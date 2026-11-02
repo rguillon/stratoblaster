@@ -1,25 +1,26 @@
-"""Each road piece as one surface draped on the ground, cut on a world lattice, its markings from
-the road atlas (phase 15, experiment, reviewer 2026-10-28; GFX-ROAD-20).
+# Copyright (c) 2026 Renaud Guillon
+"""Each road piece as one surface draped on the ground, cut on a world lattice.
+
+Its markings from the road atlas (phase 15, experiment, reviewer 2026-10-28; GFX-ROAD-20).
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from render.geometry.gradient_shapes import ColoredGeometry
 from render.scenery.tile_road_geometry import add_piece
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
 
-from core.scenery.road_tiles import RoadPiece  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.scenery_level import TileRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.scenery.road_atlas import RoadAtlas  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.scenery.tile_road_geometry import TileRoadLook  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.road_tiles import RoadPiece
+from core.scenery.scenery_level import TileRules
+from render.scenery.road_atlas import RoadAtlas
+from render.scenery.tile_road_geometry import TileRoadLook
 
 Height = Callable[[float, float], float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class TexturedGeometry(ColoredGeometry):
@@ -31,7 +32,7 @@ class TexturedGeometry(ColoredGeometry):
 
 
 def cuts(a: float, b: float, cell: float) -> list[float]:
-    """The cuts of [a, b] on the world lattice of `cell`."""
+    """Return the cuts of [a, b] on the world lattice of `cell`."""
     out = [a]
     c = (math.floor(a / cell) + 1) * cell
     while c < b - 1e-6:
@@ -70,7 +71,7 @@ def _add_surface(
             geo.indices.extend([a, a + 1, c, a + 1, c + 1, c])
 
 
-def build_road_surfaces(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def build_road_surfaces(
     pieces: list[RoadPiece],
     tile: TileRules,
     look: TileRoadLook,
@@ -79,8 +80,11 @@ def build_road_surfaces(  # noqa: PLR0917 (positional: Transcrypt has no keyword
     z_min: float,
     z_max: float,
 ) -> tuple[TexturedGeometry, ColoredGeometry]:
-    """The pieces whose middle is in [z_min, z_max): textured surfaces, and the layered geometry of
-    those the atlas has no room for. Returns (surfaces, layered)."""
+    """Return the pieces whose middle is in [z_min, z_max).
+
+    Textured surfaces, and the layered geometry of those the atlas has no room for. Returns
+    (surfaces, layered).
+    """
     surfaces = TexturedGeometry()
     layered = ColoredGeometry()
     for piece in pieces:

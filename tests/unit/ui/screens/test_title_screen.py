@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/ui/screens/title_screen.py`."""
 
 from helpers.dom import FakeDocument
@@ -23,7 +24,9 @@ def view(selected: int = 0) -> TitleView:
 
 def test_ui_title_01_the_title_screen_shows_the_title_the_high_score_and_the_version() -> None:
     """Also UI-TITLE-02, UI-TITLE-03, UI-TITLE-04 and UI-TITLE-05."""
-    root = render_title_screen(FakeDocument(), view(), ScreenHandlers(lambda i: None, lambda: None))
+    root = render_title_screen(
+        FakeDocument(), view(), ScreenHandlers(lambda _i: None, lambda: None)
+    )
     assert root.className == "menu-screen title-screen"
     assert root.querySelector(".title-name").textContent == "STRATOBLASTER"
     assert root.querySelector(".title-score-label").textContent == "HIGH SCORE"
@@ -51,7 +54,7 @@ def test_d199_the_dev_entry_follows_settings_only_when_given() -> None:
     """DEV-MENU-01: the Dev entry, only with `?dev`."""
     assert (
         render_title_screen(
-            FakeDocument(), view(), ScreenHandlers(lambda i: None, lambda: None)
+            FakeDocument(), view(), ScreenHandlers(lambda _i: None, lambda: None)
         ).querySelector(".title-dev")
         is None
     )

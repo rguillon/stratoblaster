@@ -1,33 +1,34 @@
-"""MB-EMBER-HERALD-03, MB-EMBER-HERALD-04, 4-5: the Ember Herald's colours, its ember lances (the
-parts on its turning ring), the spikes on its hull and the embers drifting round it. Logical pixels,
-nose +Z, Y up.
+# Copyright (c) 2026 Renaud Guillon
+"""MB-EMBER-HERALD-03, MB-EMBER-HERALD-04, 4-5: the Ember Herald's colours and ember lances.
+
+The lances are the parts on its turning ring. Also the spikes on its hull and the embers drifting
+round it. Logical pixels, nose +Z, Y up.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from core.math.rng import create_rng
+from game.config.boss_look import BOSS_LOOK
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H
+from game.view.bosses.world_4.living_forge import SKIN
+from render.geometry.outline import hypot2
+from render.geometry.solids import Placement
 
-from core.math.rng import create_rng  # noqa: E402
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H  # noqa: E402
-from game.view.bosses.world_4.living_forge import SKIN  # noqa: E402
-from render.geometry.outline import hypot2  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def _neon_or(kind: str, fallback: Rgb) -> Rgb:
     """`BOSS_LOOK.neon[kind] ?? fallback`."""
     colour: Rgb = BOSS_LOOK.neon[kind]
-    if colour == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    if colour == None:
         return fallback
     return colour
 
@@ -77,8 +78,10 @@ SPIKE = [
 
 
 def spike(parts: Any, at: Vec3, angles: list[float], dims: list[float]) -> None:
-    """A spike of `[radius, length]` growing from `at`, tilted by `[pitch, roll, yaw]` from straight
-    up: bone, a molten glow at its root."""
+    """Add a spike of `[radius, length]` growing from `at`.
+
+    Tilted by `[pitch, roll, yaw]` from straight up: bone, a molten glow at its root.
+    """
     place = Placement(at, angles[2], angles[0], angles[1])
     radius = dims[0]
     length = dims[1]
@@ -93,10 +96,12 @@ def spike(parts: Any, at: Vec3, angles: list[float], dims: list[float]) -> None:
 
 
 def ember_lance(p: Any, muzzles: list[Any], at: Vec3) -> None:
-    """An ember lance on the turning ring, pointing out of it to its `muzzles`' tip (from the
-    design): a soot-black shaft with molten bands and a gold collar, a glowing gold blade, two pairs
-    of barbs, a clamp holding it to the ring, and a charge light at its tip where its spirals
-    leave."""
+    """Add an ember lance on the turning ring, pointing out of it to its `muzzles`' tip.
+
+    The tip comes from the design. A soot-black shaft with molten bands and a gold collar, a glowing
+    gold blade, two pairs of barbs, a clamp holding it to the ring, and a charge light at its tip
+    where its spirals leave.
+    """
     if len(muzzles) == 0:
         return
     m = muzzles[0]
@@ -105,7 +110,7 @@ def ember_lance(p: Any, muzzles: list[Any], at: Vec3) -> None:
     yaw = math.atan2(tip[0], tip[2])
 
     def out(r: float, up: float = 0) -> Vec3:
-        """A point `r` px in from the tip along the lance, `up` above its axis."""
+        """Return a point `r` px in from the tip along the lance, `up` above its axis."""
         return [math.sin(yaw) * (reach - r), tip[1] + up, math.cos(yaw) * (reach - r)]
 
     def axis(r: float) -> Any:
@@ -142,9 +147,11 @@ EMBER_COLOURS = [GOLD, HEAT["ember"], HEAT["molten"]]
 
 
 def embers(neon: Any) -> None:
-    """The embers wreathing the Ember Herald (MB-EMBER-HERALD-02): small glowing motes scattered
-    round the hull and up past its ring, some molten orange, some bright gold, the same every
-    time."""
+    """Add the embers wreathing the Ember Herald (MB-EMBER-HERALD-02).
+
+    Small glowing motes scattered round the hull and up past its ring, some molten orange, some
+    bright gold, the same every time.
+    """
     random = create_rng(4505)
     for i in range(EMBERS_COUNT):
         a = random() * math.pi * 2

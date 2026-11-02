@@ -1,8 +1,9 @@
-"""The Ice Queen's details (MB-ICE-QUEEN-02, 2-5): its crystal canopy, its engine nacelles, the
-crystal fins at its tail, frosted plates and lights on its wings Logical pixels, nose +Z, Y up.
-"""
+# Copyright (c) 2026 Renaud Guillon
+"""The Ice Queen's details (MB-ICE-QUEEN-02, 2-5).
 
-from org.transcrypt.stubs.browser import __pragma__
+Its crystal canopy, its engine nacelles, the crystal fins at its tail, frosted plates and lights on
+its wings. Logical pixels, nose +Z, Y up.
+"""
 
 from game.view.bosses.mini_boss_greebles import lamps, plate
 from game.view.bosses.mini_boss_shapes import QUARTER, H
@@ -11,13 +12,15 @@ from game.view.bosses.world_2.w2_organic import ICE_FLESH, gland, glow_vein
 from game.view.enemies.enemy_shapes import CANOPY_SECTION, POD_SECTION, SIDES, flip_x
 from render.geometry.solids import LoftOptions, Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from game.view.enemies.enemy_mesh import EnemyParts
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The crystal canopy on the fuselage's back (loft stations), closing to a point at the front.
 CANOPY = [  # type: list[list[float]]
@@ -63,16 +66,16 @@ POD = [  # type: list[list[float]]
 CANOPY_SHOULDERS = [1, 2]
 
 
-def _canopy_paint(side: int, band: int) -> Rgb | None:
-    """The canopy's paint: pale on its two shoulders."""
+def _canopy_paint(side: int, _band: int) -> Rgb | None:
+    """Return the canopy's paint: pale on its two shoulders."""
     if side in CANOPY_SHOULDERS:
         pale: Rgb = FROST.pale
         return pale
     return None
 
 
-def _nacelle_paint(side: int, band: int) -> Rgb | None:
-    """The nacelle's paint: frosted on its back."""
+def _nacelle_paint(side: int, _band: int) -> Rgb | None:
+    """Return the nacelle's paint: frosted on its back."""
     if side == NACELLE_BACK:
         rime: Rgb = ICE_FLESH.rime
         return rime
@@ -80,7 +83,7 @@ def _nacelle_paint(side: int, band: int) -> Rgb | None:
 
 
 def _draw_canopy(p: EnemyParts) -> None:
-    """The crystal canopy and the nose's sensor crystal."""
+    """Draw the crystal canopy and the nose's sensor crystal."""
     hull = p.hull
     neon = p.neon
     hull.loft(
@@ -95,7 +98,10 @@ def _draw_canopy(p: EnemyParts) -> None:
 
 
 def _draw_nacelles(p: EnemyParts) -> None:
-    """The engine nacelles on the wing roots: snowed backs, pale blue strips along their sides."""
+    """Draw the engine nacelles on the wing roots.
+
+    Snowed backs, pale blue strips along their sides.
+    """
     flesh = p.flesh
     neon = p.neon
     for s in SIDES:
@@ -113,8 +119,10 @@ def _draw_nacelles(p: EnemyParts) -> None:
 
 
 def _draw_crystals(p: EnemyParts) -> None:
-    """The crystal fins leaning back at the tail, and low crystals along the spine (under the
-    crown ring and its spokes as they turn)."""
+    """Draw the crystal fins leaning back at the tail, and low crystals along the spine.
+
+    The low crystals sit under the crown ring and its spokes as they turn.
+    """
     hull = p.flesh
     for s in SIDES:
         crystal(hull, [s * 4.5, 7, -44], [-0.8, -0.35 * s, 0], [2.2, 13])
@@ -124,8 +132,10 @@ def _draw_crystals(p: EnemyParts) -> None:
 
 
 def _draw_wing_detail(p: EnemyParts) -> None:
-    """Frosted plates, seams and a vent on the wings, lights at their tips, crystal pods under
-    them."""
+    """Draw frosted plates, seams and a vent on the wings.
+
+    Lights at their tips, crystal pods under them.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -141,7 +151,7 @@ def _draw_wing_detail(p: EnemyParts) -> None:
 
 
 def draw_details(p: EnemyParts) -> None:
-    """The Ice Queen's details (MB-ICE-QUEEN-02), on its core body."""
+    """Draw the Ice Queen's details (MB-ICE-QUEEN-02), on its core body."""
     _draw_canopy(p)
     _draw_nacelles(p)
     _draw_crystals(p)

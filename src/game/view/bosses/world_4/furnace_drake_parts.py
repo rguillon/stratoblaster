@@ -1,37 +1,36 @@
-"""MB-FURNACE-DRAKE-03, MB-FURNACE-DRAKE-04, 4-4: the Furnace Drake's parts (its beating wings
-and its jaw) and its forge colours.
-Logical pixels, nose +Z, Y up (towards the
-camera).
+# Copyright (c) 2026 Renaud Guillon
+"""MB-FURNACE-DRAKE-03, MB-FURNACE-DRAKE-04, 4-4: the Furnace Drake's parts and forge colours.
+
+Its parts are its beating wings and its jaw. Logical pixels, nose +Z, Y up (towards the camera).
 """
 
-from org.transcrypt.stubs.browser import __pragma__
+from game.config.boss_look import BOSS_LOOK
+from game.config.bosses.boss_kit import mirror
+from game.config.bosses.world_4.furnace_drake import DRAKE_MAW, DRAKE_WING_GUNS
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.final_boss_greebles import rod
+from game.view.bosses.final_boss_shapes import sided
+from game.view.bosses.mini_boss_greebles import lamps, seam
+from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H, offset
+from game.view.bosses.world_4.living_forge import FL, SKIN, glands
+from game.view.enemies.enemy_shapes import FIGHTER_SECTION, POD_SECTION, SIDES
+from render.geometry.solids import Placement
 
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.config.bosses.boss_kit import mirror  # noqa: E402
-from game.config.bosses.world_4.furnace_drake import DRAKE_MAW, DRAKE_WING_GUNS  # noqa: E402
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.final_boss_greebles import rod  # noqa: E402
-from game.view.bosses.final_boss_shapes import sided  # noqa: E402
-from game.view.bosses.mini_boss_greebles import lamps, seam  # noqa: E402
-from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H, offset  # noqa: E402
-from game.view.bosses.world_4.living_forge import FL, SKIN, glands  # noqa: E402
-from game.view.enemies.enemy_shapes import FIGHTER_SECTION, POD_SECTION, SIDES  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Rgb = list[float]
 type Vec3 = list[float]
 type OutlinePoint = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def _neon_or(kind: str, fallback: Rgb) -> Rgb:
     """`BOSS_LOOK.neon[kind] ?? fallback`."""
     colour: Rgb = BOSS_LOOK.neon[kind]
-    if colour == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    if colour == None:
         return fallback
     return colour
 
@@ -55,7 +54,10 @@ HIDE = [0.08, 0.035, 0.03]
 
 
 def spike(builder: Any, at: Vec3, dims: list[float], color: Rgb = H.dark, lean: float = 0) -> None:
-    """A fin or spike standing on `at`: a three-sided cone `height` tall, leaning back by `lean`."""
+    """Add a fin or spike standing on `at`: a three-sided cone `height` tall.
+
+    It leans back by `lean`.
+    """
     radius = dims[0]
     height = dims[1]
     profile = [
@@ -102,7 +104,7 @@ NACELLE = [
 
 
 def _membrane(p: Any, s: float) -> None:
-    """The membrane and its bones, lit along their length by molten seams."""
+    """Add the membrane and its bones, lit along their length by molten seams."""
     hull = p.flesh
     neon = p.neon
     # MB-FURNACE-DRAKE-03: a membrane stretched on bone, veined molten.
@@ -130,10 +132,11 @@ def _membrane(p: Any, s: float) -> None:
 
 
 def wing(p: Any, at: Vec3) -> None:
-    """A wing around its pod's centre `at` (MB-FURNACE-DRAKE-03), drawn on its beating joint
-    (MB-FURNACE-DRAKE-06): a scalloped hide
-    membrane on heavy bones, molten seams along them, and under it the gun pod with its two fan
-    barrels."""
+    """Add a wing around its pod's centre `at` (MB-FURNACE-DRAKE-03).
+
+    Drawn on its beating joint (MB-FURNACE-DRAKE-06): a scalloped hide membrane on heavy bones,
+    molten seams along them, and under it the gun pod with its two fan barrels.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -180,7 +183,7 @@ LOWER_JAW = [
 
 
 def _skull(p: Any) -> None:
-    """The skull: horns swept back, red eyes, the open lower jaw with its teeth."""
+    """Add the skull: horns swept back, red eyes, the open lower jaw with its teeth."""
     flesh = p.flesh
     neon = p.neon
     flesh.loft(FIGHTER_SECTION, SKULL, SKIN.base)
@@ -196,9 +199,11 @@ def _skull(p: Any) -> None:
 
 
 def jaw(p: Any, at: Vec3) -> None:
-    """The drake's jaw around the head's centre `at` (MB-FURNACE-DRAKE-04), on its swaying neck
-    (MB-FURNACE-DRAKE-06): the neck and
-    skull, the open maw glowing as the flame charges, and the flame nozzle in its throat."""
+    """Add the drake's jaw around the head's centre `at` (MB-FURNACE-DRAKE-04).
+
+    On its swaying neck (MB-FURNACE-DRAKE-06): the neck and skull, the open maw glowing as the flame
+    charges, and the flame nozzle in its throat.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge

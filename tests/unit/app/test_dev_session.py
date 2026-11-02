@@ -1,7 +1,8 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/dev_session.py` (D-199): the dev viewer the menu shows, and the wheel."""
 
 from types import SimpleNamespace
-from typing import Any
+from typing import Any, ClassVar
 
 import pytest
 from helpers.dom import FakeDocument
@@ -11,9 +12,11 @@ from app.dev_session import DevSession
 
 
 class FakeViewer:
-    made: list["FakeViewer"] = []
+    made: ClassVar[list["FakeViewer"]] = []
 
-    def __init__(self, engine: Any, game: Any, viewer: str, items: Any, environment: bool) -> None:
+    def __init__(
+        self, _engine: Any, _game: Any, viewer: str, items: Any, _environment: bool
+    ) -> None:
         self.viewer = viewer
         self.items = items
         self.shown: tuple[int, bool] | None = None
@@ -59,14 +62,14 @@ def state(viewer: str | None, selection: int = 0, toggle: bool = True) -> Simple
 
 def session(root: Any = None) -> DevSession:
     catalog = {"ships": ["a", "b"], "levels": ["1-1"], "bosses": ["warden"]}
-    return DevSession("engine", "game", catalog, True, root)
+    return DevSession("engine", "game", catalog, environment=True, status_root=root)
 
 
 def test_d199_the_viewer_opens_follows_the_menu_and_closes() -> None:
     """DEV-MENU-02."""
     s = session()
     assert not s.active
-    s.sync(state("ships", 1, False))
+    s.sync(state("ships", 1, toggle=False))
     viewer = FakeViewer.made[0]
     assert s.active
     assert (viewer.viewer, viewer.items, viewer.shown) == ("ships", ["a", "b"], (1, False))
@@ -142,10 +145,10 @@ class FakeTarget:
     def __init__(self) -> None:
         self.listeners: dict[str, list[Any]] = {}
 
-    def addEventListener(self, kind: str, listener: Any) -> None:  # noqa: N802 (DOM name)
+    def addEventListener(self, kind: str, listener: Any) -> None:
         self.listeners.setdefault(kind, []).append(listener)
 
-    def removeEventListener(self, kind: str, listener: Any) -> None:  # noqa: N802 (DOM name)
+    def removeEventListener(self, kind: str, listener: Any) -> None:
         self.listeners[kind].remove(listener)
 
     def press(self, code: str) -> SimpleNamespace:
@@ -179,3 +182,53 @@ def test_the_keys_are_no_longer_heard_once_disposed() -> None:
     s.dispose()
     assert target.listeners == {"keydown": [], "keyup": []}
     session().listen(None)
+
+
+def test_dev_menu_14_k_is_used_on_its_release_without_breaking_another_part() -> None:
+    s = session()
+    s.sync(state("bosses"))
+    assert s.key("KeyK", False) is True
+    assert not hasattr(FakeViewer.made[0], "broken")
+    assert s.key("KeyK", True) is True
+    assert FakeViewer.made[0].broken == 1
+
+
+class StatusLine:
+    """The overlay's status line: each text written into it."""
+
+    def __init__(self) -> None:
+        self._text = ""
+        self.writes: list[str] = []
+
+    @property
+    def textContent(self) -> str:
+        return self._text
+
+    @textContent.setter
+    def textContent(self, value: str) -> None:
+        self._text = value
+        self.writes.append(value)
+
+
+def overlay(line: StatusLine | None) -> SimpleNamespace:
+    """Return the overlay root, whose `.dev-status` line is `line` (None: it has none)."""
+    return SimpleNamespace(
+        querySelector=lambda selector: line if selector == ".dev-status" else None
+    )
+
+
+def test_d199_the_status_line_is_written_only_when_it_changes() -> None:
+    """Also DEV-MENU-05: without a status line in the overlay, nothing is written."""
+    line = StatusLine()
+    s = session(overlay(line))
+    s.sync(state("levels"))
+    s.frame(0.1)
+    s.frame(0.1)
+    assert line.writes == ["1:00 / 4:00"]
+    FakeViewer.made[0].status = "2:00 / 4:00"
+    s.frame(0.1)
+    assert line.writes == ["1:00 / 4:00", "2:00 / 4:00"]
+    lineless = session(overlay(None))
+    lineless.sync(state("levels"))
+    lineless.frame(0.1)
+    assert FakeViewer.made[1].frames == [0.1]

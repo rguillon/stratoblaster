@@ -1,32 +1,19 @@
-"""GFX-FX-05: explosions where enemies and missiles were destroyed, in playfield space Each layer
-(smoke, shock rings, fireballs, debris, embers) is one mesh
-of thin instances, so a big blast costs no more draw calls than a small one (GFX-FX-09,
-ENG-104)."""
+# Copyright (c) 2026 Renaud Guillon
+"""GFX-FX-05: explosions where enemies and missiles were destroyed, in playfield space.
+
+Each layer (smoke, shock rings, fireballs, debris, embers) is one mesh of thin instances, so a big
+blast costs no more draw calls than a small one (GFX-FX-09, ENG-104).
+"""
 
 import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
-__pragma__("skip")
-from game.config.record import fields_of, record  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-__pragma__("noskip")
-
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-type Rgb = list[float]
-# The table of the blast layers: each disc, whether it is added on, and its depth.
-type LayerTable = dict[str, tuple[Callable[[], Any], bool, float]]
-__pragma__("noskip")
-
-from core.math.rng import create_rng  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.enemies.blast_particles import BLAST_LAYERS, BlastParticles  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.shot_geometry import build_glow_disc  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.babylon import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import create_rng
+from game.config.enemy_look import ENEMY_LOOK
+from game.view.enemies.blast_particles import BLAST_LAYERS, BlastParticles
+from game.view.shot_geometry import build_glow_disc
+from render.babylon import (
     apply_vertex_data,
     babylon_constant,
     color3,
@@ -35,6 +22,20 @@ from render.babylon import (  # noqa: E402 (after the Transcrypt skip block, ENG
     new_standard_material,
     vertex_data_of,
 )
+
+# isort: split
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+# __pragma__ ("skip")
+from collections.abc import Callable
+from typing import Any
+
+from game.config.record import fields_of, record
+
+type Rgb = list[float]
+# The table of the blast layers: each disc, whether it is added on, and its depth.
+type LayerTable = dict[str, tuple[Callable[[], Any], bool, float]]
+# __pragma__ ("noskip")
+
 
 LOOK = ENEMY_LOOK.blasts
 
@@ -49,7 +50,7 @@ def _object_with_colors(geo: Any, colors: list[float]) -> Any:
 
 
 def _float32_array(length: int) -> Any:
-    """A zero-filled `Float32Array` of `length` values."""
+    """Return a zero-filled `Float32Array` of `length` values."""
     __pragma__("skip")
     return [0.0] * length
     __pragma__("noskip")
@@ -67,7 +68,7 @@ def _ceil_log2(n: int) -> int:
 
 
 def soft(segments: int) -> Any:
-    """A soft white disc, fading to its rim."""
+    """Return a soft white disc, fading to its rim."""
     return build_glow_disc(
         segments,
         [[1, 1, 1], [0.85, 0.85, 0.85], [0.4, 0.4, 0.4], [0, 0, 0]],
@@ -75,14 +76,14 @@ def soft(segments: int) -> Any:
 
 
 def ring(segments: int) -> Any:
-    """A thin white ring at the rim of a disc, black (nothing, added on) inside and out."""
+    """Return a thin white ring at the rim of a disc, black (nothing, added on) inside and out."""
     colors: list[Rgb] = [[0, 0, 0] for _ in range(7)]
     colors.extend([[0.5, 0.5, 0.5], [1, 1, 1], [0, 0, 0]])
     return build_glow_disc(segments, colors)
 
 
 def puff(segments: int) -> Any:
-    """A soft disc for smoke: white, its opacity fading to the rim."""
+    """Return a soft disc for smoke: white, its opacity fading to the rim."""
     geo = soft(segments)
     colors: list[float] = []
     for i in range(0, len(geo.colors), 4):
@@ -131,8 +132,10 @@ class LayerMesh:
         self.mesh.setEnabled(False)
 
     def show(self, spots: list[Any]) -> None:
-        """Draws one thin instance per spot, tinted by the spot's colour, into buffers that grow by
-        powers of two and are reused (ENG-19)."""
+        """Draw one thin instance per spot, tinted by the spot's colour.
+
+        They go into buffers that grow by powers of two and are reused (ENG-19).
+        """
         n = len(spots)
         self.mesh.setEnabled(n > 0)
         if n == 0:
@@ -161,6 +164,7 @@ class LayerMesh:
             self.mesh.thinInstanceBufferUpdated("color")
 
     def dispose(self) -> None:
+        """Dispose the mesh and its material."""
         if self.mesh.material:
             self.mesh.material.dispose()
         self.mesh.dispose()

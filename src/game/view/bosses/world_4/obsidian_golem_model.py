@@ -1,28 +1,28 @@
-"""FB-OBSIDIAN-GOLEM-01 to FB-OBSIDIAN-GOLEM-07, 4-3: the Obsidian Golem. Logical pixels, nose +Z, Y
-up (towards the camera). A massive flying fortress shaped like a hunched giant: a broad armoured
-torso of black obsidian plates split by glowing magma seams, a small helmed head low on its chest, a
-furnace stack on its back, heavy pauldrons, two arms bending at the shoulder and elbow down to huge
-fists (limbs on joints), the shoulder cannons behind the pauldrons, the armour plate and the chest
-emitter on its front. FB-OBSIDIAN-GOLEM-02: a living hunched giant, its flesh torso and hump ribbed
-in bone and veined with magma, obsidian growths for pauldrons, knuckles and chest plate, a metal
-helm and guns grafted on.
+# Copyright (c) 2026 Renaud Guillon
+"""FB-OBSIDIAN-GOLEM-01 to FB-OBSIDIAN-GOLEM-07, 4-3: the Obsidian Golem.
+
+Logical pixels, nose +Z, Y up (towards the camera). A massive flying fortress shaped like a hunched
+giant: a broad armoured torso of black obsidian plates split by glowing magma seams, a small helmed
+head low on its chest, a furnace stack on its back, heavy pauldrons, two arms bending at the
+shoulder and elbow down to huge fists (limbs on joints), the shoulder cannons behind the pauldrons,
+the armour plate and the chest emitter on its front. FB-OBSIDIAN-GOLEM-02: a living hunched giant,
+its flesh torso and hump ribbed in bone and veined with magma, obsidian growths for pauldrons,
+knuckles and chest plate, a metal helm and guns grafted on.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.bosses.world_4.obsidian_golem import (  # noqa: E402
+from game.config.bosses.world_4.obsidian_golem import (
     GOLEM_BROW,
     GOLEM_STACK,
     OBSIDIAN_GOLEM,
 )
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.final_boss_shapes import mirrored  # noqa: E402
-from game.view.bosses.mini_boss_greebles import vent  # noqa: E402
-from game.view.bosses.mini_boss_shapes import SHADE, WHITE, H, offset, socket  # noqa: E402
-from game.view.bosses.world_4.living_forge import (  # noqa: E402
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.final_boss_shapes import mirrored
+from game.view.bosses.mini_boss_greebles import vent
+from game.view.bosses.mini_boss_shapes import SHADE, WHITE, H, offset, socket
+from game.view.bosses.world_4.living_forge import (
     SKIN,
     back_ribs,
     flesh_shell,
@@ -30,8 +30,8 @@ from game.view.bosses.world_4.living_forge import (  # noqa: E402
     magma_vein,
     reactor_sacs,
 )
-from game.view.bosses.world_4.magma_salamander_parts import barrel  # noqa: E402
-from game.view.bosses.world_4.obsidian_golem_parts import (  # noqa: E402
+from game.view.bosses.world_4.magma_salamander_parts import barrel
+from game.view.bosses.world_4.obsidian_golem_parts import (
     GOLEM_NEON,
     MAGMA,
     OBSIDIAN,
@@ -43,30 +43,30 @@ from game.view.bosses.world_4.obsidian_golem_parts import (  # noqa: E402
     fist,
     plate,
 )
-from game.view.enemies.enemy_shapes import HULL_SECTION, SIDES  # noqa: E402
-from render.geometry.organic import RibSpec  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
+from game.view.enemies.enemy_shapes import HULL_SECTION, SIDES
+from render.geometry.organic import RibSpec
+from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type OutlinePoint = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The torso seen from above (right half, chest to back).
-TORSO = mirrored(
-    [
-        [0, 30],
-        [18, 28],
-        [32, 18],
-        [40, 4],
-        [38, -16],
-        [28, -32],
-        [0, -36],
-    ]
-)
+TORSO = mirrored([
+    [0, 30],
+    [18, 28],
+    [32, 18],
+    [40, 4],
+    [38, -16],
+    [28, -32],
+    [0, -36],
+])
 # The hunched upper torso on it, back to front (loft stations: z, half width, bottom, top).
 HUMP = [
     [-32.0, 22.0, 16.0, 23.0],
@@ -102,7 +102,10 @@ HELM = [
 
 
 def _draw_torso(p: Any) -> None:
-    """The torso: a slab of dark metal, the obsidian hump on it, magma seams across its back."""
+    """Draw the torso: a slab of dark metal, the obsidian hump on it.
+
+    Magma seams run across its back.
+    """
     hull = p.hull
     neon = p.neon
     p.flesh.bevel_slab(TORSO, [-4, 2, 16], [4, 3], SKIN.base, None, SKIN.panel)
@@ -129,7 +132,7 @@ def _draw_torso(p: Any) -> None:
 
 
 def _draw_head(p: Any) -> None:
-    """The head: a helm with a glowing visor, the twin guns under its brow."""
+    """Draw the head: a helm with a glowing visor, the twin guns under its brow."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -144,7 +147,7 @@ def _draw_head(p: Any) -> None:
 
 
 def _draw_pauldrons(p: Any) -> None:
-    """The pauldrons over its shoulders: domes of obsidian ringed in orange."""
+    """Draw the pauldrons over its shoulders: domes of obsidian ringed in orange."""
     hull = p.hull
     neon = p.neon
     for s in SIDES:
@@ -174,7 +177,7 @@ def _draw_pauldrons(p: Any) -> None:
 
 
 def _draw_stack(p: Any) -> None:
-    """The furnace stack on its back, its glowing top where the core's rings leave from."""
+    """Draw the furnace stack on its back, its glowing top where the core's rings leave from."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -208,8 +211,11 @@ def _draw_underside(p: Any) -> None:
 
 
 def build_obsidian_golem(scene: Any) -> Any:
-    """FB-OBSIDIAN-GOLEM-01, FB-OBSIDIAN-GOLEM-06: the Obsidian Golem, a massive armoured flying
-    fortress of black obsidian with glowing magma seams and two huge fists on bending arms."""
+    """Build the Obsidian Golem (FB-OBSIDIAN-GOLEM-01, FB-OBSIDIAN-GOLEM-06).
+
+    A massive armoured flying fortress of black obsidian with glowing magma seams and two huge fists
+    on bending arms.
+    """
 
     def core(p: Any) -> None:
         _draw_torso(p)

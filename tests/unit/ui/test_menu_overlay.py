@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/ui/menu_overlay.py`."""
 
 from types import SimpleNamespace
@@ -93,7 +94,7 @@ def test_ui_input_09_tapping_the_selected_entry_confirms_and_another_selects_it(
 def test_ui_input_10_the_back_button_sends_back() -> None:
     overlay, _, root, commands = make_overlay()
     overlay.show(
-        LevelSelectView("Levels", "hint", "Back", 0, 1, [LevelOption("1", False)], "Locked")
+        LevelSelectView("Levels", "hint", "Back", 0, 1, [LevelOption("1", locked=False)], "Locked")
     )
     root.children[0].querySelector(".menu-back").fire("click")
     assert commands == ["back"]
@@ -129,7 +130,9 @@ def test_ui_pause_02_the_game_pause_button_sends_pause() -> None:
 
 def test_ui_set_03_a_slider_is_set_by_its_value_under_the_pointer() -> None:
     overlay, _, root, commands = make_overlay()
-    overlay.show(SettingsView("Settings", "hint", "Back", 0, [SliderView("Music", 0, 10)], False))
+    overlay.show(
+        SettingsView("Settings", "hint", "Back", 0, [SliderView("Music", 0, 10)], over_level=False)
+    )
     bar = root.children[0].querySelector(".slider-bar")
     bar.rect.left = 0
     bar.rect.width = 100
@@ -142,7 +145,7 @@ def test_ui_set_03_a_slider_is_set_by_its_value_under_the_pointer() -> None:
 def test_ui_level_04_a_locked_pick_shakes_the_selected_entry_and_shows_the_text() -> None:
     overlay, _, root, _ = make_overlay()
     overlay.show(
-        LevelSelectView("Levels", "hint", "Back", 0, 1, [LevelOption("2", True)], "Locked")
+        LevelSelectView("Levels", "hint", "Back", 0, 1, [LevelOption("2", locked=True)], "Locked")
     )
     overlay.shake_selected("Locked: finish level 1")
     screen = root.children[0]
@@ -179,7 +182,34 @@ def test_d199_the_dev_screens_render_and_the_wheel_reaches_its_handler() -> None
     assert overlay.root is root
     overlay.show(DevMenuView("Dev", "hint", "Back", 0, ["Ships"]))
     assert root.querySelector(".dev-screen") is not None
-    overlay.show(DevViewerView("Ships", "hint", "Back", 0, "Alpha", "1 / 3", False))
+    overlay.show(DevViewerView("Ships", "hint", "Back", 0, "Alpha", "1 / 3", scrub=False))
     screen = root.querySelector(".dev-viewer-screen")
     screen.fire("wheel", SimpleNamespace(deltaY=-100, target=None, preventDefault=lambda: None))
     assert wheels == [-100]
+
+
+def test_game_ctrl_04_without_touch_handlers_the_fire_button_and_drags_do_nothing() -> None:
+    """Also GAME-CTRL-05: the fire button is there, nothing listens to it."""
+    overlay, _, root, commands = make_overlay()
+    overlay.show(GameScreenView("Level 1", "FIRE", "II", None, None, 0))
+    screen = root.children[0]
+    screen.querySelector(".game-fire").fire("pointerdown")
+    screen.fire("pointerdown", FakeEvent(x=10, y=10))
+    screen.fire("pointermove", FakeEvent(x=30, y=0))
+    assert commands == []
+
+
+def test_ui_level_04_shaking_a_screen_with_no_entry_and_no_status_changes_nothing() -> None:
+    overlay, _, root, _ = make_overlay()
+    overlay.show(LoadingView("Loading", 0.1))
+    screen = root.children[0]
+    overlay.shake_selected("Locked")
+    assert screen.querySelector(".shake") is None
+    assert all(node.textContent != "Locked" for node in [screen, *screen.descendants()])
+
+
+def test_ui_look_01_dispose_with_nothing_shown_is_harmless() -> None:
+    overlay, _, root, _ = make_overlay()
+    overlay.dispose()
+    assert root.children == []
+    assert overlay.view is None

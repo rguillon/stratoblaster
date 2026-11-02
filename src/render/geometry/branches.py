@@ -1,6 +1,9 @@
-"""Branches (D-214, the dead trees and the birch of GFX-PROP-09): tapered limbs between two
-points, and limbs forking into smaller ones, as bare wood does. Seeded: the same seed gives the
-same branches.
+# Copyright (c) 2026 Renaud Guillon
+"""Branches (D-214, the dead trees and the birch of GFX-PROP-09).
+
+Tapered limbs between two points, and limbs forking into smaller ones, as bare wood does.
+
+Seeded: the same seed gives the same branches.
 
 Game-agnostic: they draw into a `SolidBuilder` and know nothing of what they are used for.
 """
@@ -31,14 +34,14 @@ _STEEP = 0.9
 
 
 def across(direction: Vec3) -> list[Vec3]:
-    """Two unit vectors `u`, `v` square to `direction` and to each other, `u × v` along it."""
+    """Two unit vectors `u`, `v` square to `direction` and to each other, `u x v` along it."""
     d = norm(direction)
     helper: Vec3 = [0, 1, 0] if abs(d[1]) < _STEEP else [1, 0, 0]
     u = norm(cross(d, helper))
     return [u, cross(d, u)]
 
 
-def limb(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def limb(
     s: SolidBuilder,
     start: Vec3,
     end: Vec3,
@@ -46,9 +49,13 @@ def limb(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
     sides: int,
     color: Rgb,
 ) -> None:
-    """A limb from `start` to `end`, `radii` = [radius at the start, at the end], of `sides` flat
-    facets. An end radius of 0 closes it to a point; otherwise its end is capped. Its start is left
-    open: it stands in the trunk or limb it grows from."""
+    """Add a limb from `start` to `end`, with `sides` flat facets.
+
+    `radii` = [radius at the start, at the end].
+
+    An end radius of 0 closes it to a point; otherwise its end is capped. Its start is left open: it
+    stands in the trunk or limb it grows from.
+    """
     uv = across([end[0] - start[0], end[1] - start[1], end[2] - start[2]])
     u = uv[0]
     v = uv[1]
@@ -74,13 +81,17 @@ def limb(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
 
 
 class Branching:
-    """How a limb forks: into `forks` limbs, each turned `spread` radians off it (give or take a
-    third), `shrink` times as long (give or take a fifth) and `thin` times as thick at its base as
-    the limb is at its end, starting in the outer `reach` (0..1) of it and bent `rise` up (or down,
-    below 0) by unit of its length. A limb's end is `taper` times as thick as its start, a limb
-    that forks no more ends in a point. Each limb is shaded up to `shade` lighter or darker."""
+    """A limb forks into `forks` limbs, each turned `spread` radians off it (give or take a third).
 
-    def __init__(  # noqa: PLR0913, PLR0917 (positional: Transcrypt has no keyword arguments)
+    Each is `shrink` times as long (give or take a fifth) and `thin` times as thick at its base as
+    the limb is at its end, starting in the outer `reach` (0..1) of it and bent `rise` up (or down,
+    below 0) by unit of its length.
+
+    A limb's end is `taper` times as thick as its start, a limb that forks no more ends in a point.
+    Each limb is shaded up to `shade` lighter or darker.
+    """
+
+    def __init__(
         self,
         forks: int,
         spread: float,
@@ -101,7 +112,7 @@ class Branching:
         self.shade = shade
 
 
-def branch(  # noqa: PLR0913, PLR0917 (positional: Transcrypt has no keyword arguments)
+def branch(
     s: SolidBuilder,
     start: Vec3,
     direction: Vec3,
@@ -111,9 +122,11 @@ def branch(  # noqa: PLR0913, PLR0917 (positional: Transcrypt has no keyword arg
     color: Rgb,
     seed: int,
 ) -> None:
-    """A limb from `start` along `direction`, `size` = [length, radius at its start], that forks
-    `depth` times more as `shape` says. Its facets go from 6 down to 3 as its limbs get thinner;
-    the same seed gives the same limbs whatever the `depth`, so a shallower one is its outline."""
+    """Add a limb from `start` along `direction` that forks `depth` times more as `shape` says.
+
+    `size` = [length, radius at its start]. Its facets go from 6 down to 3 as its limbs get thinner;
+    the same seed gives the same limbs whatever the `depth`, so a shallower one is its outline.
+    """
     length = size[0]
     radius = size[1]
     d = norm(direction)

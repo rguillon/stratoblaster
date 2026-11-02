@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/sim/enemies/mantis.py`."""
 
 import pytest
@@ -5,7 +6,7 @@ from helpers.enemy_steps import run, run_until
 from helpers.fakes import FakeContext
 
 from game.config.enemies_veteran import VETERAN_CONFIG
-from game.sim.enemies.mantis import MANTIS_DESIGN, Mantis
+from game.sim.enemies.mantis import ARM, MANTIS_DESIGN, Mantis
 
 CFG = VETERAN_CONFIG.mantis
 
@@ -43,3 +44,30 @@ def test_enm_mantis_10_while_it_stays_its_arms_and_head_fire() -> None:
     run_until(mantis, ctx, lambda: mantis.state == "stay", limit=10.0)
     run(mantis, ctx, 3.0)
     assert ctx.bullets, "the arms' and head's bullets"
+
+
+def _arm_bullets(ctx: FakeContext) -> int:
+    return sum(1 for bullet in ctx.bullets if bullet[3] is ARM.bullet)
+
+
+def test_enm_mantis_10_an_arm_destroyed_fires_no_more() -> None:
+    both = FakeContext()
+    run(Mantis(200, 300, 300), both, 2.0)
+    one = FakeContext()
+    mantis = Mantis(200, 300, 300)
+    mantis.part("left-arm").health = 0
+    run(mantis, one, 2.0)
+    assert _arm_bullets(both) > 0
+    assert _arm_bullets(one) == _arm_bullets(both) / 2
+
+
+def test_enm_15_a_mantis_above_the_playfield_holds_its_head_s_fire() -> None:
+    above = FakeContext()
+    mantis = Mantis(200, 800, 300)
+    run(mantis, above, 1.5)
+    assert mantis.y > above.height
+    assert above.bullets == []
+    # Coming in over the playfield, its head has fired by then.
+    over = FakeContext()
+    run(Mantis(200, 590, 300), over, 1.5)
+    assert len(over.bullets) == 1

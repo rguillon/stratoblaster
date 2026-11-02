@@ -1,27 +1,15 @@
-"""The sculpted ground of a level (GFX-TERRAIN-01): every section is a fractal relief
-(GFX-TERRAIN-02), optionally flattened (plateau), carved (canyon) or dropped under the sea (coast)
-(GFX-TERRAIN-03), and neighbouring sections blend smoothly over `level.transition`. Before Z = 0
-and after the end, the ground continues as the first and last sections. Pure and deterministic
-for a given seed."""
+# Copyright (c) 2026 Renaud Guillon
+"""The sculpted ground of a level (GFX-TERRAIN-01).
+
+Every section is a fractal relief (GFX-TERRAIN-02), optionally flattened (plateau), carved (canyon)
+or dropped under the sea (coast) (GFX-TERRAIN-03), and neighbouring sections blend smoothly over
+`level.transition`. Before Z = 0 and after the end, the ground continues as the first and last
+sections. Pure and deterministic for a given seed.
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-from core.scenery.scenery_level import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-    Lakes,
-    Meander,
-    PlacedSection,
-    SceneryLevel,
-    TerrainSection,
-)
-
-__pragma__("noskip")
-
-from core.math.noise import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.noise import (
     NOISE_SLOPE,
     OctaveOptions,
     create_noise2d,
@@ -29,8 +17,23 @@ from core.math.noise import (  # noqa: E402 (after the Transcrypt skip block, EN
     ridged,
     smoothstep,
 )
-from core.scenery.ice_sculpt import LakeField, crevasse_depth  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.scenery_level import Surface, layout_sections  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.ice_sculpt import LakeField, crevasse_depth
+from core.scenery.scenery_level import Surface, layout_sections
+
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
+
+from core.scenery.scenery_level import (
+    Lakes,
+    Meander,
+    PlacedSection,
+    SceneryLevel,
+    TerrainSection,
+)
+
+# __pragma__ ("noskip")
+
 
 INFINITY = float("Infinity")
 
@@ -59,13 +62,11 @@ def _lerp(a: float, b: float, t: float) -> float:
 
 def _or_one(value: float) -> float:
     """`value || 1` of JavaScript: 1 when `value` is zero (or not a number)."""
-    return value if value else 1
+    return value or 1
 
 
 def _surface_share(sections: Sequence[PlacedSection], index: int, key: str) -> float:
-    """The share of ground cover `key` of the section at `index` (0 when it has none)."""
-    if index >= len(sections):
-        return 0
+    """Return the share of ground cover `key` of the section at `index` (0 when it has none)."""
     surface = sections[index].section.surface
     if surface is None:
         return 0
@@ -87,8 +88,10 @@ def _max_of(values: Sequence[float]) -> float:
 
 
 class Steepness:
-    """How steep the relief of a section can be (most height change per unit along X or Z), and
-    the heights it stays between."""
+    """How steep the relief of a section can be (most height change per unit along X or Z).
+
+    And the heights it stays between.
+    """
 
     def __init__(self, slope: float, low: float, high: float) -> None:
         self.slope = slope
@@ -119,7 +122,7 @@ def _octaves_steepness(octaves: int) -> float:
 
 
 def _section_steepness(placed: PlacedSection, transition: float) -> Steepness | None:
-    """The steepness of a placed section, if it is smooth enough to tell (see `Steepness`)."""
+    """Return a placed section's steepness, if it is smooth enough to tell (see `Steepness`)."""
     section = placed.section
     if not _smooth_only(section) or placed.end - placed.start < transition:
         return None
@@ -144,10 +147,12 @@ def soft_cap(h: float, max_height: float) -> float:
 
 
 def terrain_ceiling(level: SceneryLevel) -> float:
-    """A height the ground of `level` never exceeds, whatever the seed (GFX-TERRAIN-06; the clouds
-    fly above it, GFX-SKY-12): the top of each section's relief (or its peak cap), of its flattened
-    band and of its sea bed. Carving only lowers the ground, and blending stays between the heights
-    of the blended sections."""
+    """Return a height the ground of `level` never exceeds.
+
+    Whatever the seed (GFX-TERRAIN-06; the clouds fly above it, GFX-SKY-12): the top of each
+    section's relief (or its peak cap), of its flattened band and of its sea bed. Carving only
+    lowers the ground, and blending stays between the heights of the blended sections.
+    """
     tops: list[float] = []
     for section in level.sections:
         relief = section.relief
@@ -181,22 +186,22 @@ class HeightField:
         """Length of the level along Z."""
         self.ceiling = terrain_ceiling(level)
         """The ground never rises above this height (see `terrain_ceiling`)."""
-        self._relief = create_noise2d(seed_value)
-        self._detail = create_noise2d(seed_value + 1)
-        self._wobble = create_noise2d(seed_value + 2)
-        self._dunes = create_noise2d(seed_value + 3)
-        self._ice = create_noise2d(seed_value + 4)
-        self._seed = seed_value
-        self._transition = max(0, level.transition)
+        self.relief_noise = create_noise2d(seed_value)
+        self.detail_noise = create_noise2d(seed_value + 1)
+        self.wobble_noise = create_noise2d(seed_value + 2)
+        self.dune_noise = create_noise2d(seed_value + 3)
+        self.ice_noise = create_noise2d(seed_value + 4)
+        self.seed = seed_value
+        self.transition = max(0, level.transition)
         # Each section's octaves, made once.
-        self._octaves: list[OctaveOptions] = [
+        self.octaves: list[OctaveOptions] = [
             OctaveOptions(placed.section.relief.octaves, OCTAVE_LACUNARITY, OCTAVE_GAIN)
             for placed in self.sections
         ]
         # The lakes of each section that has some, each square's lake worked out once.
-        self._lake_fields: list[LakeField | None] = [None for _ in self.sections]
-        self._steepness: list[Steepness | None] = [
-            _section_steepness(placed, self._transition) for placed in self.sections
+        self.lake_fields: list[LakeField | None] = [None for _ in self.sections]
+        self.section_steepness: list[Steepness | None] = [
+            _section_steepness(placed, self.transition) for placed in self.sections
         ]
 
     def height(self, x: float, z: float) -> float:
@@ -218,21 +223,19 @@ class HeightField:
         return math.hypot(dx, dz)
 
     def steepness(self, x: float, z: float, reach: float) -> float:
-        """At least the most the ground changes per unit along X or along Z within `reach` of
-        (`x`, `z`), or Infinity when that cannot be told. Known for smooth reliefs away from their
-        channels, blends included."""
+        """Return the most the ground changes per unit along X or Z within `reach` of (`x`, `z`).
+
+        The result is at least that, or Infinity when that cannot be told. Known for smooth reliefs
+        away from their channels, blends included.
+        """
         return _steepness_at(self, x, z, reach)
 
-    def section_index_at(self, z: float) -> int:
-        """Index of the section under `z` (the first or last one outside the level)."""
-        return _section_index(self, z)
-
     def section_at(self, z: float) -> PlacedSection:
-        """The section under `z`."""
-        index = _section_index(self, z)
-        if index < 0 or index >= len(self.sections):
-            raise ValueError("A height field needs a section")
-        return self.sections[index]
+        """Return the section under `z` (the first or last one outside the level).
+
+        `layout_sections` gives a level at least one.
+        """
+        return self.sections[_section_index(self, z)]
 
     def path_x(self, path: Meander, z: float) -> float:
         """X of a meander line at `z`."""
@@ -244,21 +247,25 @@ class HeightField:
 
 
 def _steepness_at(field: HeightField, x: float, z: float, reach: float) -> float:
-    half = field._transition / 2
+    half = field.transition / 2
     first = _section_index(field, z - reach - half)
     last = _section_index(field, z + reach + half)
     slope = 0.0
     blend = 0.0
     for i in range(first, last + 1):
-        own = field._steepness[i] if i < len(field._steepness) else None
+        own = field.section_steepness[i] if i < len(field.section_steepness) else None
         if own is None or not _clear_of(field, i, x, z, reach):
             return INFINITY
         slope = max(slope, own.slope)
         # Blending into the next section changes the height along Z by up to their difference.
-        nxt = field._steepness[i + 1] if i < last and i + 1 < len(field._steepness) else None
+        nxt = (
+            field.section_steepness[i + 1]
+            if i < last and i + 1 < len(field.section_steepness)
+            else None
+        )
         if nxt is not None and half > 0:
             apart = max(own.high, nxt.high) - min(own.low, nxt.low)
-            blend = max(blend, (1.5 / field._transition) * apart)
+            blend = max(blend, (1.5 / field.transition) * apart)
     return slope + blend
 
 
@@ -285,16 +292,18 @@ def _section_index(field: HeightField, z: float) -> int:
 
 def _path_x_at(field: HeightField, path: Meander, z: float) -> float:
     phase = (2 * math.pi * z) / path.wavelength
-    wobble = field._wobble(z / path.wavelength, path.x / path.wavelength)
+    wobble = field.wobble_noise(z / path.wavelength, path.x / path.wavelength)
     return path.x + path.amplitude * (math.sin(phase) + MEANDER_WOBBLE * wobble)
 
 
 def _blend_height(field: HeightField, z: float, value: Callable[[int], float]) -> float:
-    """`value` of the section under `z`, blended with its neighbour near their boundary
-    (GFX-TERRAIN-10)."""
+    """`value` of the section under `z`.
+
+    Blended with its neighbour near their boundary (GFX-TERRAIN-10).
+    """
     i = _section_index(field, z)
     here = value(i)
-    half = field._transition / 2
+    half = field.transition / 2
     if i >= len(field.sections) or half == 0:
         return here
     placed = field.sections[i]
@@ -306,12 +315,10 @@ def _blend_height(field: HeightField, z: float, value: Callable[[int], float]) -
 
 
 def _height_of_section(field: HeightField, index: int, x: float, z: float) -> float:
-    if index >= len(field.sections):
-        return 0
     section = field.sections[index].section
     h = _relief_of(field, index, x, z) + _dune_of(field, section, x, z)
     if section.crevasses is not None:
-        h -= crevasse_depth(section.crevasses, field._ice, x, z)
+        h -= crevasse_depth(section.crevasses, field.ice_noise, x, z)
     if section.lakes is not None:
         h = _lake_of(field, index, section.lakes).apply(x, z, h)
     h = _flatten_by(field, section, x, z, h)
@@ -320,33 +327,35 @@ def _height_of_section(field: HeightField, index: int, x: float, z: float) -> fl
 
 
 def _lake_of(field: HeightField, index: int, lakes: Lakes) -> LakeField:
-    lake = field._lake_fields[index]
+    lake = field.lake_fields[index]
     if lake is None:
-        lake = LakeField(lakes, field._seed)
-        field._lake_fields[index] = lake
+        lake = LakeField(lakes, field.seed)
+        field.lake_fields[index] = lake
     return lake
 
 
 def _relief_of(field: HeightField, index: int, x: float, z: float) -> float:
     relief = field.sections[index].section.relief
-    options = field._octaves[index]
+    options = field.octaves[index]
     f = relief.frequency
     if relief.style == "ridged":
-        h = relief.base + relief.amplitude * ridged(field._relief, x * f, z * f, options)
+        h = relief.base + relief.amplitude * ridged(field.relief_noise, x * f, z * f, options)
     else:
-        h = relief.base + relief.amplitude * fbm(field._relief, x * f, z * f, options)
+        h = relief.base + relief.amplitude * fbm(field.relief_noise, x * f, z * f, options)
     return h if relief.max_height is None else soft_cap(h, relief.max_height)
 
 
 def _dune_of(field: HeightField, section: TerrainSection, x: float, z: float) -> float:
-    """Height of the dunes over the relief at (`x`, `z`) (GFX-TERRAIN-04): 0 in the troughs, up to
-    `height`."""
+    """Height of the dunes over the relief at (`x`, `z`) (GFX-TERRAIN-04).
+
+    0 in the troughs, up to `height`.
+    """
     dunes = section.dunes
     if dunes is None:
         return 0
     angle = (dunes.angle_deg * math.pi) / 180
     scale = dunes.wavelength * DUNE_NOISE_SCALE
-    bend = field._dunes(x / scale, z / scale)
+    bend = field.dune_noise(x / scale, z / scale)
     across = (x * math.sin(angle) + z * math.cos(angle)) / dunes.wavelength
     phase = across + dunes.warp * bend
     t = phase - math.floor(phase)
@@ -358,13 +367,13 @@ def _dune_of(field: HeightField, section: TerrainSection, x: float, z: float) ->
     crest = _lerp(
         DUNE_LOWEST_CREST,
         1,
-        field._dunes(z / scale + 17, x / scale + 31) * 0.5 + 0.5,
+        field.dune_noise(z / scale + 17, x / scale + 31) * 0.5 + 0.5,
     )
     return dunes.height * shape * crest
 
 
 def _detail_at(field: HeightField, x: float, z: float) -> float:
-    return field._detail(x * DETAIL_FREQUENCY, z * DETAIL_FREQUENCY)
+    return field.detail_noise(x * DETAIL_FREQUENCY, z * DETAIL_FREQUENCY)
 
 
 def _flatten_by(field: HeightField, section: TerrainSection, x: float, z: float, h: float) -> float:

@@ -1,4 +1,5 @@
-"""How far a scrolling level has gone (GAME-SCREEN-03, GAME-LEVEL-02)
+# Copyright (c) 2026 Renaud Guillon
+"""How far a scrolling level has gone (GAME-SCREEN-03, GAME-LEVEL-02).
 
 The ground scrolls at `speed` world units per second from distance 0. The level's progress runs
 from 0 to `length`, then the level has ended and its progress stops (the ground keeps going).
@@ -31,9 +32,11 @@ class ScrollTrack:
 
     def __init__(self, speed: float, length: float) -> None:
         if not (speed > 0):
-            raise ValueError("The scroll speed must be positive")
+            msg = "The scroll speed must be positive"
+            raise ValueError(msg)
         if not (length >= 0):
-            raise ValueError("The level length cannot be negative")
+            msg = "The level length cannot be negative"
+            raise ValueError(msg)
         self.speed = speed
         self.length_ = length
         self._progress = 0.0
@@ -47,12 +50,12 @@ class ScrollTrack:
 
     @property
     def duration(self) -> float:
-        """Seconds the whole level takes at speed × 1."""
+        """Seconds the whole level takes at speed x 1."""
         return self.length_ / self.speed
 
     @property
     def time(self) -> float:
-        """Seconds of the level flown at speed × 1 (its progress, in time)."""
+        """Seconds of the level flown at speed x 1 (its progress, in time)."""
         return self._progress / self.speed
 
     @property
@@ -78,7 +81,8 @@ class ScrollTrack:
     def set_speed_factor(self, factor: float, seconds: float) -> None:
         """Eases the ground's speed factor from where it is to `factor` over `seconds`."""
         if not (factor >= 0):
-            raise ValueError("The speed factor cannot be negative")
+            msg = "The speed factor cannot be negative"
+            raise ValueError(msg)
         if seconds <= 0:
             self._factor = factor
             self._ease = None
@@ -86,9 +90,11 @@ class ScrollTrack:
         self._ease = _Ease(self._factor, factor, seconds)
 
     def step(self, dt: float) -> None:
-        """Advances by `dt` real seconds (times `time_scale`). The level's progress stops at the end
-        of the level (unless held); the ground keeps moving past it, so it can ease back to the
-        level's speed after the final boss (GAME-LEVEL-07)."""
+        """Advances by `dt` real seconds (times `time_scale`).
+
+        The level's progress stops at the end of the level (unless held); the ground keeps moving
+        past it, so it can ease back to the level's speed after the final boss (GAME-LEVEL-07).
+        """
         seconds = max(0, dt) * self.time_scale
         self._step_ease(seconds)
         run = self.speed * self._factor * seconds
@@ -107,8 +113,10 @@ class ScrollTrack:
             self._ease = None
 
     def seek(self, time: float) -> None:
-        """Jumps to `time` seconds of the level, kept within it. The ground keeps the lead it took
-        during held stretches, so the scenery does not jump back."""
+        """Jumps to `time` seconds of the level, kept within it.
+
+        The ground keeps the lead it took during held stretches, so the scenery does not jump back.
+        """
         lead = self._distance - self._progress
         self._progress = min(self.length_, max(0, time * self.speed))
         self._distance = self._progress + lead

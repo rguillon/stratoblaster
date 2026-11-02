@@ -1,13 +1,17 @@
+# Copyright (c) 2026 Renaud Guillon
 """What the menu overlay can show: one view class per screen.
+
 Each class has a `kind` and the fields of its interface, as
-positional constructor arguments in the order listed."""
+positional constructor arguments in the order listed.
+"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
-__pragma__("skip")
-from ui.caption_row import Caption  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from ui.caption_row import Caption
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class LoadingView:
@@ -26,7 +30,7 @@ class TitleView:
 
     kind = "title"
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         title: str,
         high_score_label: str,
@@ -70,7 +74,7 @@ class ShipSelectView(BackView):
 
     kind = "ship-select"
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         heading: str,
         hint: str,
@@ -98,7 +102,7 @@ class LevelSelectView(BackView):
 
     kind = "level-select"
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         heading: str,
         hint: str,
@@ -123,10 +127,12 @@ class LevelChoices:
 
 
 class LevelCompleteView:
-    """The "Level complete" overlay (UI-OVER-01), or "Game over" when every life is lost
-    (UI-OVER-05)."""
+    """The "Level complete" overlay (UI-OVER-01), or the "Game over" one (UI-OVER-05).
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    "Game over" shows when every life is lost.
+    """
+
+    def __init__(
         self,
         heading: str,
         over: bool,
@@ -185,7 +191,7 @@ class GameScreenView:
 
     kind = "game"
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         level: str,
         fire: str,
@@ -220,7 +226,7 @@ class SettingsView(BackView):
 
     kind = "settings"
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         heading: str,
         hint: str,
@@ -240,7 +246,7 @@ class DevMenuView(BackView):
 
     kind = "dev"
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         heading: str,
         hint: str,
@@ -253,9 +259,12 @@ class DevMenuView(BackView):
 
 
 class DevChoice:
-    """An entry of a dev viewer's menu (D-206): its `label`, the item it shows (`index` in the
-    viewer's list), whether it is the one shown (`selected`: for a group, the shown item is in
-    it), and whether it is a group's heading (`heading`) rather than an item."""
+    """An entry of a dev viewer's menu (D-206): its `label`.
+
+    The item it shows (`index` in the viewer's list), whether it is the one shown (`selected`: for a
+    group, the shown item is in it), and whether it is a group's heading (`heading`) rather than an
+    item.
+    """
 
     def __init__(self, label: str, index: int, selected: bool, heading: bool = False) -> None:
         self.label = label
@@ -265,12 +274,14 @@ class DevChoice:
 
 
 class DevViewerView(BackView):
-    """A dev viewer (D-199): the item shown over the 3D view, and where it is in the list. The
-    status line (loading, the level's time) is written by the viewer itself, each frame."""
+    """A dev viewer (D-199): the item shown over the 3D view, and where it is in the list.
+
+    The status line (loading, the level's time) is written by the viewer itself, each frame.
+    """
 
     kind = "dev-viewer"
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         heading: str,
         hint: str,

@@ -1,33 +1,35 @@
-"""Night city geometry of the title screen (UI-TITLE-07): stretches of city along
-a street (buildings, lit windows, neon trims and blade signs, lane lines), a distant skyline,
-and rain. Everything comes from `random`, so a seeded generator gives the same city every time.
+# Copyright (c) 2026 Renaud Guillon
+"""Night city geometry of the title screen (UI-TITLE-07).
+
+Stretches of city along a street (buildings, lit windows, neon trims and blade signs, lane lines), a
+distant skyline, and rain. Everything comes from `random`, so a seeded generator gives the same city
+every time.
 
 A geometry is a dict of `positions`, `indices` and `colors` (RGBA), see `render.geometry`.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from core.math.rng import pick, random_in
+from render.geometry.gradient_shapes import ColoredGeometry
 
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Callable
+from typing import Any
 
-from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import Random
 
-__pragma__("noskip")
-
-from core.math.rng import pick, random_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
 
 def _empty_geometry() -> ColoredGeometry:
-    """A geometry with no vertices yet."""
+    """Return a geometry with no vertices yet."""
     return ColoredGeometry()
 
 
 def _quad(geo: ColoredGeometry, corners: list[float], rgb: list[float]) -> None:
-    """Adds a quad (4 corners, 3 coordinates each) in the colour `rgb`."""
+    """Add a quad (4 corners, 3 coordinates each) in the colour `rgb`."""
     base = len(geo.positions) // 3
     geo.positions.extend(corners)
     for _ in range(4):
@@ -42,7 +44,7 @@ def _quad_x(
     z_range: list[float],
     rgb: list[float],
 ) -> None:
-    """A rectangle in the plane X = `x`."""
+    """Add a rectangle in the plane X = `x`."""
     _quad(
         geo,
         [
@@ -70,7 +72,7 @@ def _quad_y(
     z_range: list[float],
     rgb: list[float],
 ) -> None:
-    """A rectangle in the plane Y = `y`."""
+    """Add a rectangle in the plane Y = `y`."""
     _quad(
         geo,
         [
@@ -98,7 +100,7 @@ def _quad_z(
     y_range: list[float],
     rgb: list[float],
 ) -> None:
-    """A rectangle in the plane Z = `z`, facing the camera (which looks towards +Z)."""
+    """Add a rectangle in the plane Z = `z`, facing the camera (which looks towards +Z)."""
     _quad(
         geo,
         [
@@ -120,17 +122,17 @@ def _quad_z(
 
 
 def _scaled(rgb: list[float], k: float) -> list[float]:
-    """The colour `rgb` times `k`."""
+    """Return the colour `rgb` times `k`."""
     return [rgb[0] * k, rgb[1] * k, rgb[2] * k]
 
 
 def _range_in(random: Random, bounds: list[float]) -> float:
-    """A number in the range `bounds` (`randomIn`)."""
+    """Return a number in the range `bounds` (`randomIn`)."""
     return random_in(random, bounds[0], bounds[1])
 
 
 def _lit_window_color(random: Random, windows: dict[str, Any]) -> list[float]:
-    """The colour of a lit window: one of the window colours, brightened at random."""
+    """Return the colour of a lit window: one of the window colours, brightened at random."""
     return _scaled(pick(random, windows["colors"]), _range_in(random, windows["brightness"]))
 
 
@@ -141,7 +143,7 @@ def _for_each_lit_window(
     height: float,
     cell: Callable[[float, float], None],
 ) -> None:
-    """Calls `cell(u0, v0)` for each lit cell of a `width × height` window grid."""
+    """Call `cell(u0, v0)` for each lit cell of a `width x height` window grid."""
     cols = math.floor(width / windows["cellWidth"])
     rows = math.floor((height - windows["groundFloor"]) / windows["cellHeight"])
     margin_u = (width - cols * windows["cellWidth"]) / 2 + (
@@ -162,7 +164,7 @@ def _add_sign(
     side: float,
     z: float,
 ) -> None:
-    """A blade sign hanging from a facade into the street, facing the camera."""
+    """Add a blade sign hanging from a facade into the street, facing the camera."""
     signs = options["signs"]
     width = _range_in(random, signs["width"])
     height = _range_in(random, signs["height"])
@@ -193,7 +195,10 @@ def _window_cell(
     window_x: float,
     z0: float,
 ) -> Callable[[float, float], None]:
-    """The callback that draws one lit window of a facade (a factory: it is made in a loop)."""
+    """Return the callback that draws one lit window of a facade.
+
+    It is a factory, as it is made in a loop.
+    """
 
     def cell(u: float, v: float) -> None:
         color = _lit_window_color(random, windows)
@@ -248,7 +253,7 @@ def _add_building(
 
 
 def _add_street(city: dict[str, ColoredGeometry], options: dict[str, Any]) -> None:
-    """The street's ground and its dashed lane lines."""
+    """Add the street's ground and its dashed lane lines."""
     street = options["street"]
     length = options["length"]
     _quad_y(
@@ -273,9 +278,12 @@ def _add_street(city: dict[str, ColoredGeometry], options: dict[str, Any]) -> No
 
 
 def build_city_chunk(options: dict[str, Any], random: Random) -> dict[str, ColoredGeometry]:
-    """A stretch of night city along a street running towards +Z: rows of dark buildings on both
-    sides, lit windows on the facades facing the street, neon roof trims and blade signs, and
-    dashed lane lines. The chunk spans Z in [0, length]; two chunks end to end tile seamlessly."""
+    """Return a stretch of night city along a street running towards +Z.
+
+    Rows of dark buildings on both sides, lit windows on the facades facing the street, neon roof
+    trims and blade signs, and dashed lane lines. The chunk spans Z in [0, length]; two chunks end
+    to end tile seamlessly.
+    """
     city = {"structure": _empty_geometry(), "lights": _empty_geometry()}
     _add_street(city, options)
     for row in options["rows"]:
@@ -296,7 +304,10 @@ def _skyline_cell(
     random: Random,
     left: float,
 ) -> Callable[[float, float], None]:
-    """The callback that draws one lit window of a skyline tower (a factory: made in a loop)."""
+    """Return the callback that draws one lit window of a skyline tower.
+
+    It is a factory, as it is made in a loop.
+    """
 
     def cell(u: float, v: float) -> None:
         color = _lit_window_color(random, windows)
@@ -309,8 +320,11 @@ def _skyline_cell(
 
 
 def build_skyline(options: dict[str, Any], random: Random) -> dict[str, ColoredGeometry]:
-    """Flat silhouettes of distant towers in the XY plane (bottom at Y = 0), with a few lit windows
-    slightly in front of them. The skyline spans X in [-halfWidth, halfWidth]."""
+    """Return flat silhouettes of distant towers in the XY plane (bottom at Y = 0).
+
+    They have a few lit windows slightly in front of them. The skyline spans X in [-halfWidth,
+    halfWidth].
+    """
     city = {"structure": _empty_geometry(), "lights": _empty_geometry()}
     x = -options["halfWidth"]
     while x < options["halfWidth"]:
@@ -329,8 +343,11 @@ def build_skyline(options: dict[str, Any], random: Random) -> dict[str, ColoredG
 
 
 def build_rain(options: dict[str, Any], random: Random) -> ColoredGeometry:
-    """Thin vertical rain streaks facing the camera. The pattern is drawn twice, stacked, so moving
-    the mesh down by up to `height` and wrapping loops without a gap."""
+    """Return thin vertical rain streaks facing the camera.
+
+    The pattern is drawn twice, stacked, so moving the mesh down by up to `height` and wrapping
+    loops without a gap.
+    """
     geo = _empty_geometry()
     for _ in range(options["count"]):
         x = random_in(random, -options["halfWidth"], options["halfWidth"])

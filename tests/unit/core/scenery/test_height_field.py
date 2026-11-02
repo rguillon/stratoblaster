@@ -1,6 +1,8 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/height_field.py`."""
 
 import math
+from typing import Any
 
 import pytest
 from helpers.level_builders import (
@@ -27,7 +29,7 @@ def _heights(field: HeightField) -> list[float]:
     return [field.height(x, z) for x, z in SAMPLE_POINTS]
 
 
-def _level(terrain=None, streets=True, **rules):
+def _level(terrain: Any = None, streets: bool = True, **rules: Any) -> Any:
     grid = street_grid(0.55) if streets else None
     secs = [
         section("a", 10, terrain or flat()),
@@ -41,12 +43,12 @@ AREA = GroundArea(-200, 200, 0, 400)
 
 
 def placer_for(
-    level=None,
+    level: Any = None,
     seed: int | None = None,
     sea_level: float | None = 0,
     runout_from: float | None = None,
 ) -> PropPlacer:
-    """A placer of `level` (the sample by default), with its roads laid."""
+    """Return a placer of `level` (the sample by default), with its roads laid."""
     level = level if level is not None else sample_level()
     seed = level.seed if seed is None else seed
     field = HeightField(level, seed)
@@ -76,11 +78,11 @@ def test_gfx_terrain_01_sections_are_placed_end_to_end_and_found_by_z() -> None:
     level = make_level([section("a", 10, flat(10)), section("b", 20, flat(50))])
     field = HeightField(level)
     assert field.length_ == pytest.approx(3000.0)
-    assert field.section_index_at(-50) == 0
-    assert field.section_index_at(999.9) == 0
-    assert field.section_index_at(1000) == 1
-    assert field.section_index_at(99999) == 1
+    assert field.section_at(-50).section.name == "a"
+    assert field.section_at(999.9).section.name == "a"
+    assert field.section_at(1000).section.name == "b"
     assert field.section_at(1500).section.name == "b"
+    assert field.section_at(99999).section.name == "b"
 
 
 def test_gfx_terrain_01_before_the_level_and_after_it_the_ends_continue() -> None:
@@ -167,13 +169,16 @@ def test_a_section_without_cover_has_none() -> None:
 
 
 def test_perf_03_steepness_bounds_the_change_along_x() -> None:
-    """The bound `RoadNetwork.buildable` uses to skip the slope holds, so the shortcut gives the
-    same answers."""
+    """The bound `RoadNetwork.buildable` uses to skip the slope holds.
+
+    So the shortcut gives the same answers.
+    """
     field = HeightField(make_level([section("a", 10, hills())]))
     reach = 20.0
     for x, z in [(0.0, 50.0), (33.0, 300.0), (-120.0, 700.0)]:
         bound = field.steepness(x, z, reach)
-        assert math.isfinite(bound) and bound > 0
+        assert math.isfinite(bound)
+        assert bound > 0
         for dx in (2.0, 5.0, 10.0):
             change = abs(field.height(x + dx, z) - field.height(x, z))
             assert change <= bound * dx + 1e-9

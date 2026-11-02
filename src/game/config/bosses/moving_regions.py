@@ -1,7 +1,9 @@
-"""Moving regions (D-230, BOSS-45; docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-
-shape-shifts-design.md, Part B): armour regions whose piece stays on the boss and moves into a new
-pose as it transforms (a wing swings forward, a hull splits and slides apart), instead of bursting
-off.
+# Copyright (c) 2026 Renaud Guillon
+"""Moving regions (D-230, BOSS-45): armour regions that stay on the boss.
+
+Their piece moves into a new pose as the boss transforms (a wing swings forward, a hull splits and
+slides apart), instead of bursting off. Design:
+docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-shape-shifts-design.md, Part B.
 
 A region's piece is cut out of the core's drawing as any armour region's is; its `motion` takes it
 from its rest pose to its end pose. The drawn geometry is the pose at angle 0 or offset 0: a piece
@@ -15,38 +17,44 @@ clockwise seen from above), `along` (+Y, the boss's length) or `across` (+X).
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.bosses.hidden_weapons import FRAMES, armour_region
 from game.config.record import merge, record
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 AXES = ["up", "along", "across"]
 DEG = math.pi / 180
 
 
 def swing(pivot: list[float], axis: str, angles: list[float]) -> Any:
-    """A swing about `axis` (`up`, `along` or `across`) through `pivot` `[x, y, z]`, from
-    `angles[0]` (at rest) to `angles[1]` (at the end), in degrees from the pose as drawn."""
+    """Return a swing about `axis` (`up`, `along` or `across`) through `pivot` `[x, y, z]`.
+
+    From `angles[0]` (at rest) to `angles[1]` (at the end), in degrees from the pose as drawn.
+    """
     if axis not in AXES:
         raise ValueError('Unknown swing axis "' + axis + '"')
     return record({"kind": "swing", "pivot": pivot, "axis": axis, "angles": angles})
 
 
 def slide(offsets: list[list[float]]) -> Any:
-    """A slide from `offsets[0]` (at rest) to `offsets[1]` (at the end), each `[dx, dy, dz]` px from
-    the pose as drawn."""
+    """Return a slide from `offsets[0]` (at rest) to `offsets[1]` (at the end).
+
+    Each `[dx, dy, dz]` px from the pose as drawn.
+    """
     return record({"kind": "slide", "offsets": offsets})
 
 
 def mirrored_motion(motion: Any) -> Any:
-    """`motion` mirrored across the centre line (X negated): a swing about `up` or `along` turns
-    the other way."""
+    """`motion` mirrored across the centre line (X negated).
+
+    A swing about `up` or `along` turns the other way.
+    """
     if motion.kind == "slide":
         return slide([[-o[0], o[1], o[2]] for o in motion.offsets])
     p = motion.pivot
@@ -55,8 +63,10 @@ def mirrored_motion(motion: Any) -> Any:
 
 
 def motion_value(motion: Any, k: float) -> Any:
-    """The motion `k` of the way from its rest pose (0) to its end pose (1): an angle (degrees) or
-    an offset."""
+    """Return the motion `k` of the way from its rest pose (0) to its end pose (1).
+
+    An angle (degrees) or an offset.
+    """
     if motion.kind == "slide":
         a = motion.offsets[0]
         b = motion.offsets[1]
@@ -65,15 +75,17 @@ def motion_value(motion: Any, k: float) -> Any:
 
 
 def inverse_value(motion: Any, value: Any) -> Any:
-    """The value undoing `value` (the angle or offset back)."""
+    """Return the value undoing `value` (the angle or offset back)."""
     if motion.kind == "slide":
         return [-value[0], -value[1], -value[2]]
     return -value
 
 
 def move_point(motion: Any, value: Any, point: list[float]) -> list[float]:
-    """`point` `[x, y, z]` moved from the pose as drawn by `value` of `motion` (see
-    `motion_value`)."""
+    """Return a `point` `[x, y, z]` moved from its pose as drawn by `value` of `motion`.
+
+    See `motion_value`.
+    """
     if motion.kind == "slide":
         return [point[0] + value[0], point[1] + value[1], point[2] + value[2]]
     p = motion.pivot
@@ -97,7 +109,7 @@ def _side(outline: list[Any]) -> str:
     return "right" if sx >= 0 else "left"
 
 
-def moving_region(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def moving_region(
     region_id: str,
     form: int,
     outline: list[Any],
@@ -106,12 +118,14 @@ def moving_region(  # noqa: PLR0917 (positional: Transcrypt has no keyword argum
     heights: Any = None,
     mirror: bool = True,
 ) -> list[Any]:
-    """The pieces of a moving region (see the module): the part of the body inside `outline`,
-    between `heights` (all of it when left out), moving by `motion` at transformation `form`, and
-    with `mirror` its mirror image moving the mirror way (two regions, `region_id` + `-right` and
-    `-left`). `frame` (`wing`, `shell` or `ring`): what shows where a piece was drawn once it has
-    moved; nothing when left out."""
-    if frame != None and frame not in FRAMES:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    """Return the pieces of a moving region (see the module).
+
+    The part of the body inside `outline`, between `heights` (all of it when left out), moving by
+    `motion` at transformation `form`, and with `mirror` its mirror image moving the mirror way (two
+    regions, `region_id` + `-right` and `-left`). `frame` (`wing`, `shell` or `ring`): what shows
+    where a piece was drawn once it has moved; nothing when left out.
+    """
+    if frame != None and frame not in FRAMES:
         raise ValueError('Unknown armour frame "' + frame + '"')
     first = armour_region(region_id, form, outline, "wing", heights, mirror)
     result: list[Any] = []
@@ -137,13 +151,7 @@ def moving_region(  # noqa: PLR0917 (positional: Transcrypt has no keyword argum
 
 def is_moving(region: Any) -> bool:
     """Whether `region` moves (see `moving_region`) rather than bursting off."""
-    return bool(region.motion != None)  # noqa: E711 (absent value is undefined in the browser, ENG-161)
-
-
-def end_spot(region: Any, point: list[float]) -> list[float]:
-    """Where `point` on `region`'s piece as drawn is once it has moved."""
-    m = region.motion
-    return move_point(m, motion_value(m, 1), point)
+    return bool(region.motion != None)
 
 
 def drawn_spot(region: Any, point: list[float]) -> list[float]:
@@ -167,14 +175,17 @@ def _inside(outline: list[Any], x: float, y: float) -> bool:
 
 
 def ridden_region(design: Any, part: Any) -> Any:
-    """The moving region the hidden part `part` rides (D-230), if any: one moving at the
-    transformation that reveals it, its piece under the part's pod once moved. None otherwise."""
+    """Return the moving region the hidden part `part` rides (D-230), if any.
+
+    One moving at the transformation that reveals it, its piece under the part's pod once moved.
+    None otherwise.
+    """
     reveal = part.reveal
-    if reveal == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    if reveal == None:
         return None
     weapons = design.weapons
-    look = weapons[part.id] if weapons != None and part.id in weapons else None  # noqa: E711 (absent value is undefined in the browser, ENG-161)
-    height = look.height if look != None else 0  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    look = weapons[part.id] if weapons != None and part.id in weapons else None
+    height = look.height if look != None else 0
     for region in design.armour or []:
         if not is_moving(region) or region.form != reveal:
             continue

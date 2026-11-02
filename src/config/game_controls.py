@@ -1,4 +1,5 @@
-"""In-game controls (GAME-CTRL-01, GAME-CTRL-09)
+# Copyright (c) 2026 Renaud Guillon
+"""In-game controls (GAME-CTRL-01, GAME-CTRL-09).
 
 Which keys and gamepad buttons shoot and set bombs off, and how the left stick and the touch drag
 move the ship. Kept in config so they can be remapped later (ENG-112). Moving uses the arrows /
@@ -28,7 +29,7 @@ class GameStick:
 class GameControlsConfig:
     """The in-game controls, in the order of `GAME_CONTROLS_CONFIG`."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         fire_keys: list[str],
         switch_keys: list[str],

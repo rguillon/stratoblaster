@@ -1,13 +1,15 @@
-"""Wires the layers together (ENG-11): loads the menu scenes
-behind a loading screen, then runs the menus (specs/ui/) and the levels (specs/gameplay/) in
-Babylon's render loop with a fixed-step clock (ENG-100).
+# Copyright (c) 2026 Renaud Guillon
+"""Wires the layers together (ENG-11): loads the menu scenes behind a loading screen.
+
+Then runs the menus (specs/ui/) and the levels (specs/gameplay/) in Babylon's render loop with a
+fixed-step clock (ENG-100).
 
 `start_app(engine, game, options)` is what `main.py` calls. `AppOptions` is a plain class: every
 argument is passed by position (Transcrypt has no keyword arguments); the optional ones are None
 when omitted. The version and commit are the `version` and `commit` options (main.py supplies them).
 """
 
-from org.transcrypt.stubs.browser import __pragma__, window
+from org.transcrypt.stubs.browser import window
 
 from app.dev_catalog import dev_catalog, dev_groups, dev_labels
 from app.dev_session import DevSession
@@ -35,21 +37,21 @@ from input.keyboard_menu_input import KeyboardMenuInput
 from input.menu_input import MenuInput
 from ui.menu_overlay import MenuOverlay, MenuOverlayOptions
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-from app.game_play import GamePlay  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from app.menu_state import MenuState  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from input.menu_action import MenuCommand  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from app.game_play import GamePlay
+from app.menu_state import MenuState
+from input.menu_action import MenuCommand
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class AppOptions(PageOptions):
-    """Browser pieces the app runs on, with the page options
-    (`PageOptions`) it extends."""
+    """Browser pieces the app runs on, with the page options (`PageOptions`) it extends."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         environment: bool,
         doc: Any,
@@ -115,10 +117,12 @@ class AppOptions(PageOptions):
 
 
 class RunningApp:
-    """Handle on a running app, used by `main.py`, the test API and tests. `scenes()` and `game()`
-    are methods."""
+    """Handle on a running app, used by `main.py`, the test API and tests.
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    `scenes()` and `game()` are methods.
+    """
+
+    def __init__(
         self,
         clock: FixedStepClock,
         menu: MenuController,
@@ -149,36 +153,41 @@ class RunningApp:
         self._dispose = dispose
 
     def scenes(self) -> Any:
-        """The menu scenes, once loaded (None before)."""
+        """Return the menu scenes, once loaded (None before)."""
         return self._scenes_box[0]
 
     def game(self) -> GamePlay | None:
-        """The level being played, on the game screen."""
+        """Return the level being played, on the game screen."""
         return self._session.play
 
     def command(self, command: MenuCommand) -> None:
-        """Sends a menu command, as any input device would."""
+        """Send a menu command, as any input device would."""
         self.menu.command(command)
 
     def tick(self, dt_seconds: float) -> None:
-        """Runs one frame: input, menus, animations, rendering."""
+        """Run one frame: input, menus, animations, rendering."""
         self._frames.tick(dt_seconds)
 
     def step(self, frames: int, render: bool) -> None:
-        """Runs `frames` frames of one simulation step each, then renders once (unless `render`
-        is False): the e2e tests' clock (ENG-52, DEV-API-08). Both arguments are passed (no
-        defaults in Transcrypt closures).
+        """Run `frames` frames of one simulation step each.
+
+        Then renders once (unless `render` is False): the e2e tests' clock (ENG-52, DEV-API-08).
+        Both arguments are passed (no defaults in Transcrypt closures).
         """
         self._frames.step(frames, render)
 
     def dispose(self) -> None:
+        """Releases what the loop holds."""
         self._dispose()
 
 
 class FrameControls:
-    """Runs frames: a frame of real time (`tick`, the render loop, unit tests), and whole steps
-    (`step`, the e2e tests, which never wait on real time: ENG-58). Each step is timed as a frame;
-    the last one with the drawing (DEV-PERF-01)."""
+    """Runs frames: frames of real time, and whole steps.
+
+    A frame of real time (`tick`, the render loop, unit tests), and whole steps (`step`, the e2e
+    tests, which never wait on real time: ENG-58). Each step is timed as a frame; the last one with
+    the drawing (DEV-PERF-01).
+    """
 
     def __init__(self, clock: FixedStepClock, ticker: Ticker, perf: PerfMonitor) -> None:
         self._clock = clock
@@ -186,12 +195,14 @@ class FrameControls:
         self._perf = perf
 
     def tick(self, dt_seconds: float) -> None:
+        """Run one frame: simulate `dt_seconds`, then render it, timing both."""
         self._perf.frame_started()
         self._ticker.simulate(dt_seconds)
         self._ticker.render()
         self._perf.frame_ended()
 
     def step(self, frames: int, render: bool) -> None:
+        """Run `frames` fixed steps, timing each frame."""
         for i in range(frames):
             self._perf.frame_started()
             self._ticker.simulate(self._clock.step_seconds)
@@ -233,9 +244,11 @@ class TouchHandlers:
         self._controls = controls
 
     def fire(self, held: bool) -> None:
+        """Hold or release the touch fire button."""
         self._controls.set_touch_fire(held)
 
     def drag(self, dx: float, dy: float) -> None:
+        """Pass a drag of the touch controls on to the controls."""
         self._controls.drag(dx, dy)
 
 
@@ -244,7 +257,7 @@ def _nothing() -> None:
 
 
 def _index_of(items: list[str], item: str | None) -> int:
-    """The index of `item` in `items`, or -1 (as JavaScript's `indexOf`)."""
+    """Return the index of `item` in `items`, or -1 (as JavaScript's `indexOf`)."""
     for i in range(len(items)):
         if items[i] == item:
             return i
@@ -252,13 +265,13 @@ def _index_of(items: list[str], item: str | None) -> int:
 
 
 def performance_now() -> float:
-    """The browser's clock, in milliseconds (DEV-PERF-01)."""
+    """Return the browser's clock, in milliseconds (DEV-PERF-01)."""
     now: float = window.performance.now()
     return now
 
 
 def create_input(options: AppOptions) -> InputHandle:
-    """The keyboard, and the gamepads when there are some (UI-INPUT-01)."""
+    """Return the keyboard, and the gamepads when there are some (UI-INPUT-01)."""
     keyboard = KeyboardMenuInput(MENU_INPUT_CONFIG.keyboard, MENU_INPUT_CONFIG)
     target = options.keyboard_target
     stop = keyboard.listen(target) if target is not None else _nothing
@@ -271,7 +284,7 @@ def create_input(options: AppOptions) -> InputHandle:
 
 
 def sync_scenes(scenes: Any, state: MenuState, ship_ids: list[str]) -> None:
-    """Shows the screen on the backdrop, behind the menus (UI-TITLE-09), and highlights the ship."""
+    """Show the screen on the backdrop, behind the menus (UI-TITLE-09), and highlight the ship."""
     if scenes is None:
         return
     # The backdrop handle is a JavaScript object: its callbacks are read by their JS names.
@@ -282,8 +295,10 @@ def sync_scenes(scenes: Any, state: MenuState, ship_ids: list[str]) -> None:
 def load_menu_scenes(
     prepared: Any, menu: MenuController, options: AppOptions, on_loaded: Any
 ) -> SceneLoad:
-    """Runs the menu scenes' loading tasks, their real progress on the loading screen
-    (UI-LOAD-03), then `on_loaded` with the scenes: the title follows by itself (UI-LOAD-04)."""
+    """Run the menu scenes' loading tasks, their real progress on the loading screen (UI-LOAD-03).
+
+    Then call `on_loaded` with the scenes: the title follows by itself (UI-LOAD-04).
+    """
     progress: list[float] = []
 
     def on_progress(value: float) -> None:
@@ -299,7 +314,7 @@ def load_menu_scenes(
     return SceneLoad(run(), progress)
 
 
-def create_menu(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def create_menu(
     game: Any,
     options: AppOptions,
     input_: InputHandle,
@@ -308,10 +323,12 @@ def create_menu(  # noqa: PLR0917 (positional: Transcrypt has no keyword argumen
     on_change: Any,
     dev: Any = None,
 ) -> MenuHandle:
-    """The menu controller and its overlay (UI-FLOW-01): the overlay's commands go to the
-    controller, and the controller's changes and feedback to the scenes and the audio. `dev`: the
-    dev viewers' item labels, wheel, drag and item groups (D-199, D-202), as (labels, on_wheel,
-    on_turn, groups); None: no dev menu."""
+    """Return the menu controller and its overlay (UI-FLOW-01).
+
+    The overlay's commands go to the controller, and the controller's changes and feedback to the
+    scenes and the audio. `dev`: the dev viewers' item labels, wheel, drag and item groups (D-199,
+    D-202), as (labels, on_wheel, on_turn, groups); None: no dev menu.
+    """
 
     def on_command(command: Any) -> None:
         menu.command(command)
@@ -355,9 +372,11 @@ def frame_ticker(
     perf: PerfMonitor,
     dev: DevSession | None = None,
 ) -> Ticker:
-    """One frame, split in two: the simulation (clock, menu input and state, then the level being
-    played, the dev viewer shown, or the menu scenes' animations), then the drawing of what it
-    left."""
+    """One frame, split in two: the simulation, then the drawing of what it left.
+
+    The simulation covers the clock, the menu input and state, then the level being played, the dev
+    viewer shown, or the menu scenes' animations.
+    """
 
     def simulate(dt_seconds: float) -> None:
         dt = min(max(0, dt_seconds), MENU_CONFIG.max_frame_seconds)
@@ -391,7 +410,7 @@ def frame_ticker(
 
 
 def animate_menus(dt: float, loaded: Any, dev: DevSession | None) -> None:
-    """Moves the menu scenes (once `loaded`) and the dev viewer shown on by `dt` seconds."""
+    """Move the menu scenes (once `loaded`) and the dev viewer shown on by `dt` seconds."""
     if dev is not None:
         dev.frame(dt)
     if loaded is not None:
@@ -400,8 +419,10 @@ def animate_menus(dt: float, loaded: Any, dev: DevSession | None) -> None:
 
 
 def draw_menus(loaded: Any, screen: str, dev: DevSession | None) -> None:
-    """Draws the dev viewer's scene once built (DEV-MENU-05, D-199), else the menu scenes of
-    `screen`."""
+    """Draw the dev viewer's scene once built (DEV-MENU-05, D-199), or the menu scenes.
+
+    Without the dev viewer's scene, draw the menu scenes of `screen`.
+    """
     if dev is not None and dev.active and dev.render():
         return
     if loaded is not None:
@@ -417,7 +438,7 @@ def dispose_scenes(scenes: Any) -> None:
 
 
 def run_loop(engine: Any, tick: Any) -> None:
-    """Runs `tick` on every frame of Babylon's render loop, with the frame time in seconds."""
+    """Run `tick` on every frame of Babylon's render loop, with the frame time in seconds."""
 
     def frame() -> None:
         tick(engine.getDeltaTime() / 1000)
@@ -438,8 +459,10 @@ def start_debug_level(menu: MenuController, debug: Any | None, ship_ids: list[st
 def session_options(
     options: AppOptions, on_load_start: Any, on_draw_calls: Any
 ) -> GameSessionOptions:
-    """The game session's options: the app's, with `on_load_start` (DEV-PERF-01) and
-    `on_draw_calls` (ENG-106)."""
+    """Return the game session's options: the app's, with two more callbacks.
+
+    They are `on_load_start` (DEV-PERF-01) and `on_draw_calls` (ENG-106).
+    """
     # None passes through: the session applies its own default (typed Any here).
     stepped: Any = options.stepped_loading
     precompile: Any = options.precompile_shaders
@@ -471,8 +494,11 @@ def create_session(
     audio: GameAudio,
     perf: PerfMonitor,
 ) -> GameSession:
-    """The game session: its levels' results go to the menus, and its scores to the high score
-    (GAME-SCORE-05). `get_menu` is read when they come, once the menu exists."""
+    """Return the game session, reporting to the menus and the high score.
+
+    Its levels' results go to the menus, and its scores to the high score (GAME-SCORE-05).
+    `get_menu` is read when they come, once the menu exists.
+    """
 
     def on_load_start() -> None:
         perf.load_started()
@@ -508,8 +534,11 @@ def create_session(
 
 
 def create_dev(engine: Any, game: Any, options: AppOptions) -> Any:
-    """The dev viewers, in the game page (DEV-MENU-02, D-199), with `options.dev`: their session,
-    their items' labels and groups (D-202), as [session, labels, groups]; None without."""
+    """Return the dev viewers, in the game page, with `options.dev` (DEV-MENU-02, D-199).
+
+    Their session, their items' labels and groups (D-202), as [session, labels, groups]; None
+    without `options.dev`.
+    """
     if not options.dev:
         return None
     catalog = dev_catalog(game)
@@ -519,8 +548,10 @@ def create_dev(engine: Any, game: Any, options: AppOptions) -> Any:
 
 
 def start_app(engine: Any, game: Any, options: AppOptions) -> RunningApp:
-    """Starts the app (see the module doc) for `game`, the game's one `GameDefinition` (ENG-144).
-    Returns the handle `main.py` and the test API use."""
+    """Start the app (see the module doc) for `game`, the game's one `GameDefinition` (ENG-144).
+
+    Returns the handle `main.py` and the test API use.
+    """
     clock = FixedStepClock(ENGINE_CONFIG.simulation_hz, int(ENGINE_CONFIG.max_steps_per_frame))
     ship_ids = [ship.id for ship in game.player_ships.ships]
     input_handle = create_input(options)

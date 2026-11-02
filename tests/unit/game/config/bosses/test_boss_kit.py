@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/bosses/boss_kit.py`."""
 
 from game.config.bosses.boss_kit import (
@@ -25,7 +26,7 @@ from game.config.scoring import boss_part_points
 
 
 def _design(guns: dict, shots: list) -> object:
-    """A design with the given guns, its one stage firing `shots`."""
+    """Return a design with the given guns, its one stage firing `shots`."""
     return record({"id": "test-boss", "guns": guns, "stages": [shots], "rage": None})
 
 
@@ -51,7 +52,8 @@ def test_boss_12_part_takes_its_position_and_defaults_its_options() -> None:
     assert (p["id"], p["x"], p["y"], p["radius"], p["health"]) == ("wing", 1.5, -2, 5, 100)
     assert p["shieldsCore"] is True
     assert p["dropChance"] == 0.5
-    assert "orbits" not in p and "joint" not in p
+    assert "orbits" not in p
+    assert "joint" not in p
 
 
 def test_boss_12_part_takes_its_given_options() -> None:
@@ -65,41 +67,38 @@ def test_boss_12_part_takes_its_given_options() -> None:
 
 def test_boss_07_stats_sizes_the_boss_from_its_size_in_enemy_units() -> None:
     """Also GAME-SCORE-04 (a part's share of the points) and BOSS-22 (the stage pause)."""
-    s = stats(
-        {
-            "id": "b",
-            "name": "B",
-            "size": 4,
-            "coreRadius": 20,
-            "coreHealth": 900,
-            "points": 1000,
-            "groundSpeed": 0.5,
-            "parts": [],
-        }
-    )
+    s = stats({
+        "id": "b",
+        "name": "B",
+        "size": 4,
+        "coreRadius": 20,
+        "coreHealth": 900,
+        "points": 1000,
+        "groundSpeed": 0.5,
+        "parts": [],
+    })
     assert s["radius"] == (4 * ENEMY_UNIT) / 2
     assert s["health"] == 900
     assert s["partPoints"] == boss_part_points(1000) == 100
     assert s["stagePause"] == BOSS_TIMING["stagePause"]
-    assert "coreDropChance" not in s and "joints" not in s
+    assert "coreDropChance" not in s
+    assert "joints" not in s
 
 
 def test_boss_57_stats_adds_the_optional_core_drop_and_joints() -> None:
     """Also BOSS-33: its moving limbs' joints."""
-    s = stats(
-        {
-            "id": "b",
-            "name": "B",
-            "size": 2,
-            "coreRadius": 10,
-            "coreHealth": 1,
-            "points": 0,
-            "groundSpeed": 0,
-            "parts": [],
-            "coreDrop": 0.25,
-            "joints": {"j": 1},
-        }
-    )
+    s = stats({
+        "id": "b",
+        "name": "B",
+        "size": 2,
+        "coreRadius": 10,
+        "coreHealth": 1,
+        "points": 0,
+        "groundSpeed": 0,
+        "parts": [],
+        "coreDrop": 0.25,
+        "joints": {"j": 1},
+    })
     assert s["coreDropChance"] == 0.25
     assert s["joints"] == {"j": 1}
 
@@ -125,7 +124,8 @@ def test_boss_23_bullet_and_missile_and_laser_carry_their_style() -> None:
     """Also BOSS-30: a laser's 1 s warning line."""
     assert bullet("dart", 90) == {"speed": 90, "radius": 4, "style": "dart"}
     assert bullet("dart", 90, 7)["radius"] == 7
-    assert MISSILE["style"] == "rocketeer" and MISSILE["homingSeconds"] == 3
+    assert MISSILE["style"] == "rocketeer"
+    assert MISSILE["homingSeconds"] == 3
     laser = laser_of(2.5, 9)
     assert laser == {"warningSeconds": 1, "firingSeconds": 2.5, "width": 9, "style": "lancer"}
 
@@ -133,14 +133,17 @@ def test_boss_23_bullet_and_missile_and_laser_carry_their_style() -> None:
 def test_boss_23_bursting_splits_the_spec_into_after_count_and_small_bullet() -> None:
     small = bullet("small", 60, 2)
     b = bursting("cryo", 40, 9, [1.5, 6, small])
-    assert b["speed"] == 40 and b["radius"] == 9 and b["style"] == "cryo"
+    assert b["speed"] == 40
+    assert b["radius"] == 9
+    assert b["style"] == "cryo"
     assert b["burst"] == {"after": 1.5, "count": 6, "bullet": small}
 
 
 def test_boss_23_volley_builders_set_the_shape_kind_and_the_optional_first_shot() -> None:
     b = bullet("x", 1)
     aimed = volley.aimed("core", 2, 3, 10, b)
-    assert aimed["from"] == "core" and aimed["every"] == 2
+    assert aimed["from"] == "core"
+    assert aimed["every"] == 2
     assert aimed["shape"] == {"kind": "aimed", "count": 3, "spacingDeg": 10, "bullet": b}
     assert "first" not in aimed
     fan = volley.fan("p", 1, 5, 8, b, 0.5, 30)
@@ -149,9 +152,11 @@ def test_boss_23_volley_builders_set_the_shape_kind_and_the_optional_first_shot(
     ring = volley.ring("core", 4, 8, 15, b)
     assert ring["shape"] == {"kind": "ring", "count": 8, "turnDeg": 15, "bullet": b}
     burst = volley.burst("core", 3, 2, 0.1, b)
-    assert burst["shape"]["kind"] == "burst" and burst["shape"]["gap"] == 0.1
+    assert burst["shape"]["kind"] == "burst"
+    assert burst["shape"]["gap"] == 0.1
     missiles = volley.missiles("core", 6, 2, 20, 1)
-    assert missiles["shape"]["missile"] == MISSILE and missiles["first"] == 1
+    assert missiles["shape"]["missile"] == MISSILE
+    assert missiles["first"] == 1
     laser = volley.laser("core", 5, 1.5)
     assert laser["shape"]["kind"] == "laser"
     assert laser["shape"]["laser"]["firingSeconds"] == 1.5

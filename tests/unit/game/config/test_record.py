@@ -1,6 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/record.py`."""
 
-from game.config.record import concat, field, merge, record
+from game.config.record import concat, field, fields_of, merge, record
 
 
 def test_record_fields_read_as_attributes_and_missing_fields_read_as_none() -> None:
@@ -37,3 +38,18 @@ def test_field_reads_a_key_or_the_default() -> None:
     assert field({"k": 5}, "k", 0) == 5
     assert field({"k": 5}, "missing", 9) == 9
     assert field(record({"k": 5}), "k", 0) == 5
+
+
+def test_fields_of_copies_the_fields_of_a_record_or_of_an_object() -> None:
+    r = record({"a": 1, "b": {"c": 2}})
+    fields = fields_of(r)
+    assert fields == {"a": 1, "b": {"c": 2}}
+    fields["a"] = 5
+    assert r.a == 1
+
+    class Plain:
+        def __init__(self) -> None:
+            self.x = 3
+            self.y = "y"
+
+    assert fields_of(Plain()) == {"x": 3, "y": "y"}

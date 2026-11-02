@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/atmosphere.py`."""
 
 import pytest
@@ -45,7 +46,7 @@ def with_clouds(clouds: list[CloudCover]) -> Atmosphere:
 
 
 def look(**overrides: object) -> SkyLook:
-    """A midday look with clouds of 0.2 and 0.1 cover, as the level data gives it."""
+    """Return a midday look with clouds of 0.2 and 0.1 cover, as the level data gives it."""
     values: dict[str, object] = {"time_of_day": "midday", "clouds": [0.2, 0.1]}
     values.update(overrides)
     return SkyLook(**values)  # type: ignore[arg-type]
@@ -172,7 +173,7 @@ def test_gfx_sky_05_the_track_takes_the_changes_in_order_of_their_start() -> Non
 
 
 def test_gfx_sky_05_a_change_that_ends_before_it_starts_is_refused() -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="must end after it starts"):
         AtmosphereTrack(
             sample_atmosphere(),
             [AtmosphereChange(200, 100, sample_atmosphere())],
@@ -211,6 +212,7 @@ def test_without_weather_clears_the_weather_lightning_and_second_weather() -> No
     assert calm.lightning == 0
     assert calm.second_weather is not None
     assert calm.second_weather.strength == 0
-    assert stormy.weather is not None and stormy.weather.kind == "rain"
+    assert stormy.weather is not None
+    assert stormy.weather.kind == "rain"
     no_second = without_weather(look(weather=Weather("rain", 1)))
     assert no_second.second_weather is None

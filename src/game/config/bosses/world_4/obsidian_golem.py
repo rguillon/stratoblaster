@@ -1,5 +1,7 @@
-"""4-3: the Obsidian Golem, the final boss of the Lava fields level
-(specs/bosses/final/4-3-obsidian-golem.md).
+# Copyright (c) 2026 Renaud Guillon
+"""4-3: the Obsidian Golem, the final boss of the Lava fields level.
+
+Its spec is specs/bosses/final/4-3-obsidian-golem.md.
 
 Offsets in px from the boss's centre, X right and Y up (its chest faces down the screen, at -Y).
 Its two huge fists hang on arms bending at the shoulder and the elbow (D-061), pumping in turn. The
@@ -8,8 +10,6 @@ stand, the core fires something new at every stage, and its last stage (only the
 bombs and spirals used by no earlier stage. Health (FB-OBSIDIAN-GOLEM-09) tuned for WLD-4-22 with
 the D-055 bot.
 """
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import (
     bullet,
@@ -26,16 +26,19 @@ from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with
 from game.config.bosses.moving_regions import moving_region, swing
 from game.config.record import concat, merge, record
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def fpart(part_id: str, at: Any, radius: float, health: float, options: Any = None) -> Any:
-    """A final boss's part: drops a bonus 60 % of the time (FB-OBSIDIAN-GOLEM-20,
-    `part_drop_chance`)."""
+    """Return a final boss's part: drops a bonus 60 % of the time (FB-OBSIDIAN-GOLEM-20).
+
+    The 60 % is its `part_drop_chance`.
+    """
     return part(part_id, at, radius, health, merge({"drop": 0.6}, options))
 
 
@@ -64,12 +67,15 @@ PUMP = record({"shoulderDeg": 9, "elbowDeg": 14, "period": 4.2, "lag": 0.25})
 
 
 def side_of(arm: str) -> Any:
-    """The side of `arm`: +1 for the left one (drawn at -X, as in `GOLEM_ARM`), -1 for the right."""
+    """Return the side of `arm`: +1 for the left one, -1 for the right.
+
+    The left one is drawn at -X, as in `GOLEM_ARM`.
+    """
     return 1 if arm == "left" else -1
 
 
 def arm_joints(arm: str) -> Any:
-    """The shoulder and elbow joints of `arm`, the right one half a swing out of step."""
+    """Return the shoulder and elbow joints of `arm`, the right one half a swing out of step."""
     s = side_of(arm)
     phase = 0 if arm == "left" else 0.5
     sx = GOLEM_ARM.shoulder[0]
@@ -131,82 +137,76 @@ def fist(arm: str, health: float) -> Any:
 # on its chest, shield the core; the shoulder cannons turn to fire aimed spreads; the chest emitter
 # on its prow fires a laser straight down. The emitter hangs in front of the plate, so it can always
 # be shot.
-_OBSIDIAN_GOLEM = record(
-    {
-        "id": "obsidian-golem",
-        # Angry after each destroyed part (phase 7 review, D-063, FB-OBSIDIAN-GOLEM-15).
-        "rage": concat(
-            rage.flower(12, "orange", "red", 0.5), rage.vortex(12, "red", "magenta", 0.5)
-        ),
-        # Its core and parts, their health, and its points (FB-OBSIDIAN-GOLEM-09).
-        "stats": stats(
-            record(
-                {
-                    "id": "obsidian-golem",
-                    "name": "Obsidian Golem",
-                    "size": 5.5,
-                    "coreRadius": 24,
-                    "coreHealth": 5200,
-                    "points": 16000,
-                    "groundSpeed": 0.3,
-                    "coreDrop": 1,
-                    "parts": [
-                        fist("left", 1600),
-                        fist("right", 1600),
-                        fpart("cannon-left", [CANNON_X, CANNON_Y], 13, 1100, {"shields": False}),
-                        fpart("cannon-right", [-CANNON_X, CANNON_Y], 13, 1100, {"shields": False}),
-                        fpart("emitter", list(GOLEM_PARTS.emitter), 12, 800, {"shields": False}),
-                        fpart("plate", list(GOLEM_PARTS.plate), 16, 1000),
-                    ],
-                    "joints": merge(arm_joints("left"), arm_joints("right")),
-                }
-            )
-        ),
-        # Where it stops and how it moves in place (FB-OBSIDIAN-GOLEM-08).
-        "stopFraction": 0.74,
-        "sway": {"amplitude": 24, "period": 12},
-        "bob": {"amplitude": 5, "period": 6},
-        "guns": {
-            "core": {"gun": GOLEM_BROW, "ring": GOLEM_STACK},
-            "fist-left": {"gun": GOLEM_KNUCKLES},
-            "fist-right": {"gun": mirror(GOLEM_KNUCKLES)},
-            "cannon-left": {"gun": GOLEM_CANNON_GUNS, "turret": [CANNON_X, CANNON_Y]},
-            "cannon-right": {"gun": mirror(GOLEM_CANNON_GUNS), "turret": [-CANNON_X, CANNON_Y]},
-            "emitter": {"laser": GOLEM_LENS},
-        },
-        # In every stage the fists' magma rings (FB-OBSIDIAN-GOLEM-10), the cannons' spreads
-        # (FB-OBSIDIAN-GOLEM-11) and the emitter's laser (FB-OBSIDIAN-GOLEM-12); then the core's
-        # pattern per stage (FB-OBSIDIAN-GOLEM-13).
-        "stages": stages(
+_OBSIDIAN_GOLEM = record({
+    "id": "obsidian-golem",
+    # Angry after each destroyed part (phase 7 review, D-063, FB-OBSIDIAN-GOLEM-15).
+    "rage": concat(rage.flower(12, "orange", "red", 0.5), rage.vortex(12, "red", "magenta", 0.5)),
+    # Its core and parts, their health, and its points (FB-OBSIDIAN-GOLEM-09).
+    "stats": stats(
+        record({
+            "id": "obsidian-golem",
+            "name": "Obsidian Golem",
+            "size": 5.5,
+            "coreRadius": 24,
+            "coreHealth": 5200,
+            "points": 16000,
+            "groundSpeed": 0.3,
+            "coreDrop": 1,
+            "parts": [
+                fist("left", 1600),
+                fist("right", 1600),
+                fpart("cannon-left", [CANNON_X, CANNON_Y], 13, 1100, {"shields": False}),
+                fpart("cannon-right", [-CANNON_X, CANNON_Y], 13, 1100, {"shields": False}),
+                fpart("emitter", list(GOLEM_PARTS.emitter), 12, 800, {"shields": False}),
+                fpart("plate", list(GOLEM_PARTS.plate), 16, 1000),
+            ],
+            "joints": merge(arm_joints("left"), arm_joints("right")),
+        })
+    ),
+    # Where it stops and how it moves in place (FB-OBSIDIAN-GOLEM-08).
+    "stopFraction": 0.74,
+    "sway": {"amplitude": 24, "period": 12},
+    "bob": {"amplitude": 5, "period": 6},
+    "guns": {
+        "core": {"gun": GOLEM_BROW, "ring": GOLEM_STACK},
+        "fist-left": {"gun": GOLEM_KNUCKLES},
+        "fist-right": {"gun": mirror(GOLEM_KNUCKLES)},
+        "cannon-left": {"gun": GOLEM_CANNON_GUNS, "turret": [CANNON_X, CANNON_Y]},
+        "cannon-right": {"gun": mirror(GOLEM_CANNON_GUNS), "turret": [-CANNON_X, CANNON_Y]},
+        "emitter": {"laser": GOLEM_LENS},
+    },
+    # In every stage the fists' magma rings (FB-OBSIDIAN-GOLEM-10), the cannons' spreads
+    # (FB-OBSIDIAN-GOLEM-11) and the emitter's laser (FB-OBSIDIAN-GOLEM-12); then the core's
+    # pattern per stage (FB-OBSIDIAN-GOLEM-13).
+    "stages": stages(
+        [
+            volley.ring("fist-left", 4.4, 8, 11, MAGMA, 1.6),
+            volley.ring("fist-right", 4.4, 8, -11, MAGMA, 3.8),
+            volley.aimed("cannon-left", 3, 3, 12, MAGENTA, 1),
+            volley.aimed("cannon-right", 3, 3, 12, MAGENTA, 2.5),
+            volley.laser("emitter", 7, 1.6, 4),
+        ],
+        [
+            [volley.aimed("core", 2.6, 1, 0, RED, 1.4)],
+            [volley.burst("core", 2.5, 4, 0.13, RED, 0.8)],
+            [volley.fan("core", 2.5, 5, 14, ORANGE, 0.6)],
+            [volley.ring("core", 1.6, 10, 8, PURPLE, 0.5)],
             [
-                volley.ring("fist-left", 4.4, 8, 11, MAGMA, 1.6),
-                volley.ring("fist-right", 4.4, 8, -11, MAGMA, 3.8),
-                volley.aimed("cannon-left", 3, 3, 12, MAGENTA, 1),
-                volley.aimed("cannon-right", 3, 3, 12, MAGENTA, 2.5),
-                volley.laser("emitter", 7, 1.6, 4),
+                volley.fan("core", 2.3, 7, 12, ORANGE, 0.6),
+                volley.burst("core", 2.9, 3, 0.13, RED, 1.3),
             ],
             [
-                [volley.aimed("core", 2.6, 1, 0, RED, 1.4)],
-                [volley.burst("core", 2.5, 4, 0.13, RED, 0.8)],
-                [volley.fan("core", 2.5, 5, 14, ORANGE, 0.6)],
-                [volley.ring("core", 1.6, 10, 8, PURPLE, 0.5)],
-                [
-                    volley.fan("core", 2.3, 7, 12, ORANGE, 0.6),
-                    volley.burst("core", 2.9, 3, 0.13, RED, 1.3),
-                ],
-                [
-                    volley.ring("core", 1.5, 12, -9, PURPLE, 0.5),
-                    volley.aimed("core", 2.4, 3, 12, RED, 1.1),
-                ],
-                [
-                    volley.aimed("core", 2.4, 1, 0, BOMB, 0.6),
-                    volley.ring("core", 1.3, 12, 11, ORANGE, 0.4),
-                    volley.ring("core", 1.3, 12, -13, PURPLE, 1.05),
-                ],
+                volley.ring("core", 1.5, 12, -9, PURPLE, 0.5),
+                volley.aimed("core", 2.4, 3, 12, RED, 1.1),
             ],
-        ),
-    }
-)
+            [
+                volley.aimed("core", 2.4, 1, 0, BOMB, 0.6),
+                volley.ring("core", 1.3, 12, 11, ORANGE, 0.4),
+                volley.ring("core", 1.3, 12, -13, PURPLE, 1.05),
+            ],
+        ],
+    ),
+})
 
 # Its transformations (D-230): once both its cannons are gone its flank slabs lift on hinges along
 # its sides like gull-wing doors (FB-OBSIDIAN-GOLEM-16), over a pair of heavy cannons in the dark

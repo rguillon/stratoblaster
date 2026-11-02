@@ -1,5 +1,8 @@
-"""e2e: the score, the high score, the lives and the bombs (specs/gameplay/scoring.md, bombs.md,
-lives-and-damage.md)."""
+# Copyright (c) 2026 Renaud Guillon
+"""e2e: the score, the high score, the lives.
+
+The bombs (specs/gameplay/scoring.md, bombs.md, lives-and-damage.md).
+"""
 
 import re
 
@@ -27,15 +30,17 @@ TOUCH_PHONE = {"has_touch": True, "viewport": {"width": 390, "height": 844}}
 
 
 def wait_for_boss(page: Page, name: str) -> None:
-    """Steps the level until the boss `name` is fought."""
+    """Step the level until the boss `name` is fought."""
     step_until(page, lambda: boss_name(page), lambda n: n == name)
 
 
 def test_game_score_04_boss_parts_score_a_new_high_score_is_saved_and_shown(
     page: Page,
 ) -> None:
-    """Also GAME-SCORE-05 (the high score is saved), UI-HUD-05 (the score lines), UI-OVER-02
-    ("New high score!"), DEV-API-02 (`highScore`) and DEV-API-03 (`score`)."""
+    """Also GAME-SCORE-05 (the high score is saved) and UI-HUD-05 (the score lines).
+
+    Also UI-OVER-02 ("New high score!"), DEV-API-02 (`highScore`) and DEV-API-03 (`score`).
+    """
     open_debug(page, "?level=1-1&boss=final&ship=light")
     wait_for_boss(page, "Storm Petrel")
     expect(page.locator(".hud-score-value")).to_have_text("0000000")
@@ -83,8 +88,10 @@ def test_game_score_05_leaving_a_level_from_the_pause_menu_saves_its_score(page:
 def test_game_bomb_04_r_sets_a_bomb_off_the_enemy_shots_go_the_boss_is_hurt(
     page: Page,
 ) -> None:
-    """Also GAME-BOMB-05 (the enemy shots go), GAME-CTRL-01 (R and E), DEV-API-03 (`bombs`,
-    `enemyShots`) and DEV-API-07 (`bomb`)."""
+    """Also GAME-BOMB-05 (the enemy shots go) and GAME-CTRL-01 (R and E).
+
+    Also DEV-API-03 (`bombs`, `enemyShots`) and DEV-API-07 (`bomb`).
+    """
     open_debug(page, "?level=1-2&boss=mini")
     step_until(page, lambda: boss_name(page), lambda n: n is not None)
     expect(page.locator(".hud-bombs")).to_have_text("● 3")
@@ -112,8 +119,10 @@ def test_game_bomb_04_r_sets_a_bomb_off_the_enemy_shots_go_the_boss_is_hurt(
 def test_game_score_06_a_continue_after_the_mini_boss_keeps_the_score_up_to_the_checkpoint(
     page: Page,
 ) -> None:
-    """Also GAME-LIFE-11 (Continue with 3 bombs), UI-OVER-02, UI-OVER-07 (Continue) and ENG-54
-    (a game over)."""
+    """Also GAME-LIFE-11 (Continue with 3 bombs), UI-OVER-02 and UI-OVER-07 (Continue).
+
+    Also ENG-54 (a game over).
+    """
     open_debug(page, "?level=1-1&boss=mini&ship=light")
     wait_for_boss(page, "Reef Warden")
 

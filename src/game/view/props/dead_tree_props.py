@@ -1,4 +1,5 @@
-"""Dead trees of the desert (D-214, GFX-PROP-09), drawn as imposters
+# Copyright (c) 2026 Renaud Guillon
+"""Dead trees of the desert (D-214, GFX-PROP-09), drawn as imposters.
 
 Sizes in model units, standing on Y = 0. Bare, bleached wood: limbs forking into smaller ones
 (`render/geometry/branches.py`), each shaded its own way. The levels draw a picture of each baked
@@ -30,7 +31,7 @@ TWIGS = Branching(3, 0.6, 0.6, 0.9, 0.5, 0.1, 0.6, 0.12)
 
 
 def dead_oak() -> PropGeometry:
-    """A dead broad tree: a short leaning trunk forking into bare limbs, up and out."""
+    """Return a dead broad tree: a short leaning trunk forking into bare limbs, up and out."""
     s = SolidBuilder()
     shadow = SolidBuilder()
     branch(s, [0, 0, 0], [0.05, 1, 0.03], [3.2, 0.6], 3, SPREADING, BLEACHED, 7)
@@ -40,8 +41,10 @@ def dead_oak() -> PropGeometry:
 
 
 def dead_pine() -> PropGeometry:
-    """A dead conifer: a tall straight trunk broken at the top, rings of short drooping branches
-    round it, shorter and more often broken going up."""
+    """Return a dead conifer: a tall straight trunk broken at the top.
+
+    It has rings of short drooping branches round it, shorter and more often broken going up.
+    """
     s = SolidBuilder()
     shadow = SolidBuilder()
     top = [0.12, 9.6, 0.05]
@@ -65,8 +68,10 @@ def dead_pine() -> PropGeometry:
 
 
 def snag() -> PropGeometry:
-    """A snag: a thick trunk snapped off, charred, splinters on its broken top, one limb left and
-    the stub of another."""
+    """Return a snag: a thick trunk snapped off and charred, with splinters on its broken top.
+
+    One limb is left, and the stub of another.
+    """
     s = SolidBuilder()
     shadow = SolidBuilder()
     top = [0.25, 4.2, 0.1]
@@ -84,7 +89,7 @@ def snag() -> PropGeometry:
 
 
 def dead_bush() -> PropGeometry:
-    """A dry brush: a tangle of thin stems from one root, forking into twigs."""
+    """Return a dry brush: a tangle of thin stems from one root, forking into twigs."""
     s = SolidBuilder()
     shadow = SolidBuilder()
     stems = 7

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/input/gamepad_menu_input.py`."""
 
 import pytest
@@ -99,7 +100,7 @@ def test_ui_input_07_browser_gamepads_reads_navigator_or_gives_nothing() -> None
     pad = FakeGamepad()
 
     class Nav:
-        def getGamepads(self) -> list:  # noqa: N802 (DOM name)
+        def getGamepads(self) -> list:
             return [None, pad]
 
     assert browser_gamepads(Nav())() == [None, pad]

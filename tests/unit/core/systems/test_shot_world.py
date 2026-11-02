@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/systems/shot_world.py`."""
 
 import pytest
@@ -16,7 +17,7 @@ class _Target:
         self.max_health = health
 
 
-def _weapon(  # noqa: PLR0917 (positional fixtures)
+def _weapon(
     levels: list[list[ShotStream]] | None = None,
     sps: float = 5,
     damage: float = 5,

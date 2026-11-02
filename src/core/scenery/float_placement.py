@@ -1,24 +1,26 @@
-"""Props that do not follow the roads (phase 8): floating ice on the sea, and lines of props along
-the level (a pipeline); phase 9: set pieces at given places. Pure and deterministic for a given
-seed."""
+# Copyright (c) 2026 Renaud Guillon
+"""Props that do not follow the roads (phase 8).
+
+Floating ice on the sea, and lines of props along the level (a pipeline); phase 9: set pieces at
+given places. Pure and deterministic for a given seed.
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from core.math.noise import hash_2d
+from core.scenery.away_placement import Building
+from core.scenery.draws import between, weighted
+from core.scenery.ground_boxes import GroundArea, PropPlacement
 
-__pragma__("skip")
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Callable
 
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.height_field import HeightField
+from core.scenery.scenery_level import FloatRules, Landmark, Meander, PropLine, PropRules
 
-from core.scenery.height_field import HeightField  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.scenery_level import FloatRules, Landmark, Meander, PropLine, PropRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
-__pragma__("noskip")
-
-from core.math.noise import hash_2d  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.away_placement import Building  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.draws import between, weighted  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.ground_boxes import GroundArea, PropPlacement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Draws per floating prop: position X, position Z, kind, scale, turn.
 FLOAT_DRAWS = 5
@@ -27,7 +29,7 @@ FLOAT_COUNT = 101
 
 
 def _float_draws(r: Callable[[int], float], n: int) -> Callable[[int], float]:
-    """The draws of floating prop `n` of a cell (a closure, not a default argument)."""
+    """Return the draws of floating prop `n` of a cell (a closure, not a default argument)."""
 
     def draw(k: int) -> float:
         return r(FLOAT_COUNT + 1 + n * FLOAT_DRAWS + k)
@@ -43,9 +45,11 @@ def floating_props(
     i: int,
     j: int,
 ) -> list[PropPlacement]:
-    """The floating props of cell (`i`, `j`) (GFX-PROP-15: ice floes, icebergs): up to `per_cell`,
-    with the chance of their section's `float_density`, each where the sea is at least `depth` deep
-    under its whole footprint. They float at `sea_level`."""
+    """Return the floating props of cell (`i`, `j`) (GFX-PROP-15: ice floes, icebergs).
+
+    Up to `per_cell`, with the chance of their section's `float_density`, each where the sea is at
+    least `depth` deep under its whole footprint. They float at `sea_level`.
+    """
     cell_size = rules.cell_size
     section_density = field.section_at((j + 0.5) * cell_size).section.float_density
     density = section_density if section_density is not None else 0
@@ -87,7 +91,7 @@ def floating_in(
     seed: int,
     area: GroundArea,
 ) -> list[PropPlacement]:
-    """The floating props of the cells whose corner lies in `area` (see `floating_props`)."""
+    """Return the floating props of the cells whose corner lies in `area` (see `floating_props`)."""
     size = rules.cell_size
     i0 = math.ceil(area.x_min / size)
     i1 = math.ceil(area.x_max / size)
@@ -109,8 +113,10 @@ class LinePiece:
 
 
 def _along_path(field: HeightField, path: Meander, z: float) -> float:
-    """Turn of a model whose length runs along X so that X follows `path` at `z` (Z along the
-    level)."""
+    """Turn of a model whose length runs along X so that X follows `path` at `z`.
+
+    Z runs along the level.
+    """
     dx = field.path_x(path, z + 1) - field.path_x(path, z - 1)
     return math.atan2(-2, dx)
 
@@ -122,8 +128,11 @@ def _line_height(
     x: float,
     z: float,
 ) -> float | None:
-    """Where a piece of `line` stands at (`x`, `z`): on dry ground gentle enough, or at `sea_level`
-    over the water if the line crosses water; None where it does not stand."""
+    """Where a piece of `line` stands at (`x`, `z`).
+
+    On dry ground gentle enough, or at `sea_level` over the water if the line crosses water; None
+    where it does not stand.
+    """
     ground = field.height(x, z)
     if sea_level is not None and ground <= sea_level:
         return sea_level if line.over_water else None
@@ -131,10 +140,12 @@ def _line_height(
 
 
 def line_pieces(line: PropLine, field: HeightField, sea_level: float | None) -> list[LinePiece]:
-    """The pieces of `line` over the whole level (GFX-PROP-16: a pipeline on stilts): one every
-    `spacing` along its path, turned along it, where the ground is above `sea_level` and gentle
-    enough, in the sections it runs through. A line `over_water` (phase 9) also crosses the water,
-    its pieces at the sea level there."""
+    """Return the pieces of `line` over the whole level (GFX-PROP-16: a pipeline on stilts).
+
+    One every `spacing` along its path, turned along it, where the ground is above `sea_level` and
+    gentle enough, in the sections it runs through. A line `over_water` (phase 9) also crosses the
+    water, its pieces at the sea level there.
+    """
     pieces: list[LinePiece] = []
     step = line.spacing
     z = step / 2
@@ -156,9 +167,12 @@ def line_pieces(line: PropLine, field: HeightField, sea_level: float | None) -> 
 
 
 def place_landmark(landmark: Landmark, field: HeightField, sea_level: float | None) -> Building:
-    """Where `landmark` stands (phase 9, GFX-PROP-17): at its `x`, or on its `path` turned across
-    it; on the ground, or at `sea_level` when it is `on_water` (on the ground where that is higher).
-    Returns the set piece with the box of ground it takes."""
+    """Where `landmark` stands (phase 9, GFX-PROP-17).
+
+    At its `x`, or on its `path` turned across it; on the ground, or at `sea_level` when it is
+    `on_water` (on the ground where that is higher). Returns the set piece with the box of ground it
+    takes.
+    """
     z = landmark.z
     path = landmark.path
     x = field.path_x(path, z) if path is not None else landmark.x if landmark.x is not None else 0
@@ -178,14 +192,19 @@ def place_landmark(landmark: Landmark, field: HeightField, sea_level: float | No
 
 
 def fixed_pieces(rules: PropRules, field: HeightField, sea_level: float | None) -> list[Building]:
-    """The props placed before everything else (phases 8, 9): the set pieces, whatever the ground,
-    then the pieces of the lines, each with the box of ground it takes."""
-    landmarks: list[Building] = []
-    for landmark in rules.landmarks if rules.landmarks is not None else []:
-        landmarks.append(place_landmark(landmark, field, sea_level))
-    lines: list[Building] = []
-    for line in rules.lines if rules.lines is not None else []:
-        for piece in line_pieces(line, field, sea_level):
-            lines.append(Building(piece.placement, piece.footprint, piece.footprint))
+    """Return the props placed before everything else (phases 8, 9).
+
+    The set pieces, whatever the ground, then the pieces of the lines, each with the box of ground
+    it takes.
+    """
+    landmarks: list[Building] = [
+        place_landmark(landmark, field, sea_level)
+        for landmark in (rules.landmarks if rules.landmarks is not None else [])
+    ]
+    lines: list[Building] = [
+        Building(piece.placement, piece.footprint, piece.footprint)
+        for line in (rules.lines if rules.lines is not None else [])
+        for piece in line_pieces(line, field, sea_level)
+    ]
     landmarks.extend(lines)
     return landmarks

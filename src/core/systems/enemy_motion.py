@@ -1,19 +1,19 @@
-"""Movement helpers for enemies (ENM-24)
+# Copyright (c) 2026 Renaud Guillon
+"""Movement helpers for enemies (ENM-24).
 
 Playfield logical pixels, Y up; headings in radians from +Y, positive to the right.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Sequence
 
 PathPoint = Sequence[float]
+# __pragma__ ("noskip")
 
-__pragma__("noskip")
 
 # A path needs at least this many control points.
 MIN_CONTROLS = 2
@@ -39,21 +39,24 @@ def _catmull_rom(p0: float, p1: float, p2: float, p3: float, t: float) -> float:
 
 
 def _at_or(values: list[float], index: int, default: float) -> float:
-    """`values[index] ?? default`: Transcrypt returns undefined past the end, not an error
-    (ENG-161).
+    """`values[index] ?? default`.
+
+    Transcrypt returns undefined past the end, not an error (ENG-161).
     """
     return values[index] if 0 <= index < len(values) else default
 
 
 class Path:
-    """A smooth predefined path (ENM-25) through control points (a Catmull-Rom curve), followed by
-    distance travelled, so an enemy moving along it at a constant speed keeps that speed on the
-    curves.
+    """A smooth predefined path (ENM-25) through control points (a Catmull-Rom curve).
+
+    Followed by distance travelled, so an enemy moving along it at a constant speed keeps that speed
+    on the curves.
     """
 
     def __init__(self, controls: Sequence[PathPoint], samples_per_span: int = 16) -> None:
         if len(controls) < MIN_CONTROLS:
-            raise ValueError("A path needs at least 2 points")
+            msg = "A path needs at least 2 points"
+            raise ValueError(msg)
         self._points: list[list[float]] = []
         # Distance travelled from the start at each sampled point.
         self._lengths: list[float] = []
@@ -66,12 +69,10 @@ class Path:
             first = 0 if span == 0 else 1
             for s in range(first, samples_per_span + 1):
                 t = s / samples_per_span
-                self._add(
-                    [
-                        _catmull_rom(p0[0], p1[0], p2[0], p3[0], t),
-                        _catmull_rom(p0[1], p1[1], p2[1], p3[1], t),
-                    ]
-                )
+                self._add([
+                    _catmull_rom(p0[0], p1[0], p2[0], p3[0], t),
+                    _catmull_rom(p0[1], p1[1], p2[1], p3[1], t),
+                ])
 
     def _add(self, point: list[float]) -> None:
         count = len(self._points)
@@ -89,7 +90,7 @@ class Path:
         return _at_or(self._lengths, len(self._lengths) - 1, 0)
 
     def at(self, distance: float) -> PathPose:
-        """The pose `distance` along the path, clamped to its ends."""
+        """Return the pose `distance` along the path, clamped to its ends."""
         d = min(max(distance, 0), self.length)
         i = 1
         while i < len(self._lengths) - 1 and _at_or(self._lengths, i, 0) < d:
@@ -112,8 +113,9 @@ def _at_or_point(points: list[list[float]], index: int) -> list[float]:
 
 
 def fan_headings(center: float, count: int, spacing: float) -> list[float]:
-    """`count` headings spread `spacing` radians apart, centred on `center` (e.g. a fan of 3
-    bullets at -15°, 0° and +15° from straight down, ENM-20).
+    """`count` headings spread `spacing` radians apart.
+
+    Centred on `center` (e.g. a fan of 3 bullets at -15°, 0° and +15° from straight down, ENM-20).
     """
     return [center + (i - (count - 1) / 2) * spacing for i in range(count)]
 
@@ -128,7 +130,7 @@ def _sign(value: float) -> float:
 
 
 def approach(value: float, target: float, max_step: float) -> float:
-    """Moves `value` towards `target` by at most `max_step`."""
+    """Move `value` towards `target` by at most `max_step`."""
     if abs(target - value) <= max_step:
         return target
     return value + _sign(target - value) * max_step

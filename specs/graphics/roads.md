@@ -323,6 +323,10 @@ a level built ahead.
 - Given a level started at a later time, then its streets show asphalt, sidewalks and kerbs (unit
   tests on the sources; P14-R08 readability e2e on 3-1 and 4-1).
 
+**Discrepancy:** a stage never changes its seed (each level builds its own stage), so "a new seed
+takes its street surfaces from its own ground" has no code: the stage's re-seeding, which only
+tests called, was removed (D-237).
+
 *Sources: D-217.*
 
 ### GFX-ROAD-22 — Opaque street middles · SHOULD

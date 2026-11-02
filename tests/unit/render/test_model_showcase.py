@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/model_showcase.py` (UI-SHIP-01)."""
 
 import pytest

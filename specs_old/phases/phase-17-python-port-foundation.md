@@ -73,7 +73,7 @@ The layering rule of ENG-11 is checked, not just written down.
 > After the agent reports, write corrections here, then say **"Fix phase 17"**.
 > The agent ticks each item when fixed.
 
-- [ ] 
+- [ ]
 
 ---
 

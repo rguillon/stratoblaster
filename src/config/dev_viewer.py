@@ -1,13 +1,15 @@
-"""Tunables and texts of the dev viewers (reviewer, 2026-10-30, D-199): a Dev entry on the
-title screen (with `?dev` in the URL) opens a menu of viewers of the player ships, the enemies,
-the bosses, the props and the levels, drawn as in game.
+# Copyright (c) 2026 Renaud Guillon
+"""Tunables and texts of the dev viewers (reviewer, 2026-10-30, D-199).
+
+A Dev entry on the title screen (with `?dev` in the URL) opens a menu of viewers of the player
+ships, the enemies, the bosses, the props and the levels, drawn as in game.
 """
 
 
 class DevViewerTexts:
     """Texts of the dev menu and viewers (a developer tool: not the game's texts, DEV-MENU-04)."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         entry: str,
         heading: str,
@@ -41,8 +43,9 @@ class DevViewerTexts:
 
 
 class DevPropStageConfig:
-    """How the props viewer shows a prop (DEV-MENU-16, D-205): alone on a plain floor ruled in
-    blocks, under studio lights, no level's ground loaded.
+    """How the props viewer shows a prop (DEV-MENU-16, D-205).
+
+    Alone on a plain floor ruled in blocks, under studio lights, no level's ground loaded.
 
     `clear_color`: the background (RGBA). `ambient_intensity`; `key_direction`, `key_intensity`,
     `fill_direction`, `fill_intensity`: a hemispheric light and two directional lights, the fill
@@ -56,7 +59,7 @@ class DevPropStageConfig:
     width, to clear the menu on the left (D-206).
     """
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         clear_color: list[float],
         ambient_intensity: float,
@@ -97,17 +100,16 @@ class DevViewerConfig:
     """How the dev viewers show things.
 
     `close_up_fill`: share of the screen height the model fills in the close-up (the camera's field
-    of view narrowed, so the ground is magnified with it). `wheel_step`, `scrub_seconds`: the
-    levels viewer's wheel moves the time by `scrub_seconds` per `wheel_step` pixels. `scrub_ease`:
-    how fast the levels viewer catches up with the wheel, per second. `zoom_per_pixel`,
-    `zoom_range`: in the model viewers the wheel zooms (D-208), by e^(`zoom_per_pixel`) per pixel,
-    within `zoom_range` (times the view without zoom). `model_seed`: the random
-    numbers the enemies and bosses are spawned with (their look only). `turn_per_pixel`: radians a
-    model turns per pixel dragged. `break_key`: the key code that breaks the boss's next part in
-    the bosses viewer.
+    of view narrowed, so the ground is magnified with it). `wheel_step`, `scrub_seconds`: the levels
+    viewer's wheel moves the time by `scrub_seconds` per `wheel_step` pixels. `scrub_ease`: how fast
+    the levels viewer catches up with the wheel, per second. `zoom_per_pixel`, `zoom_range`: in the
+    model viewers the wheel zooms (D-208), by e^(`zoom_per_pixel`) per pixel, within `zoom_range`
+    (times the view without zoom). `model_seed`: the random numbers the enemies and bosses are
+    spawned with (their look only). `turn_per_pixel`: radians a model turns per pixel dragged.
+    `break_key`: the key code that breaks the boss's next part in the bosses viewer.
     """
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         close_up_fill: float,
         wheel_step: float,

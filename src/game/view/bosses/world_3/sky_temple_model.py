@@ -1,7 +1,8 @@
-"""FB-SKY-TEMPLE-01 to FB-SKY-TEMPLE-06, 3-3: the Sky Temple. Logical
-pixels, nose +Z (its grand stair, down the screen), Y up (towards the camera)."""
+# Copyright (c) 2026 Renaud Guillon
+"""FB-SKY-TEMPLE-01 to FB-SKY-TEMPLE-06, 3-3: the Sky Temple.
 
-from org.transcrypt.stubs.browser import __pragma__
+Logical pixels, nose +Z (its grand stair, down the screen), Y up (towards the camera).
+"""
 
 from game.config.bosses.world_3.sky_temple import (
     OBELISKS,
@@ -36,14 +37,16 @@ from game.view.bosses.world_3.stone_idol_stone import STONE, bar
 from game.view.enemies.enemy_shapes import SIDES
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_mesh import EnemyParts
 
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The rock it was torn from, under its base: an upside-down four-sided cone (lathe profile).
 ROOTS = table([[0, -34], [57, -20], [99, -4], [104.6, 0]])
@@ -54,12 +57,12 @@ SANCTUM = record({"z": -8, "size": [30, 10, 24], "door": 4})
 
 
 def square(half: float) -> list[list[float]]:
-    """A square outline `half` from the centre to each side."""
+    """Return a square outline `half` from the centre to each side."""
     return [[half, half], [-half, half], [-half, -half], [half, -half]]
 
 
 def draw_pyramid(p: EnemyParts) -> None:
-    """The stepped pyramid: its tiers, each trimmed with neon, and the rock under it."""
+    """Draw the stepped pyramid: its tiers, each trimmed with neon, and the rock under it."""
     hull = p.hull
     neon = p.neon
     # FB-SKY-TEMPLE-02: the lowest tier is the living beast itself; the stone tiers grew on its
@@ -87,7 +90,7 @@ def draw_pyramid(p: EnemyParts) -> None:
 
 
 def draw_stair(p: EnemyParts) -> None:
-    """The grand stair, its walls and its cyan balustrades (FB-SKY-TEMPLE-03)."""
+    """Draw the grand stair, its walls and its cyan balustrades (FB-SKY-TEMPLE-03)."""
     hull = p.hull
     neon = p.neon
     steps = STAIR.steps
@@ -115,8 +118,10 @@ def draw_stair(p: EnemyParts) -> None:
 
 
 def draw_sanctum(p: EnemyParts) -> None:
-    """The sanctum (the core, FB-SKY-TEMPLE-03): its roofs, its crystal (rings, spirals), its door
-    and twin cannons."""
+    """Draw the sanctum (the core, FB-SKY-TEMPLE-03).
+
+    Its roofs, its crystal (rings, spirals), its door and twin cannons.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -162,8 +167,10 @@ def draw_sanctum(p: EnemyParts) -> None:
 
 
 def draw_cannons(p: EnemyParts) -> None:
-    """The twin cannons either side of the door (aimed shots, spreads, bursts, fans;
-    FB-SKY-TEMPLE-03)."""
+    """Draw the twin cannons either side of the door (aimed shots, spreads, bursts, fans).
+
+    FB-SKY-TEMPLE-03.
+    """
     guns = [boss_point(m[0], m[1], m[2]) for m in TEMPLE_GUNS]
     if len(guns) == 0:
         return
@@ -198,15 +205,18 @@ def draw_braziers(p: EnemyParts) -> None:
 
 
 def sky_temple_core(p: EnemyParts) -> None:
-    """The core of the Sky Temple: its pyramid, stair, sanctum, braziers and machinery
-    (FB-SKY-TEMPLE-03; its parts are drawn apart, FB-SKY-TEMPLE-04)."""
+    """Add the core of the Sky Temple (FB-SKY-TEMPLE-03).
+
+    Its pyramid, stair, sanctum, braziers and machinery; its parts are drawn apart
+    (FB-SKY-TEMPLE-04).
+    """
     draw_pyramid(p)
     draw_stair(p)
     draw_sanctum(p)
     draw_braziers(p)
     temple_machinery(p)
     temple_jungle(p)
-    for key in OBELISKS.keys():  # noqa: SIM118 (Transcrypt: iterate keys() explicitly)
+    for key in OBELISKS.keys():
         xy = OBELISKS[key]
         socket(p.hull, boss_point(xy[0], xy[1], TIERS.height), 7, 0.6)
     beacon_at = TEMPLE_PARTS.beacon
@@ -214,12 +224,14 @@ def sky_temple_core(p: EnemyParts) -> None:
 
 
 def build_sky_temple(scene: Any) -> Any:
-    """FB-SKY-TEMPLE-01, FB-SKY-TEMPLE-06: the Sky Temple, a flying stepped pyramid with four corner
-    obelisks, gold and cyan neon: a sanctum on its summit, a beacon before it, a grand stair, the
-    jungle's moss and vines over its stones, and the dark metal of a fortress under them (thrusters,
-    buttresses)."""
+    """FB-SKY-TEMPLE-01, FB-SKY-TEMPLE-06: the Sky Temple.
+
+    A flying stepped pyramid with four corner obelisks, gold and cyan neon: a sanctum on its summit,
+    a beacon before it, a grand stair, the jungle's moss and vines over its stones, and the dark
+    metal of a fortress under them (thrusters, buttresses).
+    """
     parts: dict[str, Any] = {}
-    for key in OBELISKS.keys():  # noqa: SIM118 (Transcrypt: iterate keys() explicitly)
+    for key in OBELISKS.keys():
         parts[key] = obelisk
     parts["beacon"] = beacon
     return build_boss_model(

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/sim/enemies/enemy_helpers.py`."""
 
 import pytest
@@ -84,8 +85,8 @@ def test_pick_x_draws_a_fraction_of_the_range_across_the_top() -> None:
 
 def test_playfield_path_mirrors_its_x_fractions_when_asked() -> None:
     a = area(width=400, height=600)
-    straight = playfield_path([[0.25, 0.5], [0.25, 1.0]], a, False)
-    mirrored = playfield_path([[0.25, 0.5], [0.25, 1.0]], a, True)
+    straight = playfield_path([[0.25, 0.5], [0.25, 1.0]], a, mirror=False)
+    mirrored = playfield_path([[0.25, 0.5], [0.25, 1.0]], a, mirror=True)
     assert straight.at(0).x == pytest.approx(100)
     assert mirrored.at(0).x == pytest.approx(300)
     assert straight.at(0).y == pytest.approx(300)

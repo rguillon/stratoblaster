@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/ui/game_hud.py`."""
 
 from helpers.dom import FakeDocument, FakeEvent

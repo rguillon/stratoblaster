@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/float_placement.py`."""
 
 import math
@@ -20,7 +21,7 @@ ICE = PropKindRule("ice", 1, 2, [1, 1])
 
 
 def deep_sea(float_density: float | None = 1) -> TerrainSection:
-    """A section of sea bed, about 20 units under the sea (level 0)."""
+    """Return a section of sea bed, about 20 units under the sea (level 0)."""
     return TerrainSection(
         "sea",
         20,
@@ -32,7 +33,7 @@ def deep_sea(float_density: float | None = 1) -> TerrainSection:
 
 
 def shallow_sea() -> TerrainSection:
-    """A section of sea bed a unit under the sea: too shallow for ice."""
+    """Return a section of sea bed a unit under the sea: too shallow for ice."""
     return TerrainSection(
         "shore",
         20,
@@ -53,10 +54,7 @@ RULES = FloatRules(cell_size=40, per_cell=2, depth=3, kinds=[ICE])
 def test_floating_props_float_on_the_sea_where_it_is_deep() -> None:
     field = field_of(deep_sea())
     props = [
-        p
-        for i in range(-2, 4)
-        for j in range(0, 6)
-        for p in floating_props(RULES, field, 0, 7, i, j)
+        p for i in range(-2, 4) for j in range(6) for p in floating_props(RULES, field, 0, 7, i, j)
     ]
     assert props
     assert all(p.kind == "ice" and p.y == 0 for p in props)
@@ -70,10 +68,7 @@ def test_floating_props_need_a_section_with_float_density() -> None:
 def test_floating_props_are_refused_where_the_sea_is_shallow() -> None:
     field = field_of(shallow_sea())
     props = [
-        p
-        for i in range(-2, 4)
-        for j in range(0, 6)
-        for p in floating_props(RULES, field, 0, 7, i, j)
+        p for i in range(-2, 4) for j in range(6) for p in floating_props(RULES, field, 0, 7, i, j)
     ]
     assert props == []
 
@@ -90,10 +85,7 @@ def test_floating_in_is_the_cells_whose_corner_lies_in_the_area() -> None:
     area = GroundArea(0, 80, 0, 80)
     got = floating_in(RULES, field, 0, 7, area)
     expected = [
-        p
-        for j in range(0, 2)
-        for i in range(0, 2)
-        for p in floating_props(RULES, field, 0, 7, i, j)
+        p for j in range(2) for i in range(2) for p in floating_props(RULES, field, 0, 7, i, j)
     ]
     assert [(p.x, p.z) for p in got] == [(p.x, p.z) for p in expected]
 

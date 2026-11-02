@@ -1,8 +1,7 @@
-"""A world boss (BOSS-07), built from its design"""
+# Copyright (c) 2026 Renaud Guillon
+"""A world boss (BOSS-07), built from its design."""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from core.entities.boss import Boss
 from core.systems.boss_pattern import CORE, BossPattern
@@ -17,20 +16,19 @@ from game.sim.boss_build import (
     launch_volley,
 )
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import TYPE_CHECKING, Any
 
-from core.entities.boss_pieces import BossPart  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.entities.enemy import EnemyContext, EnemySpawnArea  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.systems.boss_pattern import BossPatternSpec, VolleySource, VolleySources  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.enemy import EnemyContext, EnemySpawnArea
+from core.systems.boss_pattern import BossPatternSpec, VolleySource, VolleySources
 
-__pragma__("noskip")
-
+if TYPE_CHECKING:
+    from core.entities.boss_pieces import BossPart
 # A boss design is a config record (`game/config/record.py`), typed as Any there.
-__pragma__("skip")
 BossDesign = Any
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def _sign(value: float) -> int:
@@ -63,8 +61,9 @@ def _boss_top(design: BossDesign) -> float:
 
 
 class WorldBoss(Boss):
-    """A world boss, from its `BossDesign` (BOSS-07): it comes down from above the top edge,
-    braking into its place in the upper part of the screen (BOSS-08), then sways left and right
+    """A world boss, from its `BossDesign` (BOSS-07): it comes down from above the top edge.
+
+    Braking into its place in the upper part of the screen (BOSS-08), then sways left and right
     (never taking its parts out of the ship's reach at the bottom of the screen, D-048, BOSS-10) and
     bobs. Each stage fires its pattern; its parts' launches go on while they stand. How each boss
     comes in and moves is its boss file's (`specs/bosses/`).
@@ -96,8 +95,9 @@ class WorldBoss(Boss):
         self._pattern = BossPattern(self._stage(0))
 
     def _stage(self, stage: int) -> BossPatternSpec:
-        """The pattern of stage `stage` (BOSS-20): its design's volleys, from their guns, and the
-        parts' launches.
+        """Return the pattern of stage `stage` (BOSS-20): its design's volleys, from their guns.
+
+        And the parts' launches.
         """
         stages = self.design.stages
         volleys = stages[min(stage, len(stages) - 1)] or []
@@ -111,8 +111,9 @@ class WorldBoss(Boss):
         return armed_pattern(self.design, volleys)
 
     def update(self, ctx: EnemyContext, dt: float) -> None:
-        """Its turrets follow the player as long as it is there, fire pauses included (phase 7
-        review, BOSS-29).
+        """Its turrets follow the player as long as it is there.
+
+        Fire pauses included (phase 7 review, BOSS-29).
         """
         Boss.update(self, ctx, dt)
         pattern = self._rage if self.rage > 0 and self.pause <= 0 else self._pattern
@@ -120,6 +121,7 @@ class WorldBoss(Boss):
             pattern.turn_turrets(ctx, dt, self._sources())
 
     def enter(self, _ctx: EnemyContext, dt: float) -> bool:
+        """Fly in from above the top edge, braking into the stop height."""
         entry_speed: float = BOSS_TIMING.entrySpeed
         left = self.y - self.stop_y
         # Full speed, then braking into its place over the last `brake_distance`.
@@ -130,6 +132,7 @@ class WorldBoss(Boss):
         return done
 
     def move(self, _ctx: EnemyContext, dt: float) -> None:
+        """Advance the boss by `dt` seconds."""
         self._fighting += dt
         sway = self.design.sway
         bob = self.design.bob
@@ -140,16 +143,20 @@ class WorldBoss(Boss):
         self.spin += (self.design.spinRate or 0) * dt
 
     def update_pattern(self, ctx: EnemyContext, dt: float) -> None:
+        """Run the current pattern of volleys for `dt` seconds."""
         self._pattern.step(ctx, dt, self._sources())
         self.charge = self._pattern.charge
 
     def update_rage(self, ctx: EnemyContext, dt: float) -> None:
-        """Its bullet hell while it is angry (phase 7 review, BOSS-27): its charge lights full
-        on."""
+        """Its bullet hell while it is angry (phase 7 review, BOSS-27).
+
+        Its charge lights full on.
+        """
         self._rage.step(ctx, dt, self._sources())
         self.charge = 1
 
     def on_stage_change(self, stage: int, ctx: EnemyContext) -> None:
+        """Switch to the volleys of a new stage."""
         self._pattern = BossPattern(self._stage(stage))
         self._rage = BossPattern(self._armed(self.design.rage or []))
         for ring_id in break_ring_ids(self.design):
@@ -164,7 +171,7 @@ class WorldBoss(Boss):
                 ctx.fire_bullet(part.x, part.y, (2 * math.pi * k) / ring.count, bullet)
 
     def _sources(self) -> VolleySources:
-        """The piece a volley fires from, as a function of what fires it."""
+        """Return the piece a volley fires from, as a function of what fires it."""
 
         def source(from_: str) -> VolleySource | None:
             return self._source(from_)
@@ -172,8 +179,10 @@ class WorldBoss(Boss):
         return source
 
     def _source(self, from_: str) -> VolleySource | None:
-        """The piece a volley fires from: the core, or its part while that part stands (BOSS-21),
-        once revealed."""
+        """Return the piece a volley fires from: the core, or its part (BOSS-21).
+
+        The part only while it stands, once revealed.
+        """
         if from_ == CORE:
             return self.core
         part = self._by_id.get(from_)
@@ -182,8 +191,11 @@ class WorldBoss(Boss):
         return part
 
     def on_transform(self, form: int, ctx: EnemyContext) -> None:
-        """The armour regions it sheds at transformation `form` burst (docs/superpowers/specs/
-        2026-10-31-boss-armour-shedding-design.md), and the weapons beneath come out (BOSS-37)."""
+        """Burst the armour regions it sheds at transformation `form`.
+
+        The weapons beneath come out (BOSS-37). The shedding's design:
+        docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md.
+        """
         for region in self.design.armour or []:
             if region.form == form:
                 for blast in region_blasts(region, BOSS_TIMING.regionBlasts):

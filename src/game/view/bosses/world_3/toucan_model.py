@@ -1,8 +1,10 @@
-"""MB-TOUCAN-01 to MB-TOUCAN-06, 3-2: the Toucan. Logical pixels,
-nose +Z, Y up (towards the camera). A stubby gunship: a round black body, short wings carrying the
-fan pods, a fanned tail, and the huge bright beak (its cannon, a part) in front of its head."""
+# Copyright (c) 2026 Renaud Guillon
+"""MB-TOUCAN-01 to MB-TOUCAN-06, 3-2: the Toucan.
 
-from org.transcrypt.stubs.browser import __pragma__
+Logical pixels, nose +Z, Y up (towards the camera). A stubby gunship: a round black body, short
+wings carrying the fan pods, a fanned tail, and the huge bright beak (its cannon, a part) in front
+of its head.
+"""
 
 from game.config.bosses.world_3.toucan import TOUCAN, TOUCAN_CHEEK_GUNS, TOUCAN_CREST
 from game.view.bosses.boss_limbs import boss_point
@@ -33,56 +35,54 @@ from game.view.enemies.organic_parts import reactor_sac
 from render.geometry.organic import ROUND_SECTION
 from render.geometry.solids import LoftOptions, Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_mesh import EnemyParts
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The body along the centre line, tail to head (loft stations: z, half width, bottom, top).
-BODY = table(
-    [
-        [-36, 5, 0, 5],
-        [-26, 11, -2, 9.5],
-        [-10, 16, -4, 13],
-        [6, 17, -4, 15],
-        [15, 14.5, -3, 14.2],
-        [21, 10.6, -1.5, 12.6],
-    ]
-)
+BODY = table([
+    [-36, 5, 0, 5],
+    [-26, 11, -2, 9.5],
+    [-10, 16, -4, 13],
+    [6, 17, -4, 15],
+    [15, 14.5, -3, 14.2],
+    [21, 10.6, -1.5, 12.6],
+])
 # The cream bib under its head (the lower sides of the body's last bands).
 BIB = [0.7, 0.64, 0.42]
 BIB_SIDES = [0, 1, 7, 8]
 # The wings seen from above (right half, front to back), the pods at their ends.
-WINGS = mirrored(
-    [
-        [0, 13],
-        [14, 12],
-        [26, 9],
-        [30, 4],
-        [30, -9],
-        [24, -15],
-        [12, -17],
-        [0, -17],
-    ]
-)
+WINGS = mirrored([
+    [0, 13],
+    [14, 12],
+    [26, 9],
+    [30, 4],
+    [30, -9],
+    [24, -15],
+    [12, -17],
+    [0, -17],
+])
 # The tail's fan of feathers seen from above (right half, from the body back).
 TAIL = mirrored([[0, -30], [8, -32], [11, -45], [5, -48], [0, -44]])
 
 
 def body_paint(side: int, band: int) -> Any:
-    """The body's paint: the bib on the lower sides of its last band."""
-    if band == 4 and side in BIB_SIDES:  # noqa: PLR2004 (the last band of BODY)
+    """Return the body's paint: the bib on the lower sides of its last band."""
+    if band == 4 and side in BIB_SIDES:
         return BIB
     return None
 
 
 def draw_body(p: EnemyParts) -> None:
-    """The body: black plates, a cream bib, orange neon along its flanks, moss on its back."""
+    """Draw the body: black plates, a cream bib, orange neon along its flanks, moss on its back."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -94,9 +94,7 @@ def draw_body(p: EnemyParts) -> None:
         None,
         LoftOptions(False, body_paint),
     )
-    path: list[Vec3] = []
-    for st in BODY[1:]:
-        path.append([0, st[3] + 0.3, st[0]])
+    path: list[Vec3] = [[0, st[3] + 0.3, st[0]] for st in BODY[1:]]
     spine(
         p,
         path,
@@ -112,7 +110,7 @@ def draw_body(p: EnemyParts) -> None:
 
 
 def draw_wings_and_tail(p: EnemyParts) -> None:
-    """The wings and the tail: dark, bevelled, neon on their edges, vines hanging from them."""
+    """Draw the wings and the tail: dark, bevelled, neon on their edges, vines hanging from them."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -145,8 +143,10 @@ def draw_wings_and_tail(p: EnemyParts) -> None:
 
 
 def draw_head(p: EnemyParts) -> None:
-    """The head (MB-TOUCAN-03): its round neon eyes either side, the cheek guns under them, the
-    crest emitter."""
+    """Draw the head (MB-TOUCAN-03).
+
+    Its round neon eyes either side, the cheek guns under them, the crest emitter.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -193,15 +193,17 @@ def draw_head(p: EnemyParts) -> None:
 
 
 def toucan_core(p: EnemyParts) -> None:
-    """The core of the Toucan: its body, wings, tail and head."""
+    """Add the core of the Toucan: its body, wings, tail and head."""
     draw_body(p)
     draw_wings_and_tail(p)
     draw_head(p)
 
 
 def build_toucan(scene: Any) -> Any:
-    """MB-TOUCAN-01, MB-TOUCAN-06: the Toucan, a stubby gunship with a huge bright beak, yellow and
-    orange neon, moss on its back and vines hanging from its wings."""
+    """MB-TOUCAN-01, MB-TOUCAN-06: the Toucan, a stubby gunship with a huge bright beak.
+
+    It has yellow and orange neon, moss on its back and vines hanging from its wings.
+    """
     parts: dict[str, Any] = {
         "pod-left": wing_pod,
         "pod-right": wing_pod,

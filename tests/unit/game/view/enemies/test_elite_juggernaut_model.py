@@ -1,11 +1,16 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/enemies/elite_juggernaut_model.py`."""
+
+from typing import Any
 
 from helpers.view_probes import drawings_of, jointed_design_ids, probe_builder
 
 from game.view.enemies import elite_juggernaut_model as module
 
 
-def test_enm_juggernaut_06_juggernaut_draws_its_cannons_and_plates_on_their_joints(monkeypatch):
+def test_enm_juggernaut_06_juggernaut_draws_its_cannons_and_plates_on_their_joints(
+    monkeypatch: Any,
+) -> None:
     capture = probe_builder(monkeypatch, module.build_juggernaut)
     design_ids, drawn_ids = jointed_design_ids(capture)
     assert capture.name == "juggernaut"
@@ -16,7 +21,9 @@ def test_enm_juggernaut_06_juggernaut_draws_its_cannons_and_plates_on_their_join
     assert {"limbs.shoulder-left", "limbs.shoulder-right"} <= set(drawn)
 
 
-def test_enm_juggernaut_05_juggernaut_body_has_three_reactors_and_two_guns(monkeypatch):
+def test_enm_juggernaut_05_juggernaut_body_has_three_reactors_and_two_guns(
+    monkeypatch: Any,
+) -> None:
     capture = probe_builder(monkeypatch, module.build_juggernaut)
     body = drawings_of(capture)["body"]
     assert len(body["reactors"]) == 3

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/audio/synth.py`."""
 
 import pytest
@@ -154,8 +155,9 @@ def test_aud_engine_10_stopping_a_source_that_already_ended_is_harmless() -> Non
     voice = play_voice(ctx, FakeNode("bus"), [layer()], VoiceOptions(0, 440, INFINITY, 1))
     oscillator = ctx.of_kind("oscillator")[0]
 
-    def broken_stop(when: float = 0) -> None:
-        raise RuntimeError("already stopped")
+    def broken_stop(_when: float = 0) -> None:
+        msg = "already stopped"
+        raise RuntimeError(msg)
 
     oscillator.stop = broken_stop
     voice.stop(1.0, 0.1)  # must not raise

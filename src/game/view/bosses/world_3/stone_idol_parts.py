@@ -1,9 +1,10 @@
+# Copyright (c) 2026 Renaud Guillon
 """MB-STONE-IDOL-03, 3-3: the Stone Idol's parts (its eyes, their turning eyeballs, its mouth).
-Logical pixels, nose +Z (the chin), Y up (towards the camera); the face looks up at the camera."""
+
+Logical pixels, nose +Z (the chin), Y up (towards the camera); the face looks up at the camera.
+"""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.boss_look import BOSS_LOOK
 from game.config.bosses.boss_kit import mirror
@@ -20,13 +21,15 @@ from game.view.bosses.world_3.stone_idol_stone import STONE, crack, moss, vine
 from game.view.enemies.enemy_shapes import SIDES
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from game.view.enemies.enemy_mesh import EnemyParts
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The Stone Idol's neon: the light glowing through its cracks, eyes and mouth (MB-STONE-IDOL-05).
 IDOL_NEON = BOSS_LOOK.neon["stone-idol"]
@@ -42,8 +45,11 @@ LIPS = record({"width": 15, "depth": 8})
 
 
 def eye_socket(p: EnemyParts, at: Vec3) -> None:
-    """An eye's socket around its centre `at` (MB-STONE-IDOL-03): a deep, round hollow in the face,
-    its rim cracked and lit, moss on its lower lid. Its eyeball (`eyeball`) turns in it."""
+    """Add an eye's socket around its centre `at` (MB-STONE-IDOL-03).
+
+    A deep, round hollow in the face, its rim cracked and lit, moss on its lower lid. Its eyeball
+    (`eyeball`) turns in it.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -72,7 +78,7 @@ def eye_socket(p: EnemyParts, at: Vec3) -> None:
 
 
 def iris_point(centre: Vec3, y: float, d: float) -> Vec3:
-    """A point `d` along the iris's tilt from `centre`, at height `y`."""
+    """Return a point `d` along the iris's tilt from `centre`, at height `y`."""
     return [
         centre[0],
         y + d * math.cos(IRIS_TILT),
@@ -81,8 +87,11 @@ def iris_point(centre: Vec3, y: float, d: float) -> Vec3:
 
 
 def eyeball(p: EnemyParts, at: Vec3) -> None:
-    """An eyeball turning in its socket (phase 8 review: it aims its laser): a ball of polished
-    stone, a neon iris facing down the screen and the charge-lit lens its laser leaves from."""
+    """Add an eyeball turning in its socket (phase 8 review: it aims its laser).
+
+    A ball of polished stone, a neon iris facing down the screen and the charge-lit lens its laser
+    leaves from.
+    """
     flesh = p.flesh
     vein = p.vein
     charge = p.charge
@@ -106,8 +115,11 @@ def eyeball(p: EnemyParts, at: Vec3) -> None:
 
 
 def mouth(p: EnemyParts, at: Vec3) -> None:
-    """The mouth around its centre `at` (MB-STONE-IDOL-03): thick carved lips open on a deep throat,
-    stone teeth, a neon lining; its rings of boulders leave from the throat's glow."""
+    """Add the mouth around its centre `at` (MB-STONE-IDOL-03).
+
+    Thick carved lips open on a deep throat, stone teeth, a neon lining; its rings of boulders leave
+    from the throat's glow.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon

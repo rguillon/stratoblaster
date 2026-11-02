@@ -1,13 +1,13 @@
-"""The balanced player ship (GFX-SHIP-01): inspired by the Macross
-Delta VF-31J: long pointed nose, framed bubble canopy, canards, dual reactors fed by side intakes,
-forward-swept wings, canted twin tails and ventral fins, a gun pod under the belly. Model units:
-nose towards +Z, about 4.8 units long. Low-poly and polygonal like the other ships: fuselage with
-a smooth top and a faceted belly, canopy, intakes and pods.
+# Copyright (c) 2026 Renaud Guillon
+"""The balanced player ship (GFX-SHIP-01), inspired by the Macross Delta VF-31J.
+
+Long pointed nose, framed bubble canopy, canards, dual reactors fed by side intakes, forward-swept
+wings, canted twin tails and ventral fins, a gun pod under the belly. Model units: nose towards +Z,
+about 4.8 units long. Low-poly and polygonal like the other ships: fuselage with a smooth top and a
+faceted belly, canopy, intakes and pods.
 """
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.view.ship_materials import get_ship_materials
 from game.view.ship_parts import (
@@ -20,7 +20,6 @@ from game.view.ship_parts import (
     nav_light,
     panel,
     plate,
-    tag_part,
 )
 
 # create_disc: render/babylon.py.
@@ -31,11 +30,13 @@ from render.babylon import (
 )
 from render.geometry.lathe_z import create_faceted_lathe_along_z
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
 Scene = Any
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Right main wing (X > 0). The tip's leading edge is ahead of the root's: forward-swept.
 BALANCED_WING = [
@@ -106,9 +107,9 @@ CANOPY_MID_Z = 1.1
 
 
 def _build_body(root: Any, scene: Any) -> None:
-    """The fuselage, its dorsal spine, and the gun pod under the belly."""
+    """Build the fuselage, its dorsal spine, and the gun pod under the belly."""
     mats = get_ship_materials(scene)
-    body_root = tag_part(new_transform_node("balanced-body-root", scene), "body")
+    body_root = new_transform_node("balanced-body-root", scene)
     body_root.parent = root
     body = create_faceted_lathe_along_z(
         "balanced-body",
@@ -157,7 +158,7 @@ def _build_body(root: Any, scene: Any) -> None:
 
 
 def _build_cockpit(root: Any, scene: Any) -> None:
-    """The bubble canopy and its frame."""
+    """Build the bubble canopy and its frame."""
     mats = get_ship_materials(scene)
     # The frame is the canopy profile, a bit larger and longer.
     frame_profile = [
@@ -169,17 +170,14 @@ def _build_cockpit(root: Any, scene: Any) -> None:
     frame.material = mats.trim
     frame.parent = root
 
-    canopy = tag_part(
-        create_faceted_lathe_along_z("balanced-canopy", CANOPY, PART_FACETS, scene),
-        "canopy",
-    )
+    canopy = create_faceted_lathe_along_z("balanced-canopy", CANOPY, PART_FACETS, scene)
     canopy.position.y = 0.17
     canopy.material = mats.canopy
     canopy.parent = root
 
 
 def _build_intake(side: str, sign: float, root: Any, scene: Any) -> None:
-    """A side intake with its dark mouth, facing forward."""
+    """Build a side intake with its dark mouth, facing forward."""
     mats = get_ship_materials(scene)
     intake = create_faceted_lathe_along_z(
         "balanced-intake-" + side,
@@ -211,13 +209,13 @@ def _build_intake(side: str, sign: float, root: Any, scene: Any) -> None:
 
 
 def _build_wing(side: str, sign: float, root: Any, scene: Any) -> None:
-    """A forward-swept main wing with its band, flap, strake, canard and wing-tip light."""
+    """Build a forward-swept main wing with its band, flap, strake, canard and wing-tip light."""
     mats = get_ship_materials(scene)
 
     def mirror(outline: list[list[float]]) -> list[list[float]]:
         return outline if sign > 0 else mirror_x(outline)
 
-    wing = tag_part(new_transform_node("balanced-wing-" + side, scene), "wing")
+    wing = new_transform_node("balanced-wing-" + side, scene)
     wing.parent = root
     panel(
         "balanced-wing-" + side + "-panel", mirror(BALANCED_WING), WING_THICKNESS, mats.hull, wing
@@ -233,9 +231,9 @@ def _build_wing(side: str, sign: float, root: Any, scene: Any) -> None:
 
 
 def _build_tails(side: str, sign: float, root: Any, scene: Any) -> None:
-    """The canted twin tail and the ventral fin on one side."""
+    """Build the canted twin tail and the ventral fin on one side."""
     mats = get_ship_materials(scene)
-    tail = tag_part(new_transform_node("balanced-tail-" + side, scene), "tail")
+    tail = new_transform_node("balanced-tail-" + side, scene)
     tail.position.set(sign * 0.38, 0.12, 0)
     # Stand the panel up (X becomes height), then cant it outwards.
     tail.rotation.z = math.pi / 2 - sign * TAIL_CANT
@@ -253,7 +251,7 @@ def _build_tails(side: str, sign: float, root: Any, scene: Any) -> None:
 
 
 def build_balanced_ship(scene: Any) -> Any:
-    """Builds the balanced player ship (GFX-SHIP-01)."""
+    """Build the balanced player ship (GFX-SHIP-01)."""
     root = new_transform_node("ship-balanced", scene)
     _build_body(root, scene)
     _build_cockpit(root, scene)

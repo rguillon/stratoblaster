@@ -1,6 +1,10 @@
-"""A neutral scenery look for the tests of `render/scenery/`: every field is set to a plain value,
-so a test changes only the fields it is about. The records are the classes of
-`render/scenery/scenery_look.py`, built positionally as the game's own configs build them."""
+# Copyright (c) 2026 Renaud Guillon
+"""A neutral scenery look for the tests of `render/scenery/`.
+
+Every field is set to a plain value, so a test changes only the fields it is about. The records are
+the classes of `render/scenery/scenery_look.py`, built positionally as the game's own configs build
+them.
+"""
 
 from typing import Any
 
@@ -43,7 +47,7 @@ def texture(**overrides: Any) -> TextureLook:
 
 
 def make_look(**overrides: Any) -> SceneryLook:
-    """A scenery look with plain values. Pass any field of `SceneryLook` to replace it."""
+    """Return a scenery look with plain values. Pass any field of `SceneryLook` to replace it."""
     foam = ShoreFoam(WHITE, 1, 4, 1, 2)
     shore = ShoreLook(GREY, 2, GREY, BLACK, 10, foam)
     terrain = TerrainLook(

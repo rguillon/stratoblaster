@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/sim/enemies/scissor.py`."""
+
+from typing import Any
 
 import pytest
 from helpers.enemy_steps import run, run_until
@@ -45,7 +48,7 @@ def test_enm_scissor_11_the_arm_beam_follows_its_arm() -> None:
     class _Arm:
         x, y, heading, gone, health = 1.0, 2.0, 0.5, False, 9.0
 
-        def place(self, muzzle):
+        def place(self, _muzzle: Any) -> Any:
             return (self.x, self.y)
 
     beam = ArmBeam(_Arm(), CFG.arms[0].muzzle)
@@ -53,3 +56,23 @@ def test_enm_scissor_11_the_arm_beam_follows_its_arm() -> None:
     assert beam.health == 9.0
     assert beam.gone is False
     assert beam.emitter == (1.0, 2.0)
+
+
+def test_enm_scissor_10_only_a_standing_arm_shows_its_laser() -> None:
+    ctx = FakeContext()
+    scissor = Scissor(200, 300, 300)
+    scissor.part("arm-left").health = 0
+    run_until(scissor, ctx, lambda: scissor.state == "warn", limit=10.0)
+    [(beam, _spec)] = ctx.lasers
+    right = scissor.part("arm-right")
+    tip = right.place(CFG.arms[1].muzzle)
+    assert (beam.emitter.x, beam.emitter.y, beam.heading) == (tip.x, tip.y, right.heading)
+
+
+def test_enm_scissor_12_once_its_lasers_are_done_it_backs_away_upward() -> None:
+    ctx = FakeContext()
+    scissor = Scissor(200, 300, 300)
+    run_until(scissor, ctx, lambda: scissor.state == "exit", limit=10.0)
+    y = scissor.y
+    run(scissor, ctx, 1.0)
+    assert scissor.y == pytest.approx(y + CFG.exitSpeed)

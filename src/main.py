@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Bootstrap only (ENG-10): create the engine and start the app.
 
 `index.html` calls `main()` once the page has loaded.
@@ -24,16 +25,18 @@ from input.gamepad_menu_input import browser_gamepads
 from render.babylon import new_engine
 from ui.stage_fit import apply_stage_fit, fit_stage
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module, ENG-153).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
-__pragma__("ifdef", "e2e")
-from debug.test_api import install_test_api  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("ifdef", "e2e")
+from debug.test_api import install_test_api
 
-__pragma__("endif")
+# __pragma__ ("endif")
 
 E2E = False
 __pragma__("ifdef", "e2e")
@@ -43,7 +46,7 @@ DEV_BUILD = False
 
 
 def show_fatal(message: str) -> None:
-    """Shows `message` in the #fatal element, if the page has one."""
+    """Show `message` in the #fatal element, if the page has one."""
     el = document.getElementById("fatal")
     if el:
         el.textContent = message
@@ -51,13 +54,15 @@ def show_fatal(message: str) -> None:
 
 
 def reload_page() -> None:
-    """The reload button of the lost graphics context's message (UI-LOAD-07)."""
+    """Reload the page: the reload button of the lost graphics context's message (UI-LOAD-07)."""
     window.location.reload()
 
 
 def show_context_lost() -> None:
-    """UI-LOAD-07: the lost graphics context's message over the page, with a button that reloads
-    it (ENG-110)."""
+    """UI-LOAD-07: the lost graphics context's message over the page, with a reload button.
+
+    The button reloads the page (ENG-110).
+    """
     el = document.getElementById("fatal")
     if not el:
         return
@@ -73,11 +78,15 @@ def show_context_lost() -> None:
     el.appendChild(button)
 
 
+class PageError(Exception):
+    """The page lacks an element the app needs."""
+
+
 def element(element_id: str) -> Any:
-    """The element called `element_id`; raises when the page lacks it."""
+    """Return the element called `element_id`; raises when the page lacks it."""
     el = document.getElementById(element_id)
     if not el:
-        raise Exception("#" + element_id + " not found")
+        raise PageError("#" + element_id + " not found")
     return el
 
 
@@ -89,7 +98,7 @@ def audio_context_available() -> bool:
 
 
 def new_audio_context() -> object:
-    """A new Web Audio context. Only called during a user gesture (AUD-ENGINE-03)."""
+    """Return a new Web Audio context. Only called during a user gesture (AUD-ENGINE-03)."""
     __pragma__("js", "{}", "return new AudioContext();")
     return None
 
@@ -101,15 +110,18 @@ def audio_can_start() -> bool:
 
 
 def browser_audio() -> AudioOptions:
-    """Web Audio, if the browser has it (AUD-ENGINE-04): the context is only created during a user
-    gesture that lets audio start, so no autoplay warning is shown."""
+    """Web Audio, if the browser has it (AUD-ENGINE-04).
+
+    The context is only created during a user gesture that lets audio start, so no autoplay
+    warning is shown.
+    """
     if not audio_context_available():
         return AudioOptions(None, None)
     return AudioOptions(new_audio_context, audio_can_start)
 
 
 def start_interval(tick: Any, seconds: float) -> Any:
-    """Runs `tick` every `seconds` (the music scheduler, AUD-ENGINE-05). Returns the stopper."""
+    """Run `tick` every `seconds` (the music scheduler, AUD-ENGINE-05). Returns the stopper."""
     __pragma__(
         "js",
         "{}",
@@ -119,7 +131,7 @@ def start_interval(tick: Any, seconds: float) -> Any:
 
 
 def next_frame() -> Any:
-    """A promise that resolves at the next animation frame."""
+    """Return a promise that resolves at the next animation frame."""
     __pragma__(
         "js",
         "{}",
@@ -136,7 +148,7 @@ def document_hidden() -> bool:
 
 
 def pixel_ratio() -> float:
-    """The device pixel ratio, capped (ENGINE_CONFIG.max_device_pixel_ratio)."""
+    """Return the device pixel ratio, capped (ENGINE_CONFIG.max_device_pixel_ratio)."""
     ratio: float = window.devicePixelRatio
     cap: float = ENGINE_CONFIG.max_device_pixel_ratio
     if ratio < cap:
@@ -145,8 +157,10 @@ def pixel_ratio() -> float:
 
 
 def fit_to_window(engine: Any, stage: Any, overlay: Any) -> None:
-    """Keeps the stage and the menu overlay fitted to the window (ENG-110, GAME-SCREEN-02,
-    UI-LOOK-02)."""
+    """Keep the stage and the menu overlay fitted to the window (ENG-110, GAME-SCREEN-02).
+
+    Covers UI-LOOK-02 too.
+    """
 
     def fit() -> None:
         apply_stage_fit(
@@ -162,7 +176,7 @@ def fit_to_window(engine: Any, stage: Any, overlay: Any) -> None:
 
 
 def start_game(engine: Any) -> None:
-    """The game page: the menu, the levels and the audio."""
+    """Start the game page: the menu, the levels and the audio."""
     document.title = GAME.title
     overlay = element("menu")
     fit_to_window(engine, element("stage"), overlay)
@@ -208,10 +222,11 @@ def start_game(engine: Any) -> None:
 
 
 def main() -> None:
-    """Runs the game page: the WebGL check, the engine, then the app."""
+    """Run the game page: the WebGL check, the engine, then the app."""
     canvas: Any = document.getElementById("game-canvas")
     if not is_canvas(canvas):
-        raise Exception("#game-canvas not found")
+        msg = "#game-canvas not found"
+        raise PageError(msg)
     # UI-LOAD-01 (ENG-06): without WebGL2, a friendly message (UI-LOAD-02) shows instead of the
     # menu, with no error.
     if not has_webgl2(lambda: document.createElement("canvas")):

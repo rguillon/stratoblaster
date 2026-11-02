@@ -1,11 +1,11 @@
-"""Stand-ins for Babylon.js in the view tests: Babylon runs only in the browser, so the view modules
-that build meshes are tested with `MagicMock` objects in place of the `render.babylon` helpers
-(ENG-47).
+# Copyright (c) 2026 Renaud Guillon
+"""Stand-ins for Babylon.js in the view tests (ENG-47).
 
-`stub_babylon` replaces, in one module, every helper it imported from `render.babylon` (each call
-then gives a fresh `MagicMock`) and the few JavaScript-only twins the module calls (a plain object
-or a JavaScript value). CPython runs those twins' Python fallback bodies, which return None, so
-they are given working replacements here.
+Babylon runs only in the browser, so the view modules that build meshes are tested with `MagicMock`
+objects in place of the `render.babylon` helpers. `stub_babylon` replaces, in one module, every
+helper it imported from `render.babylon` (each call then gives a fresh `MagicMock`) and the few
+JavaScript-only twins the module calls (a plain object or a JavaScript value). CPython runs those
+twins' Python fallback bodies, which return None, so they are given working replacements here.
 """
 
 import sys
@@ -36,7 +36,7 @@ def _fake(*_args: Any, **_kwargs: Any) -> MagicMock:
 
 
 def stub_babylon(monkeypatch: pytest.MonkeyPatch, *modules: ModuleType) -> None:
-    """Replaces the `render.babylon` helpers the modules imported, and their JavaScript-only twins.
+    """Replace the `render.babylon` helpers the modules imported, and their JavaScript-only twins.
 
     The modules given are patched, and so is every module of `render/` and `game/view/` loaded so
     far: a helper that one of them calls through another's import is stubbed as well.

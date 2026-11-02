@@ -1,21 +1,22 @@
-"""Merges several devices (keyboard, gamepads...) into one stream of menu actions"""
+# Copyright (c) 2026 Renaud Guillon
+"""Merges several devices (keyboard, gamepads...) into one stream of menu actions."""
 
-from org.transcrypt.stubs.browser import __pragma__
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Sequence
+from typing import Protocol
 
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-from input.menu_action import MenuAction  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from input.menu_action import MenuAction
 
 
 class MenuActionSource(Protocol):
     """Anything that produces menu actions once per frame."""
 
-    def update(self, dt_seconds: float) -> list[MenuAction]: ...
+    def update(self, dt_seconds: float) -> list[MenuAction]:
+        """Return the menu actions since the last call."""
 
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class MenuInput:
@@ -25,6 +26,7 @@ class MenuInput:
         self._sources = sources
 
     def update(self, dt_seconds: float) -> list[MenuAction]:
+        """Return the menu actions since the last call."""
         actions: list[MenuAction] = []
         for source in self._sources:
             actions.extend(source.update(dt_seconds))

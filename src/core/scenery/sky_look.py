@@ -1,23 +1,16 @@
-"""A level's look as its data describes it (GFX-SKY-04): a time of day, a cloud cover and a
-weather, turned into an `Atmosphere` with the engine's time-of-day presets.
+# Copyright (c) 2026 Renaud Guillon
+"""A level's look as its data describes it (GFX-SKY-04).
+
+A time of day, a cloud cover and a weather, turned into an `Atmosphere` with the engine's
+time-of-day presets.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-from core.scenery.atmosphere import AtmosphereChange  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-Rgb = tuple[float, float, float]
-__pragma__("noskip")
-
-from config.time_of_day import OVERCAST, SKY_STOPS, TIME_OF_DAY, UNDERGLOW  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from config.weather import WEATHER_KINDS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.math.noise import smoothstep  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.atmosphere import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from config.time_of_day import OVERCAST, SKY_STOPS, TIME_OF_DAY, UNDERGLOW
+from config.weather import WEATHER_KINDS
+from core.math.noise import smoothstep
+from core.scenery.atmosphere import (
     Ambient,
     Atmosphere,
     CloudCover,
@@ -28,10 +21,22 @@ from core.scenery.atmosphere import (  # noqa: E402 (after the Transcrypt skip b
     Weather,
 )
 
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Sequence
+
+from core.scenery.atmosphere import AtmosphereChange
+
+Rgb = tuple[float, float, float]
+# __pragma__ ("noskip")
+
 
 class SkyMist:
-    """Phase 9: a mist (GFX-SKY-15, the 3-1 morning): the fog ends at `fog` of its distance (1 = as
-    far as usual) and the haze turns `white` (0..1) of the way to the mist's pale colour."""
+    """Phase 9: a mist (GFX-SKY-15, the 3-1 morning).
+
+    The fog ends at `fog` of its distance (1 = as far as usual) and the haze turns `white` (0..1) of
+    the way to the mist's pale colour.
+    """
 
     def __init__(self, fog: float, white: float) -> None:
         self.fog = fog
@@ -47,10 +52,12 @@ class SkyGlow:
 
 
 class SkyLook:
-    """How a level looks at one place along it. The optional fields default to None,
-    which means the defaults (see the comments)."""
+    """How a level looks at one place along it.
 
-    def __init__(  # noqa: PLR0917 (positional data fields: Transcrypt drops keyword arguments)
+    The optional fields default to None, which means the defaults (see the comments).
+    """
+
+    def __init__(
         self,
         time_of_day: str,
         clouds: Sequence[float],
@@ -67,17 +74,20 @@ class SkyLook:
         brightness: float | None = None,
         plain_clouds: bool | None = None,
     ) -> None:
-        """`time_of_day`: a time of day. `clouds`: cover (0 = clear, 1 = overcast) of the low and
-        the high cloud layers. `storm`: how stormy the clouds look (0 = the time of day's colour,
-        1 = dark storm grey). `weather`: weather (GFX-WEATHER-01), none when None. `aurora`:
-        strength (0..1) of an aurora in the night haze. `lightning`: strength (0..1) of the
-        lightning of a storm (GFX-WEATHER-10). `mist` (GFX-SKY-15). `tint`: a tint (RGB factors) on
-        the ambient light (GFX-SKY-16). `second_weather` (phase 10): a second weather at the same
-        time (GFX-WEATHER-15). `cloud_tint` (phase 10): a tint on the clouds' colours (GFX-SKY-13).
-        `underglow` (phase 10): a glow from below. `ground_lights`: strength of the lights on the
-        ground; the time of day's when None. `brightness`: a factor on the sun and the ambient light
-        (1 = the time of day's); both GFX-SKY-08. `plain_clouds`: the clouds keep the time of day's
-        colours: no storm grey, tint or glow from below."""
+        """`time_of_day`: a time of day.
+
+        `clouds`: cover (0 = clear, 1 = overcast) of the low and the high cloud layers. `storm`: how
+        stormy the clouds look (0 = the time of day's colour, 1 = dark storm grey). `weather`:
+        weather (GFX-WEATHER-01), none when None. `aurora`: strength (0..1) of an aurora in the
+        night haze. `lightning`: strength (0..1) of the lightning of a storm (GFX-WEATHER-10).
+        `mist` (GFX-SKY-15). `tint`: a tint (RGB factors) on the ambient light (GFX-SKY-16).
+        `second_weather` (phase 10): a second weather at the same time (GFX-WEATHER-15).
+        `cloud_tint` (phase 10): a tint on the clouds' colours (GFX-SKY-13). `underglow` (phase 10):
+        a glow from below. `ground_lights`: strength of the lights on the ground; the time of day's
+        when None. `brightness`: a factor on the sun and the ambient light (1 = the time of day's);
+        both GFX-SKY-08. `plain_clouds`: the clouds keep the time of day's colours: no storm grey,
+        tint or glow from below.
+        """
         self.time_of_day = time_of_day
         self.clouds = clouds
         self.storm = storm
@@ -95,8 +105,11 @@ class SkyLook:
 
 
 class SkyScript:
-    """The look of a level along its length: `start`, and changes over stretches given in seconds
-    of scrolling from the level's start (the stage turns them into distances at its speed)."""
+    """The look of a level along its length.
+
+    `start`, and changes over stretches given in seconds of scrolling from the level's start (the
+    stage turns them into distances at its speed).
+    """
 
     def __init__(self, start: SkyLook, changes: Sequence[AtmosphereChange] | None = None) -> None:
         self.start = start
@@ -142,7 +155,7 @@ def _clamp01(v: float) -> float:
 
 
 def _weather_haze(haze: Rgb, weather: Weather) -> Rgb:
-    """The haze of `weather` (phase 9, GFX-WEATHER-03: rain greys it), over `haze`."""
+    """Return the haze of `weather` (phase 9, GFX-WEATHER-03: rain greys it), over `haze`."""
     kind = WEATHER_KINDS.get(weather.kind)
     tint = kind.haze if kind is not None else None
     if tint is None:
@@ -151,16 +164,21 @@ def _weather_haze(haze: Rgb, weather: Weather) -> Rgb:
 
 
 def weather_fog(weather: Weather) -> float:
-    """How far the fog comes in for `weather`: 1 in clear weather, down to its kind's `fog_at_1`
-    (GFX-SKY-07)."""
+    """How far the fog comes in for `weather`.
+
+    1 in clear weather, down to its kind's `fog_at_1` (GFX-SKY-07).
+    """
     kind = WEATHER_KINDS.get(weather.kind)
     strength = _clamp01(weather.strength)
     return _lerp(1, kind.fog_at_1, strength) if kind is not None else 1
 
 
 def _clouds_of(look: SkyLook, base: SkyBase, color: Rgb, shade: Rgb) -> list[CloudCover]:
-    """The cloud layers of `look` (GFX-SKY-13): the time of day's colours, greyed by a storm,
-    tinted, lit from below (phase 10), thinned when heavy."""
+    """Return the cloud layers of `look` (GFX-SKY-13).
+
+    The time of day's colours, greyed by a storm, tinted, lit from below (phase 10), thinned when
+    heavy.
+    """
     plain = look.plain_clouds is True
     storm = 0 if plain else (look.storm if look.storm is not None else 0)
     tint: Rgb = (
@@ -187,9 +205,11 @@ def _clouds_of(look: SkyLook, base: SkyBase, color: Rgb, shade: Rgb) -> list[Clo
 
 
 def resolve_sky(look: SkyLook, base: SkyBase) -> Atmosphere:
-    """The atmosphere of `look` (GFX-SKY-04): its time of day's light, dimmed and softened under a
-    heavy cloud cover (GFX-SKY-06), its clouds, and the fog of `base` brought in by the time of day
-    and the weather."""
+    """Return the atmosphere of `look` (GFX-SKY-04).
+
+    Its time of day's light, dimmed and softened under a heavy cloud cover (GFX-SKY-06), its clouds,
+    and the fog of `base` brought in by the time of day and the weather.
+    """
     preset = TIME_OF_DAY[look.time_of_day]
     o = smoothstep(OVERCAST.overcast[0], OVERCAST.overcast[1], look.clouds[0])
     clouds = _clouds_of(look, base, preset.clouds.color, preset.clouds.shade)
@@ -244,7 +264,7 @@ def resolve_sky(look: SkyLook, base: SkyBase) -> Atmosphere:
 
 
 def copy_look(look: SkyLook) -> SkyLook:
-    """A copy of `look`, field by field."""
+    """Return a copy of `look`, field by field."""
     return SkyLook(
         look.time_of_day,
         look.clouds,
@@ -273,8 +293,11 @@ def at_time_of_day(look: SkyLook, time_of_day: str | None) -> SkyLook:
 
 
 def without_weather(look: SkyLook) -> SkyLook:
-    """`look` without its weather, lightning and second weather included (the `weather=0` debug
-    option, DEV-OPT-04; weather is only a look, GFX-WEATHER-05)."""
+    """`look` without its weather.
+
+    Lightning and second weather included (the `weather=0` debug option, DEV-OPT-04; weather is only
+    a look, GFX-WEATHER-05).
+    """
     result = copy_look(look)
     result.weather = CLEAR
     result.lightning = 0
@@ -284,8 +307,10 @@ def without_weather(look: SkyLook) -> SkyLook:
 
 
 def weather_particles(weather: Weather) -> int:
-    """How many particles `weather` draws (GFX-WEATHER-03): none at strength 0, its kind's most at
-    1, in proportion between."""
+    """How many particles `weather` draws (GFX-WEATHER-03).
+
+    None at strength 0, its kind's most at 1, in proportion between.
+    """
     kind = WEATHER_KINDS.get(weather.kind)
     strength = _clamp01(weather.strength)
     if kind is None:

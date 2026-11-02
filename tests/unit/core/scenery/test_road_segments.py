@@ -1,13 +1,15 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/road_segments.py`."""
 
 import math
+from typing import Any
 
 import pytest
 from helpers.level_builders import road_rules
 
 from core.scenery.districts import ZRange
 from core.scenery.road_paths import PathGround, _path_through
-from core.scenery.road_segments import Nearest, SegmentIndex, add_slots, segment_distance
+from core.scenery.road_segments import Nearest, Segment, SegmentIndex, add_slots, segment_distance
 from core.scenery.road_types import Road, RoadPoint
 from core.scenery.scenery_level import NoCrossings
 
@@ -19,8 +21,10 @@ def _main_along_z(x: float = 0.0) -> Road:
     return Road(0, "main", 24.0, 1, points)
 
 
-def _ground(rules, laid: list, is_open=lambda x, z: True, nearest=None) -> PathGround:
-    def no_road(x: float, z: float, which) -> Nearest:
+def _ground(
+    rules: Any, laid: list, is_open: Any = lambda _x, _z: True, nearest: Any = None
+) -> PathGround:
+    def no_road(_x: float, _z: float, _which: Any) -> Nearest:
         return Nearest(math.inf)
 
     return PathGround(
@@ -32,7 +36,9 @@ def _ground(rules, laid: list, is_open=lambda x, z: True, nearest=None) -> PathG
     )
 
 
-def _road(index: int, points: list[tuple[float, float]], width: float = 10.0, kind: str = "main"):
+def _road(
+    index: int, points: list[tuple[float, float]], width: float = 10.0, kind: str = "main"
+) -> Any:
     return Road(index, kind, width, 1, [RoadPoint(x, z, width) for x, z in points])
 
 
@@ -41,7 +47,7 @@ def test_gfx_road_05_without_crossings_a_path_across_another_road_is_blocked() -
     main = _main_along_z()
     crossing = Road(9, "cross", 12.0, 1, [])
 
-    def other_path(x: float, z: float, which) -> Nearest:
+    def other_path(_x: float, _z: float, which: Any) -> Nearest:
         if which(main):
             return Nearest(math.inf)
         return Nearest(0.5, crossing)
@@ -51,7 +57,6 @@ def test_gfx_road_05_without_crossings_a_path_across_another_road_is_blocked() -
 
 
 def test_segment_distance_is_to_the_nearest_point_of_the_segment() -> None:
-    from core.scenery.road_segments import Segment  # noqa: PLC0415 (keeps the import near its use)
 
     s = Segment(None, 0.0, 0.0, 10.0, 0.0, 0.0)  # type: ignore[arg-type]
     assert segment_distance(5.0, 3.0, s) == pytest.approx(3.0)
@@ -65,16 +70,16 @@ def test_gfx_road_23_nearest_reports_the_edge_of_the_road() -> None:
     index = SegmentIndex()
     road = _road(0, [(0.0, 0.0), (100.0, 0.0), (100.0, 100.0)])
     index.add(road)
-    on_centre = index.nearest(50.0, 0.0, lambda r: True)
+    on_centre = index.nearest(50.0, 0.0, lambda _r: True)
     assert on_centre.distance == pytest.approx(-5.0)
     assert on_centre.road is road
-    assert index.nearest(50.0, 20.0, lambda r: True).distance == pytest.approx(15.0)
+    assert index.nearest(50.0, 20.0, lambda _r: True).distance == pytest.approx(15.0)
 
 
 def test_nearest_skips_the_roads_not_accepted() -> None:
     index = SegmentIndex()
     index.add(_road(0, [(0.0, 0.0), (100.0, 0.0)]))
-    nearest = index.nearest(50.0, 20.0, lambda r: False)
+    nearest = index.nearest(50.0, 20.0, lambda _r: False)
     assert nearest.distance == math.inf
     assert nearest.road is None
 
@@ -82,13 +87,13 @@ def test_nearest_skips_the_roads_not_accepted() -> None:
 def test_nearest_is_infinite_with_no_road_near() -> None:
     index = SegmentIndex()
     index.add(_road(0, [(0.0, 0.0), (10.0, 0.0)]))
-    assert index.nearest(5000.0, 5000.0, lambda r: True).distance == math.inf
+    assert index.nearest(5000.0, 5000.0, lambda _r: True).distance == math.inf
 
 
 def test_a_single_point_road_has_no_segment() -> None:
     index = SegmentIndex()
     index.add(_road(0, [(0.0, 0.0)]))
-    assert index.nearest(0.0, 0.0, lambda r: True).distance == math.inf
+    assert index.nearest(0.0, 0.0, lambda _r: True).distance == math.inf
 
 
 def test_gfx_road_23_clear_of_agrees_with_the_nearest_road() -> None:
@@ -98,7 +103,7 @@ def test_gfx_road_23_clear_of_agrees_with_the_nearest_road() -> None:
     for clearance in (2.0, 10.0, 40.0, 100.0):
         for x in range(-80, 200, 17):
             for z in range(-60, 220, 19):
-                expected = index.nearest(float(x), float(z), lambda r: True).distance >= clearance
+                expected = index.nearest(float(x), float(z), lambda _r: True).distance >= clearance
                 assert index.clear_of(float(x), float(z), clearance) == expected
 
 

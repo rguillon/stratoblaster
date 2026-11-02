@@ -1,15 +1,19 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/tile_streets.py`."""
 
+import itertools
 from types import SimpleNamespace
+from typing import Any
 
 import pytest
 from helpers.level_builders import flat, make_level, road_rules, section, street_grid, tile_rules
 
 from core.math.rng import create_rng
-from core.scenery.districts import ZRange, find_districts
+from core.scenery.districts import District, DistrictPart, ZRange, find_districts
 from core.scenery.scenery_level import Boulevard, layout_sections
 from core.scenery.street_links import Node
 from core.scenery.tile_streets import (
+    Line,
     _fitting_tile,
     _int_set,
     _mod,
@@ -18,6 +22,7 @@ from core.scenery.tile_streets import (
     _part_rows,
     _row_size,
     _tile_at,
+    _TileLayout,
     _unique,
     _unique_nodes,
     column_fits,
@@ -29,7 +34,7 @@ SPAN = ZRange(-3000.0, 6000.0)
 TILE = tile_rules()
 
 
-def _district(sections):
+def _district(sections: Any) -> Any:
     return find_districts(layout_sections(make_level(sections)), SPAN)[0]
 
 
@@ -37,14 +42,18 @@ def _in_view(node: Node) -> bool:
     return abs(node.x) >= 300.0
 
 
-def _grid_district(links: float = 0.8):
+def _grid_district(links: float = 0.8) -> Any:
     grid = street_grid(links)
-    return _district(
-        [section("a", 10, flat()), section("b", 10, flat(), streets=grid), section("c", 10, flat())]
-    )
+    return _district([
+        section("a", 10, flat()),
+        section("b", 10, flat(), streets=grid),
+        section("c", 10, flat()),
+    ])
 
 
-def _runs(district, rules=None, buildable=lambda x, z: True, seed: int = 4):
+def _runs(
+    district: Any, rules: Any = None, buildable: Any = lambda _x, _z: True, seed: int = 4
+) -> Any:
     rules = rules if rules is not None else road_rules(tiles=TILE)
     return tile_street_runs(district, rules, TILE, create_rng(seed), buildable, _in_view)
 
@@ -88,8 +97,9 @@ def test_fitting_tile_skips_tiles_next_to_taken_ones() -> None:
 def test_part_rows_run_from_the_first_row_to_the_last_one_tile_wide() -> None:
     part = _grid_district().parts[0]
     rows = _part_rows(road_rules(), TILE, part, create_rng(2))
-    assert rows[0].size == 1 and rows[-1].size == 1
-    assert all(b.start > a.start for a, b in zip(rows, rows[1:], strict=False))
+    assert rows[0].size == 1
+    assert rows[-1].size == 1
+    assert all(b.start > a.start for a, b in itertools.pairwise(rows))
 
 
 def test_part_rows_of_a_part_shorter_than_a_tile_is_one_row() -> None:
@@ -111,7 +121,8 @@ def test_part_columns_reach_past_both_screen_edges() -> None:
 def test_gfx_road_08_the_streets_cover_whole_tiles_and_are_straight() -> None:
     """Also GFX-ROAD-14."""
     runs, blocks = _runs(_grid_district())
-    assert runs and blocks
+    assert runs
+    assert blocks
     for run in runs:
         assert (
             len({round(p.x, 6) for p in run.points}) == 1
@@ -122,7 +133,7 @@ def test_gfx_road_08_the_streets_cover_whole_tiles_and_are_straight() -> None:
 
 
 def test_gfx_road_08_the_streets_are_the_same_for_the_same_seed() -> None:
-    def shape(seed):
+    def shape(seed: Any) -> Any:
         runs, blocks = _runs(_grid_district(), seed=seed)
         return [len(r.points) for r in runs], [b.x_min for b in blocks]
 
@@ -131,9 +142,10 @@ def test_gfx_road_08_the_streets_are_the_same_for_the_same_seed() -> None:
 
 def test_gfx_road_13_two_sections_of_tiles_share_their_row() -> None:
     grid = street_grid(0.6)
-    district = _district(
-        [section("a", 10, flat(), streets=grid), section("b", 10, flat(), streets=grid)]
-    )
+    district = _district([
+        section("a", 10, flat(), streets=grid),
+        section("b", 10, flat(), streets=grid),
+    ])
     runs, blocks = _runs(district)
     assert runs
     assert all(b.x_max > b.x_min for b in blocks)
@@ -141,8 +153,8 @@ def test_gfx_road_13_two_sections_of_tiles_share_their_row() -> None:
 
 def test_gfx_road_14_ground_that_is_not_buildable_gets_no_street_there() -> None:
     # Streets join ground nodes only, and blocks keep to buildable ground: nothing crosses to
-    # X >= 0.
-    runs, blocks = _runs(_grid_district(), buildable=lambda x, z: x < 0.0)
+    # positive X.
+    runs, blocks = _runs(_grid_district(), buildable=lambda x, _z: x < 0.0)
     assert runs
     assert all(p.x < 0.0 for run in runs for p in run.points)
     assert all((b.x_min + b.x_max) / 2 < 0.0 for b in blocks)
@@ -150,12 +162,36 @@ def test_gfx_road_14_ground_that_is_not_buildable_gets_no_street_there() -> None
 
 def test_gfx_road_08_a_district_one_row_tall_has_no_blocks() -> None:
     # A middle section a centimetre long (1 unit): the district is one tile row, with no block.
-    thin = _district(
-        [
-            section("a", 10, flat()),
-            section("b", 0.01, flat(), streets=street_grid()),
-            section("c", 10, flat()),
-        ]
-    )
+    thin = _district([
+        section("a", 10, flat()),
+        section("b", 0.01, flat(), streets=street_grid()),
+        section("c", 10, flat()),
+    ])
     _, blocks = _runs(thin)
+    assert blocks == []
+
+
+def test_gfx_road_17_a_boulevard_with_no_share_is_never_drawn() -> None:
+    rules = road_rules(boulevards=[Boulevard(4, 96.0, 0.0), Boulevard(3, 72.0, 1.0)])
+    assert {_row_size(rules, t) for t in range(-20, 20)} == {3}
+
+
+def test_gfx_road_09_a_wide_row_needs_its_ground_between_the_columns_too() -> None:
+    def layout(buildable: Any) -> Any:
+        return _TileLayout(road_rules(tiles=TILE), TILE, create_rng(1), buildable)
+
+    row = Line(0, 2)
+    assert layout(lambda _x, _z: True)._fits(row, [12.0, 60.0]) is True
+    # Both columns are on buildable ground, the stretch between them (x = 36) is not.
+    assert layout(lambda x, _z: x != 36.0)._fits(row, [12.0, 60.0]) is False
+
+
+def test_gfx_road_14_two_rows_on_neighbouring_tiles_leave_no_room_for_a_block() -> None:
+    district = District(0.0, 30.0, [DistrictPart(street_grid(0.8), 0.0, 30.0)])
+    runs, blocks = _runs(district)
+    # The rows on tiles 0 and 1 are both built (they bound the district), and touch.
+    assert {round(r.points[0].z, 6) for r in runs if r.points[0].z == r.points[-1].z} == {
+        12.0,
+        36.0,
+    }
     assert blocks == []

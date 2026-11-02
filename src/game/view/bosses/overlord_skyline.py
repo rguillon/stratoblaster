@@ -1,28 +1,30 @@
-"""FB-OVERLORD-02, FB-OVERLORD-04 (phase 7 review: more detail, not symmetrical): the Overlord's
-skyline, a city grown out of its back: towers of flesh and bone lit with
-window glands, a broadcast spire and a neon billboard on the left (+X, the screen's left), the
-command stalk on the right. Model space: logical pixels, nose +Z, Y up.
+# Copyright (c) 2026 Renaud Guillon
+"""FB-OVERLORD-02, FB-OVERLORD-04 (phase 7 review: more detail, not symmetrical).
+
+The Overlord's skyline, a city grown out of its back: towers of flesh and bone lit with window
+glands, a broadcast spire and a neon billboard on the left (+X, the screen's left), the command
+stalk on the right. Model space: logical pixels, nose +Z, Y up.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
+from game.config.enemy_look import ENEMY_LOOK
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 from game.config.record import record
-from game.view.bosses.overlord_city import OVERLORD_DECK, OVERLORD_NEON  # noqa: E402
-from game.view.bosses.world_1_organic_kit import F, graft, polygon  # noqa: E402
-from game.view.enemies.organic_parts import opt  # noqa: E402
-from render.geometry.organic import organ  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
+from game.view.bosses.overlord_city import OVERLORD_DECK, OVERLORD_NEON
+from game.view.bosses.world_1_organic_kit import F, graft, polygon
+from game.view.enemies.organic_parts import opt
+from render.geometry.organic import organ
+from render.geometry.solids import Placement
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
 type Vec3 = list[Any]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 WHITE = [1, 1, 1]
@@ -56,8 +58,11 @@ SHADES = [F.graphite, F.slate, F.sinew, F.bone]
 
 
 def _spire(p: Any, tower: Any) -> None:
-    """A tower grown out of the back (FB-OVERLORD-02): a tapering spire of flesh or bone over the
-    tower's footprint, bands of window glands up it, a grafted roof plate where it had a roof."""
+    """Add a tower grown out of the back (FB-OVERLORD-02).
+
+    A tapering spire of flesh or bone over the tower's footprint, bands of window glands up it, a
+    grafted roof plate where it had a roof.
+    """
     x = tower.x
     z = tower.z
     w = tower.w
@@ -67,7 +72,7 @@ def _spire(p: Any, tower: Any) -> None:
     roof = opt(tower, "roof", None)
     base = OVERLORD_DECK["top"] - 1
     r = max(w, d) * 0.6
-    height = h + (tier[2] if tier != None else 0) + 1  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    height = h + (tier[2] if tier != None else 0) + 1
     color = SHADES[abs(math.floor(x + z + 0.5)) % len(SHADES)]
     profile = [
         [r, 0],
@@ -81,13 +86,15 @@ def _spire(p: Any, tower: Any) -> None:
         k = 1 - (y / height) * 0.5
         p.vein.ring(r * 0.86 * k + 0.1, 0.7, 5, N, Placement([x, base + y, z], x * 0.1))
         y += 7
-    if roof != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    if roof != None:
         graft(p, polygon(4, r * 0.6), [base + height - 1, base + height], [x, 0, z])
 
 
 def _draw_spire(parts: Any) -> None:
-    """A broadcast spire on the left: a bulb, a tapered bone mast ringed with neon, a beacon on
-    top."""
+    """Draw a broadcast spire on the left: a bulb, a tapered bone mast ringed with neon.
+
+    A beacon on top.
+    """
     flesh = parts.flesh
     neon = parts.neon
     charge = parts.charge
@@ -127,8 +134,10 @@ TEXT = [
 
 
 def _draw_billboard(parts: Any) -> None:
-    """A neon billboard on stilts: a dark board, a lit frame, a logo, text flickering with the
-    charge."""
+    """Draw a neon billboard on stilts: a dark board, a lit frame, a logo.
+
+    Text flickering with the charge.
+    """
     hull = parts.hull
     neon = parts.neon
     charge = parts.charge
@@ -149,7 +158,7 @@ def _draw_billboard(parts: Any) -> None:
     s = math.sin(lean)
 
     def on_face(dx: float, dy: float) -> Vec3:
-        """A point (dx, dy) of the board's face, just out of it."""
+        """Return a point (dx, dy) of the board's face, just out of it."""
         return [x + dx, y + dy * c - 0.6 * s, z + dy * s + 0.6 * c]
 
     def quad(lit: str, rect: list[Any]) -> None:
@@ -190,8 +199,10 @@ COMMAND = {"x": -42, "z": 1, "shaft": 20}
 
 
 def _draw_command_tower(p: Any) -> None:
-    """The command stalk on the right: a sinew stalk, an eye of a cab ringed with lit glands,
-    masts."""
+    """Draw the command stalk on the right: a sinew stalk, an eye of a cab ringed with lit glands.
+
+    Masts.
+    """
     x = COMMAND["x"]
     z = COMMAND["z"]
     shaft = COMMAND["shaft"]

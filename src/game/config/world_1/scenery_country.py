@@ -1,4 +1,5 @@
-"""1-3, the green country of World 1 (WLD-1-07; reviewer, 2026-10-26)
+# Copyright (c) 2026 Renaud Guillon
+"""1-3, the green country of World 1 (WLD-1-07; reviewer, 2026-10-26).
 
 From the farmland 1-2 ended on, through woods, green hills and a market town, to where the grass
 turns dry and yellow. No sea. Its `seconds` add up to 240 (LVL-1-3-02).
@@ -15,20 +16,18 @@ G = WORLD_1_GROUPS
 TOWN_STREETS = record({"rows": [60, 110], "columns": [70, 130], "links": 0.55})
 
 # Dry grassland, where 1-3 ends and 1-4 begins: a little grass left on the dry earth.
-DRY_GRASSLAND = record(
-    {
-        "name": "dry grassland",
-        "seconds": 30,
-        "relief": smooth(28, 10, 560),
-        "buildingDensity": 0.75,
-        # D-212: trees on the little grass left, few.
-        "treeDensity": 1,
-        # D-214: the woods are dying, dead trees among the living (LVL-1-3-07).
-        "trees": concat(LIVE_TREES, DEAD_TREES),
-        "surface": {"lush": 0.2},
-        "groups": [G.villages, G.outposts],
-    }
-)
+DRY_GRASSLAND = record({
+    "name": "dry grassland",
+    "seconds": 30,
+    "relief": smooth(28, 10, 560),
+    "buildingDensity": 0.75,
+    # D-212: trees on the little grass left, few.
+    "treeDensity": 1,
+    # D-214: the woods are dying, dead trees among the living (LVL-1-3-07).
+    "trees": concat(LIVE_TREES, DEAD_TREES),
+    "surface": {"lush": 0.2},
+    "groups": [G.villages, G.outposts],
+})
 
 # 1-3's sections (LVL-1-3-04): farmland, woods, green hills and a market town, with their farms
 # and villages (LVL-1-3-06), then the yellowing and the dry grass.
@@ -84,15 +83,13 @@ COUNTRY = [
 ]
 
 # 1-3 (LVL-1-3-01): the green country, starting on the farmland 1-2 ended on.
-LEVEL_1_3 = record(
-    {
-        "id": "world-1-3",
-        "name": "1-3 Green country",
-        "seed": 1301,
-        "scrollSpeed": 60,
-        "transition": 420,
-        "sections": COUNTRY,
-        "roads": WORLD_1_ROADS,
-        "props": WORLD_1_PROPS,
-    }
-)
+LEVEL_1_3 = record({
+    "id": "world-1-3",
+    "name": "1-3 Green country",
+    "seed": 1301,
+    "scrollSpeed": 60,
+    "transition": 420,
+    "sections": COUNTRY,
+    "roads": WORLD_1_ROADS,
+    "props": WORLD_1_PROPS,
+})

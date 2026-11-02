@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/boss_fights.py`."""
 
 from game.config.boss_fights import BOSS_FIGHT_RULES

@@ -1,6 +1,5 @@
-"""World 1 (WLD-1-01): five levels of about 4 minutes"""
-
-from org.transcrypt.stubs.browser import __pragma__
+# Copyright (c) 2026 Renaud Guillon
+"""World 1 (WLD-1-01): five levels of about 4 minutes."""
 
 from core.content.game_level import GameLevel
 from game.config.world_1.bosses import WORLD_1_BOSSES
@@ -18,22 +17,21 @@ from game.config.world_1.waves import (
 )
 from game.sim.assemble_level import WorldTables, assemble_level
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 # A beat is a config record (`game/config/record.py`), typed as Any there.
-__pragma__("skip")
 Beat = Any
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
-__pragma__("noskip")
 
 TABLES = WorldTables(WORLD_1_DIFFICULTY, WORLD_1_FILLERS, WORLD_1_BOSSES)
 
 
-def _level(id: str, scenery: Any, beats: list[Beat]) -> GameLevel:
-    return assemble_level(id, scenery, beats, TABLES)
+def _level(level_id: str, scenery: Any, beats: list[Beat]) -> GameLevel:
+    return assemble_level(level_id, scenery, beats, TABLES)
 
 
 # World 1: five levels of about 4 minutes, from the open sea over green grassland to the deep

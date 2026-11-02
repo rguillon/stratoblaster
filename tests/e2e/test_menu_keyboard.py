@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """e2e: the menus with the keyboard only (UI-INPUT-04, UI-INPUT-06, UI-INPUT-12, UI-PAUSE-01)."""
 
 from e2e.menu_helpers import expect_state, game_state, open_game, step

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """The e2e test API (ENG-52): `window.__GAME_TEST__`, installed by `main.py` in e2e builds only.
 
 `main.py` imports this module inside `__pragma__("ifdef", "e2e")`, so the production bundle has
@@ -24,11 +25,12 @@ from org.transcrypt.stubs.browser import __pragma__
 from input.menu_action import is_menu_action
 from render.babylon import js_object, js_set
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def _checkpoint(checkpoint: Any) -> Any:
@@ -43,7 +45,7 @@ def _checkpoint(checkpoint: Any) -> Any:
 
 
 def level_result_state(result: Any) -> Any:
-    """The "Level complete" / "Game over" result (UI-OVER-01, UI-OVER-02), or None."""
+    """Return the "Level complete" / "Game over" result (UI-OVER-01, UI-OVER-02), or None."""
     if result is None:
         return None
     state = js_object()
@@ -66,7 +68,7 @@ def _volumes(volumes: Any) -> Any:
 
 
 def _perf(numbers: Any) -> Any:
-    """What the perf monitor measured (DEV-API-06), in ms."""
+    """Return what the perf monitor measured (DEV-API-06), in ms."""
     result = js_object()
     js_set(result, "longFrames", numbers.long_frames)
     js_set(result, "longestFrame", numbers.longest_frame)
@@ -77,7 +79,10 @@ def _perf(numbers: Any) -> Any:
 
 
 def game_test_state(app: Any) -> Any:
-    """What `__GAME_TEST__.getState()` returns for the running `app` (`RunningApp`, DEV-API-02)."""
+    """Return what `__GAME_TEST__.getState()` returns for the running `app` (DEV-API-02).
+
+    `app` is the `RunningApp`.
+    """
     menu = app.menu
     flow = menu.flow.state
     audio = app.audio.state
@@ -107,8 +112,10 @@ def game_test_state(app: Any) -> Any:
 
 
 def send_test_action(app: Any, action: str) -> None:
-    """`__GAME_TEST__.sendAction` (DEV-API-07): `bomb` sets a bomb off; any other action is a menu
-    action (UI-INPUT-01)."""
+    """`__GAME_TEST__.sendAction` (DEV-API-07): `bomb` sets a bomb off.
+
+    Any other action is a menu action (UI-INPUT-01).
+    """
     if action == "bomb":
         app.controls.bomb()
         return
@@ -128,7 +135,7 @@ def frames_in(seconds: float, step_seconds: float) -> int:
     """Whole frames of `step_seconds` that last at least `seconds`."""
     if not seconds >= 0:
         raise ValueError("Cannot advance by " + str(seconds) + " s")
-    return int(math.ceil(seconds / step_seconds - 1e-9))
+    return math.ceil(seconds / step_seconds - 1e-9)
 
 
 def measure_readability(app: Any, bright_share: float) -> Any:
@@ -142,7 +149,7 @@ def measure_readability(app: Any, bright_share: float) -> Any:
 
 
 def _resolved(value: Any) -> Any:
-    """A promise of `value`."""
+    """Return a promise of `value`."""
     __pragma__("js", "{}", "return Promise.resolve(value);")
     return value
 

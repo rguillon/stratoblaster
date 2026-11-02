@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/entities/enemy.py`."""
 
 import math
@@ -19,7 +20,6 @@ from core.entities.enemy import (
     EnemyMissileSpec,
     EnemySpawnArea,
     EnemyStats,
-    validate_enemy_kinds,
 )
 from core.entities.muzzle import PlanePoint
 from core.entities.weapon import ProjectileWeaponDefinition, ShotStream
@@ -44,7 +44,7 @@ from core.systems.wave_runner import Wave
 class Walker(Enemy):
     """An enemy that does nothing when it updates."""
 
-    def update(self, ctx: Any, dt: float) -> None:
+    def update(self, _ctx: Any, dt: float) -> None:
         self.age += dt
 
 
@@ -114,7 +114,7 @@ class _Bounds:
     max_y = 100
     center_x = 50
 
-    def half_width_at(self, y: float) -> float:
+    def half_width_at(self, _y: float) -> float:
         return 50
 
 
@@ -129,7 +129,7 @@ def _kind(health: float = 10, points: float = 100, y: float = 30) -> EnemyKindDe
     return EnemyKindDefinition(
         "still",
         "Still",
-        lambda area: [Still(50, y, EnemyStats("still", 4, health, points))],
+        lambda _area: [Still(50, y, EnemyStats("still", 4, health, points))],
     )
 
 
@@ -150,19 +150,19 @@ def _level(
 
 
 def _run(**overrides: object) -> LevelRun:
-    options: dict = dict(
-        screen=SCREEN,
-        level=_level(),
-        kinds=[_kind()],
-        weapon=GUN,
-        weapon_level=1,
-        ship=SHIP,
-        bounds=_Bounds(),
-        cull_margin=10,
-        max_enemy_age=60,
-        end_wait=1,
-        seed=1,
-    )
+    options: dict = {
+        "screen": SCREEN,
+        "level": _level(),
+        "kinds": [_kind()],
+        "weapon": GUN,
+        "weapon_level": 1,
+        "ship": SHIP,
+        "bounds": _Bounds(),
+        "cull_margin": 10,
+        "max_enemy_age": 60,
+        "end_wait": 1,
+        "seed": 1,
+    }
     options.update(overrides)
     return LevelRun(LevelRunOptions(**options))  # type: ignore[arg-type]
 
@@ -289,29 +289,11 @@ def test_enm_08_an_entry_is_an_edge_and_a_position_along_it() -> None:
 
 
 def test_an_enemy_kind_keeps_its_name_and_spawn() -> None:
-    def spawn(area: EnemySpawnArea) -> list[Enemy]:
+    def spawn(_area: EnemySpawnArea) -> list[Enemy]:
         return []
 
     kind = EnemyKindDefinition("drone", "Drone", spawn)
     assert (kind.id, kind.name, kind.spawn) == ("drone", "Drone", spawn)
-
-
-def test_the_kinds_must_not_be_empty() -> None:
-    with pytest.raises(ValueError, match="at least one enemy kind"):
-        validate_enemy_kinds([])
-
-
-def test_the_kind_ids_must_be_unique() -> None:
-    kinds = [
-        EnemyKindDefinition("drone", "A", lambda area: []),
-        EnemyKindDefinition("drone", "B", lambda area: []),
-    ]
-    with pytest.raises(ValueError, match='Duplicate enemy kind id "drone"'):
-        validate_enemy_kinds(kinds)
-
-
-def test_valid_kinds_pass() -> None:
-    validate_enemy_kinds([EnemyKindDefinition("drone", "A", lambda area: [])])
 
 
 def test_bullet_missile_and_laser_specs_keep_their_fields() -> None:
@@ -389,7 +371,7 @@ def test_enm_18_a_missile_with_no_health_leaves_a_missile_blast() -> None:
 
 
 def test_enm_22_an_enemy_fires_bullets_faster_by_the_difficulty_factor() -> None:
-    def fire(e: WalkerEnemyWorld, ctx: object, dt: float) -> None:
+    def fire(_e: WalkerEnemyWorld, ctx: object, _dt: float) -> None:
         ctx.fire_bullet(1, 2, 0.5, EnemyBulletSpec(5, 2, "s", EnemyBurstSpec(1, 2, BULLET)))  # type: ignore[attr-defined]
 
     world = _world(EnemyDifficulty(2, 1))
@@ -417,7 +399,7 @@ def test_enm_18_an_enemy_can_fire_missiles_and_lasers() -> None:
     """ENM-18 and ENM-19: its missiles and lasers go into the shot world."""
     laser = EnemyLaserSpec(0, 1, 4, "b")
 
-    def fire(e: WalkerEnemyWorld, ctx: object, dt: float) -> None:
+    def fire(e: WalkerEnemyWorld, ctx: object, _dt: float) -> None:
         ctx.fire_missile(1, 2, 0, EnemyMissileSpec(1, 1, 1, 1, 3, "m"))  # type: ignore[attr-defined]
         ctx.fire_laser(e, laser)  # type: ignore[attr-defined]
 

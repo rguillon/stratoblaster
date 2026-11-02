@@ -1,27 +1,31 @@
-"""Phase 4 review (GFX-CAR-06): cars driving along the streets and main roads (not the paths),
-right-hand traffic, in one lane each way (two on 2×2 roads). All the cars of one lane drive at the
-same speed, so they never catch up with each other. A car that reaches the end of its road goes
-round to its start, hidden near both ends: streets end in the crossing street, main roads off the
-screen.
+# Copyright (c) 2026 Renaud Guillon
+"""Phase 4 review (GFX-CAR-06).
+
+Cars driving along the streets and main roads (not the paths), right-hand traffic, in one lane each
+way (two on 2x2 roads). All the cars of one lane drive at the same speed, so they never catch up
+with each other. A car that reaches the end of its road goes round to its start, hidden near both
+ends: streets end in the crossing street, main roads off the screen.
 """
 
 import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.noise import hash_2d
+from core.scenery.ground_boxes import GroundArea, PropPlacement
+from core.scenery.road_types import Road
 
-from core.scenery.scenery_level import CarRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
 
-__pragma__("noskip")
+from core.scenery.scenery_level import CarRules
 
-from core.math.noise import hash_2d  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.ground_boxes import GroundArea, PropPlacement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.road_types import Road  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
 # `%` keeps JavaScript's sign rule.
 __pragma__("jsmod")
+
 
 # Z span of a bucket of the roads with cars (`Traffic._buckets`).
 BUCKET = 256
@@ -34,8 +38,11 @@ def _bucket_of(z: float) -> int:
 
 
 class Track:
-    """A road as cars follow it: its points, their distance along it, and the road surface height
-    there, worked out when a car is first placed on it."""
+    """A road as cars follow it.
+
+    Its points, their distance along it, and the road surface height there, worked out when a car is
+    first placed on it.
+    """
 
     def __init__(
         self,
@@ -114,9 +121,11 @@ class _TrackEntry:
 
 
 class Traffic:
-    """The cars of `rules` on all the streets and main roads of a level, and where they are. The
-    roads with cars are indexed by the buckets of Z they span, so finding the cars in an area only
-    looks at the roads near it (GFX-CAR-08, PERF-24)."""
+    """The cars of `rules` on all the streets and main roads of a level, and where they are.
+
+    The roads with cars are indexed by the buckets of Z they span, so finding the cars in an area
+    only looks at the roads near it (GFX-CAR-08, PERF-24).
+    """
 
     def __init__(
         self,
@@ -138,11 +147,14 @@ class Traffic:
         self.add(roads)
 
     def add(self, roads: Sequence[Road]) -> None:
-        """Adds the cars of `roads` (e.g. the runout's, which come later)."""
+        """Add the cars of `roads` (e.g. the runout's, which come later)."""
         for road in roads:
-            if road.kind == "cross" or len(road.points) < 2:  # noqa: PLR2004 (a road needs 2 points)
+            if road.kind == "cross" or len(road.points) < 2:
                 continue
             track = _track_of(road)
+            # A road of one point repeated has no length to drive along.
+            if track.length_ <= 0:
+                continue
             cars: list[Car] = []
             for i in range(len(road.points)):
                 car = self._car_at(track, i, self._seed)
@@ -170,15 +182,17 @@ class Traffic:
         return self._count
 
     def _roadway(self, road: Road) -> float:
-        """Width of the part of `road` cars drive on: streets without their sidewalks
-        (GFX-CAR-07)."""
+        """Width of the part of `road` cars drive on (GFX-CAR-07).
+
+        On streets, that is the road without its sidewalks.
+        """
         if road.kind == "street":
             sidewalk = self._rules.sidewalk if self._rules.sidewalk is not None else 0
             return road.width - 2 * sidewalk
         return road.width
 
     def _car_at(self, track: Track, i: int, seed: int) -> Car | None:
-        """The car that starts at point `i` of a road, if any: one chance per point."""
+        """Return the car that starts at point `i` of a road, if any: one chance per point."""
         road = track.road
 
         def r(draw: int) -> float:
@@ -205,7 +219,10 @@ class Traffic:
         )
 
     def at(self, time: float, area: GroundArea) -> list[PropPlacement]:
-        """The cars in `area` at `time` (seconds), facing the way they drive, in road order."""
+        """Return the cars in `area` at `time` (seconds), in road order.
+
+        They face the way they drive.
+        """
         out: list[PropPlacement] = []
         for index in self._tracks_in(area):
             for car in self._tracks[index].cars:
@@ -221,7 +238,7 @@ class Traffic:
         return out
 
     def _tracks_in(self, area: GroundArea) -> list[int]:
-        """Indices of the roads with cars whose Z range meets `area`, in order."""
+        """Return the indices of the roads with cars whose Z range meets `area`, in order."""
         # Within the buckets that have roads (the area may be endless).
         first = max(_bucket_of(area.z_min), self._lowest)
         last = min(_bucket_of(area.z_max), self._highest)
@@ -248,7 +265,10 @@ class Traffic:
         return s
 
     def _heights_of(self, track: Track) -> list[float]:
-        """The road surface heights at the points of `track`, worked out on first use (PERF-27)."""
+        """Return the road surface heights at the points of `track` (PERF-27).
+
+        They are worked out on first use.
+        """
         if track.heights is None:
             track.heights = [self._height(p.x, p.z) + self._rules.lift for p in track.road.points]
         return track.heights
@@ -259,16 +279,13 @@ class Traffic:
         s = self._distance(car, time)
         if s is None:
             return None
+        # A segment that ends after `s` (< length): s0 <= s < s1.
         i = _segment_at(track, s)
         points = track.road.points
-        if i + 1 >= len(points):
-            return None
         a = points[i]
         b = points[i + 1]
-        s0 = track.along[i] if i < len(track.along) else 0
-        s1 = track.along[i + 1] if i + 1 < len(track.along) else 0
-        if s1 <= s0:
-            return None
+        s0 = track.along[i]
+        s1 = track.along[i + 1]
         t = (s - s0) / (s1 - s0)
         dx = (b.x - a.x) / (s1 - s0)
         dz = (b.z - a.z) / (s1 - s0)

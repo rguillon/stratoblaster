@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/math/bits.py`."""
 
 from core.math.bits import imul, u32, ushr, xor

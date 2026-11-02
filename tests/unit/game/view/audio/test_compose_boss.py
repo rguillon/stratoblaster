@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/audio/compose_boss.py`."""
+
+from typing import Any
 
 import pytest
 
@@ -21,24 +24,26 @@ from game.view.audio.instruments import DRUM_PITCH
 from game.view.audio.music_styles import BEATS_PER_BAR, OCTAVE, WORLD_STYLES
 
 
-def bar(energy: int = 2, fill: bool = False, beat: float = 0.0, chord=None) -> BarContext:
+def bar(energy: int = 2, fill: bool = False, beat: float = 0.0, chord: Any = None) -> BarContext:
     chord = [36, 39, 43] if chord is None else chord
     return BarContext(beat, chord, [36, 38, 39, 41, 43, 45, 46], energy, fill)
 
 
-def test_aud_music_07_boss_progressions_are_four_chords_inside_the_scale():
+def test_aud_music_07_boss_progressions_are_four_chords_inside_the_scale() -> None:
     assert all(len(p) == 4 for p in BOSS_PROGRESSIONS)
     assert all(0 <= d <= 6 for p in BOSS_PROGRESSIONS for d in p)
 
 
-def test_aud_music_07_roll_length_is_short_every_fourth_bar_and_half_a_bar_at_a_section_end():
+def test_aud_music_07_roll_length_is_short_every_fourth_bar_and_half_a_bar_at_a_section_end() -> (
+    None
+):
     assert roll_length(bar(beat=3 * BEATS_PER_BAR)) == 4
     assert roll_length(bar(beat=0)) == 0
     assert roll_length(bar(beat=7 * BEATS_PER_BAR)) == 4
     assert roll_length(bar(fill=True)) == 8
 
 
-def test_snare_roll_grows_louder_over_its_sixteenths():
+def test_snare_roll_grows_louder_over_its_sixteenths() -> None:
     notes = snare_roll("snare", bar(beat=0.0), 4)
     assert len(notes) == 4
     velocities = [n.velocity for n in notes]
@@ -48,7 +53,7 @@ def test_snare_roll_grows_louder_over_its_sixteenths():
     assert notes[0].beat == pytest.approx((STEPS - 4) * STEP)
 
 
-def test_aud_music_07_boss_drums_push_kicks_and_hit_every_sixteenth_but_the_off_beats():
+def test_aud_music_07_boss_drums_push_kicks_and_hit_every_sixteenth_but_the_off_beats() -> None:
     notes = boss_drum_bar(WORLD_STYLES[1], bar())
     kick = WORLD_STYLES[1].instruments.kick
     kicks = [n for n in notes if n.instrument == kick]
@@ -60,7 +65,7 @@ def test_aud_music_07_boss_drums_push_kicks_and_hit_every_sixteenth_but_the_off_
     assert all(n.pitch == DRUM_PITCH for n in notes)
 
 
-def test_aud_music_07_boss_drums_roll_the_snare_on_a_section_end_and_drop_the_backbeat():
+def test_aud_music_07_boss_drums_roll_the_snare_on_a_section_end_and_drop_the_backbeat() -> None:
     style = WORLD_STYLES[1]
     snares = [
         n for n in boss_drum_bar(style, bar(fill=True)) if n.instrument == style.instruments.snare
@@ -71,7 +76,7 @@ def test_aud_music_07_boss_drums_roll_the_snare_on_a_section_end_and_drop_the_ba
     assert len(snares) == 1 + 8
 
 
-def test_aud_music_07_boss_bass_jumps_between_root_and_octave():
+def test_aud_music_07_boss_bass_jumps_between_root_and_octave() -> None:
     style = WORLD_STYLES[1]
     notes = boss_bass_bar(style, bar(chord=[36, 39, 43]))
     assert len(notes) == STEPS
@@ -81,28 +86,28 @@ def test_aud_music_07_boss_bass_jumps_between_root_and_octave():
     assert notes[1].velocity == 0.75
 
 
-def test_aud_music_07_boss_bass_falls_back_to_the_default_root_without_a_chord():
+def test_aud_music_07_boss_bass_falls_back_to_the_default_root_without_a_chord() -> None:
     notes = boss_bass_bar(WORLD_STYLES[1], bar(chord=[]))
     assert {n.pitch for n in notes} == {36, 48}
 
 
-def test_aud_music_07_stabs_are_silent_below_full_energy():
+def test_aud_music_07_stabs_are_silent_below_full_energy() -> None:
     assert stab_bar(bar(energy=1)) == []
 
 
-def test_aud_music_07_stabs_play_a_three_note_voicing_on_the_3_3_2_rhythm():
+def test_aud_music_07_stabs_play_a_three_note_voicing_on_the_3_3_2_rhythm() -> None:
     notes = stab_bar(bar(energy=2))
     assert len(notes) == len(STAB_STEPS) * 3
     assert {n.instrument for n in notes} == {"stab"}
     assert {n.pitch for n in notes} == {36 + OCTAVE, 43 + OCTAVE, 36 + 2 * OCTAVE}
 
 
-def test_aud_music_07_stabs_fall_back_to_defaults_without_a_chord():
+def test_aud_music_07_stabs_fall_back_to_defaults_without_a_chord() -> None:
     notes = stab_bar(bar(energy=2, chord=[]))
     assert {n.pitch for n in notes} == {36 + OCTAVE, 36 + 7 + OCTAVE, 36 + 2 * OCTAVE}
 
 
-def test_aud_music_04_riser_sweeps_only_into_the_next_section():
+def test_aud_music_04_riser_sweeps_only_into_the_next_section() -> None:
     """Also AUD-MUSIC-07: the boss tracks' riser into each section."""
     assert riser_bar(bar(fill=False)) == []
     notes = riser_bar(bar(fill=True))

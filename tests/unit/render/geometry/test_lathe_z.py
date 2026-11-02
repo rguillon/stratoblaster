@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/geometry/lathe_z.py` (GFX-ART-02, GFX-ART-09)."""
 
 import math
@@ -89,9 +90,9 @@ def test_create_faceted_lathe_hands_the_geometry_to_a_new_mesh(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     seen: list[Any] = []
-    monkeypatch.setattr(lathe_z, "compute_normals", lambda p, i: "N")
-    monkeypatch.setattr(lathe_z, "vertex_data_of", lambda p, i, n: ("D", n))
-    monkeypatch.setattr(lathe_z, "new_mesh", lambda label, scene: SimpleNamespace(label=label))
+    monkeypatch.setattr(lathe_z, "compute_normals", lambda _p, _i: "N")
+    monkeypatch.setattr(lathe_z, "vertex_data_of", lambda _p, _i, n: ("D", n))
+    monkeypatch.setattr(lathe_z, "new_mesh", lambda label, _scene: SimpleNamespace(label=label))
     monkeypatch.setattr(lathe_z, "apply_vertex_data", lambda d, m: seen.append((d, m.label)))
 
     create_faceted_lathe_along_z("hull", CONE, 4, "scene")

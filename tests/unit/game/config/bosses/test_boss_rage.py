@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/bosses/boss_rage.py`: the angry patterns (BOSS-28)."""
 
 import pytest
@@ -51,7 +52,8 @@ def test_a_sharing_pattern_fires_less_often_than_a_full_one() -> None:
 def test_spirals_are_two_rings_turning_opposite_ways() -> None:
     a, b = rage["spirals"](0, "x", "y")
     assert a["shape"]["kind"] == b["shape"]["kind"] == "ring"
-    assert a["shape"]["turnDeg"] == 13 and b["shape"]["turnDeg"] == -17
+    assert a["shape"]["turnDeg"] == 13
+    assert b["shape"]["turnDeg"] == -17
     assert b["first"] == pytest.approx(a["first"] + a["every"] / 2)
 
 
@@ -59,7 +61,8 @@ def test_curtain_sweeps_eight_fans_and_a_ring() -> None:
     volleys = rage["curtain"](0, "x", "y")
     fans = [v for v in volleys if v["shape"]["kind"] == "fan"]
     rings = [v for v in volleys if v["shape"]["kind"] == "ring"]
-    assert len(fans) == 8 and len(rings) == 1
+    assert len(fans) == 8
+    assert len(rings) == 1
     assert [f["shape"]["headingDeg"] for f in fans] == [-40, -20, 0, 20, 40, 20, 0, -20]
 
 

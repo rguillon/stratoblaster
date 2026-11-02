@@ -1,23 +1,24 @@
-"""The World 2 frost on the Fjord Lynx and the Harbour Kraken (MB-FJORD-LYNX-05,
-FB-HARBOUR-KRAKEN-05): snow caps, ice crust and icicles
-over the dark metal Logical pixels, nose +Z,
-Y up (towards the camera).
+# Copyright (c) 2026 Renaud Guillon
+"""The World 2 frost on the Fjord Lynx and the Harbour Kraken.
+
+MB-FJORD-LYNX-05, FB-HARBOUR-KRAKEN-05: snow caps, ice crust and icicles over the dark metal.
+Logical pixels, nose +Z, Y up (towards the camera).
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from render.geometry.outline import OutlinePoint
+from render.geometry.solids import SolidBuilder
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Packed snow on top faces: pale blue-white.
 SNOW = [0.78, 0.84, 0.92]
@@ -33,7 +34,10 @@ def snow_cap(
     y: float,
     place: Placement | None = None,
 ) -> None:
-    """A snow cap: `outline` a little proud of the surface at height `y`, rounded at its edges."""
+    """Add a snow cap: `outline` a little proud of the surface at height `y`.
+
+    It is rounded at its edges.
+    """
     hull.bevel_slab(outline, [y - 0.3, y, y + 0.7], [0, 0.5], SNOW, place)
 
 
@@ -50,7 +54,9 @@ def spread(a: Vec3, b: Vec3, count: int) -> list[Vec3]:
     result: list[Vec3] = []
     for i in range(count):
         t = i / (count - 1) if count > 1 else 0.5
-        result.append(
-            [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
-        )
+        result.append([
+            a[0] + (b[0] - a[0]) * t,
+            a[1] + (b[1] - a[1]) * t,
+            a[2] + (b[2] - a[2]) * t,
+        ])
     return result

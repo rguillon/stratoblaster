@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/bosses/world_4/ember_herald.py`."""
 
 from helpers.config_checks import assert_boss_design, original_parts
@@ -12,7 +13,8 @@ def test_mb_ember_herald_08_boss_design_is_well_formed() -> None:
 
 def test_boss_07_boss_id_is_a_lowercase_kebab_case_kind() -> None:
     assert EMBER_HERALD.id == EMBER_HERALD.id.lower()
-    assert " " not in EMBER_HERALD.id and "_" not in EMBER_HERALD.id
+    assert " " not in EMBER_HERALD.id
+    assert "_" not in EMBER_HERALD.id
 
 
 def test_mb_ember_herald_07_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
@@ -25,5 +27,6 @@ def test_mb_ember_herald_07_boss_stats_are_in_the_range_the_sim_relies_on() -> N
 
 def test_mb_ember_herald_10_boss_has_an_angry_pattern_and_its_stage_count() -> None:
     """Its rage, and one stage pattern more than its parts (MB-EMBER-HERALD-09)."""
-    assert isinstance(EMBER_HERALD.rage, list) and EMBER_HERALD.rage
+    assert isinstance(EMBER_HERALD.rage, list)
+    assert EMBER_HERALD.rage
     assert len(EMBER_HERALD.stages) == len(original_parts(EMBER_HERALD)) + 1

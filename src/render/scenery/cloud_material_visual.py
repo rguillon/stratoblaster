@@ -1,17 +1,18 @@
-# ruff: noqa: E501
-"""A cloud layer's material (GFX-SKY-11): a generated noise texture cut at a threshold set by the
-coverage.
+# Copyright (c) 2026 Renaud Guillon
+"""A cloud layer's material (GFX-SKY-11): generated noise cut at a threshold set by the coverage.
+
+Its edges are soft, and it is faded by the opacity and the fog.
 """
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-from org.transcrypt.stubs.browser import __pragma__
-
 from render.babylon import color3, new_glsl_material, vector2, vector4
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 VERTEX = """
 precision highp float;
@@ -41,12 +42,14 @@ uniform vec2 fogRange;
 uniform vec3 cameraPosition;
 void main() {
   vec2 uv = (vWorld.xz + cloudOffset) * cloudParams.w;
-  float density = texture2D(cloudTexture, uv).g * 0.65 + texture2D(cloudTexture, uv * 3.1 + 0.37).r * 0.35;
+  float density = texture2D(cloudTexture, uv).g * 0.65
+    + texture2D(cloudTexture, uv * 3.1 + 0.37).r * 0.35;
   float threshold = 1.0 - cloudParams.x;
   float edge = smoothstep(threshold - cloudParams.z, threshold + cloudParams.z, density);
   float core = smoothstep(threshold, threshold + cloudParams.z * 4.0, density);
   vec3 color = mix(cloudShade, cloudColor, core);
-  float fog = clamp((distance(vWorld, cameraPosition) - fogRange.x) / (fogRange.y - fogRange.x), 0.0, 1.0);
+  float fog = clamp(
+    (distance(vWorld, cameraPosition) - fogRange.x) / (fogRange.y - fogRange.x), 0.0, 1.0);
   gl_FragColor = vec4(mix(color, fogColor, fog), edge * cloudParams.y);
 }
 """
@@ -79,6 +82,7 @@ class CloudMaterialImpl:
         self._fog_color = color3(0, 0, 0)
 
     def set(self, state: Any) -> None:
+        """Set the cloud material's shader parameters from `state`."""
         look = self._look
         material = self.material
         self._params.set(state.coverage, state.opacity, look.softness, 1 / look.tileSize)
@@ -103,9 +107,13 @@ class CloudMaterialImpl:
 def create_cloud_material(
     scene: Any, look: Any, texture: Any, camera_position: Any
 ) -> CloudMaterialImpl:
-    """A cloud layer material (GFX-SKY-11): a generated noise texture cut at a threshold set by the
-    coverage, with soft edges, faded by the opacity and the fog. Drawn blended, without writing
-    depth. `camera_position` is a function giving the camera's position."""
+    """Return a cloud layer material (GFX-SKY-11): generated noise cut at the coverage threshold.
+
+    Its edges are soft, and it is faded by the opacity and the fog.
+
+    Drawn blended, without writing depth. `camera_position` is a function giving the camera's
+    position.
+    """
     material = new_glsl_material(
         "cloud-" + str(look.altitude),
         scene,

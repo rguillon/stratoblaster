@@ -1,9 +1,11 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/entities/muzzle.py`."""
 
 import math
 from collections.abc import Callable
 from dataclasses import dataclass
 from types import SimpleNamespace
+from typing import Any
 
 import pytest
 
@@ -95,12 +97,12 @@ class _Src:
     def emitter(self) -> PlanePoint:
         return PlanePoint(self.x, self.y)
 
-    def place(self, muzzle, on_turret=False):  # type: ignore[no-untyped-def]
+    def place(self, muzzle: Any, _on_turret: bool = False) -> Any:  # type: ignore[no-untyped-def]
         mx, my, mh = muzzle
         return RaisedPoint(self.x + mx, self.y + my, mh)
 
 
-def _sources(parts: dict[str, _Src]):  # type: ignore[no-untyped-def]
+def _sources(parts: dict[str, _Src]) -> Any:  # type: ignore[no-untyped-def]
     return parts.get
 
 
@@ -307,7 +309,7 @@ def test_game_bomb_05_counts_and_clear_cover_bullets_missiles_and_lasers() -> No
 def test_enm_04_the_context_gives_enemies_the_playfield_the_player_and_the_random_source() -> None:
     seen: dict[str, object] = {}
 
-    def look(e: Walker, ctx: object, dt: float) -> None:
+    def look(_e: Walker, ctx: object, _dt: float) -> None:
         seen["width"] = ctx.width  # type: ignore[attr-defined]
         seen["height"] = ctx.height  # type: ignore[attr-defined]
         seen["player"] = (ctx.player_x, ctx.player_y)  # type: ignore[attr-defined]
@@ -333,7 +335,6 @@ def test_enm_04_the_context_gives_enemies_the_playfield_the_player_and_the_rando
 def test_gfx_shot_09_a_seen_point_is_moved_by_the_eye_when_raised() -> None:
     eye = SimpleNamespace(x=0, y=0, height=100)
     world = _world(eye=eye)
-    from core.entities.muzzle import RaisedPoint  # noqa: PLC0415
 
     point = world._context.seen(RaisedPoint(0, 50, 50))  # type: ignore[attr-defined]
     assert isinstance(point, PlanePoint)

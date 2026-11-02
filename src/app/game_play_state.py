@@ -1,21 +1,21 @@
-"""A snapshot of a running level, for the test API
+# Copyright (c) 2026 Renaud Guillon
+"""A snapshot of a running level, for the test API.
 
 The snapshots are plain JavaScript objects with camelCase key names (`levelId`,
 `bonusKinds`...): the test scripts read them from JavaScript (`debug/test_api.py`).
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from render.babylon import js_object, js_set
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
-def game_play_sky(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def game_play_sky(
     weather: str,
     second_weather: str,
     weather_particles: int,
@@ -31,7 +31,7 @@ def game_play_sky(  # noqa: PLR0917 (positional: Transcrypt has no keyword argum
     plumes: int,
     shot_style: str,
 ) -> Any:
-    """A `GamePlaySky` object (DEV-API-05): how the level looks where the view is."""
+    """Return a `GamePlaySky` object (DEV-API-05): how the level looks where the view is."""
     sky = js_object()
     js_set(sky, "weather", weather)
     js_set(sky, "secondWeather", second_weather)
@@ -51,7 +51,7 @@ def game_play_sky(  # noqa: PLR0917 (positional: Transcrypt has no keyword argum
 
 
 def _boss_state(run: Any) -> Any:
-    """The boss being fought, or null (DEV-API-04)."""
+    """Return the boss being fought, or null (DEV-API-04)."""
     fights = run.fights
     boss = fights.boss
     rank = fights.rank
@@ -73,8 +73,10 @@ def _boss_state(run: Any) -> Any:
 
 
 def level_state(run: Any, time_scale: float, max_health: float) -> Any:
-    """The state of `run` for the test API (DEV-API-03); `max_health` stands for the health
-    without a hull."""
+    """Return the state of `run` for the test API (DEV-API-03).
+
+    `max_health` stands for the health without a hull.
+    """
     track = run.track
     enemies = run.enemies
     shots = run.shots

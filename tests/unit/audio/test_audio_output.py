@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/audio/audio_output.py`."""
 
 import pytest
@@ -22,7 +23,8 @@ def options(
 ) -> AudioOutputOptions:
     def create() -> FakeContext:
         if fail:
-            raise RuntimeError("no Web Audio")
+            msg = "no Web Audio"
+            raise RuntimeError(msg)
         assert context is not None
         return context
 

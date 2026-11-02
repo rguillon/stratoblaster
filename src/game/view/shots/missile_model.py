@@ -1,4 +1,5 @@
-"""A small missile with a reactor flame (GFX-SHOT-06)
+# Copyright (c) 2026 Renaud Guillon
+"""A small missile with a reactor flame (GFX-SHOT-06).
 
 The body lies along +Z like the ship models: a tube, a cyan nose and four fins.
 """
@@ -7,21 +8,23 @@ import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-__pragma__("noskip")
-
-from game.config.ship_look import PLAYER_SHIP_SCALE  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.shot_look import SHOT_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.reactor_flame import build_reactor_flame  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.babylon import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.ship_look import PLAYER_SHIP_SCALE
+from game.config.shot_look import SHOT_LOOK
+from game.view.reactor_flame import build_reactor_flame
+from render.babylon import (
     color3,
     create_box,
     create_cylinder,
     new_standard_material,
     new_transform_node,
 )
+
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
+
+# __pragma__ ("noskip")
+
 
 LOOK = SHOT_LOOK.missile
 SIDES = 6
@@ -42,7 +45,7 @@ def _nose_options(height: float, diameter_bottom: float) -> Any:
         "js",
         "{}",
         "return {height: height, diameterTop: 0, "
-        + "diameterBottom: diameter_bottom, tessellation: SIDES};",
+        "diameterBottom: diameter_bottom, tessellation: SIDES};",
     )
     return None
 
@@ -54,13 +57,16 @@ def _box_options(width: float, height: float, depth: float) -> Any:
 
 
 def _flame_options(nozzle_z: float, flame: Any) -> Any:
-    """The flame's options: its nozzle position, then the look's own values (as `{ ...flame }`)."""
+    """Return the flame's options.
+
+    Its nozzle position, then the look's own values (as `{ ...flame }`).
+    """
     __pragma__("js", "{}", "return Object.assign({nozzleZ: nozzle_z}, flame);")
     return None
 
 
 def materials(scene: Any) -> tuple[Any, Any]:
-    """The body's material and the tip's material, in that order."""
+    """Return the body's material and the tip's material, in that order."""
     body = new_standard_material("missile-body", scene)
     body.diffuseColor = color3(LOOK.body[0], LOOK.body[1], LOOK.body[2])
     body.specularColor = color3(0.6, 0.6, 0.6)
@@ -71,7 +77,7 @@ def materials(scene: Any) -> tuple[Any, Any]:
 
 
 def build_body(name: str, scene: Any, parent: Any) -> None:
-    """Builds the missile body (along +Z, like the ship models): tube, cyan nose, four fins."""
+    """Build the missile body (along +Z, like the ship models): tube, cyan nose, four fins."""
     body_mat, tip_mat = materials(scene)
     nose_length = LOOK.length * NOSE_FRACTION
     tube_length = LOOK.length - nose_length
@@ -104,8 +110,9 @@ def build_body(name: str, scene: Any, parent: Any) -> None:
 
 
 def build_missile(name: str, scene: Any) -> Any:
-    """A small missile with a reactor flame, seen from above on the playfield: the returned pivot
-    lies in the XY plane and points to +Y; turn it about Z to follow the heading (GFX-SHOT-06).
+    """Return a small missile with a reactor flame, seen from above: the returned pivot.
+
+    It lies in the XY plane and points to +Y; turn it about Z to follow the heading (GFX-SHOT-06).
     """
     pivot = new_transform_node(name, scene)
     model = new_transform_node(name + "-model", scene)

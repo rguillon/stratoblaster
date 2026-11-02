@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/hull.py`."""
 
 from game.config.hull import HULL_RULES

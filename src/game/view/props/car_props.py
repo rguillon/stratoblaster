@@ -1,13 +1,13 @@
-"""Cars on the streets and main roads (Phase 4 review; D-211: futuristic hover cars, drawn as
-imposters)
+# Copyright (c) 2026 Renaud Guillon
+"""Cars on the streets and main roads (Phase 4 review; D-211: futuristic hover cars as imposters).
 
 Sizes in model units (drawn at `CAR_RULES.scale`), standing on Y = 0; the front faces +Z, the way
 they drive. The levels draw a picture of each car baked from these models (`imposter_bake_visual`),
-so their triangles cost nothing in play. D-213: each kind has its own body (a racer, a coupé, a
-pod, a limousine, a van, a bus, a hauler, a tanker; GFX-CAR-01). They hover on pads instead of
-wheels (GFX-CAR-02): chamfered wedge hulls, glass canopies, fins, thrusters, neon strips. Their
-light bars, neon strips, the glow under them and the beams on the road stay real geometry (the
-lights), so they glow at night (GFX-CAR-09).
+so their triangles cost nothing in play. D-213: each kind has its own body (a racer, a coupé, a pod,
+a limousine, a van, a bus, a hauler, a tanker; GFX-CAR-01). They hover on pads instead of wheels
+(GFX-CAR-02): chamfered wedge hulls, glass canopies, fins, thrusters, neon strips. Their light bars,
+neon strips, the glow under them and the beams on the road stay real geometry (the lights), so they
+glow at night (GFX-CAR-09).
 """
 
 import math
@@ -61,7 +61,7 @@ HOVER = 0.6
 
 
 def ground(lights: SolidBuilder, size: list[float], z: float, color: list[float]) -> None:
-    """A flat quad facing up just above the road, `w × d`, centred at Z = `z`."""
+    """Add a flat quad facing up just above the road, `w x d`, centred at Z = `z`."""
     w = size[0]
     d = size[1]
     x0 = -w / 2
@@ -83,7 +83,7 @@ def ground(lights: SolidBuilder, size: list[float], z: float, color: list[float]
 def side_profile(
     s: SolidBuilder, profile: list[list[float]], width: float, color: list[float]
 ) -> None:
-    """A solid whose side view is `profile` (`[z, y]` points), `width` wide across X, centred."""
+    """Add a solid with side view `profile` (`[z, y]` points), `width` wide across X, centred."""
     # A slab is an outline in XZ pushed up Y; turned a quarter round Z, its Y goes across X and
     # its X (here minus the height) goes up.
     outline = [[-p[1], p[0]] for p in profile]
@@ -91,14 +91,16 @@ def side_profile(
 
 
 def pads(s: SolidBuilder, width: float, axles: list[float]) -> None:
-    """A hover pad under each corner (at Z `axles`): a flat dark block, tucked in under the hull
-    (round ones read as wheels)."""
+    """Add a hover pad under each corner (at Z `axles`): a flat dark block.
+
+    It is tucked in under the hull. Round ones would read as wheels.
+    """
     for z in axles:
         for side in [-1, 1]:
             s.box([0.8, HOVER - 0.25, 1.1], PAD, Placement([side * width * 0.26, 0.25, z]))
 
 
-def thrusters(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def thrusters(
     s: SolidBuilder,
     lights: SolidBuilder,
     xs: list[float],
@@ -113,7 +115,7 @@ def thrusters(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments
         lights.cylinder(0.24, 0.05, 8, accent, Placement([x, y, z - 0.12], 0, math.pi / 2, 0))
 
 
-def strips(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def strips(
     s: SolidBuilder,
     lights: SolidBuilder,
     width: float,
@@ -121,8 +123,10 @@ def strips(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
     span: list[float],
     accent: list[float],
 ) -> None:
-    """A neon strip along each side at height `y`, from Z `span[0]` to `span[1]`: painted on the
-    hull (it shows by day) and lit over it (it glows at night)."""
+    """Add a neon strip along each side at height `y`, from Z `span[0]` to `span[1]`.
+
+    It is painted on the hull (it shows by day) and lit over it (it glows at night).
+    """
     length = span[1] - span[0]
     z = (span[0] + span[1]) / 2
     for side in [-1, 1]:
@@ -131,7 +135,7 @@ def strips(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
         lights.box([0.06, 0.22, length * 0.98], accent, Placement([x + side * 0.05, y + 0.04, z]))
 
 
-def stripes(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def stripes(
     s: SolidBuilder,
     lights: SolidBuilder,
     xs: list[float],
@@ -139,8 +143,10 @@ def stripes(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
     span: list[float],
     accent: list[float],
 ) -> None:
-    """Neon stripes along the top at X `xs`, on a deck at height `y`, from Z `span[0]` to
-    `span[1]`: seen from above, as the playfield camera sees the cars."""
+    """Neon stripes along the top at X `xs`, on a deck at height `y`, from Z `span[0]` to `span[1]`.
+
+    Seen from above, as the playfield camera sees the cars.
+    """
     length = span[1] - span[0]
     z = (span[0] + span[1]) / 2
     for x in xs:
@@ -149,14 +155,16 @@ def stripes(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
 
 
 def light_bars(lights: SolidBuilder, width: float, length: float, y: float) -> None:
-    """A headlight bar and a tail light bar, `width` wide."""
+    """Add a headlight bar and a tail light bar, `width` wide."""
     lights.box([width, 0.18, 0.12], L.window, Placement([0, y, length / 2 + 0.02]))
     lights.box([width * 1.1, 0.18, 0.12], L.red, Placement([0, y, -length / 2 - 0.02]))
 
 
 def sedan(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: list[float]) -> None:
-    """A hover coupé: a chamfered wedge hull with a pointed nose, a teardrop glass canopy, twin
-    fins carrying a wing, and two thrusters."""
+    """Add a hover coupé: a chamfered wedge hull with a pointed nose.
+
+    It has a teardrop glass canopy, twin fins carrying a wing, and two thrusters.
+    """
     dims = SHAPES["sedan"]
     length = dims["length"]
     width = dims["width"]
@@ -190,8 +198,10 @@ def sedan(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: lis
 
 
 def van(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: list[float]) -> None:
-    """A hover van: a tall chamfered pod with a sloping nose, a band of glass wrapping round it, a
-    roof light bar and thrusters under the tail."""
+    """Add a hover van: a tall chamfered pod with a sloping nose.
+
+    It has a band of glass wrapping round it, a roof light bar and thrusters under the tail.
+    """
     dims = SHAPES["van"]
     length = dims["length"]
     width = dims["width"]
@@ -233,8 +243,10 @@ def van(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: list[
 
 
 def cab_pod(s: SolidBuilder, frame: list[float], paint: list[float]) -> None:
-    """A hauler's pointed cab pod with a wraparound windscreen, `frame` = [half width, back Z,
-    front Z, top]."""
+    """Add a hauler's pointed cab pod with a wraparound windscreen.
+
+    `frame` is [half width, back Z, front Z, top].
+    """
     hw = frame[0]
     c0 = frame[1]
     f = frame[2]
@@ -260,8 +272,10 @@ def cab_pod(s: SolidBuilder, frame: list[float], paint: list[float]) -> None:
 
 
 def truck(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: list[float]) -> None:
-    """A hover hauler: a pointed cab pod with a wraparound windscreen, a chamfered cargo pod with
-    glowing seams, and three thrusters."""
+    """Add a hover hauler: a pointed cab pod with a wraparound windscreen.
+
+    A chamfered cargo pod with glowing seams, and three thrusters.
+    """
     dims = SHAPES["truck"]
     length = dims["length"]
     width = dims["width"]
@@ -295,8 +309,11 @@ def truck(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: lis
 
 
 def racer(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: list[float]) -> None:
-    """A hover racer: two long pontoons either side of a needle-nosed fuselage with a small bubble
-    canopy, joined by struts, a wide wing over the tail, a thruster at the end of each pontoon."""
+    """Add a hover racer: two long pontoons either side of a needle-nosed fuselage.
+
+    The fuselage has a small bubble canopy, joined to the pontoons by struts, a wide wing over the
+    tail, and a thruster at the end of each pontoon.
+    """
     dims = SHAPES["racer"]
     length = dims["length"]
     width = dims["width"]
@@ -334,8 +351,10 @@ def racer(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: lis
 
 
 def pod(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: list[float]) -> None:
-    """A little city pod: a short rounded body under a big glass bubble, one thruster, a neon
-    ring round its waist."""
+    """Add a little city pod: a short rounded body under a big glass bubble.
+
+    It has one thruster and a neon ring round its waist.
+    """
     dims = SHAPES["pod"]
     length = dims["length"]
     width = dims["width"]
@@ -366,8 +385,11 @@ def pod(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: list[
 
 
 def cruiser(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: list[float]) -> None:
-    """A long hover limousine: a flat chamfered hull, a long glass greenhouse round a painted
-    roof, tail fins leaning out, four small thrusters and a stripe down the middle."""
+    """Add a long hover limousine with a flat chamfered hull.
+
+    A glass greenhouse goes round a painted roof. It has tail fins leaning out, four small thrusters
+    and a stripe down the middle.
+    """
     dims = SHAPES["cruiser"]
     length = dims["length"]
     width = dims["width"]
@@ -402,8 +424,10 @@ def cruiser(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: l
 
 
 def bus(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: list[float]) -> None:
-    """A hover bus (GFX-CAR-03): a long chamfered body, a band of windows all round it split by
-    pillars, a white roof with two cooling units and a neon stripe."""
+    """Add a hover bus (GFX-CAR-03): a long chamfered body with a band of windows all round it.
+
+    The windows are split by pillars; a white roof with two cooling units and a neon stripe.
+    """
     dims = SHAPES["bus"]
     length = dims["length"]
     width = dims["width"]
@@ -446,8 +470,10 @@ def bus(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: list[
 
 
 def tanker(s: SolidBuilder, lights: SolidBuilder, paint: list[float], accent: list[float]) -> None:
-    """A hover tanker (GFX-CAR-03): the hauler's cab pulling a long chrome tank on a dark frame,
-    neon bands round the tank and a walkway along its top."""
+    """Add a hover tanker (GFX-CAR-03): the hauler's cab pulling a long chrome tank on a dark frame.
+
+    It has neon bands round the tank and a walkway along its top.
+    """
     dims = SHAPES["tanker"]
     length = dims["length"]
     width = dims["width"]
@@ -493,8 +519,10 @@ BODIES = {
 
 
 def build_car(shape: str, paint: list[float], accent: list[float] | None = None) -> PropGeometry:
-    """A hover car of `shape` painted `paint`, its neon `accent` (cyan if None): its hull, and its
-    lights with the glow under it and its beam."""
+    """Return a hover car of `shape` painted `paint`, with its neon `accent` (cyan if None).
+
+    It has its hull, and its lights with the glow under it and its beam.
+    """
     if accent is None:
         accent = L.cyan
     s = SolidBuilder(True)

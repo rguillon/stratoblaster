@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of the prop models against the levels that place them (GFX-PROP-03)."""
 
 from game.config.world_1.scenery_coast import LEVEL_1_1, LEVEL_1_2
@@ -46,8 +47,10 @@ def _placed_kinds() -> set[str]:
 
 
 def test_gfx_prop_03_every_prop_model_is_placed_by_some_level_but_the_road_kit() -> None:
-    """The road kit (its pieces and its sample) is shown by the props viewer only: the levels draw
-    their streets, so it is the one exception."""
+    """The road kit is shown by the props viewer only.
+
+    The road kit (its pieces and its sample) is the one exception: the levels draw their streets.
+    """
     placed = _placed_kinds()
     road_kit = {kit.id for kit in ROAD_KIT} | {ROAD_SAMPLE_ID}
     unplaced = sorted(kind for kind in PROP_MODELS if kind not in road_kit and kind not in placed)

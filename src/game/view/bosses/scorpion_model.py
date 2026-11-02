@@ -1,22 +1,22 @@
-"""MB-SCORPION-01 to MB-SCORPION-05, 1-4: the Scorpion: a living desert
-scorpion with yellow veins, a segmented shell, two arms out to its claw cannons, and a segmented
-tail arched over its back, its stinger hanging in front of the head. Logical pixels, nose +Z, Y up
-(towards the camera).
+# Copyright (c) 2026 Renaud Guillon
+"""MB-SCORPION-01 to MB-SCORPION-05, 1-4: the Scorpion.
+
+A living desert scorpion with yellow veins, a segmented shell, two arms out to its claw cannons, and
+a segmented tail arched over its back, its stinger hanging in front of the head. Logical pixels,
+nose +Z, Y up (towards the camera).
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.bosses.mini_bosses import SCORPION  # noqa: E402
-from game.config.record import merge  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.mini_boss_greebles import mast  # noqa: E402
-from game.view.bosses.mini_boss_shapes import QUARTER, WHITE, offset  # noqa: E402
-from game.view.bosses.scorpion_arms import arm_limbs, claw  # noqa: E402
-from game.view.bosses.scorpion_look import YELLOW  # noqa: E402
-from game.view.bosses.scorpion_tail import build_tail_rig, tail_triangles  # noqa: E402
-from game.view.bosses.world_1_organic_kit import (  # noqa: E402
+from game.config.bosses.mini_bosses import SCORPION
+from game.config.record import merge
+from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.mini_boss_greebles import mast
+from game.view.bosses.mini_boss_shapes import QUARTER, WHITE, offset
+from game.view.bosses.scorpion_arms import arm_limbs, claw
+from game.view.bosses.scorpion_look import YELLOW
+from game.view.bosses.scorpion_tail import build_tail_rig, tail_triangles
+from game.view.bosses.world_1_organic_kit import (
     F,
     M,
     graft,
@@ -25,19 +25,21 @@ from game.view.bosses.world_1_organic_kit import (  # noqa: E402
     spine,
     tentacle,
 )
-from game.view.enemies.enemy_shapes import SIDES  # noqa: E402
-from game.view.enemies.organic_parts import eyes, reactor_sac  # noqa: E402
-from render.geometry.organic import (  # noqa: E402
-    ROUND_SECTION,  # noqa: E402
+from game.view.enemies.enemy_shapes import SIDES
+from game.view.enemies.organic_parts import eyes, reactor_sac
+from render.geometry.organic import (
+    ROUND_SECTION,
 )
-from render.geometry.solids import Placement  # noqa: E402
+from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Vec3 = list[Any]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The head plate seen from above.
 HEAD = [
@@ -80,7 +82,7 @@ STINGER_TILT = 0.35
 
 
 def _along(at: Vec3, pitch: float, y: float, z: float) -> Vec3:
-    """The point `[0, y, z]` of a solid at `at`, pitched by `pitch`."""
+    """Return the point `[0, y, z]` of a solid at `at`, pitched by `pitch`."""
     return offset(
         at,
         0,
@@ -90,8 +92,10 @@ def _along(at: Vec3, pitch: float, y: float, z: float) -> Vec3:
 
 
 def _draw_body(p: Any) -> None:
-    """The body (MB-SCORPION-02): a swollen, segmented abdomen under a ridged shell, the head plated
-    with grafted armour, bone legs, glowing eyes, and the tail of shelled beads."""
+    """Draw the body (MB-SCORPION-02): a swollen, segmented abdomen under a ridged shell.
+
+    The head plated with grafted armour, bone legs, glowing eyes, and the tail of shelled beads.
+    """
     flesh = p.flesh
     hide(
         p,
@@ -120,8 +124,10 @@ def _draw_body(p: Any) -> None:
 
 
 def _draw_machinery(p: Any) -> None:
-    """The living works (MB-SCORPION-02): the torn stump of the missing right hind leg, a plate
-    grafted on the abdomen (the tail is a rig of its own, `scorpion_tail`)."""
+    """Draw the living works (MB-SCORPION-02): the torn stump of the missing right hind leg.
+
+    A plate grafted on the abdomen (the tail is a rig of its own, `scorpion_tail`).
+    """
     # The missing right hind leg: a torn stump.
     p.flesh.cylinder(1.6, 2.4, 6, F.wound, Placement([-15, -0.5, -13], 0, 0, QUARTER))
     graft(p, PATCH, [5.5, 6.6], [0, 0, 0], {"color": M.base})
@@ -129,8 +135,10 @@ def _draw_machinery(p: Any) -> None:
 
 
 def _stinger(p: Any, at: Vec3) -> None:
-    """The stinger (MB-SCORPION-04): a venom bulb hanging from the tail's tip, its emitter in
-    front."""
+    """Add the stinger (MB-SCORPION-04): a venom bulb hanging from the tail's tip.
+
+    Its emitter in front.
+    """
     place_at = offset(at, 0, STINGER_Y, 0)
     place = Placement(place_at, 0, STINGER_TILT)
     p.flesh.loft(ROUND_SECTION, STINGER, F.graphite, place)
@@ -146,8 +154,11 @@ def _stinger(p: Any, at: Vec3) -> None:
 
 
 def _tail_cannon(p: Any, at: Vec3) -> None:
-    """The cannon its tail unfolds into (D-228), round `at`, pointing out behind (-Z): a venom bulb
-    swollen into a barrel, neon rings, a great lens that brightens as the giant laser charges."""
+    """Add the cannon its tail unfolds into (D-228), round `at`, pointing out behind (-Z).
+
+    A venom bulb swollen into a barrel, neon rings, a great lens that brightens as the giant laser
+    charges.
+    """
     h = STINGER_Y * 0.6
     base = offset(at, 0, h, 12)
     back = Placement(base, 0, -QUARTER)
@@ -162,9 +173,11 @@ def _tail_cannon(p: Any, at: Vec3) -> None:
 
 
 def build_scorpion(scene: Any) -> Any:
-    """MB-SCORPION-01: the Scorpion, a living desert scorpion with yellow veins: a segmented
-    shell, two arms out to its claw cannons, and a segmented tail arched over its back, its stinger
-    hanging in front of the head, between the claws."""
+    """MB-SCORPION-01: the Scorpion, a living desert scorpion with yellow veins.
+
+    A segmented shell, two arms out to its claw cannons, and a segmented tail arched over its back,
+    its stinger hanging in front of the head, between the claws.
+    """
 
     def core(p: Any) -> None:
         _draw_body(p)

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/road_traffic.py`."""
 
 import pytest
@@ -20,7 +21,7 @@ def _street(index: int, points: list[tuple[float, float]], width: float = 10.0) 
 
 
 def _cross_streets() -> list[StreetLine]:
-    """A street along X and one along Z, crossing at the origin."""
+    """Return a street along X and one along Z, crossing at the origin."""
     along_x = _street(0, [(-100.0, 0.0), (100.0, 0.0)])
     along_z = _street(1, [(0.0, -100.0), (0.0, 100.0)])
     return street_lines([along_x, along_z])
@@ -68,21 +69,20 @@ def test_gfx_road_07_in_crossing_ignores_the_street_itself() -> None:
 
 
 def test_meeting_width_is_the_widest_street_met_or_none() -> None:
-    lines = street_lines(
-        [
-            _street(0, [(-100.0, 0.0), (100.0, 0.0)], width=10.0),
-            _street(1, [(0.0, -100.0), (0.0, 100.0)], width=30.0),
-        ]
-    )
+    lines = street_lines([
+        _street(0, [(-100.0, 0.0), (100.0, 0.0)], width=10.0),
+        _street(1, [(0.0, -100.0), (0.0, 100.0)], width=30.0),
+    ])
     assert meeting_width(lines, 0, 0.0, 0.0) == 30.0
     assert meeting_width(lines, 0, 50.0, 0.0) is None
 
 
 def test_the_index_is_rebuilt_for_other_lines() -> None:
     first = street_lines([_street(0, [(0.0, 0.0), (100.0, 0.0)])])
-    second = street_lines(
-        [_street(0, [(0.0, 0.0), (0.0, 100.0)]), _street(1, [(5.0, 0.0), (5.0, 9.0)])]
-    )
+    second = street_lines([
+        _street(0, [(0.0, 0.0), (0.0, 100.0)]),
+        _street(1, [(5.0, 0.0), (5.0, 9.0)]),
+    ])
     assert in_crossing(first, 0, 50.0, 0.0, 0.0) is False
     assert in_crossing(second, 0, 0.0, 50.0, 0.0) is False
     assert in_crossing(second, 1, 2.0, 2.0, 0.0) is True

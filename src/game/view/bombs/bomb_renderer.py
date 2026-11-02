@@ -1,26 +1,31 @@
-"""A bomb going off (GFX-FX-10, GAME-BOMB-07): in playfield space, a
-shockwave ring growing from where the ship was over the whole playfield, and a flash there that
+# Copyright (c) 2026 Renaud Guillon
+"""A bomb going off (GFX-FX-10, GAME-BOMB-07): in playfield space.
+
+A shockwave ring growing from where the ship was over the whole playfield, and a flash there that
 fades in a fraction of a second.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.bomb_look import BOMB_LOOK
+from game.view.shot_geometry import build_glow_disc
+from game.view.shots.shot_meshes import additive_template
 
-from render.game_view import BombRenderer  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+from render.game_view import BombRenderer
 
-from game.config.bomb_look import BOMB_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.shot_geometry import build_glow_disc  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.shots.shot_meshes import additive_template  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
+
 
 LOOK = BOMB_LOOK
 
 
 def _bomb_renderer(sync: Any, dispose: Any) -> Any:
-    """A `BombRenderer` as a plain object (the renderer calls `sync` and `dispose`)."""
+    """Return a `BombRenderer` as a plain object (the renderer calls `sync` and `dispose`)."""
+    _ = (sync, dispose)
     __pragma__("js", "{}", "return {sync: sync, dispose: dispose};")
     return None
 
@@ -39,7 +44,7 @@ def flash_strength(age: float) -> float:
 
 
 def create_bomb_renderer(scene: Any) -> BombRenderer:
-    """The bomb's shockwave and flash, drawn in `scene`."""
+    """Return the bomb's shockwave and flash, drawn in `scene`."""
     wave = LOOK.wave
     flash = LOOK.flash
     depth = LOOK.depth
@@ -48,8 +53,8 @@ def create_bomb_renderer(scene: Any) -> BombRenderer:
 
     def show(bomb: Any) -> None:
         # `!= None` also covers an undefined bomb (no bomb this frame).
-        ring.setEnabled(bomb != None)  # noqa: E711 (absent value is undefined in the browser, ENG-161)
-        glow.setEnabled(bomb != None and flash_strength(bomb.age) > 0)  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+        ring.setEnabled(bomb != None)
+        glow.setEnabled(bomb != None and flash_strength(bomb.age) > 0)
         if not bomb:
             return
         t = bomb.age / bomb.seconds

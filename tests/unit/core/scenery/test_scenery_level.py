@@ -1,6 +1,8 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/scenery_level.py`."""
 
 import math
+from typing import Any
 
 import pytest
 from helpers.level_builders import (
@@ -26,17 +28,19 @@ from core.scenery.block_towers import tower_in
 from core.scenery.district_packing import DistrictSite, RoadTilesCache, pack_districts
 from core.scenery.districts import ZRange, find_districts
 from core.scenery.float_placement import fixed_pieces, floating_props, line_pieces, place_landmark
-from core.scenery.ground_boxes import GroundArea
+from core.scenery.ground_boxes import GroundArea, PropPlacement
 from core.scenery.height_field import HeightField, terrain_ceiling
-from core.scenery.ice_sculpt import LakeField, crevasse_depth, with_lakes
+from core.scenery.ice_sculpt import LakeField, crevasse_depth
 from core.scenery.lanes import main_road_width
 from core.scenery.prop_placement import PropPlacer
 from core.scenery.road_network import RoadNetwork, RoadNetworkOptions, level_roads
 from core.scenery.scenery_level import (
     BlockFill,
     Boulevard,
+    CarRules,
     Channel,
     Crevasses,
+    Drift,
     Dual,
     Dunes,
     Flatten,
@@ -52,6 +56,7 @@ from core.scenery.scenery_level import (
     PropLine,
     PropRules,
     Relief,
+    Sea,
     Shore,
     StreetGrid,
     Surface,
@@ -82,7 +87,7 @@ TWO = PropKindRule("two", 1.0, 24.0, (0.5, 1.0), tiles=(2, 2))
 LOT = PropKindRule("lot", 1.0, 12.0, (0.5, 1.0), tiles=(3, 1))
 
 
-def _setup(group_at=None, lots=(LOT,), seed: int = 4):
+def _setup(group_at: Any = None, lots: Any = (LOT,), seed: int = 4) -> Any:
     level = make_level(
         [
             section("a", 10, flat()),
@@ -101,13 +106,13 @@ def _setup(group_at=None, lots=(LOT,), seed: int = 4):
         level.props,
         roads,
         seed,
-        group_at if group_at is not None else (lambda x, z, section: group),
+        group_at if group_at is not None else (lambda _x, _z, _section: group),
         placed.append,
     )
     return site, roads, placed
 
 
-def _pack(site, roads, within=lambda z: True):
+def _pack(site: Any, roads: Any, within: Any = lambda _z: True) -> Any:
     road = RoadTilesCache().of(roads.roads, TILE)
     pack_districts(site, within, TILE, road)
     return road
@@ -120,7 +125,7 @@ def _heights(field: HeightField) -> list[float]:
     return [field.height(x, z) for x, z in SAMPLE_POINTS]
 
 
-def _level(terrain=None, streets=True, **rules):
+def _level(terrain: Any = None, streets: bool = True, **rules: Any) -> Any:
     grid = street_grid(0.55) if streets else None
     secs = [
         section("a", 10, terrain or flat()),
@@ -130,16 +135,16 @@ def _level(terrain=None, streets=True, **rules):
     return make_level(secs, roads=road_rules(**rules))
 
 
-def _network(level, seed: int = 4, options=None) -> RoadNetwork:
+def _network(level: Any, seed: int = 4, options: Any = None) -> RoadNetwork:
     field = HeightField(level)
     return RoadNetwork(field, level.roads, seed, SPAN, options)
 
 
-def _mains(net):
+def _mains(net: Any) -> Any:
     return [r for r in net.roads if r.kind == "main"]
 
 
-def _distance_to_road(x: float, z: float, road) -> float:
+def _distance_to_road(x: float, z: float, road: Any) -> float:
     best = math.inf
     for a, b in zip(road.points, road.points[1:], strict=False):
         dx = b.x - a.x
@@ -150,8 +155,11 @@ def _distance_to_road(x: float, z: float, road) -> float:
     return best
 
 
-def _district(grid: StreetGrid, middle: bool = True):
-    """A district of one section (the middle one of three, so its rows start and end inside)."""
+def _district(grid: StreetGrid, middle: bool = True) -> Any:
+    """Return a district of one section.
+
+    The middle one of three, so its rows start and end inside.
+    """
     sections = [
         section("a", 10, flat()),
         section("b", 10, flat(), streets=grid),
@@ -163,15 +171,15 @@ def _district(grid: StreetGrid, middle: bool = True):
     return find_districts(placed, SPAN)[0]
 
 
-def _ground(x: float, z: float) -> bool:
+def _ground(_x: float, _z: float) -> bool:
     return True
 
 
-def _in_view(node) -> bool:
+def _in_view(node: Any) -> bool:
     return abs(node.x) >= 300.0
 
 
-def _runs(grid: StreetGrid, rules, seed: int = 4, buildable=_ground):
+def _runs(grid: StreetGrid, rules: Any, seed: int = 4, buildable: Any = _ground) -> Any:
     return street_runs(_district(grid), rules, create_rng(seed), buildable, _in_view)
 
 
@@ -180,9 +188,10 @@ def kind(footprint: float = 3, frontage: float | None = None) -> PropKindRule:
 
 
 class FakeSite:
-    """A site of a flat_away level: every spot is clear of the roads and of flat_away unless told
-    otherwise.
-    `add` keeps the buildings apart by their boxes and the gap, as the placer does."""
+    """A flat_away site: every spot is clear of the roads and flat_away unless told otherwise.
+
+    `add` keeps the buildings apart by their boxes and the gap, as the placer does.
+    """
 
     def __init__(
         self,
@@ -203,20 +212,20 @@ class FakeSite:
         self.added: list[Building] = []
         self.group_calls = 0
 
-    def section_at(self, z: float) -> TerrainSection:
+    def section_at(self, _z: float) -> TerrainSection:
         return self.section
 
-    def group_at(self, x: float, z: float, section: TerrainSection) -> PropGroupRule | None:
+    def group_at(self, _x: float, _z: float, _section: TerrainSection) -> PropGroupRule | None:
         self.group_calls += 1
         return self.group
 
-    def clear_of_roads(self, x: float, z: float, clearance: float) -> bool:
+    def clear_of_roads(self, _x: float, _z: float, _clearance: float) -> bool:
         return self.clear
 
-    def ground(self, x: float, z: float, radius: float) -> float | None:
+    def ground(self, _x: float, _z: float, _radius: float) -> float | None:
         return 0.0 if self.ground_ok else None
 
-    def add(self, building: Building, gap: float | None) -> bool:
+    def add(self, building: Building, _gap: float | None) -> bool:
         if not self.accept:
             return False
         self.added.append(building)
@@ -229,7 +238,7 @@ ICE = PropKindRule("ice", 1, 2, [1, 1])
 
 
 def deep_sea(float_density: float | None = 1) -> TerrainSection:
-    """A section of sea bed, about 20 units under the sea (level 0)."""
+    """Return a section of sea bed, about 20 units under the sea (level 0)."""
     return TerrainSection(
         "sea",
         20,
@@ -250,12 +259,12 @@ SETBACK = 1
 
 
 def placer_for(
-    level=None,
+    level: Any = None,
     seed: int | None = None,
     sea_level: float | None = 0,
     runout_from: float | None = None,
 ) -> PropPlacer:
-    """A placer of `level` (the sample by default), with its roads laid."""
+    """Return a placer of `level` (the sample by default), with its roads laid."""
     level = level if level is not None else sample_level()
     seed = level.seed if seed is None else seed
     field = HeightField(level, seed)
@@ -264,8 +273,11 @@ def placer_for(
     return PropPlacer(field, level.props, seed, roads, sea_level=sea_level)
 
 
-def dense_level():
-    """The sample with a dense grid of streets over the whole level: many buildings to pack."""
+def dense_level() -> Any:
+    """Return the sample with a dense grid of streets over the whole level.
+
+    Many buildings to pack.
+    """
     flat_section = flat_props("grid", 20, 10)
     flat_section.streets = StreetGrid([20, 25], [20, 30], 0.8)
     return sample_level(sections=[flat_section])
@@ -275,7 +287,6 @@ class _Ground:
     """A box of ground for the overlap checks: a tree's box is `half` each way."""
 
     def __init__(self, x: float, z: float, half: float) -> None:
-        from core.scenery.ground_boxes import PropPlacement  # noqa: PLC0415
 
         self.placement = PropPlacement("", x, 0, z, 0, 1)
         self.half_x = half
@@ -312,7 +323,7 @@ def test_a_kind_without_frontage_is_fitted_by_its_footprint() -> None:
 
 def test_gfx_bldg_05_a_group_without_tile_kinds_leaves_the_lots() -> None:
     empty = PropGroupRule("empty", 1.0, [])
-    site, roads, placed = _setup(group_at=lambda x, z, section: empty)
+    site, roads, placed = _setup(group_at=lambda _x, _z, _section: empty)
     _pack(site, roads)
     assert {b.placement.kind for b in placed} == {"lot"}
 
@@ -320,7 +331,7 @@ def test_gfx_bldg_05_a_group_without_tile_kinds_leaves_the_lots() -> None:
 def test_gfx_bldg_05_areas_of_different_groups_pack_with_their_own_kinds() -> None:
     other = PropGroupRule("other", 1.0, [ONE])
     group = PropGroupRule("g", 1.0, [TWO])
-    site, roads, placed = _setup(group_at=lambda x, z, section: group if x < 0.0 else other)
+    site, roads, placed = _setup(group_at=lambda x, _z, _section: group if x < 0.0 else other)
     _pack(site, roads)
     assert placed
     kinds = {b.placement.kind for b in placed}
@@ -435,11 +446,11 @@ def test_gfx_terrain_01_sections_are_laid_end_to_end_from_zero() -> None:
 
 
 def test_gfx_terrain_01_a_level_needs_sections_speed_and_lengths() -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="has no section"):
         layout_sections(make_level([]))
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="scroll speed must be positive"):
         layout_sections(make_level([section("a", 10, flat())], speed=0.0))
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="has no length"):
         layout_sections(make_level([section("a", 0.0, flat())]))
 
 
@@ -459,7 +470,8 @@ def test_game_level_08_a_runout_extends_the_last_section_and_adds_up() -> None:
     again = with_runout(extended, 20.0)
     assert again.runout == pytest.approx(50.0)
     # The level it was made from is as it was.
-    assert level.runout is None and level.sections[1].seconds == 5.0
+    assert level.runout is None
+    assert level.sections[1].seconds == 5.0
 
 
 def test_game_level_08_the_runout_starts_where_its_seconds_begin() -> None:
@@ -486,21 +498,6 @@ def test_with_runout_of_a_level_without_sections_is_the_same_level() -> None:
 
 
 def test_the_terrain_and_prop_data_records_keep_their_fields() -> None:
-    from core.scenery.scenery_level import (  # noqa: PLC0415
-        BlockFill,
-        CarRules,
-        Drift,
-        FloatRules,
-        HamletRules,
-        Landmark,
-        Loners,
-        Meander,
-        PropGroupRule,
-        PropKindRule,
-        PropLine,
-        Sea,
-        TileRules,
-    )
 
     drift = Drift(2.0, 3.0, 4.0)
     assert (drift.x, drift.z, drift.period) == (2.0, 3.0, 4.0)
@@ -536,7 +533,7 @@ def test_gfx_road_14_streets_are_straight_runs_across_and_along() -> None:
 
 
 def test_gfx_road_14_the_streets_are_the_same_for_the_same_seed() -> None:
-    def shape(seed: int):
+    def shape(seed: int) -> Any:
         runs, blocks = _runs(StreetGrid((60.0, 110.0), (70.0, 130.0), 0.55), road_rules(), seed)
         return (
             [[(round(p.x, 6), round(p.z, 6)) for p in r.points] for r in runs],
@@ -555,9 +552,10 @@ def test_gfx_road_14_the_blocks_between_streets_have_room() -> None:
 
 def test_gfx_road_14_unbuildable_ground_gets_no_streets() -> None:
     runs, blocks = _runs(
-        StreetGrid((60.0, 110.0), (70.0, 130.0), 1.0), road_rules(), buildable=lambda x, z: False
+        StreetGrid((60.0, 110.0), (70.0, 130.0), 1.0), road_rules(), buildable=lambda _x, _z: False
     )
-    assert runs == [] and blocks == []
+    assert runs == []
+    assert blocks == []
 
 
 def test_gfx_road_17_a_boulevard_is_built_along_its_line() -> None:
@@ -581,7 +579,8 @@ def test_gfx_road_14_without_crossings_the_streets_are_still_straight() -> None:
 def test_gfx_road_08_on_tiles_the_streets_are_whole_tiles_wide() -> None:
     rules = road_rules(tiles=tile_rules(), main_width=24.0, dual=road_rules().dual)
     runs, blocks = _runs(StreetGrid((60.0, 110.0), (70.0, 130.0), 0.8), rules)
-    assert runs and blocks
+    assert runs
+    assert blocks
     assert {run.width for run in runs} <= {24.0, 48.0, 72.0, 96.0}
 
 
@@ -669,14 +668,14 @@ def test_fixed_pieces_are_the_landmarks_then_the_lines() -> None:
         landmarks=[Landmark("dam", 40, (5, 3), x=0)],
     )
     pieces = fixed_pieces(rules, field, None)
-    assert [b.placement.kind for b in pieces][0] == "dam"
+    assert next(b.placement.kind for b in pieces) == "dam"
     assert {b.placement.kind for b in pieces[1:]} == {"pipe"}
     assert fixed_pieces(sample_props(), field, None) == []
 
 
 def test_no_chance_means_no_lakes() -> None:
     none = Lakes(spacing=100, chance=0, radius=(20, 20), level=-5, edge=10)
-    assert with_lakes(none, 7, 50, 50, 10) == 10
+    assert LakeField(none, 7).apply(50, 50, 10) == 10
 
 
 def test_a_lake_square_too_small_for_its_lake_is_centred() -> None:
@@ -715,7 +714,7 @@ def test_p04_review_square_plans_stand_at_the_setback_and_pack_apart() -> None:
 def test_p04_review_a_slot_whose_building_does_not_fit_tries_a_smaller_kind() -> None:
     # Where the large building does not fit (it is 400 wide, next to a road), the smaller one does.
     huge = block_kind(footprint=400)
-    small = stick_kind(id="small", weight=0, footprint=4)
+    small = stick_kind(id_="small", weight=0, footprint=4)
     level = sample_level(
         sections=[
             flat_props("low", 10, 10),
@@ -810,7 +809,7 @@ def test_gfx_prop_15_floating_props_float_on_the_sea() -> None:
     level = sample_level(
         sections=[deep],
         props=sample_props(
-            floating=FloatRules(40, 2, 3, [stick_kind(id="ice", footprint=2)]), trees=[]
+            floating=FloatRules(40, 2, 3, [stick_kind(id_="ice", footprint=2)]), trees=[]
         ),
     )
     floats = [q for q in placer_for(level, sea_level=0).place(AREA) if q.kind == "ice"]
@@ -837,9 +836,9 @@ def test_hamlets_add_bunches_of_buildings_away_from_the_roads() -> None:
         props=sample_props(hamlets=HamletRules([100, 100], [3, 3], 20, 2, 1)),
     )
     with_hamlets = placer_for(level).place(AREA)
-    assert len([p for p in with_hamlets if p.kind == "block"]) > len(
-        [p for p in plain if p.kind == "block"]
-    )
+    assert len([p for p in with_hamlets if p.kind == "block"]) > len([
+        p for p in plain if p.kind == "block"
+    ])
 
 
 def test_the_tile_districts_are_packed_when_the_roads_have_tiles() -> None:

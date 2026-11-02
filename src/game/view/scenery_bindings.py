@@ -1,9 +1,9 @@
-"""How this game's generated levels look (P04, P06, P08, P09, P10): the scenery looks of every
-level, toned by world, and the prop models,
-groups and road tiles the scenery is built from.
-"""
+# Copyright (c) 2026 Renaud Guillon
+"""How this game's generated levels look (P04, P06, P08, P09, P10).
 
-from org.transcrypt.stubs.browser import __pragma__
+The scenery looks of every level, toned by world, and the prop models, groups and road tiles the
+scenery is built from.
+"""
 
 from game.config.readability import READABILITY
 from game.config.scenery_look import BASE_SCENERY_LOOK, PLAYFIELD_CAMERA
@@ -66,10 +66,12 @@ from game.view.props.prop_models import PROP_MODELS
 from game.view.props.road_kit import ROAD_KIT_PIECES
 from game.view.readability_view import all_toned
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 TONES = READABILITY.tones
 CAMERA = PLAYFIELD_CAMERA
@@ -113,17 +115,21 @@ WORLD_4_LOOKS = {
 
 
 def _with_sky_script(look: Any) -> Any:
-    """`look` (a copy, as `toned` makes it) with its sky script mapped to the core's classes
-    (GFX-SKY-04): its `atmosphere` is read by `core/scenery/sky_look.py`.
+    """`look` (a copy, as `toned` makes it) with its sky script mapped to core classes (GFX-SKY-04).
+
+    Its `atmosphere` is read by `core/scenery/sky_look.py`.
     """
-    if look.atmosphere != None:  # noqa: E711 (undefined: a look without a sky script)
+    if look.atmosphere != None:
         look.atmosphere = sky_script(look.atmosphere)
     return look
 
 
 def _all_looks() -> dict[str, Any]:
-    """The looks of every world, each world's ground and props darkened by its tone (GFX-READ-02);
-    the gameplay objects are not in the looks, so they are never dimmed (GFX-READ-03)."""
+    """Return the looks of every world, each darkened by its tone (GFX-READ-02).
+
+    The tone darkens each world's ground and props. The gameplay objects are not in the looks, so
+    they are never dimmed (GFX-READ-03).
+    """
     looks: dict[str, Any] = {}
     looks.update(all_toned(WORLD_1_LOOKS, TONES.world1))
     looks.update(all_toned(WORLD_2_LOOKS, TONES.world2))

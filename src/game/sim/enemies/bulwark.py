@@ -1,8 +1,7 @@
-"""The Bulwark (`specs/enemies/bulwark.md`)"""
+# Copyright (c) 2026 Renaud Guillon
+"""The Bulwark (`specs/enemies/bulwark.md`)."""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from core.entities.enemy import Enemy
 from core.systems.enemy_motion import approach
@@ -10,19 +9,22 @@ from core.systems.gun_muzzles import GunMuzzles, fire_aimed
 from game.config.enemies import ENEMY_CONFIG
 from game.sim.enemies.enemy_helpers import DOWN, Cadence, bullet_shot, on_playfield
 
-__pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from core.entities.enemy import EnemyContext
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 CFG = ENEMY_CONFIG.bulwark
 
 
 class Bulwark(Enemy):
-    """ENM-BULWARK-05: a heavy gunship. It comes down slowly to the upper third, drifts left and
-    right for 8 s, then leaves downward (ENM-BULWARK-06). Every 2 s it fires a spread of 5 bullets
-    10° apart, the middle one aimed at the player (ENM-BULWARK-07, ENM-20), from the twin cannon on
-    its tower.
+    """ENM-BULWARK-05: a heavy gunship.
+
+    It comes down slowly to the upper third, drifts left and right for 8 s, then leaves downward
+    (ENM-BULWARK-06). Every 2 s it fires a spread of 5 bullets 10° apart, the middle one aimed at
+    the player (ENM-BULWARK-07, ENM-20), from the twin cannon on its tower.
     """
 
     def __init__(self, center_x: float, y: float, stop_y: float) -> None:
@@ -36,6 +38,7 @@ class Bulwark(Enemy):
         self.heading = DOWN
 
     def update(self, ctx: EnemyContext, dt: float) -> None:
+        """Advance the enemy by `dt` seconds."""
         if self.state == "enter":
             self.y = approach(self.y, self.stop_y, CFG.entrySpeed * dt)
             if self.y == self.stop_y:

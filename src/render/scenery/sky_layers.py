@@ -1,9 +1,9 @@
-"""The sky of a scenery stage (GFX-SKY-05, GFX-SKY-11, GFX-WEATHER-02): the level's look along
-its length, the sun and ambient light it sets, and the cloud layers, weather, aurora and lightning
-above the ground.
-"""
+# Copyright (c) 2026 Renaud Guillon
+"""The sky of a scenery stage (GFX-SKY-05, GFX-SKY-11, GFX-WEATHER-02).
 
-from org.transcrypt.stubs.browser import __pragma__
+The level's look along its length, the sun and ambient light it sets, and the cloud layers, weather,
+aurora and lightning above the ground.
+"""
 
 from core.scenery.lightning import flashed
 from render.babylon import babylon_class
@@ -17,11 +17,13 @@ from render.scenery.lightning_layer import LightningLayer
 from render.scenery.scenery_lighting import apply_atmosphere, light_scenery
 from render.scenery.weather_layer import WeatherLayer, WeatherView
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The aurora's sheet flies this far above the highest cloud layer, under the ships.
 AURORA_ABOVE_CLOUDS = 8
@@ -29,8 +31,10 @@ AURORA_ABOVE_CLOUDS = 8
 
 class SkyPlacement:
     """Where the sky's layers go: what the camera sees at a height, and the flight altitude.
+
     `window_at(altitude)` gives the ground window seen at an altitude; `altitude_of(look)` the
-    altitude of a cloud layer."""
+    altitude of a cloud layer.
+    """
 
     def __init__(
         self, window_at: Any, altitude_of: Any, flight_altitude: float, margin: float
@@ -58,12 +62,14 @@ def _min_of(values: list[float], start: float) -> float:
 
 
 class SkyLayers:
-    """The sky of a scenery stage (GFX-SKY-05, GFX-SKY-11): the level's look along its length, the
-    sun and ambient light it sets, and the cloud layers, the weather and the aurora above the
+    """The sky of a scenery stage (GFX-SKY-05, GFX-SKY-11): the level's look along its length.
+
+    The sun and ambient light it sets, and the cloud layers, the weather and the aurora above the
     ground. Built in two steps, as the scenery kit needs the sun first (`attach`).
 
     `setup` is `(scroll_speed, options, seed)`: `options` is the `AtmosphereOptions` (or None) and
-    `seed` the level's seed (its lightning strikes are drawn from it, GFX-WEATHER-10)."""
+    `seed` the level's seed (its lightning strikes are drawn from it, GFX-WEATHER-10).
+    """
 
     def __init__(self, scene: Any, look: Any, setup: tuple[float, Any, int]) -> None:
         scroll_speed, options, seed = setup
@@ -83,10 +89,12 @@ class SkyLayers:
 
     @property
     def sun(self) -> Any:
+        """The sun."""
         return self._lights.sun
 
     @property
     def atmosphere(self) -> Any:
+        """The atmosphere."""
         return self._atmosphere
 
     @property
@@ -101,8 +109,10 @@ class SkyLayers:
 
     @property
     def flash(self) -> float:
-        """How bright the lightning was on the last frame (0..1, its strength included;
-        GFX-WEATHER-11)."""
+        """Return how bright the lightning was on the last frame.
+
+        From 0 to 1, its strength included (GFX-WEATHER-11).
+        """
         return self._flash
 
     @property
@@ -111,7 +121,7 @@ class SkyLayers:
         return self._lightning
 
     def attach(self, kit: Any, place: SkyPlacement) -> None:
-        """Builds the cloud layers, the weather and the aurora with `kit`'s materials."""
+        """Build the cloud layers, the weather and the aurora with `kit`'s materials."""
         look = self._look
         clouds: list[Any] = []
         for i, cloud in enumerate(look.clouds):
@@ -134,10 +144,12 @@ class SkyLayers:
         self._lightning = LightningLayer(self._scene, self._seed, (place.window_at(low), low))
 
     def update(self, distance: float, frame: tuple[float, Any, float]) -> Any:
-        """The look at `distance` along the level, seen from `camera` at `time`: light, haze,
-        clouds, weather (in the box of air from `z_min`), aurora and lightning (GFX-WEATHER-11: a
-        flash lights the scene). `frame` is `(time, camera, z_min)`. Returns the atmosphere as lit
-        on this frame."""
+        """Return the look at `distance` along the level, seen from `camera` at `time`.
+
+        Its light, haze and clouds. Weather (in the box of air from `z_min`), aurora and lightning
+        (GFX-WEATHER-11: a flash lights the scene). `frame` is `(time, camera, z_min)`. Returns the
+        atmosphere as lit on this frame.
+        """
         time, camera, z_min = frame
         at = camera.position
         self._atmosphere = self._track.at(distance)

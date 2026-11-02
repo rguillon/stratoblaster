@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/config/time_of_day.py`."""
 
 import pytest
@@ -10,7 +11,7 @@ BASE = SkyBase(Fog(100, 1000), [0.8, 0.6])
 
 
 def look(**overrides: object) -> SkyLook:
-    """A midday look with clouds of 0.2 and 0.1 cover, as the level data gives it."""
+    """Return a midday look with clouds of 0.2 and 0.1 cover, as the level data gives it."""
     values: dict[str, object] = {"time_of_day": "midday", "clouds": [0.2, 0.1]}
     values.update(overrides)
     return SkyLook(**values)  # type: ignore[arg-type]

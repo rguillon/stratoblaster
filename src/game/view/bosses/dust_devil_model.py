@@ -1,34 +1,36 @@
-"""MB-DUST-DEVIL-01 to MB-DUST-DEVIL-04, 1-3: the Dust Devil: a desert
-whirl-jelly with amber veins, a swollen fleshy bell and a slowly turning ring of sinew carrying
-three clinging sand rays. Logical pixels, nose +Z, Y up (towards the camera).
+# Copyright (c) 2026 Renaud Guillon
+"""MB-DUST-DEVIL-01 to MB-DUST-DEVIL-04, 1-3: the Dust Devil.
+
+A desert whirl-jelly with amber veins, a swollen fleshy bell and a slowly turning ring of sinew
+carrying three clinging sand rays. Logical pixels, nose +Z, Y up (towards the camera).
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.config.bosses.mini_bosses import DUST_DEVIL  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.mini_boss_shapes import WHITE, scaled  # noqa: E402
-from game.view.bosses.world_1_organic_kit import (  # noqa: E402
+from game.config.boss_look import BOSS_LOOK
+from game.config.bosses.mini_bosses import DUST_DEVIL
+from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.mini_boss_shapes import WHITE, scaled
+from game.view.bosses.world_1_organic_kit import (
     F,
     graft,
     polygon,
     tentacle,
     vein_line,
 )
-from game.view.enemies.enemy_shapes import SIDES, around  # noqa: E402
-from game.view.enemies.organic_parts import eyes, reactor_sac  # noqa: E402
-from render.geometry.organic import organ  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
+from game.view.enemies.enemy_shapes import SIDES, around
+from game.view.enemies.organic_parts import eyes, reactor_sac
+from render.geometry.organic import organ
+from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Vec3 = list[Any]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 AMBER = BOSS_LOOK.neon["dust-devil"]
 
@@ -112,9 +114,11 @@ POD_SCALE = 1.15
 
 
 def _draw_core(p: Any) -> None:
-    """The core (MB-DUST-DEVIL-02): a swollen fleshy bell (the gyro disc grown over), plated ribs
-    radiating across it, the amber charge gland on its crown (the ring emitter), eyes at its front,
-    its reactors in sacs behind."""
+    """Draw the core (MB-DUST-DEVIL-02): a swollen fleshy bell (the gyro disc grown over).
+
+    Plated ribs radiating across it, the amber charge gland on its crown (the ring emitter), eyes at
+    its front, its reactors in sacs behind.
+    """
     p.flesh.lathe(GYRO_DISC, 10, F.sinew, Placement(None, math.pi / 10))
     p.neon.ring(18.2, 1.2, 10, AMBER, Placement([0, -0.4, 0], math.pi / 10))
     organ(p.flesh, 9, 8, F.slate, Placement([0, 4, 0]), 0.25)
@@ -122,7 +126,7 @@ def _draw_core(p: Any) -> None:
         x = math.sin(a)
         z = math.cos(a)
         tentacle(p, [x * 5, 8, z * 5], [x * 18, 1.6, z * 18], [0, 2.2, 0], [1.1, 0.6], F.bone, 3)
-        if abs(z) < 0.95:  # noqa: PLR2004 (a geometric threshold of the model)
+        if abs(z) < 0.95:
             graft(
                 p,
                 polygon(4, 2.6, [0.8, 1.4]),
@@ -142,8 +146,10 @@ def _draw_core(p: Any) -> None:
 
 
 def _draw_ring(p: Any) -> None:
-    """The turning ring (MB-DUST-DEVIL-02): a sinew collar round the bell, a fleshy rim, three
-    tentacle spokes out to the pods and membrane fins between them."""
+    """Draw the turning ring (MB-DUST-DEVIL-02): a sinew collar round the bell, a fleshy rim.
+
+    Three tentacle spokes out to the pods and membrane fins between them.
+    """
     p.flesh.lathe(HUB, 10, F.graphite, None, False)
     p.flesh.lathe(RIM, 15, F.sinew, None, False)
     p.neon.ring(43.1, 0.8, 15, AMBER, Placement([0, -0.4, 0]))
@@ -172,8 +178,10 @@ def _draw_ring(p: Any) -> None:
 
 
 def _blade_pod(p: Any, at: Vec3) -> None:
-    """A blade pod on the ring (MB-DUST-DEVIL-03): a sand ray clinging to the rim, its wide fleshy
-    wings plated at the front, a bone barb at each wing tip carrying a muzzle."""
+    """Add a blade pod on the ring (MB-DUST-DEVIL-03): a sand ray clinging to the rim.
+
+    Its wide fleshy wings plated at the front, a bone barb at each wing tip carrying a muzzle.
+    """
     yaw = math.atan2(at[0], at[2])
     place = Placement(at, yaw)
     p.flesh.bevel_slab(
@@ -205,8 +213,10 @@ def _blade_pod(p: Any, at: Vec3) -> None:
 
 
 def build_dust_devil(scene: Any) -> Any:
-    """MB-DUST-DEVIL-01, MB-DUST-DEVIL-04: the Dust Devil, a desert whirl-jelly with amber veins: a
-    swollen fleshy bell, and a slowly turning ring of sinew carrying three clinging sand rays."""
+    """MB-DUST-DEVIL-01, MB-DUST-DEVIL-04: the Dust Devil, a desert whirl-jelly with amber veins.
+
+    A swollen fleshy bell, and a slowly turning ring of sinew carrying three clinging sand rays.
+    """
     return build_boss_model(
         DUST_DEVIL,
         scene,

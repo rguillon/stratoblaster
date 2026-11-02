@@ -1,5 +1,8 @@
-"""The pause menu (UI-PAUSE-07): Resume, Settings, Main menu. Main menu asks `Leave the level?`
-with No (selected first) and Yes (UI-PAUSE-10). Pure: the flow changes screens.
+# Copyright (c) 2026 Renaud Guillon
+"""The pause menu (UI-PAUSE-07): Resume, Settings, Main menu.
+
+Main menu asks `Leave the level?` with No (selected first) and Yes (UI-PAUSE-10). Pure: the flow
+changes screens.
 """
 
 import math
@@ -14,8 +17,10 @@ def _is_integer(value: float) -> bool:
 
 
 class PauseMenu:
-    """The pause menu (UI-PAUSE-07). The outcomes of its commands are `none`, `moved`, `ask`,
-    `resume`, `settings` and `leave`: the flow carries out the last three.
+    """The pause menu (UI-PAUSE-07).
+
+    The outcomes of its commands are `none`, `moved`, `ask`,. `resume`, `settings` and `leave`: the
+    flow carries out the last three.
     """
 
     def __init__(self) -> None:
@@ -26,10 +31,12 @@ class PauseMenu:
 
     @property
     def selection(self) -> int:
+        """Index of the selected entry of the pause menu."""
         return self._selection
 
     @property
     def selected_id(self) -> str:
+        """Id of the selected entry (`resume` when out of range)."""
         return PAUSE_ENTRIES[self._selection] if self._selection < len(PAUSE_ENTRIES) else "resume"
 
     @property
@@ -39,15 +46,17 @@ class PauseMenu:
 
     @property
     def choice(self) -> int:
+        """Index of the answer chosen on the question (0 No, 1 Yes)."""
         return self._choice
 
     def open(self) -> None:
-        """The menu opens on Resume, without the question."""
+        """Open the menu on Resume, without the question."""
         self._selection = 0
         self._leaving = False
         self._choice = 0
 
     def move(self, direction: str) -> str:
+        """Move the selection, or the answer while the question shows, for `direction`."""
         if self._leaving:
             return self._choose(0 if direction in ["left", "up"] else 1)
         if direction in ["left", "right"]:
@@ -55,6 +64,7 @@ class PauseMenu:
         return self.select(self._selection + (-1 if direction == "up" else 1))
 
     def select(self, index: int) -> str:
+        """Select entry `index`, or answer `index` while the question shows."""
         if self._leaving:
             return self._choose(index) if index in [0, 1] else "none"
         if not _is_integer(index) or index < 0 or index >= len(PAUSE_ENTRIES):
@@ -65,6 +75,7 @@ class PauseMenu:
         return "moved"
 
     def confirm(self) -> str:
+        """Confirm the selected entry, or the answer to the question."""
         if self._leaving:
             if self._choice == 1:
                 return "leave"

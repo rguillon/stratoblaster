@@ -1,6 +1,8 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/shots/laser_particles.py`."""
 
 from types import SimpleNamespace
+from typing import Any
 
 import pytest
 
@@ -10,11 +12,11 @@ from game.view.shots.laser_particles import LaserParticles
 OPTIONS = SimpleNamespace(count=6, speed=[50, 80], radius=[1, 2], spread=0.8, seed=4)
 
 
-def segment(y0, y1, x=0.0, width=10.0, hit=False):
+def segment(y0: Any, y1: Any, x: Any = 0.0, width: Any = 10.0, hit: Any = False) -> Any:
     return SimpleNamespace(x=x, y0=y0, y1=y1, width=width, hit=hit)
 
 
-def test_gfx_shot_03_the_particles_start_spread_along_the_beam():
+def test_gfx_shot_03_the_particles_start_spread_along_the_beam() -> None:
     particles = LaserParticles(OPTIONS, create_rng(1), 100.0)
     assert len(particles._particles) == OPTIONS.count
     assert all(0 <= p.distance < 100 for p in particles._particles)
@@ -22,17 +24,17 @@ def test_gfx_shot_03_the_particles_start_spread_along_the_beam():
     assert all(50 <= p.speed <= 80 for p in particles._particles)
 
 
-def test_gfx_shot_03_no_beam_no_particles():
+def test_gfx_shot_03_no_beam_no_particles() -> None:
     particles = LaserParticles(OPTIONS, create_rng(1), 100.0)
     assert particles.step([], 0.1) == []
 
 
-def test_gfx_shot_03_a_beam_of_no_length_draws_nothing():
+def test_gfx_shot_03_a_beam_of_no_length_draws_nothing() -> None:
     particles = LaserParticles(OPTIONS, create_rng(1), 100.0)
     assert particles.step([segment(5, 5)], 0.1) == []
 
 
-def test_gfx_shot_03_particles_wrap_around_the_beam_and_stay_on_it():
+def test_gfx_shot_03_particles_wrap_around_the_beam_and_stay_on_it() -> None:
     particles = LaserParticles(OPTIONS, create_rng(2), 100.0)
     beam = [segment(0, 40, x=3.0), segment(40, 120, x=4.0, width=4.0)]
     spots = particles.step(beam, 10.0)
@@ -42,14 +44,14 @@ def test_gfx_shot_03_particles_wrap_around_the_beam_and_stay_on_it():
         assert s.radius > 0
 
 
-def test_gfx_shot_03_each_particle_is_drawn_inside_the_width_of_its_segment():
+def test_gfx_shot_03_each_particle_is_drawn_inside_the_width_of_its_segment() -> None:
     particles = LaserParticles(OPTIONS, create_rng(7), 100.0)
     beam = [segment(0, 100, x=20.0, width=10.0)]
     for s in particles.step(beam, 0.0):
         assert abs(s.x - 20.0) <= 10.0 * OPTIONS.spread / 2 + 1e-9
 
 
-def test_gfx_shot_03_a_particle_moves_up_the_beam_by_its_speed():
+def test_gfx_shot_03_a_particle_moves_up_the_beam_by_its_speed() -> None:
     particles = LaserParticles(OPTIONS, create_rng(3), 100.0)
     p = particles._particles[0]
     p.distance = 10.0

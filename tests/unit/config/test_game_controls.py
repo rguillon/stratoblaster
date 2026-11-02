@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/config/game_controls.py` (bindings in config, GAME-CTRL-09)."""
 
 from config.game_controls import GAME_CONTROLS_CONFIG

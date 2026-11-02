@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/audio/music_player.py`."""
+
+from typing import Any
 
 import pytest
 from helpers.audio_fakes import FakeContext, FakeVoice
@@ -39,7 +42,7 @@ def instrument() -> Instrument:
 def voices(monkeypatch: pytest.MonkeyPatch) -> list[FakeVoice]:
     made: list[FakeVoice] = []
 
-    def fake_play_voice(context, destination, layers, options) -> FakeVoice:  # noqa: ANN001
+    def fake_play_voice(_context: Any, _destination: Any, _layers: Any, options: Any) -> FakeVoice:
         voice = FakeVoice(options.when + options.hold, "")
         voice.hold = options.hold
         made.append(voice)
@@ -93,7 +96,8 @@ def test_aud_engine_05_the_notes_of_an_unknown_instrument_are_skipped(
     assert voices == []
 
 
-def test_aud_engine_05_the_position_follows_the_audio_clock(voices: list[FakeVoice]) -> None:
+@pytest.mark.usefixtures("voices")
+def test_aud_engine_05_the_position_follows_the_audio_clock() -> None:
     context = FakeContext()
     player, _ = make(context)
     player.play(track("menu"), 0)
@@ -123,7 +127,8 @@ def test_aud_engine_10_pausing_keeps_the_position_and_resuming_goes_on_from_it(
     assert player.position == pytest.approx(2.0)
 
 
-def test_aud_engine_10_pause_and_resume_are_idempotent(voices: list[FakeVoice]) -> None:
+@pytest.mark.usefixtures("voices")
+def test_aud_engine_10_pause_and_resume_are_idempotent() -> None:
     context = FakeContext()
     player, _ = make(context)
     player.resume()  # not paused: nothing to do
@@ -136,9 +141,22 @@ def test_aud_engine_10_pause_and_resume_are_idempotent(voices: list[FakeVoice]) 
     assert player.position == pytest.approx(0)
 
 
-def test_aud_engine_10_pausing_before_the_context_exists_is_harmless(
-    voices: list[FakeVoice],
-) -> None:
+@pytest.mark.usefixtures("voices")
+def test_aud_engine_10_a_track_played_while_paused_starts_from_its_beginning() -> None:
+    context = FakeContext()
+    player, _ = make(context)
+    player.play(track("menu"), 0)
+    player.update()
+    context.currentTime = 1.0
+    player.pause()
+    assert player.position == pytest.approx(1.0)
+    player.play(track("level"), 0)
+    # The paused place is the menu's: the new track has not started yet.
+    assert player.position == 0
+
+
+@pytest.mark.usefixtures("voices")
+def test_aud_engine_10_pausing_before_the_context_exists_is_harmless() -> None:
     player, _ = make(None)
     player.play(track("menu"), 0)
     player.pause()
@@ -146,7 +164,8 @@ def test_aud_engine_10_pausing_before_the_context_exists_is_harmless(
     assert player.position == 0
 
 
-def test_aud_music_08_a_new_track_cross_fades_the_old_one_out(voices: list[FakeVoice]) -> None:
+@pytest.mark.usefixtures("voices")
+def test_aud_music_08_a_new_track_cross_fades_the_old_one_out() -> None:
     context = FakeContext()
     player, _ = make(context)
     player.play(track("level-1"), 0)
@@ -163,7 +182,8 @@ def test_aud_music_08_a_new_track_cross_fades_the_old_one_out(voices: list[FakeV
     assert player.track is not None
 
 
-def test_aud_music_08_playing_none_fades_the_music_out(voices: list[FakeVoice]) -> None:
+@pytest.mark.usefixtures("voices")
+def test_aud_music_08_playing_none_fades_the_music_out() -> None:
     context = FakeContext()
     player, _ = make(context)
     player.play(track("menu"), 0)
@@ -201,7 +221,8 @@ def test_aud_engine_10_stop_silences_everything_and_clears_the_track(
     assert all(voice.stops for voice in voices)
 
 
-def test_aud_engine_10_stop_without_a_context_clears_the_track(voices: list[FakeVoice]) -> None:
+@pytest.mark.usefixtures("voices")
+def test_aud_engine_10_stop_without_a_context_clears_the_track() -> None:
     player, _ = make(None)
     player.play(track("menu"), 0)
     player.stop()
@@ -212,3 +233,51 @@ def test_aud_engine_04_update_without_a_context_does_nothing(voices: list[FakeVo
     player, _ = make(None)
     player.update()
     assert voices == []
+
+
+def test_aud_music_10_a_jingle_plays_with_no_track_playing(voices: list[FakeVoice]) -> None:
+    context = FakeContext()
+    player, _ = make(context)
+    player.jingle(track("complete", loop=False))
+    player.update()
+    assert player.track is None
+    assert len(voices) == 2  # its notes at 0 and 0.5 s, within the 1.5 s lookahead
+
+
+def test_aud_engine_10_pausing_keeps_the_place_of_a_jingle_too(voices: list[FakeVoice]) -> None:
+    context = FakeContext()
+    player, _ = make(context)
+    player.play(track("menu"), 0)
+    player.jingle(track("complete", loop=False))
+    player.update()
+    context.currentTime = 1.0
+    player.pause()
+    context.currentTime = 5.0
+    player.resume()
+    del voices[:]
+    player.update()
+    # Both go on from 1 s in: their note at 1.5 s starts half a second after the resume.
+    assert sum(1 for voice in voices if voice.end == pytest.approx(5.5 + 0.5)) == 2
+
+
+def test_aud_music_08_a_track_replaced_before_it_started_never_plays(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    pitches: list[float] = []
+
+    def fake_play_voice(_context: Any, _destination: Any, _layers: Any, options: Any) -> FakeVoice:
+        pitches.append(options.note_hz)
+        return FakeVoice(options.when + options.hold)
+
+    monkeypatch.setattr(music_player, "play_voice", fake_play_voice)
+    context = FakeContext()
+    player, _ = make(context)
+    player.play(track("level-1"), 1.0)
+    higher = Track("boss-1", 120, 4, [Note(0, 1, 72, 1, "lead")], True)
+    player.play(higher, 1.0)
+    player.update()
+    assert pitches == [pytest.approx(music_player.midi_to_hz(72))]
+    context.currentTime = 0.5
+    player.update()
+    # The first track is dropped, and nothing more is due within the lookahead.
+    assert len(pitches) == 1

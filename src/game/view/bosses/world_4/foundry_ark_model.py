@@ -1,28 +1,30 @@
-"""FB-FOUNDRY-ARK-01 to FB-FOUNDRY-ARK-07, 4-4: the Foundry Ark. Model space: logical pixels, nose
-+Z (down the screen), Y up towards the camera; +X is the screen's left. A huge flying foundry: an
-iron deck carrying a blast furnace at its heart, slag channels glowing from it to the crucibles aft,
-a chimney row on the foredeck, a missile battery on the bow and outriggers out to the rail cannons.
+# Copyright (c) 2026 Renaud Guillon
+"""FB-FOUNDRY-ARK-01 to FB-FOUNDRY-ARK-07, 4-4: the Foundry Ark.
+
+Model space: logical pixels, nose +Z (down the screen), Y up towards the camera; +X is the screen's
+left. A huge flying foundry: an iron deck carrying a blast furnace at its heart, slag channels
+glowing from it to the crucibles aft, a chimney row on the foredeck, a missile battery on the bow
+and outriggers out to the rail cannons.
+
 FB-FOUNDRY-ARK-02: a living colossus, its broad back scorched flesh ribbed in bone, its furnace a
 swollen heart, slag running in its veins, its stacks, engines, rails and guns metal grafts.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.bosses.world_4.foundry_ark import (  # noqa: E402
+from game.config.bosses.world_4.foundry_ark import (
     ARK_PARTS,
     ARK_TAPS,
     ARK_THROAT,
     FOUNDRY_ARK,
 )
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.final_boss_greebles import grille, hazard  # noqa: E402
-from game.view.bosses.mini_boss_greebles import seam, vent  # noqa: E402
-from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H  # noqa: E402
-from game.view.bosses.overlord_city import box2d, edge_lights, symmetric  # noqa: E402
-from game.view.bosses.world_4.foundry_ark_parts import (  # noqa: E402
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.final_boss_greebles import grille, hazard
+from game.view.bosses.mini_boss_greebles import seam, vent
+from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H
+from game.view.bosses.overlord_city import box2d, edge_lights, symmetric
+from game.view.bosses.world_4.foundry_ark_parts import (
     ARK_ORANGE,
     ARK_RED,
     DECK_TOP,
@@ -34,25 +36,27 @@ from game.view.bosses.world_4.foundry_ark_parts import (  # noqa: E402
     rail_cannon,
     rail_mount,
 )
-from game.view.bosses.world_4.foundry_ark_yard import draw_yard  # noqa: E402
-from game.view.bosses.world_4.living_forge import (  # noqa: E402
+from game.view.bosses.world_4.foundry_ark_yard import draw_yard
+from game.view.bosses.world_4.living_forge import (
     SKIN,
     back_ribs,
     glands,
     magma_vein,
     reactor_sacs,
 )
-from game.view.enemies.enemy_shapes import SIDES, decal, flip_x  # noqa: E402
-from render.geometry.organic import RibSpec  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
+from game.view.enemies.enemy_shapes import SIDES, decal, flip_x
+from render.geometry.organic import RibSpec
+from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type OutlinePoint = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The deck (right half, front to tail), closed across the bow.
 DECK = symmetric(
@@ -109,7 +113,7 @@ def _flipped(outline: Any) -> Any:
 
 
 def _draw_hull(p: Any) -> None:
-    """The deck with its lit rim, the outriggers, the engine block, rust and soot."""
+    """Draw the deck with its lit rim, the outriggers, the engine block, rust and soot."""
     hull = p.hull
     neon = p.neon
     flesh = p.flesh
@@ -149,7 +153,7 @@ def _draw_hull(p: Any) -> None:
 
 
 def _draw_furnace(p: Any) -> None:
-    """The blast furnace (the core): hearth, stack, glowing slits, the furnace door and tap guns."""
+    """Draw the blast furnace (the core): hearth, stack, glowing slits, door and tap guns."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -179,7 +183,7 @@ def _draw_furnace(p: Any) -> None:
 
 
 def _draw_channels(p: Any) -> None:
-    """The slag channels glowing across the deck from the furnace to the crucibles."""
+    """Draw the slag channels glowing across the deck from the furnace to the crucibles."""
     hull = p.hull
     neon = p.neon
     flesh = p.flesh
@@ -195,7 +199,7 @@ def _draw_channels(p: Any) -> None:
 
 
 def _draw_stern(p: Any) -> None:
-    """The engines' nozzles at the stern, and red lamps on the deck's corners."""
+    """Draw the engines' nozzles at the stern, and red lamps on the deck's corners."""
     for s in SIDES:
         reactor_sacs(p, [[s * 12, 1, -100.2]], 5.5, MOLTEN)
         reactor_sacs(p, [[s * 28, 1, -100.2]], 4.2, MOLTEN)
@@ -204,10 +208,12 @@ def _draw_stern(p: Any) -> None:
 
 
 def build_foundry_ark(scene: Any) -> Any:
-    """FB-FOUNDRY-ARK-01, FB-FOUNDRY-ARK-07: the Foundry Ark, a huge flying foundry (6 L) of sooty
-    iron under orange neon: a blast furnace at its heart, slag channels glowing out to two crucibles
-    hung in gantries aft, a chimney row on the foredeck, a missile battery on the bow and two rail
-    cannons on outriggers."""
+    """FB-FOUNDRY-ARK-01, FB-FOUNDRY-ARK-07: the Foundry Ark, a huge flying foundry (6 L).
+
+    Sooty iron under orange neon: a blast furnace at its heart, slag channels glowing out to two
+    crucibles hung in gantries aft, a chimney row on the foredeck, a missile battery on the bow and
+    two rail cannons on outriggers.
+    """
 
     def core(p: Any) -> None:
         _draw_hull(p)

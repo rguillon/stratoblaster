@@ -1,9 +1,10 @@
-"""FB-SKY-TEMPLE-04, 3-3: the Sky Temple's parts (its corner obelisks, its summit beacon). Logical
-pixels, nose +Z (its grand stair, down the screen), Y up (towards the camera)."""
+# Copyright (c) 2026 Renaud Guillon
+"""FB-SKY-TEMPLE-04, 3-3: the Sky Temple's parts (its corner obelisks, its summit beacon).
+
+Logical pixels, nose +Z (its grand stair, down the screen), Y up (towards the camera).
+"""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.boss_look import BOSS_LOOK
 from game.config.bosses.world_3.sky_temple import TEMPLE_BEACON, TEMPLE_HEIGHTS
@@ -16,13 +17,15 @@ from game.view.bosses.world_3.stone_idol_stone import STONE, moss, vine
 from game.view.enemies.enemy_shapes import SIDES
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from game.view.enemies.enemy_mesh import EnemyParts
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The Sky Temple's gold neon, and the cyan it shares its lights with (FB-SKY-TEMPLE-06).
 TEMPLE_GOLD = BOSS_LOOK.neon["sky-temple"]
@@ -39,14 +42,16 @@ OBELISK = record({"plinth": TIERS.height + 4, "shaft": TEMPLE_HEIGHTS.obelisk - 
 
 
 def corner(half: float) -> float:
-    """A four-sided solid's corner radius for a half width `half`."""
+    """Return a four-sided solid's corner radius for a half width `half`."""
     return half * math.sqrt(2)
 
 
 def obelisk(p: EnemyParts, at: Vec3) -> None:
-    """A corner obelisk around its centre `at` (FB-SKY-TEMPLE-04): a plinth on the lowest tier, a
-    tapering stone shaft carved with gold glyphs, a gilt pyramidion whose tip fires its spirals, a
-    vine climbing it."""
+    """Add a corner obelisk around its centre `at` (FB-SKY-TEMPLE-04).
+
+    A plinth on the lowest tier, a tapering stone shaft carved with gold glyphs, a gilt pyramidion
+    whose tip fires its spirals, a vine climbing it.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -117,8 +122,11 @@ LANTERN = record({"base": SUMMIT + 10, "roof": SUMMIT + 13})
 
 
 def beacon(p: EnemyParts, at: Vec3) -> None:
-    """The summit beacon around its centre `at` (FB-SKY-TEMPLE-04): a square tower at the front of
-    the summit, a lantern burning cyan under a gilt roof, four missile tubes on the roof."""
+    """Add the summit beacon around its centre `at` (FB-SKY-TEMPLE-04).
+
+    A square tower at the front of the summit, a lantern burning cyan under a gilt roof, four
+    missile tubes on the roof.
+    """
     hull = p.hull
     neon = p.neon
     hull.box(

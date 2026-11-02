@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/sim/world_1.py`."""
 
 from game.sim.world_1 import WORLD_1

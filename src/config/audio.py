@@ -1,4 +1,5 @@
-"""Engine tunables of the audio layer and the volume settings (audio/engine.md, ui/settings.md)
+# Copyright (c) 2026 Renaud Guillon
+"""Engine tunables of the audio layer and the volume settings (audio/engine.md, ui/settings.md).
 
 The music, the sounds and their own levels are game data (`src/game/view/audio/`).
 """
@@ -27,7 +28,7 @@ class AudioLimiter:
 class AudioConfig:
     """The audio tunables, in the order of `AUDIO_CONFIG`."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         volume_steps: float,
         default_volumes: AudioVolumes,

@@ -1,8 +1,7 @@
-"""The Juggernaut (`specs/enemies/juggernaut.md`)"""
+# Copyright (c) 2026 Renaud Guillon
+"""The Juggernaut (`specs/enemies/juggernaut.md`)."""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from core.entities.jointed_enemy import JointedEnemy
 from core.systems.enemy_motion import approach
@@ -11,23 +10,26 @@ from game.config.enemies_elite import ELITE_CONFIG
 from game.sim.enemies.enemy_helpers import DOWN, Cadence, bullet_shot, on_playfield
 from game.sim.joints import jointed_design
 
-__pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from core.entities.enemy import EnemyContext
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 CFG = ELITE_CONFIG.juggernaut
 
 
 class Juggernaut(JointedEnemy):
-    """ENM-JUGGERNAUT-08: an armoured brute. It comes down slowly to the upper third, drifts left
-    and right for 10 s, then leaves downward. Its two shoulder cannons swing to and fro
-    (ENM-JUGGERNAUT-09; moving parts, ENM-27), each firing a burst of 3 bullets along its barrel
-    every 1.6 s (ENM-JUGGERNAUT-10); its two front plates are parts too, and while one stands the
-    core cannot be hit (a shield, as a boss's, ENM-JUGGERNAUT-12). The core's turret fires a spread
-    of 7 bullets 9° apart centred on the player every 2.5 s (ENM-JUGGERNAUT-11), its charge lights
-    following it (ENM-JUGGERNAUT-04). Its cannons and plates come from its config, as the engine's
-    specs (ENM-JUGGERNAUT-15).
+    """ENM-JUGGERNAUT-08: an armoured brute.
+
+    It comes down slowly to the upper third, drifts left and right for 10 s, then leaves downward.
+    Its two shoulder cannons swing to and fro (ENM-JUGGERNAUT-09; moving parts, ENM-27), each firing
+    a burst of 3 bullets along its barrel every 1.6 s (ENM-JUGGERNAUT-10); its two front plates are
+    parts too, and while one stands the core cannot be hit (a shield, as a boss's,
+    ENM-JUGGERNAUT-12). The core's turret fires a spread of 7 bullets 9° apart centred on the player
+    every 2.5 s (ENM-JUGGERNAUT-11), its charge lights following it (ENM-JUGGERNAUT-04). Its cannons
+    and plates come from its config, as the engine's specs (ENM-JUGGERNAUT-15).
     """
 
     def __init__(self, center_x: float, y: float, stop_y: float) -> None:
@@ -45,6 +47,7 @@ class Juggernaut(JointedEnemy):
         self.heading = DOWN
 
     def act(self, ctx: EnemyContext, dt: float) -> None:
+        """Advance the enemy by `dt` seconds."""
         if self.state == "enter":
             self.y = approach(self.y, self.stop_y, CFG.entrySpeed * dt)
             if self.y == self.stop_y:

@@ -1,9 +1,10 @@
+# Copyright (c) 2026 Renaud Guillon
 """MB-MANGROVE-CROC-01 to MB-MANGROVE-CROC-06, 3-1: the Mangrove Croc.
+
 Logical pixels, nose +Z, Y up (towards the camera). A long, low hover-gunboat shaped like a
 crocodile: a scaly armoured back, a broad head with raised green neon eyes, jaws that open and
-close around the jaw cannon, and two side pontoons."""
-
-from org.transcrypt.stubs.browser import __pragma__
+close around the jaw cannon, and two side pontoons.
+"""
 
 from game.config.bosses.world_3.mangrove_croc import CROC_DOME, MANGROVE_CROC
 from game.config.record import record
@@ -29,59 +30,56 @@ from game.view.enemies.organic_parts import reactor_sac
 from render.geometry.organic import ROUND_SECTION, organ
 from render.geometry.solids import LoftOptions, Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import TYPE_CHECKING, Any
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_mesh import EnemyParts
 
+if TYPE_CHECKING:
+    from render.geometry.outline import OutlinePoint
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The hull (loft stations, tail to snout: z, half width, bottom, top): long, low and broad.
-HULL = table(
-    [
-        [-50, 2.5, 1.5, 4],
-        [-42, 7, 0, 6.5],
-        [-28, 13, -2.5, 9],
-        [-8, 17, -3, 10.5],
-        [10, 15, -2.5, 10],
-        [22, 11, -1.5, 8.5],
-        [30, 7.5, -0.5, 6],
-    ]
-)
+HULL = table([
+    [-50, 2.5, 1.5, 4],
+    [-42, 7, 0, 6.5],
+    [-28, 13, -2.5, 9],
+    [-8, 17, -3, 10.5],
+    [10, 15, -2.5, 10],
+    [22, 11, -1.5, 8.5],
+    [30, 7.5, -0.5, 6],
+])
 # The hover skirt under the hull, seen from above.
-SKIRT = table(
-    [
-        [0, -44],
-        [13, -30],
-        [18, -6],
-        [15, 14],
-        [9, 28],
-        [-9, 28],
-        [-15, 14],
-        [-18, -6],
-        [-13, -30],
-    ]
-)
+SKIRT = table([
+    [0, -44],
+    [13, -30],
+    [18, -6],
+    [15, 14],
+    [9, 28],
+    [-9, 28],
+    [-15, 14],
+    [-18, -6],
+    [-13, -30],
+])
 # The eyes on the head: where each sits (x across, z along) and the bump's radius and height.
 EYE = record({"x": 7, "z": 17, "radius": 3.6, "height": 10.4})
 # Rows of scutes either side of the spine (x, from z, to z, step).
-SCUTE_ROWS = table(
-    [
-        [4, -40, 6, 7],
-        [-4, -40, 6, 7],
-        [10, -26, -2, 8],
-        [-10, -26, -2, 8],
-    ]
-)
+SCUTE_ROWS = table([
+    [4, -40, 6, 7],
+    [-4, -40, 6, 7],
+    [10, -26, -2, 8],
+    [-10, -26, -2, 8],
+])
 # The ring dome on its back (a lathe profile around the dome's axis).
 DOME = table([[6.5, 0], [6.5, 1.5], [5, 4], [2.4, 5.2], [0, 5.4]])
 
 
 def top_at(z: float) -> float:
-    """The hull's height at `z` (the top of its loft there), for things laid on it."""
+    """Return the hull's height at `z` (the top of its loft there), for things laid on it."""
     for i in range(1, len(HULL)):
         a = HULL[i - 1]
         b = HULL[i]
@@ -94,7 +92,7 @@ def top_at(z: float) -> float:
 
 
 def draw_hull(p: EnemyParts) -> None:
-    """The hull, its skirt, its green neon chines and the pontoons' pylons."""
+    """Draw the hull, its skirt, its green neon chines and the pontoons' pylons."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -102,9 +100,7 @@ def draw_hull(p: EnemyParts) -> None:
     # metal belly.
     flesh.loft(ROUND_SECTION, HULL, JUNGLE_FLESH)
     hull.bevel_slab(SKIRT, [-4.5, -3.5, -2.5], [0.5, 0.5], H.dark, None, SWAMP.mud)
-    path: list[Vec3] = []
-    for st in HULL[1:]:
-        path.append([0, st[3] + 0.4, st[0]])
+    path: list[Vec3] = [[0, st[3] + 0.4, st[0]] for st in HULL[1:]]
     spine(p, path, {"at": [-30, -18, -6], "halfWidth": 9, "y": 4, "height": 6.2}, CROC_GREEN)
     for side in [1, 6]:
         neon.loft(
@@ -122,7 +118,10 @@ def draw_hull(p: EnemyParts) -> None:
 
 
 def draw_head(p: EnemyParts) -> None:
-    """The head: its two raised eyes with green neon slits, nostrils at the snout, a brow ridge."""
+    """Draw the head.
+
+    Its two raised eyes with green neon slits, nostrils at the snout, a brow ridge.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -152,8 +151,10 @@ def draw_head(p: EnemyParts) -> None:
 
 
 def draw_back(p: EnemyParts) -> None:
-    """Its scaly back (MB-MANGROVE-CROC-05): rows of scutes, moss in the hollows, river stones, a
-    vent and the ring dome."""
+    """Draw its scaly back (MB-MANGROVE-CROC-05).
+
+    Rows of scutes, moss in the hollows, river stones, a vent and the ring dome.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -169,7 +170,7 @@ def draw_back(p: EnemyParts) -> None:
             points.append([x, top_at(z) - 0.3, z])
             z += step
         # The narrow rows (|x| < 6, the TS literal) get smaller scutes.
-        scutes(hull, points, 2.2 if abs(x) < 6 else 1.8)  # noqa: PLR2004 (the TS cut-off of 6)
+        scutes(hull, points, 2.2 if abs(x) < 6 else 1.8)
     moss(hull, [[-3, -36], [3, -34], [2, -22], [-2, -24]], top_at(-30) + 0.1)
     moss(hull, [[6, -2], [13, 0], [11, 8], [5, 6]], top_at(3) - 0.2)
     stone(hull, [-11, top_at(6) - 0.8, 6], 2.6, 0.4)
@@ -192,7 +193,7 @@ def draw_back(p: EnemyParts) -> None:
 
 
 def mangrove_croc_core(p: EnemyParts) -> None:
-    """The core of the Mangrove Croc: its hull, head, back and reactors."""
+    """Add the core of the Mangrove Croc: its hull, head, back and reactors."""
     draw_hull(p)
     draw_head(p)
     draw_back(p)
@@ -201,10 +202,12 @@ def mangrove_croc_core(p: EnemyParts) -> None:
 
 
 def build_mangrove_croc(scene: Any) -> Any:
-    """MB-MANGROVE-CROC-01, MB-MANGROVE-CROC-06: the Mangrove Croc, a long, low hover-gunboat, green
-    neon: a crocodile's scaly armoured hull on a hover skirt, raised neon eyes, jaws opening and
-    closing around the jaw cannon in its throat, two side pontoons with fan guns, moss and vines
-    from the delta."""
+    """MB-MANGROVE-CROC-01, MB-MANGROVE-CROC-06: the Mangrove Croc, a long, low hover-gunboat.
+
+    Green neon: a crocodile's scaly armoured hull on a hover skirt, raised neon eyes, jaws opening
+    and closing around the jaw cannon in its throat, two side pontoons with fan guns, moss and vines
+    from the delta.
+    """
     parts: dict[str, Any] = {
         "jaw-cannon": jaw_cannon,
         "pontoon-left": pontoon,

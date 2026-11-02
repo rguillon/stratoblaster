@@ -1,14 +1,14 @@
-"""How a prop sits on the ground (GFX-PROP-06): pure helpers of the prop placement"""
+# Copyright (c) 2026 Renaud Guillon
+"""How a prop sits on the ground (GFX-PROP-06): pure helpers of the prop placement."""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Sequence
+from typing import Protocol
 
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-from core.scenery.height_field import HeightField  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.height_field import HeightField
 
 
 class Heights(Protocol):
@@ -19,20 +19,21 @@ class Heights(Protocol):
         ...
 
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class SampledGround:
-    """The heights of `field` sampled on the grid of multiples of `step` that covers the square of
-    `size` from (`x0`, `z0`), read back between the samples as the terrain's mesh draws them (D-212:
-    the trees of a cell ask for many heights; the field's cost a few octaves of noise each). The
-    mesh has a vertex at every multiple of its cell, and splits each cell into two triangles along
-    the diagonal from its (+X, -Z) corner to its (-X, +Z) corner (`build_grid_indices`): with
-    `step` its cell, a tree stands on the ground drawn (GFX-PROP-13). Outside the grid, its edge."""
+    """The heights of `field` on the grid of multiples of `step` that covers a square.
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
-        self, field: Heights, x0: float, z0: float, size: float, step: float
-    ) -> None:
+    The square has side `size` from (`x0`, `z0`), read back between the samples as the terrain's
+    mesh draws them (D-212: the trees of a cell ask for many heights; the field's cost a few octaves
+    of noise each). The mesh has a vertex at every multiple of its cell, and splits each cell into
+    two triangles along the diagonal from its (+X, -Z) corner to its (-X, +Z) corner
+    (`build_grid_indices`): with `step` its cell, a tree stands on the ground drawn (GFX-PROP-13).
+    Outside the grid, its edge.
+    """
+
+    def __init__(self, field: Heights, x0: float, z0: float, size: float, step: float) -> None:
         i0 = math.floor(x0 / step)
         j0 = math.floor(z0 / step)
         self._columns = max(1, math.ceil((x0 + size) / step) - i0)
@@ -47,16 +48,19 @@ class SampledGround:
         ]
 
     def height(self, x: float, z: float) -> float:
-        """Height of the ground at (x, z), interpolated between the samples as the mesh draws them;
-        points outside the sampled square are clamped to it."""
+        """Height of the ground at (x, z).
+
+        Interpolated between the samples as the mesh draws them; points outside the sampled square
+        are clamped to it.
+        """
         columns = self._columns
         rows = self._rows
         u = _clamped((x - self._x0) / self._step, columns)
         v = _clamped((z - self._z0) / self._step, rows)
         i = math.floor(u)
         j = math.floor(v)
-        i = columns - 1 if i > columns - 1 else i
-        j = rows - 1 if j > rows - 1 else j
+        i = min(i, columns - 1)
+        j = min(j, rows - 1)
         fu = u - i
         fv = v - j
         h = self._heights
@@ -75,7 +79,7 @@ class SampledGround:
 def _min_of(values: Sequence[float]) -> float:
     low = values[0]
     for k in range(1, len(values)):
-        if values[k] < low:  # noqa: PLR1730 (running minimum over a list)
+        if values[k] < low:
             low = values[k]
     return low
 
@@ -83,7 +87,7 @@ def _min_of(values: Sequence[float]) -> float:
 def _max_of(values: Sequence[float]) -> float:
     high = values[0]
     for k in range(1, len(values)):
-        if values[k] > high:  # noqa: PLR1730 (running maximum over a list)
+        if values[k] > high:
             high = values[k]
     return high
 
@@ -92,15 +96,13 @@ def _clamped(v: float, high: float) -> float:
     """`v` within [0, `high`]."""
     if v < 0:
         return 0
-    return high if v > high else v
+    return min(v, high)
 
 
 def lowest_under(field: HeightField, x: float, z: float, half: float) -> float:
-    """The lowest ground under a square of half side `half` around (x, z)."""
+    """Return the lowest ground under a square of half side `half` around (x, z)."""
     heights = [field.height(x, z)]
-    for dx in [-half, half]:
-        for dz in [-half, half]:
-            heights.append(field.height(x + dx, z + dz))
+    heights.extend([field.height(x + dx, z + dz) for dx in [-half, half] for dz in [-half, half]])
     return _min_of(heights)
 
 
@@ -109,9 +111,10 @@ def standing_height(
     spot: Sequence[float],
     limits: Sequence[float],
 ) -> float | None:
-    """Lowest ground height under a footprint of radius `radius` around (`x`, `z`), or None when
-    the ground there is steeper than `max_slope` or lower than `min_height` (so it never floats at a
-    corner, GFX-BLDG-04).
+    """Lowest ground height under a footprint of radius `radius` around (`x`, `z`).
+
+    Or None when the ground there is steeper than `max_slope` or lower than `min_height` (so it
+    never floats at a corner, GFX-BLDG-04).
 
     `spot` is (x, z, radius); `limits` is (max_slope, min_height).
     """

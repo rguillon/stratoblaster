@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/district_packing.py`."""
+
+from typing import Any
 
 from helpers.level_builders import (
     flat,
@@ -10,7 +13,7 @@ from helpers.level_builders import (
     tile_rules,
 )
 
-from core.scenery.district_packing import DistrictSite, RoadTilesCache, pack_districts
+from core.scenery.district_packing import DistrictSite, RoadTilesCache, _tries_of, pack_districts
 from core.scenery.districts import ZRange
 from core.scenery.height_field import HeightField
 from core.scenery.road_network import RoadNetwork
@@ -27,7 +30,7 @@ TWO = PropKindRule("two", 1.0, 24.0, (0.5, 1.0), tiles=(2, 2))
 LOT = PropKindRule("lot", 1.0, 12.0, (0.5, 1.0), tiles=(3, 1))
 
 
-def _setup(group_at=None, lots=(LOT,), seed: int = 4):
+def _setup(group_at: Any = None, lots: Any = (LOT,), seed: int = 4) -> Any:
     level = make_level(
         [
             section("a", 10, flat()),
@@ -46,20 +49,20 @@ def _setup(group_at=None, lots=(LOT,), seed: int = 4):
         level.props,
         roads,
         seed,
-        group_at if group_at is not None else (lambda x, z, section: group),
+        group_at if group_at is not None else (lambda _x, _z, _section: group),
         placed.append,
     )
     return site, roads, placed
 
 
-def _pack(site, roads, within=lambda z: True):
+def _pack(site: Any, roads: Any, within: Any = lambda _z: True) -> Any:
     road = RoadTilesCache().of(roads.roads, TILE)
     pack_districts(site, within, TILE, road)
     return road
 
 
 def test_gfx_bldg_05_buildings_are_the_same_for_the_same_seed() -> None:
-    def placements(seed: int):
+    def placements(seed: int) -> Any:
         site, roads, placed = _setup(seed=seed)
         _pack(site, roads)
         return [(b.placement.kind, b.placement.x, b.placement.z) for b in placed]
@@ -69,26 +72,47 @@ def test_gfx_bldg_05_buildings_are_the_same_for_the_same_seed() -> None:
 
 def test_perf_16_no_buildings_outside_the_places_asked_for() -> None:
     site, roads, placed = _setup()
-    _pack(site, roads, within=lambda z: False)
+    _pack(site, roads, within=lambda _z: False)
     assert placed == []
 
 
 def test_gfx_bldg_05_where_no_building_fits_the_lots_are_used() -> None:
-    site, roads, placed = _setup(group_at=lambda x, z, section: None)
+    site, roads, placed = _setup(group_at=lambda _x, _z, _section: None)
     _pack(site, roads)
     assert placed
     assert {b.placement.kind for b in placed} == {"lot"}
 
 
 def test_gfx_bldg_05_a_group_with_no_lots_leaves_the_ground_empty_where_nothing_fits() -> None:
-    site, roads, placed = _setup(group_at=lambda x, z, section: None, lots=())
+    site, roads, placed = _setup(group_at=lambda _x, _z, _section: None, lots=())
     _pack(site, roads)
     assert placed == []
 
 
 def test_perf_11_the_road_tiles_are_worked_out_once_per_list_of_roads() -> None:
-    site, roads, _ = _setup()
+    _site, roads, _ = _setup()
     cache = RoadTilesCache()
     first = cache.of(roads.roads, TILE)
     assert cache.of(roads.roads, TILE) is first
     assert cache.of(list(roads.roads), TILE) is not first
+
+
+PLAIN = PropKindRule("plain", 1.0, 12.0, (0.5, 1.0))
+
+
+def test_gfx_bldg_05_a_lot_without_tiles_counts_as_no_area_and_is_tried_last() -> None:
+    # Given first, the one-tile `plain` lot would fit everywhere and leave no room for the 3 x 1
+    # lot; sorted by area (none for a lot without tiles), the larger lot is tried first.
+    site, roads, placed = _setup(group_at=lambda _x, _z, _section: None, lots=(PLAIN, LOT))
+    _pack(site, roads)
+    kinds = {b.placement.kind for b in placed}
+    assert "lot" in kinds
+    assert kinds <= {"lot", "plain"}
+    assert all(b.half_x == b.half_z == TILE.size / 2 for b in placed if b.placement.kind == "plain")
+
+
+def test_gfx_bldg_05_a_group_tries_its_drawn_kind_then_the_largest_then_the_lots() -> None:
+    tries = _tries_of(PropGroupRule("g", 1.0, [ONE, TWO, PLAIN]), [LOT])
+    assert tries.kinds == [ONE, TWO]
+    assert tries.get(ONE) == [ONE, TWO, LOT]
+    assert tries.get(TWO) == [TWO, ONE, LOT]

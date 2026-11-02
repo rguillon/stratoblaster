@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/bosses/world_2/fjord_lynx.py`."""
 
 from helpers.config_checks import assert_boss_design, original_parts
@@ -6,14 +7,17 @@ from game.config.bosses.world_2.fjord_lynx import FJORD_LYNX
 
 
 def test_mb_fjord_lynx_08_boss_design_is_well_formed() -> None:
-    """Its parts (paw cannons, radar mast MB-FJORD-LYNX-09), guns and stage volleys fit together
-    (MB-FJORD-LYNX-10)."""
+    """Its parts, guns and stage volleys fit together.
+
+    Parts: paw cannons, radar mast (MB-FJORD-LYNX-09). Guns and stage volleys: MB-FJORD-LYNX-10.
+    """
     assert_boss_design(FJORD_LYNX)
 
 
 def test_boss_07_boss_id_is_a_lowercase_kebab_case_kind() -> None:
     assert FJORD_LYNX.id == FJORD_LYNX.id.lower()
-    assert " " not in FJORD_LYNX.id and "_" not in FJORD_LYNX.id
+    assert " " not in FJORD_LYNX.id
+    assert "_" not in FJORD_LYNX.id
 
 
 def test_mb_fjord_lynx_13_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
@@ -26,5 +30,6 @@ def test_mb_fjord_lynx_13_boss_stats_are_in_the_range_the_sim_relies_on() -> Non
 
 def test_mb_fjord_lynx_11_boss_has_an_angry_pattern_and_its_stage_count() -> None:
     """Its rage, and one stage pattern more than its parts (MB-FJORD-LYNX-10)."""
-    assert isinstance(FJORD_LYNX.rage, list) and FJORD_LYNX.rage
+    assert isinstance(FJORD_LYNX.rage, list)
+    assert FJORD_LYNX.rage
     assert len(FJORD_LYNX.stages) == len(original_parts(FJORD_LYNX)) + 1

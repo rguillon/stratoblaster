@@ -1,12 +1,12 @@
-"""Builds the core types of the player's ships and weapons from their config records: the one
-place where the config meets `core/` for them, the weapons staying data (GAME-WPN-19). Mapping
-rules are in `config_build.py`.
+# Copyright (c) 2026 Renaud Guillon
+"""Builds the core types of the player's ships and weapons from their config records.
+
+The one place where the config meets `core/` for them, the weapons staying data (GAME-WPN-19).
+Mapping rules are in `config_build.py`.
 
 `PLAYER_SHIPS` and `PLAYER_WEAPONS` keep camelCase keys; `core/` dispatches
 projectile and beam weapons with `isinstance`, so a weapon is built as its class here.
 """
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from core.entities.player_ship import PlayerShipDefinition, PlayerShipRoster
 from core.entities.weapon import (
@@ -17,14 +17,15 @@ from core.entities.weapon import (
 )
 from game.sim.config_build import mapped
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-from core.entities.weapon import WeaponDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.weapon import WeaponDefinition
 
 # A config record (`game/config/record.py`), typed as Any there.
 ConfigRecord = Any
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def _ship(ship: ConfigRecord) -> PlayerShipDefinition:
@@ -37,7 +38,7 @@ def _ship(ship: ConfigRecord) -> PlayerShipDefinition:
 
 
 def player_roster(config: ConfigRecord) -> PlayerShipRoster:
-    """The ships the player can fly, as `core/` reads them (GAME-SHIP-01)."""
+    """Return the ships the player can fly, as `core/` reads them (GAME-SHIP-01)."""
     return PlayerShipRoster(config.baseSpeedPxPerSec, mapped(config.ships, _ship))
 
 
@@ -46,11 +47,9 @@ def _stream(stream: ConfigRecord) -> ShotStream:
 
 
 def _projectile(weapon: ConfigRecord) -> ProjectileWeaponDefinition:
-    levels: list[list[ShotStream]] = []
-    for streams in weapon.levels:
-        levels.append(mapped(streams, _stream))
+    levels: list[list[ShotStream]] = [mapped(streams, _stream) for streams in weapon.levels]
     launch_back = weapon.launchBack
-    if launch_back == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    if launch_back == None:
         launch_back = 0
     return ProjectileWeaponDefinition(
         weapon.id,
@@ -79,7 +78,7 @@ def _beam(weapon: ConfigRecord) -> BeamWeaponDefinition:
 
 
 def _weapon(weapon: ConfigRecord) -> WeaponDefinition:
-    """The core class of a config weapon, by its `kind`."""
+    """Return the core class of a config weapon, by its `kind`."""
     kind = weapon.kind
     if kind == "projectile":
         return _projectile(weapon)
@@ -89,8 +88,6 @@ def _weapon(weapon: ConfigRecord) -> WeaponDefinition:
 
 
 def player_weapons(configs: list[ConfigRecord]) -> list[WeaponDefinition]:
-    """The weapons every player ship can fire, as `core/` reads them (GAME-WPN-01)."""
-    result: list[WeaponDefinition] = []
-    for weapon in configs:
-        result.append(_weapon(weapon))
+    """Return the weapons every player ship can fire, as `core/` reads them (GAME-WPN-01)."""
+    result: list[WeaponDefinition] = [_weapon(weapon) for weapon in configs]
     return result

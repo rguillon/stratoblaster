@@ -1,19 +1,19 @@
-"""How the ship comes into a level and leaves it (GAME-LEVEL-11, GAME-LEVEL-12)
+# Copyright (c) 2026 Renaud Guillon
+"""How the ship comes into a level and leaves it (GAME-LEVEL-11, GAME-LEVEL-12).
 
 It rises from below the screen to its start, the player flies it freely for a while once the level
 is cleared, then it flies off the top of the screen. Logical pixels and seconds.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from core.entities.muzzle import PlanePoint
 from core.systems.player_flight import PlayerFlight
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Literal, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Literal, Protocol
 
-from core.systems.player_flight import FlightBounds  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.player_flight import FlightBounds
 
 JourneyStage = Literal["arriving", "flying", "free", "leaving", "gone"]
 
@@ -79,17 +79,19 @@ class FlightOptions(Protocol):
         ...
 
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class JourneyRules:
-    """The ship's journey: `arrive_seconds` to rise from below the screen to the start, `below`
-    how far below the bottom of the screen the ship starts, `free_seconds` the seconds the player
-    keeps the ship once the level is cleared, and the fly-off: its starting speed `leave_speed`, its
-    acceleration `leave_acceleration`, and how far past the top it goes (`above`).
+    """The ship's journey.
+
+    `arrive_seconds` to rise from below the screen to the start, `below` how far below the bottom of
+    the screen the ship starts, `free_seconds` the seconds the player keeps the ship once the level
+    is cleared, and the fly-off: its starting speed `leave_speed`, its acceleration
+    `leave_acceleration`, and how far past the top it goes (`above`).
     """
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         arrive_seconds: float,
         below: float,
@@ -111,8 +113,9 @@ def _ease_out(t: float) -> float:
 
 
 class ShipJourney:
-    """The arrival and the departure of the ship (see `JourneyRules`). Pure. The player only flies
-    the ship in the `flying` stage.
+    """The arrival and the departure of the ship (see `JourneyRules`).
+
+    Pure. The player only flies the ship in the `flying` stage.
     """
 
     def __init__(self, rules: JourneyRules, start: PlanePoint, top: float) -> None:
@@ -135,7 +138,7 @@ class ShipJourney:
         return self._stage in ("arriving", "leaving", "gone")
 
     def skip_arrival(self, ship: Moved) -> None:
-        """The ship is at its start, as if it had arrived (a seek, a debug start)."""
+        """Put the ship at its start, as if it had arrived (a seek, a debug start)."""
         if self._stage != "arriving":
             return
         ship.x = self.start.x
@@ -145,7 +148,7 @@ class ShipJourney:
         self._stage = "flying"
 
     def clear(self) -> None:
-        """The level is cleared: the player keeps the ship for `free_seconds`."""
+        """Mark the level cleared: the player keeps the ship for `free_seconds`."""
         if self._stage not in ("flying", "arriving"):
             return
         self._stage = "free"
@@ -192,8 +195,9 @@ class FlightOfResult:
 
 
 def flight_of(options: FlightOptions) -> FlightOfResult:
-    """The player's ship, and its journey if `options.journey` is given, the ship then below the
-    screen.
+    """Return the player's ship, and its journey if `options.journey` is given.
+
+    The ship then below the screen.
     """
     start = options.ship.start
     flight = PlayerFlight(start, options.ship.max_speed, options.ship.acceleration_seconds)

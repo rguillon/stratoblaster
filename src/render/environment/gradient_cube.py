@@ -1,7 +1,8 @@
-"""Sky gradient as cube-map faces (no asset download, ENG-126)
+# Copyright (c) 2026 Renaud Guillon
+"""Sky gradient as cube-map faces (no asset download, ENG-126).
 
-The pure part of the sky reflections (GFX-SKY-10), unit-tested on its numbers; the Babylon
-wiring is in `showcase_environment_visual.py`.
+The pure part of the sky reflections (GFX-SKY-10), unit-tested on its numbers; the Babylon wiring is
+in `showcase_environment_visual.py`.
 """
 
 import math
@@ -10,11 +11,12 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from render.babylon import uint8_array
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class GradientStop:
@@ -43,7 +45,8 @@ def sample_gradient(stops: list[GradientStop], y: float) -> list[float]:
             return list(stop.color)
         previous = stop
     if previous is None:
-        raise ValueError("A gradient needs at least one stop")
+        msg = "A gradient needs at least one stop"
+        raise ValueError(msg)
     return list(previous.color)
 
 
@@ -59,11 +62,11 @@ def _side_height(u: float, v: float) -> float:
     return -v / _hypot3(1, u, v)
 
 
-def _top_height(u: float, v: float) -> float:
+def _top_height(_u: float, _v: float) -> float:
     return 1
 
 
-def _bottom_height(u: float, v: float) -> float:
+def _bottom_height(_u: float, _v: float) -> float:
     return -1
 
 
@@ -82,8 +85,7 @@ def _channel_byte(c: float) -> int:
 
 
 def build_gradient_cube_faces(size: int, stops: list[GradientStop]) -> list[Any]:
-    """Builds the 6 RGBA8 faces (`Uint8Array`s) of a cube map whose colour depends only on
-    height."""
+    """Build the 6 RGBA8 faces (`Uint8Array`s) of a cube map, coloured by height only."""
     faces: list[Any] = []
     for height in FACE_HEIGHT:
         face = uint8_array(size * size * 4)

@@ -1,11 +1,13 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/readability.py`."""
 
 import importlib
 from typing import Any
 
 import pytest
+from helpers.color_families import in_family
 
-from core.math.color import in_family, relative_luminance
+from core.math.color import relative_luminance
 from game.config.readability import READABILITY
 
 YELLOW = (1, 1, 0)
@@ -23,7 +25,7 @@ def test_gfx_read_04_each_gameplay_family_has_a_hue_window_and_a_saturation_floo
 
 
 def _hues(family: dict[str, float]) -> set[int]:
-    """The whole degrees `family`'s hue range covers."""
+    """Return the whole degrees `family`'s hue range covers."""
     span = (family["to"] - family["from"] + 360) % 360
     return {(family["from"] + d) % 360 for d in range(int(span) + 1)}
 
@@ -68,8 +70,11 @@ def test_gfx_read_07_contrast_thresholds_are_positive() -> None:
 
 
 def _colours_under(obj: Any, path: str, out: list[tuple[str, list[float]]]) -> None:
-    """Every RGB colour of `obj` (a look's subtree), with its path: lists of three channels in
-    0..1. The `tints` are multipliers, not colours, and are left out."""
+    """Every RGB colour of `obj` (a look's subtree) is listed with its path.
+
+    Each is a list of three channels in 0..1. The `tints` are multipliers, not colours, and are left
+    out.
+    """
     if isinstance(obj, dict):
         for key in obj:
             if key != "tints":
@@ -84,8 +89,10 @@ def _colours_under(obj: Any, path: str, out: list[tuple[str, list[float]]]) -> N
 
 
 def _background_palettes() -> dict[int, list[tuple[str, list[float]]]]:
-    """The background palette of each world: the ground, shore and water colours of its levels'
-    looks (GFX-READ-02; the sky is not the background)."""
+    """Return the background palette of each world is its ground, shore and water colours.
+
+    Taken from its levels' looks (GFX-READ-02; the sky is not the background).
+    """
     palettes: dict[int, list[tuple[str, list[float]]]] = {}
     for world in range(1, 5):
         looks = importlib.import_module(f"game.config.world_{world}.looks")

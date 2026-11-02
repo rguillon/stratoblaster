@@ -1,17 +1,17 @@
-"""What touches the player's hitbox (GAME-LIFE-04)"""
+# Copyright (c) 2026 Renaud Guillon
+"""What touches the player's hitbox (GAME-LIFE-04)."""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Literal, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
+from typing import Literal, Protocol
 
-from core.systems.enemy_shots import EnemyLaser  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.systems.enemy_world import EnemyWorld  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.systems.player_hull import HullRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.systems.enemy_shots import EnemyLaser
+from core.systems.enemy_world import EnemyWorld
+from core.systems.player_hull import HullRules
 
 PlayerHitKind = Literal["bullet", "missile", "laser", "collision"]
 
@@ -31,8 +31,7 @@ class PlayerHitPoint(Protocol):
 
 
 Touches = Callable[[PlayerHitPoint, float], bool]
-
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class PlayerHit:
@@ -42,7 +41,7 @@ class PlayerHit:
     takes damage... (GAME-LIFE-05)
     """
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self, kind: str, damage: float, x: float, y: float, land: Callable[[], None]
     ) -> None:
         self.kind = kind
@@ -91,19 +90,21 @@ def _ram_land(enemy: object, damage: float) -> Callable[[], None]:
 
 
 def _bullet_hits(world: EnemyWorld, rules: HullRules, touches: Touches) -> list[PlayerHit]:
-    hits: list[PlayerHit] = []
-    for b in world.shots.bullets:
-        if b.alive and touches(b, b.radius):
-            hits.append(PlayerHit("bullet", rules.damage.bullet, b.x, b.y, _bullet_land(b)))
+    hits: list[PlayerHit] = [
+        PlayerHit("bullet", rules.damage.bullet, b.x, b.y, _bullet_land(b))
+        for b in world.shots.bullets
+        if b.alive and touches(b, b.radius)
+    ]
     return hits
 
 
 def _missile_hits(world: EnemyWorld, rules: HullRules, touches: Touches) -> list[PlayerHit]:
-    hits: list[PlayerHit] = []
-    for m in world.shots.missiles:
-        if m.alive and m.health > 0 and touches(m, m.radius):
-            # Shot down by the hit: it blows up on the next step.
-            hits.append(PlayerHit("missile", rules.damage.missile, m.x, m.y, _missile_land(m)))
+    # A missile shot down by the hit blows up on the next step.
+    hits: list[PlayerHit] = [
+        PlayerHit("missile", rules.damage.missile, m.x, m.y, _missile_land(m))
+        for m in world.shots.missiles
+        if m.alive and m.health > 0 and touches(m, m.radius)
+    ]
     return hits
 
 
@@ -113,18 +114,15 @@ def _laser_hits(
     ship: PlayerHitPoint,
     lasers_hit: set[EnemyLaser],
 ) -> list[PlayerHit]:
-    hits: list[PlayerHit] = []
     x = ship.x
     y = ship.y
-    for laser in world.shots.lasers:
-        if (
-            laser.phase == "firing"
-            and laser not in lasers_hit
-            and _beam_distance(x, y, laser) <= rules.hit_radius + laser.spec.width / 2
-        ):
-            hits.append(
-                PlayerHit("laser", rules.damage.laser, x, y, _laser_land(laser, lasers_hit))
-            )
+    hits: list[PlayerHit] = [
+        PlayerHit("laser", rules.damage.laser, x, y, _laser_land(laser, lasers_hit))
+        for laser in world.shots.lasers
+        if laser.phase == "firing"
+        and laser not in lasers_hit
+        and _beam_distance(x, y, laser) <= rules.hit_radius + laser.spec.width / 2
+    ]
     return hits
 
 
@@ -154,7 +152,7 @@ def _collision_hits(world: EnemyWorld, rules: HullRules, touches: Touches) -> li
 
 
 def _sort_most_damaging_first(hits: list[PlayerHit]) -> None:
-    """A stable sort by damage, the most damaging first (as `Array.sort` does)."""
+    """Sort `hits` stably by damage, the most damaging first (as `Array.sort` does)."""
     for i in range(1, len(hits)):
         j = i
         while j > 0 and hits[j - 1].damage < hits[j].damage:
@@ -168,10 +166,11 @@ def find_player_hits(
     world: EnemyWorld,
     lasers_hit: set[EnemyLaser],
 ) -> list[PlayerHit]:
-    """The enemy shots and enemies touching the player's hitbox at (`x`, `y`), the most damaging
-    first (GAME-SHIP-06: a small hitbox). A laser beam counts once: those in `lasers_hit` are
-    skipped, and a beam's hit adds it there when it lands. A collision also hurts the enemy rammed,
-    unless it is a boss.
+    """Return the enemy shots and enemies touching the player's hitbox at (`x`, `y`).
+
+    The most damaging first (GAME-SHIP-06: a small hitbox). A laser beam counts once: those in
+    `lasers_hit` are skipped, and a beam's hit adds it there when it lands. A collision also hurts
+    the enemy rammed, unless it is a boss.
     """
 
     # A circle test (ENG-09: simple shapes in core/, no physics engine).

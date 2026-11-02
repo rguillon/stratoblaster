@@ -1,6 +1,8 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/tile_packing.py`."""
 
 import math
+from typing import Any
 
 import pytest
 from helpers.level_builders import flat, hills, make_level, prop_rules, section, tile_rules
@@ -32,14 +34,16 @@ ONE = PropKindRule("one", 1.0, 1.0, (0.5, 1.0), tiles=(1, 1))
 TWO = PropKindRule("two", 1.0, 2.0, (0.5, 1.0), tiles=(2, 2))
 
 
-def _site(free=None, road=None, kinds=(ONE,), random=lambda k: 0.3) -> PackSite:
+def _site(
+    free: Any = None, road: Any = None, kinds: Any = (ONE,), random: Any = lambda _k: 0.3
+) -> PackSite:
     def is_free(x: int, z: int) -> bool:
         return True if free is None else free(x, z)
 
     def is_road(x: int, z: int) -> bool:
         return False if road is None else road(x, z)
 
-    return PackSite(is_free, is_road, lambda x, z, n: list(kinds), random)
+    return PackSite(is_free, is_road, lambda _x, _z, _n: list(kinds), random)
 
 
 def test_gfx_bldg_05_a_block_is_packed_to_about_its_density() -> None:
@@ -52,7 +56,7 @@ def test_gfx_bldg_05_a_block_is_packed_to_about_its_density() -> None:
 
 def test_gfx_bldg_05_only_free_tiles_are_built_on() -> None:
     spots: list[TileSpot] = []
-    pack_block(_site(free=lambda x, z: x < 2), BLOCK, 1.0, spots.append)
+    pack_block(_site(free=lambda x, _z: x < 2), BLOCK, 1.0, spots.append)
     assert spots
     assert all(s.x < 2 for s in spots)
 
@@ -68,7 +72,7 @@ def test_gfx_bldg_05_packing_is_the_same_for_the_same_draws() -> None:
 
 def test_gfx_bldg_06_a_spot_turns_to_face_the_road_beside_it() -> None:
     # A road along the -X side of tile column 0 (outside the block): the spot faces it.
-    site = _site(road=lambda x, z: x == -1)
+    site = _site(road=lambda x, _z: x == -1)
     spot = _spot_for(site, BLOCK, ONE, 0, 2, 0.3, (6, 6))
     assert spot is not None
     assert spot.rotation == pytest.approx(math.pi / 2)
@@ -82,7 +86,7 @@ def test_gfx_bldg_06_without_a_road_the_spot_turns_by_its_draw() -> None:
 
 def test_gfx_bldg_05_no_spot_where_the_room_or_the_tiles_do_not_allow() -> None:
     assert _spot_for(_site(), BLOCK, ONE, 2, 2, 0.3, (0, 0)) is None
-    assert _spot_for(_site(free=lambda x, z: False), BLOCK, ONE, 2, 2, 0.3, (6, 6)) is None
+    assert _spot_for(_site(free=lambda _x, _z: False), BLOCK, ONE, 2, 2, 0.3, (6, 6)) is None
 
 
 def test_gfx_bldg_05_a_big_kind_is_not_put_over_the_left_tiles() -> None:
@@ -92,7 +96,7 @@ def test_gfx_bldg_05_a_big_kind_is_not_put_over_the_left_tiles() -> None:
 
 
 def test_gfx_bldg_06_faces_and_away_from_roads() -> None:
-    site = _site(road=lambda x, z: z == 1)
+    site = _site(road=lambda _x, z: z == 1)
     assert _faces(site, 0, 2, 1, 1, FACINGS[0]) is True
     assert _faces(site, 0, 2, 1, 1, FACINGS[1]) is False
     assert _away_from_roads(site, 0, 2, 1, 1) is False

@@ -104,8 +104,10 @@ positive whole number.
   (unit test).
 - Given the game's own ships, then they pass the check.
 
-**Discrepancy:** the check (`validate_player_ship_roster`) exists and is unit tested, but nothing
-runs it on the game's data.
+**Discrepancy:** the engine has no check: nothing refuses a roster at run time. The game's own ships
+are checked by a unit test (`tests/unit/game/sim/test_player_build.py`); the engine's check, which
+nothing ran, was removed with the code only tests called (D-237), and the duplicate-id criterion
+has no test.
 
 *Sources: D-004.*
 

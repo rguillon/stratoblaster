@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/geometry/islands.py`: which pieces of a model hold together (D-227)."""
 
 import pytest
@@ -93,3 +94,10 @@ def test_the_cell_memo_is_emptied_once_full_and_the_answers_stay_the_same(
     assert len(islands._CELL_MEMO[0]) < len(_boxes(*places))
     # Asked again, partly from what the memo kept.
     assert _held(*places) == expected
+
+
+def test_holding_groups_boxes_given_in_any_order_each_pair_joined_once() -> None:
+    # Out of order along X, and three boxes all touching each other: the third pair is already
+    # in one group when it is compared.
+    boxes = [[1.5, 0, 0, 2.5, 1, 1], [9, 9, 9, 10, 10, 10], [0, 0, 0, 2, 1, 1], [1, 0, 0, 3, 1, 1]]
+    assert holding(boxes, 0.1) == [0, 1, 0, 0]

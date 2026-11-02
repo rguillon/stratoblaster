@@ -1,24 +1,24 @@
-"""Shapes shared by the elite models (the five elite kinds, specs/enemies/*.md)
+# Copyright (c) 2026 Renaud Guillon
+"""Shapes shared by the elite models (the five elite kinds, specs/enemies/*.md).
 
-Logical pixels, nose +Z, Y up; a design point (x, y) facing down the screen is model
-(-x, height, -y) (`boss_point`).
+Logical pixels, nose +Z, Y up; a design point (x, y) facing down the screen is model (-x, height,
+-y) (`boss_point`).
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from game.config.enemy_look import ENEMY_LOOK
+from render.geometry.solids import Placement
 
-from render.geometry.solids import Placement  # noqa: E402
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Vec3 = list[float]
 type Rgb = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 H = ENEMY_LOOK.hull
 WHITE = [1, 1, 1]  # type: Rgb
@@ -26,14 +26,19 @@ QUARTER = math.pi / 2
 
 
 def ahead(at: Vec3, yaw: float, d: float) -> list[float]:
-    """The point `d` from `at` along `yaw` (radians from +Z towards +X), at the same height."""
+    """Return the point `d` from `at` along `yaw`, at the same height.
+
+    `yaw` is in radians from +Z towards +X.
+    """
     return [at[0] + math.sin(yaw) * d, at[1], at[2] + math.cos(yaw) * d]
 
 
 def barrel(p: Any, tip: Vec3, yaw: float, size: Any, kind: str = "gun") -> None:
-    """A gun barrel pointing `yaw`, ending at `tip`, `radius` thick and `length` long: dark steel,
-    a charge light at its mouth (the drones' and the cannons' charge lights, ENM-ORBITER-04,
-    ENM-JUGGERNAUT-04), the muzzle (`kind`) marked at the tip."""
+    """Add a gun barrel pointing `yaw`, ending at `tip`, `radius` thick and `length` long.
+
+    Dark steel, with a charge light at its mouth (the drones' and the cannons' charge lights,
+    ENM-ORBITER-04, ENM-JUGGERNAUT-04), and the muzzle (`kind`) marked at the tip.
+    """
     radius = size[0]
     length = size[1]
 
@@ -46,7 +51,7 @@ def barrel(p: Any, tip: Vec3, yaw: float, size: Any, kind: str = "gun") -> None:
 
 
 def strip(neon: Any, at: Vec3, yaw: float, span: Any, color: Rgb) -> None:
-    """A neon strip `length` long, centred `d` from `at` along `yaw`, `width` wide."""
+    """Add a neon strip `length` long, centred `d` from `at` along `yaw`, `width` wide."""
     d = span[0]
     length = span[1]
     width = span[2]

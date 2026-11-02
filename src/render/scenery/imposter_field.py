@@ -1,21 +1,25 @@
-"""The imposters in view (D-211, GFX-PROP-10): one quad per placement, facing the camera, showing
-the atlas frame of its kind nearest its heading (`imposters.py`). One mesh per kind and frame, its
-quads as thin instances (moved and scaled, never turned: the frame shows the turn; ENG-104).
-"""
+# Copyright (c) 2026 Renaud Guillon
+"""The imposters in view (D-211, GFX-PROP-10).
 
-from org.transcrypt.stubs.browser import __pragma__
+One quad per placement, facing the camera, showing the atlas frame of its kind nearest its heading
+(`imposters.py`).
+
+One mesh per kind and frame, its quads as thin instances (moved and scaled, never turned: the frame
+shows the turn; ENG-104).
+"""
 
 from render.babylon import float32_array, set_enabled
 from render.scenery.imposters import frame_of, frame_uv, imposter_quad
 from render.scenery.prop_field import MATRIX_FLOATS, mesh_of, same_placements
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from core.scenery.ground_boxes import PropPlacement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.ground_boxes import PropPlacement
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 # The normals of a quad's 4 corners, all up.
@@ -26,9 +30,11 @@ def _mesh_key(kind: str, frame: int) -> str:
     return kind + "#" + str(frame)
 
 
-def placement_matrix(buffer: Any, at: int, p: PropPlacement) -> None:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
-    """Writes the world matrix of `p`'s quad (scaled, moved, not turned) at float `at` of
-    `buffer`."""
+def placement_matrix(buffer: Any, at: int, p: PropPlacement) -> None:
+    """Write the world matrix of `p`'s quad at float `at` of `buffer`.
+
+    The quad is scaled and moved, not turned.
+    """
     s = p.scale
     values = [s, 0, 0, 0, 0, s, 0, 0, 0, 0, s, 0, p.x, p.y, p.z, 1]
     for i in range(MATRIX_FLOATS):
@@ -38,13 +44,13 @@ def placement_matrix(buffer: Any, at: int, p: PropPlacement) -> None:  # noqa: A
 class ImposterField:
     """The imposters of `kinds` (their atlas rows, in order), drawn with `material`."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
-        scene: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
+        scene: Any,
         kinds: list[str],
-        look: Any,  # noqa: ANN401 (a config record)
+        look: Any,
         tilt: float,
-        material: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
+        material: Any,
     ) -> None:
         self._look = look
         self._meshes: dict[str, Any] = {}

@@ -1,17 +1,20 @@
-"""The dead ends and crossings of a district's street grid, fixed (phase 4 review, phase 6
-review)."""
+# Copyright (c) 2026 Renaud Guillon
+"""The dead ends and crossings of a district's street grid.
 
-from org.transcrypt.stubs.browser import __pragma__
+Fixed (phase 4 review, phase 6 review).
+"""
 
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.min_heap import MinHeap
 
-from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.street_links import Link, LinksAt, Node  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
 
-__pragma__("noskip")
+from core.math.rng import Random
+from core.scenery.street_links import Link, LinksAt, Node
 
-from core.math.min_heap import MinHeap  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
+
 
 # Most passes of the dead-end removal (each pass can extend or cut every dead end by a link).
 MAX_PASSES = 500
@@ -30,7 +33,7 @@ def _links_of(at: LinksAt, node_id: int) -> Sequence[Link]:
 
 
 def _side_of(node: Node, link: Link) -> int:
-    """The side of `node` that `link` leaves it by, as an index of `SIDES`."""
+    """Return the side of `node` that `link` leaves it by, as an index of `SIDES`."""
     if link.a is node:
         self_node, other = link.a, link.b
     else:
@@ -40,13 +43,12 @@ def _side_of(node: Node, link: Link) -> int:
     return 2 if other.z < self_node.z else 3
 
 
-def _is_crossing(node: Node, around: Sequence[Link] | None, extra: Link | None = None) -> bool:
+def _is_crossing(node: Node, around: Sequence[Link], extra: Link | None = None) -> bool:
     """Whether built streets (and `extra`, if given) leave `node` on all four sides."""
     sides = 0
-    if around is not None:
-        for link in around:
-            if link.built or link is extra:
-                sides = sides | (1 << _side_of(node, link))
+    for link in around:
+        if link.built or link is extra:
+            sides = sides | (1 << _side_of(node, link))
     return sides == ALL_SIDES
 
 
@@ -63,9 +65,12 @@ def _fix_dead_end(
     tees: bool,
     keep_cut: bool,
 ) -> Link | None:
-    """Fixes `node` if a single built street ends there on screen: the street goes on straight when
-    the next link's ground allows it (and, with `tees`, its far end is no T-junction it would turn
-    into a crossing, nor was cut back before), else it is cut back. Returns the link it changed."""
+    """Fix `node` if a single built street ends there on screen.
+
+    The street goes on straight when the next link's ground allows it (and, with `tees`, its far end
+    is no T-junction it would turn into a crossing, nor was cut back before), else it is cut back.
+    Returns the link it changed.
+    """
     around = _links_of(at, node.id)
     only: Link | None = None
     built = 0
@@ -104,10 +109,11 @@ def remove_dead_ends(
     tees: bool,
     keep_cut: bool | None = None,
 ) -> None:
-    """Fixes the dead ends (GFX-ROAD-16), pass after pass over the nodes in order, until a pass
-    changes nothing. Reviewer, 2026-10-28: a pass only looks at the nodes whose links changed since
-    they were last looked at (those it would have fixed); the others would be left as they are.
-    Same passes, same fixes in the same order, without going through every node each time.
+    """Fix the dead ends (GFX-ROAD-16), pass after pass over the nodes in order.
+
+    Until a pass changes nothing. Reviewer, 2026-10-28: a pass only looks at the nodes whose links
+    changed since they were last looked at (those it would have fixed); the others would be left as
+    they are. Same passes, same fixes in the same order, without going through every node each time.
 
     `keep_cut`: a link cut back is never built again, so a street cannot keep being cut from one
     end and built again from the other (the default; the removal flips until `MAX_PASSES`
@@ -141,7 +147,7 @@ class _Passes:
         self._in_next: list[int] = [0 for _ in range(count)]
 
     def take(self) -> int | None:
-        """The next node this pass looks at, if any."""
+        """Return the next node this pass looks at, if any."""
         value = self._now.pop()
         if value is None:
             return None
@@ -150,8 +156,10 @@ class _Passes:
         return node_id
 
     def again(self, node_id: int, current: int) -> None:
-        """Looks at node `node_id` again: later in this pass if it comes after `current`, else in
-        the next."""
+        """Look at node `node_id` again.
+
+        Later in this pass if it comes after `current`, else in the next.
+        """
         if node_id > current and self._in_now[node_id] == 0:
             self._in_now[node_id] = 1
             self._now.push(node_id)
@@ -160,7 +168,7 @@ class _Passes:
             self._next.append(node_id)
 
     def turn(self) -> None:
-        """Starts the next pass."""
+        """Start the next pass."""
         nxt = sorted(self._next)
         for node_id in nxt:
             self._in_next[node_id] = 0
@@ -170,8 +178,11 @@ class _Passes:
 
 
 def _side_to_cut(around: Sequence[Link], random: Random) -> str | None:
-    """The side of a crossing whose street goes: up or down the level, or left or right where a
-    boulevard runs along the level, so it keeps going straight. None where two boulevards cross."""
+    """Return the side of a crossing whose street goes.
+
+    Up or down the level, or left or right where a boulevard runs along the level, so it keeps going
+    straight. None where two boulevards cross.
+    """
     along = any(not link.across and link.boulevard for link in around)
     across = any(link.across and link.boulevard for link in around)
     if along and across:
@@ -188,9 +199,11 @@ def remove_crossings(
     out_of_view: Callable[[Node], bool],
     random: Random,
 ) -> None:
-    """Turns every crossing into a T-junction (see `straight_runs`): the streets leaving it up or
-    down the level go. Cutting makes no crossing, nor does fixing the dead ends that leaves with
-    `tees`, so one pass is enough."""
+    """Turn every crossing into a T-junction (see `straight_runs`).
+
+    The streets leaving it up or down the level go. Cutting makes no crossing, nor does fixing the
+    dead ends that leaves with `tees`, so one pass is enough.
+    """
     for node in nodes:
         around = _links_of(at, node.id)
         if not _is_crossing(node, around):

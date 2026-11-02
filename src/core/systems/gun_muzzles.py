@@ -1,4 +1,5 @@
-"""Where a gun's shots leave from (ENM-21)
+# Copyright (c) 2026 Renaud Guillon
+"""Where a gun's shots leave from (ENM-21).
 
 A gun fires from its muzzles: the one furthest along each shot's way, the ones side by side in
 turn, as the camera sees them.
@@ -6,19 +7,18 @@ turn, as the camera sees them.
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from core.entities.muzzle import PlanePoint
 from core.systems.enemy_motion import fan_headings
 from core.systems.projectile_motion import heading_to
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
+from typing import Protocol
 
-from core.entities.enemy import EnemyContext, LaserOwner  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.entities.muzzle import Muzzle, RaisedPoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.enemy import EnemyContext, LaserOwner
+from core.entities.muzzle import Muzzle, RaisedPoint
 
 
 class MuzzleSource(LaserOwner, Protocol):
@@ -35,13 +35,15 @@ class MuzzleSource(LaserOwner, Protocol):
         ...
 
     def place(self, muzzle: Muzzle, on_turret: bool = False) -> RaisedPoint:
-        """Where `muzzle` is now (`Enemy.place`, `BossPiece.place`), turned with its turret when
-        `on_turret`; guns with muzzles need it.
+        """Where `muzzle` is now (`Enemy.place`, `BossPiece.place`).
+
+        Turned with its turret when `on_turret`; guns with muzzles need it.
         """
         ...
 
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 DEG = math.pi / 180
 
@@ -95,8 +97,9 @@ class GunMuzzles:
         return PlanePoint(source.x, source.y)
 
     def laser(self, source: MuzzleSource) -> LaserOwner:
-        """The laser owner a laser fired along `source`'s heading follows: its piece, from a
-        muzzle.
+        """Return the laser owner a laser fired along `source`'s heading follows.
+
+        Its piece, from a muzzle.
         """
         muzzle = self._choose(source, source.heading)
         if muzzle is None or not hasattr(source, "place"):
@@ -119,10 +122,7 @@ class GunMuzzles:
             p = source.place(m, self._on_turret)
             reach.append((p.x - source.x) * dx + (p.y - source.y) * dy)
         best = max(reach)
-        ahead: list[Muzzle] = []
-        for i in range(len(self._muzzles)):
-            if reach[i] >= best - TIE:
-                ahead.append(self._muzzles[i])
+        ahead: list[Muzzle] = [m for i, m in enumerate(self._muzzles) if reach[i] >= best - TIE]
         index = self._next % len(ahead)
         self._next += 1
         return ahead[index]
@@ -135,8 +135,9 @@ def fire_aimed(
     count_and_spacing: tuple[int, float],
     fire: Callable[[float, float, float], None],
 ) -> None:
-    """Fires a fan of `count` shots `spacing_deg` apart around the player's direction (ENM-20),
-    each from the muzzle facing its way and aimed from where it leaves.
+    """Fire a fan of `count` shots `spacing_deg` apart around the player's direction (ENM-20).
+
+    Each from the muzzle facing its way and aimed from where it leaves.
     """
     count, spacing_deg = count_and_spacing
     aim = heading_to(source.x, source.y, ctx.player_x, ctx.player_y)

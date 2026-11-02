@@ -1,5 +1,9 @@
-"""The works made for the grid of tiles (Phase 15, GFX-BLDG-09): outposts, mines, oil, refineries,
-factories, warehouses, docks and the foundries of heavy industry See `tile_kit.py`."""
+# Copyright (c) 2026 Renaud Guillon
+"""The works made for the grid of tiles (Phase 15, GFX-BLDG-09).
+
+Outposts, mines, oil, refineries, factories, warehouses, docks and the foundries of heavy industry.
+See `tile_kit.py`.
+"""
 
 import math
 
@@ -40,13 +44,13 @@ def cylinders(k: TileKit, radius: float, height: list[float], color: list[float]
 
 
 def chimney(k: TileKit, x: float, z: float, h: float, radius: float = 0.9) -> None:
-    """A chimney `h` high at (x, z), a glowing ring near its top."""
+    """Add a chimney `h` high at (x, z), a glowing ring near its top."""
     k.s.cylinder(radius, h, 8, C.concreteDark, Placement([x, 0, z], 0, 0, 0), radius * 0.75)
     k.lights.ring(radius * 0.8, 0.5, 8, L.red, Placement([x, h - 1.2, z], 0, 0, 0))
 
 
 def build_water_tower(k: TileKit) -> None:
-    """A water tower on four legs, a cyan ring of light under the tank."""
+    """Build a water tower on four legs, a cyan ring of light under the tank."""
     plot(k, C.sand)
     for x, z in [[-2, -2], [2, -2], [-2, 2], [2, 2]]:
         k.s.box([0.4, 8, 0.4], C.metalDark, Placement([x, 0, z], 0, 0, 0))
@@ -55,7 +59,7 @@ def build_water_tower(k: TileKit) -> None:
 
 
 def build_solar(k: TileKit) -> None:
-    """A solar farm: rows of tilted panels on sand."""
+    """Build a solar farm: rows of tilted panels on sand."""
     plot(k, C.sand)
     rows = max(2, js_round(k.d / 3))
     for i in range(rows):
@@ -68,7 +72,7 @@ def build_solar(k: TileKit) -> None:
 
 
 def build_radio(k: TileKit) -> None:
-    """A radio station: a low hut and a tall mast with a red light."""
+    """Build a radio station: a low hut and a tall mast with a red light."""
     plot(k, C.sand)
     k.s.box([4, 3, 3], C.concrete, Placement([-1.5, 0, -2], 0, 0, 0), C.roof)
     k.s.cylinder(0.4, 14, 4, C.metal, Placement([2, 0, 1.5], 0, 0, 0), 0.1)
@@ -78,7 +82,7 @@ def build_radio(k: TileKit) -> None:
 
 
 def build_depot(k: TileKit) -> None:
-    """A depot: a shed and two silos on sand."""
+    """Build a depot: a shed and two silos on sand."""
     plot(k, C.sand)
     k.s.box(
         [k.w * 0.6, 5, k.d * 0.5],
@@ -91,12 +95,12 @@ def build_depot(k: TileKit) -> None:
 
 
 def cylinders_at(k: TileKit, at: list[float], radius: float, h: float) -> None:
-    """A single silo of `radius` and height `h` at (x, z)."""
+    """Add a single silo of `radius` and height `h` at (x, z)."""
     k.s.cylinder(radius, h, 8, C.silver, Placement([at[0], 0, at[1]], 0, 0, 0))
 
 
 def build_headframe(k: TileKit) -> None:
-    """A mine headframe: four legs and a sheave wheel over a shed."""
+    """Build a mine headframe: four legs and a sheave wheel over a shed."""
     plot(k, C.ore)
     h = r(k, [14, 20])
     for x, z in [[-2, -2], [2, -2], [-2, 2], [2, 2]]:
@@ -158,7 +162,7 @@ def build_oil_tanks(k: TileKit) -> None:
 
 
 def build_flare(k: TileKit) -> None:
-    """A gas flare: a stack with a molten tip, a small block beside it."""
+    """Build a gas flare: a stack with a molten tip, a small block beside it."""
     plot(k, C.concreteDark)
     k.s.cylinder(0.7, 16, 6, C.metal, Placement([0, 0, 0], 0, 0, 0), 0.5)
     k.lights.lathe(
@@ -185,7 +189,7 @@ def build_tanks(k: TileKit) -> None:
 
 
 def build_refinery(k: TileKit) -> None:
-    """A refinery: columns, pipe racks and a block of plant."""
+    """Build a refinery: columns, pipe racks and a block of plant."""
     plot(k, C.concreteDark)
     n = max(2, js_round((k.w * k.d) / 120))
     for _i in range(n):
@@ -205,7 +209,7 @@ def build_refinery(k: TileKit) -> None:
 
 
 def build_factory(k: TileKit) -> None:
-    """A factory: a saw-tooth hall, chimneys and lit windows."""
+    """Build a factory: a saw-tooth hall, chimneys and lit windows."""
     plot(k, C.concreteDark)
     w = k.w - 1
     d = k.d * 0.75
@@ -222,7 +226,7 @@ def build_factory(k: TileKit) -> None:
 
 
 def build_warehouse(k: TileKit) -> None:
-    """A warehouse: a long hall with loading doors."""
+    """Build a warehouse: a long hall with loading doors."""
     plot(k, C.concreteDark)
     w = k.w - 1
     d = k.d - 3
@@ -236,7 +240,7 @@ def build_warehouse(k: TileKit) -> None:
 
 
 def build_containers(k: TileKit) -> None:
-    """A container yard: stacks of containers in a grid, a lamp."""
+    """Build a container yard: stacks of containers in a grid, a lamp."""
     plot(k, C.concreteDark)
     cols = max(1, math.floor(k.w / 3.5))
     rows = max(1, math.floor(k.d / 7))
@@ -251,7 +255,7 @@ def build_containers(k: TileKit) -> None:
 
 
 def build_cooling_tower(k: TileKit) -> None:
-    """A hyperbolic cooling tower, a red ring at its throat, a service block."""
+    """Build a hyperbolic cooling tower, a red ring at its throat, a service block."""
     plot(k, C.concreteDark)
     rad = min(k.w, k.d) * 0.36
     k.s.lathe(
@@ -268,7 +272,7 @@ def build_cooling_tower(k: TileKit) -> None:
 
 
 def build_foundry(k: TileKit) -> None:
-    """A foundry: a tall hall with molten furnace mouths and tall stacks."""
+    """Build a foundry: a tall hall with molten furnace mouths and tall stacks."""
     plot(k, C.rustDark)
     w = k.w - 2
     d = k.d * 0.6
@@ -290,7 +294,7 @@ def build_foundry(k: TileKit) -> None:
 
 
 def build_plant(k: TileKit) -> None:
-    """A power plant: a hall, a cooling tower, silos and a tall stack."""
+    """Build a power plant: a hall, a cooling tower, silos and a tall stack."""
     plot(k, C.concreteDark)
     k.s.box(
         [k.w * 0.5, 16, k.d * 0.45],
@@ -319,7 +323,7 @@ def build_plant(k: TileKit) -> None:
 
 
 def build_dock_crane(k: TileKit) -> None:
-    """A dock crane: two gantry legs a side and a beam across the top."""
+    """Build a dock crane: two gantry legs a side and a beam across the top."""
     plot(k, C.concreteDark)
     long = max(k.w, k.d)
     along_z = k.d > k.w

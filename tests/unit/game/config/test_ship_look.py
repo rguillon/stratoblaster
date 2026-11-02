@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/ship_look.py`."""
 
 from game.config.ship_look import PLAYER_SHIP_SCALE, SHIP_LOOK

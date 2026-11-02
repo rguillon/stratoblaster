@@ -1,5 +1,8 @@
-"""Unit tests of `src/render/edge_trim_mesh.py`: models get their glowing edge trim as child
-meshes (GFX-TRIM-01)."""
+# Copyright (c) 2026 Renaud Guillon
+"""Unit tests of `src/render/edge_trim_mesh.py`: models get their glowing edge trim as child meshes.
+
+Covers GFX-TRIM-01.
+"""
 
 from types import SimpleNamespace
 from typing import Any
@@ -30,11 +33,11 @@ def _babylon(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(edge_trim_mesh, "mesh_positions", lambda mesh: mesh.positions)
     monkeypatch.setattr(edge_trim_mesh, "mesh_indices", lambda mesh: mesh.indices)
     monkeypatch.setattr(edge_trim_mesh, "world_matrix", lambda node: node.matrix)
-    monkeypatch.setattr(edge_trim_mesh, "compute_normals", lambda p, i: [])
+    monkeypatch.setattr(edge_trim_mesh, "compute_normals", lambda _p, _i: [])
     monkeypatch.setattr(
         edge_trim_mesh,
         "vertex_data_of",
-        lambda p, i, n, c: SimpleNamespace(positions=p, indices=i, colors=c),
+        lambda p, i, _n, c: SimpleNamespace(positions=p, indices=i, colors=c),
     )
 
     def apply(data: Any, mesh: Any) -> None:
@@ -42,7 +45,7 @@ def _babylon(monkeypatch: pytest.MonkeyPatch) -> None:
 
     monkeypatch.setattr(edge_trim_mesh, "apply_vertex_data", apply)
     monkeypatch.setattr(
-        edge_trim_mesh, "new_standard_material", lambda label, scene: SimpleNamespace(name=label)
+        edge_trim_mesh, "new_standard_material", lambda label, _scene: SimpleNamespace(name=label)
     )
 
 
@@ -117,7 +120,8 @@ def test_meshes_of_one_colour_share_a_material() -> None:
     trims = add_edge_trim(root, TrimOptions(0.1, 0))
     assert len(trims) == 2
     assert trims[0].material is trims[1].material
-    assert a.children and b.children
+    assert a.children
+    assert b.children
 
 
 def test_a_covered_mesh_gets_no_trim_and_a_cleared_one_neither() -> None:
@@ -156,4 +160,33 @@ def test_a_trim_group_is_trimmed_along_its_own_outline() -> None:
     trims = add_edge_trim(root, TrimOptions(0.1, 0))
     # The part on the hull keeps its outline; the hull keeps its own.
     assert sorted(t.parent.name for t in trims) == ["hull", "part-mesh"]
-    assert big.children and small.children
+    assert big.children
+    assert small.children
+
+
+def test_gfx_trim_09_clearing_a_model_leaves_its_meshes_without_a_trim_untouched() -> None:
+    scene = FakeScene()
+    root = _root(scene)
+    trimmed = _box_mesh(scene, root, "trimmed", [1, 1, 1])
+    plain = _box_mesh(scene, root, "plain", [1, 1, 1])
+    plain.metadata = {"kind": "hull"}
+    set_trim(trimmed, CYAN)
+    clear_trim(root)
+    assert trim_of(trimmed) is None
+    assert plain.metadata == {"kind": "hull"}
+
+
+def test_gfx_trim_08_a_mesh_under_a_plain_node_belongs_to_the_model_s_own_group() -> None:
+    # The hull hangs from a plain node: it is in the model's group, so the part on it hides its
+    # inner edges; a part in a trim group of its own would keep them.
+    scene = FakeScene()
+    root = _root(scene)
+    frame = scene.add_node("frame")
+    frame.parent = root
+    big = _box_mesh(scene, frame, "hull", [4, 1, 4])
+    small = _box_mesh(scene, frame, "part-mesh", [1, 1, 1])
+    small.matrix = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1]
+    request_trim(root, CYAN)
+    trims = add_edge_trim(root, TrimOptions(0.1, 0))
+    assert [t.parent for t in trims] == [big]
+    assert small.children == []

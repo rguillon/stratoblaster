@@ -1,4 +1,5 @@
-"""Glow shapes of the shots (discs, swirls, streaks and bars)
+# Copyright (c) 2026 Renaud Guillon
+"""Glow shapes of the shots (discs, swirls, streaks and bars).
 
 Each builder returns a `ColoredGeometry`: positions, indices and vertex colours (RGBA) that the
 render layer turns into a mesh. Colours are `[r, g, b]` lists in 0..1.
@@ -10,15 +11,17 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from render.geometry.gradient_shapes import ColoredGeometry
 
-__pragma__("jsmod")
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Sequence
+from typing import Any
 
 Rgb = Sequence[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
+__pragma__("jsmod")
+
 
 # The guards of the builders: a ring needs 3 sides, a streak 2 colours and 2 rows.
 MIN_SEGMENTS = 3
@@ -32,36 +35,38 @@ def _range_error(message: str) -> None:
 
 
 def _empty_geometry() -> ColoredGeometry:
-    """A geometry with no vertices yet."""
+    """Return a geometry with no vertices yet."""
     return ColoredGeometry()
 
 
 def _mirrored_columns(count: int) -> list[int]:
-    """Colour indices `count-1 .. 0` then `1 .. count-1` (the reversed keys, then the keys after
-    the first)."""
-    columns: list[int] = []
-    for i in range(count - 1, -1, -1):
-        columns.append(i)
-    for i in range(1, count):
-        columns.append(i)
+    """Colour indices `count-1 .. 0`, then `1 .. count-1` (the keys after the first)."""
+    columns: list[int] = list(range(count - 1, -1, -1))
+    columns.extend(range(1, count))
     return columns
 
 
 def build_glow_disc(segments: int, colors: Sequence[Rgb]) -> ColoredGeometry:
-    """A disc of radius 1 in the XY plane, made of `rings` rings of `segments` sides: `colors[0]`
-    at the centre, `colors[i]` on ring `i`. Drawn with additive blending, a black outer ring
-    fades out, which gives the blob its soft edge."""
+    """Return a disc of radius 1 in the XY plane.
+
+    `colors[0]` is at the centre, `colors[i]` on ring `i`. It is made of `rings` rings of `segments`
+    sides. Drawn with additive blending, a black outer ring fades out, which gives the blob its soft
+    edge.
+    """
     return build_swirl(segments, colors, {"lobes": 0, "depth": 0, "twist": 0})
 
 
 def build_swirl(segments: int, colors: Sequence[Rgb], shape: dict[str, float]) -> ColoredGeometry:
-    """A `build_glow_disc` bent into curled arms, like a spiral galaxy: each ring's radius swells
-    on the arms and shrinks between them, and each ring is turned by `twist` × its radius, so the
-    arms curl outwards. Spun, it churns like plasma (the enemy bullets' swirls, GFX-SHOT-10).
+    """Return a `build_glow_disc` bent into curled arms, like a spiral galaxy.
 
-    `shape` holds `lobes` (number of arms, 0: a round disc), `depth` (0..1: how far the gaps
-    between the arms reach, relative to the radius) and `twist` (radians each arm turns by, from
-    the centre out to the rim)."""
+    Each ring's radius swells on the arms and shrinks between them, and each ring is turned by
+    `twist` x its radius, so the arms curl outwards. Spun, it churns like plasma (the enemy bullets'
+    swirls, GFX-SHOT-10).
+
+    `shape` holds `lobes` (number of arms, 0: a round disc), `depth` (0..1: how far the gaps between
+    the arms reach, relative to the radius) and `twist` (radians each arm turns by, from the centre
+    out to the rim).
+    """
     if segments < MIN_SEGMENTS or len(colors) < MIN_COLOURS:
         _range_error("Need 3 segments and 2 colours")
     lobes = shape["lobes"]
@@ -91,17 +96,24 @@ def build_swirl(segments: int, colors: Sequence[Rgb], shape: dict[str, float]) -
         outer = inner + segments
         for i in range(segments):
             nxt = (i + 1) % segments
-            geo.indices.extend(
-                [inner + i, outer + i, outer + nxt, inner + i, outer + nxt, inner + nxt]
-            )
+            geo.indices.extend([
+                inner + i,
+                outer + i,
+                outer + nxt,
+                inner + i,
+                outer + nxt,
+                inner + nxt,
+            ])
     return geo
 
 
 def build_tracer(colors: Sequence[Rgb], rows: Sequence[dict[str, Any]]) -> ColoredGeometry:
-    """A streak along Y, X in [-0.5, 0.5]: across its width `colors` go from the centre line to
-    both edges (like `build_glow_bar`); along it, each row at Y = `at` multiplies them by `tint`.
-    With additive blending, a black row fades the streak out there (the minigun tracer,
-    GFX-SHOT-01)."""
+    """Return a streak along Y (X in [-0.5, 0.5]): `colors` go from the centre line to the edges.
+
+    Across its width the colours go from the centre line to both edges (like `build_glow_bar`);
+    along it, each row at Y = `at` multiplies them by `tint`. With additive blending, a black row
+    fades the streak out there (the minigun tracer, GFX-SHOT-01).
+    """
     if len(colors) < MIN_COLOURS or len(rows) < MIN_ROWS:
         _range_error("Need 2 colours and 2 rows")
     geo = _empty_geometry()
@@ -122,8 +134,11 @@ def build_tracer(colors: Sequence[Rgb], rows: Sequence[dict[str, Any]]) -> Color
 
 
 def build_glow_bar(colors: Sequence[Rgb]) -> ColoredGeometry:
-    """A bar from Y = 0 to Y = 1, X in [-0.5, 0.5], coloured across its width: `colors[0]` on
-    the centre line out to the last colour on both edges. Scaled in X and Y, it draws a beam."""
+    """Return a bar from Y = 0 to Y = 1, X in [-0.5, 0.5], coloured across its width.
+
+    `colors[0]` is on the centre line, out to the last colour on both edges. Scaled in X and Y, it
+    draws a beam.
+    """
     if len(colors) < MIN_COLOURS:
         _range_error("Need 2 colours")
     geo = _empty_geometry()

@@ -1,16 +1,16 @@
-"""Keyboard listeners of the level: keys go to the level's
-debug keys first (when on, DEV-OPT-08), then to the in-game controls. Losing the focus lets every
-key go (GAME-CTRL-07).
+# Copyright (c) 2026 Renaud Guillon
+"""Keyboard listeners of the level: keys go to the level's debug keys first (when on, DEV-OPT-08).
+
+Then to the in-game controls. Losing the focus lets every key go (GAME-CTRL-07).
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def listen_controls(
@@ -18,9 +18,10 @@ def listen_controls(
     controls: Any,
     game: Callable[[], Any],
 ) -> Callable[[], None]:
-    """Listens for keys and focus loss on `target` (an event target, or None: nothing listens),
-    feeding `controls`. `game()` returns the level being played, or None. Returns the function
-    that stops listening.
+    """Listen for keys and focus loss on `target` (an event target, or None: nothing listens).
+
+    Feeding `controls`. `game()` returns the level being played, or None. Returns the function that
+    stops listening.
     """
     if target is None:
         return _stop_nothing

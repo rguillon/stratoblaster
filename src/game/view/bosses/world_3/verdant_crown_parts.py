@@ -1,10 +1,11 @@
-"""FB-VERDANT-CROWN-05, 3-5: the Verdant Crown's destroyable parts (thorn cannons, seed batteries,
-root generators), each drawn around its centre `at`, each turret around its pivot. Model space:
-logical pixels, nose +Z, Y up."""
+# Copyright (c) 2026 Renaud Guillon
+"""FB-VERDANT-CROWN-05, 3-5: the Verdant Crown's destroyable parts.
+
+Its thorn cannons, seed batteries and root generators, each drawn around its centre `at`, each
+turret around its pivot. Model space: logical pixels, nose +Z, Y up.
+"""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import mirror
 from game.config.bosses.world_3.verdant_crown import VERDANT_SEEDS, VERDANT_THORN
@@ -21,16 +22,18 @@ from game.view.bosses.world_3.verdant_crown_garden import (
 from game.view.enemies.enemy_shapes import POD_SECTION, around, decal, radial
 from render.geometry.solids import LoftOptions, Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_mesh import EnemyParts
+from render.geometry.outline import OutlinePoint
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 WHITE = [1, 1, 1]
@@ -41,7 +44,7 @@ OUTRIGGER_TOP = 3
 
 
 def rect(w: float, d: float, centre: list[float] | None = None) -> list[OutlinePoint]:
-    """A rectangle `w` wide and `d` long around (x, z) (the origin by default)."""
+    """Return a rectangle `w` wide and `d` long around (x, z) (the origin by default)."""
     x: float = 0
     z: float = 0
     if centre is not None:
@@ -56,14 +59,12 @@ def rect(w: float, d: float, centre: list[float] | None = None) -> list[OutlineP
 
 
 # A thorn cannon's pod (loft stations around its pivot), mossy on its back.
-THORN_POD = table(
-    [
-        [-13, 5.5, 0, 7],
-        [-4, 7.5, -0.5, 9],
-        [9, 6.5, 0, 8.5],
-        [15, 4, 2, 7],
-    ]
-)
+THORN_POD = table([
+    [-13, 5.5, 0, 7],
+    [-4, 7.5, -0.5, 9],
+    [9, 6.5, 0, 8.5],
+    [15, 4, 2, 7],
+])
 POD_BACK = 2
 # The lens at the front of its barrel (lathe profile, along the barrel).
 LENS = table([[0, 0], [3.2, 1], [2.2, 3], [0, 3.6]])
@@ -71,17 +72,19 @@ LENS = table([[0, 0], [3.2, 1], [2.2, 3], [0, 3.6]])
 THORNS = table([[3, 0], [6, 1.1], [9, -1.1], [12, 0], [15, 1.1], [18, -1.1]])
 
 
-def pod_paint(side: int, band: int) -> Any:
-    """The thorn pod's paint: its back mossy."""
+def pod_paint(side: int, _band: int) -> Any:
+    """Return the thorn pod's paint: its back mossy."""
     if side == POD_BACK:
         return JUNGLE["moss"]
     return None
 
 
 def thorn_cannon(p: EnemyParts, pos: Vec3) -> None:
-    """A thorn cannon (FB-VERDANT-CROWN-05), turning on its outrigger's turntable (D-073): a mossy
-    pod crowned with magenta spikes, a long barrel bristling with thorns, its lens glowing as the
-    laser charges."""
+    """Add a thorn cannon (FB-VERDANT-CROWN-05), turning on its outrigger's turntable (D-073).
+
+    A mossy pod crowned with magenta spikes, a long barrel bristling with thorns, its lens glowing
+    as the laser charges.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -133,7 +136,10 @@ def thorn_cannon(p: EnemyParts, pos: Vec3) -> None:
 
 
 def thorn_mount(p: EnemyParts, pos: Vec3) -> None:
-    """The turntable a thorn cannon turns on: a low drum on the outrigger, ringed with magenta."""
+    """Add the turntable a thorn cannon turns on.
+
+    A low drum on the outrigger, ringed with magenta.
+    """
     x = pos[0]
     z = pos[2]
     # FB-VERDANT-CROWN-02: a swollen knuckle of flesh at the limb's end, a metal turntable grafted
@@ -144,7 +150,7 @@ def thorn_mount(p: EnemyParts, pos: Vec3) -> None:
 
 
 def seed_point(a: float) -> list[float]:
-    """A point of a seed battery's pod outline (around its centre), at turn `a`."""
+    """Return a point of a seed battery's pod outline (around its centre), at turn `a`."""
     r = radial(a, 1, 0)
     return [r[0] * 12, r[2] * 15.5]
 
@@ -155,8 +161,11 @@ HATCH = [7, 5.6]
 
 
 def seed_battery(p: EnemyParts, pos: Vec3) -> None:
-    """A seed battery (FB-VERDANT-CROWN-05): a mossy armoured seed pod on the deck, six hatches lit
-    as its missiles load, magenta strips down its sides, leaves sprouting at its ends."""
+    """Add a seed battery (FB-VERDANT-CROWN-05): a mossy armoured seed pod on the deck.
+
+    Six hatches lit as its missiles load, magenta strips down its sides, leaves sprouting at its
+    ends.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -196,9 +205,11 @@ ROOT_REACH = 12
 
 
 def root_generator(p: EnemyParts, pos: Vec3) -> None:
-    """A root generator (FB-VERDANT-CROWN-05; no weapon, it shields the core): a glowing magenta
-    seed on a stone pedestal, gnarled roots arching from it into the deck, an emerald ring round its
-    foot."""
+    """Add a root generator (FB-VERDANT-CROWN-05; no weapon, it shields the core).
+
+    A glowing magenta seed on a stone pedestal, gnarled roots arching from it into the deck, an
+    emerald ring round its foot.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon

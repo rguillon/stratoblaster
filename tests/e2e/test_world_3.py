@@ -1,5 +1,8 @@
-"""e2e: World 3, its weather and its final bosses (specs/worlds/world-3/, and the way into World
-4)."""
+# Copyright (c) 2026 Renaud Guillon
+"""e2e: World 3, its weather, its final bosses and the way into World 4.
+
+See specs/worlds/world-3/.
+"""
 
 import re
 
@@ -35,8 +38,10 @@ def test_wld_3_01_the_world_3_row_shows_3_1_to_3_5_all_unlocked(page: Page) -> N
 def test_ui_level_08_a_level_can_be_confirmed_from_the_menu_and_plays(
     page: Page, index: int, level_id: str
 ) -> None:
-    """Also WLD-3-02 (five-minute levels) and each level's identity and duration (LVL-3-1-01,
-    LVL-3-2-01, LVL-3-3-01, LVL-3-4-01, LVL-3-5-01)."""
+    """Also WLD-3-02 (five-minute levels) and each level's identity and duration.
+
+    Levels' identity and duration: LVL-3-1-01, LVL-3-2-01, LVL-3-3-01, LVL-3-4-01, LVL-3-5-01.
+    """
     open_game(page)
     send_action(page, "confirm")
     send_action(page, "confirm")

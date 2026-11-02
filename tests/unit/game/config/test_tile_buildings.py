@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/tile_buildings.py`."""
 
 import math
@@ -24,7 +25,8 @@ def test_gfx_bldg_03_every_tile_model_has_a_unique_id_and_a_positive_footprint()
     assert len(ids) == len(set(ids))
     for m in TILE_MODELS:
         assert m.id.startswith("tile-"), m.id
-        assert m.tiles[0] >= 1 and m.tiles[1] >= 1, m.id
+        assert m.tiles[0] >= 1, m.id
+        assert m.tiles[1] >= 1, m.id
 
 
 def test_gfx_bldg_08_every_tile_group_lists_its_models_and_range() -> None:
@@ -45,7 +47,8 @@ def test_gfx_bldg_11_lot_kinds_have_their_weight_scale_and_tiles() -> None:
     assert LOT_KINDS
     for lot in LOT_KINDS:
         assert lot.weight > 0
-        assert lot.scale[0] > 0 and lot.scale[1] > 0
+        assert lot.scale[0] > 0
+        assert lot.scale[1] > 0
 
 
 def test_gfx_road_08_tile_and_building_margin_constants() -> None:

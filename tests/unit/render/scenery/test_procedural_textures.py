@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/scenery/procedural_textures.py` (GFX-TERRAIN-07, PERF-11)."""
 
 import json
@@ -25,10 +26,23 @@ from render.scenery.procedural_textures import (
 
 SIZE = 8
 
+# The JavaScript `Map` and JSON helpers as the module defines them, taken before the fixture below
+# replaces them, with the placeholder CPython returns after their `__pragma__("js")` body.
+JS_HELPERS: list[tuple[Any, tuple[Any, ...], Any]] = [
+    (procedural_textures._new_map, (), None),
+    (procedural_textures._map_has, ({}, "k"), False),
+    (procedural_textures._map_get, ({}, "k"), None),
+    (procedural_textures._map_set, ({}, "k", 1), None),
+    (procedural_textures._map_delete, ({}, "k"), None),
+    (procedural_textures._map_size, ({},), 0),
+    (procedural_textures._map_first_key, ({},), ""),
+    (procedural_textures._json_of, ([1, 2],), ""),
+]
+
 
 @pytest.fixture(autouse=True)
 def _js(monkeypatch: pytest.MonkeyPatch) -> None:
-    """The JavaScript `Map` of the kept textures and its JSON keys, as plain Python."""
+    """Replace the JavaScript `Map` of the kept textures and its JSON keys with plain Python."""
     patch_babylon(monkeypatch, procedural_textures)
     monkeypatch.setattr(procedural_textures, "_kept", {})
     monkeypatch.setattr(procedural_textures, "_map_has", lambda c, k: k in c)
@@ -105,8 +119,10 @@ def test_a_noise_texture_holds_fine_and_coarse_noise_in_red_and_green() -> None:
     pixels = build_noise_texture(SIZE, 4, 9)
     reds = [pixels[i] for i in range(0, len(pixels), 4)]
     greens = [pixels[i] for i in range(1, len(pixels), 4)]
-    assert min(reds) == 0 and max(reds) == 255
-    assert min(greens) == 0 and max(greens) == 255
+    assert min(reds) == 0
+    assert max(reds) == 255
+    assert min(greens) == 0
+    assert max(greens) == 255
     assert all(pixels[i] == 0 for i in range(2, len(pixels), 4))
 
 
@@ -178,3 +194,14 @@ def test_the_oldest_kept_texture_goes_when_the_cache_is_full(
     assert not has_texture(TextureJob("noise", [1]))
     assert has_texture(TextureJob("noise", [2]))
     assert has_texture(TextureJob("noise", [3]))
+
+
+@pytest.mark.parametrize(("helper", "args", "placeholder"), JS_HELPERS)
+def test_the_map_and_json_helpers_are_javascript_only(
+    helper: Any, args: tuple[Any, ...], placeholder: Any
+) -> None:
+    """The kept textures' `Map` and their JSON keys exist in the browser only.
+
+    CPython runs the placeholder return after each `__pragma__("js")` body.
+    """
+    assert helper(*args) == placeholder

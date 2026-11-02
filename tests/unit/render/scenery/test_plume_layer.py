@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/scenery/plume_layer.py` (GFX-PROP-18)."""
 
 from types import SimpleNamespace
@@ -48,13 +49,13 @@ def _babylon(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         plume_layer, "vertex_data_of", lambda positions, indices: (positions, indices)
     )
-    monkeypatch.setattr(plume_layer, "apply_vertex_data", lambda data, mesh: None)
+    monkeypatch.setattr(plume_layer, "apply_vertex_data", lambda _data, _mesh: None)
 
 
 def _new_mesh(label: str, scene: FakeScene) -> FakeNode:
     node = scene.add_node(label, is_mesh=True)
     node.vertexData = {}
-    node.setVerticesData = lambda name, values, updatable, stride: node.vertexData.__setitem__(
+    node.setVerticesData = lambda name, values, _updatable, _stride: node.vertexData.__setitem__(
         name, values
     )
     return node
@@ -156,7 +157,7 @@ def test_a_mesh_is_made_for_each_plume_kind_a_prop_has() -> None:
 
 def test_a_plume_mesh_is_always_selected_see_through_and_starts_hidden() -> None:
     meshes = build_plume_meshes(
-        FakeScene(), "chimney", [PropPlume((0, 0, 0), "smoke")], lambda kind: "m"
+        FakeScene(), "chimney", [PropPlume((0, 0, 0), "smoke")], lambda _kind: "m"
     )
     mesh = meshes[0]
     assert mesh.alwaysSelectAsActiveMesh is True
@@ -167,7 +168,7 @@ def test_a_plume_mesh_is_always_selected_see_through_and_starts_hidden() -> None
 
 def test_a_plume_mesh_holds_the_puffs_of_its_kind() -> None:
     plumes = [PropPlume((0, 0, 0), "smoke")]
-    mesh = build_plume_meshes(FakeScene(), "chimney", plumes, lambda kind: "m")[0]
+    mesh = build_plume_meshes(FakeScene(), "chimney", plumes, lambda _kind: "m")[0]
     assert len(mesh.vertexData["puff"]) == PLUME_KINDS["smoke"].puffs * 4 * 4
     assert len(mesh.vertexData["puffScale"]) == PLUME_KINDS["smoke"].puffs * 4
 
@@ -178,17 +179,17 @@ def test_a_plume_of_an_unknown_kind_or_without_a_material_makes_no_mesh() -> Non
         FakeScene(), "p", plumes, lambda kind: None if kind == "smoke" else "m"
     )
     assert meshes == []
-    meshes = build_plume_meshes(FakeScene(), "p", plumes, lambda kind: "m")
+    meshes = build_plume_meshes(FakeScene(), "p", plumes, lambda _kind: "m")
     assert [mesh.name for mesh in meshes] == ["p-plume-smoke"]
 
 
 def test_a_given_table_of_kinds_is_used_instead_of_the_engine_kinds() -> None:
     table = {"ember": _kind()}
     meshes = build_plume_meshes(
-        FakeScene(), "p", [PropPlume((0, 0, 0), "ember")], lambda kind: "m", table
+        FakeScene(), "p", [PropPlume((0, 0, 0), "ember")], lambda _kind: "m", table
     )
     assert [mesh.name for mesh in meshes] == ["p-plume-ember"]
 
 
 def test_a_prop_with_no_plumes_makes_no_mesh() -> None:
-    assert build_plume_meshes(FakeScene(), "p", [], lambda kind: "m") == []
+    assert build_plume_meshes(FakeScene(), "p", [], lambda _kind: "m") == []

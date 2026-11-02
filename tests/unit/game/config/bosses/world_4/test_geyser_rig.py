@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/bosses/world_4/geyser_rig.py`."""
 
 from helpers.config_checks import assert_boss_design, original_parts
@@ -12,7 +13,8 @@ def test_fb_geyser_rig_10_boss_design_is_well_formed() -> None:
 
 def test_boss_07_boss_id_is_a_lowercase_kebab_case_kind() -> None:
     assert GEYSER_RIG.id == GEYSER_RIG.id.lower()
-    assert " " not in GEYSER_RIG.id and "_" not in GEYSER_RIG.id
+    assert " " not in GEYSER_RIG.id
+    assert "_" not in GEYSER_RIG.id
 
 
 def test_fb_geyser_rig_09_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
@@ -25,5 +27,6 @@ def test_fb_geyser_rig_09_boss_stats_are_in_the_range_the_sim_relies_on() -> Non
 
 def test_fb_geyser_rig_14_boss_has_an_angry_pattern_and_its_stage_count() -> None:
     """Its rage, and one stage pattern more than its parts (FB-GEYSER-RIG-13)."""
-    assert isinstance(GEYSER_RIG.rage, list) and GEYSER_RIG.rage
+    assert isinstance(GEYSER_RIG.rage, list)
+    assert GEYSER_RIG.rage
     assert len(GEYSER_RIG.stages) == len(original_parts(GEYSER_RIG)) + 1

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/props/window_facades.py` (D-210)."""
 
 import pytest
@@ -25,11 +26,11 @@ CELLS = 64
 BAND = 15
 
 
-def test_d210_the_tint_is_half_the_window_colour_over_white():
+def test_d210_the_tint_is_half_the_window_colour_over_white() -> None:
     assert tint_of([1.0, 0.5, 0.0]) == pytest.approx([1.0, 0.75, 0.5])
 
 
-def test_d210_a_wall_maps_on_one_cell_per_window_in_its_style_band():
+def test_d210_a_wall_maps_on_one_cell_per_window_in_its_style_band() -> None:
     random = create_rng(1)
     for _ in range(50):
         u0, v0, u1, v1 = wall_uv(random, 2, 5 * WINDOW_CELL.width, 4 * WINDOW_CELL.height)
@@ -39,17 +40,17 @@ def test_d210_a_wall_maps_on_one_cell_per_window_in_its_style_band():
         assert u1 * CELLS <= 3 * BAND
 
 
-def test_d210_a_wall_wider_than_a_band_gets_the_whole_band():
+def test_d210_a_wall_wider_than_a_band_gets_the_whole_band() -> None:
     u0, _, u1, _ = wall_uv(create_rng(1), 0, 100 * WINDOW_CELL.width, 3)
     assert (u0, u1) == (0, BAND / CELLS)
 
 
-def test_d210_a_tiny_wall_gets_one_cell():
+def test_d210_a_tiny_wall_gets_one_cell() -> None:
     u0, v0, u1, v1 = wall_uv(create_rng(1), 1, 0.5, 0.5)
     assert (u1 - u0, v1 - v0) == pytest.approx((1 / CELLS, 1 / CELLS))
 
 
-def test_d210_a_box_gets_one_quad_per_wall_just_off_it():
+def test_d210_a_box_gets_one_quad_per_wall_just_off_it() -> None:
     quads = QuadBuilder()
     facade_windows(quads, create_rng(2), [0.0, 0.0, 10.0, 6.0], [1.0, 9.0], [1.0, 1.0, 1.0])
     geo = quads.geometry
@@ -62,12 +63,12 @@ def test_d210_a_box_gets_one_quad_per_wall_just_off_it():
 
 
 def _bands(geo: object) -> list[int]:
-    """The style band of each quad of `geo`."""
+    """Return the style band of each quad of `geo`."""
     uvs = geo.uvs  # type: ignore[attr-defined]
     return [int(min(uvs[i], uvs[i + 4]) * CELLS) // BAND for i in range(0, len(uvs), 8)]
 
 
-def test_d210_a_box_is_one_style_unless_mixed():
+def test_d210_a_box_is_one_style_unless_mixed() -> None:
     for seed in range(10):
         quads = QuadBuilder()
         facade_windows(quads, create_rng(seed), [0.0, 0.0, 10.0, 10.0], [0.0, 9.0], [1, 1, 1])
@@ -75,12 +76,14 @@ def test_d210_a_box_is_one_style_unless_mixed():
     mixed = set()
     for seed in range(10):
         quads = QuadBuilder()
-        facade_windows(quads, create_rng(seed), [0.0, 0.0, 10.0, 10.0], [0.0, 9.0], [1, 1, 1], True)
+        facade_windows(
+            quads, create_rng(seed), [0.0, 0.0, 10.0, 10.0], [0.0, 9.0], [1, 1, 1], mixed=True
+        )
         mixed.add(len(set(_bands(quads.geometry))))
     assert max(mixed) > 1
 
 
-def test_d210_a_wall_too_low_or_too_narrow_gets_no_quad():
+def test_d210_a_wall_too_low_or_too_narrow_gets_no_quad() -> None:
     quads = QuadBuilder()
     facade_windows(quads, create_rng(2), [0.0, 0.0, 10.0, 6.0], [1.0, 1.5], [1, 1, 1])
     assert quads.geometry.indices == []
@@ -88,7 +91,7 @@ def test_d210_a_wall_too_low_or_too_narrow_gets_no_quad():
     assert len(quads.geometry.indices) == 2 * 6
 
 
-def test_d210_a_round_tower_gets_one_quad_per_facet_following_its_taper():
+def test_d210_a_round_tower_gets_one_quad_per_facet_following_its_taper() -> None:
     quads = QuadBuilder()
     tower = [2.0, 3.0, 5.0, 20.0, 4.0, 2.0, 6]
     round_windows(quads, create_rng(2), tower, [5.0, 25.0], [1.0, 1.0, 1.0])
@@ -101,22 +104,28 @@ def test_d210_a_round_tower_gets_one_quad_per_facet_following_its_taper():
     assert len(set(_bands(geo))) == 1
 
 
-def test_d210_a_round_tower_too_low_gets_no_windows():
+def test_d210_a_round_tower_too_low_gets_no_windows() -> None:
     quads = QuadBuilder()
     round_windows(quads, create_rng(2), [0.0, 0.0, 0.0, 10.0, 3.0, 3.0, 8], [2.0, 2.5], [1, 1, 1])
     assert quads.geometry.indices == []
 
 
-def test_d215_a_box_may_have_the_style_it_asks_for():
+def test_d215_a_box_may_have_the_style_it_asks_for() -> None:
     for seed in range(10):
         quads = QuadBuilder()
         facade_windows(
-            quads, create_rng(seed), [0.0, 0.0, 10.0, 10.0], [0.0, 9.0], [1, 1, 1], False, 2
+            quads,
+            create_rng(seed),
+            [0.0, 0.0, 10.0, 10.0],
+            [0.0, 9.0],
+            [1, 1, 1],
+            mixed=False,
+            style=2,
         )
         assert set(_bands(quads.geometry)) == {2}
 
 
-def test_d215_one_wall_gets_one_quad_of_its_style_just_off_it_facing_its_way():
+def test_d215_one_wall_gets_one_quad_of_its_style_just_off_it_facing_its_way() -> None:
     for facing in [-1, 1]:
         quads = QuadBuilder()
         wall_windows(
@@ -137,26 +146,26 @@ def test_d215_one_wall_gets_one_quad_of_its_style_just_off_it_facing_its_way():
         assert high == pytest.approx([5.0, 4.0, z])
 
 
-def test_d215_one_wall_faces_out():
+def test_d215_one_wall_faces_out() -> None:
     for facing in [-1, 1]:
         quads = QuadBuilder()
         wall_windows(quads, create_rng(1), [0.0, 0.0, facing], [4.0, 0.0, 3.0], 0, [1, 1, 1])
         p = quads.geometry.positions
-        # The quad's corners: foot, top, top, foot, its normal (c1 - c0) × (c2 - c0) along Z.
+        # The quad's corners: foot, top, top, foot, its normal (c1 - c0) x (c2 - c0) along Z.
         e1 = [p[3] - p[0], p[4] - p[1], p[5] - p[2]]
         e2 = [p[6] - p[0], p[7] - p[1], p[8] - p[2]]
         nz = e1[0] * e2[1] - e1[1] * e2[0]
         assert nz * facing > 0
 
 
-def test_d215_a_wall_too_narrow_or_too_low_gets_no_quad():
+def test_d215_a_wall_too_narrow_or_too_low_gets_no_quad() -> None:
     quads = QuadBuilder()
     wall_windows(quads, create_rng(1), [0.0, 0.0, -1], [0.5, 0.0, 3.0], 0, [1, 1, 1])
     wall_windows(quads, create_rng(1), [0.0, 0.0, -1], [4.0, 1.0, 1.5], 0, [1, 1, 1])
     assert quads.geometry.positions == []
 
 
-def test_d215_a_door_is_one_cell_of_its_band_standing_on_the_ground():
+def test_d215_a_door_is_one_cell_of_its_band_standing_on_the_ground() -> None:
     """GFX-BLDG-14."""
     random = create_rng(4)
     for door in [DOOR_STYLES.door, DOOR_STYLES.bay]:
@@ -173,6 +182,8 @@ def test_d215_a_door_is_one_cell_of_its_band_standing_on_the_ground():
             assert int(u0 * CELLS + 0.5) in [4 * BAND + 2 * door, 4 * BAND + 2 * door + 1]
             low, high = bounds(geo)
             assert low == pytest.approx([1.0 - WINDOW_CELL.width / 2, 0.5, -2 - WINDOW_OFFSET])
-            assert high == pytest.approx(
-                [1.0 + WINDOW_CELL.width / 2, 0.5 + WINDOW_CELL.height, -2 - WINDOW_OFFSET]
-            )
+            assert high == pytest.approx([
+                1.0 + WINDOW_CELL.width / 2,
+                0.5 + WINDOW_CELL.height,
+                -2 - WINDOW_OFFSET,
+            ])

@@ -1,25 +1,25 @@
-"""MB-FURNACE-DRAKE-01 to MB-FURNACE-DRAKE-06, 4-4: the Furnace Drake. Logical pixels, nose +Z, Y up
-(towards the camera). A dragon-shaped gunship: a heavy armoured torso with a furnace glowing through
-a grate in its back, molten seams between its soot-black plates, four clawed legs tucked under it, a
-long spiked tail lashing behind, beating wings and a horned head on a swaying neck.
-MB-FURNACE-DRAKE-02: a living dragon, its flesh torso ribbed in bone, a furnace heart grafted in its
-back, magma veins under its hide, bone spines and claws.
+# Copyright (c) 2026 Renaud Guillon
+"""MB-FURNACE-DRAKE-01 to MB-FURNACE-DRAKE-06, 4-4: the Furnace Drake.
+
+Logical pixels, nose +Z, Y up (towards the camera). A dragon-shaped gunship: a heavy armoured torso
+with a furnace glowing through a grate in its back, molten seams between its soot-black plates, four
+clawed legs tucked under it, a long spiked tail lashing behind, beating wings and a horned head on a
+swaying neck. MB-FURNACE-DRAKE-02: a living dragon, its flesh torso ribbed in bone, a furnace heart
+grafted in its back, magma veins under its hide, bone spines and claws.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.bosses.world_4.furnace_drake import (  # noqa: E402
+from game.config.bosses.world_4.furnace_drake import (
     DRAKE_HEART,
     DRAKE_WING,
     FURNACE_DRAKE,
 )
-from game.config.record import record  # noqa: E402
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.final_boss_greebles import rod  # noqa: E402
-from game.view.bosses.mini_boss_greebles import seam, vent  # noqa: E402
-from game.view.bosses.mini_boss_shapes import WHITE, H  # noqa: E402
-from game.view.bosses.world_4.furnace_drake_parts import (  # noqa: E402
+from game.config.record import record
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.final_boss_greebles import rod
+from game.view.bosses.mini_boss_greebles import seam, vent
+from game.view.bosses.mini_boss_shapes import WHITE, H
+from game.view.bosses.world_4.furnace_drake_parts import (
     DRAKE_ORANGE,
     DRAKE_RED,
     SOOT,
@@ -27,23 +27,25 @@ from game.view.bosses.world_4.furnace_drake_parts import (  # noqa: E402
     spike,
     wing,
 )
-from game.view.bosses.world_4.living_forge import (  # noqa: E402
+from game.view.bosses.world_4.living_forge import (
     SKIN,
     back_ribs,
     glands,
     magma_vein,
     reactor_sacs,
 )
-from game.view.enemies.enemy_shapes import HULL_SECTION, POD_SECTION, SIDES  # noqa: E402
-from render.geometry.organic import RibSpec  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
+from game.view.enemies.enemy_shapes import HULL_SECTION, POD_SECTION, SIDES
+from render.geometry.organic import RibSpec
+from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The torso along the centre line (loft stations: z, half width, bottom, top).
 TORSO = [
@@ -105,8 +107,10 @@ def _draw_legs(p: Any) -> None:
 
 
 def _draw_torso(p: Any) -> None:
-    """The torso: plates, molten seams between them, soot, spines down the back, legs and
-    reactors."""
+    """Draw the torso: plates, molten seams between them, soot, spines down the back.
+
+    And the legs and reactors.
+    """
     hull = p.hull
     neon = p.neon
     p.flesh.loft(HULL_SECTION, TORSO, SKIN.base)
@@ -155,7 +159,7 @@ def _draw_torso(p: Any) -> None:
 
 
 def _draw_heart(p: Any) -> None:
-    """The furnace heart on its back, where its spirals leave from."""
+    """Draw the furnace heart on its back, where its spirals leave from."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -176,7 +180,7 @@ def _draw_heart(p: Any) -> None:
 
 
 def _draw_tail(p: Any) -> None:
-    """The tail on its joint at the hips: spikes down its back, a glowing blade at its tip."""
+    """Draw the tail on its joint at the hips: spikes down its back, a glowing blade at its tip."""
     hull = p.flesh
     neon = p.neon
     hull.loft(POD_SECTION, TAIL, SKIN.panel)
@@ -193,9 +197,11 @@ TAIL_LIMB = record({"draw": _draw_tail})
 
 
 def build_furnace_drake(scene: Any) -> Any:
-    """MB-FURNACE-DRAKE-01, MB-FURNACE-DRAKE-05: the Furnace Drake, a dragon-shaped gunship (3.5 L)
-    of soot-black plates with red and orange neon: beating wings with a fan pod under each, a horned
-    head breathing flame, a furnace glowing in its back and a spiked tail lashing behind."""
+    """MB-FURNACE-DRAKE-01, MB-FURNACE-DRAKE-05: the Furnace Drake, a dragon-shaped gunship (3.5 L).
+
+    Made of soot-black plates with red and orange neon: beating wings with a fan pod under each, a
+    horned head breathing flame, a furnace glowing in its back and a spiked tail lashing behind.
+    """
 
     def core(p: Any) -> None:
         _draw_torso(p)

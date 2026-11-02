@@ -1,19 +1,20 @@
+# Copyright (c) 2026 Renaud Guillon
 """The towers of the city blocks (phase 4 review)."""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from core.scenery.away_placement import Building
+from core.scenery.ground_boxes import PropPlacement
 
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Sequence
 
-from core.scenery.scenery_level import PropGroupRule, PropKindRule  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.street_links import Block  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.scenery_level import PropGroupRule, PropKindRule
+from core.scenery.street_links import Block
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
-from core.scenery.away_placement import Building  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.ground_boxes import PropPlacement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Gap between a tower and the edge of its part of the podium roof.
 TOWER_MARGIN = 1
@@ -41,7 +42,10 @@ def tower_in(
     y: float,
     r: float,
 ) -> Building | None:
-    """The largest kind of `groups` that fits `part`, standing at `y`, with the ground it takes."""
+    """Return the largest kind of `groups` that fits `part`, with the ground it takes.
+
+    The tower stands at `y`.
+    """
     half = min(part.x_max - part.x_min, part.z_max - part.z_min) / 2 - TOWER_MARGIN
     fitting: list[_Fit] = []
     for g in groups:

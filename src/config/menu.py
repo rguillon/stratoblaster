@@ -1,4 +1,5 @@
-"""Tunables of the engine's menu screens (phase 01)
+# Copyright (c) 2026 Renaud Guillon
+"""Tunables of the engine's menu screens (phase 01).
 
 Game-specific values are in `src/game/config/`.
 """
@@ -9,7 +10,7 @@ import math
 class ShipSelectCamera:
     """The camera of the ship select screen."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         alpha: float,
         beta: float,
@@ -29,7 +30,7 @@ class ShipSelectCamera:
 class ShipSelectLights:
     """The lights of the ship select screen."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         ambient_intensity: float,
         spot_intensity: float,
@@ -64,7 +65,7 @@ class ShipSelectRing:
 class ShipSelect:
     """The ship select screen's tunables (UI-SHIP-01)."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         spacing: float,
         rotation_speed_rad_per_sec: float,

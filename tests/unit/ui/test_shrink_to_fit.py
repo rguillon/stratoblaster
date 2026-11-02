@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/ui/shrink_to_fit.py`."""
 
 from helpers.dom import FakeDocument, FakeElement
@@ -9,13 +10,13 @@ class Text(FakeElement):
     """A line of text whose width is its length times the font size (0.6 em a letter)."""
 
     @property
-    def scrollWidth(self) -> float:  # noqa: N802
+    def scrollWidth(self) -> float:
         size = float(self.style.fontSize.rstrip("px")) if self.style.fontSize else 16.0
         return len(self.textContent) * size * 0.6
 
     @scrollWidth.setter
-    def scrollWidth(self, value: float) -> None:  # noqa: N802
-        """The base class sets it; the text computes its own."""
+    def scrollWidth(self, value: float) -> None:
+        """Ignore the value: the base class sets it, but the text computes its own."""
 
 
 def make_title(doc: FakeDocument, text: str, room: float) -> Text:

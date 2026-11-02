@@ -1,4 +1,5 @@
-"""The single entry point of this game's content (ENG-144)
+# Copyright (c) 2026 Renaud Guillon
+"""The single entry point of this game's content (ENG-144).
 
 `main.py` passes `GAME` to `app/`; the engine discovers all content through it.
 """
@@ -31,11 +32,12 @@ from game.view.title_backdrop import build_title_backdrop
 
 
 class GameBindings:
-    """The presentation bindings of this game (its `view`, typed as `GameView` in `render/`):
-    meshes, sounds and renderers for the content the sim defines.
+    """The presentation bindings of this game (its `view`, typed as `GameView` in `render/`).
+
+    Meshes, sounds and renderers for the content the sim defines.
     """
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         player_ship_models: object,
         player_ship_scale: float,

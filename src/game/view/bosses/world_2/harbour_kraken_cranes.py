@@ -1,47 +1,50 @@
-"""FB-HARBOUR-KRAKEN-03, 2-2: the Harbour Kraken's crane arms: a boom on each shoulder, a jib on
-each elbow (moving limbs, FB-HARBOUR-KRAKEN-06, D-061), and the grab cannons hanging from the jibs'
-tips Logical pixels, nose +Z, Y up (towards the camera)."""
+# Copyright (c) 2026 Renaud Guillon
+"""FB-HARBOUR-KRAKEN-03, 2-2: the Harbour Kraken's crane arms.
+
+A boom on each shoulder, a jib on each elbow (moving limbs, FB-HARBOUR-KRAKEN-06, D-061), and the
+grab cannons hanging from the jibs' tips. Logical pixels, nose +Z, Y up (towards the camera).
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-from game.view.bosses.boss_limbs import LimbDrawing  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-type Vec3 = list[float]
-type Rgb = list[float]
-__pragma__("noskip")
-
-from game.config.boss_look import BOSS_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.bosses.world_2.harbour_kraken import CRANE_REST, CRANES  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.record import record  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.final_boss_shapes import barrels  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.mini_boss_shapes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.boss_look import BOSS_LOOK
+from game.config.bosses.world_2.harbour_kraken import CRANE_REST, CRANES
+from game.config.record import record
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.final_boss_shapes import barrels
+from game.view.bosses.mini_boss_shapes import (
     QUARTER,
     SHADE,
     WHITE,
     H,
     offset,
 )
-from game.view.bosses.world_2.fjord_lynx_frost import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.fjord_lynx_frost import (
     icicles,
     spread,
 )
-from game.view.bosses.world_2.w2_organic import ICE_FLESH  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.organic import curve, organ, tendril  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.outline import hypot2  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.solids import Placement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.w2_organic import ICE_FLESH
+from render.geometry.organic import curve, organ, tendril
+from render.geometry.outline import hypot2
+from render.geometry.solids import Placement
+
+# isort: split
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
+
+from game.view.bosses.boss_limbs import LimbDrawing
+from game.view.enemies.enemy_mesh import EnemyParts
+from render.geometry.solids import SolidBuilder
+
+type Vec3 = list[float]
+type Rgb = list[float]
+# __pragma__ ("noskip")
+
 
 # The Kraken's orange neon.
 _ORANGE = BOSS_LOOK.neon["harbour-kraken"]
-ORANGE_NEON = [1.0, 0.5, 0.08] if _ORANGE == None else _ORANGE  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+ORANGE_NEON = [1.0, 0.5, 0.08] if _ORANGE == None else _ORANGE
 # Height of the booms over the deck's level, and of the deck.
 BOOM_Y = 12
 DECK_Y = 4
@@ -57,7 +60,7 @@ def beam(
     size: Sequence[float],
     colors: Sequence[Rgb],
 ) -> None:
-    """A beam from `a` to `b` (on the same level), `size` wide and high, its top `colors[1]`."""
+    """Add a beam from `a` to `b` (on the same level), `size` wide and high, its top `colors[1]`."""
     dx = b[0] - a[0]
     dz = b[2] - a[2]
     builder.box(
@@ -72,7 +75,7 @@ def beam(
 
 
 def crane_points(crane: str, y: float) -> list[Vec3]:
-    """The model-space points of a crane at rest: its shoulder, elbow and grab, at `y`."""
+    """Return the model-space points of a crane at rest: its shoulder, elbow and grab, at `y`."""
     parts = crane.split("-")
     end = parts[0]
     side = parts[1]
@@ -81,7 +84,10 @@ def crane_points(crane: str, y: float) -> list[Vec3]:
 
 
 def boom(crane: str) -> Callable[[EnemyParts], None]:
-    """A crane's boom, on its shoulder: a lattice-dark beam, rimed on top, a neon line along it."""
+    """Return a crane's boom, on its shoulder.
+
+    A lattice-dark beam, rimed on top, a neon line along it.
+    """
 
     def draw(p: EnemyParts) -> None:
         hull = p.hull
@@ -126,7 +132,7 @@ def boom(crane: str) -> Callable[[EnemyParts], None]:
 
 
 def jib(crane: str) -> Callable[[EnemyParts], None]:
-    """A crane's jib, on its elbow: a lighter beam out to the winch its grab hangs from."""
+    """Return a crane's jib, on its elbow: a lighter beam out to the winch its grab hangs from."""
 
     def draw(p: EnemyParts) -> None:
         points = crane_points(crane, BOOM_Y + 0.4)
@@ -149,8 +155,10 @@ def jib(crane: str) -> Callable[[EnemyParts], None]:
 
 
 def crane_limbs() -> dict[str, LimbDrawing]:
-    """The limbs of the four cranes (FB-HARBOUR-KRAKEN-06): a boom on each shoulder and a jib on
-    each elbow."""
+    """Return the limbs of the four cranes (FB-HARBOUR-KRAKEN-06).
+
+    A boom on each shoulder and a jib on each elbow.
+    """
     limbs: dict[str, LimbDrawing] = {}
     for crane in CRANES:
         limbs["shoulder-" + crane] = record({"draw": boom(crane)})
@@ -159,8 +167,10 @@ def crane_limbs() -> dict[str, LimbDrawing]:
 
 
 def pedestal(p: EnemyParts, at: Vec3) -> None:
-    """A crane's pedestal on the deck at `at` (its shoulder): a drum, a neon ring, a slewing
-    cog."""
+    """Add a crane's pedestal on the deck at `at` (its shoulder).
+
+    A drum, a neon ring, a slewing cog.
+    """
     # FB-HARBOUR-KRAKEN-03: the root of a tentacle, a swollen ring of muscle with a metal collar.
     p.flesh.cylinder(
         6.5,
@@ -182,8 +192,11 @@ def pedestal(p: EnemyParts, at: Vec3) -> None:
 
 
 def grab(p: EnemyParts, at: Vec3) -> None:
-    """A grab cannon (FB-HARBOUR-KRAKEN-03): a clamshell grab hanging from its jib on a cable, its
-    four tines frosted, a cannon between them firing bursts at the player."""
+    """Add a grab cannon (FB-HARBOUR-KRAKEN-03).
+
+    A clamshell grab hanging from its jib on a cable, its four tines frosted, a cannon between them
+    firing bursts at the player.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon

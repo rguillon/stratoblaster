@@ -1,6 +1,9 @@
-"""Shared set-up of the UI tests: the browser's `window.Math` and `window.Number`, and the two
-JavaScript-only helpers of the DOM (`replaceChildren`, `Array.from`), whose Python twins work on
-the fake DOM of `helpers.dom`."""
+# Copyright (c) 2026 Renaud Guillon
+"""Shared set-up of the UI tests.
+
+The browser's `window.Math` and `window.Number`, and the two JavaScript-only helpers of the DOM
+(`replaceChildren`, `Array.from`), whose Python twins work on the fake DOM of `helpers.dom`.
+"""
 
 import importlib
 

@@ -1,12 +1,12 @@
-"""The real scenery kit (phases 4, 8-10): generated terrain textures blended in the terrain
-shader, a sea with drifting generated waves that reflect the sky and the sun (or lava;
-GFX-WATER-03, GFX-WATER-07), generated cloud layers, and the sun's shadows (PCF, ENG-103). Needs a
-WebGL engine.
+# Copyright (c) 2026 Renaud Guillon
+"""The real scenery kit (phases 4, 8-10).
+
+Generated terrain textures blended in the terrain shader, a sea with drifting generated waves that
+reflect the sky and the sun (or lava; GFX-WATER-03, GFX-WATER-07), generated cloud layers, and the
+sun's shadows (PCF, ENG-103). Needs a WebGL engine.
 """
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-from org.transcrypt.stubs.browser import __pragma__
-
 from render.babylon import (
     babylon_class,
     babylon_constant,
@@ -44,16 +44,18 @@ from render.scenery.terrain_blend_plugin_visual import (
 from render.scenery.weather_material_visual import create_weather_material
 from render.scenery.window_material_visual import add_window_material
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 ANISOTROPY = 8
 
 
 def _raw_texture(scene: Any, pixels: Any, size: int) -> Any:
-    """A tiling RGBA texture of `pixels`, trilinear and anisotropic."""
+    """Return a tiling RGBA texture of `pixels`, trilinear and anisotropic."""
     sampling = babylon_class("Texture").TRILINEAR_SAMPLINGMODE
     texture = new_raw_texture(
         pixels,
@@ -123,16 +125,22 @@ def _sea_material(scene: Any, look: Any, size: Any, seed: int) -> Any:
 
 
 def _liquid_of(scene: Any, context: Any) -> tuple[TerrainBlendState, Any]:
-    """The terrain's live state and, for a lava level (GFX-TERRAIN-16), the lava's material."""
+    """Return the terrain's live state and the lava's material (GFX-TERRAIN-16).
+
+    The material is None but on a lava level.
+    """
     look = context.look
     lava = look.sea.lava
-    state = TerrainBlendState(context.sea_level, True, 0, lava if lava else None, None)
+    state = TerrainBlendState(context.sea_level, True, 0, lava or None, None)
     return state, (create_lava_material(scene, lava, look.sea.drift) if lava else None)
 
 
 class VisualSceneryKit:
-    """The real scenery kit (`create_scenery_kit`): terrain, sea, props, roads, the cloud,
-    weather, rings, aurora and plume materials, and the sun's shadows."""
+    """The real scenery kit (`create_scenery_kit`).
+
+    Terrain, sea, props, roads, the cloud, weather, rings, aurora and plume materials, and the sun's
+    shadows.
+    """
 
     def __init__(self, scene: Any, context: Any) -> None:
         look = context.look
@@ -171,22 +179,26 @@ class VisualSceneryKit:
         self.plume = create_plume_material
 
     def cloud(self, look: Any) -> Any:
+        """Cloud."""
         return create_cloud_material(self._scene, look, self._cloud_texture, lambda: self._camera)
 
     def aurora(self) -> Any:
+        """Aurora."""
         return create_aurora_material(self._scene)
 
-    def imposter_atlas(self, look: Any, kinds: int) -> Any:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
+    def imposter_atlas(self, look: Any, kinds: int) -> Any:
         """D-211: an atlas of `look` for `kinds` kinds of prop, if there is a look."""
-        if look == None:  # noqa: E711 (absent: undefined)
+        if look == None:
             return None
-        tone = self._look.tone if self._look.tone != None else 1  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+        tone = self._look.tone if self._look.tone != None else 1
         return ImposterAtlas(self._scene, look, kinds, tone)
 
     def add_shadow_caster(self, mesh: Any) -> None:
+        """Add shadow caster."""
         self._shadows.addShadowCaster(mesh, False)
 
     def update(self, frame: Any) -> None:
+        """Update."""
         self._camera = frame.camera_position
         self._state.time = frame.time
         # GFX-SKY-06, GFX-SKY-08: softer shadows under a heavy cover, ground lights by the time of
@@ -200,13 +212,12 @@ class VisualSceneryKit:
         if self._lava:
             fog = FogState(atmosphere.sky.haze, atmosphere.fog.start, atmosphere.fog.end)
             self._lava.set(LavaFrame(frame.time, fog))
-        bump = self._sea.bumpTexture if is_instance_of(self._sea, "PBRMaterial") else None
+        bump: Any = self._sea.bumpTexture if is_instance_of(self._sea, "PBRMaterial") else None
         if is_instance_of(bump, "Texture"):
-            assert bump is not None
             bump.uOffset = (frame.time * self._look.sea.drift[0]) / self._look.sea.tileSize
             bump.vOffset = (frame.time * self._look.sea.drift[1]) / self._look.sea.tileSize
 
 
 def create_scenery_kit(scene: Any, context: Any) -> VisualSceneryKit:
-    """The real scenery kit (the `SceneryKitFactory` that needs WebGL)."""
+    """Return the real scenery kit (the `SceneryKitFactory` that needs WebGL)."""
     return VisualSceneryKit(scene, context)

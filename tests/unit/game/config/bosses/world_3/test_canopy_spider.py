@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/bosses/world_3/canopy_spider.py`."""
 
 from helpers.config_checks import assert_boss_design, original_parts
@@ -12,7 +13,8 @@ def test_fb_canopy_spider_09_boss_design_is_well_formed() -> None:
 
 def test_boss_07_boss_id_is_a_lowercase_kebab_case_kind() -> None:
     assert CANOPY_SPIDER.id == CANOPY_SPIDER.id.lower()
-    assert " " not in CANOPY_SPIDER.id and "_" not in CANOPY_SPIDER.id
+    assert " " not in CANOPY_SPIDER.id
+    assert "_" not in CANOPY_SPIDER.id
 
 
 def test_fb_canopy_spider_08_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
@@ -25,5 +27,6 @@ def test_fb_canopy_spider_08_boss_stats_are_in_the_range_the_sim_relies_on() -> 
 
 def test_fb_canopy_spider_11_boss_has_an_angry_pattern_and_its_stage_count() -> None:
     """Its rage, and one stage pattern more than its parts (FB-CANOPY-SPIDER-10)."""
-    assert isinstance(CANOPY_SPIDER.rage, list) and CANOPY_SPIDER.rage
+    assert isinstance(CANOPY_SPIDER.rage, list)
+    assert CANOPY_SPIDER.rage
     assert len(CANOPY_SPIDER.stages) == len(original_parts(CANOPY_SPIDER)) + 1

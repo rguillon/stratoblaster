@@ -1,18 +1,18 @@
+# Copyright (c) 2026 Renaud Guillon
 """Flat-shaded prisms from a planform outline (GFX-ART-09)."""
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from render.babylon import apply_vertex_data, compute_normals, new_mesh, vertex_data_of
 from render.geometry.outline import reversed_copy, ring_at
 from render.geometry.triangulate import triangulate_polygon
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.outline import OutlinePoint
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 # A prism needs a polygon of at least this many corners.
@@ -37,12 +37,17 @@ def _signed_area(outline: list[OutlinePoint]) -> float:
 
 
 def build_prism_vertex_data(outline: list[OutlinePoint], thickness: float) -> PrismGeometry:
-    """Extrudes a planform outline (in the XZ plane) into a flat prism of the given thickness,
-    centred on Y = 0. Faces are flat-shaded (vertices are not shared between faces). The outline
-    must be a simple polygon (concave is fine); either winding order is accepted."""
+    """Extrudes a planform outline (in the XZ plane) into a flat prism of the given thickness.
+
+    It is centred on Y = 0.
+
+    Faces are flat-shaded (vertices are not shared between faces). The outline must be a simple
+    polygon (concave is fine); either winding order is accepted.
+    """
     if len(outline) < MIN_OUTLINE_POINTS:
-        raise ValueError("A prism outline needs at least 3 points")
-    # Babylon front faces: outward normal = (c - a) × (b - a); caps need a CCW outline.
+        msg = "A prism outline needs at least 3 points"
+        raise ValueError(msg)
+    # Babylon front faces: outward normal = (c - a) x (b - a); caps need a CCW outline.
     pts = reversed_copy(outline) if _signed_area(outline) < 0 else list(outline)
     h = thickness / 2
     positions: list[float] = []
@@ -74,8 +79,10 @@ def create_prism(
     thickness: float,
     scene: Any,
 ) -> Any:
-    """Creates a flat-shaded prism mesh from a planform outline (see
-    `build_prism_vertex_data`)."""
+    """Create a flat-shaded prism mesh from a planform outline.
+
+    See `build_prism_vertex_data`.
+    """
     geometry = build_prism_vertex_data(outline, thickness)
     normals = compute_normals(geometry.positions, geometry.indices)
     data = vertex_data_of(geometry.positions, geometry.indices, normals)

@@ -1,4 +1,5 @@
-"""How the World 4 levels look (WLD-4-14, WLD-4-15; reworked at the reviewer's request, 2026-10-27)
+# Copyright (c) 2026 Renaud Guillon
+"""How the World 4 levels look (WLD-4-14, WLD-4-15; reworked at the reviewer's request, 2026-10-27).
 
 World 3's ground where it ended, grass and gardens giving way to the concrete of the city (the
 sections raise the `paved` cover level after level), the river flowing down the screen; and for each
@@ -7,17 +8,17 @@ the city from below along its length, as before the rework. Every look draws the
 contrast core (WLD-4-16). Gamma-space RGB, 0..1.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.enemy_look import ENEMY_LOOK
 from game.config.record import field, merge, record
 from game.config.world_3.looks import town
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Reviewer, 2026-10-28: World 4 at midday, brighter, the windows and the cars lit as at night
 # (GFX-SKY-08); 2026-10-29: its clouds white on every level, whatever the storm, tint or glow.
@@ -37,10 +38,10 @@ def bright(atmosphere: Any) -> Any:
 
 
 def city(atmosphere: Any) -> Any:
-    """A World 4 look: World 3's town ground and water (WLD-4-11), the sky script, contrast shots.
+    """Return a World 4 look.
 
-    The flat ground casts no shadows (GFX-TERRAIN-13, PERF-28; reviewer, 2026-10-28: it has nothing
-    to shade).
+    World 3's town ground and water (WLD-4-11), the sky script and contrast shots. The flat ground
+    casts no shadows (GFX-TERRAIN-13, PERF-28; reviewer, 2026-10-28: it has nothing to shade).
     """
     look = town(bright(atmosphere))
     return merge(
@@ -68,16 +69,14 @@ ASH_PINK = [0.95, 0.84, 0.86]
 SMOKE_HAZE = record({"fog": 0.75, "white": 0.2})
 
 # 4-1 (LVL-4-1-03): a smoke haze over the garden town, at midday (D-126).
-LEVEL_4_1_LOOK = city(
-    {
-        "start": {
-            "timeOfDay": "midday",
-            "clouds": [0.4, 0.3],
-            "cloudTint": ASH_PINK,
-            "mist": SMOKE_HAZE,
-        }
+LEVEL_4_1_LOOK = city({
+    "start": {
+        "timeOfDay": "midday",
+        "clouds": [0.4, 0.3],
+        "cloudTint": ASH_PINK,
+        "mist": SMOKE_HAZE,
     }
-)
+})
 
 # Brown-grey clouds of the ash cloud over 4-2.
 ASH_BROWN = [0.8, 0.72, 0.62]
@@ -85,88 +84,80 @@ ASH_BROWN = [0.8, 0.72, 0.62]
 ASH_LIGHT = [1.04, 0.96, 0.74]
 
 # 4-2 (LVL-4-2-03): midday under an ash cloud, ash falling.
-LEVEL_4_2_LOOK = city(
-    {
-        "start": {
-            "timeOfDay": "midday",
-            "clouds": [0.9, 0.9],
-            "cloudTint": ASH_BROWN,
-            "tint": ASH_LIGHT,
-            "weather": ash(0.5),
-        }
+LEVEL_4_2_LOOK = city({
+    "start": {
+        "timeOfDay": "midday",
+        "clouds": [0.9, 0.9],
+        "cloudTint": ASH_BROWN,
+        "tint": ASH_LIGHT,
+        "weather": ash(0.5),
     }
-)
+})
 
 # The orange glow of the town's lights under the clouds of 4-3.
 LAVA_GLOW = [1, 0.42, 0.12]
 
 # 4-3 (LVL-4-3-03): the glow of midtown's lights takes over, at midday (D-126).
-LEVEL_4_3_LOOK = city(
-    {
-        "start": {
-            "timeOfDay": "midday",
-            "clouds": [0.5, 0.4],
-            "storm": 0.5,
-            "underglow": {"color": LAVA_GLOW, "strength": 0.25},
-            "weather": embers(0.4),
-        },
-        "changes": [
-            {
-                "from": 60,
-                "to": 280,
-                "look": {
-                    "timeOfDay": "midday",
-                    "clouds": [0.5, 0.4],
-                    "storm": 0.5,
-                    "underglow": {"color": LAVA_GLOW, "strength": 0.8},
-                    "weather": embers(0.4),
-                },
-            }
-        ],
-    }
-)
+LEVEL_4_3_LOOK = city({
+    "start": {
+        "timeOfDay": "midday",
+        "clouds": [0.5, 0.4],
+        "storm": 0.5,
+        "underglow": {"color": LAVA_GLOW, "strength": 0.25},
+        "weather": embers(0.4),
+    },
+    "changes": [
+        {
+            "from": 60,
+            "to": 280,
+            "look": {
+                "timeOfDay": "midday",
+                "clouds": [0.5, 0.4],
+                "storm": 0.5,
+                "underglow": {"color": LAVA_GLOW, "strength": 0.8},
+                "weather": embers(0.4),
+            },
+        }
+    ],
+})
 
 # The glow of the business district under the smoke of 4-4.
 FURNACE_GLOW = [1, 0.5, 0.15]
 
 # 4-4 (LVL-4-4-03): the towers lit, ash and embers falling and rising, at midday (D-126).
-LEVEL_4_4_LOOK = city(
-    {
-        "start": {
-            "timeOfDay": "midday",
-            "clouds": [0.6, 0.5],
-            "storm": 0.6,
-            "underglow": {"color": FURNACE_GLOW, "strength": 0.7},
-            "weather": ash(0.3),
-            "secondWeather": embers(0.3),
-        }
+LEVEL_4_4_LOOK = city({
+    "start": {
+        "timeOfDay": "midday",
+        "clouds": [0.6, 0.5],
+        "storm": 0.6,
+        "underglow": {"color": FURNACE_GLOW, "strength": 0.7},
+        "weather": ash(0.3),
+        "secondWeather": embers(0.3),
     }
-)
+})
 
 # The deep red of the eruption over 4-5.
 ERUPTION_RED = [1, 0.16, 0.08]
 
 # 4-5 (LVL-4-5-03): a volcano erupts beyond downtown, the sky turning deep red and the embers
 # growing to the final boss.
-LEVEL_4_5_LOOK = city(
-    {
-        "start": {
-            "timeOfDay": "midday",
-            "clouds": [0.7, 0.6],
-            "underglow": {"color": ERUPTION_RED, "strength": 0.6},
-            "weather": embers(0.6),
-        },
-        "changes": [
-            {
-                "from": 180,
-                "to": 300,
-                "look": {
-                    "timeOfDay": "midday",
-                    "clouds": [0.7, 0.6],
-                    "underglow": {"color": ERUPTION_RED, "strength": 1},
-                    "weather": embers(1),
-                },
-            }
-        ],
-    }
-)
+LEVEL_4_5_LOOK = city({
+    "start": {
+        "timeOfDay": "midday",
+        "clouds": [0.7, 0.6],
+        "underglow": {"color": ERUPTION_RED, "strength": 0.6},
+        "weather": embers(0.6),
+    },
+    "changes": [
+        {
+            "from": 180,
+            "to": 300,
+            "look": {
+                "timeOfDay": "midday",
+                "clouds": [0.7, 0.6],
+                "underglow": {"color": ERUPTION_RED, "strength": 1},
+                "weather": embers(1),
+            },
+        }
+    ],
+})

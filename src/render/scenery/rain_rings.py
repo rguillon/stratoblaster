@@ -1,5 +1,7 @@
-"""Rain rings on the water (GFX-WEATHER-09): faint rings spreading where raindrops land, drawn on a
-plane at the water level.
+# Copyright (c) 2026 Renaud Guillon
+"""Rain rings on the water (GFX-WEATHER-09): faint rings spreading where raindrops land.
+
+Drawn on a plane at the water level.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -8,12 +10,14 @@ from config.weather import WEATHER_KINDS
 from render.babylon import create_ground_sized, set_enabled
 from render.scenery.scenery_kit import FogState
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
+from typing import Any, Protocol
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Draw order among the see-through meshes: right after the water.
 RINGS_ALPHA_INDEX = 1
@@ -39,7 +43,8 @@ class RingsMaterial(Protocol):
 
     material: Any
 
-    def set(self, frame: RingsFrame) -> None: ...
+    def set(self, frame: RingsFrame) -> None:
+        """Set."""
 
 
 RingsMaterialFactory = Callable[[Any, Any], RingsMaterial]
@@ -47,10 +52,13 @@ __pragma__("noskip")
 
 
 class RainRings:
-    """Faint rings spreading on the water where raindrops land (GFX-WEATHER-09): a plane at the
-    water level that follows the view, the rings drawn by its material in cells of the ground. The
-    terrain above the water hides it, so the rings only show on the sea, the rivers, the swamps
-    and the lakes. It shows the rings of the weather kind of the atmosphere, if it has any."""
+    """Faint rings spreading on the water where raindrops land (GFX-WEATHER-09).
+
+    A plane at the water level that follows the view, the rings drawn by its material in cells of
+    the ground. The terrain above the water hides it, so the rings only show on the sea, the rivers,
+    the swamps and the lakes. It shows the rings of the weather kind of the atmosphere, if it has
+    any.
+    """
 
     def __init__(
         self,
@@ -78,8 +86,11 @@ class RainRings:
         return self._shown
 
     def update(self, atmosphere: Any, frame: tuple[float, float, bool]) -> None:
-        """Shows the rings of `atmosphere`'s weather. `frame` is `(time, z, water)`: the plane is
-        centred at `z`; none while the water is hidden (`water` false)."""
+        """Show the rings of `atmosphere`'s weather.
+
+        `frame` is `(time, z, water)`: the plane is centred at `z`; none while the water is hidden
+        (`water` false).
+        """
         time, z, water = frame
         weather = atmosphere.weather
         kind = self._kinds.get(weather.kind)

@@ -1,10 +1,10 @@
-"""The Snow Owl's parts (its radar pods and sensor eye) and its frost (MB-SNOW-OWL-03,
-MB-SNOW-OWL-05, 2-3). Logical pixels, nose +Z, Y up (towards the camera).
+# Copyright (c) 2026 Renaud Guillon
+"""The Snow Owl's parts and its frost (MB-SNOW-OWL-03, MB-SNOW-OWL-05, 2-3).
+
+The parts are its radar pods and sensor eye. Logical pixels, nose +Z, Y up (towards the camera).
 """
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.boss_look import BOSS_LOOK
 from game.config.bosses.boss_kit import mirror
@@ -15,18 +15,20 @@ from game.view.bosses.world_2.w2_organic import ICE_FLESH, crystals, gland
 from game.view.enemies.enemy_shapes import POD_SECTION, SIDES
 from render.geometry.solids import Placement, place_at
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from game.view.enemies.enemy_mesh import EnemyParts
+from render.geometry.solids import SolidBuilder
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 _OWL_NEON = BOSS_LOOK.neon["snow-owl"]
 # The Snow Owl's white neon.
-OWL_WHITE = [0.85, 0.92, 1] if _OWL_NEON == None else _OWL_NEON  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+OWL_WHITE = [0.85, 0.92, 1] if _OWL_NEON == None else _OWL_NEON
 # Snow lying on its top faces, and the bluer ice of its crust and icicles (World 2 frost).
 FROST = [0.75, 0.82, 0.9]
 ICE = ICE_FLESH.crystal
@@ -58,8 +60,10 @@ def _sign(x: float) -> float:
 
 
 def icicles(hull: SolidBuilder, points: list[Vec3], side: float = 1) -> None:
-    """Icicles hanging from each point (`[x, y, z]`, `x` times `side`): thin cones of ice
-    (MB-SNOW-OWL-05)."""
+    """Add icicles hanging from each point: thin cones of ice (MB-SNOW-OWL-05).
+
+    Points are `[x, y, z]`, `x` times `side`.
+    """
     for i in range(len(points)):
         x = points[i][0]
         y = points[i][1]
@@ -69,9 +73,11 @@ def icicles(hull: SolidBuilder, points: list[Vec3], side: float = 1) -> None:
 
 
 def radar_pod(p: EnemyParts, at: Vec3) -> None:
-    """A wing radar pod around its centre `at` (MB-SNOW-OWL-03): a nacelle under an iced radome with
-    a turning antenna on top (MB-SNOW-OWL-06), and two fan barrels poking out of the nacelle's
-    front."""
+    """Add a wing radar pod around its centre `at` (MB-SNOW-OWL-03).
+
+    A nacelle under an iced radome with a turning antenna on top (MB-SNOW-OWL-06), and two fan
+    barrels poking out of the nacelle's front.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -98,9 +104,11 @@ def radar_pod(p: EnemyParts, at: Vec3) -> None:
 
 
 def eye(p: EnemyParts, at: Vec3) -> None:
-    """The sensor eye around its centre `at` (MB-SNOW-OWL-03): a big round housing facing forward,
-    its lens ringed with white neon, the iris lighting up as its laser charges, under a snow-capped
-    brow."""
+    """Add the sensor eye around its centre `at` (MB-SNOW-OWL-03).
+
+    A big round housing facing forward, its lens ringed with white neon, the iris lighting up as its
+    laser charges, under a snow-capped brow.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge

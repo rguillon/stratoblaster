@@ -1,31 +1,20 @@
+# Copyright (c) 2026 Renaud Guillon
 """The boxes of ground props take, and the buckets of the index of placed buildings."""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-
-class GroundBoxPlacement(Protocol):
-    """The centre of a box of ground."""
-
-    @property
-    def x(self) -> float:
-        """X of the centre of the box."""
-        ...
-
-    @property
-    def z(self) -> float:
-        """Z of the centre of the box."""
-        ...
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Sequence
+from typing import Protocol
 
 
 class BuildingRecord(Protocol):
-    """A building placed: its prop, and the half-extents of the box of ground it takes (see
-    `away_placement.BuildingRecord`)."""
+    """A building placed.
+
+    Its prop, and the half-extents of the box of ground it takes (see
+    `away_placement.BuildingRecord`).
+    """
 
     @property
     def placement(self) -> "PropPlacement":
@@ -62,7 +51,8 @@ class GroundBox(Protocol):
         ...
 
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Bucket size of the index of placed buildings.
 BUILDING_BUCKET = 32
@@ -76,7 +66,7 @@ INFINITY = float("Infinity")
 class PropPlacement:
     """One prop standing on the ground."""
 
-    def __init__(  # noqa: PLR0917 (positional data fields: Transcrypt drops keyword arguments)
+    def __init__(
         self,
         kind: str,
         x: float,
@@ -115,8 +105,10 @@ def inside(area: GroundArea, x: float, z: float) -> bool:
 
 
 def overlap(a: GroundBox, b: GroundBox, gap: float) -> bool:
-    """Whether the ground boxes of `a` and `b` come closer than `gap` (no two buildings overlap,
-    GFX-BLDG-01)."""
+    """Whether the ground boxes of `a` and `b` come closer than `gap`.
+
+    Buildings must not overlap (GFX-BLDG-01).
+    """
     apart_x = abs(a.placement.x - b.placement.x) >= a.half_x + b.half_x + gap
     apart_z = abs(a.placement.z - b.placement.z) >= a.half_z + b.half_z + gap
     return not apart_x and not apart_z
@@ -141,9 +133,11 @@ def _to_bucket(v: float, i: int) -> float:
 
 
 class BuildingIndex:
-    """The placed buildings, in buckets `BUILDING_BUCKET` wide by where their centres are
-    (reviewer, 2026-10-28: number keys, and a bucket too far for its largest building to come close
-    is left out)."""
+    """The placed buildings.
+
+    In buckets `BUILDING_BUCKET` wide by where their centres are (reviewer, 2026-10-28: number keys,
+    and a bucket too far for its largest building to come close is left out).
+    """
 
     def __init__(self) -> None:
         self._buckets: dict[str, _Bucket] = {}
@@ -152,8 +146,10 @@ class BuildingIndex:
         self._max_half_z = 0.0
 
     def add(self, building: BuildingRecord) -> None:
-        """Adds `building` to the bucket of its centre, and widens the largest half-extents to take
-        it in."""
+        """Add `building` to the bucket of its centre.
+
+        And widens the largest half-extents to take it in.
+        """
         x = building.placement.x
         z = building.placement.z
         self._max_half_x = max(self._max_half_x, building.half_x)
@@ -168,8 +164,11 @@ class BuildingIndex:
         bucket.half_z = max(bucket.half_z, building.half_z)
 
     def clear(self, area: GroundBox, gap: float) -> bool:
-        """Whether no building comes closer to `area` than `gap`: the buckets within reach of the
-        largest building (so a wide building, centred further off, is not missed)."""
+        """Whether no building comes closer to `area` than `gap`.
+
+        The buckets within reach of the largest building (so a wide building, centred further off,
+        is not missed).
+        """
         x = area.placement.x
         z = area.placement.z
         bx = math.floor(x / BUILDING_BUCKET)
@@ -193,9 +192,12 @@ class BuildingIndex:
 
 
 class PlacerSnapshot:
-    """What a `PropPlacer` placed, in order: enough to make it again without placing them
-    (PERF-14). The first `fixed` buildings are its set pieces and lines; `placed_to` is the first
-    chunk not placed yet (see `PropPlacer.ensure_placed`)."""
+    """What a `PropPlacer` placed, in order.
+
+    Enough to make it again without placing them (PERF-14). The first `fixed` buildings are its set
+    pieces and lines; `placed_to` is the first chunk not placed yet (see
+    `PropPlacer.ensure_placed`).
+    """
 
     def __init__(self, buildings: Sequence[BuildingRecord], fixed: int, placed_to: int) -> None:
         self.buildings = buildings

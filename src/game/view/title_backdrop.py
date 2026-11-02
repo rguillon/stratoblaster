@@ -1,6 +1,8 @@
-"""The darksynth backdrop of the menus (UI-TITLE-07, UI-TITLE-08 for its colours, D-103): a night
-street between dark towers with lit windows, neon signs and roof trims, scrolling towards the
-camera, a distant skyline, haze, rain, and the balanced ship floating and turning above the
+# Copyright (c) 2026 Renaud Guillon
+"""The darksynth backdrop of the menus (UI-TITLE-07, UI-TITLE-08 for its colours, D-103).
+
+A night street between dark towers with lit windows, neon signs and roof trims, scrolling towards
+the camera, a distant skyline, haze, rain, and the balanced ship floating and turning above the
 street. Everything is generated in code from a fixed seed. The ship is hidden on the ship select
 screen, which shows the ships itself (UI-TITLE-09).
 """
@@ -34,17 +36,18 @@ from render.babylon import (
 from render.geometry.gradient_shapes import build_gradient_rect
 from render.model_animation import step_model_animations
 
-__pragma__("jsmod")
-
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
 Scene = Any
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
+__pragma__("jsmod")
 
 
 def _self_lit(name: str, scene: Any, fog: bool, intensity: float) -> Any:
-    """A material that shows its vertex colours times a grey emissive: unlit."""
+    """Return a material that shows its vertex colours times a grey emissive: unlit."""
     mat = new_standard_material(name, scene)
     mat.emissiveColor = color3(intensity, intensity, intensity)
     mat.diffuseColor = color3_black()
@@ -56,7 +59,7 @@ def _self_lit(name: str, scene: Any, fog: bool, intensity: float) -> Any:
 
 
 def _colored_mesh(name: str, geo: Any, scene: Any, fog: bool, intensity: float = 1) -> Any:
-    """A mesh of the vertex-coloured geometry `geo`, self-lit."""
+    """Return a mesh of the vertex-coloured geometry `geo`, self-lit."""
     mesh = new_mesh(name, scene)
     data = vertex_data_of(geo.positions, geo.indices, None, geo.colors)
     apply_vertex_data(data, mesh)
@@ -65,7 +68,7 @@ def _colored_mesh(name: str, geo: Any, scene: Any, fog: bool, intensity: float =
 
 
 def _build_sky(scene: Any, random: Any) -> list[Any]:
-    """The sky and the distant skyline; returns the meshes that must not glow."""
+    """Return the sky and the distant skyline; returns the meshes that must not glow."""
     sky = LOOK.sky
     sky_mesh = _colored_mesh(
         "title-sky",
@@ -90,8 +93,10 @@ def _build_sky(scene: Any, random: Any) -> list[Any]:
 
 
 def _build_city(scene: Any, random: Any) -> dict[str, Any]:
-    """Two copies of a city chunk, end to end, under one node that scrolls towards the camera: two
-    merged meshes each, the lights at the neon intensity (UI-TITLE-10)."""
+    """Two copies of a city chunk, end to end, under one node that scrolls towards the camera.
+
+    Each copy is two merged meshes, the lights at the neon intensity (UI-TITLE-10).
+    """
     chunk = build_city_chunk(LOOK.city, random)
     city = new_transform_node("title-city", scene)
     structure = _colored_mesh("title-city-structure", chunk["structure"], scene, True)
@@ -127,8 +132,11 @@ def _set_up_scene(scene: Any) -> None:
 
 
 def build_title_backdrop(scene: Any) -> Any:
-    """Builds the title backdrop in `scene` and returns its `MenuBackdrop` handle: the meshes that
-    must not glow, an `update(dt)` per frame, and `showScreen(screen)`."""
+    """Build the title backdrop in `scene` and return its `MenuBackdrop` handle.
+
+    The handle holds the meshes that must not glow, an `update(dt)` per frame, and
+    `showScreen(screen)`.
+    """
     _set_up_scene(scene)
     random = create_rng(LOOK.seed)
     sky = _build_sky(scene, random)

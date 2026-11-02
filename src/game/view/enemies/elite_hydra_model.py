@@ -1,20 +1,17 @@
-"""The Hydra (specs/enemies/hydra.md) Logical pixels, nose
-+Z, Y up (towards the camera).
-"""
+# Copyright (c) 2026 Renaud Guillon
+"""The Hydra (specs/enemies/hydra.md) Logical pixels, nose +Z, Y up (towards the camera)."""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.enemies_elite import ELITE_CONFIG  # noqa: E402
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.config.enemy_look_elite import ELITE_NEON  # noqa: E402
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.enemies.elite_shapes import QUARTER, H, ahead  # noqa: E402
-from game.view.enemies.enemy_shapes import SIDES  # noqa: E402
-from game.view.enemies.jointed_model import build_jointed_model  # noqa: E402
-from game.view.enemies.organic_parts import reactor_sac  # noqa: E402
-from render.geometry.organic import (  # noqa: E402
+from game.config.enemies_elite import ELITE_CONFIG
+from game.config.enemy_look import ENEMY_LOOK
+from game.config.enemy_look_elite import ELITE_NEON
+from game.view.bosses.boss_limbs import boss_point
+from game.view.enemies.elite_shapes import QUARTER, H, ahead
+from game.view.enemies.enemy_shapes import SIDES
+from game.view.enemies.jointed_model import build_jointed_model
+from game.view.enemies.organic_parts import reactor_sac
+from render.geometry.organic import (
     SegmentedBody,
     carapace,
     curve,
@@ -25,12 +22,14 @@ from render.geometry.organic import (  # noqa: E402
 from render.geometry.organic import (
     vein as vein_tube,
 )
-from render.geometry.solids import Placement  # noqa: E402
+from render.geometry.solids import Placement
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 CFG = ELITE_CONFIG.hydra
 NEON = ELITE_NEON.hydra
@@ -59,8 +58,10 @@ CAP = [[-2.6, -4], [2.6, -4], [2, 2], [-2, 2]]  # type: list[list[float]]
 
 
 def body(p: Any) -> None:
-    """The shell, its plates, ridge and veins (ENM-HYDRA-03), and the reactors in sacs at its tail
-    (ENM-HYDRA-04)."""
+    """Add the shell: its plates, ridge and veins (ENM-HYDRA-03).
+
+    The reactors in sacs at its tail (ENM-HYDRA-04).
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -82,8 +83,10 @@ def body(p: Any) -> None:
 
 
 def neck(head: Any) -> Any:
-    """A neck from its joint to its head (ENM-HYDRA-05): a flesh tendril ringed with teal and
-    metal collars."""
+    """Return a neck from its joint to its head (ENM-HYDRA-05).
+
+    A flesh tendril ringed with teal and metal collars.
+    """
     px = head.pivot[0]
     py = head.pivot[1]
     hx = head.head[0]
@@ -108,7 +111,7 @@ def neck(head: Any) -> Any:
 
 
 def head(spec: Any) -> Any:
-    """A head on its neck: a skull with bone mandibles, a metal brow and a glowing eye."""
+    """Return a head on its neck: a skull with bone mandibles, a metal brow and a glowing eye."""
     at = boss_point(spec.head[0], spec.head[1], NECK_Y)
     aim = spec.aim
     eye = boss_point(spec.muzzle[0], spec.muzzle[1], spec.muzzle[2])
@@ -131,8 +134,10 @@ def head(spec: Any) -> Any:
 
 
 def build_hydra(scene: Any) -> Any:
-    """ENM-HYDRA-01: a broad, plated shell with three long flesh necks forward, each ending in a
-    teal-eyed head, within the elite triangle budget (ENM-HYDRA-06)."""
+    """ENM-HYDRA-01: a broad, plated hydra with three long flesh necks forward.
+
+    Each neck ends in a teal-eyed head, within the elite triangle budget (ENM-HYDRA-06).
+    """
     limbs = {}
     parts = {}
     for h in CFG.heads:

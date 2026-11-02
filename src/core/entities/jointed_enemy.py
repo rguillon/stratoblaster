@@ -1,4 +1,5 @@
-"""Enemies with moving parts (ENM-27 to ENM-33)
+# Copyright (c) 2026 Renaud Guillon
+"""Enemies with moving parts (ENM-27 to ENM-33).
 
 Parts hang on swinging joints (as a boss's limbs, D-061) or orbit the hull (ENM-27), each with its
 own hit circle, health and guns (ENM-28). A destroyed part blows up and stops (ENM-29); the enemy
@@ -7,20 +8,20 @@ goes with its hull, taking its parts with it (ENM-30).
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from core.entities.boss_joint import BossJoints
 from core.entities.enemy import Enemy
 from core.entities.muzzle import PlanePoint, muzzle_point
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from core.entities.boss_joint import BossJointSpec  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.entities.enemy import EnemyContext, EnemyStats  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.entities.muzzle import Muzzle, RaisedPoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.entities.shot_target import ShotTarget  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from core.entities.boss_joint import BossJointSpec
+from core.entities.enemy import EnemyContext, EnemyStats
+from core.entities.muzzle import Muzzle, RaisedPoint
+from core.entities.shot_target import ShotTarget
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 INFINITY = float("Infinity")
 
@@ -28,9 +29,9 @@ INFINITY = float("Infinity")
 class EnemyPartSpec:
     """A part of a `JointedEnemy`."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
-        id: str,
+        id_: str,
         x: float,
         y: float,
         radius: float,
@@ -40,13 +41,15 @@ class EnemyPartSpec:
         aim: float = 0,
         shields: bool = False,
     ) -> None:
-        """`x` and `y` are its centre, from the enemy's centre, as drawn facing down at rest (X
-        right, Y up). `joint` is the joint it hangs on, if any: it moves with it. `orbits`: whether
-        it turns around the centre with the enemy's `spin` (it cannot hang on a joint). `aim` is in
-        radians, clockwise on screen, from the enemy's nose to the way the part points at rest.
-        `shields`: whether the hull cannot be hit while it stands (a shield, ENM-31).
+        """`x` and `y` are its centre, from the enemy's centre.
+
+        As drawn facing down at rest (X right, Y up). `joint` is the joint it hangs on, if any: it
+        moves with it. `orbits`: whether it turns around the centre with the enemy's `spin` (it
+        cannot hang on a joint). `aim` is in radians, clockwise on screen, from the enemy's nose to
+        the way the part points at rest. `shields`: whether the hull cannot be hit while it stands
+        (a shield, ENM-31).
         """
-        self.id = id
+        self.id = id_
         self.x = x
         self.y = y
         self.radius = radius
@@ -60,7 +63,7 @@ class EnemyPartSpec:
 class JointedDesign:
     """How a `JointedEnemy` is built: its parts and the joints they hang on."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         parts: list[EnemyPartSpec],
         joints: dict[str, BossJointSpec] | None = None,
@@ -70,7 +73,10 @@ class JointedDesign:
 
 
 class EnemyPart:
-    """A destroyable part of a `JointedEnemy`, where it is now. It is a `DropSource` and a
+    """A destroyable part of a `JointedEnemy`, where it is now.
+
+    It is a `DropSource` and a.
+
     `LaserOwner`.
     """
 
@@ -107,7 +113,7 @@ class EnemyPart:
 
     @health.setter
     def health(self, value: float) -> None:
-        """Sets the health left, never below 0; a hit (a lower value) restarts the hit flash."""
+        """Set the health left, never below 0; a hit (a lower value) restarts the hit flash."""
         next_health = max(0, value)
         if next_health < self._health:
             self.since_hit = 0
@@ -132,8 +138,10 @@ class EnemyPart:
         )
 
     def place(self, muzzle: Muzzle) -> RaisedPoint:
-        """Where `muzzle` (from the enemy's centre, as drawn facing down at rest) is now: moved by
-        the joint the part hangs on, or turned by the spin if it orbits, then with the enemy's nose.
+        """Where `muzzle` (from the enemy's centre, as drawn facing down at rest) is now.
+
+        Moved by the joint the part hangs on, or turned by the spin if it orbits, then with the
+        enemy's nose.
         """
         x, y = self._owner.joints.move(self.spec.joint, muzzle[0], muzzle[1])
         moved: Muzzle = (x, y, muzzle[2])
@@ -145,8 +153,10 @@ class EnemyPart:
 
 
 class JointedEnemy(Enemy):
-    """Base of the enemies with moving parts (ENM-33). Each step swings the joints, runs the
-    kind's `act`, then puts the parts where they are now; parts the player destroyed blow up.
+    """Base of the enemies with moving parts (ENM-33).
+
+    Each step swings the joints, runs the kind's `act`, then puts the parts where they are now;
+    parts the player destroyed blow up.
     """
 
     def __init__(self, x: float, y: float, stats: EnemyStats, design: JointedDesign) -> None:
@@ -160,24 +170,22 @@ class JointedEnemy(Enemy):
         self.parts = [EnemyPart(spec, i, self) for i, spec in enumerate(design.parts)]
         self._place_parts()
 
-    def part(self, id: str) -> EnemyPart | None:
-        """Its part `id`, if it is still there."""
+    def part(self, item_id: str) -> EnemyPart | None:
+        """Its part `item_id`, if it is still there."""
         for part in self.parts:
-            if part.spec.id == id and not part.destroyed:
+            if part.spec.id == item_id and not part.destroyed:
                 return part
         return None
 
     @property
     def shielded(self) -> bool:
         """Whether a standing part shields the hull."""
-        return any([part.spec.shields and not part.destroyed for part in self.parts])
+        return any(part.spec.shields and not part.destroyed for part in self.parts)
 
     def _hit_targets(self) -> list[ShotTarget]:
-        """The hull and its standing parts: what shots hit and the player can bump into."""
+        """Return the hull and its standing parts: what shots hit and the player can bump into."""
         targets: list[ShotTarget] = [self]
-        for part in self.parts:
-            if not part.destroyed:
-                targets.append(part)
+        targets.extend([part for part in self.parts if not part.destroyed])
         return targets
 
     def _shot_targets(self) -> list[ShotTarget]:
@@ -188,8 +196,11 @@ class JointedEnemy(Enemy):
         return targets
 
     def update(self, ctx: EnemyContext, dt: float) -> None:
-        """Steps the enemy for `dt` seconds: breaks off its destroyed parts, swings the joints
-        (unless `swinging` is off), runs `act`, then places the parts."""
+        """Step the enemy for `dt` seconds.
+
+        It breaks off its destroyed parts, swings the joints (unless `swinging` is off), runs `act`,
+        then places the parts.
+        """
         self._break_destroyed(ctx)
         if self.swinging:
             self.joints.step(dt)
@@ -197,8 +208,9 @@ class JointedEnemy(Enemy):
         self._place_parts()
 
     def act(self, ctx: EnemyContext, dt: float) -> None:
-        """Moves and attacks for `dt` seconds, as `Enemy.update`; the parts are placed after.
-        Abstract.
+        """Move and attacks for `dt` seconds.
+
+        As `Enemy.update`; the parts are placed after Abstract.
         """
         raise NotImplementedError
 

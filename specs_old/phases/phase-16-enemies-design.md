@@ -131,7 +131,7 @@ The `enemies/` and `bosses/` debug pages show the new models, with a toggle to p
 > After the agent reports, write corrections here, then say **"Fix phase 16"**.
 > The agent ticks each item when fixed.
 
-- [ ] 
+- [ ]
 
 ---
 

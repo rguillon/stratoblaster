@@ -1,4 +1,5 @@
-"""Player shots of one ship (`specs/gameplay/weapons.md`)
+# Copyright (c) 2026 Renaud Guillon
+"""Player shots of one ship (`specs/gameplay/weapons.md`).
 
 Fires the selected weapon at the selected level from the muzzle, moves the projectiles, applies
 damage to the targets and reports impacts. Pure and deterministic: everything depends on the `dt`
@@ -7,31 +8,30 @@ given to `step`.
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from core.entities.shot_target import damage_target, is_alive
 from core.entities.weapon import BeamWeaponDefinition, ProjectileWeaponDefinition
 from core.systems.beam import BeamSegment, trace_beam
 from core.systems.projectile_motion import Projectile, advance_projectile
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import TypeVar  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Sequence
 
-T = TypeVar("T")
+from core.entities.shot_target import ShotTarget
+from core.entities.weapon import WeaponDefinition
 
-from core.entities.shot_target import ShotTarget  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.entities.weapon import WeaponDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
-__pragma__("noskip")
 
 DEG = math.pi / 180
 
 
 class ShotImpact:
-    """Where a projectile hit, for effects. `blast_radius` is 0 for a direct hit. `blocked` is true
-    when the hit did no damage, e.g. on a shielded core (a sound of its own, AUD-SFX-01).
+    """Where a projectile hit, for effects.
+
+    `blast_radius` is 0 for a direct hit. `blocked` is true when the hit did no damage, e.g. on a
+    shielded core (a sound of its own, AUD-SFX-01).
     """
 
     def __init__(
@@ -45,8 +45,9 @@ class ShotImpact:
 
 
 class ShotWorldOptions:
-    """The playfield (X in [0, width], Y in [0, height]) and what shots are culled by: shots
-    `cull_margin` outside it are removed (GAME-SCREEN-07).
+    """The playfield (X in [0, width], Y in [0, height]) and what shots are culled by.
+
+    Shots `cull_margin` outside it are removed (GAME-SCREEN-07).
     """
 
     def __init__(self, width: float, height: float, cull_margin: float) -> None:
@@ -55,14 +56,15 @@ class ShotWorldOptions:
         self.cull_margin = cull_margin
 
 
-def _at_or_none(values: Sequence[T], index: int) -> T | None:  # noqa: UP047 (no PEP 695)
+def _at_or_none[T](values: Sequence[T], index: int) -> T | None:
     """`values[index]`, or None past its ends (Transcrypt gives undefined there)."""
     return values[index] if 0 <= index < len(values) else None
 
 
 class ShotWorld:
-    """Player shots of one ship. Its `projectiles` are a pool (ENG-19): entries with `alive` false
-    are free for reuse.
+    """Player shots of one ship.
+
+    Its `projectiles` are a pool (ENG-19): entries with `alive` false are free for reuse.
     """
 
     def __init__(self, options: ShotWorldOptions, weapon: WeaponDefinition) -> None:
@@ -104,8 +106,10 @@ class ShotWorld:
         return self._level
 
     def select(self, weapon: WeaponDefinition, level: float) -> None:
-        """Selects the weapon and its level (clamped to the weapon's levels, GAME-WPN-02).
-        Shots in flight stay."""
+        """Select the weapon and its level (clamped to the weapon's levels, GAME-WPN-02).
+
+        Shots in flight stay.
+        """
         self._weapon = weapon
         self._level = min(max(1, math.floor(level + 0.5)), len(weapon.levels))
         self._cooldown = 0.0
@@ -144,9 +148,10 @@ class ShotWorld:
             shot.alive = False
 
     def _fire(self, weapon: ProjectileWeaponDefinition, dt: float) -> None:
-        """Fires the level's streams one after the other, in their listed order, evenly spaced over
-        the volley (reviewer, 2026-10-26, GAME-WPN-11): each stream still fires `shots_per_second`
-        times a second.
+        """Fire the level's streams one after the other, in their listed order.
+
+        Evenly spaced over the volley (reviewer, 2026-10-26, GAME-WPN-11): each stream still fires
+        `shots_per_second` times a second.
         """
         self._cooldown -= dt
         streams_at = _at_or_none(weapon.levels, self._level - 1)
@@ -220,6 +225,7 @@ class ShotWorld:
 
     def _damage(self, shot: Projectile, hit: ShotTarget) -> float:
         """Deals the shot's damage to `hit`, or to everything in its blast (GAME-WPN-09).
+
         Returns the damage dealt.
         """
         weapon = shot.weapon

@@ -1,24 +1,25 @@
-"""Plays the generated music: one track at a time, cross-fading into the next or fading out
-(AUD-MUSIC-08), plus one-shot jingles over it. Notes are scheduled ahead on the audio clock by
-`update`, so the music keeps time when frames are slow (AUD-ENGINE-05). Pausing keeps each
-track's position; resuming goes on from there (AUD-ENGINE-10).
+# Copyright (c) 2026 Renaud Guillon
+"""Plays the generated music, one track at a time, plus one-shot jingles over it.
+
+A track cross-fades into the next or fades out (AUD-MUSIC-08). Notes are scheduled ahead on the
+audio clock by `update`, so the music keeps time when frames are slow (AUD-ENGINE-05). Pausing keeps
+each track's position; resuming goes on from there (AUD-ENGINE-10).
 
 `bus` is a function returning the `MusicBus` once the context exists (None before).
 
 Seconds into each paused track are kept in parallel lists, keyed by slot.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from audio.audio_types import INFINITY, Instrument, MusicEffects, Track, midi_to_hz
 from audio.sequencer import Sequencer
 from audio.synth import Voice, VoiceOptions, play_voice
 from audio.track_mixer import MusicBus, TrackMixer
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class MusicTimings:
@@ -49,7 +50,7 @@ class Slot:
 
 def _all_ended(voices: list[Voice], now: float) -> bool:
     """Whether every voice is over."""
-    return all([voice.end <= now for voice in voices])
+    return all(voice.end <= now for voice in voices)
 
 
 class MusicPlayer:
@@ -95,8 +96,10 @@ class MusicPlayer:
         return 0
 
     def play(self, track: Track | None, fade: float) -> None:
-        """Plays `track` from its start, cross-fading from the current one over `fade` seconds;
-        None fades the music out."""
+        """Plays `track` from its start, cross-fading from the current one over `fade` seconds.
+
+        None fades the music out.
+        """
         previous = self._current
         if previous is not None:
             self._fade_out(previous, fade)
@@ -117,7 +120,9 @@ class MusicPlayer:
                 continue
             now = bus.context.currentTime
             at = now - slot.anchor
-            self._set_paused_at(slot, at)
+            # Each slot once: a pause pauses once, and `resume` empties these lists.
+            self._paused_slots.append(slot)
+            self._paused_at.append(at)
             slot.sequencer.seek(at)
             for voice in slot.voices:
                 voice.stop(now, self._timings.pause_fade_seconds)
@@ -136,7 +141,7 @@ class MusicPlayer:
         self._paused_at = []
 
     def stop(self) -> None:
-        """Stops everything at once."""
+        """Stop everything at once."""
         bus = self._bus()
         now = bus.context.currentTime if bus is not None else 0
         for slot in self._slots():
@@ -147,8 +152,10 @@ class MusicPlayer:
         self._paused_at = []
 
     def update(self) -> None:
-        """Schedules the notes due within the lookahead, and drops the tracks that are over, so
-        the work per frame stays small (AUD-ENGINE-12)."""
+        """Schedules the notes due within the lookahead.
+
+        And drops the tracks that are over So the work per frame stays small (AUD-ENGINE-12).
+        """
         bus = self._bus()
         if bus is None or self._paused:
             return
@@ -173,14 +180,6 @@ class MusicPlayer:
                 return i
         return -1
 
-    def _set_paused_at(self, slot: Slot, at: float) -> None:
-        index = self._paused_index(slot)
-        if index >= 0:
-            self._paused_at[index] = at
-        else:
-            self._paused_slots.append(slot)
-            self._paused_at.append(at)
-
     def _fade_out(self, slot: Slot, fade: float) -> None:
         slot.target = 0
         slot.fade = fade
@@ -194,16 +193,14 @@ class MusicPlayer:
         slot.mixer.fade_to(0, now, max(0.01, fade))
 
     def _schedule(self, slot: Slot, bus: MusicBus, now: float) -> None:
-        """Starts the slot on the bus if needed, then schedules its notes up to the lookahead."""
+        """Start the slot on the bus if needed, then schedule its notes up to the lookahead."""
         # A track fading out goes on playing until it is silent; one never started stays so.
         if slot.until is not None and slot.mixer is None:
             return
-        if slot.mixer is None or slot.anchor is None:
-            self._start(slot, bus, now)
         mixer = slot.mixer
         anchor = slot.anchor
         if mixer is None or anchor is None:
-            return
+            mixer, anchor = self._start(slot, bus, now)
         slot.voices = [voice for voice in slot.voices if voice.end > now]
         lookahead = now + self._timings.lookahead_seconds - anchor
         for scheduled in slot.sequencer.advance(lookahead):
@@ -222,19 +219,21 @@ class MusicPlayer:
             slot.voices.append(play_voice(bus.context, destination, instrument.layers, options))
 
     def _playable(self, slot: Slot, name: str, start: float) -> Instrument | None:
-        """The instrument of a note, unless it is unknown or starts once the fade-out is over."""
+        """Return a note's instrument, unless it is unknown or starts once the fade-out is over."""
         if slot.until is not None and start >= slot.until:
             return None
         return self._instruments.get(name)
 
-    def _start(self, slot: Slot, bus: MusicBus, now: float) -> None:
+    def _start(self, slot: Slot, bus: MusicBus, now: float) -> tuple[TrackMixer, float]:
+        """Start the slot's track on the bus now; return its mixer and its anchor."""
         mixer = TrackMixer(bus, self._effects, slot.track.bpm)
         mixer.fade_in(now, slot.fade)
         slot.mixer = mixer
         slot.anchor = now
+        return mixer, now
 
     def _over(self, slot: Slot, now: float) -> bool:
-        """A slot is over once faded out, or once a jingle has played all its notes."""
+        """Return a slot is over once faded out, or once a jingle has played all its notes."""
         if slot.until is not None and now >= slot.until:
             self._silence(slot, now)
             return True

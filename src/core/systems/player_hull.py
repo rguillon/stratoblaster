@@ -1,21 +1,22 @@
-"""The player's health and lives (`specs/gameplay/lives-and-damage.md`)"""
+# Copyright (c) 2026 Renaud Guillon
+"""The player's health and lives (`specs/gameplay/lives-and-damage.md`)."""
 
-from org.transcrypt.stubs.browser import __pragma__
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Literal  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Literal
 
 HullEvent = Literal["ignored", "hit", "lifeLost", "gameOver"]
+# __pragma__ ("noskip")
 
-__pragma__("noskip")
 
 INFINITY = float("Infinity")
 
 
 class HullDamage:
-    """Damage of an enemy bullet, a missile, a laser beam (once per beam), and a collision
-    (GAME-LIFE-03).
+    """Damage of an enemy bullet, a missile, a laser beam (once per beam).
+
+    And a collision (GAME-LIFE-03).
     """
 
     def __init__(self, bullet: float, missile: float, laser: float, collision: float) -> None:
@@ -26,14 +27,15 @@ class HullDamage:
 
 
 class HullRules:
-    """What hurts the player and how much, and its lives (GAME-LIFE-02, GAME-LIFE-03; phase 6
-    review).
+    """What hurts the player and how much.
+
+    And its lives (GAME-LIFE-02, GAME-LIFE-03; phase 6 review).
 
     `max_lives`: most lives the player can have with life bonuses (GAME-BONUS-10); no limit when
     None.
     """
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         lives: float,
         invincible_seconds: float,
@@ -42,10 +44,11 @@ class HullRules:
         ram_damage: float,
         max_lives: float | None = None,
     ) -> None:
-        """`lives`: lives at the start of a level (GAME-LIFE-02). `invincible_seconds`: seconds the
-        ship cannot be hurt after a hit (GAME-LIFE-07). `hit_radius`: radius of the ship's hitbox,
-        much smaller than its model (GAME-SHIP-06). `ram_damage`: damage an enemy takes when the
-        ship rams it (GAME-LIFE-05).
+        """`lives`: lives at the start of a level (GAME-LIFE-02).
+
+        `invincible_seconds`: seconds the ship cannot be hurt after a hit (GAME-LIFE-07).
+        `hit_radius`: radius of the ship's hitbox, much smaller than its model (GAME-SHIP-06).
+        `ram_damage`: damage an enemy takes when the ship rams it (GAME-LIFE-05).
         """
         self.lives = lives
         self.invincible_seconds = invincible_seconds
@@ -56,13 +59,15 @@ class HullRules:
 
 
 class PlayerHull:
-    """The player ship's health and lives (GAME-LIFE-01, GAME-LIFE-08): a hit takes health and makes
-    the ship invincible for a while; when the health runs out a life is lost and the ship comes back
-    with full health (still invincible); with no life left, the game is over. Pure.
+    """The player ship's health and lives (GAME-LIFE-01, GAME-LIFE-08).
+
+    A hit takes health and makes the ship invincible for a while; when the health runs out a life is
+    lost and the ship comes back with full health (still invincible); with no life left, the game is
+    over. Pure.
     """
 
     def __init__(self, rules: HullRules, max_health: float, lives: float | None = None) -> None:
-        """Starts with `lives`: the rules' (GAME-LIFE-02), or those kept from the level before."""
+        """Start with `lives`: the rules' (GAME-LIFE-02), or those kept from the level before."""
         self._rules = rules
         self.max_health = max_health
         self.health = max_health
@@ -76,7 +81,7 @@ class PlayerHull:
         return self.lives <= 0
 
     def hit(self, damage: float) -> HullEvent:
-        """Takes `damage`, unless invincible or out."""
+        """Take `damage`, unless invincible or out."""
         if self.invincible > 0 or self.out:
             return "ignored"
         self.health = max(0, self.health - damage)
@@ -90,8 +95,9 @@ class PlayerHull:
         return "lifeLost"
 
     def add_life(self) -> bool:
-        """A life bonus (GAME-BONUS-09): one more life, up to the most if any. Returns whether it
-        was added.
+        """Return a life bonus (GAME-BONUS-09): one more life, up to the most if any.
+
+        Returns whether it was added.
         """
         most = self._rules.max_lives if self._rules.max_lives is not None else INFINITY
         if self.out or self.lives >= most:
@@ -100,5 +106,5 @@ class PlayerHull:
         return True
 
     def step(self, dt: float) -> None:
-        """Counts down the invincibility."""
+        """Count down the invincibility."""
         self.invincible = max(0, self.invincible - dt)

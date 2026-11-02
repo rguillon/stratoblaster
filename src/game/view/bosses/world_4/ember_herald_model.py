@@ -1,4 +1,6 @@
+# Copyright (c) 2026 Renaud Guillon
 """MB-EMBER-HERALD-01 to MB-EMBER-HERALD-04, 4-5: the Ember Herald, the mini boss of the Caldera.
+
 Model space: logical pixels, nose +Z (down the screen), Y up towards the camera; +X is the screen's
 left. MB-EMBER-HERALD-02: a living fire-wasp, its long flesh body ribbed in bone, scorched membrane
 wings veined molten, bone spines and a metal spire and halo grafted on.
@@ -6,45 +8,45 @@ wings veined molten, bone spines and a metal spire and halo grafted on.
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.bosses.world_4.ember_herald import (  # noqa: E402
+from game.config.bosses.world_4.ember_herald import (
     EMBER_CROWN,
     EMBER_GUNS,
     EMBER_HERALD,
     EMBER_LANCE,
 )
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.mini_boss_greebles import seam, vent  # noqa: E402
-from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H  # noqa: E402
-from game.view.bosses.overlord_city import edge_lights, symmetric  # noqa: E402
-from game.view.bosses.world_4.ember_herald_parts import (  # noqa: E402
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.mini_boss_greebles import seam, vent
+from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H
+from game.view.bosses.overlord_city import edge_lights, symmetric
+from game.view.bosses.world_4.ember_herald_parts import (
     GOLD,
     HEAT,
     ember_lance,
     embers,
     spike,
 )
-from game.view.bosses.world_4.living_forge import (  # noqa: E402
+from game.view.bosses.world_4.living_forge import (
     SKIN,
     back_ribs,
     glands,
     magma_vein,
     reactor_sacs,
 )
-from game.view.enemies.enemy_shapes import FIGHTER_SECTION, SIDES, around, canopy_paint  # noqa: E402
-from render.geometry.organic import RibSpec  # noqa: E402
-from render.geometry.outline import hypot2  # noqa: E402
-from render.geometry.solids import LoftOptions, Placement  # noqa: E402
+from game.view.enemies.enemy_shapes import FIGHTER_SECTION, SIDES, around, canopy_paint
+from render.geometry.organic import RibSpec
+from render.geometry.outline import hypot2
+from render.geometry.solids import LoftOptions, Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type OutlinePoint = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The fuselage (loft stations, tail to nose): a long, hard-edged body closing to a needle nose.
 FUSELAGE = [
@@ -63,21 +65,19 @@ SOOT_BANDS = 2
 
 # The spiky wings seen from above (right half, front to tail): a forward spike off the wing root, a
 # long spike at the tip, a sawtooth trailing edge and a spike at the tail.
-WING = symmetric(
-    [
-        [6, 34],
-        [14, 16],
-        [28, 7],
-        [50, 14],
-        [38, -2],
-        [57, -24],
-        [45, -24],
-        [36, -33],
-        [30, -46],
-        [20, -36],
-        [8, -40],
-    ]
-)
+WING = symmetric([
+    [6, 34],
+    [14, 16],
+    [28, 7],
+    [50, 14],
+    [38, -2],
+    [57, -24],
+    [45, -24],
+    [36, -33],
+    [30, -46],
+    [20, -36],
+    [8, -40],
+])
 # Heights of the wing: belly, edge, top.
 WING_Y = [-2.5, 0.0, 2.5]
 # Its leading edges, lit gold (edges of WING, from point i to the next).
@@ -140,12 +140,15 @@ SPOKE = [
 
 
 def _along_nose(x: float, y: float, z: float, dz: float) -> Any:
-    """A placement at `[x, y, z - dz]`, lying along Z (`{ at, pitch: QUARTER }`)."""
+    """Return a placement at `[x, y, z - dz]`, lying along Z (`{ at, pitch: QUARTER }`)."""
     return Placement([x, y, z - dz], 0, QUARTER)
 
 
 def _draw_fuselage(p: Any) -> None:
-    """The fuselage, soot-black behind its canopy, gold strips down its flanks, reactors aft."""
+    """Draw the fuselage, soot-black behind its canopy, with reactors aft.
+
+    Gold strips run down its flanks.
+    """
     hull = p.hull
     neon = p.neon
     canopy: Any = canopy_paint([3, 4], H.dark)
@@ -153,7 +156,7 @@ def _draw_fuselage(p: Any) -> None:
     def paint(side: int, band: int) -> Any:
         # Soot over its back behind the canopy, from the reactors' heat.
         painted: Any = canopy(side, band)
-        if painted == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+        if painted == None:
             if band < SOOT_BANDS and side in BACK:
                 return SKIN.dark
             return None
@@ -188,7 +191,10 @@ def _draw_fuselage(p: Any) -> None:
 
 
 def _draw_wings(p: Any) -> None:
-    """The spiky wings: soot-dark tops cracked with molten seams, gold leading edges, spikes."""
+    """Draw the spiky wings: soot-dark tops cracked with molten seams.
+
+    They have gold leading edges and spikes.
+    """
     neon = p.neon
     p.flesh.bevel_slab(WING, WING_Y, [0.6, 0.8], SKIN.dark, None, SKIN.base)
     edge_lights(neon, WING, LEADING, [-1.2, -0.2], GOLD)
@@ -229,7 +235,7 @@ def _draw_wings(p: Any) -> None:
 
 
 def _draw_spikes(p: Any) -> None:
-    """The dorsal spikes down its back, leaning aft."""
+    """Draw the dorsal spikes down its back, leaning aft."""
     for i, pair in enumerate([[-22.0, 3.0], [-30.0, 3.6], [-38.0, 3.0]]):
         z = pair[0]
         size = pair[1]
@@ -237,7 +243,7 @@ def _draw_spikes(p: Any) -> None:
 
 
 def _draw_nose_guns(p: Any) -> None:
-    """The twin ember cannons under the nose, their tips at the design's muzzles."""
+    """Draw the twin ember cannons under the nose, their tips at the design's muzzles."""
     hull = p.hull
     charge = p.charge
     muzzle = p.muzzle
@@ -253,7 +259,7 @@ def _draw_nose_guns(p: Any) -> None:
 
 
 def _draw_spire(p: Any) -> None:
-    """The spire over the core, its crown glowing where its spirals leave from."""
+    """Draw the spire over the core, its crown glowing where its spirals leave from."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -265,7 +271,7 @@ def _draw_spire(p: Any) -> None:
 
 
 def _draw_core(p: Any) -> None:
-    """The core body: fuselage, wings, spikes, nose guns, spire and the embers round it."""
+    """Draw the core body: fuselage, wings, spikes, nose guns, spire and the embers round it."""
     _draw_fuselage(p)
     _draw_wings(p)
     _draw_spikes(p)
@@ -275,8 +281,10 @@ def _draw_core(p: Any) -> None:
 
 
 def _draw_ring(p: Any) -> None:
-    """The turning ring (MB-EMBER-HERALD-03, MB-EMBER-HERALD-06): a soot-black rim lit gold, held by
-    three spokes from the hub."""
+    """Draw the turning ring (MB-EMBER-HERALD-03, MB-EMBER-HERALD-06).
+
+    A soot-black rim lit gold, held by three spokes from the hub.
+    """
     hull = p.hull
     neon = p.neon
     r = ORBIT
@@ -296,14 +304,17 @@ def _draw_ring(p: Any) -> None:
 def _gun_muzzles(part_id: str) -> list[Any]:
     """`EMBER_HERALD.guns[part.id]?.gun ?? []`."""
     entry: Any = EMBER_HERALD.guns[part_id]
-    if entry == None or entry.gun == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    if entry == None or entry.gun == None:
         return []
     guns: list[Any] = entry.gun
     return guns
 
 
 def _lance_part(muzzles: list[Any]) -> Any:
-    """A lance on the ring (MB-EMBER-HERALD-03), drawn from its design's muzzles (`muzzles`)."""
+    """Return a lance on the ring (MB-EMBER-HERALD-03).
+
+    It is drawn from its design's muzzles (`muzzles`).
+    """
 
     def draw(parts: Any, at: Vec3) -> None:
         ember_lance(parts, muzzles, at)
@@ -312,12 +323,14 @@ def _lance_part(muzzles: list[Any]) -> Any:
 
 
 def build_ember_herald(scene: Any) -> Any:
-    """MB-EMBER-HERALD-01, MB-EMBER-HERALD-04: the Ember Herald, a fast, spiky interceptor (3.5 L)
-    wreathed in embers, gold neon: spiked wings cracked with molten seams, a spire over the core,
-    and a ring turning over it carrying three ember lances."""
+    """Build the Ember Herald (MB-EMBER-HERALD-01, MB-EMBER-HERALD-04).
+
+    A fast, spiky interceptor (3.5 L) wreathed in embers, gold neon: spiked wings cracked with
+    molten seams, a spire over the core, and a ring turning over it carrying three ember lances.
+    """
     lances = {}
     for part in EMBER_HERALD.stats.parts:
-        if part.reveal != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+        if part.reveal != None:
             continue  # A hidden weapon, drawn from its look (`hidden_weapon_shapes`).
         lances[part.id] = _lance_part(_gun_muzzles(part.id))
     return build_boss_model(

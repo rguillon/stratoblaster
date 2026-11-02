@@ -50,22 +50,24 @@ The high score, the last chosen ship and the volumes are kept in cookies (`strat
 ## Getting started
 
 ```sh
-make setup     # checks the tools, installs the dependencies and the git hooks
-make serve     # builds the game and serves it on http://localhost:5173
+make setup     # installs the git hooks (pre-commit, pre-push)
+make serve     # builds the game into dist/ and serves it on http://localhost:5173
 ```
+
+Then open http://localhost:5173. `SERVE_PORT=8000 make serve` picks another port.
 
 ## Make targets
 
 <!-- ENG-37: the public targets, the only ones `make help` lists. -->
 
-| Target        | What it does                                                          |
-| ------------- | --------------------------------------------------------------------- |
-| `make setup`  | Checks the tools, installs the dependencies and the git hooks         |
-| `make check`  | Every code check (lint, types), unit tests with coverage, build, e2e  |
-| `make tests`  | Unit tests (pytest, CPython over `src/`), coverage (HTML in `coverage/`) |
-| `make e2e`    | End-to-end tests (Playwright, Chromium) on the e2e build              |
-| `make serve`  | Builds the game and serves `dist/` on port 5173                       |
-| `make help`   | Lists these targets                                                   |
+| Target       | What it does                                                                 |
+| ------------ | ---------------------------------------------------------------------------- |
+| `make setup` | Installs the git hooks (pre-commit, pre-push)                                |
+| `make check` | Every code check: ruff (lint and format), import-linter, mypy                |
+| `make tests` | Unit tests (pytest, CPython over `src/`) with coverage (HTML in `coverage/`) |
+| `make build` | Fetches Babylon.js if needed, builds the game into `dist/`                   |
+| `make e2e`   | Builds the e2e game, then runs the end-to-end tests (Playwright, Chromium)  |
+| `make serve` | Builds the game, then serves `dist/` on http://localhost:5173 (`SERVE_PORT`) |
 
 [`node/tests/`](node/tests/) keeps the TypeScript test suite of the game this port came from. Nothing
 runs it: it is the reference for the tests still to port.

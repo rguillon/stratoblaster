@@ -1,17 +1,20 @@
-"""Seeded 2D gradient noise and its fractal sums (the terrain's relief, GFX-TERRAIN-02)"""
+# Copyright (c) 2026 Renaud Guillon
+"""Seeded 2D gradient noise and its fractal sums (the terrain's relief, GFX-TERRAIN-02)."""
+
+import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.bits import imul, ushr, xor
+from core.math.rng import create_rng
+
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Callable
 
 Noise2D = Callable[[float, float], float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
-import math  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-from core.math.bits import imul, ushr, xor  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.math.rng import create_rng  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 TABLE_SIZE = 256
 PI = 3.141592653589793
@@ -43,8 +46,11 @@ def _lerp(a: float, b: float, t: float) -> float:
 
 
 def _int_mod(a: int, n: int) -> int:
-    """`a % n` for whole numbers, with JavaScript's `%` (Transcrypt's `%` also corrects the sign,
-    which is slow here: the noise is evaluated for every texel). Equal to Python's for `a >= 0`."""
+    """Return `a % n` for whole numbers, with JavaScript's `%`.
+
+    Transcrypt's `%` also corrects the sign, which is slow here: the noise is evaluated for every
+    texel. Equal to Python's for `a >= 0`.
+    """
     r = 0
     __pragma__("skip")
     r = a - n * int(a / n)  # Truncating, as JavaScript's `%` (CPython's `%` floors).
@@ -61,7 +67,7 @@ def create_noise2d(seed: int, period: int = TABLE_SIZE) -> Noise2D:
     """Seeded 2D gradient noise (Perlin style), values in [-1, 1].
 
     With a `period`, the lattice wraps every `period` units, so the noise tiles seamlessly on a
-    `period` × `period` square (for textures).
+    `period` x `period` square (for textures).
     """
     random = create_rng(seed)
     perm = list(range(TABLE_SIZE))
@@ -89,7 +95,7 @@ def create_noise2d(seed: int, period: int = TABLE_SIZE) -> Noise2D:
         top = _lerp(gradient(ix, iy + 1, fx, fy - 1), gradient(ix + 1, iy + 1, fx - 1, fy - 1), u)
         # Gradient noise peaks at about ±0.71 in 2D: scale it to fill [-1, 1].
         value = _lerp(bottom, top, v) * SQRT2
-        return -1 if value < -1 else (1 if value > 1 else value)
+        return -1 if value < -1 else (min(value, 1))
 
     return noise
 
@@ -118,7 +124,7 @@ def ridged(noise: Noise2D, x: float, y: float, options: OctaveOptions) -> float:
     for _ in range(options.octaves):
         crest = 1 - abs(noise(x * frequency, y * frequency))
         value = crest * crest * weight
-        weight = value * 2 if value * 2 < 1 else 1
+        weight = min(1, value * 2)
         total_sum += value * amplitude
         total += amplitude
         amplitude *= options.gain
@@ -131,12 +137,12 @@ def smoothstep(edge0: float, edge1: float, x: float) -> float:
     if edge0 == edge1:
         return 0.0 if x < edge0 else 1.0
     t = (x - edge0) / (edge1 - edge0)
-    t = 0 if t < 0 else (1 if t > 1 else t)
+    t = 0 if t < 0 else (min(t, 1))
     return t * t * (3 - 2 * t)
 
 
 def hash_2d(x: int, y: int, seed: int) -> float:
-    """A well-mixed 32-bit hash of integer coordinates and a seed, as a number in [0, 1)."""
+    """Return a well-mixed 32-bit hash of integer coordinates and a seed, as a number in [0, 1)."""
     h = xor(xor(imul(int(x), 0x27D4EB2D), imul(int(y), 0x165667B1)), imul(int(seed), 0x9E3779B1))
     h = imul(xor(h, ushr(h, 15)), 0x85EBCA6B)
     h = imul(xor(h, ushr(h, 13)), 0xC2B2AE35)

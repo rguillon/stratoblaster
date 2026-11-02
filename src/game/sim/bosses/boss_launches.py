@@ -1,9 +1,9 @@
-"""The launch volleys of the bosses' parts (BOSS-25: hangars, drone bays). The volley itself is
-built from its config record in `game/sim/boss_build.py`; which parts of each boss launch is its
-boss file's (`specs/bosses/`).
-"""
+# Copyright (c) 2026 Renaud Guillon
+"""The launch volleys of the bosses' parts (BOSS-25: hangars, drone bays).
 
-from org.transcrypt.stubs.browser import __pragma__
+The volley itself is built from its config record in `game/sim/boss_build.py`; which parts of each
+boss launch is its boss file's (`specs/bosses/`).
+"""
 
 from core.entities.enemy import Enemy
 from core.systems.enemy_motion import Path
@@ -11,11 +11,13 @@ from game.config.enemies import ENEMY_CONFIG
 from game.sim.enemies.gnat import Gnat
 from game.sim.enemies.hornet import Hornet, hornet_options
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 GNATS = ENEMY_CONFIG.gnat
 CARRIER = ENEMY_CONFIG.carrier
@@ -48,9 +50,10 @@ def _hornets(count: int) -> Callable[[float, float], list[Enemy]]:
 
 
 def launch_fire(kind: str, count: int, side: int) -> Callable[[float, float], list[Enemy]]:
-    """What a part's launch of `count` enemies of `kind` ('gnats' or 'hornets') sends out from
-    (x, y). `side` is which side of the boss the part is on (-1 left, 1 right), for the Gnats' way
-    out.
+    """Return what a part's launch of `count` enemies of `kind` sends out from (x, y).
+
+    `kind` is 'gnats' or 'hornets'. `side` is which side of the boss the part is on (-1 left, 1
+    right), for the Gnats' way out.
     """
     if kind == "gnats":
         return _gnats(count, side or 1)

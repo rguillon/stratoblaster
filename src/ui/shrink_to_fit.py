@@ -1,17 +1,21 @@
-"""Lowers an element's font size until it fits its parent (UI-LOOK-13: the logo fits)"""
+# Copyright (c) 2026 Renaud Guillon
+"""Lowers an element's font size until it fits its parent (UI-LOOK-13: the logo fits)."""
 
-from org.transcrypt.stubs.browser import __pragma__, window
+from org.transcrypt.stubs.browser import window
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def shrink_to_fit(el: Any, min_px: float = 12) -> None:
-    """Lowers `el`'s font size, 1 px at a time, until it fits the width of its parent (or
-    `min_px` is reached). The CSS sizes are tuned for condensed fonts; this keeps whole letters
-    when the system falls back to a wider one. Does nothing while the element is not laid out.
+    """Lowers `el`'s font size, 1 px at a time, until it fits the width of its parent.
+
+    (Or until `min_px` is reached.) The CSS sizes are tuned for condensed fonts; this keeps whole
+    letters when the system falls back to a wider one. Does nothing while the element is not laid
+    out.
     """
     parent = el.parentElement
     room = parent.clientWidth if parent else 0

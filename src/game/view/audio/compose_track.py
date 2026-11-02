@@ -1,32 +1,27 @@
-"""Composes a whole looping track for a level, a boss or the menu (AUD-MUSIC-02, AUD-MUSIC-07,
-AUD-MUSIC-11): a key, a tempo and sections picked from the style by a seeded generator, each
-section's bars made of drums, bass, pad, arpeggio and melody. Pure: the same request always gives
-the same notes.
+# Copyright (c) 2026 Renaud Guillon
+"""Composes a whole looping track for a level, a boss or the menu.
+
+AUD-MUSIC-02, AUD-MUSIC-07, AUD-MUSIC-11: a key, a tempo and sections picked from the style by a
+seeded generator, each section's bars made of drums, bass, pad, arpeggio and melody. Pure: the
+same request always gives the same notes.
 """
 
 import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.audio.compose_melody import Motif  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-__pragma__("noskip")
-
-from audio.audio_types import Note, Track  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.math.bits import imul, u32, xor  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.math.rng import create_rng, pick, random_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.audio.compose_boss import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from audio.audio_types import Note, Track
+from core.math.bits import imul, u32, xor
+from core.math.rng import create_rng, pick, random_in
+from game.view.audio.compose_boss import (
     BOSS_PROGRESSIONS,
     boss_bass_bar,
     boss_drum_bar,
     riser_bar,
     stab_bar,
 )
-from game.view.audio.compose_melody import make_motif, motif_bars, scale_pitch  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.audio.compose_parts import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.audio.compose_melody import make_motif, motif_bars, scale_pitch
+from game.view.audio.compose_parts import (
     BarContext,
     arp_bar,
     arp_shape,
@@ -37,12 +32,20 @@ from game.view.audio.compose_parts import (  # noqa: E402 (after the Transcrypt 
     pad_bar,
     sort_by_beat,
 )
-from game.view.audio.music_styles import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.audio.music_styles import (
     BEATS_PER_BAR,
     MUSIC_LOOP_MIN_SECONDS,
     SECTION_BARS,
     MusicStyle,
 )
+
+# isort: split
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+# __pragma__ ("skip")
+from core.math.rng import Random
+from game.view.audio.compose_melody import Motif
+
+# __pragma__ ("noskip")
 
 
 class TrackRequest:
@@ -60,12 +63,13 @@ class TrackRequest:
 
 def char_code_at(text: str, index: int) -> int:
     """`text.charCodeAt(index)`."""
+    _ = (text, index)
     __pragma__("js", "{}", "return text.charCodeAt(index);")
     return 0
 
 
 def seed_of(text: str) -> int:
-    """A seed from a text (FNV-1a), so a level's id picks its music."""
+    """Return a seed from a text (FNV-1a), so a level's id picks its music."""
     hash_ = 0x811C9DC5
     for i in range(len(text)):
         hash_ = xor(hash_, char_code_at(text, i))
@@ -83,8 +87,10 @@ class Section:
 
 
 def tempo_of(request: TrackRequest, random: Random) -> int:
-    """The tempo of a track: in its style's range (AUD-MUSIC-05), or 20–30 BPM above it for a
-    boss (AUD-MUSIC-07)."""
+    """Return the tempo of a track: in its style's range (AUD-MUSIC-05).
+
+    Or 20-30 BPM above it for a boss (AUD-MUSIC-07).
+    """
     tempo = request.style.tempo
     if request.boss:
         return math.floor(
@@ -114,8 +120,10 @@ LEVEL_ENERGIES = [
 
 
 def energies(request: TrackRequest, count: int, random: Random) -> list[int]:
-    """The energy of each section (AUD-MUSIC-04): the level's shape; a boss fight is intense all
-    along, with one breath."""
+    """Return the energy of each section (AUD-MUSIC-04): the level's shape.
+
+    A boss fight is intense all along, with one breath.
+    """
     if request.boss:
         return [1 if i == count - 2 else 2 for i in range(count)]
     shape = pick(
@@ -141,14 +149,17 @@ def sections(request: TrackRequest, count: int, random: Random) -> list[Section]
 
 
 def chord(scale: list[int], degree: int) -> list[int]:
-    """The chord of scale step `degree`: a triad in the bass register."""
+    """Return the chord of scale step `degree`: a triad in the bass register."""
     return [scale_pitch(scale, degree + third) for third in [0, 2, 4]]
 
 
 def rhythm_bar(
     request: TrackRequest, bar: BarContext, random: Random, bass: list[int]
 ) -> list[Note]:
-    """The drums and bass of a bar: the style's, or the boss's driving ones with chord stabs."""
+    """Return the drums and bass of a bar.
+
+    The style's, or the boss's driving ones with chord stabs.
+    """
     style = request.style
     if request.boss:
         return concat([boss_drum_bar(style, bar), boss_bass_bar(style, bar), stab_bar(bar)])
@@ -171,7 +182,7 @@ def section_notes(
     start: int,
     parts: TrackParts,
 ) -> list[Note]:
-    """The notes of one section, bar by bar."""
+    """Return the notes of one section, bar by bar."""
     style = request.style
     scale = parts.scale
     notes: list[Note] = []
@@ -194,9 +205,11 @@ def section_notes(
 
 
 def compose_track(request: TrackRequest) -> Track:
-    """Composes a looping track (AUD-MUSIC-01, AUD-MUSIC-02): a key, a tempo and sections picked
-    from the style by a seeded generator, each section's bars made of drums, bass, pad, arpeggio
-    and melody. Pure: the same request always gives the same notes."""
+    """Composes a looping track (AUD-MUSIC-01, AUD-MUSIC-02): a key.
+
+    A tempo and sections picked from the style by a seeded generator, each section's bars made of
+    drums, bass, pad, arpeggio and melody. Pure: the same request always gives the same notes.
+    """
     random = create_rng(request.seed)
     style = request.style
     bpm = tempo_of(request, random)

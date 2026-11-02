@@ -1,19 +1,21 @@
-"""Callbacks of the tappable parts of a menu screen
-A callback that does not apply to a screen is None."""
+# Copyright (c) 2026 Renaud Guillon
+"""Callbacks of the tappable parts of a menu screen.
 
-from org.transcrypt.stubs.browser import __pragma__
+A callback that does not apply to a screen is None.
+"""
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class ScreenHandlers:
     """The callbacks of a menu screen's tappable parts."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         on_tap: Callable[[int], None],
         on_back: Callable[[], None],

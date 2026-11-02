@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """A dev viewer (D-199): the item picked in the dev menu, drawn as in game (DEV-MENU-08).
 
 Every viewer shows a level's scene built as a level is (`build_level_scene`, with the game's lights,
@@ -10,8 +11,6 @@ alone on a floor ruled in blocks (`DevPropStage`, D-205), no ground loaded.
 """
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from app.dev_catalog import DevItem
 from app.dev_model_scene import build_model_scene
@@ -29,11 +28,13 @@ from core.systems.enemy_world import EnemyBlast
 from render.babylon import dispose_node, get_hierarchy_bounding_vectors
 from render.enemy_layer import EnemyLayer
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The smallest number of seconds written with two digits.
 TWO_DIGITS = 10
@@ -41,28 +42,34 @@ TWO_DIGITS = 10
 
 def clock_text(seconds: float) -> str:
     """`m:ss`."""
-    whole = int(math.floor(max(0, seconds)))
+    whole = math.floor(max(0, seconds))
     rest = whole % 60
     return str(whole // 60) + ":" + ("0" if rest < TWO_DIGITS else "") + str(rest)
 
 
 def close_up_fov(size: float, distance: float, fill: float, widest: float) -> float:
-    """The vertical field of view in which something `size` across, `distance` away, fills `fill`
-    of the screen's height; never wider than `widest`."""
+    """Return the vertical field of view in which something `size` across, `distance` away.
+
+    Fills `fill` of the screen's height; never wider than `widest`.
+    """
     if size <= 0 or distance <= 0 or fill <= 0:
         return widest
     return min(widest, 2 * math.atan(size / (2 * distance * fill)))
 
 
 def zoomed_fov(fov: float, zoom: float) -> float:
-    """The field of view `fov` narrowed `zoom` times (DEV-MENU-11, D-208: what is seen looks
-    `zoom` times as big)."""
+    """Return the field of view `fov` narrowed `zoom` times (DEV-MENU-11, D-208).
+
+    What is seen looks `zoom` times as big.
+    """
     return 2 * math.atan(math.tan(fov / 2) / zoom)
 
 
 def zoomed(zoom: float, delta_y: float) -> float:
-    """`zoom` after the wheel turned by `delta_y` pixels (D-208): in when it turns up (negative),
-    out when it turns down, within `zoom_range`."""
+    """`zoom` after the wheel turned by `delta_y` pixels (D-208): in when it turns up (negative).
+
+    Out when it turns down, within `zoom_range`.
+    """
     low = math.log(CFG.zoom_range[0])
     high = math.log(CFG.zoom_range[1])
     return math.exp(max(low, min(high, math.log(zoom) - delta_y * CFG.zoom_per_pixel)))
@@ -82,9 +89,11 @@ def _within(enemy: Any, screen: Any, margin: float) -> bool:
 
 
 class DevEnemyContext:
-    """The world an enemy of the enemies viewer (DEV-MENU-13) lives in (`EnemyContext`): the
-    playfield, the player at the bottom middle, nothing it fires or sends out kept; what blows up
-    is kept for the viewer to draw (`blasts`)."""
+    """The world an enemy of the enemies viewer (DEV-MENU-13) lives in (`EnemyContext`).
+
+    The playfield, the player at the bottom middle, nothing it fires or sends out kept; what blows
+    up is kept for the viewer to draw (`blasts`).
+    """
 
     def __init__(self, screen: Any, random: Any) -> None:
         self.width = screen.width
@@ -97,33 +106,38 @@ class DevEnemyContext:
         self.blasts: list[EnemyBlast] = []
 
     def seen(self, point: Any) -> PlanePoint:
+        """Return the plane position of `point`, as the viewer shows it."""
         return PlanePoint(point.x, point.y)
 
-    def fire_bullet(self, x: float, y: float, heading: float, spec: Any) -> None:
-        return None
+    def fire_bullet(self, _x: float, _y: float, _heading: float, _spec: Any) -> None:
+        """Do nothing: the viewer fires no bullets."""
 
-    def fire_missile(self, x: float, y: float, heading: float, spec: Any) -> None:
-        return None
+    def fire_missile(self, _x: float, _y: float, _heading: float, _spec: Any) -> None:
+        """Do nothing: the viewer fires no missiles."""
 
-    def fire_laser(self, owner: Any, spec: Any) -> None:
-        return None
+    def fire_laser(self, _owner: Any, _spec: Any) -> None:
+        """Do nothing: the viewer fires no lasers."""
 
-    def spawn(self, enemy: Any) -> None:
-        return None
+    def spawn(self, _enemy: Any) -> None:
+        """Do nothing: the viewer spawns no enemies."""
 
     def explode(self, x: float, y: float, radius: float) -> None:
+        """Add a blast of enemy colour at the given position."""
         self.blasts.append(EnemyBlast("enemy", x, y, radius))
 
     def break_part(self, part: Any) -> None:
+        """Add a blast where a part of an enemy broke."""
         self.blasts.append(EnemyBlast("enemy", part.x, part.y, part.radius))
 
 
 class DevViewer:
-    """One dev viewer (`viewer`, one of `DEV_VIEWERS`) and its `items`. Each frame, `show` says
-    which item and toggle the menu has, `frame` builds what is missing and moves on; `scene` is
-    what to draw (None while it is being built)."""
+    """One dev viewer (`viewer`, one of `DEV_VIEWERS`) and its `items`.
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    Each frame, `show` says which item and toggle the menu has, `frame` builds what is missing and
+    moves on; `scene` is what to draw (None while it is being built).
+    """
+
+    def __init__(
         self,
         engine: Any,
         game: Any,
@@ -193,16 +207,16 @@ class DevViewer:
         return ""
 
     def show(self, index: int, toggle: bool) -> None:
-        """The item the menu picked, and its toggle (close-up, or play for the levels)."""
+        """Show the item the menu picked, and its toggle (close-up, or play for the levels)."""
         self._index = max(0, min(index, len(self._items) - 1))
         self._toggle = toggle
 
     def zoom(self, delta_y: float) -> None:
-        """The wheel turned by `delta_y` pixels zooms in or out (D-208)."""
+        """Zoom in or out as the wheel turns by `delta_y` pixels (D-208)."""
         self._zoom = zoomed(self._zoom, delta_y)
 
     def turn(self, dx: float, dy: float) -> None:
-        """A drag of (`dx`, `dy`) screen pixels turns the model (see `_turn`, DEV-MENU-10)."""
+        """Turn the model by a drag of (`dx`, `dy`) screen pixels (see `_turn`, DEV-MENU-10)."""
         self._turn[0] += dx * CFG.turn_per_pixel
         self._turn[1] += dy * CFG.turn_per_pixel
 
@@ -212,8 +226,10 @@ class DevViewer:
         self._target = max(0, min(self._duration, self._target + seconds))
 
     def frame(self, dt: float) -> None:
-        """Builds the scene of the item's level if needed (once its ground is ready), shows the
-        item, and moves on by `dt` seconds."""
+        """Build the scene of the item's level if needed (once its ground is ready).
+
+        Shows the item, and moves on by `dt` seconds.
+        """
         if len(self._items) == 0:
             return
         item = self._items[self._index]
@@ -263,16 +279,20 @@ class DevViewer:
         self._view.update(0, 0)
 
     def _play(self, dt: float) -> None:
-        """Levels viewer (DEV-MENU-18): the time eases to the wheel's, and goes on at the level's
-        pace while playing."""
+        """Levels viewer (DEV-MENU-18): the time eases to the wheel's.
+
+        And goes on at the level's pace while playing.
+        """
         if self._toggle:
             self._target = min(self._duration, self._target + dt)
         self._time = eased_time(self._time, self._target, CFG.scrub_ease, dt)
         self._view.update(self._time * self._view.track.speed, dt)
 
     def _middle(self) -> list[float]:
-        """The playfield point drawn at the middle of the view (where the camera looks, on the
-        flight plane), as [x, y]."""
+        """Return the playfield point drawn at the middle of the view, where the camera looks.
+
+        On the flight plane, as [x, y].
+        """
         stage = self._view.stage
         camera = stage.camera.position
         direction = stage.framing.direction
@@ -296,8 +316,10 @@ class DevViewer:
         self._shown = -1
 
     def _show_item(self, item: DevItem) -> None:
-        """Builds the model of `item` at the middle of the view, and measures it (the ships
-        viewer's ship, DEV-MENU-12, and the enemies' and bosses')."""
+        """Build the model of `item` at the middle of the view.
+
+        And measures it (the ships viewer's ship, DEV-MENU-12, and the enemies' and bosses').
+        """
         self._drop_item()
         self._shown = self._index
         view = self._view
@@ -324,8 +346,10 @@ class DevViewer:
         self._size = self._measure(view.playfield.root)
 
     def _spawn(self, item: DevItem) -> Any:
-        """One enemy (or the boss) of `item`'s kind, where its kind brings it in; it then lives
-        its own life (see `_live`)."""
+        """One enemy (or the boss) of `item`'s kind.
+
+        Where its kind brings it in It then lives its own life (see `_live`).
+        """
         screen = self.game.screen
         area = EnemySpawnArea(screen.width, screen.height, create_rng(int(CFG.model_seed)))
         enemy: Any = None
@@ -344,8 +368,10 @@ class DevViewer:
         return enemy
 
     def _show_prop(self, item: DevItem) -> None:
-        """Props viewer (D-205): builds the stage once, puts the prop picked on it, and places the
-        camera as dragged."""
+        """Props viewer (D-205): builds the stage once.
+
+        Puts the prop picked on it And places the camera as dragged.
+        """
         if self._props is None:
             self._props = DevPropStage(self._engine, self.game, self._environment)
         if self._shown != self._index:
@@ -354,7 +380,7 @@ class DevViewer:
         self._props.update(self._turn, self._toggle, self._zoom)
 
     def _measure(self, root: Any) -> float:
-        """The size of what hangs from `root`: its largest side, in world units."""
+        """Return the size of what hangs from `root`: its largest side, in world units."""
         bounds = get_hierarchy_bounding_vectors(root)
         low = bounds.min
         high = bounds.max
@@ -362,9 +388,11 @@ class DevViewer:
         return size
 
     def _live(self, dt: float) -> None:
-        """Runs the enemy's own life for `dt` seconds, in steps of the game's: its moves, its
-        turrets and limbs, a boss's coming in and its patterns (what it fires is dropped). Once it
-        has left the playfield, or is older than the game lets an enemy get, a new one comes."""
+        """Run the enemy's own life for `dt` seconds, in steps of the game's: its moves.
+
+        Its turrets and limbs, a boss's coming in and its patterns (what it fires is dropped). Once
+        it has left the playfield, or is older than the game lets an enemy get, a new one comes.
+        """
         enemy = self._enemy
         if enemy is None or self._item is None:
             return
@@ -379,8 +407,10 @@ class DevViewer:
             self._enemy = self._spawn(self._item)
 
     def _take_blasts(self, enemy: Any) -> None:
-        """The explosions of the last step, moved as the enemy is: it is drawn at the middle of the
-        view (see `_sync`)."""
+        """Take the explosions of the last step, moved as the enemy is.
+
+        The enemy is drawn at the middle of the view (see `_sync`).
+        """
         dx = self._middle_point[0] - enemy.x
         dy = self._middle_point[1] - enemy.y
         for blast in self._context.blasts:
@@ -390,9 +420,11 @@ class DevViewer:
         self._context.blasts = []
 
     def break_part(self) -> None:
-        """Bosses viewer (DEV-MENU-14): destroys the boss's next part, or its core once they are
-        all gone (as K does in a level, DEV-OPT-09), to watch it break: blasts, transformations and
-        its death. A new boss comes in once it is gone."""
+        """Bosses viewer (DEV-MENU-14): destroys the boss's next part.
+
+        Or its core once they are all gone (as K does in a level, DEV-OPT-09), to watch it break:
+        blasts, transformations and its death. A new boss comes in once it is gone.
+        """
         if self.viewer == "bosses" and isinstance(self._enemy, Boss):
             self._enemy.break_next()
 
@@ -426,7 +458,7 @@ class DevViewer:
             self._view.playfield.run(lambda: self._blasts.sync(blasts, dt))
 
     def _animate(self, dt: float) -> None:
-        """Steps the model's animations and sets the camera's field of view (the close-up's)."""
+        """Step the model's animations and set the camera's field of view (the close-up's)."""
         if self._ship is not None:
             self._ship.update(dt)
         self._live(dt)
@@ -440,16 +472,15 @@ class DevViewer:
         camera.fov = zoomed_fov(camera.fov, self._zoom)
 
     def _apply_turn(self) -> None:
-        """Turns the model as dragged: a ship or an enemy around its nose and nose up or down (on
-        top of the bank and heading the game gives them)."""
-        pivot: Any = None
-        if self._ship is not None:
-            pivot = self._ship.pivot
-        elif self._layer is not None and self._enemy is not None:
-            pivot = self._layer.pivot_of(self._enemy)
-        if pivot is not None:
-            pivot.rotation.y = self._turn[0]
-            pivot.rotation.x = self._turn[1]
+        """Turn the model as dragged.
+
+        A ship or an enemy around its nose and nose up or down (on top of the bank and heading the
+        game gives them).
+        """
+        # `_show_item` made a ship, or a layer and an enemy that `_sync` has just drawn.
+        pivot = self._ship.pivot if self._ship is not None else self._layer.pivot_of(self._enemy)
+        pivot.rotation.y = self._turn[0]
+        pivot.rotation.x = self._turn[1]
 
     def _distance(self) -> float:
         """How far the camera is from the middle of the view's subject."""
@@ -466,6 +497,7 @@ class DevViewer:
         self._view = None
 
     def dispose(self) -> None:
+        """Releases the scene and the props of the viewer."""
         self._drop_scene()
         if self._props is not None:
             self._props.dispose()

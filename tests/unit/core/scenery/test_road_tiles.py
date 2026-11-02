@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/road_tiles.py`."""
+
+from typing import Any
 
 from helpers.level_builders import (
     flat,
@@ -48,7 +51,7 @@ TWO = PropKindRule("two", 1.0, 24.0, (0.5, 1.0), tiles=(2, 2))
 LOT = PropKindRule("lot", 1.0, 12.0, (0.5, 1.0), tiles=(3, 1))
 
 
-def _setup(group_at=None, lots=(LOT,), seed: int = 4):
+def _setup(group_at: Any = None, lots: Any = (LOT,), seed: int = 4) -> Any:
     level = make_level(
         [
             section("a", 10, flat()),
@@ -67,13 +70,13 @@ def _setup(group_at=None, lots=(LOT,), seed: int = 4):
         level.props,
         roads,
         seed,
-        group_at if group_at is not None else (lambda x, z, section: group),
+        group_at if group_at is not None else (lambda _x, _z, _section: group),
         placed.append,
     )
     return site, roads, placed
 
 
-def _footprint_tiles(building) -> set[tuple[int, int]]:
+def _footprint_tiles(building: Any) -> set[tuple[int, int]]:
     t = TILE.size
     p = building.placement
     i0 = round((p.x - building.half_x) / t)
@@ -83,7 +86,7 @@ def _footprint_tiles(building) -> set[tuple[int, int]]:
     return {(i, j) for i in range(i0, i1) for j in range(j0, j1)}
 
 
-def _pack(site, roads, within=lambda z: True):
+def _pack(site: Any, roads: Any, within: Any = lambda _z: True) -> Any:
     road = RoadTilesCache().of(roads.roads, TILE)
     pack_districts(site, within, TILE, road)
     return road
@@ -101,11 +104,11 @@ def _street(
 
 
 def _row(start: int, at: float, from_: float, to: float, size: int = 1) -> _TileLine:
-    return _TileLine(True, start, size, at, from_, to)
+    return _TileLine(row=True, start=start, size=size, at=at, from_=from_, to=to)
 
 
 def _column(start: int, at: float, from_: float, to: float, size: int = 1) -> _TileLine:
-    return _TileLine(False, start, size, at, from_, to)
+    return _TileLine(row=False, start=start, size=size, at=at, from_=from_, to=to)
 
 
 def test_gfx_road_08_buildings_stand_on_whole_tiles_off_the_roads_and_apart() -> None:
@@ -180,9 +183,11 @@ def test_gfx_road_11_a_street_turning_at_a_junction_is_a_turn_and_one_ending_is_
     column = _column(3, 72.0, 120.0, 300.0)
     row = _row(5, 120.0, -300.0, 72.0)
     turn = _junction(row, column)
-    assert turn is not None and turn.kind == "turn"
+    assert turn is not None
+    assert turn.kind == "turn"
     tee = _junction(_row(5, 120.0, -300.0, 72.0), _column(3, 72.0, -300.0, 300.0))
-    assert tee is not None and tee.kind == "tee"
+    assert tee is not None
+    assert tee.kind == "tee"
 
 
 def test_gfx_road_08_road_pieces_cover_each_tile_once() -> None:
@@ -217,9 +222,11 @@ def test_perf_11_the_pieces_of_a_street_are_cached_per_list_of_roads() -> None:
 
 
 def test_road_tiles_marks_every_tile_of_each_piece() -> None:
-    piece = RoadPiece(2, 3, 2, "straight", False, [None, None, None, None])
+    piece = RoadPiece(2, 3, 2, "straight", adapter=False, sides=[None, None, None, None])
     tiles = road_tiles([piece])
-    assert {k for k in tiles} == {str(tile_key(2 + i, 3 + j)) for i in range(2) for j in range(2)}
+    assert set(tiles) == {str(tile_key(2 + i, 3 + j)) for i in range(2) for j in range(2)}
     line = _line_of(_street(0, (72.0, -300.0), (72.0, 300.0)), TILE_ROADS)
-    assert line is not None and not line.row and line.start == 3
+    assert line is not None
+    assert not line.row
+    assert line.start == 3
     assert _line_of(Road(0, "street", 24.0, 1, []), TILE_ROADS) is None

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/dev_catalog.py` (D-199: what each dev viewer lists)."""
 
 from types import SimpleNamespace
@@ -27,7 +28,7 @@ def game() -> SimpleNamespace:
 def prop_kinds(monkeypatch: pytest.MonkeyPatch) -> None:
     kinds = {"sea": ["buoy", "hut"], "town": ["hut", "tower"]}
     monkeypatch.setattr(dev_catalog, "level_prop_kinds", lambda scenery: list(kinds[scenery]))
-    monkeypatch.setattr(dev_catalog, "car_kinds", lambda scenery: [])
+    monkeypatch.setattr(dev_catalog, "car_kinds", lambda _scenery: [])
 
 
 def test_d199_the_ships_enemies_and_bosses_are_shown_over_the_first_level() -> None:
@@ -113,7 +114,7 @@ def test_d209_the_cars_of_the_levels_are_listed_with_their_props(
 ) -> None:
     cars = {"sea": [], "town": ["van", "hut"]}
     monkeypatch.setattr(dev_catalog, "car_kinds", lambda scenery: cars[scenery])
-    monkeypatch.setattr(dev_catalog, "car_scale", lambda scenery: 0.6)
+    monkeypatch.setattr(dev_catalog, "car_scale", lambda _scenery: 0.6)
     g = game()
     g.view.scenery["propGroups"] = [SimpleNamespace(label="Cars", ids=["van"])]
     props = dev_items(g, "props")

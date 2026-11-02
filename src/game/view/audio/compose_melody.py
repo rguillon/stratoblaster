@@ -1,19 +1,23 @@
-"""The melody of generated music (AUD-MUSIC-02): a two-bar motif
-(a rhythm, and a walk on the scale that lands on chord tones), repeated and varied over a section.
+# Copyright (c) 2026 Renaud Guillon
+"""The melody of generated music (AUD-MUSIC-02).
+
+A two-bar motif (a rhythm, and a walk on the scale that lands on chord tones), repeated and varied
+over a section.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
+from audio.audio_types import Note
+from core.math.rng import pick
+from game.view.audio.compose_parts import BarContext, note
+from game.view.audio.music_styles import BEATS_PER_BAR, MusicStyle
+
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from core.math.rng import Random
 
-__pragma__("noskip")
-
-from audio.audio_types import Note  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.math.rng import pick  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.audio.compose_parts import BarContext, note  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.audio.music_styles import BEATS_PER_BAR, MusicStyle  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
 
 class MotifNote:
@@ -46,8 +50,11 @@ CHORD_STEPS = [0, 2, 4, 7]
 
 
 def make_motif(random: Random) -> Motif:
-    """A motif for a section (AUD-MUSIC-02): one of the rhythms, its pitches a walk on the scale
-    that starts and ends on chord tones, so every level gets its own melody."""
+    """Return a motif for a section (AUD-MUSIC-02): one of the rhythms.
+
+    Its pitches a walk on the scale that starts and ends on chord tones, so every level gets its own
+    melody.
+    """
     rhythm = pick(random, RHYTHMS)
     degree = pick(random, CHORD_STEPS)
     motif: Motif = []
@@ -64,7 +71,7 @@ def make_motif(random: Random) -> Motif:
 
 
 def nearest_chord_step(degree: int) -> int:
-    """The chord step nearest to `degree` (ties keep the earlier candidate)."""
+    """Return the chord step nearest to `degree` (ties keep the earlier candidate)."""
     best = 0
     candidates = [-7, -5, -3]
     candidates.extend(CHORD_STEPS)
@@ -82,8 +89,10 @@ def motif_bars(
     chord_degree: int,
     shift: int,
 ) -> list[Note]:
-    """Plays two bars of a motif from `bar`, on the chord of the bar (its scale step
-    `chord_degree`), `shift` scale steps up for a variation."""
+    """Return the notes of two bars of a motif from `bar`.
+
+    On the chord of the bar (its scale step `chord_degree`), `shift` scale steps up for a variation.
+    """
     if bar.energy == 0:
         return []
     eighth = BEATS_PER_BAR / 8
@@ -105,7 +114,7 @@ def motif_bars(
 
 
 def scale_pitch(scale: list[int], index: int) -> int:
-    """The pitch of scale step `index` (any integer: it wraps by octaves)."""
+    """Return the pitch of scale step `index` (any integer: it wraps by octaves)."""
     size = len(scale)
     if size == 0:
         return 0

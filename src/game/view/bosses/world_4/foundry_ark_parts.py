@@ -1,37 +1,38 @@
-"""FB-FOUNDRY-ARK-03 to FB-FOUNDRY-ARK-06, 4-4: the Foundry Ark's destroyable parts (rail cannons,
-chimney row, missile battery, crucibles), each drawn around its centre `at`, each turret around its
-pivot, and its forge colours. Model space: logical pixels, nose +Z, Y up.
+# Copyright (c) 2026 Renaud Guillon
+"""FB-FOUNDRY-ARK-03 to FB-FOUNDRY-ARK-06, 4-4: the Foundry Ark's destroyable parts.
+
+The rail cannons, chimney row, missile battery and crucibles, each drawn around its centre `at`,
+each turret around its pivot, and its forge colours. Model space: logical pixels, nose +Z, Y up.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from game.config.boss_look import BOSS_LOOK
+from game.config.bosses.boss_kit import mirror
+from game.config.bosses.world_4.foundry_ark import ARK_CELLS, ARK_RAIL
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.final_boss_greebles import rod
+from game.view.bosses.mini_boss_greebles import lamps, seam
+from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H
+from game.view.bosses.overlord_city import box2d
+from game.view.bosses.world_4.living_forge import SKIN
+from game.view.enemies.enemy_shapes import SIDES, decal
+from render.geometry.solids import Placement
 
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.config.bosses.boss_kit import mirror  # noqa: E402
-from game.config.bosses.world_4.foundry_ark import ARK_CELLS, ARK_RAIL  # noqa: E402
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.final_boss_greebles import rod  # noqa: E402
-from game.view.bosses.mini_boss_greebles import lamps, seam  # noqa: E402
-from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H  # noqa: E402
-from game.view.bosses.overlord_city import box2d  # noqa: E402
-from game.view.bosses.world_4.living_forge import SKIN  # noqa: E402
-from game.view.enemies.enemy_shapes import SIDES, decal  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def _neon_or(kind: str, fallback: Rgb) -> Rgb:
     """`BOSS_LOOK.neon[kind] ?? fallback`."""
     colour: Rgb = BOSS_LOOK.neon[kind]
-    if colour == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    if colour == None:
         return fallback
     return colour
 
@@ -53,7 +54,7 @@ DECK_TOP = 4
 
 
 def rail_mount(p: Any, centre: Vec3) -> None:
-    """The turntable a rail cannon turns on: a low drum on its outrigger, ringed with orange."""
+    """Add the turntable a rail cannon turns on: a low drum on its outrigger, ringed with orange."""
     x = centre[0]
     z = centre[2]
     p.flesh.cylinder(11, DECK_TOP + 1, 8, SKIN.base, Placement([x, 0, z], math.pi / 8))
@@ -66,9 +67,11 @@ COILS = [22.0, 30.0, 38.0]
 
 
 def rail_cannon(p: Any, centre: Vec3) -> None:
-    """A rail cannon (FB-FOUNDRY-ARK-03), turning on its outrigger's turntable (D-073): an armoured
-    breech, two long rails out to the emitter between their tips, glowing coils along them, the
-    emitter lit as the laser charges."""
+    """Add a rail cannon (FB-FOUNDRY-ARK-03), turning on its outrigger's turntable (D-073).
+
+    An armoured breech, two long rails out to the emitter between their tips, glowing coils along
+    them, the emitter lit as the laser charges.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -100,8 +103,11 @@ CHIMNEY_TOP = 32
 
 
 def chimney_row(p: Any, centre: Vec3) -> None:
-    """The chimney row (FB-FOUNDRY-ARK-04; no weapon, it shields the core): four tall stacks on a
-    brick-dark plinth, sooty at the top with a heat glow under their lips, a red lamp on each."""
+    """Add the chimney row (FB-FOUNDRY-ARK-04; no weapon, it shields the core).
+
+    Four tall stacks on a brick-dark plinth, sooty at the top with a heat glow under their lips, a
+    red lamp on each.
+    """
     hull = p.hull
     neon = p.neon
     flesh = p.flesh
@@ -132,8 +138,10 @@ HATCH = [8.0, 7.0]
 
 
 def battery(p: Any, centre: Vec3) -> None:
-    """The missile battery on the bow (FB-FOUNDRY-ARK-05): an armoured block, four hatches lit as
-    missiles load, hazard-orange strips down its sides."""
+    """Add the missile battery on the bow (FB-FOUNDRY-ARK-05).
+
+    An armoured block, four hatches lit as missiles load, hazard-orange strips down its sides.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -173,9 +181,11 @@ BUCKET_FOOT = DECK_TOP + 2
 
 
 def crucible(p: Any, centre: Vec3) -> None:
-    """A crucible (FB-FOUNDRY-ARK-06): a heavy bucket brimming with glowing molten metal, hung from
-    a gantry on chains, a pouring lip on its inboard side, a hot band round its belly. Destroyed, it
-    spills into a ring of bullets."""
+    """Add a crucible (FB-FOUNDRY-ARK-06): a heavy bucket brimming with glowing molten metal.
+
+    It hangs from a gantry on chains, a pouring lip on its inboard side, a hot band round its belly.
+    Destroyed, it spills into a ring of bullets.
+    """
     hull = p.hull
     neon = p.neon
     flesh = p.flesh

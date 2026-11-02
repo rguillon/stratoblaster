@@ -1,5 +1,9 @@
-"""Unit tests of `src/game/view/bosses/boss_reveal.py`: hidden weapon parts unfolding as a boss
-transforms (BOSS-43; docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md)."""
+# Copyright (c) 2026 Renaud Guillon
+"""Unit tests of `src/game/view/bosses/boss_reveal.py`.
+
+Hidden weapon parts unfold as a boss transforms (BOSS-43; docs/superpowers/specs/2026-10-31-boss-
+armour-shedding-design.md).
+"""
 
 import math
 from types import SimpleNamespace
@@ -88,14 +92,17 @@ def test_a_barrel_slides_out_from_back_along_its_axis_and_overshoots() -> None:
 def test_a_weapon_hinges_on_its_mount_or_its_inner_side() -> None:
     # Model +X is the screen's left: a weapon there hinges towards the centre line.
     hinge, fold = weapon_hinge([30, 0, -5], 10, None)
-    assert hinge == [21, 0, -5] and fold > 0
+    assert hinge == [21, 0, -5]
+    assert fold > 0
     hinge, fold = weapon_hinge([-30, 0, -5], 10, None)
-    assert hinge == [-21, 0, -5] and fold < 0
+    assert hinge == [-21, 0, -5]
+    assert fold < 0
     hinge, fold = weapon_hinge([0, 0, 20], 10, None)
     assert hinge == [0, 0, 11]
     # A mount: offset in px (X right, Y up), its own fold.
     hinge, fold = weapon_hinge([30, 0, -5], 10, [4, 2, 1.0])
-    assert hinge == [26, 0, -7] and fold == 1.0
+    assert hinge == [26, 0, -7]
+    assert fold == 1.0
 
 
 def _node() -> SimpleNamespace:
@@ -143,7 +150,8 @@ def test_it_stays_folded_away_until_the_armour_has_burst(enabled: dict[int, bool
     assert barrel.position.z == pytest.approx(-10)
 
 
-def test_it_ends_unfolded_with_its_barrel_out_and_never_scales(enabled: dict[int, bool]) -> None:
+@pytest.mark.usefixtures("enabled")
+def test_it_ends_unfolded_with_its_barrel_out_and_never_scales() -> None:
     root, barrel = _node(), _node()
     view = _view(root, barrel)
     for k in range(21):
@@ -168,3 +176,12 @@ def test_build_reveal_reads_the_weapon_mount() -> None:
     assert view.sink == pytest.approx(10 * LOOK.sink)
     plain = build_reveal(SimpleNamespace(weapons=None), spec, root, [])
     assert plain.hinge[1] > 0
+
+
+def test_d228_a_weapon_on_a_rig_rises_into_place_with_no_swing() -> None:
+    root = _node()
+    spec = SimpleNamespace(id="tail", x=0, y=30, radius=6, reveal=1)
+    design = SimpleNamespace(weapons=record({"tail": {"kind": "beam", "rig": True}}))
+    view = build_reveal(design, spec, root, [])
+    assert view.hinge == [[0, 0, -30], 0]
+    assert view.sink == pytest.approx(3)

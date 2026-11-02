@@ -1,19 +1,19 @@
-"""Numbers taken out smallest first (a binary heap)"""
+# Copyright (c) 2026 Renaud Guillon
+"""Numbers taken out smallest first (a binary heap)."""
 
-from org.transcrypt.stubs.browser import __pragma__
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Sequence
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class MinHeap:
     """A binary min-heap of numbers."""
 
     def __init__(self, initial: Sequence[float]) -> None:
-        """Starts with `initial`, which must be in increasing order."""
+        """Start with `initial`, which must be in increasing order."""
         self._items: list[float] = list(initial)
 
     @property
@@ -22,7 +22,7 @@ class MinHeap:
         return len(self._items)
 
     def push(self, value: float) -> None:
-        """Adds `value`, keeping the smallest number on top."""
+        """Add `value`, keeping the smallest number on top."""
         items = self._items
         i = len(items)
         items.append(value)
@@ -36,7 +36,7 @@ class MinHeap:
         items[i] = value
 
     def pop(self) -> float | None:
-        """The smallest number, taken out; None when empty."""
+        """Return the smallest number, taken out; None when empty."""
         items = self._items
         if len(items) == 0:
             return None
@@ -47,7 +47,7 @@ class MinHeap:
         return top
 
     def _sink(self, value: float) -> None:
-        """Puts `value` at the top, then moves it down below its smaller children."""
+        """Put `value` at the top, then move it down below its smaller children."""
         items = self._items
         i = 0
         child = self._smaller_child(i)
@@ -61,7 +61,7 @@ class MinHeap:
         items[i] = value
 
     def _smaller_child(self, i: int) -> int | None:
-        """The index of the smaller child of `i`, if it has one."""
+        """Return the index of the smaller child of `i`, if it has one."""
         items = self._items
         left = 2 * i + 1
         right = 2 * i + 2

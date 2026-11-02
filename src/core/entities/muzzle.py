@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Where enemy shots leave from (ENM-21).
 
 A gun's muzzle is a point of the enemy as it is drawn, above the playfield; the tilted camera
@@ -7,11 +8,10 @@ start (GFX-SHOT-09).
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Protocol
 
 # A muzzle: its offset from the enemy's centre as seen when the enemy faces down the screen (X
 # right, Y up, logical pixels), and its height above the playfield (towards the camera).
@@ -56,7 +56,7 @@ class MuzzleBody(Protocol):
         ...
 
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class RaisedPoint:
@@ -77,8 +77,10 @@ class PlanePoint:
 
 
 def seen_on_playfield(eye: PlayfieldEye | None, point: RaisedPoint) -> PlanePoint:
-    """The point of the playfield the eye sees behind `point`: along the line from the eye through
-    it, down to the playfield. Straight below it without an eye (or when it is on the playfield).
+    """Return the point of the playfield the eye sees behind `point`.
+
+    Along the line from the eye through it, down to the playfield. Straight below it without an eye
+    (or when it is on the playfield).
     """
     if eye is None or point.height == 0:
         return PlanePoint(point.x, point.y)
@@ -87,9 +89,11 @@ def seen_on_playfield(eye: PlayfieldEye | None, point: RaisedPoint) -> PlanePoin
 
 
 def muzzle_point(body: MuzzleBody, muzzle: Muzzle, spin: float = 0) -> RaisedPoint:
-    """Where `muzzle` is on the playfield, and how high, on `body`. `spin` (radians, clockwise on
-    screen) first turns it around the body's centre, as for a boss's orbiting parts. The body's
-    optional `roll` (radians about its nose; positive dips its right side) is 0 when absent.
+    """Where `muzzle` is on the playfield, and how high, on `body`.
+
+    `spin` (radians, clockwise on screen) first turns it around the body's centre, as for a boss's
+    orbiting parts. The body's optional `roll` (radians about its nose; positive dips its right
+    side) is 0 when absent.
     """
     mx, my, mh = muzzle
     sc, ss = math.cos(spin), math.sin(spin)

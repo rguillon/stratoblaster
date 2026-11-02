@@ -1,18 +1,19 @@
-"""The heavier veteran kinds, the Mortar and the Minelayer (specs/enemies/mortar.md,
-minelayer.md) Logical pixels, nose +Z, Y up (to the camera)."""
+# Copyright (c) 2026 Renaud Guillon
+"""The heavier veteran kinds, the Mortar and the Minelayer (specs/enemies/mortar.md, minelayer.md).
+
+Logical pixels, nose +Z, Y up (to the camera).
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.enemies_veteran import VETERAN_CONFIG  # noqa: E402
-from game.config.enemies_veteran import VETERAN_NEON as N  # noqa: E402
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.view.enemies.enemy_mesh import build_enemy_model  # noqa: E402
-from game.view.enemies.enemy_shapes import SIDES, flip_x  # noqa: E402
-from game.view.enemies.organic_parts import eyes  # noqa: E402
-from game.view.enemies.vetelite_organic import LEAN_SECTION  # noqa: E402
-from render.geometry.organic import (  # noqa: E402
+from game.config.enemies_veteran import VETERAN_CONFIG
+from game.config.enemies_veteran import VETERAN_NEON as N
+from game.config.enemy_look import ENEMY_LOOK
+from game.view.enemies.enemy_mesh import build_enemy_model
+from game.view.enemies.enemy_shapes import SIDES, flip_x
+from game.view.enemies.organic_parts import eyes
+from game.view.enemies.vetelite_organic import LEAN_SECTION
+from render.geometry.organic import (
     SegmentedBody,
     carapace,
     curve,
@@ -22,12 +23,14 @@ from render.geometry.organic import (  # noqa: E402
 from render.geometry.organic import (
     vein as vein_tube,
 )
-from render.geometry.solids import Placement  # noqa: E402
+from render.geometry.solids import Placement
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 F = ENEMY_LOOK.flesh
@@ -50,16 +53,19 @@ MORTAR_PLATE = [[6, 11], [12, 8], [12.5, 4], [7, 6]]  # type: list[list[float]]
 
 
 def mortar_sac(p: Any, s: float) -> None:
-    """A side sac on side `s`, swollen with shells, a running light along it (ENM-MORTAR-03)."""
+    """Add a side sac on side `s`, swollen with shells, a running light along it (ENM-MORTAR-03)."""
     organ(p.flesh, 3, 5, F.slate, Placement([s * 18, 0.6, -9], 0, QUARTER), 0.95)
     p.neon.box([0.8, 0.3, 4], N.mortar, Placement([s * 18.2, 3.6, -4]))
 
 
 def build_mortar(scene: Any) -> Any:
-    """ENM-MORTAR-02: a squat, armoured beetle with a short, wide barrel grafted on a raised mount
-    in its middle, shell sacs on its flanks and olive-green neon (ENM-MORTAR-03), two reactors at
-    its back (ENM-MORTAR-05), within the veteran triangle budget (ENM-MORTAR-06). The barrel's
-    mouth glows as the next shell charges (ENM-MORTAR-04)."""
+    """ENM-MORTAR-02: a squat, armoured beetle with a short, wide barrel.
+
+    The barrel is grafted on a raised mount in its middle, with shell sacs on its flanks and
+    olive-green neon (ENM-MORTAR-03), and two reactors at its back (ENM-MORTAR-05), within the
+    veteran triangle budget (ENM-MORTAR-06). The barrel's mouth glows as the next shell charges
+    (ENM-MORTAR-04).
+    """
     muzzle_cfg = VETERAN_CONFIG.mortar.muzzles[0]
     mouth_height = muzzle_cfg[2]
     mouth = -muzzle_cfg[1]
@@ -98,10 +104,12 @@ MINELAYER_FIN = [[5, -12], [9.8, -17], [9.8, -20.5], [4.5, -18.5]]  # type: list
 
 
 def build_minelayer(scene: Any) -> Any:
-    """ENM-MINELAYER-02: a long, flat, segmented grub with a rack of egg-mines along its belly
-    (each lit as the next drop charges, ENM-MINELAYER-04), metal tail fins, red-orange neon running
-    lights (ENM-MINELAYER-03) and two reactors at its tail (ENM-MINELAYER-05), within the veteran
-    triangle budget (ENM-MINELAYER-06)."""
+    """ENM-MINELAYER-02: a long, flat, segmented grub with a rack of egg-mines along its belly.
+
+    Each mine is lit as the next drop charges (ENM-MINELAYER-04). It has metal tail fins, red-orange
+    neon running lights (ENM-MINELAYER-03) and two reactors at its tail (ENM-MINELAYER-05), within
+    the veteran triangle budget (ENM-MINELAYER-06).
+    """
     hatches = VETERAN_CONFIG.minelayer.muzzles
 
     def draw(p: Any) -> None:

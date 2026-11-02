@@ -1,6 +1,5 @@
+# Copyright (c) 2026 Renaud Guillon
 """Puts what some code creates into a layer ()."""
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from render.babylon import (
     number_max_value,
@@ -10,13 +9,15 @@ from render.babylon import (
     unique_id,
 )
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any, TypeVar  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
+from typing import Any, TypeVar
 
 T = TypeVar("T")
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Draw order from which a layer's see-through meshes are drawn over all those that set none
 # (GFX-READ-10, GFX-READ-13: the enemy shots). Babylon draws a mesh left at its default order
@@ -33,13 +34,14 @@ def newer(items: list[Any], after: float) -> list[Any]:
 
 
 class NodeAdopter:
-    """Every mesh or node created while `run` runs, and left without a parent, is parented to
-    `root`, and every new mesh is drawn in `rendering_group_id`, under `ON_TOP_ALPHA_INDEX` if
-    it sets no draw order.
+    """Every mesh or node created while `run` runs, and left without a parent, is parented to.
 
-    It lets drawing code written for a flat playfield (shot renderers draw in the XY plane) be
-    shown in another space, e.g. the tilted level view, without knowing about it. Clones of an
-    adopted template keep its parent, group and draw order by themselves.
+    `root`, and every new mesh is drawn in `rendering_group_id`, under `ON_TOP_ALPHA_INDEX` if it
+    sets no draw order.
+
+    It lets drawing code written for a flat playfield (shot renderers draw in the XY plane) be shown
+    in another space, e.g. the tilted level view, without knowing about it. Clones of an adopted
+    template keep its parent, group and draw order by themselves.
     """
 
     def __init__(
@@ -56,7 +58,10 @@ class NodeAdopter:
         self._on_mesh = on_mesh
 
     def run(self, create: Callable[[], T]) -> T:
-        """Runs `create`, then adopts what it created. Returns what `create` returned."""
+        """Run `create`, then adopt what it created.
+
+        Returns what `create` returned.
+        """
         # Babylon numbers every node from one counter: what `create` builds gets higher numbers.
         before = scene_unique_id(self._scene)
         try:

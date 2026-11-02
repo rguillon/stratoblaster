@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/bosses/world_4/cinder_crab.py`."""
 
 from helpers.config_checks import assert_boss_design, original_parts
@@ -12,7 +13,8 @@ def test_mb_cinder_crab_09_boss_design_is_well_formed() -> None:
 
 def test_boss_07_boss_id_is_a_lowercase_kebab_case_kind() -> None:
     assert CINDER_CRAB.id == CINDER_CRAB.id.lower()
-    assert " " not in CINDER_CRAB.id and "_" not in CINDER_CRAB.id
+    assert " " not in CINDER_CRAB.id
+    assert "_" not in CINDER_CRAB.id
 
 
 def test_mb_cinder_crab_08_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
@@ -25,5 +27,6 @@ def test_mb_cinder_crab_08_boss_stats_are_in_the_range_the_sim_relies_on() -> No
 
 def test_mb_cinder_crab_12_boss_has_an_angry_pattern_and_its_stage_count() -> None:
     """Its rage, and one stage pattern more than its parts (MB-CINDER-CRAB-11)."""
-    assert isinstance(CINDER_CRAB.rage, list) and CINDER_CRAB.rage
+    assert isinstance(CINDER_CRAB.rage, list)
+    assert CINDER_CRAB.rage
     assert len(CINDER_CRAB.stages) == len(original_parts(CINDER_CRAB)) + 1

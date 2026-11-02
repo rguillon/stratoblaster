@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/systems/wave_runner.py`."""
 
 from types import SimpleNamespace
@@ -23,7 +24,7 @@ class _Bounds:
     max_y = 100
     center_x = 50
 
-    def half_width_at(self, y: float) -> float:
+    def half_width_at(self, _y: float) -> float:
         return 50
 
 
@@ -38,7 +39,7 @@ def _kind(health: float = 10, points: float = 100, y: float = 30) -> EnemyKindDe
     return EnemyKindDefinition(
         "still",
         "Still",
-        lambda area: [Still(50, y, EnemyStats("still", 4, health, points))],
+        lambda _area: [Still(50, y, EnemyStats("still", 4, health, points))],
     )
 
 
@@ -59,19 +60,19 @@ def _level(
 
 
 def _run(**overrides: object) -> LevelRun:
-    options: dict = dict(
-        screen=SCREEN,
-        level=_level(),
-        kinds=[_kind()],
-        weapon=GUN,
-        weapon_level=1,
-        ship=SHIP,
-        bounds=_Bounds(),
-        cull_margin=10,
-        max_enemy_age=60,
-        end_wait=1,
-        seed=1,
-    )
+    options: dict = {
+        "screen": SCREEN,
+        "level": _level(),
+        "kinds": [_kind()],
+        "weapon": GUN,
+        "weapon_level": 1,
+        "ship": SHIP,
+        "bounds": _Bounds(),
+        "cull_margin": 10,
+        "max_enemy_age": 60,
+        "end_wait": 1,
+        "seed": 1,
+    }
     options.update(overrides)
     return LevelRun(LevelRunOptions(**options))  # type: ignore[arg-type]
 
@@ -156,12 +157,10 @@ def test_game_level_01_waves_are_triggered_in_distance_order_whatever_the_script
 
 
 def test_game_level_15_groups_due_at_the_same_time_keep_their_order() -> None:
-    runner, spawned = _runner(
-        [
-            Wave(0, "scout", 2, 5, TOP),
-            Wave(0, "drone", 1, 0, TOP),
-        ]
-    )
+    runner, spawned = _runner([
+        Wave(0, "scout", 2, 5, TOP),
+        Wave(0, "drone", 1, 0, TOP),
+    ])
     runner.step(1, 0)
     # The scout's second group is due in 5 seconds; the drone's group is due now, after it.
     assert [k for k, _ in spawned] == ["scout", "drone"]
@@ -199,9 +198,11 @@ def test_game_level_10_stopping_drops_the_groups_waiting_and_the_rest_of_the_scr
 
 
 def test_dev_opt_02_skipping_ahead_drops_the_waves_before_and_keeps_the_later_ones() -> None:
-    runner, spawned = _runner(
-        [Wave(0, "scout", 3, 1, TOP), Wave(50, "drone", 1, 0, TOP), Wave(100, "scout", 1, 0, TOP)]
-    )
+    runner, spawned = _runner([
+        Wave(0, "scout", 3, 1, TOP),
+        Wave(50, "drone", 1, 0, TOP),
+        Wave(100, "scout", 1, 0, TOP),
+    ])
     runner.step(1, 0)
     runner.skip_to(60)
     assert runner.triggered == 2

@@ -1,5 +1,7 @@
-"""3-3: the Sky Temple, the final boss of the Lost temples level
-(specs/bosses/final/3-3-sky-temple.md).
+# Copyright (c) 2026 Renaud Guillon
+"""3-3.
+
+The Sky Temple, the final boss of the Lost temples level (specs/bosses/final/3-3-sky-temple.md).
 
 Offsets in px from the boss's centre, X right and Y up (its grand stair points down, at -Y). Stage
 patterns as for the World 1 and 2 final bosses (FB-SKY-TEMPLE-10): its parts fire the same while
@@ -9,19 +11,19 @@ always drops a bonus (FB-SKY-TEMPLE-15). Health (FB-SKY-TEMPLE-08) tuned for WLD
 bot.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.bosses.boss_kit import bullet, cells, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.bosses.moving_regions import moving_region, slide
 from game.config.record import concat, merge, record
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 GOLD = bullet("orange", 200)
 RED = bullet("red", 210)
@@ -31,8 +33,10 @@ GREEN = bullet("green", 190)
 
 
 def fpart(part_id: str, at: Any, radius: float, health: float, options: Any = None) -> Any:
-    """A final boss's part: drops a bonus 60 % of the time (FB-SKY-TEMPLE-15,
-    `part_drop_chance`)."""
+    """Return a final boss's part.
+
+    Drops a bonus 60 % of the time (FB-SKY-TEMPLE-15, `part_drop_chance`).
+    """
     return part(part_id, at, radius, health, merge({"drop": 0.6}, options))
 
 
@@ -55,93 +59,85 @@ TEMPLE_CRYSTAL = [[0, 10, TEMPLE_HEIGHTS.crystal]]
 OX = TEMPLE_PARTS.obelisk[0]
 OY = TEMPLE_PARTS.obelisk[1]
 # The obelisks, by part id, and where they stand (X right, Y up).
-OBELISKS = record(
-    {
-        "obelisk-front-left": [-OX, -OY],
-        "obelisk-front-right": [OX, -OY],
-        "obelisk-back-left": [-OX, OY],
-        "obelisk-back-right": [OX, OY],
-    }
-)
+OBELISKS = record({
+    "obelisk-front-left": [-OX, -OY],
+    "obelisk-front-right": [OX, -OY],
+    "obelisk-back-left": [-OX, OY],
+    "obelisk-back-right": [OX, OY],
+})
 
 
 def tip(pos: Any) -> Any:
-    """The tip of an obelisk standing at `pos`."""
+    """Return the tip of an obelisk standing at `pos`."""
     return [[pos[0], pos[1], TEMPLE_HEIGHTS.obelisk]]
 
 
 # 3-3: a flying stepped pyramid, gold and cyan neon; its four corner obelisks fire spirals and
 # shield the core, its summit beacon homing missiles (FB-SKY-TEMPLE-09), its core every bullet
 # pattern.
-_SKY_TEMPLE = record(
-    {
-        "id": "sky-temple",
-        # Angry after each destroyed part (phase 7 review, FB-SKY-TEMPLE-11): a vortex inside a
-        # blooming flower.
-        "rage": concat(
-            rage.vortex(7, "orange", "blue", 0.5), rage.flower(7, "blue", "orange", 0.5)
-        ),
-        "stats": stats(
-            record(
-                {
-                    "id": "sky-temple",
-                    "name": "Sky Temple",
-                    "size": 5.5,
-                    "coreRadius": 22,
-                    "coreHealth": 3550,
-                    "points": 15000,
-                    "groundSpeed": 0.3,
-                    "coreDrop": 1,
-                    "parts": [
-                        fpart("obelisk-back-left", OBELISKS["obelisk-back-left"], 13, 1000),
-                        fpart("obelisk-back-right", OBELISKS["obelisk-back-right"], 13, 1000),
-                        fpart("obelisk-front-left", OBELISKS["obelisk-front-left"], 13, 1000),
-                        fpart("obelisk-front-right", OBELISKS["obelisk-front-right"], 13, 1000),
-                        fpart("beacon", TEMPLE_PARTS.beacon, 16, 2400, {"shields": False}),
-                    ],
-                }
-            )
-        ),
-        # Where it stops and how it moves in place (FB-SKY-TEMPLE-07).
-        "stopFraction": 0.74,
-        "sway": {"amplitude": 30, "period": 11},
-        "bob": {"amplitude": 6, "period": 5},
-        "guns": {
-            "core": {"gun": TEMPLE_GUNS, "ring": TEMPLE_CRYSTAL},
-            "obelisk-front-left": {"ring": tip(OBELISKS["obelisk-front-left"])},
-            "obelisk-front-right": {"ring": tip(OBELISKS["obelisk-front-right"])},
-            "obelisk-back-left": {"ring": tip(OBELISKS["obelisk-back-left"])},
-            "obelisk-back-right": {"ring": tip(OBELISKS["obelisk-back-right"])},
-            "beacon": {"missile": TEMPLE_BEACON},
-        },
-        # The parts' volleys, then the core's pattern per stage (FB-SKY-TEMPLE-10).
-        "stages": stages(
+_SKY_TEMPLE = record({
+    "id": "sky-temple",
+    # Angry after each destroyed part (phase 7 review, FB-SKY-TEMPLE-11): a vortex inside a
+    # blooming flower.
+    "rage": concat(rage.vortex(7, "orange", "blue", 0.5), rage.flower(7, "blue", "orange", 0.5)),
+    "stats": stats(
+        record({
+            "id": "sky-temple",
+            "name": "Sky Temple",
+            "size": 5.5,
+            "coreRadius": 22,
+            "coreHealth": 3550,
+            "points": 15000,
+            "groundSpeed": 0.3,
+            "coreDrop": 1,
+            "parts": [
+                fpart("obelisk-back-left", OBELISKS["obelisk-back-left"], 13, 1000),
+                fpart("obelisk-back-right", OBELISKS["obelisk-back-right"], 13, 1000),
+                fpart("obelisk-front-left", OBELISKS["obelisk-front-left"], 13, 1000),
+                fpart("obelisk-front-right", OBELISKS["obelisk-front-right"], 13, 1000),
+                fpart("beacon", TEMPLE_PARTS.beacon, 16, 2400, {"shields": False}),
+            ],
+        })
+    ),
+    # Where it stops and how it moves in place (FB-SKY-TEMPLE-07).
+    "stopFraction": 0.74,
+    "sway": {"amplitude": 30, "period": 11},
+    "bob": {"amplitude": 6, "period": 5},
+    "guns": {
+        "core": {"gun": TEMPLE_GUNS, "ring": TEMPLE_CRYSTAL},
+        "obelisk-front-left": {"ring": tip(OBELISKS["obelisk-front-left"])},
+        "obelisk-front-right": {"ring": tip(OBELISKS["obelisk-front-right"])},
+        "obelisk-back-left": {"ring": tip(OBELISKS["obelisk-back-left"])},
+        "obelisk-back-right": {"ring": tip(OBELISKS["obelisk-back-right"])},
+        "beacon": {"missile": TEMPLE_BEACON},
+    },
+    # The parts' volleys, then the core's pattern per stage (FB-SKY-TEMPLE-10).
+    "stages": stages(
+        [
+            # Each obelisk turns its own spiral: front ones one way, back ones the other.
+            volley.ring("obelisk-front-left", 1.6, 4, 23, GOLD, 0.6),
+            volley.ring("obelisk-front-right", 1.6, 4, -23, GOLD, 1.4),
+            volley.ring("obelisk-back-left", 1.6, 4, -19, GOLD, 1),
+            volley.ring("obelisk-back-right", 1.6, 4, 19, GOLD, 1.8),
+            volley.missiles("beacon", 5.5, 2, 30, 3),
+        ],
+        [
+            [volley.aimed("core", 2.8, 1, 0, RED, 1.6)],
+            [volley.aimed("core", 2.6, 3, 12, RED, 0.8)],
+            [volley.burst("core", 2.4, 4, 0.13, MAGENTA, 0.6)],
+            [volley.fan("core", 2.4, 5, 14, BLUE, 0.6)],
             [
-                # Each obelisk turns its own spiral: front ones one way, back ones the other.
-                volley.ring("obelisk-front-left", 1.6, 4, 23, GOLD, 0.6),
-                volley.ring("obelisk-front-right", 1.6, 4, -23, GOLD, 1.4),
-                volley.ring("obelisk-back-left", 1.6, 4, -19, GOLD, 1),
-                volley.ring("obelisk-back-right", 1.6, 4, 19, GOLD, 1.8),
-                volley.missiles("beacon", 5.5, 2, 30, 3),
+                volley.ring("core", 2, 12, 0, GREEN, 0.6),
+                volley.fan("core", 2.6, 7, 12, BLUE, 1.2),
             ],
             [
-                [volley.aimed("core", 2.8, 1, 0, RED, 1.6)],
-                [volley.aimed("core", 2.6, 3, 12, RED, 0.8)],
-                [volley.burst("core", 2.4, 4, 0.13, MAGENTA, 0.6)],
-                [volley.fan("core", 2.4, 5, 14, BLUE, 0.6)],
-                [
-                    volley.ring("core", 2, 12, 0, GREEN, 0.6),
-                    volley.fan("core", 2.6, 7, 12, BLUE, 1.2),
-                ],
-                [
-                    volley.ring("core", 0.6, 6, 14, GOLD, 0.4),
-                    volley.ring("core", 0.6, 6, -19, BLUE, 0.7),
-                    volley.burst("core", 2.6, 3, 0.12, RED, 1.2),
-                ],
+                volley.ring("core", 0.6, 6, 14, GOLD, 0.4),
+                volley.ring("core", 0.6, 6, -19, BLUE, 0.7),
+                volley.burst("core", 2.6, 3, 0.12, RED, 1.2),
             ],
-        ),
-    }
-)
+        ],
+    ),
+})
 
 # Its transformations (D-230, FB-SKY-TEMPLE-12): once its back obelisks are gone its back corner
 # wedges slide out diagonally, a gun battery riding each, and its back terrace bursts off for a

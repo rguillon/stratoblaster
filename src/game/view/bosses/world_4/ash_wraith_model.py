@@ -1,21 +1,22 @@
-"""MB-ASH-WRAITH-01 to MB-ASH-WRAITH-05, 4-2: the Ash Wraith. Logical pixels, nose +Z, Y up (towards
-the camera). A ragged stealth flying wing: a thin faceted wing, its trailing edge torn into tatters,
-a low fuselage with a dark canopy, the two shroud pods on the wings, the eye cannon on the nose.
-MB-ASH-WRAITH-02: a living ash ray, its wing a scorched membrane veined with cyan, its body flesh
-under ribs, a great eye on its brow, metal only on its grafts (vents, plates, guns, reactors).
+# Copyright (c) 2026 Renaud Guillon
+"""MB-ASH-WRAITH-01 to MB-ASH-WRAITH-05, 4-2: the Ash Wraith.
+
+Logical pixels, nose +Z, Y up (towards the camera). A ragged stealth flying wing: a thin faceted
+wing, its trailing edge torn into tatters, a low fuselage with a dark canopy, the two shroud pods on
+the wings, the eye cannon on the nose. MB-ASH-WRAITH-02: a living ash ray, its wing a scorched
+membrane veined with cyan, its body flesh under ribs, a great eye on its brow, metal only on its
+grafts (vents, plates, guns, reactors).
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.bosses.world_4.ash_wraith import ASH_WRAITH, WRAITH_VENT  # noqa: E402
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.final_boss_shapes import edge_strips, mirrored, strip  # noqa: E402
-from game.view.bosses.mini_boss_greebles import vent  # noqa: E402
-from game.view.bosses.mini_boss_shapes import WHITE, H, offset, socket  # noqa: E402
-from game.view.bosses.world_4.ash_plains_soot import (  # noqa: E402
+from game.config.bosses.world_4.ash_wraith import ASH_WRAITH, WRAITH_VENT
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.final_boss_shapes import edge_strips, mirrored, strip
+from game.view.bosses.mini_boss_greebles import vent
+from game.view.bosses.mini_boss_shapes import WHITE, H, offset, socket
+from game.view.bosses.world_4.ash_plains_soot import (
     ASH,
     ASH_THIN,
     SCORCH,
@@ -23,29 +24,31 @@ from game.view.bosses.world_4.ash_plains_soot import (  # noqa: E402
     molten_seam,
     soot_streaks,
 )
-from game.view.bosses.world_4.ash_wraith_parts import (  # noqa: E402
+from game.view.bosses.world_4.ash_wraith_parts import (
     WRAITH_CYAN,
     eye_mount,
     eye_turret,
     shroud_pod,
 )
-from game.view.bosses.world_4.living_forge import (  # noqa: E402
+from game.view.bosses.world_4.living_forge import (
     SKIN,
     back_ribs,
     glands,
     magma_vein,
     reactor_sacs,
 )
-from game.view.enemies.enemy_shapes import FIGHTER_SECTION, SIDES, canopy_paint  # noqa: E402
-from render.geometry.organic import RibSpec  # noqa: E402
-from render.geometry.solids import LoftOptions, Placement  # noqa: E402
+from game.view.enemies.enemy_shapes import FIGHTER_SECTION, SIDES, canopy_paint
+from render.geometry.organic import RibSpec
+from render.geometry.solids import LoftOptions, Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The wing seen from above (right half, nose to tail): a sharp delta, its trailing edge torn into
 # ragged points, as if it had flown through fire.
@@ -104,8 +107,10 @@ def _wing_veins(p: Any, s: float) -> None:
 
 
 def _draw_wing(p: Any) -> None:
-    """The wing: grey, bevelled plates, pale cyan neon along its leading edges, ash and soot on
-    it."""
+    """Draw the wing.
+
+    Grey, bevelled plates, pale cyan neon along its leading edges, ash and soot on it.
+    """
     hull = p.hull
     neon = p.neon
     p.flesh.bevel_slab(WING, [-1, 0.6, 3], [0.8, 1], SKIN.dark, None, SKIN.base)
@@ -157,14 +162,16 @@ def _draw_wing(p: Any) -> None:
 
 
 def _canopy_glass_paint() -> Any:
-    """The canopy's dark glass, painted on the back of the front bands of the fuselage."""
+    """Return the canopy's dark glass, painted on the back of the front bands of the fuselage."""
     paint: Any = canopy_paint([2, 3], CANOPY_GLASS)
     return paint
 
 
 def _draw_fuselage(p: Any) -> None:
-    """The fuselage: a low faceted spine, its dark canopy, vents and scorched plates by the
-    engines."""
+    """Draw the fuselage.
+
+    A low faceted spine, its dark canopy, vents and scorched plates by the engines.
+    """
     hull = p.hull
     neon = p.neon
     p.flesh.loft(
@@ -218,7 +225,7 @@ FLAKE = [
 
 
 def _draw_ash_trail(p: Any) -> None:
-    """The ash it sheds: grey flakes drifting behind the trailing edge, either side."""
+    """Draw the ash it sheds: grey flakes drifting behind the trailing edge, either side."""
     hull = p.hull
     for s in SIDES:
         for entry in ASH_TRAIL:
@@ -233,7 +240,10 @@ def _draw_ash_trail(p: Any) -> None:
 
 
 def _draw_vent(p: Any) -> None:
-    """The ash vent on its back (the core's spirals): a squat stack, a cyan ring, a lit grate."""
+    """Draw the ash vent on its back (the core's spirals).
+
+    A squat stack, a cyan ring, a lit grate.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -251,8 +261,10 @@ def _draw_vent(p: Any) -> None:
 
 
 def build_ash_wraith(scene: Any) -> Any:
-    """MB-ASH-WRAITH-01, MB-ASH-WRAITH-05: the Ash Wraith, a ragged grey stealth gunship trailing
-    ash, pale cyan neon, soot and molten seams on its torn wing."""
+    """MB-ASH-WRAITH-01, MB-ASH-WRAITH-05: the Ash Wraith, a ragged grey stealth gunship.
+
+    It trails ash; pale cyan neon, soot and molten seams on its torn wing.
+    """
 
     def core(p: Any) -> None:
         _draw_wing(p)

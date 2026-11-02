@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/geometry/rough.py` (D-212, GFX-PROP-09)."""
 
 import math
@@ -26,8 +27,10 @@ def _ball(seed: int, rough: float = 0.2) -> SolidBuilder:
 def test_d212_the_ball_profile_goes_from_pole_to_pole() -> None:
     profile = ball_profile(4)
     assert len(profile) == 5
-    assert abs(profile[0][0]) < 1e-9 and profile[0][1] == -1
-    assert abs(profile[4][0]) < 1e-9 and abs(profile[4][1] - 1) < 1e-9
+    assert abs(profile[0][0]) < 1e-9
+    assert profile[0][1] == -1
+    assert abs(profile[4][0]) < 1e-9
+    assert abs(profile[4][1] - 1) < 1e-9
     assert abs(profile[2][0] - 1) < 1e-9
 
 
@@ -81,7 +84,7 @@ def test_d212_rough_facets_face_outwards() -> None:
 
 
 def _faces_outward_from(s: SolidBuilder, centre: list[float]) -> float:
-    """The share of triangles whose front faces away from `centre`."""
+    """Return the share of triangles whose front faces away from `centre`."""
     p = s.geometry.positions
     idx = s.geometry.indices
     out = 0

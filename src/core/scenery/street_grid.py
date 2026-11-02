@@ -1,5 +1,7 @@
-"""The straight streets of a district (phase 4 review), as maximal straight runs of built links,
-each a list of points every `rules.step`.
+# Copyright (c) 2026 Renaud Guillon
+"""The straight streets of a district (phase 4 review), as maximal straight runs of built links.
+
+Each a list of points every `rules.step`.
 
 - every section of the district has its own random columns, from past one screen edge to past the
   other, and rows; its first and last rows are full streets, so the columns of two sections meet
@@ -14,21 +16,10 @@ each a list of points every `rules.step`.
   and run straight: at a crossing, the street across them is cut instead.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.districts import District  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.scenery_level import RoadRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-__pragma__("noskip")
-
-from core.math.rng import random_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.lanes import is_boulevard, run_width, street_width  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.street_dead_ends import remove_crossings, remove_dead_ends  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.street_links import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import random_in
+from core.scenery.lanes import is_boulevard, run_width, street_width
+from core.scenery.street_dead_ends import remove_crossings, remove_dead_ends
+from core.scenery.street_links import (
     Block,
     Link,
     Node,
@@ -37,8 +28,19 @@ from core.scenery.street_links import (  # noqa: E402 (after the Transcrypt skip
     links_by_node,
     pair,
 )
-from core.scenery.street_runs import straight_runs  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.tile_streets import StreetRun, tile_street_runs  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.street_runs import straight_runs
+from core.scenery.tile_streets import StreetRun, tile_street_runs
+
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
+
+from core.math.rng import Random
+from core.scenery.districts import District
+from core.scenery.scenery_level import RoadRules
+
+# __pragma__ ("noskip")
+
 
 # Gap between a street's edge and the block beside it.
 BLOCK_KERB = 0.5
@@ -66,14 +68,14 @@ def _spaced(from_: float, to: float, gap: Sequence[float], random: Random) -> li
 
 
 def _concat(a: Sequence[float], b: Sequence[float]) -> list[float]:
-    """`a` then `b`, as one new list."""
+    """Return `a` then `b`, as one new list."""
     result = list(a)
     result.extend(b)
     return result
 
 
 def _merge_columns(a: Sequence[float], b: Sequence[float]) -> list[float]:
-    """The union of two column lists, in increasing order."""
+    """Return the union of two column lists, in increasing order."""
     seen: dict[str, bool] = {}
     union: list[float] = []
     for v in _concat(a, b):
@@ -91,7 +93,7 @@ def street_runs(
     buildable: Callable[[float, float], bool],
     out_of_view: Callable[[Node], bool],
 ) -> tuple[list[StreetRun], list[Block]]:
-    """The runs and the blocks of a district (see the module doc). Returns (runs, blocks)."""
+    """Return the runs and the blocks of a district (see the module doc). Returns (runs, blocks)."""
     # Phase 15: on a grid of tiles.
     if rules.tiles is not None:
         return tile_street_runs(district, rules, rules.tiles, random, buildable, out_of_view)
@@ -138,25 +140,18 @@ def _grid_blocks(
                 cell = _corners(grid, c, r)
                 # The first row of a later section was laid on the merged columns (or, going on
                 # from another district, with it): it is a full street.
-                if cell is None:
-                    continue
                 block = _cell_block(cell, has, r == 0 and layout.laid_before, inset)
                 if block is not None:
                     blocks.append(block)
     return blocks
 
 
-def _corners(
-    grid: Sequence[Sequence[Node]], c: int, r: int
-) -> tuple[Node, Node, Node, Node] | None:
-    """The corners of cell (`c`, `r`) of `grid`: bottom left, bottom right, top left, top right."""
-    found: list[Node] = []
-    for rr, cc in [(r, c), (r, c + 1), (r + 1, c), (r + 1, c + 1)]:
-        if 0 <= rr < len(grid) and 0 <= cc < len(grid[rr]):
-            found.append(grid[rr][cc])
-        else:
-            return None
-    return found[0], found[1], found[2], found[3]
+def _corners(grid: Sequence[Sequence[Node]], c: int, r: int) -> tuple[Node, Node, Node, Node]:
+    """Return the corners of cell (`c`, `r`) of `grid` (rows of equal length).
+
+    Bottom left, bottom right, top left, top right.
+    """
+    return grid[r][c], grid[r][c + 1], grid[r + 1][c], grid[r + 1][c + 1]
 
 
 def _cell_block(
@@ -165,8 +160,11 @@ def _cell_block(
     bottom: bool,
     inset: Callable[[float], float],
 ) -> Block | None:
-    """The block of a cell, up to the edge of the street along each side it has (avenues are
-    wider); `bottom` when its first row is known to be a street."""
+    """Return the block of a cell.
+
+    Up to the edge of the street along each side it has (avenues are wider); `bottom` when its first
+    row is known to be a street.
+    """
     n00, n10, n01, n11 = cell
     x0 = n00.x
     x1 = n11.x
@@ -226,7 +224,7 @@ def _grid_links(
     return dedupe(links), layouts, nodes.used
 
 
-def _add_link(  # noqa: PLR0917 (positional data fields: Transcrypt drops keyword arguments)
+def _add_link(
     links: list[Link],
     nodes: Nodes,
     rules: RoadRules,
@@ -249,7 +247,7 @@ def _add_link(  # noqa: PLR0917 (positional data fields: Transcrypt drops keywor
 
 
 def block_parts(block: Block, nx: int, nz: int) -> list[Block]:
-    """`block` cut into `nx` × `nz` equal parts."""
+    """`block` cut into `nx` x `nz` equal parts."""
     w = (block.x_max - block.x_min) / nx
     d = (block.z_max - block.z_min) / nz
     parts: list[Block] = []

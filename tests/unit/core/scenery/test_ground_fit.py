@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/ground_fit.py`."""
+
+import math
 
 import pytest
 
@@ -12,7 +15,7 @@ class _Plane:
         self.base = base
         self.slope = slope
 
-    def height(self, x: float, z: float) -> float:
+    def height(self, x: float, _z: float) -> float:
         return self.base + self.slope * x
 
 
@@ -37,11 +40,14 @@ def test_gfx_prop_06_a_spot_under_the_sea_limit_does_not_stand() -> None:
 
 
 class _Bumps:
-    """Ground that no plane fits: a sum of sines. (`SampledGround` is checked against the terrain
-    mesh itself in `tests/unit/render/scenery/test_terrain_geometry.py`.)"""
+    """Ground that no plane fits: a sum of sines.
+
+    (`SampledGround` is checked against the terrain
+
+        mesh itself in `tests/unit/render/scenery/test_terrain_geometry.py`.).
+    """
 
     def height(self, x: float, z: float) -> float:
-        import math  # noqa: PLC0415
 
         return 10 * math.sin(x * 0.37) + 7 * math.cos(z * 0.23) + 0.05 * x * z
 

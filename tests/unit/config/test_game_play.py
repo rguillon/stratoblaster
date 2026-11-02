@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/config/game_play.py`."""
 
 from config.game_play import GAME_PLAY_CONFIG

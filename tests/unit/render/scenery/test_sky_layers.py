@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/scenery/sky_layers.py` (GFX-SKY-11)."""
 
 from types import SimpleNamespace
@@ -69,15 +70,15 @@ def _fakes(monkeypatch: pytest.MonkeyPatch) -> None:
     _APPLIED.clear()
     _CLOUD_UPDATES.clear()
     monkeypatch.setattr(
-        sky_layers, "atmosphere_track", lambda look, speed, options: _NEXT_TRACK[-1]
+        sky_layers, "atmosphere_track", lambda _look, _speed, _options: _NEXT_TRACK[-1]
     )
     monkeypatch.setattr(
         sky_layers,
         "light_scenery",
-        lambda scene, atmosphere: SimpleNamespace(sun="sun-light", ambient="ambient-light"),
+        lambda _scene, _atmosphere: SimpleNamespace(sun="sun-light", ambient="ambient-light"),
     )
     monkeypatch.setattr(
-        sky_layers, "apply_atmosphere", lambda scene, lights, atmo: _APPLIED.append(atmo)
+        sky_layers, "apply_atmosphere", lambda _scene, _lights, atmo: _APPLIED.append(atmo)
     )
     monkeypatch.setattr(sky_layers, "build_cloud_layer", _build_cloud)
     monkeypatch.setattr(
@@ -91,12 +92,12 @@ def _fakes(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(
         sky_layers,
         "babylon_class",
-        lambda name: SimpleNamespace(Right=lambda: "right", Up=lambda: "up"),
+        lambda _name: SimpleNamespace(Right=lambda: "right", Up=lambda: "up"),
     )
 
 
 def _build_cloud(
-    scene: Any, look: Any, material: Any, index: int, placement: tuple[Any, ...]
+    _scene: Any, look: Any, material: Any, index: int, placement: tuple[Any, ...]
 ) -> Any:
     return SimpleNamespace(
         state=("state", index), look=look, material=material, placement=placement
@@ -110,7 +111,7 @@ def _cloud(altitude: float) -> Any:
 def _sky(
     clouds: list[Any] | None = None, look: Any = None, options: Any = None
 ) -> tuple[SkyLayers, _Track]:
-    """A sky over a track that gives one atmosphere (a fresh sample) at every distance."""
+    """Return a sky over a track that gives one atmosphere (a fresh sample) at every distance."""
     track = _Track(sample_atmosphere())
     _NEXT_TRACK.append(track)
     if look is None:
@@ -191,6 +192,15 @@ def test_the_lightning_flashes_inside_the_lowest_cloud_layer() -> None:
     assert placement == (_window(100), 100)
 
 
+def test_the_storm_s_lightning_is_there_once_attached() -> None:
+    """GFX-WEATHER-11."""
+    sky, _ = _sky()
+    assert sky.lightning is None
+    sky.attach(_Kit(), _placement())
+    assert sky.lightning is sky._lightning
+    assert isinstance(sky.lightning, _Layer)
+
+
 def test_a_sky_without_clouds_has_its_aurora_and_lightning_at_the_ground() -> None:
     sky, _ = _sky(clouds=[])
     sky.attach(_Kit(), _placement(flight=200))
@@ -216,7 +226,7 @@ def test_updating_follows_the_camera_and_the_time_with_each_cloud_layer() -> Non
     layer, camera_time, frame = _CLOUD_UPDATES[0]
     assert layer is sky._clouds[0]
     assert camera_time == (40, 2.5)
-    atmosphere, cover, follow = frame
+    _atmosphere, cover, follow = frame
     assert cover is track.atmosphere.clouds[0]
     assert follow is False
 

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/content/level_catalog.py`."""
 
 import pytest
@@ -11,7 +12,7 @@ from core.content.level_catalog import (
 
 
 def test_level_entry_keeps_its_fields() -> None:
-    entry = LevelEntry("2-3", "2-3", 2, 3, False)
+    entry = LevelEntry("2-3", "2-3", 2, 3, unlocked=False)
     assert (entry.id, entry.label, entry.world, entry.level, entry.unlocked) == (
         "2-3",
         "2-3",

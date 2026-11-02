@@ -1,6 +1,8 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/enemies/basic_parts.py`."""
 
 import math
+from typing import Any
 
 import pytest
 
@@ -31,17 +33,17 @@ class _Parts:
         self.muzzle = _Muzzles()
         self.flaps: list[tuple[list[float], float, float, object]] = []
 
-    def flap(self, pivot, side, span, draw) -> None:
+    def flap(self, pivot: Any, side: Any, span: Any, draw: Any) -> None:
         self.flaps.append((pivot, side, span, draw))
 
 
-def test_mirror_flips_the_outline_across_by_the_sign():
+def test_mirror_flips_the_outline_across_by_the_sign() -> None:
     outline = [[1, 2], [3, 4]]
     assert mirror(outline, -1) == [[-1, 2], [-3, 4]]
     assert mirror(outline, 1) == [[1, 2], [3, 4]]
 
 
-def test_gun_barrel_is_a_metal_barrel_with_a_charge_light_and_a_marked_muzzle():
+def test_gun_barrel_is_a_metal_barrel_with_a_charge_light_and_a_marked_muzzle() -> None:
     parts = _Parts()
     gun_barrel(parts, [0, 1, 2], 3)
     assert len(parts.hull.geometry.positions) > 0
@@ -52,14 +54,14 @@ def test_gun_barrel_is_a_metal_barrel_with_a_charge_light_and_a_marked_muzzle():
     assert kind == "gun"
 
 
-def test_gun_barrel_turned_by_its_yaw_points_its_muzzle_that_way():
+def test_gun_barrel_turned_by_its_yaw_points_its_muzzle_that_way() -> None:
     parts = _Parts()
     gun_barrel(parts, [0, 0, 0], 2, yaw=math.pi / 2)
     (at, _kind) = parts.muzzle.marks[0]
     assert at == pytest.approx([2.8, 0, 0], abs=1e-9)
 
 
-def test_sinew_is_a_flesh_tube_from_start_to_end():
+def test_sinew_is_a_flesh_tube_from_start_to_end() -> None:
     parts = _Parts()
     sinew(parts, [0, 0, 0], [0, 0, 4], [0, 1, 0], 0.5)
     zs = parts.flesh.geometry.positions[2::3]
@@ -68,19 +70,20 @@ def test_sinew_is_a_flesh_tube_from_start_to_end():
     assert 3.5 <= max(zs) <= 4.5
 
 
-def test_eye_pair_is_two_glowing_beads_mirrored_either_side_of_the_centre():
+def test_eye_pair_is_two_glowing_beads_mirrored_either_side_of_the_centre() -> None:
     parts = _Parts()
     eye_pair(parts, [0, 0, 0], 2.0, 1.0, [1, 0, 0])
     xs = parts.vein.geometry.positions[0::3]
     # Two beads, each about `size` across, centred on x = -1 and x = +1: the group is symmetric
     # and reaches past each centre.
     assert (min(xs) + max(xs)) / 2 == pytest.approx(0, abs=0.01)
-    assert min(xs) <= -1 <= 0 and max(xs) >= 1
+    assert min(xs) <= -1 <= 0
+    assert max(xs) >= 1
     # Each bead is lit in the glow colour.
     assert parts.vein.geometry.colors[0:3] == pytest.approx([1, 0, 0])
 
 
-def test_wing_pair_hinges_one_membrane_wing_per_side_at_its_root():
+def test_wing_pair_hinges_one_membrane_wing_per_side_at_its_root() -> None:
     parts = _Parts()
     shape = {"root": [1, 0], "tips": [[4, 3], [3, 6]], "y": 2, "strut": 0.3}
     wing_pair(parts, shape, [0, 1, 0])
@@ -92,12 +95,12 @@ def test_wing_pair_hinges_one_membrane_wing_per_side_at_its_root():
     assert spans == pytest.approx([3, 3])
 
 
-def test_wing_draw_builds_membrane_struts_and_the_steady_lights_when_given():
+def test_wing_draw_builds_membrane_struts_and_the_steady_lights_when_given() -> None:
     parts = _Parts()
     light = [[4, 0], [3, 0], [3, 1]]
     shape = {"root": [1, 0], "tips": [[4, 0]], "y": 2, "strut": 0.3, "lights": [light]}
     wing_pair(parts, shape, [0, 1, 0])
-    _pivot, side, _span, draw = parts.flaps[1]
+    _pivot, _side, _span, draw = parts.flaps[1]
     wing = _Parts()
     draw(wing)
     assert len(wing.flesh.geometry.positions) > 0
@@ -106,7 +109,7 @@ def test_wing_draw_builds_membrane_struts_and_the_steady_lights_when_given():
     assert len(wing.vein.geometry.positions) == 0
 
 
-def test_wing_draw_without_lights_runs_a_vein_along_its_leading_strut():
+def test_wing_draw_without_lights_runs_a_vein_along_its_leading_strut() -> None:
     parts = _Parts()
     shape = {"root": [1, 0], "tips": [[4, 0]], "y": 2, "strut": 0.3}
     wing_pair(parts, shape, [0, 1, 0])

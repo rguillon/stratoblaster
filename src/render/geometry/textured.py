@@ -1,5 +1,8 @@
-"""Vertex-coloured, textured quads (D-210: one quad per building wall, mapped on the windows'
-atlas, GFX-BLDG-13)."""
+# Copyright (c) 2026 Renaud Guillon
+"""Vertex-coloured, textured quads (D-210: one quad per building wall).
+
+They are mapped on the windows' atlas (GFX-BLDG-13).
+"""
 
 from render.geometry.gradient_shapes import ColoredGeometry
 
@@ -19,10 +22,12 @@ class QuadBuilder:
         self.geometry = TexturedGeometry()
 
     def quad(self, corners: list[list[float]], uv: list[float], color: list[float]) -> None:
-        """A flat quad, its corners (two up one edge, then two down the other) going
-        counter-clockwise seen from the front (as `SolidBuilder.face`), showing the texture's
-        `[u0, v0, u1, v1]` (u1 on its first edge, v0 along its first and last corners), tinted by
-        `color`."""
+        """Add a flat quad: its corners go counter-clockwise seen from the front.
+
+        Its corners are two up one edge, then two down the other (as `SolidBuilder.face`), showing
+        the texture's `[u0, v0, u1, v1]` (u1 on its first edge, v0 along its first and last
+        corners), tinted by `color`.
+        """
         geo = self.geometry
         base = len(geo.positions) // 3
         for corner in corners:
@@ -33,5 +38,5 @@ class QuadBuilder:
         u1 = uv[2]
         v1 = uv[3]
         geo.uvs.extend([u1, v0, u1, v1, u0, v1, u0, v0])
-        # Babylon front faces have the normal (c - a) × (b - a), hence the swapped order.
+        # Babylon front faces have the normal (c - a) x (b - a), hence the swapped order.
         geo.indices.extend([base, base + 2, base + 1, base, base + 3, base + 2])

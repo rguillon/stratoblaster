@@ -1,5 +1,7 @@
-"""The dry levels of World 1 (WLD-1-07, WLD-1-10; reworked at the reviewer's request,
-2026-10-26)
+# Copyright (c) 2026 Renaud Guillon
+"""The dry levels of World 1 (WLD-1-07, WLD-1-10).
+
+Reworked at the reviewer's request, 2026-10-26.
 
 From the dry grassland 1-3 ended on into an American desert (reviewer, 2026-10-30, D-200: dried
 land, not sand dunes): red dirt and scrub, rock, a cracked dry lake bed, an oasis, a canyon, mesas
@@ -8,75 +10,71 @@ and buttes, then deeper into the desert, its towns bigger and denser. No factory
 to 240 (WLD-1-03).
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.record import merge, record
 from game.config.trees import DEAD_TREES, DESERT_WOODS, LONE_DEAD_TREES
 from game.config.world_1.props import WORLD_1_GROUPS, WORLD_1_PROPS, WORLD_1_ROADS
 from game.config.world_1.scenery_coast import smooth
 from game.config.world_1.scenery_country import DRY_GRASSLAND, TOWN_STREETS
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 G = WORLD_1_GROUPS
 
 
 def dry_lake() -> Any:
-    """A dry lake bed: ground flat and low enough for the cracked hardpan (`lowHeight`)."""
+    """Return a dry lake bed: ground flat and low enough for the cracked hardpan (`lowHeight`)."""
     return smooth(3, 2, 700, 3)
 
 
 def buttes(top: float) -> Any:
-    """Buttes and mesas standing out of a dry floor (GFX-TERRAIN-11): steep, high relief whose
-    tops are squashed flat under `top` (about a fifth of the ground), its lows a fifth on the
-    cracked hardpan."""
-    return record(
-        {
-            "base": 35,
-            "amplitude": 160,
-            "frequency": 1 / 450,
-            "octaves": 4,
-            "style": "smooth",
-            "maxHeight": top,
-        }
-    )
+    """Buttes and mesas standing out of a dry floor (GFX-TERRAIN-11): steep.
+
+    High relief whose tops are squashed flat under `top` (about a fifth of the ground), its lows a
+    fifth on the cracked hardpan.
+    """
+    return record({
+        "base": 35,
+        "amplitude": 160,
+        "frequency": 1 / 450,
+        "octaves": 4,
+        "style": "smooth",
+        "maxHeight": top,
+    })
 
 
 def mesas(top: float) -> Any:
     """Flat-topped mesas: a high relief whose tops are squashed under `top`."""
-    return record(
-        {
-            "base": 30,
-            "amplitude": 150,
-            "frequency": 1 / 560,
-            "octaves": 5,
-            "style": "smooth",
-            "maxHeight": top,
-        }
-    )
+    return record({
+        "base": 30,
+        "amplitude": 150,
+        "frequency": 1 / 560,
+        "octaves": 5,
+        "style": "smooth",
+        "maxHeight": top,
+    })
 
 
 def desert(name: str, seconds: float, extra: Any) -> Any:
-    """A desert section: red dirt and scrub, with `extra` set over the defaults."""
+    """Return a desert section: red dirt and scrub, with `extra` set over the defaults."""
     return merge(
-        record(
-            {
-                "name": name,
-                "seconds": seconds,
-                "relief": smooth(28, 12, 520),
-                "buildingDensity": 0,
-                # D-214 (WLD-1-14): sparse woods of dead trees, and dead trees alone between them.
-                "treeDensity": 1,
-                "trees": DEAD_TREES,
-                "woods": DESERT_WOODS,
-                "surface": {"sandy": 1},
-                "groups": [G.outposts],
-            }
-        ),
+        record({
+            "name": name,
+            "seconds": seconds,
+            "relief": smooth(28, 12, 520),
+            "buildingDensity": 0,
+            # D-214 (WLD-1-14): sparse woods of dead trees, and dead trees alone between them.
+            "treeDensity": 1,
+            "trees": DEAD_TREES,
+            "woods": DESERT_WOODS,
+            "surface": {"sandy": 1},
+            "groups": [G.outposts],
+        }),
         extra,
     )
 
@@ -231,20 +229,20 @@ DEEP_DESERT = [
 
 
 def level(level_id: str, name: str, seed: float, sections: list[Any]) -> Any:
-    """A World 1 desert level: its sections on the World 1 roads and props, at 60 units/s
-    (WLD-1-04)."""
-    return record(
-        {
-            "id": level_id,
-            "name": name,
-            "seed": seed,
-            "scrollSpeed": 60,
-            "transition": 420,
-            "sections": sections,
-            "roads": WORLD_1_ROADS,
-            "props": WORLD_1_PROPS,
-        }
-    )
+    """Return a World 1 desert level, at 60 units/s (WLD-1-04).
+
+    Its sections are on the World 1 roads and props.
+    """
+    return record({
+        "id": level_id,
+        "name": name,
+        "seed": seed,
+        "scrollSpeed": 60,
+        "transition": 420,
+        "sections": sections,
+        "roads": WORLD_1_ROADS,
+        "props": WORLD_1_PROPS,
+    })
 
 
 # 1-4 (LVL-1-4-01, LVL-1-4-02): the dry lands, starting on the dry grassland 1-3 ended on.

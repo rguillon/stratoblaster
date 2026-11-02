@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/enemies/elite_shapes.py`."""
 
 import math
@@ -9,17 +10,17 @@ from game.config.enemy_look import ENEMY_LOOK
 from game.view.enemies.elite_shapes import QUARTER, WHITE, ahead, barrel, strip
 
 
-def test_ahead_moves_along_the_yaw_from_plus_z_towards_plus_x():
+def test_ahead_moves_along_the_yaw_from_plus_z_towards_plus_x() -> None:
     assert ahead([1, 2, 3], 0, 4) == pytest.approx([1, 2, 7])
     x, y, z = ahead([0, 5, 0], math.pi / 2, 2)
     assert (x, y, z) == pytest.approx((2, 5, 0), abs=1e-12)
 
 
-def test_ahead_stays_at_the_same_height():
+def test_ahead_stays_at_the_same_height() -> None:
     assert ahead([0, -3, 0], 0.7, 10)[1] == -3
 
 
-def test_barrel_is_a_steel_tube_with_a_charge_light_and_a_marked_muzzle():
+def test_barrel_is_a_steel_tube_with_a_charge_light_and_a_marked_muzzle() -> None:
     builder, log = recorder()
     barrel(builder, [0, 0, 0], 0, [0.5, 2], kind="gun")
     assert paths(log) == ["hull.cylinder", "charge.cylinder", "muzzle"]
@@ -39,7 +40,7 @@ def test_barrel_is_a_steel_tube_with_a_charge_light_and_a_marked_muzzle():
     assert log[2][1] == ([0, 0, 0], "gun")
 
 
-def test_barrel_is_placed_at_its_tip_turned_by_its_yaw():
+def test_barrel_is_placed_at_its_tip_turned_by_its_yaw() -> None:
     builder, log = recorder()
     barrel(builder, [0, 0, 0], math.pi / 2, [1, 1], kind="cannon")
     place = log[0][1][4]
@@ -49,7 +50,7 @@ def test_barrel_is_placed_at_its_tip_turned_by_its_yaw():
     assert log[2][1][1] == "cannon"
 
 
-def test_strip_is_a_thin_box_centred_along_the_yaw():
+def test_strip_is_a_thin_box_centred_along_the_yaw() -> None:
     builder, log = recorder()
     strip(builder, [0, 1, 0], 0, [3, 4, 0.5], [1, 0, 0])
     assert paths(log) == ["box"]

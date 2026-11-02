@@ -1,25 +1,26 @@
-"""Times the work of each frame and of each level start (DEV-PERF-01): how many frames are longer
-than `long_frame_ms`, the longest one, the last loading time and the draw calls of the last frame
-(ENG-106, recorded by the game). `now` is the clock, in
-milliseconds (`performance.now` in the browser). These numbers check the frame-rate target
-(ENG-101) and the freezes (PERF-19), and are taken before anything is optimised (PERF-02).
+# Copyright (c) 2026 Renaud Guillon
+"""Times the work of each frame and of each level start (DEV-PERF-01).
+
+How many frames are longer than `long_frame_ms`, the longest one, the last loading time and the draw
+calls of the last frame (ENG-106, recorded by the game). `now` is the clock, in milliseconds
+(`performance.now` in the browser). These numbers check the frame-rate target (ENG-101) and the
+freezes (PERF-19), and are taken before anything is optimised (PERF-02).
 
 `perf_overlay` shows the numbers on a debug overlay (dev and e2e builds only): with no
 `perf_parent` it returns the ticker unchanged and does nothing.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from app.page_audio import Ticker
 from config.engine import ENGINE_CONFIG
 from ui.perf_overlay import PerfNumbers, PerfOverlay
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-from ui.screens.elements import MenuDocument  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.screens.elements import MenuDocument
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class PerfMonitor:
@@ -43,6 +44,7 @@ class PerfMonitor:
 
     @property
     def numbers(self) -> PerfNumbers:
+        """The current frame timing numbers."""
         return PerfNumbers(
             self._long_frames,
             self._longest_frame,
@@ -58,15 +60,15 @@ class PerfMonitor:
         return self._load_start is not None
 
     def record_draw_calls(self, count: float) -> None:
-        """Records the draw calls of the frame just drawn (ENG-106): the overlay shows the last."""
+        """Record the draw calls of the frame just drawn (ENG-106): the overlay shows the last."""
         self._draw_calls = count
 
     def frame_started(self) -> None:
-        """Starts timing a frame."""
+        """Start timing a frame."""
         self._frame_start = self._now()
 
     def frame_ended(self) -> None:
-        """Ends the frame started last; it counts unless skipped or part of a level loading."""
+        """End the frame started last; it counts unless skipped or part of a level loading."""
         if self._frame_start is None:
             return
         time = self._now() - self._frame_start
@@ -83,15 +85,16 @@ class PerfMonitor:
             self._long_frames = self._long_frames + 1
 
     def load_started(self) -> None:
-        """A level was confirmed: its loading starts now."""
+        """Start timing a level's loading: the level was just confirmed."""
         # The frame the level was confirmed in is part of its loading.
         start = self._frame_start
         self._load_start = start if start is not None else self._now()
         self._loading_step = 0.0
 
     def load_finished(self, skip_frames: float = 0) -> None:
-        """The level's first frame was drawn: records the loading time and resets the frame
-        counts, which then skip the next `skip_frames` frames.
+        """Record the loading time and reset the frame counts: the level's first frame was drawn.
+
+        The frame counts then skip the next `skip_frames` frames.
         """
         if self._load_start is None:
             return
@@ -102,7 +105,7 @@ class PerfMonitor:
         self.reset(skip_frames)
 
     def reset(self, skip_frames: float = 0) -> None:
-        """Clears the frame counts (not the last loading time), skipping the next `skip_frames`."""
+        """Clear the frame counts (not the last loading time), skipping the next `skip_frames`."""
         self._long_frames = 0
         self._longest_frame = 0.0
         self._frames = 0
@@ -130,8 +133,10 @@ class PerfOverlayOptions:
 
 
 def perf_overlay(options: PerfOverlayOptions, perf: PerfMonitor) -> PerfOverlayHandle:
-    """The perf overlay (DEV-PERF-03, ENG-111), toggled by its key, refreshed after each frame's
-    simulation."""
+    """Return the perf overlay (DEV-PERF-03, ENG-111), toggled by its key.
+
+    Refreshed after each frame's simulation.
+    """
     perf_parent = options.perf_parent
     keyboard_target = options.keyboard_target
     if perf_parent is None:

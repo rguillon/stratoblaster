@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/scoring.py`."""
 
 import pytest
@@ -38,8 +39,10 @@ def test_game_score_04_part_points_are_always_a_multiple_of_round_to() -> None:
 
 
 def test_game_score_03_no_kind_scores_less_than_a_kind_with_half_its_health_or_less() -> None:
-    """Over every enemy kind of the game (the basic, veteran and elite rosters): a kind with at
-    least twice the health of another never scores less than it (GAME-SCORE-03)."""
+    """Over every enemy kind, a kind with at least twice another's health never scores less than it.
+
+    The kinds are those of the game's basic, veteran and elite rosters (GAME-SCORE-03).
+    """
     kinds = [
         *ENEMY_CONFIG.values(),
         *VETERAN_CONFIG.values(),

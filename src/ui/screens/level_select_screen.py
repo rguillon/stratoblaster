@@ -1,21 +1,23 @@
-"""Level select screen (UI-LEVEL-01): a grid of
-levels, locked ones greyed out with a padlock (UI-LEVEL-04)."""
+# Copyright (c) 2026 Renaud Guillon
+"""Level select screen (UI-LEVEL-01): a grid of levels, locked ones greyed out.
 
-from org.transcrypt.stubs.browser import __pragma__
+A padlock (UI-LEVEL-04).
+"""
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.screens.elements import back_button, element, entry, padlock
 
-from ui.menu_view import LevelSelectView  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from ui.screens.screen_handlers import ScreenHandlers  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+from ui.menu_view import LevelSelectView
+from ui.screens.screen_handlers import ScreenHandlers
 
-from ui.screens.elements import back_button, element, entry, padlock  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
 
 def render_level_select_screen(doc: Any, view: LevelSelectView, handlers: ScreenHandlers) -> Any:
-    """Renders the level select screen (UI-LEVEL-09)."""
+    """Render the level select screen (UI-LEVEL-09)."""
     root = element(doc, "div", "menu-screen level-select-screen")
     grid = element(doc, "div", "level-grid")
     grid.style.gridTemplateColumns = "repeat(" + str(view.columns) + ", 1fr)"

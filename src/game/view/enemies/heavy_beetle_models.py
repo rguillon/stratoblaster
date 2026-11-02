@@ -1,14 +1,13 @@
+# Copyright (c) 2026 Renaud Guillon
 """The Bulwark and the Splitter, Cyber-Organic (ENM-35) Logical pixels, nose +Z, Y up."""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.enemies import ENEMY_CONFIG  # noqa: E402
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.view.enemies.enemy_mesh import build_enemy_model  # noqa: E402
-from game.view.enemies.enemy_shapes import SIDES, around, radial  # noqa: E402
-from render.geometry.organic import (  # noqa: E402
+from game.config.enemies import ENEMY_CONFIG
+from game.config.enemy_look import ENEMY_LOOK
+from game.view.enemies.enemy_mesh import build_enemy_model
+from game.view.enemies.enemy_shapes import SIDES, around, radial
+from render.geometry.organic import (
     SegmentedBody,
     carapace,
     curve,
@@ -18,12 +17,14 @@ from render.geometry.organic import (  # noqa: E402
 from render.geometry.organic import (
     vein as vein_tube,
 )
-from render.geometry.solids import Placement  # noqa: E402
+from render.geometry.solids import Placement
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 F = ENEMY_LOOK.flesh
@@ -55,9 +56,12 @@ BULWARK_VISOR = [  # type: list[list[float]]
 
 
 def build_bulwark(scene: Any) -> Any:
-    """ENM-BULWARK-01: a heavy armoured beetle: a wide ridged carapace, a metal armour band across
-    its front with a neon visor slit (ENM-BULWARK-02; green, ENM-BULWARK-04), mandibles, short
-    legs, twin cannon grafted on its head and three reactors (ENM-BULWARK-03)."""
+    """ENM-BULWARK-01: a heavy armoured beetle with a wide ridged carapace.
+
+    It has a metal armour band across its front with a neon visor slit (ENM-BULWARK-02; green,
+    ENM-BULWARK-04), mandibles, short legs, a twin cannon grafted on its head and three reactors
+    (ENM-BULWARK-03).
+    """
 
     def draw(p: Any) -> None:
         flesh = p.flesh
@@ -99,8 +103,11 @@ def build_bulwark(scene: Any) -> Any:
 
 
 def splitter_pod_outline(offset: float, inner: float, outer: float) -> list[list[float]]:
-    """A Splitter pod: a wedge fitted around the core, `inner` to `outer` from the core's centre,
-    outwards along +Z, around its own centre `offset` out."""
+    """Return a Splitter pod: a wedge fitted around the core.
+
+    It runs from `inner` to `outer` from the core's centre, outwards along +Z, around its own centre
+    `offset` out.
+    """
 
     def rim(a: float) -> list[float]:
         return [outer * math.sin(a), outer * math.cos(a) - offset]
@@ -109,8 +116,11 @@ def splitter_pod_outline(offset: float, inner: float, outer: float) -> list[list
 
 
 def pod(flesh: Any, hull: Any, neon: Any, veins: Any, place: Any) -> None:
-    """ENM-SPLITTER-03: a pod of the Splitter, a curled flesh grub: a swollen body, a metal plate
-    grafted on its back, a neon seam along its inner side and a vein across it."""
+    """ENM-SPLITTER-03: a pod of the Splitter, a curled flesh grub.
+
+    It has a swollen body, a metal plate grafted on its back, a neon seam along its inner side and a
+    vein across it.
+    """
     offset = ENEMY_CONFIG.splitter.podOffset
     inner = 8.3
     body = splitter_pod_outline(offset, inner, 16.4)
@@ -132,9 +142,11 @@ def pod(flesh: Any, hull: Any, neon: Any, veins: Any, place: Any) -> None:
 
 
 def build_splitter(scene: Any) -> Any:
-    """ENM-SPLITTER-01: a body visibly made of the three grubs it splits into, curled around a
-    small flesh heart with a neon ring (yellow, ENM-SPLITTER-04), its eye charging before it fires
-    and one reactor (ENM-SPLITTER-02)."""
+    """ENM-SPLITTER-01: a body visibly made of the three grubs it splits into.
+
+    They are curled around a small flesh heart with a neon ring (yellow, ENM-SPLITTER-04), its eye
+    charging before it fires, and one reactor (ENM-SPLITTER-02).
+    """
     offset = ENEMY_CONFIG.splitter.podOffset
 
     def draw(p: Any) -> None:

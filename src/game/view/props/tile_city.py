@@ -1,18 +1,13 @@
-"""The city made for the grid of tiles (Phase 15): mid-rise blocks, offices, towers and skyscrapers
-(GFX-BLDG-10), and the lots (car parks, yards, plazas, parks; GFX-BLDG-11)
-See `tile_kit.py`."""
+# Copyright (c) 2026 Renaud Guillon
+"""The city made for the grid of tiles (Phase 15).
 
-from org.transcrypt.stubs.browser import __pragma__
+Mid-rise blocks, offices, towers and skyscrapers (GFX-BLDG-10), and the lots (car parks, yards,
+plazas, parks; GFX-BLDG-11). See `tile_kit.py`.
+"""
 
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from game.view.props.tile_kit import Rgb  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-__pragma__("noskip")
-
-from game.config.prop_look import PROP_COLORS as C  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.props.city_lots import LotKit  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.props.tile_kit import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.prop_look import PROP_COLORS as C
+from game.view.props.city_lots import LotKit
+from game.view.props.tile_kit import (
     NEON,
     NEON_DIM,
     TileKit,
@@ -23,15 +18,26 @@ from game.view.props.tile_kit import (  # noqa: E402 (after the Transcrypt skip 
     r,
     tree,
 )
-from game.view.props.tile_towers import city_building  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.solids import Placement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.tile_towers import city_building
+from render.geometry.solids import Placement
+
+# isort: split
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+# __pragma__ ("skip")
+from game.view.props.tile_kit import Rgb
+
+# __pragma__ ("noskip")
+
 
 FACADES = [C.glassBlue, C.glassDark, C.glassGreen, C.concrete, C.white]
 ROOFS = [C.roof, C.metal, C.metalDark]
 
 
 def lot_kit(k: TileKit, facades: list[Rgb], lights: list[Rgb], faces: bool = False) -> LotKit:
-    """The lot colours of a city building: a facade, its windows and a roof, picked at random."""
+    """Return the lot colours of a city building, picked at random.
+
+    A facade, its windows and a roof.
+    """
     return LotKit(
         k.s,
         k.lights,
@@ -45,28 +51,36 @@ def lot_kit(k: TileKit, facades: list[Rgb], lights: list[Rgb], faces: bool = Fal
 
 
 def city(k: TileKit, height: list[float], facades: list[Rgb], asymmetric: bool = False) -> None:
-    """A city building of the silhouette its seed names (see `tile_towers.py`); `asymmetric`,
-    each face lit its own way, an annex and a fin on one side (reviewer, 2026-10-28)."""
+    """Add a city building of the silhouette its seed names (see `tile_towers.py`).
+
+    `asymmetric`: each face is lit its own way, with an annex and a fin on one side (reviewer,
+    2026-10-28).
+    """
     city_building(k, lot_kit(k, facades, NEON_DIM, asymmetric), height, asymmetric)
 
 
 def build_midrise(k: TileKit) -> None:
+    """Build a mid-rise block of brick, concrete, white and farm-wall facades."""
     city(k, [16, 28], [C.brick, C.concrete, C.white, C.farmWall])
 
 
 def build_office(k: TileKit) -> None:
+    """Build an office block in the city's facade colours."""
     city(k, [26, 42], FACADES, True)
 
 
 def build_tower(k: TileKit) -> None:
+    """Build a tower in the city's facade colours."""
     city(k, [44, 66], FACADES, True)
 
 
 def build_skyscraper(k: TileKit) -> None:
+    """Build a skyscraper of blue, dark and green glass."""
     city(k, [70, 110], [C.glassBlue, C.glassDark, C.glassGreen], True)
 
 
 def build_car_park(k: TileKit) -> None:
+    """Build a car park: a dark metal plot with rows of parked cars."""
     plot(k, C.metalDark)
     rows = max(1, js_round(k.d / 6))
     for j in range(rows):
@@ -74,7 +88,7 @@ def build_car_park(k: TileKit) -> None:
         x = -k.w / 2 + 1
         while x < k.w / 2 - 3:
             k.s.box([0.15, 0.05, 4], C.white, Placement([x, 0.2, z], 0, 0, 0))
-            if k.random() < 0.5:  # noqa: PLR2004 (a geometry constant)
+            if k.random() < 0.5:
                 k.s.box(
                     [1.6, 1.2, 3.6],
                     any_of(k, [C.containerRed, C.containerBlue, C.white]),
@@ -85,6 +99,7 @@ def build_car_park(k: TileKit) -> None:
 
 
 def build_yard(k: TileKit) -> None:
+    """Build a yard: a concrete plot with stacked crates."""
     plot(k, C.concrete)
     for _i in range(4):
         size = [1.6, 1.2 + k.random(), 1.6]
@@ -95,6 +110,7 @@ def build_yard(k: TileKit) -> None:
 
 
 def build_plaza(k: TileKit) -> None:
+    """Build a plaza: a paved plot with a round feature at its centre."""
     plot(k, C.paving)
     k.s.cylinder(3, 0.8, 10, C.concreteDark, Placement([0, 0.2, 0], 0, 0, 0))
     k.lights.ring(2.6, 0.3, 10, any_of(k, NEON), Placement([0, 1, 0], 0, 0, 0))
@@ -103,6 +119,7 @@ def build_plaza(k: TileKit) -> None:
 
 
 def build_park(k: TileKit) -> None:
+    """Build a park: a lawn on a leaf-green plot, with a paved path."""
     plot(k, C.leaf)
     k.s.box([1.2, 0.05, k.d - 1], C.paving, Placement([0, 0.2, 0], 0.4, 0, 0))
     lamp(k, k.w / 2 - 0.5, -k.d / 2 + 0.5)

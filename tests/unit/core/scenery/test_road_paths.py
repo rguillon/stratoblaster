@@ -1,6 +1,8 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/road_paths.py`."""
 
 import math
+from typing import Any
 
 import pytest
 from helpers.level_builders import road_rules
@@ -19,8 +21,10 @@ def _main_along_z(x: float = 0.0) -> Road:
     return Road(0, "main", 24.0, 1, points)
 
 
-def _ground(rules, laid: list, is_open=lambda x, z: True, nearest=None) -> PathGround:
-    def no_road(x: float, z: float, which) -> Nearest:
+def _ground(
+    rules: Any, laid: list, is_open: Any = lambda _x, _z: True, nearest: Any = None
+) -> PathGround:
+    def no_road(_x: float, _z: float, _which: Any) -> Nearest:
         return Nearest(math.inf)
 
     return PathGround(
@@ -62,7 +66,7 @@ def test_no_main_road_means_no_path() -> None:
 def test_a_path_that_is_not_on_open_ground_is_dropped() -> None:
     laid: list = []
     lay_paths(
-        _ground(road_rules(), laid, is_open=lambda x, z: False), create_rng(5), [_main_along_z()]
+        _ground(road_rules(), laid, is_open=lambda _x, _z: False), create_rng(5), [_main_along_z()]
     )
     assert laid == []
 

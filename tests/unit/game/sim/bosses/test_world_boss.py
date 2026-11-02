@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/sim/bosses/world_boss.py`."""
 
 import pytest
@@ -8,6 +9,7 @@ from game.config.bosses.boss_kit import BOSS_TIMING, bullet, part, stages, volle
 from game.config.bosses.final_bosses import REFINERY_TITAN
 from game.config.bosses.hidden_weapons import region_blasts
 from game.config.bosses.mini_bosses import REEF_WARDEN
+from game.config.bosses.world_3.stone_idol import STONE_IDOL
 from game.config.bosses.world_4.caldera_throne import CALDERA_THRONE
 from game.config.record import merge
 from game.sim.bosses.world_boss import WorldBoss, _sign, boss_half_width
@@ -79,7 +81,7 @@ def test_boss_21_a_boss_turret_follows_nothing_while_its_source_is_destroyed() -
 
 
 def _hidden_gun_design() -> object:
-    """The Reef Warden with one more gun, hidden until its transformation."""
+    """Return the Reef Warden with one more gun, hidden until its transformation."""
     stats = REEF_WARDEN.stats
     parts = [*stats["parts"], part("hidden-gun", [0, -10], 8, 50, {"reveal": 1, "shields": False})]
     guns = merge(REEF_WARDEN.guns, {"hidden-gun": {"gun": [[0, -14, 3]]}})
@@ -116,3 +118,54 @@ def test_a_hidden_weapon_fires_only_once_revealed_and_its_armour_blows_off() -> 
         boss.update(ctx, 1 / 60)
     assert boss.form == 1
     assert len(ctx.bullets) > 0
+
+
+def test_boss_25_a_part_s_launches_go_out_from_it_while_it_stands() -> None:
+    """A launch from a part the boss does not have has no side, and never goes out."""
+    launches = [
+        {"from": "cannon-left", "kind": "gnats", "count": 2, "every": 1, "first": 0.1},
+        {"from": "ghost", "kind": "hornets", "count": 1, "every": 1, "first": 0.1},
+    ]
+    boss = WorldBoss(merge(REEF_WARDEN, {"launches": launches}), area(width=480, height=640))
+    ctx = FakeContext()
+    for _ in range(5):
+        boss.update_pattern(ctx, 0.1)
+    assert [type(enemy).__name__ for enemy in ctx.spawned] == ["Gnat", "Gnat"]
+
+
+def _turret_aims(boss: WorldBoss) -> list[float]:
+    return [p.turret.aim for p in [boss.core, *boss.parts] if p.turret is not None]
+
+
+def test_boss_29_a_dying_boss_turns_its_turrets_no_more() -> None:
+    living = WorldBoss(STONE_IDOL, area(width=480, height=640))
+    dying = WorldBoss(STONE_IDOL, area(width=480, height=640))
+    ctx = FakeContext()
+    for _ in range(30):
+        living.update(ctx, 1 / 30)
+        dying.update(ctx, 1 / 30)
+    dying.hurt_core(0)
+    assert dying.state == "dying"
+    held = _turret_aims(dying)
+    ctx.player_x = 0
+    for _ in range(30):
+        living.update(ctx, 1 / 30)
+        dying.update(ctx, 1 / 30)
+    assert _turret_aims(dying) == held
+    assert _turret_aims(living) != held
+
+
+def test_boss_37_a_transformation_bursts_only_the_armour_it_sheds() -> None:
+    """Also BOSS-42: the regions of the other transformation stay on."""
+    boss = WorldBoss(REFINERY_TITAN, area(width=480, height=640))
+    assert {region.form for region in REFINERY_TITAN.armour} == {1, 2}
+    ctx = FakeContext()
+    boss.on_transform(2, ctx)
+    expected = [
+        (boss.x + b[0], boss.y + b[1], b[2])
+        for region in REFINERY_TITAN.armour
+        if region.form == 2
+        for b in region_blasts(region, BOSS_TIMING.regionBlasts)
+    ]
+    expected.extend((p.x, p.y, p.radius) for p in boss.parts if p.spec.reveal == 2)
+    assert ctx.explosions == expected

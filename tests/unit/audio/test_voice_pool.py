@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/audio/voice_pool.py`."""
 
 from audio.voice_pool import VoicePool

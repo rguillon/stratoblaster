@@ -1,17 +1,21 @@
+# Copyright (c) 2026 Renaud Guillon
 """Plain data for the browser's worker messages (PERF-14, ENG-164).
 
 `postMessage` copies its message (structured clone), and a function cannot be copied: Transcrypt
-class instances carry their class as an own function property (`__class__`), so a level or a
-ground posted as it is fails with "Function object could not be cloned". `to_plain` makes a copy
-of the data alone: the fields of every object, with the shared references kept (a road referenced
-twice is one copy, as the clone would keep it).
+class instances carry their class as an own function property (`__class__`), so a level or a ground
+posted as it is fails with "Function object could not be cloned". `to_plain` makes a copy of the
+data alone: the fields of every object, with the shared references kept (a road referenced twice is
+one copy, as the clone would keep it).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
 
 def to_plain(value: object) -> object:
-    """A copy of `value` as plain data: objects and arrays, without functions or class markers."""
+    """Return a copy of `value` as plain data: objects and arrays.
+
+    The copy has no functions or class markers.
+    """
     out: object = None
     __pragma__(
         "js",

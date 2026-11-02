@@ -1,4 +1,5 @@
-"""How a scenery level looks: sky, light, terrain, sea, clouds and props (phase 4)
+# Copyright (c) 2026 Renaud Guillon
+"""How a scenery level looks: sky, light, terrain, sea, clouds and props (phase 4).
 
 The interfaces are classes here (Transcrypt has no interfaces). Each takes its fields
 positionally, in the order of the interface, with the optional fields last (default None).
@@ -6,25 +7,26 @@ positionally, in the order of the interface, with the optional fields last (defa
 
 from org.transcrypt.stubs.browser import __pragma__
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module). The
 # imports here are used in annotations only, so they stay out of the browser build.
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
+from typing import Any
 
-from core.scenery.sky_look import SkyScript  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.textured import TexturedGeometry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.scenery.road_geometry import RoadLook  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.sky_look import SkyScript
+from render.geometry.gradient_shapes import ColoredGeometry
+from render.geometry.textured import TexturedGeometry
+from render.scenery.road_geometry import RoadLook
 
 Rgb = tuple[float, float, float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class TextureLook:
     """A tiling texture generated in code: fractal noise between three colours, plus speckles."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         colors: tuple[Rgb, Rgb, Rgb],
         frequency: float,
@@ -34,10 +36,12 @@ class TextureLook:
         strata: float,
         cracks: float | None = None,
     ) -> None:
-        """`colors`: dark, base and light, at the low, middle and high noise values. `frequency`:
-        noise cycles across the texture (first octave). `speckle`: share (0..1) of pixels turned
-        into speckles of `speckleColor`. `strata`: horizontal bands, like rock strata. `cracks`:
-        thin dark crack lines, as in lake ice (phase 8)."""
+        """`colors`: dark, base and light, at the low, middle and high noise values.
+
+        `frequency`: noise cycles across the texture (first octave). `speckle`: share (0..1) of
+        pixels turned into speckles of `speckleColor`. `strata`: horizontal bands, like rock strata.
+        `cracks`: thin dark crack lines, as in lake ice (phase 8).
+        """
         self.colors = colors
         self.frequency = frequency
         self.octaves = octaves
@@ -56,12 +60,14 @@ class Jitter:
 
 
 class TerrainLook:
-    """Generated ground textures blended by altitude and slope (GFX-TERRAIN-08): `low` under
-    `lowHeight` (shores, sea bed), `ground` in between, `high` above `highHeight` (snow),
-    `steep` on slopes. `lush`, `paved` and `sand` are the covers of the terrain sections
-    (GFX-TERRAIN-09)."""
+    """Generated ground textures blended by altitude and slope (GFX-TERRAIN-08).
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    `low` under `lowHeight` (shores, sea bed), `ground` in between, `high` above `highHeight`
+    (snow), `steep` on slopes. `lush`, `paved` and `sand` are the covers of the terrain sections
+    (GFX-TERRAIN-09).
+    """
+
+    def __init__(
         self,
         texture_size: float,
         tile_size: float,
@@ -84,8 +90,10 @@ class TerrainLook:
         specular: float,
         casts_shadows: bool | None = None,
     ) -> None:
-        """`castsShadows`: whether the terrain casts the sun's shadows (default: yes;
-        GFX-TERRAIN-13, PERF-28)."""
+        """`castsShadows`: whether the terrain casts the sun's shadows.
+
+        Default: yes (GFX-TERRAIN-13, PERF-28).
+        """
         self.textureSize = texture_size
         self.tileSize = tile_size
         self.low = low
@@ -122,9 +130,12 @@ class ShoreFoam:
 
 
 class ShoreLook:
-    """The shore, painted on the terrain around the sea level (phase 5 review): a sand beach up to
-    `beach` above the water, ground under the water tinted from `shallow` to `deep` over `depth`,
-    and surf: a broken foam line at the water's edge and bands of foam rolling in."""
+    """The shore, painted on the terrain around the sea level (phase 5 review).
+
+    A sand beach up to `beach` above the water, ground under the water tinted from `shallow` to
+    `deep` over `depth`, and surf: a broken foam line at the water's edge and bands of foam rolling
+    in.
+    """
 
     def __init__(
         self, sand: Rgb, beach: float, shallow: Rgb, deep: Rgb, depth: float, foam: ShoreFoam
@@ -148,8 +159,10 @@ class SeaNormalMap:
 
 
 class LavaEdge:
-    """The rock where it meets the lava: a glowing edge `width` high, and glowing cracks up to
-    `cracks` above it."""
+    """The rock where it meets the lava: a glowing edge `width` high, and glowing cracks.
+
+    The cracks rise up to `cracks` above it.
+    """
 
     def __init__(self, color: Rgb, width: float, cracks: float) -> None:
         self.color = color
@@ -158,10 +171,12 @@ class LavaEdge:
 
 
 class LavaLook:
-    """Lava (GFX-TERRAIN-16): a self-lit liquid at the sea level, dark crust plates drifting and
-    breaking over a glowing melt. Only a look."""
+    """Lava (GFX-TERRAIN-16): a self-lit liquid at the sea level, dark crust plates drifting.
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    Breaking over a glowing melt. Only a look.
+    """
+
+    def __init__(
         self,
         crust: Rgb,
         plate: Rgb,
@@ -173,10 +188,12 @@ class LavaLook:
         intensity: float,
         edge: LavaEdge,
     ) -> None:
-        """`crust`: the dark crust; `plate`: the lit side of its plates; `glow` and `hot`: the glow
-        in the cracks and their white-hot heart. `cell`: world units across a plate. `crack`: width
-        of the cracks (0..1 of a plate). `churn`: cycles a second. `intensity`: brightness of the
-        self-lit colours."""
+        """`crust`: the dark crust; `plate`: the lit side of its plates; `glow` and `hot`.
+
+        The glow in the cracks and their white-hot heart. `cell`: world units across a plate.
+        `crack`: width of the cracks (0..1 of a plate). `churn`: cycles a second. `intensity`:
+        brightness of the self-lit colours.
+        """
         self.crust = crust
         self.plate = plate
         self.glow = glow
@@ -191,7 +208,7 @@ class LavaLook:
 class SeaLook:
     """Water with a generated, drifting normal map that catches the sun (GFX-WATER-03)."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         color: Rgb,
         alpha: float,
@@ -203,8 +220,10 @@ class SeaLook:
         lava: LavaLook | None = None,
     ) -> None:
         """`sunGlint`: strength of the sun's direct light on the water (above 1, brighter glint).
+
         `drift`: world units per second the waves drift along X and Z. `lava` (phase 10): the
-        liquid is lava (GFX-TERRAIN-16), not water."""
+        liquid is lava (GFX-TERRAIN-16), not water.
+        """
         self.color = color
         self.alpha = alpha
         self.roughness = roughness
@@ -218,7 +237,7 @@ class SeaLook:
 class CloudLayerLook:
     """A layer of clouds under the flight altitude (GFX-SKY-11)."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         altitude: float,
         coverage: float,
@@ -229,9 +248,12 @@ class CloudLayerLook:
         color: Rgb,
         shade: Rgb,
     ) -> None:
-        """`coverage`: share (0..1) of the sky covered by this layer. `opacity`: 0 = invisible,
-        1 = opaque. `drift`: world units per second, on top of the scrolling. `softness`: fade
-        width (0..1) of the cloud edges. `shade`: colour of the thin edges."""
+        """`coverage`: share (0..1) of the sky covered by this layer.
+
+        `opacity`: 0 = invisible, 1 = opaque. `drift`: world units per second, on top of the
+        scrolling. `softness`: fade width (0..1) of the cloud edges. `shade`: colour of the thin
+        edges.
+        """
         self.altitude = altitude
         self.coverage = coverage
         self.opacity = opacity
@@ -260,8 +282,11 @@ class SceneryFog:
 
 
 class ShadowLook:
-    """The sun's shadow map: its size, the square of ground it covers (fixed, moved by whole
-    texels so shadows do not shimmer), bias, normal bias and darkness (0 = black, 1 = none)."""
+    """The sun's shadow map: its size.
+
+    The square of ground it covers (fixed, moved by whole texels so shadows do not shimmer), bias,
+    normal bias and darkness (0 = black, 1 = none).
+    """
 
     def __init__(
         self, map_size: float, frustum: float, bias: float, normal_bias: float, darkness: float
@@ -274,8 +299,10 @@ class ShadowLook:
 
 
 class SunLook:
-    """The sun: its elevation (degrees above the horizon), azimuth (0 = straight ahead, +Z,
-    positive towards +X), colour, intensity and shadow."""
+    """The sun: its elevation (degrees above the horizon).
+
+    Azimuth (0 = straight ahead, +Z, positive towards +X), colour, intensity and shadow.
+    """
 
     def __init__(
         self,
@@ -302,18 +329,20 @@ class AmbientLook:
 
 
 class PropsLook:
-    """The props: their specular and the brightness of their self-lit accents. The looks of the
-    windows' atlas (D-210, see `window_atlas.py`) and of the cars' and the trees' imposters (D-211,
-    D-212, see `imposters.py`) are read from the config record as it is (`look.props.windows`,
-    `look.props.imposters`, `look.props.treeImposters`); these are None (drawn as they are) here,
-    which is the case for the looks built by hand."""
+    """The props: their specular and the brightness of their self-lit accents.
+
+    The looks of the windows' atlas (D-210, see `window_atlas.py`) and of the cars' and the trees'
+    imposters (D-211, D-212, see `imposters.py`) are read from the config record as it is
+    (`look.props.windows`, `look.props.imposters`, `look.props.treeImposters`); these are None
+    (drawn as they are) here, which is the case for the looks built by hand.
+    """
 
     def __init__(self, specular: float, light_intensity: float) -> None:
         self.specular = specular
         self.lightIntensity = light_intensity
-        self.windows: Any = None  # noqa: ANN401 (a config record)
-        self.imposters: Any = None  # noqa: ANN401 (a config record)
-        self.treeImposters: Any = None  # noqa: ANN401 (a config record)
+        self.windows: Any = None
+        self.imposters: Any = None
+        self.treeImposters: Any = None
 
 
 class GlowLook:
@@ -325,12 +354,15 @@ class GlowLook:
 
 
 class SceneryLook:
-    """How a scenery level looks: sky, light, terrain, sea, clouds and props. The optional fields
-    are last: `atmosphere` (phase 8, its sky script, replaces the fixed sky, fog, sun, ambient,
-    clouds and ground lights), `shotStyle` (phase 10, the enemy shot style of this level),
-    `tone` (phase 14, 0..1, how bright the background is kept under the playfield; 1 when None)."""
+    """How a scenery level looks: sky, light, terrain, sea, clouds and props.
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    The optional fields are last: `atmosphere` (phase 8, its sky script, replaces the fixed sky,
+    fog, sun, ambient, clouds and ground lights), `shotStyle` (phase 10, the enemy shot style of
+    this level), `tone` (phase 14, 0..1, how bright the background is kept under the playfield; 1
+    when None).
+    """
+
+    def __init__(
         self,
         sky: SceneryLookSky,
         fog: SceneryFog,
@@ -362,9 +394,11 @@ class SceneryLook:
 
 
 class PropPlume:
-    """A column of smoke or steam rising from a prop (phase 10, GFX-PROP-18): from `at` (model
-    space, at scale 1), of a kind of the engine's `PLUME_KINDS`, `scale` times as big as the
-    kind's."""
+    """A column of smoke or steam rising from a prop (phase 10, GFX-PROP-18).
+
+    From `at` (model space, at scale 1), of a kind of the engine's `PLUME_KINDS`, `scale` times as
+    big as the kind's.
+    """
 
     def __init__(
         self, at: tuple[float, float, float], kind: str, scale: float | None = None
@@ -375,12 +409,15 @@ class PropPlume:
 
 
 class PropGeometry:
-    """Raw geometry of a prop (GFX-PROP-04): its lit structure (casts shadows), its self-lit
-    accents, the smoke or steam it sends up, its windows (D-210: quads on the walls, mapped on the
-    windows' atlas) and a stand-in that only casts its shadow (D-212: a prop drawn as an imposter,
-    whose quad would cast a wrong one; a few low-poly solids round where it stands)."""
+    """Raw geometry of a prop (GFX-PROP-04): its lit structure and its self-lit accents.
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    Its lit structure casts shadows. The smoke or steam it sends up, its windows (D-210: quads on
+    the walls, mapped on the windows' atlas) and a stand-in that only casts its shadow (D-212: a
+    prop drawn as an imposter, whose quad would cast a wrong one; a few low-poly solids round where
+    it stands).
+    """
+
+    def __init__(
         self,
         structure: ColoredGeometry,
         lights: ColoredGeometry | None = None,
@@ -402,9 +439,11 @@ __pragma__("noskip")
 
 
 class PlayfieldCameraLook:
-    """The camera above the playfield (GFX-CAM-02): its tilt from straight down, vertical field of
-    view, the height of the playfield plane, and `groundScale` (how much bigger the ground is
-    drawn, as if flying lower; 1 when None)."""
+    """The camera above the playfield (GFX-CAM-02): its tilt from straight down.
+
+    Vertical field of view, the height of the playfield plane, and `groundScale` (how much bigger
+    the ground is drawn, as if flying lower; 1 when None).
+    """
 
     def __init__(
         self,

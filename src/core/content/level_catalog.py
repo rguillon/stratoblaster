@@ -1,4 +1,5 @@
-"""The levels of a game as shown on the level select screen"""
+# Copyright (c) 2026 Renaud Guillon
+"""The levels of a game as shown on the level select screen."""
 
 import math
 
@@ -6,12 +7,14 @@ import math
 class LevelEntry:
     """One level as shown on the level select screen (data only)."""
 
-    def __init__(self, id: str, label: str, world: int, level: int, unlocked: bool) -> None:
-        """`id` is a stable identifier, e.g. `1-1`; `label` the text shown on the level select
-        screen; `world` the 1-based world number; `level` the 1-based level number inside its
-        world; `unlocked` is False for a level that is shown but cannot be started.
+    def __init__(self, id_: str, label: str, world: int, level: int, unlocked: bool) -> None:
+        """Keep the level's id, label, world and level numbers, and whether it is unlocked.
+
+        `id` is a stable identifier, e.g. `1-1`; `label` the text shown on the level select screen;
+        `world` the 1-based world number; `level` the 1-based level number inside its world;
+        `unlocked` is False for a level that is shown but cannot be started.
         """
-        self.id = id
+        self.id = id_
         self.label = label
         self.world = world
         self.level = level
@@ -22,7 +25,8 @@ class LevelCatalog:
     """The levels of a game, laid out as one row per world (the game's data, UI-LEVEL-02)."""
 
     def __init__(self, columns: int, levels: list[LevelEntry]) -> None:
-        """`columns` is the levels per world, i.e. entries per row of the level select grid;
+        """`columns` is the levels per world, i.e. entries per row of the level select grid.
+
         `levels` lists World 1 level 1 first, row by row.
         """
         self.columns = columns
@@ -36,13 +40,16 @@ def _is_integer(value: float) -> bool:
 
 
 def build_level_grid(worlds: int, levels_per_world: int, unlocked_ids: list[str]) -> LevelCatalog:
-    """Builds a catalog of `worlds` x `levels_per_world` levels labelled `world-level`
-    (UI-LEVEL-01).
+    """Build a catalog of `worlds` x `levels_per_world` levels (UI-LEVEL-01).
+
+    Each level is labelled `world-level`.
     """
     if not _is_integer(worlds) or not _is_integer(levels_per_world):
-        raise ValueError("worlds and levels_per_world must be integers")
+        msg = "worlds and levels_per_world must be integers"
+        raise ValueError(msg)
     if worlds < 1 or levels_per_world < 1:
-        raise ValueError("A level grid needs one level")
+        msg = "A level grid needs one level"
+        raise ValueError(msg)
     worlds = int(worlds)
     levels_per_world = int(levels_per_world)
     levels: list[LevelEntry] = []

@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/world_2/waves.py`."""
+
+from typing import Any
 
 import pytest
 from helpers.config_checks import assert_beats_well_formed, enemy_kind_ids
@@ -18,7 +21,7 @@ PLANS = [PLAN_2_1, PLAN_2_2, PLAN_2_3, PLAN_2_4, PLAN_2_5]
 
 
 @pytest.mark.parametrize("plan", PLANS)
-def test_wld_2_19_a_plan_composes_beats_that_name_kinds_and_sides_in_order(plan) -> None:
+def test_wld_2_19_a_plan_composes_beats_that_name_kinds_and_sides_in_order(plan: Any) -> None:
     """Each level's wave plan (WLD-2-19), of known kinds (WLD-2-17)."""
     beats = compose_beats(plan)
     assert beats

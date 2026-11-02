@@ -1,25 +1,28 @@
+# Copyright (c) 2026 Renaud Guillon
 """Paths from points of the main roads to past the screen edge, every `cross_spacing` (GFX-ROAD-02).
+
 Each one tries both directions and a few bends, and is dropped if none stays on buildable ground
-(and, without crossings, GFX-ROAD-05, clear of the roads and the paths laid before it)."""
+(and, without crossings, GFX-ROAD-05, clear of the roads and the paths laid before it).
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from core.math.noise import smoothstep
+from core.math.rng import random_in
+from core.scenery.road_types import RoadPoint
 
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
 
-from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.districts import ZRange  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.road_segments import Nearest  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.road_types import Road  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.scenery_level import RoadRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import Random
+from core.scenery.districts import ZRange
+from core.scenery.road_segments import Nearest
+from core.scenery.road_types import Road
+from core.scenery.scenery_level import RoadRules
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
-from core.math.noise import smoothstep  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.math.rng import random_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.road_types import RoadPoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 INFINITY = float("Infinity")
 
@@ -112,7 +115,7 @@ def lay_paths(ground: PathGround, random: Random, mains: Sequence[Road]) -> None
 
 
 def _find_index(points: Sequence[RoadPoint], z: float, offscreen_x: float) -> int:
-    """The index of the first point at or past `z` and on screen (-1 when there is none)."""
+    """Return the index of the first point at or past `z` and on screen (-1 when there is none)."""
     for i, q in enumerate(points):
         if q.z >= z and abs(q.x) < offscreen_x:
             return i
@@ -149,9 +152,11 @@ class _Walk:
 def _path_through(
     ground: PathGround, line: Sequence[RoadPoint], from_: Road
 ) -> list[RoadPoint] | None:
-    """`line` if a path can go there from its road `from_`: on open ground and, without crossings,
-    `gap` clear of every road and path, except where it ends on another main road or street (cut
-    there). None if it cannot."""
+    """`line` if a path can go there from its road `from_`.
+
+    On open ground and, without crossings, `gap` clear of every road and path, except where it ends
+    on another main road or street (cut there). None if it cannot.
+    """
     no_crossings = ground.rules.no_crossings
     if no_crossings is None:
         for p in line[1:]:
@@ -169,8 +174,10 @@ def _path_through(
 
 
 def _path_point(ground: PathGround, walk: _Walk, p: RoadPoint, from_: Road) -> str:
-    """Whether a path goes on through `p`, ends there on another road, or is blocked: 'on', 'end'
-    or 'blocked'."""
+    """Whether a path goes on through `p`, ends there on another road, or is blocked.
+
+    'on', 'end' or 'blocked'.
+    """
     if not ground.open(p.x, p.z):
         return "blocked"
     # Off its own road for good once clear of it.
@@ -192,8 +199,10 @@ def _path_point(ground: PathGround, walk: _Walk, p: RoadPoint, from_: Road) -> s
 
 
 def _path_line(rules: RoadRules, start: RoadPoint, direction: int, bend: float) -> list[RoadPoint]:
-    """A path from `start` to past the screen edge on the `direction` side (GFX-ROAD-04), bending
-    by `bend`."""
+    """Return a path from `start` to past the screen edge on the `direction` side (GFX-ROAD-04).
+
+    Bending by `bend`.
+    """
     step = rules.step
     count = math.ceil((rules.offscreen_x - direction * start.x) / step) + 1
     return [

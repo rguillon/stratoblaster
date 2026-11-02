@@ -1,6 +1,5 @@
-"""The boss kinds of the game (BOSS-01)"""
-
-from org.transcrypt.stubs.browser import __pragma__
+# Copyright (c) 2026 Renaud Guillon
+"""The boss kinds of the game (BOSS-01)."""
 
 from game.config.bosses.boss_kit import with_own_lasers
 from game.config.bosses.final_bosses import (
@@ -43,28 +42,26 @@ from game.config.bosses.world_4.obsidian_golem import OBSIDIAN_GOLEM
 from game.config.bosses.world_4.steam_dreadnought import STEAM_DREADNOUGHT
 from game.sim.bosses.world_boss import WorldBoss
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
+from typing import Any
 
-from core.entities.boss import Boss  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.entities.enemy import EnemySpawnArea  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.systems.boss_fights import BossKindDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.boss import Boss
+from core.entities.enemy import EnemySpawnArea
+from core.systems.boss_fights import BossKindDefinition
 
 # A boss design is a config record (`game/config/record.py`), typed as Any there.
-__pragma__("skip")
-BossDesign = Any  # noqa: E402
-__pragma__("noskip")
-
-__pragma__("noskip")
+BossDesign = Any
+# __pragma__ ("noskip")
 
 
 class BossKind:
     """A kind of boss a game offers (BOSS-07): a name, and how one boss of it comes in."""
 
-    def __init__(self, id: str, name: str, spawn: Callable[[EnemySpawnArea], Boss]) -> None:
-        self.id = id
+    def __init__(self, item_id: str, name: str, spawn: Callable[[EnemySpawnArea], Boss]) -> None:
+        self.id = item_id
         self.name = name
         self.spawn = spawn
 
@@ -125,15 +122,13 @@ def _spawner(own: BossDesign) -> Callable[[EnemySpawnArea], Boss]:
 
 
 def _boss_kind(design: BossDesign) -> BossKind:
-    """The boss kind of a design, its lasers in its own colour (BOSS-32)."""
+    """Return the boss kind of a design, its lasers in its own colour (BOSS-32)."""
     own = with_own_lasers(design)
     return BossKind(design.id, design.stats["name"], _spawner(own))
 
 
 def _all_kinds() -> list[BossKindDefinition]:
-    kinds: list[BossKindDefinition] = []
-    for design in BOSS_DESIGNS:
-        kinds.append(_boss_kind(design))
+    kinds: list[BossKindDefinition] = [_boss_kind(design) for design in BOSS_DESIGNS]
     return kinds
 
 

@@ -1,14 +1,14 @@
-"""MB-BREAKWATER-01 to MB-BREAKWATER-04, 1-2: the Breakwater Logical pixels,
-nose +Z, Y up (towards the camera).
+# Copyright (c) 2026 Renaud Guillon
+"""MB-BREAKWATER-01 to MB-BREAKWATER-04, 1-2: the Breakwater Logical pixels, nose +Z.
+
+Y up (towards the camera).
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.config.bosses.mini_bosses import BREAKWATER  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.mini_boss_greebles import lamps, mast  # noqa: E402
-from game.view.bosses.mini_boss_shapes import (  # noqa: E402
+from game.config.boss_look import BOSS_LOOK
+from game.config.bosses.mini_bosses import BREAKWATER
+from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.mini_boss_greebles import lamps, mast
+from game.view.bosses.mini_boss_shapes import (
     neon_band,
     offset,
     radius_of,
@@ -16,7 +16,7 @@ from game.view.bosses.mini_boss_shapes import (  # noqa: E402
     socket,
     turret,
 )
-from game.view.bosses.world_1_organic_kit import (  # noqa: E402
+from game.view.bosses.world_1_organic_kit import (
     F,
     M,
     barbs,
@@ -33,16 +33,18 @@ from game.view.bosses.world_1_organic_kit import (  # noqa: E402
     tentacle,
     vein_line,
 )
-from game.view.enemies.enemy_shapes import SIDES  # noqa: E402
-from game.view.enemies.organic_parts import eyes, reactor_sac  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
+from game.view.enemies.enemy_shapes import SIDES
+from game.view.enemies.organic_parts import eyes, reactor_sac
+from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Vec3 = list[Any]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 ORANGE = BOSS_LOOK.neon["breakwater"]
 
@@ -80,9 +82,11 @@ PLATE = [
 
 
 def _draw_body(p: Any) -> None:
-    """The crab's body (MB-BREAKWATER-02): a wide mantle under a domed, plated shell, ribs over its
-    back, an orange vein along its spine, eyes on stalks at its front over its mouth (the bow
-    gun)."""
+    """Draw the crab's body (MB-BREAKWATER-02): a wide mantle under a domed, plated shell.
+
+    Ribs over its back, an orange vein along its spine, eyes on stalks at its front over its mouth
+    (the bow gun).
+    """
     deck = HULL_Y[2]
     mantle(p, BARGE_HULL, [HULL_Y[0], deck], F.sinew, ORANGE)
     neon_band(p.neon, BARGE_HULL, [-1.4, -0.4], [1.02, 1.02], ORANGE)
@@ -110,7 +114,7 @@ def _draw_body(p: Any) -> None:
 
 
 def _draw_legs(p: Any) -> None:
-    """The crab's walking legs, three each side, folded under its rim (bone, jointed)."""
+    """Draw the crab's walking legs, three each side, folded under its rim (bone, jointed)."""
     for s in SIDES:
         for z in [-8, -20, -32]:
             knee = [s * 36, HULL_Y[2] + 4, z - 2]
@@ -134,14 +138,19 @@ def _draw_grafts(p: Any) -> None:
 
 
 def _bow_gun(p: Any, at: Vec3) -> None:
-    """The bow gun in the hold (the core's fans, bursts and rings), turning on the hold's floor."""
+    """Add the bow gun in the hold (the core's fans, bursts and rings).
+
+    It turns on the hold's floor.
+    """
     gun = {"radius": 7, "barrels": 2, "gap": 3, "bore": 1.2, "length": 6, "neon": ORANGE}
     turret(p, offset(at, 0, HULL_Y[2] + 0.4, 0), gun)
 
 
 def _ram_plate(p: Any, at: Vec3) -> None:
-    """The ram plate (MB-BREAKWATER-03): no weapon, the crab's thick bony brow shield, a V of
-    grafted armour on it, orange veins along its edge."""
+    """Add the ram plate (MB-BREAKWATER-03): no weapon, the crab's thick bony brow shield.
+
+    A V of grafted armour on it, orange veins along its edge.
+    """
     top = 9
     p.flesh.bevel_slab(PLATE, [-3, 1, top - 1.5], [1.5, 4], F.bone, Placement(at), F.sinew)
     neon_band(p.neon, PLATE, [0.6, 1.8], [1.02, 1.02], ORANGE, Placement(at))
@@ -153,15 +162,17 @@ def _ram_plate(p: Any, at: Vec3) -> None:
 
 
 def _mortar(p: Any, at: Vec3) -> None:
-    """A mortar (MB-BREAKWATER-03): a swollen barnacle growth on the flank under its turret, a
-    spawn sac beside it."""
+    """Add a mortar (MB-BREAKWATER-03): a swollen barnacle growth on the flank under its turret.
+
+    A spawn sac beside it.
+    """
     r = radius_of(BREAKWATER.stats.parts, 1, 13)
     growth(p, offset(at, 0, HULL_Y[2] - 2, 0), r, ORANGE, {"flesh": F.graphite, "height": 0.4})
     sac(p, offset(at, sign_of(at[0]) * 8, HULL_Y[2], 6), 3.5, F.slate, {"stretch": 0.7})
 
 
 def _mortar_turret(p: Any, at: Vec3) -> None:
-    """A mortar's turret: a squat dome and a short, fat, raised barrel."""
+    """Add a mortar's turret: a squat dome and a short, fat, raised barrel."""
     r = radius_of(BREAKWATER.stats.parts, 1, 13)
     turret(
         p,
@@ -180,9 +191,11 @@ def _mortar_turret(p: Any, at: Vec3) -> None:
 
 
 def build_breakwater(scene: Any) -> Any:
-    """MB-BREAKWATER-01, MB-BREAKWATER-04: the Breakwater, a huge armoured shore crab with orange
-    veins: a wide plated shell over jointed legs, a bony V-shaped ram plate over its snout, a gun
-    in its mouth and two barnacle mortars on its flanks."""
+    """MB-BREAKWATER-01, MB-BREAKWATER-04: the Breakwater.
+
+    A huge armoured shore crab with orange veins: a wide plated shell over jointed legs, a bony
+    V-shaped ram plate over its snout, a gun in its mouth and two barnacle mortars on its flanks.
+    """
 
     def core(p: Any) -> None:
         _draw_body(p)

@@ -1,4 +1,8 @@
-"""A minimal sample game for the engine's unit tests (ENG-145). `SAMPLE_GAME` is a `GameDefinition`
+# Copyright (c) 2026 Renaud Guillon
+"""A minimal sample game for the engine's unit tests (ENG-145).
+
+`SAMPLE_GAME` is a `GameDefinition`
+
 of its own, with one enemy kind, one weapon and one tiny level; its look values are in `look`.
 The engine tests read a game's numbers from here, never from `src/game/`.
 """

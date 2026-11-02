@@ -1,6 +1,9 @@
-"""Unit tests of `src/game/view/bosses/boss_frame.py`: the frame a shed armour region leaves (its
-floor and ribs, BOSS-44, D-224), and the pylons and bridges that hold pieces up (BOSS-52,
-D-227)."""
+# Copyright (c) 2026 Renaud Guillon
+"""Unit tests of `src/game/view/bosses/boss_frame.py`.
+
+The frame a shed armour region leaves (its floor and ribs, BOSS-44, D-224), and the pylons and
+bridges that hold pieces up (BOSS-52, D-227).
+"""
 
 from typing import Any
 
@@ -28,7 +31,7 @@ WING = armour_region("wings", 1, [[10, -20], [50, -20], [50, 20], [10, 20]], "wi
 
 
 def _plane(p: Any) -> None:
-    """A wide, flat delta: a slab 120 x 60, a fuselage box on it, a muzzle and a reactor."""
+    """Draw a wide, flat delta: a slab 120 x 60, a fuselage box on it, a muzzle and a reactor."""
     p.hull.box([120, 4, 60], GREY, Placement([0, -2, 0]))
     p.flesh.box([12, 10, 60], GREY, Placement([0, 2, 0]))
     p.neon.box([2, 1, 50], GREY, Placement([40, 2, 0]))
@@ -50,7 +53,8 @@ def test_longest_two_picks_the_two_longest_segments() -> None:
 def test_a_pylon_reaches_from_its_floor_to_the_piece() -> None:
     drawn = _drawn(lambda p: draw_pylon(p, 0, [3, 4, 10, 6], GREY))
     ys = [v.position[1] for t in drawn for v in t]
-    assert min(ys) == pytest.approx(0) and max(ys) == pytest.approx(10)
+    assert min(ys) == pytest.approx(0)
+    assert max(ys) == pytest.approx(10)
     on_deck = _drawn(lambda p: draw_pylon(p, 0, [3, 4, 10, 6, 5], GREY))
     assert min(v.position[1] for t in on_deck for v in t) == pytest.approx(5)
     assert _drawn(lambda p: draw_pylon(p, 0, [3, 4, 0.1, 6], GREY)) == []
@@ -60,7 +64,8 @@ def test_a_bridge_runs_along_the_floor_then_up_to_its_end() -> None:
     drawn = _drawn(lambda p: draw_bridge(p, [[0, 0, 0], [20, 6, 0]], GREY))
     xs = [v.position[0] for t in drawn for v in t]
     ys = [v.position[1] for t in drawn for v in t]
-    assert max(xs) >= 20 and min(xs) <= 0
+    assert max(xs) >= 20
+    assert min(xs) <= 0
     assert max(ys) >= 6
 
 
@@ -69,7 +74,8 @@ def test_the_frame_floor_lies_flat_and_dark_under_the_armour() -> None:
     y = floor_height(tris)
     assert y == pytest.approx(-2 + BOSS_LOOK.frame.lift)
     floor = floor_triangles(tris, y)
-    assert floor and all(v.position[1] == y for t in floor for v in t)
+    assert floor
+    assert all(v.position[1] == y for t in floor for v in t)
     assert all(up_facing(t, 0.9) for t in floor)
     assert all(v.color[:3] == BOSS_LOOK.frame.floor for t in floor for v in t)
 
@@ -85,5 +91,7 @@ def test_the_frame_ribs_lie_within_the_armour_top_view() -> None:
     floor, ribs = frame_drawings(tris, "wing", [1, 0, 1])
     drawn_floor = collect_parts(floor)["parts"]
     drawn_ribs = collect_parts(ribs)["parts"]
-    assert drawn_floor.hull.geometry.positions and not drawn_floor.neon.geometry.positions
-    assert drawn_ribs.hull.geometry.positions and drawn_ribs.neon.geometry.positions
+    assert drawn_floor.hull.geometry.positions
+    assert not drawn_floor.neon.geometry.positions
+    assert drawn_ribs.hull.geometry.positions
+    assert drawn_ribs.neon.geometry.positions

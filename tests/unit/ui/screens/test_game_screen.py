@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/ui/screens/game_screen.py`."""
 
 from helpers.dom import FakeDocument, FakeEvent
@@ -76,7 +77,14 @@ def test_game_ctrl_04_dragging_the_playfield_reports_the_pointer_offsets() -> No
 def test_ui_over_01_the_level_complete_panel_replaces_the_controls_and_taps_go_on() -> None:
     """Also UI-OVER-03 (a tap goes on)."""
     taps: list[int] = []
-    complete = LevelCompleteView("Level complete", False, "Level 2", "5/5", "1200", "Tap to go on")
+    complete = LevelCompleteView(
+        "Level complete",
+        over=False,
+        level="Level 2",
+        enemies="5/5",
+        score="1200",
+        hint="Tap to go on",
+    )
     root = render(GameScreenView("Level 2", "FIRE", "II", complete, None, 0), handlers(taps=taps))
     assert root.querySelector(".game-fire") is None
     panel = root.querySelector(".level-complete")
@@ -93,7 +101,14 @@ def test_ui_over_06_a_game_over_with_choices_shows_the_choices_not_a_tap_to_go_o
     taps: list[int] = []
     choices = LevelChoices(["Continue", "Level select"], 1)
     complete = LevelCompleteView(
-        "Game over", True, "Mini boss", "4/5", "300", "", "New high score", choices
+        "Game over",
+        over=True,
+        level="Mini boss",
+        enemies="4/5",
+        score="300",
+        hint="",
+        new_high_score="New high score",
+        choices=choices,
     )
     root = render(GameScreenView("Mini boss", "", "", complete, None, 0), handlers(taps=taps))
     panel = root.querySelector(".level-complete")
@@ -113,3 +128,20 @@ def test_ui_pause_07_a_paused_level_shows_the_pause_panel_only() -> None:
     assert root.querySelector(".pause-panel") is not None
     assert root.querySelector(".game-fire") is None
     assert root.querySelector(".game-pause") is None
+
+
+def test_game_ctrl_04_without_touch_handlers_the_buttons_and_drags_only_stop_their_events() -> None:
+    """Also GAME-CTRL-05 and UI-PAUSE-02: nothing listens to the fire or pause button."""
+    taps: list[int] = []
+    root = render(
+        GameScreenView("Level 2", "FIRE", "II", None, None, 0),
+        ScreenHandlers(taps.append, lambda: None),
+    )
+    press = FakeEvent()
+    root.querySelector(".game-fire").fire("pointerdown", press)
+    root.querySelector(".game-pause").fire("click")
+    root.fire("pointerdown", FakeEvent(x=10, y=10))
+    root.fire("pointermove", FakeEvent(x=13, y=7))
+    root.fire("pointermove", FakeEvent(x=20, y=20))
+    assert press.stopped is True
+    assert taps == []

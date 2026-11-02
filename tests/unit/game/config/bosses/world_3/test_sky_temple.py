@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/bosses/world_3/sky_temple.py`."""
 
 from helpers.config_checks import assert_boss_design, original_parts
@@ -12,7 +13,8 @@ def test_fb_sky_temple_09_boss_design_is_well_formed() -> None:
 
 def test_boss_07_boss_id_is_a_lowercase_kebab_case_kind() -> None:
     assert SKY_TEMPLE.id == SKY_TEMPLE.id.lower()
-    assert " " not in SKY_TEMPLE.id and "_" not in SKY_TEMPLE.id
+    assert " " not in SKY_TEMPLE.id
+    assert "_" not in SKY_TEMPLE.id
 
 
 def test_fb_sky_temple_08_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
@@ -25,5 +27,6 @@ def test_fb_sky_temple_08_boss_stats_are_in_the_range_the_sim_relies_on() -> Non
 
 def test_fb_sky_temple_11_boss_has_an_angry_pattern_and_its_stage_count() -> None:
     """Its rage, and one stage pattern more than its parts (FB-SKY-TEMPLE-10)."""
-    assert isinstance(SKY_TEMPLE.rage, list) and SKY_TEMPLE.rage
+    assert isinstance(SKY_TEMPLE.rage, list)
+    assert SKY_TEMPLE.rage
     assert len(SKY_TEMPLE.stages) == len(original_parts(SKY_TEMPLE)) + 1

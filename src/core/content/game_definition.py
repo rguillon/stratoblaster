@@ -1,31 +1,32 @@
-"""The contract between the engine and a game built on it (ENG-144)
+# Copyright (c) 2026 Renaud Guillon
+"""The contract between the engine and a game built on it (ENG-144).
 
 The game exports exactly one object of this type; the engine discovers all game content
 through it. The view type parameter is `object` here: the presentation bindings
 (meshes, materials...) are defined by the presentation layers, so `core/` stays free of Babylon.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from core.content.game_level import GameLevel  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.content.level_catalog import LevelCatalog  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.content.menu_texts import MenuTexts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.entities.enemy import EnemyKindDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.entities.player_ship import PlayerShipRoster  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.entities.weapon import WeaponDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.systems.bonus_world import BonusRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.systems.boss_fights import BossFightRules, BossKindDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.systems.player_bombs import BombRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.systems.player_hull import HullRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from core.content.game_level import GameLevel
+from core.content.level_catalog import LevelCatalog
+from core.content.menu_texts import MenuTexts
+from core.entities.enemy import EnemyKindDefinition
+from core.entities.player_ship import PlayerShipRoster
+from core.entities.weapon import WeaponDefinition
+from core.systems.bonus_world import BonusRules
+from core.systems.boss_fights import BossFightRules, BossKindDefinition
+from core.systems.player_bombs import BombRules
+from core.systems.player_hull import HullRules
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class LogicalScreen:
-    """The logical resolution the game is laid out on (GAME-SCREEN-01), scaled to fit the window
-    (GAME-SCREEN-02).
+    """The logical resolution the game is laid out on (GAME-SCREEN-01).
+
+    It is scaled to fit the window (GAME-SCREEN-02).
     """
 
     def __init__(self, width: float, height: float) -> None:
@@ -36,9 +37,9 @@ class LogicalScreen:
 class GameDefinition:
     """Contract between the engine and a game built on it (ENG-144)."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
-        id: str,
+        id_: str,
         title: str,
         screen: LogicalScreen,
         player_ships: PlayerShipRoster,
@@ -54,7 +55,7 @@ class GameDefinition:
         texts: MenuTexts,
         view: object,
     ) -> None:
-        """Fields, in the same order:
+        """Fields, in the same order.
 
         - `id`: stable identifier, used e.g. as a storage key prefix; `title`: shown by the engine.
         - `screen`: logical resolution of the screens (GAME-SCREEN-01).
@@ -73,7 +74,7 @@ class GameDefinition:
         - `texts`: texts of the menu screens.
         - `view`: presentation bindings for the content above.
         """
-        self.id = id
+        self.id = id_
         self.title = title
         self.screen = screen
         self.player_ships = player_ships

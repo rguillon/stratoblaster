@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/menu_view_builder.py`."""
 # (the views of the screens of specs/ui/, and of the dev menu: specs/dev/dev-menu.md).
 
@@ -68,7 +69,7 @@ def test_ui_ship_02_the_ship_select_has_a_card_per_ship() -> None:
     view = build_menu_view(state("ship-select", selection=1), ctx())
     assert isinstance(view, ShipSelectView)
     assert [card.title for card in view.ships] == ["Alpha", "Beta"]
-    assert view.ships[1].lines[0] == "Speed ×2 (200 px/s)"
+    assert view.ships[1].lines[0] == "Speed \u00d72 (200 px/s)"
     assert view.cards_width_percent == 80
 
 
@@ -116,7 +117,7 @@ def test_ui_hud_06_an_unknown_level_is_labelled_with_a_question_mark() -> None:
 
 def test_ui_over_01_a_completed_level_shows_its_score_and_the_new_high_score() -> None:
     """Also UI-OVER-02 and UI-OVER-08 (no checkpoint, no choice)."""
-    result = LevelResult("1-1", 10, 12, "complete", 1500.0, True, None)
+    result = LevelResult("1-1", 10, 12, "complete", 1500.0, new_high_score=True, checkpoint=None)
     view = build_menu_view(state("game", level_result=result, chosen_level_id="1-1"), ctx())
     complete = view.complete
     assert complete.heading == "Level complete"
@@ -130,7 +131,7 @@ def test_ui_over_01_a_completed_level_shows_its_score_and_the_new_high_score() -
 def test_ui_over_06_a_game_over_with_a_checkpoint_offers_its_two_choices() -> None:
     """Also UI-OVER-05 and GAME-LIFE-11."""
     checkpoint = LevelCheckpoint(0.4, 1, WeaponLevels("guns", {"guns": 1.0}), 800.0)
-    result = LevelResult("1-1", 3, 9, "over", 800.0, False, checkpoint)
+    result = LevelResult("1-1", 3, 9, "over", 800.0, new_high_score=False, checkpoint=checkpoint)
     view = build_menu_view(state("game", level_result=result, choice=1), ctx())
     complete = view.complete
     assert complete.heading == "Game over"

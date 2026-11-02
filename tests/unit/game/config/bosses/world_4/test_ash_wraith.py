@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/bosses/world_4/ash_wraith.py`."""
 
 from helpers.config_checks import assert_boss_design, original_parts
@@ -12,7 +13,8 @@ def test_mb_ash_wraith_08_boss_design_is_well_formed() -> None:
 
 def test_boss_07_boss_id_is_a_lowercase_kebab_case_kind() -> None:
     assert ASH_WRAITH.id == ASH_WRAITH.id.lower()
-    assert " " not in ASH_WRAITH.id and "_" not in ASH_WRAITH.id
+    assert " " not in ASH_WRAITH.id
+    assert "_" not in ASH_WRAITH.id
 
 
 def test_mb_ash_wraith_07_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
@@ -25,5 +27,6 @@ def test_mb_ash_wraith_07_boss_stats_are_in_the_range_the_sim_relies_on() -> Non
 
 def test_mb_ash_wraith_11_boss_has_an_angry_pattern_and_its_stage_count() -> None:
     """Its rage, and one stage pattern more than its parts (MB-ASH-WRAITH-10)."""
-    assert isinstance(ASH_WRAITH.rage, list) and ASH_WRAITH.rage
+    assert isinstance(ASH_WRAITH.rage, list)
+    assert ASH_WRAITH.rage
     assert len(ASH_WRAITH.stages) == len(original_parts(ASH_WRAITH)) + 1

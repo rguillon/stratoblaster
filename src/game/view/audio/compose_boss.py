@@ -1,12 +1,14 @@
-"""The boss tracks' parts (AUD-MUSIC-07, "a more stressful music"): a driving drum machine with
-pushed kicks and snare rolls, a rolling octave
-bass, chord stabs on a 3-3-2 rhythm and a noise riser into every section.
+# Copyright (c) 2026 Renaud Guillon
+"""The boss tracks' parts (AUD-MUSIC-07, "a more stressful music").
+
+A driving drum machine with pushed kicks and snare rolls, a rolling octave bass, chord stabs on a
+3-3-2 rhythm and a noise riser into every section.
 """
 
-from audio.audio_types import Note  # noqa: E402
-from game.view.audio.compose_parts import BarContext, note  # noqa: E402
-from game.view.audio.instruments import DRUM_PITCH  # noqa: E402
-from game.view.audio.music_styles import (  # noqa: E402
+from audio.audio_types import Note
+from game.view.audio.compose_parts import BarContext, note
+from game.view.audio.instruments import DRUM_PITCH
+from game.view.audio.music_styles import (
     BEATS_PER_BAR,
     FULL_ENERGY,
     OCTAVE,
@@ -39,7 +41,7 @@ OFF_BEATS = [2, 6, 10, 14]
 
 
 def snare_roll(snare: str, bar: BarContext, count: int) -> list[Note]:
-    """A snare roll over the last `count` sixteenths of the bar, growing louder."""
+    """Return a snare roll over the last `count` sixteenths of the bar, growing louder."""
     return [
         note(
             snare, bar.beat + (STEPS - count + i) * STEP, STEP, DRUM_PITCH, 0.35 + (0.6 * i) / count
@@ -63,16 +65,15 @@ def boss_drum_bar(style: MusicStyle, bar: BarContext) -> list[Note]:
     perc = style.instruments.perc
     roll = roll_length(bar)
     notes = [note(kick, bar.beat + i * STEP, STEP, DRUM_PITCH, 1) for i in KICKS]
-    for i in SNARES:
-        if i < STEPS - roll:
-            notes.append(note(snare, bar.beat + i * STEP, 0.5, DRUM_PITCH, 0.95))
-    for i in range(STEPS):
-        if i not in OFF_BEATS:
-            notes.append(
-                note(hat, bar.beat + i * STEP, STEP, DRUM_PITCH, 0.85 if i % 4 == 0 else 0.55)
-            )
-    for i in OFF_BEATS:
-        notes.append(note(perc, bar.beat + i * STEP, STEP * 2, DRUM_PITCH, 0.7))
+    notes.extend([
+        note(snare, bar.beat + i * STEP, 0.5, DRUM_PITCH, 0.95) for i in SNARES if i < STEPS - roll
+    ])
+    notes.extend([
+        note(hat, bar.beat + i * STEP, STEP, DRUM_PITCH, 0.85 if i % 4 == 0 else 0.55)
+        for i in range(STEPS)
+        if i not in OFF_BEATS
+    ])
+    notes.extend([note(perc, bar.beat + i * STEP, STEP * 2, DRUM_PITCH, 0.7) for i in OFF_BEATS])
     notes.extend(snare_roll(snare, bar, roll))
     return notes
 
@@ -103,15 +104,17 @@ def stab_bar(bar: BarContext) -> list[Note]:
     root = bar.chord[0] if len(bar.chord) > 0 else 36
     fifth = bar.chord[FIFTH_INDEX] if len(bar.chord) > FIFTH_INDEX else root + 7
     voicing = [root + OCTAVE, fifth + OCTAVE, root + 2 * OCTAVE]
-    notes: list[Note] = []
-    for s in STAB_STEPS:
-        for pitch in voicing:
-            notes.append(
-                note("stab", bar.beat + s * STEP, STEP * 1.5, pitch, 0.85 if s % 8 == 0 else 0.65)
-            )
+    notes: list[Note] = [
+        note("stab", bar.beat + s * STEP, STEP * 1.5, pitch, 0.85 if s % 8 == 0 else 0.65)
+        for s in STAB_STEPS
+        for pitch in voicing
+    ]
     return notes
 
 
 def riser_bar(bar: BarContext) -> list[Note]:
-    """A rising noise sweep over a section's last bar, into the next section (AUD-MUSIC-04)."""
+    """Return a rising noise sweep over a section's last bar (AUD-MUSIC-04).
+
+    It leads into the next section.
+    """
     return [note("riser", bar.beat, BEATS_PER_BAR, DRUM_PITCH, 0.8)] if bar.fill else []

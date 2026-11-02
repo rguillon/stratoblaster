@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/sim/sky_build.py`."""
 
 from game.config.record import record
@@ -53,15 +54,13 @@ def test_gfx_sky_15_a_sky_look_maps_a_weather_and_a_mist_when_given() -> None:
 
 
 def test_gfx_sky_05_a_sky_script_is_the_start_look_and_its_changes_in_order() -> None:
-    config = record(
-        {
-            "start": _look(),
-            "changes": [
-                {"from": 0.0, "to": 0.5, "look": _look(timeOfDay=0.1)},
-                {"from": 0.5, "to": 1.0, "look": _look(timeOfDay=0.9)},
-            ],
-        }
-    )
+    config = record({
+        "start": _look(),
+        "changes": [
+            {"from": 0.0, "to": 0.5, "look": _look(timeOfDay=0.1)},
+            {"from": 0.5, "to": 1.0, "look": _look(timeOfDay=0.9)},
+        ],
+    })
     script = sky_script(config)
     assert script.start.time_of_day == 0.5
     assert len(script.changes) == 2

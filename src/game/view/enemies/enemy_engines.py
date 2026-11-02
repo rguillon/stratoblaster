@@ -1,31 +1,29 @@
-"""The reactors and rotors of the enemy models (phase 5 review)"""
+# Copyright (c) 2026 Renaud Guillon
+"""The reactors and rotors of the enemy models (phase 5 review)."""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from render.geometry.solids import Placement  # noqa: E402
-
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-type Vec3 = list[float]
-__pragma__("noskip")
-
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.enemies.enemy_materials import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.enemy_look import ENEMY_LOOK
+from game.view.enemies.enemy_materials import (
     enemy_color,
     flame_materials,
     mesh_of,
 )
-from game.view.reactor_flame import build_reactor_flame  # noqa: E402, E501 (after the Transcrypt skip block, ENG-153)
-from render.babylon import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.reactor_flame import build_reactor_flame
+from render.babylon import (
     new_transform_node,
     node_name,
 )
-from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.model_animation import add_model_animation  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import Placement, SolidBuilder
+from render.model_animation import add_model_animation
+
+# isort: split
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+# __pragma__ ("skip")
+from typing import Any
+
+type Vec3 = list[float]
+# __pragma__ ("noskip")
 
 
 class Reactor:
@@ -37,7 +35,7 @@ class Reactor:
 
 
 def spin_animation(node: Any, spin_rad_per_sec: float) -> Any:
-    """Turns the node around +Y as time passes."""
+    """Turn the node around +Y as time passes."""
 
     def animate(dt: float) -> None:
         node.rotation.y = node.rotation.y + spin_rad_per_sec * dt
@@ -46,8 +44,10 @@ def spin_animation(node: Any, spin_rad_per_sec: float) -> Any:
 
 
 def add_rotors(name: str, rotors: list[Reactor], material: Any, root: Any) -> None:
-    """The rotors' blades and hubs, each on a node spun by a model animation (rotors spin,
-    ENM-42)."""
+    """Add the rotors' blades and hubs, each on a node spun by a model animation.
+
+    Rotors spin (ENM-42).
+    """
     look = ENEMY_LOOK.rotor
     scene = root.getScene()
     blade = [(-0.12, 0.3), (0.12, 0.3), (0.22, 0.92), (-0.08, 0.95)]
@@ -82,12 +82,14 @@ def add_rotors(name: str, rotors: list[Reactor], material: Any, root: Any) -> No
 def add_reactors(
     name: str, reactors: list[Reactor], parts: Any, root: Any, neon: Any = None
 ) -> None:
-    """Nozzles in the hull, cores in the neon, and an animated flame per reactor (ENM-40) under
-    `root`, outside the body, so the living motion never moves it (ENM-45), in the enemy's `neon`
-    colour (D-231, GFX-ART-05: a yellow enemy's flames yellow, a green one's green), or the
-    reactors' own when left out."""
+    """Nozzles in the hull, cores in the neon, and an animated flame per reactor (ENM-40).
+
+    The flames are drawn under `root`, outside the body, so the living motion never moves them
+    (ENM-45), in the enemy's `neon` colour (D-231, GFX-ART-05: a yellow enemy's flames yellow, a
+    green one's green), or the reactors' own when left out.
+    """
     look = ENEMY_LOOK.reactor
-    flame = neon if neon != None else look.color  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    flame = neon if neon != None else look.color
     color = enemy_color(flame)
     behind = -math.pi / 2
     for i, reactor in enumerate(reactors):
@@ -104,13 +106,11 @@ def add_reactors(
         for k in range(look.sides):
             # Counter-clockwise seen from behind (-Z), so the face points back, out of the nozzle.
             a = (-2 * math.pi * k) / look.sides
-            core.append(
-                [
-                    x + math.cos(a) * radius * look.core,
-                    y + math.sin(a) * radius * look.core,
-                    z,
-                ]
-            )
+            core.append([
+                x + math.cos(a) * radius * look.core,
+                y + math.sin(a) * radius * look.core,
+                z,
+            ])
         # Folded with the rest of the neon (`inEnemyFamily`): the colour of the flame.
         parts.neon.face(core, flame)
         node = new_transform_node(name + "-reactor-" + str(i), root.getScene())

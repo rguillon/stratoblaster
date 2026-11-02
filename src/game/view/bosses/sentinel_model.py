@@ -1,17 +1,17 @@
-"""MB-SENTINEL-01 to MB-SENTINEL-04, 1-5: the Sentinel: a twin-bodied city
-hunter, a blue body and a red one joined by a membrane through its thorax. Logical pixels, nose +Z,
-Y up (towards the camera).
+# Copyright (c) 2026 Renaud Guillon
+"""MB-SENTINEL-01 to MB-SENTINEL-04, 1-5: the Sentinel, a twin-bodied city hunter.
+
+A blue body and a red one joined by a membrane through its thorax. Logical pixels, nose +Z, Y up
+(towards the camera).
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.config.bosses.mini_bosses import SENTINEL  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.mini_boss_greebles import lamps, mast  # noqa: E402
-from game.view.bosses.mini_boss_shapes import (  # noqa: E402
+from game.config.boss_look import BOSS_LOOK
+from game.config.bosses.mini_bosses import SENTINEL
+from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.mini_boss_greebles import lamps, mast
+from game.view.bosses.mini_boss_shapes import (
     WHITE,
     offset,
     radius_of,
@@ -19,7 +19,7 @@ from game.view.bosses.mini_boss_shapes import (  # noqa: E402
     socket,
     turret,
 )
-from game.view.bosses.world_1_organic_kit import (  # noqa: E402
+from game.view.bosses.world_1_organic_kit import (
     F,
     M,
     barbs,
@@ -32,23 +32,25 @@ from game.view.bosses.world_1_organic_kit import (  # noqa: E402
     rib_cage,
     vein_line,
 )
-from game.view.enemies.enemy_shapes import SIDES, flip_x  # noqa: E402
-from game.view.enemies.organic_parts import eyes, reactor_sac  # noqa: E402
-from render.geometry.organic import (  # noqa: E402
+from game.view.enemies.enemy_shapes import SIDES, flip_x
+from game.view.enemies.organic_parts import eyes, reactor_sac
+from render.geometry.organic import (
     MembraneWing,
     SegmentedBody,
     membrane_wing,
     organ,
     segmented_body,
 )
-from render.geometry.solids import Placement  # noqa: E402
+from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Vec3 = list[Any]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 QUARTER = math.pi / 2
 BLUE = BOSS_LOOK.neon["sentinel"]
@@ -129,8 +131,11 @@ def _sign_of(x: float) -> float:
 
 
 def _draw_hull(p: Any, x: float, color: Any) -> None:
-    """A body at `x` (MB-SENTINEL-02): a long segmented worm along Z, a shell plated on its back,
-    lit veins along its flanks in `color`, its tail fin a membrane on bone struts."""
+    """Draw a body at `x` (MB-SENTINEL-02): a long segmented worm along Z.
+
+    A shell plated on its back, lit veins along its flanks in `color`, its tail fin a membrane on
+    bone struts.
+    """
     at = [x, 0, 0]
     hide(
         p,
@@ -165,8 +170,11 @@ def _draw_hull(p: Any, x: float, color: Any) -> None:
 
 
 def _draw_gear(p: Any) -> None:
-    """Grafts on the bodies (MB-SENTINEL-02): a radome and mast on the red one, a searchlight and an
-    extra plate on the blue one, a whip antenna off-centre on the thorax."""
+    """Grafts on the bodies (MB-SENTINEL-02).
+
+    A radome and mast on the red one, a searchlight and an extra plate on the blue one, a whip
+    antenna off-centre on the thorax.
+    """
     mast(p, [-HULL_X - 3, BACK, 10], 9, POLICE_RED)
     graft(p, PATCH, [BACK, BACK + 0.8], [0, 0, 0], {"color": M.base})
     p.hull.cylinder(2.2, 2, 6, M.panel, Placement([HULL_X, BACK, 20]))
@@ -193,7 +201,10 @@ def _draw_gear(p: Any) -> None:
 
 
 def _draw_body(p: Any) -> None:
-    """The thorax with its glands, the membrane joining the bodies, both bodies, the core's guns."""
+    """Draw the Sentinel's body: its thorax, its membrane, both bodies and the core's guns.
+
+    The thorax with its glands, the membrane joining the bodies, both bodies, the core's guns.
+    """
     mantle(p, WING, [-1.5, 2.5], F.membrane)
     rib_cage(p, [-14, 2], {"halfWidth": HULL_X - 6, "y": 1, "height": 3, "thickness": 0.9})
     segmented_body(
@@ -220,8 +231,10 @@ def _draw_body(p: Any) -> None:
 
 
 def _hull_gun(p: Any, at: Vec3) -> None:
-    """A hull gun (MB-SENTINEL-03): an armoured growth on the body's outer flank under its
-    turret."""
+    """Add a hull gun (MB-SENTINEL-03): an armoured growth on the body's outer flank.
+
+    The growth is under its turret.
+    """
     sponson = SPONSON if at[0] > 0 else flip_x(SPONSON)  # type: ignore[arg-type]  # the argument does not match the parameter type mypy expects
     p.flesh.bevel_slab(sponson, [-2, 0.5, 3], [0.8, 1.6], F.slate, Placement(at), F.sinew)
     growth(
@@ -234,7 +247,7 @@ def _hull_gun(p: Any, at: Vec3) -> None:
 
 
 def _hull_gun_turret(p: Any, at: Vec3) -> None:
-    """A hull gun's twin-barrelled turret."""
+    """Add a hull gun's twin-barrelled turret."""
     r = radius_of(SENTINEL.stats.parts, 0, 13)
     outer = at[0] > 0
     neon = BLUE if outer else POLICE_RED
@@ -254,8 +267,11 @@ def _hull_gun_turret(p: Any, at: Vec3) -> None:
 
 
 def _drone_bay(p: Any, at: Vec3) -> None:
-    """The drone bay (MB-SENTINEL-03): a swollen brood pouch at the nose, its slit lit, launch
-    glands at its corners, two drones hatching from it; a grafted rim plate behind."""
+    """Add the drone bay (MB-SENTINEL-03): a swollen brood pouch at the nose.
+
+    Its slit lit, launch glands at its corners, two drones hatching from it; a grafted rim plate
+    behind.
+    """
     p.flesh.bevel_slab(BAY, [-3, 1, BAY_TOP - 1], [1, 3], F.slate, Placement(at), F.graphite)
     organ(p.flesh, 10, 7, F.graphite, Placement(offset(at, 0, 0, 1)), 0.35)
     p.neon.box([0.5, 0.3, 16], BLUE, Placement(offset(at, 0, BAY_TOP + 0.4, 1.5)))
@@ -286,9 +302,11 @@ def _drone_bay(p: Any, at: Vec3) -> None:
 
 
 def build_sentinel(scene: Any) -> Any:
-    """MB-SENTINEL-01, MB-SENTINEL-04: the Sentinel, a twin-bodied city hunter: a blue body and a
-    red one joined by a membrane through its thorax, police-light glands on its back, a gun growth
-    on each body's outer flank and a brood pouch at the nose, between the bodies."""
+    """MB-SENTINEL-01, MB-SENTINEL-04: the Sentinel, a twin-bodied city hunter.
+
+    A blue body and a red one joined by a membrane through its thorax, police-light glands on its
+    back, a gun growth on each body's outer flank and a brood pouch at the nose, between the bodies.
+    """
 
     def core(p: Any) -> None:
         _draw_body(p)

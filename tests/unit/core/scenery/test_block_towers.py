@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/block_towers.py`."""
 
 from core.scenery.block_towers import TOWER_MARGIN, tower_in

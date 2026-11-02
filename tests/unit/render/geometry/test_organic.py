@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/geometry/organic.py` (GFX-ART-17)."""
 
 import math
@@ -213,4 +214,19 @@ def test_grown_is_repeatable_with_the_same_seed() -> None:
     second = grown(outline, 0.2, create_rng(7))
     assert first == second
     for p, q in zip(first, outline, strict=True):
-        assert abs(p[0] - q[0]) <= 0.2 and abs(p[1] - q[1]) <= 0.2
+        assert abs(p[0] - q[0]) <= 0.2
+        assert abs(p[1] - q[1]) <= 0.2
+
+
+def test_gfx_art_13_a_membrane_wing_is_moved_by_its_placement() -> None:
+    wing = MembraneWing(root=[0, 0], tips=[[2, 1], [2, -1]], y=0.5, thickness=0.1, strut=0.2)
+    skin, bone = SolidBuilder(), SolidBuilder()
+    membrane_wing(skin, bone, wing, [RED, BLUE])
+    moved_skin, moved_bone = SolidBuilder(), SolidBuilder()
+    membrane_wing(moved_skin, moved_bone, wing, [RED, BLUE], Placement(at=[5, 0, 0]))
+    for before, after in [(skin, moved_skin), (bone, moved_bone)]:
+        points = points_of(before.geometry.positions)
+        moved = points_of(after.geometry.positions)
+        assert len(moved) == len(points)
+        for p, q in zip(points, moved, strict=True):
+            assert q == pytest.approx([p[0] + 5, p[1], p[2]])

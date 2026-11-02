@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/ui/menu_view.py`."""
 
 from ui.menu_view import (
@@ -24,7 +25,9 @@ def test_ui_flow_01_each_screen_view_names_its_screen_kind() -> None:
 
 
 def test_ui_input_10_the_screens_with_a_back_button_share_its_fields() -> None:
-    settings = SettingsView("Settings", "hint", "Back", 1, [SliderView("Music", 3, 10)], False)
+    settings = SettingsView(
+        "Settings", "hint", "Back", 1, [SliderView("Music", 3, 10)], over_level=False
+    )
     assert isinstance(settings, BackView)
     assert (settings.heading, settings.back, settings.selected) == ("Settings", "Back", 1)
     assert settings.sliders[0].max == 10
@@ -32,7 +35,7 @@ def test_ui_input_10_the_screens_with_a_back_button_share_its_fields() -> None:
 
 
 def test_ui_level_01_the_level_select_view_keeps_its_grid_and_locks() -> None:
-    levels = [LevelOption("1", False), LevelOption("2", True)]
+    levels = [LevelOption("1", locked=False), LevelOption("2", locked=True)]
     view = LevelSelectView("Levels", "hint", "Back", 0, 2, levels, "Locked")
     assert view.columns == 2
     assert [level.locked for level in view.levels] == [False, True]
@@ -46,7 +49,9 @@ def test_ui_title_01_the_title_view_keeps_every_text_it_was_given() -> None:
 
 
 def test_ui_over_08_a_level_complete_panel_has_no_choices_unless_given() -> None:
-    panel = LevelCompleteView("Level complete", False, "Level 1", "3/3", "900", "Tap")
+    panel = LevelCompleteView(
+        "Level complete", over=False, level="Level 1", enemies="3/3", score="900", hint="Tap"
+    )
     assert panel.choices is None
     assert panel.new_high_score is None
     assert panel.over is False

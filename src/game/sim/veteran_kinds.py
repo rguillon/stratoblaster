@@ -1,6 +1,5 @@
-"""The veteran enemy kinds (ENM-01)"""
-
-from org.transcrypt.stubs.browser import __pragma__
+# Copyright (c) 2026 Renaud Guillon
+"""The veteran enemy kinds (ENM-01)."""
 
 from core.entities.enemy import EnemyKindDefinition
 from core.math.rng import random_in
@@ -13,14 +12,12 @@ from game.sim.enemies.mortar import Mortar
 from game.sim.enemies.phantom import Phantom
 from game.sim.enemies.wasp import Wasp
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from core.entities.enemy import Enemy, EnemySpawnArea  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from core.entities.enemy import Enemy, EnemySpawnArea
 
-__pragma__("noskip")
-
-# Where the veteran kinds come in, as the first kinds do (`enemy_kinds.py`): kept here, not
-# imported from there, as `enemy_kinds.py` imports this file.
+# __pragma__ ("noskip")
 
 
 def _top(area: EnemySpawnArea) -> float:
@@ -37,7 +34,7 @@ def _entry_x(area: EnemySpawnArea, range_: tuple[float, float]) -> float:
 
 
 def _side_pass(area: EnemySpawnArea, height_fraction: float) -> tuple[bool, float]:
-    """A side pass comes from the entry's side, at its height; at random otherwise."""
+    """Return a side pass comes from the entry's side, at its height; at random otherwise."""
     entry = area.entry
     if entry is not None and entry.side != "top":
         return (entry.side == "left", clamp_entry(entry.position) * area.height)
@@ -45,8 +42,10 @@ def _side_pass(area: EnemySpawnArea, height_fraction: float) -> tuple[bool, floa
 
 
 def _wasp_group(area: EnemySpawnArea) -> list[Enemy]:
-    """A group of Wasps side by side (ENM-WASP-07), kept inside the range coming in from the top
-    (ENM-09)."""
+    """Return a group of Wasps side by side (ENM-WASP-07).
+
+    They are kept inside the range coming in from the top (ENM-09).
+    """
     group_size = C.wasp.groupSize
     group_spacing = C.wasp.groupSpacing
     stop_y = C.wasp.stopFraction * area.height
@@ -79,7 +78,7 @@ def _spawn_minelayer(area: EnemySpawnArea) -> list[Enemy]:
 
 
 def _all_kinds() -> list[EnemyKindDefinition]:
-    """The five veteran kinds (ENM-01), in the order of the spec."""
+    """Return the five veteran kinds (ENM-01), in the order of the spec."""
     return [
         EnemyKindDefinition("wasp", "Wasp", _wasp_group),
         EnemyKindDefinition("mortar", "Mortar", _spawn_mortar),

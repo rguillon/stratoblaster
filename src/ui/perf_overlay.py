@@ -1,11 +1,13 @@
-"""Debug perf overlay (DEV-PERF-03, ENG-111)"""
+# Copyright (c) 2026 Renaud Guillon
+"""Debug perf overlay (DEV-PERF-03, ENG-111)."""
 
-from org.transcrypt.stubs.browser import __pragma__, window
+from org.transcrypt.stubs.browser import window
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class PerfNumbers:
@@ -35,16 +37,17 @@ class PerfNumbers:
 
 
 def _ms(value: float | None) -> str:
-    """Formats milliseconds for the overlay."""
+    """Format milliseconds for the overlay."""
     if value is None:
-        return "–"
+        return "\u2013"
     return str(window.Number(value).toFixed(0)) + " ms"
 
 
 class PerfOverlay:
-    """The debug perf overlay (DEV-PERF-03, ENG-111; dev and e2e builds only): long frames, the
-    longest frame and the last level loading time. Hidden until toggled (F3); the text changes at
-    most every `refresh_seconds`, so the numbers stay readable.
+    """The debug perf overlay (DEV-PERF-03, ENG-111; dev and e2e builds only): long frames.
+
+    The longest frame and the last level loading time. Hidden until toggled (F3); the text changes
+    at most every `refresh_seconds`, so the numbers stay readable.
     """
 
     def __init__(self, doc: Any, parent: Any, refresh_seconds: float) -> None:
@@ -57,26 +60,27 @@ class PerfOverlay:
 
     @property
     def shown(self) -> bool:
+        """The shown."""
         return not self.root.hidden
 
     def toggle(self) -> None:
+        """Toggle."""
         self.root.hidden = not self.root.hidden
         self._since_refresh = float("Infinity")
 
     def update(self, dt: float, numbers: PerfNumbers) -> None:
-        """Shows `numbers` if shown and `refresh_seconds` have passed since the last change."""
+        """Show `numbers` if shown and `refresh_seconds` have passed since the last change."""
         self._since_refresh += dt
         if not self.shown or self._since_refresh < self._refresh_seconds:
             return
         self._since_refresh = 0
-        self.root.textContent = "\n".join(
-            [
-                "Long frames: " + str(numbers.long_frames),
-                "Longest frame: " + _ms(numbers.longest_frame),
-                "Draw calls: " + str(window.Math.round(numbers.draw_calls)),
-                "Level load: " + _ms(numbers.last_load),
-            ]
-        )
+        self.root.textContent = "\n".join([
+            "Long frames: " + str(numbers.long_frames),
+            "Longest frame: " + _ms(numbers.longest_frame),
+            "Draw calls: " + str(window.Math.round(numbers.draw_calls)),
+            "Level load: " + _ms(numbers.last_load),
+        ])
 
     def dispose(self) -> None:
+        """Dispose."""
         self.root.remove()

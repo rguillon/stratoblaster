@@ -1,14 +1,15 @@
+# Copyright (c) 2026 Renaud Guillon
 """Ear-clipping triangulation of a simple polygon (no triangulation package: GFX-ART-02)."""
 
-from org.transcrypt.stubs.browser import __pragma__
+from render.geometry.outline import ring_at
 
+# isort: split
 # OutlinePoint is a type alias, imported for annotations only (Transcrypt skips this block).
-__pragma__("skip")
-from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from render.geometry.outline import OutlinePoint
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
-from render.geometry.outline import ring_at  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # A polygon left with fewer corners than this has no triangle to clip.
 MIN_TRIANGLE_POINTS = 3
@@ -45,7 +46,7 @@ def triangulate_polygon(points: list[OutlinePoint]) -> list[list[int]]:
 
     Returns triangles as index triples into `points`, each counter-clockwise.
     """
-    ring = [i for i in range(len(points))]
+    ring = list(range(len(points)))
     triangles: list[list[int]] = []
     while len(ring) >= MIN_TRIANGLE_POINTS:
         ear = -1
@@ -54,7 +55,8 @@ def triangulate_polygon(points: list[OutlinePoint]) -> list[list[int]]:
                 ear = i
                 break
         if ear < 0:
-            raise ValueError("The outline is not a simple polygon")
+            msg = "The outline is not a simple polygon"
+            raise ValueError(msg)
         triangles.append(_corner_at(ring, ear))
         ring.pop(ear)
     return triangles

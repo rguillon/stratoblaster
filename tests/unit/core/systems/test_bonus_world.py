@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/systems/bonus_world.py`."""
 
 from types import SimpleNamespace
@@ -78,7 +79,7 @@ class _Bounds:
     max_y = 100
     center_x = 50
 
-    def half_width_at(self, y: float) -> float:
+    def half_width_at(self, _y: float) -> float:
         return 50
 
 
@@ -118,7 +119,7 @@ class FakeBossKind:
     id = "hulk"
     name = "Hulk"
 
-    def spawn(self, area: object) -> FakeBoss:
+    def spawn(self, _area: object) -> FakeBoss:
         return FakeBoss(50, 60)
 
 
@@ -126,7 +127,7 @@ def _kind(health: float = 10, points: float = 100, y: float = 30) -> EnemyKindDe
     return EnemyKindDefinition(
         "still",
         "Still",
-        lambda area: [Still(50, y, EnemyStats("still", 4, health, points))],
+        lambda _area: [Still(50, y, EnemyStats("still", 4, health, points))],
     )
 
 
@@ -147,19 +148,19 @@ def _level(
 
 
 def _run(**overrides: object) -> LevelRun:
-    options: dict = dict(
-        screen=SCREEN,
-        level=_level(),
-        kinds=[_kind()],
-        weapon=GUN,
-        weapon_level=1,
-        ship=SHIP,
-        bounds=_Bounds(),
-        cull_margin=10,
-        max_enemy_age=60,
-        end_wait=1,
-        seed=1,
-    )
+    options: dict = {
+        "screen": SCREEN,
+        "level": _level(),
+        "kinds": [_kind()],
+        "weapon": GUN,
+        "weapon_level": 1,
+        "ship": SHIP,
+        "bounds": _Bounds(),
+        "cull_margin": 10,
+        "max_enemy_age": 60,
+        "end_wait": 1,
+        "seed": 1,
+    }
     options.update(overrides)
     return LevelRun(LevelRunOptions(**options))  # type: ignore[arg-type]
 
@@ -213,7 +214,7 @@ def test_game_bonus_03_a_special_enemy_may_drop_a_life_before_a_bomb_or_weapon()
         10,  # type: ignore[arg-type]
         _always(0.0),
     )  # type: ignore[arg-type]
-    world.drop([_Source()], special=lambda t: True)
+    world.drop([_Source()], special=lambda _t: True)
     assert [b.kind for b in world.bonuses] == ["life"]
 
 
@@ -226,7 +227,7 @@ def test_game_bonus_03_a_special_enemy_drops_a_bomb_when_the_life_draw_fails() -
         10,  # type: ignore[arg-type]
         _always(0.3),
     )  # type: ignore[arg-type]
-    world.drop([_Source()], special=lambda t: True)
+    world.drop([_Source()], special=lambda _t: True)
     assert [b.kind for b in world.bonuses] == ["bomb"]
 
 
@@ -239,7 +240,7 @@ def test_game_bonus_03_the_weapon_draw_always_happens_even_when_a_special_bonus_
 
     odds = LifeAndBomb(1.0, 1.0)
     world = BonusWorld(_rules(special=odds), weapon_draw, (0, 100), 10, _always(0.0))  # type: ignore[arg-type]
-    world.drop([_Source()], special=lambda t: True)
+    world.drop([_Source()], special=lambda _t: True)
     assert calls == [0]
     assert [b.kind for b in world.bonuses] == ["life"]
 
@@ -254,13 +255,13 @@ def test_game_bonus_04_an_ordinary_enemy_never_drops_a_special_bonus() -> None:
         10,  # type: ignore[arg-type]
         _always(0.0),
     )  # type: ignore[arg-type]
-    world.drop([_Source()], special=lambda t: False)
+    world.drop([_Source()], special=lambda _t: False)
     assert [b.kind for b in world.bonuses] == ["weapon"]
 
 
 def test_game_bonus_03_a_special_draw_on_a_rules_without_special_odds_is_skipped() -> None:
     world = BonusWorld(_rules(), _always(0.0), (0, 100), 10, _always(0.0))  # type: ignore[arg-type]
-    world.drop([_Source()], special=lambda t: True)
+    world.drop([_Source()], special=lambda _t: True)
     assert [b.kind for b in world.bonuses] == ["weapon"]
 
 

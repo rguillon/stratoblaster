@@ -1,5 +1,9 @@
-"""Small vector maths for the tests of `render/`: the triangles of a flat-shaded mesh, and the
-normal Babylon gives each one (`(c - a) × (b - a)` for the index triple `(a, b, c)`)."""
+# Copyright (c) 2026 Renaud Guillon
+"""Small vector maths for the tests of `render/`.
+
+The triangles of a flat-shaded mesh, and the normal Babylon gives each one (`(c - a) x (b - a)` for
+the index triple `(a, b, c)`).
+"""
 
 from typing import Any
 
@@ -19,7 +23,7 @@ def dot(p: Vec, q: Vec) -> float:
 
 
 def points_of(positions: list[float]) -> list[Vec]:
-    """The flat list of coordinates as a list of 3D points."""
+    """Return the flat list of coordinates as a list of 3D points."""
     return [positions[i : i + 3] for i in range(0, len(positions), 3)]
 
 
@@ -30,7 +34,7 @@ def triangles(positions: list[float], indices: list[Any]) -> list[tuple[Vec, Vec
 
 
 def babylon_normal(tri: tuple[Vec, Vec, Vec]) -> Vec:
-    """The normal of a triangle as Babylon takes it: `(c - a) × (b - a)`."""
+    """Return the normal of a triangle as Babylon takes it: `(c - a) x (b - a)`."""
     a, b, c = tri
     return cross(sub(c, a), sub(b, a))
 
@@ -41,8 +45,12 @@ def centroid(tri: tuple[Vec, Vec, Vec]) -> Vec:
 
 
 def enclosed_volume(positions: list[float], indices: list[Any]) -> float:
-    """The volume a closed mesh encloses (divergence theorem). It is positive when every face
-    has its Babylon normal pointing outwards, so it also checks the winding of every face."""
+    """Return the volume a closed mesh encloses (divergence theorem).
+
+    It is positive when every face
+
+        has its Babylon normal pointing outwards, so it also checks the winding of every face.
+    """
     total = 0.0
     for tri in triangles(positions, indices):
         total += dot(tri[0], babylon_normal(tri)) / 6

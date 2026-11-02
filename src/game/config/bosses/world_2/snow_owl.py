@@ -1,4 +1,5 @@
-"""The Snow Owl (2-3's mini boss, specs/bosses/mini/2-3-snow-owl.md)
+# Copyright (c) 2026 Renaud Guillon
+"""The Snow Owl (2-3's mini boss, specs/bosses/mini/2-3-snow-owl.md).
 
 The mini boss of the Tundra level. Offsets in px from the boss's centre, X right and Y up (its nose
 points down, at -Y). The stage patterns are the agent's design (MB-SNOW-OWL-11): the parts fire the
@@ -33,58 +34,54 @@ OWL_CROWN = [[0, 10, 12.5]]
 # 2-3: a wide-winged recon drone with white neon and a big round sensor eye at its front; two wing
 # radar pods fire fans and shield the core (MB-SNOW-OWL-09), the eye fires a laser after its
 # warning line (MB-SNOW-OWL-10). The eye sits in front of the core, so it can always be shot.
-_SNOW_OWL = record(
-    {
+_SNOW_OWL = record({
+    "id": "snow-owl",
+    # Angry after each destroyed part (phase 7 review, MB-SNOW-OWL-12).
+    "rage": rage.flower(4.5, "blue", "magenta"),
+    # Its core, wing pods, eye and points (MB-SNOW-OWL-14).
+    "stats": stats({
         "id": "snow-owl",
-        # Angry after each destroyed part (phase 7 review, MB-SNOW-OWL-12).
-        "rage": rage.flower(4.5, "blue", "magenta"),
-        # Its core, wing pods, eye and points (MB-SNOW-OWL-14).
-        "stats": stats(
-            {
-                "id": "snow-owl",
-                "name": "Snow Owl",
-                "size": 3,
-                "coreRadius": 18,
-                "coreHealth": 1250,
-                "points": 5500,
-                "groundSpeed": 0.5,
-                "parts": [
-                    part("pod-left", [-38, -2], 13, 850),
-                    part("pod-right", [38, -2], 13, 850),
-                    part("eye", [0, -30], 11, 600, {"shields": False}),
-                ],
-            }
-        ),
-        # Where it stops and how it moves in place (MB-SNOW-OWL-08).
-        "stopFraction": 0.73,
-        "sway": {"amplitude": 65, "period": 7.5},
-        "bob": {"amplitude": 9, "period": 3.4},
-        "guns": {
-            "core": {"gun": OWL_CHIN_GUNS, "ring": OWL_CROWN},
-            "pod-left": {"gun": mirror(OWL_POD_GUNS)},
-            "pod-right": {"gun": OWL_POD_GUNS},
-            "eye": {"laser": OWL_EYE_LENS},
-        },
-        # The pods' fans and the eye's laser, then the core's pattern per stage (MB-SNOW-OWL-11).
-        "stages": stages(
+        "name": "Snow Owl",
+        "size": 3,
+        "coreRadius": 18,
+        "coreHealth": 1250,
+        "points": 5500,
+        "groundSpeed": 0.5,
+        "parts": [
+            part("pod-left", [-38, -2], 13, 850),
+            part("pod-right", [38, -2], 13, 850),
+            part("eye", [0, -30], 11, 600, {"shields": False}),
+        ],
+    }),
+    # Where it stops and how it moves in place (MB-SNOW-OWL-08).
+    "stopFraction": 0.73,
+    "sway": {"amplitude": 65, "period": 7.5},
+    "bob": {"amplitude": 9, "period": 3.4},
+    "guns": {
+        "core": {"gun": OWL_CHIN_GUNS, "ring": OWL_CROWN},
+        "pod-left": {"gun": mirror(OWL_POD_GUNS)},
+        "pod-right": {"gun": OWL_POD_GUNS},
+        "eye": {"laser": OWL_EYE_LENS},
+    },
+    # The pods' fans and the eye's laser, then the core's pattern per stage (MB-SNOW-OWL-11).
+    "stages": stages(
+        [
+            # The pods' fans cross under the drone, each leaning towards the other side.
+            volley.fan("pod-left", 2.3, 3, 14, MAGENTA, 0.9, 10),
+            volley.fan("pod-right", 2.3, 3, 14, MAGENTA, 2, -10),
+            volley.laser("eye", 5.5, 1.4, 3),
+        ],
+        [
+            [volley.aimed("core", 3, 1, 0, RED, 1.5)],
+            [volley.aimed("core", 2.4, 3, 12, RED, 0.8)],
+            [volley.burst("core", 2.2, 4, 0.14, RED, 0.6)],
             [
-                # The pods' fans cross under the drone, each leaning towards the other side.
-                volley.fan("pod-left", 2.3, 3, 14, MAGENTA, 0.9, 10),
-                volley.fan("pod-right", 2.3, 3, 14, MAGENTA, 2, -10),
-                volley.laser("eye", 5.5, 1.4, 3),
+                volley.ring("core", 1.4, 12, 8, BLUE, 0.4),
+                volley.aimed("core", 2.4, 1, 0, PURPLE, 1),
             ],
-            [
-                [volley.aimed("core", 3, 1, 0, RED, 1.5)],
-                [volley.aimed("core", 2.4, 3, 12, RED, 0.8)],
-                [volley.burst("core", 2.2, 4, 0.14, RED, 0.6)],
-                [
-                    volley.ring("core", 1.4, 12, 8, BLUE, 0.4),
-                    volley.aimed("core", 2.4, 1, 0, PURPLE, 1),
-                ],
-            ],
-        ),
-    }
-)
+        ],
+    ),
+})
 
 # Its transformation (D-230, MB-SNOW-OWL-13): once both wing pods are gone its outer wing panels
 # slide out, their dark metal spars showing, a sweeper riding each new tip; its back plating bursts

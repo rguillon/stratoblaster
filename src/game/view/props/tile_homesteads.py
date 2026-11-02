@@ -1,7 +1,10 @@
-"""The small homes of the villages and the worker homes (Phase 15, reviewer 2026-10-28): small homes
-of the future on paved plots, no garden, no tile roof.
-Each model takes the silhouette its seed names (GFX-BLDG-09): a capsule, a dome, stacked cubes,
-stacked containers, a lit grow tower and a home beside a solar shed."""
+# Copyright (c) 2026 Renaud Guillon
+"""The small homes of the villages and the worker homes (Phase 15, reviewer 2026-10-28).
+
+Small homes of the future on paved plots, no garden, no tile roof. Each model takes the silhouette
+its seed names (GFX-BLDG-09): a capsule, a dome, stacked cubes, stacked containers, a lit grow tower
+and a home beside a solar shed.
+"""
 
 import math
 
@@ -26,7 +29,7 @@ GLASS = [C.glassBlue, C.glassDark, C.glass]
 
 
 def capsule(k: TileKit) -> None:
-    """A capsule lying on its side on two cradles, along the plot's long side, lit along it."""
+    """Add a capsule lying on its side on two cradles, along the plot's long side, lit along it."""
     along = k.w >= k.d
     length = k.w * 0.8 if along else k.d * 0.8
     across = k.d if along else k.w
@@ -57,7 +60,7 @@ def capsule(k: TileKit) -> None:
 
 
 def dome(k: TileKit) -> None:
-    """A low dome on a ring wall, a mast with a red light."""
+    """Add a low dome on a ring wall, a mast with a red light."""
     radius = min(k.w, k.d) * 0.4
     k.s.cylinder(radius, 1.5, 12, any_of(k, SHELLS))
     colors = [C.white, C.silver]
@@ -77,8 +80,10 @@ def dome(k: TileKit) -> None:
 
 
 def cubes(k: TileKit) -> None:
-    """Two or three cubes stacked off each other, glass on their fronts (D-215: a quad of curtain
-    wall each)."""
+    """Two or three cubes stacked off each other, with glass on their fronts.
+
+    Each front is a quad of curtain wall (D-215).
+    """
     s = min(k.w, k.d) * 0.45
     n = 2 + math.floor(k.random() * 2)
     for i in range(n):
@@ -114,7 +119,7 @@ def containers(k: TileKit) -> None:
 
 
 def grow_tower(k: TileKit) -> None:
-    """A glass grow tower lit from inside, a small home at its foot."""
+    """Add a glass grow tower lit from inside, a small home at its foot."""
     s = min(k.w, k.d) * 0.35
     h = r(k, [8, 11])
     k.s.box([s, h, s], C.glassBlue, Placement([k.w * 0.2, 0, k.d * 0.1], 0, 0, 0), C.metalDark)
@@ -135,7 +140,7 @@ def grow_tower(k: TileKit) -> None:
 
 
 def solar_shed(k: TileKit) -> None:
-    """A flat-roofed home beside a shed under tilted solar panels."""
+    """Add a flat-roofed home beside a shed under tilted solar panels."""
     along = k.w >= k.d
     a = -k.w * 0.22 if along else -k.d * 0.22
     b = k.w * 0.25 if along else k.d * 0.25
@@ -156,8 +161,10 @@ SILHOUETTES = [capsule, dome, cubes, containers, grow_tower, solar_shed]
 
 
 def build_homestead(k: TileKit) -> None:
-    """A small home of the villages and the worker homes, of the silhouette its seed names, on a
-    paved plot."""
+    """Build a small home of the villages and the worker homes, of the silhouette its seed names.
+
+    It stands on a paved plot.
+    """
     deck(k)
     index = js_remainder(k.seed - 1, len(SILHOUETTES))
     build = SILHOUETTES[index] if 0 <= index < len(SILHOUETTES) else dome

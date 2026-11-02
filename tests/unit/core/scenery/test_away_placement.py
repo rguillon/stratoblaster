@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/away_placement.py`."""
 
 import math
@@ -32,7 +33,9 @@ def kind(footprint: float = 3, frontage: float | None = None) -> PropKindRule:
 
 class FakeSite:
     """A site of a flat level: every spot is clear of the roads and flat unless told otherwise.
-    `add` keeps the buildings apart by their boxes and the gap, as the placer does."""
+
+    `add` keeps the buildings apart by their boxes and the gap, as the placer does.
+    """
 
     def __init__(
         self,
@@ -53,20 +56,20 @@ class FakeSite:
         self.added: list[Building] = []
         self.group_calls = 0
 
-    def section_at(self, z: float) -> TerrainSection:
+    def section_at(self, _z: float) -> TerrainSection:
         return self.section
 
-    def group_at(self, x: float, z: float, section: TerrainSection) -> PropGroupRule | None:
+    def group_at(self, _x: float, _z: float, _section: TerrainSection) -> PropGroupRule | None:
         self.group_calls += 1
         return self.group
 
-    def clear_of_roads(self, x: float, z: float, clearance: float) -> bool:
+    def clear_of_roads(self, _x: float, _z: float, _clearance: float) -> bool:
         return self.clear
 
-    def ground(self, x: float, z: float, radius: float) -> float | None:
+    def ground(self, _x: float, _z: float, _radius: float) -> float | None:
         return 0.0 if self.ground_ok else None
 
-    def add(self, building: Building, gap: float | None) -> bool:
+    def add(self, building: Building, _gap: float | None) -> bool:
         if not self.accept:
             return False
         self.added.append(building)
@@ -145,7 +148,7 @@ def test_hamlets_need_a_centre_clear_of_the_roads_on_flat_ground() -> None:
 
 def test_hamlets_need_a_group_that_allows_them_there() -> None:
     site = FakeSite(group=PropGroupRule("none", 1, []))
-    site.group_at = lambda x, z, section: None  # type: ignore[method-assign]
+    site.group_at = lambda _x, _z, _section: None  # type: ignore[method-assign]
     place_hamlets(site, HAMLETS, ZSpan(-math.inf, math.inf))
     assert site.added == []
 
@@ -191,7 +194,7 @@ def test_loners_need_a_kind_of_their_group() -> None:
     place_loners(site, Loners(100, 1, 1), ZSpan(0, 300))
     assert site.added == []
     site = FakeSite()
-    site.group_at = lambda x, z, section: None  # type: ignore[method-assign]
+    site.group_at = lambda _x, _z, _section: None  # type: ignore[method-assign]
     place_loners(site, Loners(100, 1, 1), ZSpan(0, 300))
     assert site.added == []
 

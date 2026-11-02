@@ -1,5 +1,8 @@
-"""The lines of a dark metal frame laid where armour was cut away (docs/superpowers/specs/2026-10-
-31-boss-armour-shedding-design.md): ribs across the armour's footprint, clipped to it.
+# Copyright (c) 2026 Renaud Guillon
+"""The lines of a dark metal frame laid where armour was cut away.
+
+Ribs across the armour's footprint, clipped to it
+(docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md).
 
 Pure: no Babylon. Points are `[x, z]` in the XZ plane; a footprint is the top view of the armour's
 up-facing triangles.
@@ -7,13 +10,13 @@ up-facing triangles.
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The cell of the footprint's lookup grid, px.
 GRID = 8.0
@@ -67,13 +70,13 @@ class Footprint:
         key = _key(math.floor(x / GRID), math.floor(z / GRID))
         if key not in self.cells:
             return False
-        for k in self.cells[key]:  # noqa: SIM110 (Transcrypt: any() over a generator is slow)
+        for k in self.cells[key]:
             if _in_triangle(self.tris[k], x, z):
                 return True
         return False
 
     def centre(self) -> list[float]:
-        """The middle of its bounds."""
+        """Return the middle of its bounds."""
         return [(self.low[0] + self.high[0]) / 2, (self.low[1] + self.high[1]) / 2]
 
 
@@ -85,9 +88,11 @@ def _span(low: float, high: float, gap: float) -> list[float]:
 
 
 def frame_lines(style: str, footprint: Footprint, gap: float, spokes: int) -> list[list[Any]]:
-    """The frame's lines over `footprint`, each `[a, b]`, unclipped: `wing` ribs along Z every
-    `gap` across X, and two spars along X; `shell` a lattice `gap` apart both ways; `ring` `spokes`
-    spokes out from the middle, and a hoop half way out."""
+    """Return the frame's lines over `footprint`, each `[a, b]`, unclipped.
+
+    By style: `wing` ribs along Z every `gap` across X, and two spars along X; `shell` a lattice
+    `gap` apart both ways; `ring` `spokes` spokes out from the middle, and a hoop half way out.
+    """
     low = footprint.low
     high = footprint.high
     result: list[list[Any]] = []
@@ -102,27 +107,26 @@ def frame_lines(style: str, footprint: Footprint, gap: float, spokes: int) -> li
             a = (2 * math.pi * k) / hoop
             b = (2 * math.pi * (k + 1)) / hoop
             r = reach / 2
-            result.append(
-                [
-                    [c[0] + math.cos(a) * r, c[1] + math.sin(a) * r],
-                    [c[0] + math.cos(b) * r, c[1] + math.sin(b) * r],
-                ]
-            )
+            result.append([
+                [c[0] + math.cos(a) * r, c[1] + math.sin(a) * r],
+                [c[0] + math.cos(b) * r, c[1] + math.sin(b) * r],
+            ])
         return result
-    for x in _span(low[0], high[0], gap):
-        result.append([[x, low[1]], [x, high[1]]])
+    result.extend([[[x, low[1]], [x, high[1]]] for x in _span(low[0], high[0], gap)])
     if style == "shell":
         zs = _span(low[1], high[1], gap)
     else:
         depth = high[1] - low[1]
         zs = [low[1] + depth / 3, low[1] + (2 * depth) / 3]
-    for z in zs:
-        result.append([[low[0], z], [high[0], z]])
+    result.extend([[[low[0], z], [high[0], z]] for z in zs])
     return result
 
 
 def clip_line(line: list[Any], footprint: Footprint, step: float, least: float) -> list[list[Any]]:
-    """The pieces of `line` over `footprint`, sampled every `step`, each at least `least` long."""
+    """Return the pieces of `line` over `footprint`, sampled every `step`.
+
+    Each piece is at least `least` long.
+    """
     a = line[0]
     b = line[1]
     length = math.hypot(b[0] - a[0], b[1] - a[1])
@@ -141,11 +145,9 @@ def clip_line(line: list[Any], footprint: Footprint, step: float, least: float) 
             if (end - start) * (length / count) >= least:
                 t0 = start / count
                 t1 = end / count
-                result.append(
-                    [
-                        [a[0] + (b[0] - a[0]) * t0, a[1] + (b[1] - a[1]) * t0],
-                        [a[0] + (b[0] - a[0]) * t1, a[1] + (b[1] - a[1]) * t1],
-                    ]
-                )
+                result.append([
+                    [a[0] + (b[0] - a[0]) * t0, a[1] + (b[1] - a[1]) * t0],
+                    [a[0] + (b[0] - a[0]) * t1, a[1] + (b[1] - a[1]) * t1],
+                ])
             start = -1
     return result

@@ -1,8 +1,5 @@
-"""The 3D scenes behind the menus: the game's backdrop, and the
-ship select stage over it.
-"""
-
-from org.transcrypt.stubs.browser import __pragma__
+# Copyright (c) 2026 Renaud Guillon
+"""The 3D scenes behind the menus: the game's backdrop, and the ship select stage over it."""
 
 from config.menu import MENU_CONFIG
 from render.babylon import js_object, js_set, new_scene
@@ -12,11 +9,12 @@ from render.environment.showcase_environment_visual import (
 )
 from render.ship_select_stage import ShipSelectStage
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class MenuScenes:
@@ -59,14 +57,15 @@ def _ship_models(game: Any) -> list[Any]:
 
 
 def _stage_options() -> Any:
-    """The ship select stage's layout and look: the config's `ship_select` (see below)."""
+    """Return the ship select stage's layout and look: the config's `ship_select` (see below)."""
     return MENU_CONFIG.ship_select
 
 
 def _environment_options() -> Any:
-    """The options of the showcase environment: the config's `environment` and `glow` (the TS
-    spread `{...MENU_CONFIG.environment, glow}`); the config classes have the fields of the render
-    option classes, which Python matches by structure.
+    """Return the options of the showcase environment.
+
+    The config's `environment` and `glow` (the TS spread `{...MENU_CONFIG.environment, glow}`); the
+    config classes have the fields of the render option classes, which Python matches by structure.
     """
     environment: Any = MENU_CONFIG.environment
     glow: Any = MENU_CONFIG.glow
@@ -110,8 +109,9 @@ def _highlight_ships(built: _Built, environment: bool) -> None:
 
 
 def prepare_menu_scenes(engine: Any, game: Any, environment: bool) -> MenuSceneLoad:
-    """Splits the creation of the menu scenes into loading steps (UI-LOAD-03): build the backdrop,
-    build the ships, then compile each scene's shaders and draw each ship highlighted once.
+    """Split the creation of the menu scenes into loading steps (UI-LOAD-03): build the backdrop.
+
+    Build the ships, then compile each scene's shaders and draw each ship highlighted once.
     `result()` is available once every task has run. `environment` (image-based lighting, glow)
     needs a real WebGL engine.
     """
@@ -119,9 +119,11 @@ def prepare_menu_scenes(engine: Any, game: Any, environment: bool) -> MenuSceneL
 
     def result() -> MenuScenes:
         if built.backdrop_scene is None or built.backdrop is None:
-            raise ValueError("The menu scenes are not loaded yet")
+            msg = "The menu scenes are not loaded yet"
+            raise ValueError(msg)
         if built.ship_scene is None or built.stage is None:
-            raise ValueError("The menu scenes are not loaded yet")
+            msg = "The menu scenes are not loaded yet"
+            raise ValueError(msg)
         return MenuScenes(built.backdrop_scene, built.backdrop, built.ship_scene, built.stage)
 
     tasks: list[Any] = [
@@ -147,8 +149,10 @@ def _wait_ships(built: _Built) -> Any:
 
 
 def render_menu_scenes(scenes: MenuScenes, screen: str) -> None:
-    """Renders the scenes of `screen`: the backdrop (behind every menu, UI-TITLE-09), plus the
-    ships on the ship select screen."""
+    """Render the scenes of `screen`: the backdrop (behind every menu, UI-TITLE-09).
+
+    Plus the ships on the ship select screen.
+    """
     if screen == "loading":
         return
     scenes.backdrop_scene.render()

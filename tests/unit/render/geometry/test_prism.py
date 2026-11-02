@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/geometry/prism.py` (GFX-ART-02, GFX-ART-09)."""
 
 from types import SimpleNamespace
@@ -56,11 +57,11 @@ def test_an_outline_needs_three_points() -> None:
 def test_create_prism_hands_the_geometry_to_a_new_mesh(monkeypatch: pytest.MonkeyPatch) -> None:
     calls: list[tuple[str, Any]] = []
 
-    def fake_normals(positions: list[float], indices: list[Any]) -> str:
+    def fake_normals(_positions: list[float], indices: list[Any]) -> str:
         calls.append(("normals", len(indices)))
         return "N"
 
-    def fake_data(positions: list[float], indices: list[Any], normals: str) -> str:
+    def fake_data(_positions: list[float], _indices: list[Any], normals: str) -> str:
         calls.append(("data", normals))
         return "D"
 

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/debug/test_api.py` (ENG-52: the e2e test API, `window.__GAME_TEST__`)."""
 
 from types import SimpleNamespace
@@ -15,6 +16,9 @@ from debug.test_api import (
     send_test_action,
     step_test_frames,
 )
+
+# Taken when this module is imported, before `js_twins` swaps it for a Python twin in every test.
+RESOLVED = test_api._resolved
 
 
 @pytest.fixture(autouse=True)
@@ -166,15 +170,15 @@ def test_eng_52_send_action_rejects_an_unknown_action() -> None:
 def test_eng_52_step_renders_unless_render_is_false() -> None:
     app = FakeApp()
     step_test_frames(app, 3, None)
-    step_test_frames(app, 1, False)
-    step_test_frames(app, 0, True)
+    step_test_frames(app, 1, render=False)
+    step_test_frames(app, 0, render=True)
     assert app.steps == [(3, True), (1, False), (0, True)]
 
 
 @pytest.mark.parametrize("frames", [-1, 1.5])
 def test_eng_52_step_rejects_negative_or_partial_frames(frames: float) -> None:
     with pytest.raises(ValueError, match="Cannot step"):
-        step_test_frames(FakeApp(), frames, True)
+        step_test_frames(FakeApp(), frames, render=True)
 
 
 def test_eng_52_advance_rounds_up_to_whole_frames() -> None:
@@ -205,3 +209,13 @@ def test_eng_52_install_puts_the_api_on_the_target() -> None:
 def test_dev_api_09_readability_is_a_promise_of_null_off_a_level() -> None:
     api = install_test_api({}, FakeApp())
     assert api["readability"](0.5) == ("resolved", None)
+
+
+def test_dev_api_09_the_promise_of_a_value_is_javascript_only() -> None:
+    """`Promise.resolve(value)` runs only in the browser: CPython runs its placeholder.
+
+    The value itself comes back.
+    """
+    report = SimpleNamespace(bright=0.5)
+    assert RESOLVED(report) is report
+    assert RESOLVED(None) is None

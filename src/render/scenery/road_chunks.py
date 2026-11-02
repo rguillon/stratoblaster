@@ -1,34 +1,40 @@
-"""The street surfaces of a terrain chunk (phase 15, GFX-ROAD-20): each street piece as a textured
-surface draped on the ground, its layered fallback, and the grid of tiles. Pure (no Babylon): the
-ground worker makes them for the level's chunks (PERF-17), or the main thread does when there is no
-worker (see `road_sources`). Both run the same code, so they give the same geometry.
+# Copyright (c) 2026 Renaud Guillon
+"""The street surfaces of a terrain chunk (phase 15, GFX-ROAD-20).
+
+Each street piece as a textured surface draped on the ground, its layered fallback, and the grid of
+tiles. Pure (no Babylon): the ground worker makes them for the level's chunks (PERF-17), or the main
+thread does when there is no worker (see `road_sources`). Both run the same code, so they give the
+same geometry.
 
 The road atlas that the surfaces' texture coordinates point into is kept here too: its pixels are
 sent when they have changed, and handed out with the chunks (see `road_sources`).
 """
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from core.scenery.road_tiles import cached_road_pieces
 from render.scenery.road_atlas import RoadAtlas
 from render.scenery.road_surface import build_road_surfaces
 from render.scenery.tile_road_geometry import build_tile_grid
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Colour of the grid of tiles drawn with `tiles=1` (phase 15).
 GRID_COLOR = (0, 0.9, 1)
 
 
 class RoadChunk:
-    """The street geometry of one terrain chunk: `index`; `surfaces` (textured, drawn opaque);
-    `layered` (the streets the atlas has no room for); `grid` (the tile grid, or None); `atlas` (the
-    latest atlas pixels, set when the chunk is taken from its source, or None) and `atlas_version`
-    (which pixels those are: it grows each time they change, so they are uploaded once each)."""
+    """The street geometry of one terrain chunk.
+
+    `index`; `surfaces` (textured, drawn opaque); `layered` (the streets the atlas has no room for);
+    `grid` (the tile grid, or None); `atlas` (the latest atlas pixels, set when the chunk is taken
+    from its source, or None) and `atlas_version` (which pixels those are: it grows each time they
+    change, so they are uploaded once each).
+    """
 
     def __init__(self, index: int, surfaces: Any, layered: Any, grid: Any) -> None:
         self.index = index
@@ -50,7 +56,10 @@ class TileRoadChunks:
         self._atlas = RoadAtlas(tiles, tile_look)
 
     def chunk(self, index: int, z_min: float, z_max: float, grid: bool) -> RoadChunk:
-        """The street geometry of chunk `index` over [z_min, z_max); with `grid`, the tile grid."""
+        """Return the street geometry of chunk `index` over [z_min, z_max).
+
+        With `grid`, it has the tile grid too.
+        """
         ground = self._ground
 
         def height(x: float, z: float) -> float:
@@ -70,6 +79,9 @@ class TileRoadChunks:
         return self._atlas.dirty
 
     def atlas_pixels(self) -> Any:
-        """The atlas's pixels (the live array): sent when `atlas_changed`, which then clears."""
+        """Return the atlas's pixels (the live array).
+
+        They are sent when `atlas_changed`, which then clears.
+        """
         self._atlas.dirty = False
         return self._atlas.data

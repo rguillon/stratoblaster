@@ -1,10 +1,11 @@
-"""FB-DAM-BREAKER-03, FB-DAM-BREAKER-04, 3-4: the Dam Breaker's parts (sluice cannons, chemical
-tanks, armour plate, drone hangar) and its swamp growth. Logical pixels, nose +Z, Y up (towards the
-camera)."""
+# Copyright (c) 2026 Renaud Guillon
+"""FB-DAM-BREAKER-03, FB-DAM-BREAKER-04, 3-4: the Dam Breaker's parts and its swamp growth.
+
+The parts: sluice cannons, chemical tanks, armour plate, drone hangar. Logical pixels, nose +Z, Y up
+(towards the camera).
+"""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.boss_look import BOSS_LOOK
 from game.config.bosses.boss_kit import mirror
@@ -29,14 +30,16 @@ from game.view.bosses.world_3.jungle_flesh import F, gland, sign_of, table, vein
 from game.view.enemies.enemy_shapes import SIDES
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from game.view.enemies.enemy_mesh import EnemyParts
+from render.geometry.solids import SolidBuilder
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The Dam Breaker's toxic green neon (FB-DAM-BREAKER-05).
 TOXIC = BOSS_LOOK.neon["dam-breaker"]
@@ -68,9 +71,11 @@ def vines(hull: SolidBuilder, points: list[Vec3], drop: float = 7) -> None:
 
 
 def sluice(p: EnemyParts, at: Vec3) -> None:
-    """A sluice cannon around its centre `at` (FB-DAM-BREAKER-03): a gate house on the deck, its
-    sluice gate raised over a chute whose lip lets out the sludge, a hand wheel on top, a green glow
-    inside."""
+    """Add a sluice cannon around its centre `at` (FB-DAM-BREAKER-03).
+
+    A gate house on the deck, its sluice gate raised over a chute whose lip lets out the sludge, a
+    hand wheel on top, a green glow inside.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -113,24 +118,24 @@ def sluice(p: EnemyParts, at: Vec3) -> None:
 
 
 # A chemical tank's body: a capsule lying along Z (a lathe profile, its axis along +Y).
-TANK = table(
-    [
-        [0, -17],
-        [7, -16],
-        [11, -13],
-        [12, -9],
-        [12, 9],
-        [11, 13],
-        [7, 16],
-        [0, 17],
-    ]
-)
+TANK = table([
+    [0, -17],
+    [7, -16],
+    [11, -13],
+    [12, -9],
+    [12, 9],
+    [11, 13],
+    [7, 16],
+    [0, 17],
+])
 
 
 def tank(p: EnemyParts, at: Vec3) -> None:
-    """A chemical tank around its centre `at` (FB-DAM-BREAKER-03): a fat capsule on cradles at the
-    barge's side, glowing green through bands of glass, hooped with rusty straps, vines hanging off
-    it."""
+    """Add a chemical tank around its centre `at` (FB-DAM-BREAKER-03).
+
+    A fat capsule on cradles at the barge's side, glowing green through bands of glass, hooped with
+    rusty straps, vines hanging off it.
+    """
     hull = p.hull
     neon = p.neon
     s = sign_of(at[0])
@@ -163,8 +168,11 @@ PLATE = table([[-22, -6], [-18, 9], [18, 9], [22, -6], [14, -12], [-14, -12]])
 
 
 def plate(p: EnemyParts, at: Vec3) -> None:
-    """The armour plate around its centre `at` (FB-DAM-BREAKER-03): a thick, sloped slab bolted over
-    the bow, no weapon, hazard stripes along its front edge, green slits, moss in its seams."""
+    """Add the armour plate around its centre `at` (FB-DAM-BREAKER-03).
+
+    A thick, sloped slab bolted over the bow, no weapon, hazard stripes along its front edge, green
+    slits, moss in its seams.
+    """
     hull = p.hull
     neon = p.neon
     top = DECK_Y + 9
@@ -186,8 +194,10 @@ def plate(p: EnemyParts, at: Vec3) -> None:
 
 
 def hangar(p: EnemyParts, at: Vec3) -> None:
-    """The drone hangar around its centre `at` (FB-DAM-BREAKER-03): a bay at the bow, its open door
-    framed in green, where its Hornets leave from."""
+    """Add the drone hangar around its centre `at` (FB-DAM-BREAKER-03).
+
+    A bay at the bow, its open door framed in green, where its Hornets leave from.
+    """
     hull = p.hull
     neon = p.neon
     # FB-DAM-BREAKER-03: a brood pouch of flesh on the bow, its drone hatch a grafted metal door.

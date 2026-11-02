@@ -1,8 +1,13 @@
-"""Shared set-up of the app tests: the JavaScript-only helpers of `src/app/` (URL query, stored
-value checks, JSON, Babylon snapshot objects) are replaced by their Python twins from
-`helpers.js_shims`, so the logic around them can be tested under CPython."""
+# Copyright (c) 2026 Renaud Guillon
+"""Shared set-up of the app tests.
+
+The JavaScript-only helpers of `src/app/` (URL query, stored value checks, JSON, Babylon snapshot
+objects) are replaced by their Python twins from `helpers.js_shims`, so the logic around them can be
+tested under CPython.
+"""
 
 from types import SimpleNamespace
+from typing import Any
 from urllib.parse import parse_qs
 
 import pytest
@@ -18,17 +23,17 @@ from app import (
 )
 
 
-def _supplies(raw: str):  # noqa: ANN202
+def _supplies(raw: str) -> SimpleNamespace | None:
     parsed = js_shims.read_supplies(raw)
     return None if parsed is None else SimpleNamespace(**parsed)
 
 
-def _weapons(raw: str):  # noqa: ANN202
+def _weapons(raw: str) -> SimpleNamespace | None:
     parsed = js_shims.read_weapon_levels(raw)
     return None if parsed is None else SimpleNamespace(**parsed)
 
 
-def _weapons_json(weapons):  # noqa: ANN001, ANN202
+def _weapons_json(weapons: Any) -> str:
     return js_shims.to_json({"weapon": weapons.weapon, "levels": weapons.levels})
 
 

@@ -1,11 +1,11 @@
-"""The Ice Queen's crystals: its shards (the parts on its crown ring), the crystals growing on its
-wings and ring, its icicles Logical pixels,
-nose +Z, Y up.
+# Copyright (c) 2026 Renaud Guillon
+"""The Ice Queen's crystals.
+
+Its shards (the parts on its crown ring), the crystals growing on its wings and ring, its icicles.
+Logical pixels, nose +Z, Y up.
 """
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.boss_look import BOSS_LOOK
 from game.config.record import record
@@ -15,32 +15,32 @@ from game.view.bosses.world_2.w2_organic import ICE_FLESH
 from render.geometry.organic import organ
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from core.entities.muzzle import Muzzle  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from core.entities.muzzle import Muzzle
+from game.view.enemies.enemy_mesh import EnemyParts
+from render.geometry.solids import SolidBuilder
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 _ICE_QUEEN_NEON = BOSS_LOOK.neon["ice-queen"]
 # Pale blue: the Ice Queen's registered neon (MB-ICE-QUEEN-04, BOSS-50).
-PALE_BLUE = WHITE if _ICE_QUEEN_NEON == None else _ICE_QUEEN_NEON  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+PALE_BLUE = WHITE if _ICE_QUEEN_NEON == None else _ICE_QUEEN_NEON
 # Violet: the Ice Queen's second neon colour, on its edges (MB-ICE-QUEEN-04).
 VIOLET = [0.62, 0.3, 1]
 
 # World 2 frost (MB-ICE-QUEEN-05): snow on top faces, pale faceted ice (the palest at the facets'
 # tips), frosted (snow-dusted) panels.
-FROST = record(
-    {
-        "snow": [0.75, 0.82, 0.9],
-        "ice": [0.56, 0.7, 0.92],
-        "pale": [0.84, 0.92, 1],
-        "frosted": [0.36, 0.4, 0.47],
-    }
-)
+FROST = record({
+    "snow": [0.75, 0.82, 0.9],
+    "ice": [0.56, 0.7, 0.92],
+    "pale": [0.84, 0.92, 1],
+    "frosted": [0.36, 0.4, 0.47],
+})
 
 # A crystal's faceted body (a lathe profile, in units of its radius and length).
 CRYSTAL = [  # type: list[list[float]]
@@ -55,22 +55,26 @@ CRYSTAL_TIP = [  # type: list[list[float]]
 
 
 def _scaled(profile: list[list[float]], radius: float, length: float) -> list[list[float]]:
-    """A lathe profile in units of a radius and a length, in model units."""
+    """Return a lathe profile in units of a radius and a length, in model units."""
     return [[p[0] * radius, p[1] * length] for p in profile]
 
 
 def crystal(hull: SolidBuilder, at: Vec3, angles: list[float], dims: list[float]) -> None:
-    """A six-sided crystal growing from `at`, `dims[0]` thick and `dims[1]` long, tilted by
-    `angles` = `[pitch, roll, yaw]` from straight up: blue ice, its tip the palest
-    (MB-ICE-QUEEN-05)."""
+    """Add a six-sided crystal growing from `at`, `dims[0]` thick and `dims[1]` long.
+
+    It is tilted by `angles` = `[pitch, roll, yaw]` from straight up: blue ice, its tip the palest
+    (MB-ICE-QUEEN-05).
+    """
     place = Placement(at, angles[2], angles[0], angles[1])
     hull.lathe(_scaled(CRYSTAL, dims[0], dims[1]), 6, FROST.ice, place)
     hull.lathe(_scaled(CRYSTAL_TIP, dims[0], dims[1]), 6, FROST.pale, place, False)
 
 
 def icicles(hull: SolidBuilder, s: float, points: list[list[float]]) -> None:
-    """Icicles hanging under a wing on side `s`, at the `[x, z]` given (x for the right wing;
-    MB-ICE-QUEEN-05)."""
+    """Icicles hanging under a wing on side `s`, at the `[x, z]` given (x for the right wing).
+
+    MB-ICE-QUEEN-05.
+    """
     for i in range(len(points)):
         x = points[i][0]
         z = points[i][1]
@@ -103,7 +107,7 @@ SHARD_TIP = [  # type: list[list[float]]
 
 
 def _axis(centre: Vec3, yaw: float, along: float, up: float, turn: float) -> Placement:
-    """A placement on the shard's axis, `along` from its centre, `up` higher, turned `turn`."""
+    """Return a placement `along` the shard's axis from its centre, `up` higher, turned `turn`."""
     at: Vec3 = [
         centre[0] + math.sin(yaw) * along,
         centre[1] + up,
@@ -113,9 +117,12 @@ def _axis(centre: Vec3, yaw: float, along: float, up: float, turn: float) -> Pla
 
 
 def ice_shard(p: EnemyParts, muzzles: list[Muzzle], height: float) -> None:
-    """MB-ICE-QUEEN-03: a crystal shard on the crown ring, lying along the ring between its two
-    `muzzles` (from the design, `height` high): faceted ice banded with violet neon, a light at each
-    tip where its bullets leave, a pale spike pointing out of the ring, a dark clamp under it."""
+    """Add a crystal shard on the crown ring (MB-ICE-QUEEN-03).
+
+    It lies along the ring between its two `muzzles` (from the design, `height` high): faceted ice
+    banded with violet neon, a light at each tip where its bullets leave, a pale spike pointing out
+    of the ring, a dark clamp under it.
+    """
     points: list[Vec3] = [boss_point(m[0], m[1], m[2]) for m in muzzles]
     if len(points) < SHARD_MUZZLES:
         return

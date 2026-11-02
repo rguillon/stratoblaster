@@ -1,49 +1,52 @@
-"""MB-STONE-IDOL-04, FB-SKY-TEMPLE-05, 3-3: the carved stone, moss, vines and neon cracks of the
-Lost temples' bosses (the Stone Idol and the Sky Temple; World 3 theme: dark metal with neon, plus
-moss, vines and stone). Logical pixels, nose +Z, Y up."""
+# Copyright (c) 2026 Renaud Guillon
+"""MB-STONE-IDOL-04, FB-SKY-TEMPLE-05, 3-3: the stone of the Lost temples' bosses.
+
+The carved stone, moss, vines and neon cracks of the Stone Idol and the Sky Temple (World 3 theme:
+dark metal with neon, plus moss, vines and stone). Logical pixels, nose +Z, Y up.
+"""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.record import record
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from render.geometry.solids import SolidBuilder
 
 type Rgb = list[float]
 type Vec3 = list[float]
 type Flat = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Stone and jungle shades (vertex colours, multiplied into the hull's dark metal).
-STONE = record(
-    {
-        # Weathered stone on the top faces, catching the light.
-        "light": [0.34, 0.32, 0.28],
-        # Carved stone.
-        "base": [0.23, 0.22, 0.2],
-        # Stone in shadow: recesses, the undersides.
-        "dark": [0.13, 0.12, 0.11],
-        # Deep cuts: sockets, doorways, the mouth.
-        "deep": [0.04, 0.04, 0.045],
-        # Moss, and older moss in the cracks.
-        "moss": [0.14, 0.46, 0.07],
-        "mossDark": [0.08, 0.3, 0.04],
-        # Vines and their leaves.
-        "vine": [0.07, 0.3, 0.04],
-        "leaf": [0.12, 0.52, 0.06],
-        # Old gilding on carved stone.
-        "gilt": [0.6, 0.45, 0.14],
-    }
-)
+STONE = record({
+    # Weathered stone on the top faces, catching the light.
+    "light": [0.34, 0.32, 0.28],
+    # Carved stone.
+    "base": [0.23, 0.22, 0.2],
+    # Stone in shadow: recesses, the undersides.
+    "dark": [0.13, 0.12, 0.11],
+    # Deep cuts: sockets, doorways, the mouth.
+    "deep": [0.04, 0.04, 0.045],
+    # Moss, and older moss in the cracks.
+    "moss": [0.14, 0.46, 0.07],
+    "mossDark": [0.08, 0.3, 0.04],
+    # Vines and their leaves.
+    "vine": [0.07, 0.3, 0.04],
+    "leaf": [0.12, 0.52, 0.06],
+    # Old gilding on carved stone.
+    "gilt": [0.6, 0.45, 0.14],
+})
 
 
 def bar(builder: SolidBuilder, a: Vec3, b: Vec3, dims: list[float], color: Rgb) -> None:
-    """A straight bar from `a` to `b` (3D), `dims[0]` across and `dims[1]` high: a vine, a
-    cable."""
+    """Add a straight bar from `a` to `b` (3D): a vine, a cable.
+
+    It is `dims[0]` across and `dims[1]` high.
+    """
     dx = b[0] - a[0]
     dy = b[1] - a[1]
     dz = b[2] - a[2]
@@ -64,7 +67,7 @@ def bar(builder: SolidBuilder, a: Vec3, b: Vec3, dims: list[float], color: Rgb) 
 
 
 def leaf(hull: SolidBuilder, at: Vec3, size: float, turn: float) -> None:
-    """A leaf at `at`, `size` long, turned by its index."""
+    """Add a leaf at `at`, `size` long, turned by its index."""
     blade: list[list[float]] = [
         [0, 0],
         [size * 0.35, size * 0.5],
@@ -75,7 +78,7 @@ def leaf(hull: SolidBuilder, at: Vec3, size: float, turn: float) -> None:
 
 
 def vine(hull: SolidBuilder, path: list[Vec3], width: float = 1.1) -> None:
-    """A vine along `path` (3D points), with a leaf at every other joint."""
+    """Add a vine along `path` (3D points), with a leaf at every other joint."""
     for i in range(len(path) - 1):
         a = path[i]
         b = path[i + 1]
@@ -85,13 +88,13 @@ def vine(hull: SolidBuilder, path: list[Vec3], width: float = 1.1) -> None:
 
 
 def moss(hull: SolidBuilder, at: Vec3, size: float, turn: float = 0) -> None:
-    """A patch of moss on a top face at `at`, `size` across: a low, faceted cushion."""
+    """Add a patch of moss on a top face at `at`, `size` across: a low, faceted cushion."""
     hull.cylinder(size, size * 0.18, 6, STONE.mossDark, Placement(at, turn), size * 0.75)
     hull.cylinder(size * 0.6, size * 0.3, 5, STONE.moss, Placement(at, turn + 0.7), size * 0.35)
 
 
 def crack(neon: SolidBuilder, path: list[Flat], y: float, color: Rgb, width: float = 0.6) -> None:
-    """A neon crack along `path` (XZ) at height `y`: thin lit strips, `width` wide."""
+    """Add a neon crack along `path` (XZ) at height `y`: thin lit strips, `width` wide."""
     for i in range(len(path) - 1):
         a = path[i]
         b = path[i + 1]

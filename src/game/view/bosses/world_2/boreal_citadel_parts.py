@@ -1,37 +1,40 @@
-"""FB-BOREAL-CITADEL-04, 2-5: the Boreal Citadel's destroyable parts (aurora cannons, missile
-batteries, dome generators) Each is drawn around its centre (model space: logical pixels, nose +Z, Y
-up)."""
+# Copyright (c) 2026 Renaud Guillon
+"""FB-BOREAL-CITADEL-04, 2-5: the Boreal Citadel's destroyable parts.
+
+The aurora cannons, missile batteries and dome generators. Each is drawn around its centre (model
+space: logical pixels, nose +Z, Y up).
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-type Vec3 = list[float]
-__pragma__("noskip")
-
-from game.config.bosses.boss_kit import mirror  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.bosses.world_2.boreal_citadel import BOREAL_BATTERY, BOREAL_CANNON  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.mini_boss_shapes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.bosses.boss_kit import mirror
+from game.config.bosses.world_2.boreal_citadel import BOREAL_BATTERY, BOREAL_CANNON
+from game.config.enemy_look import ENEMY_LOOK
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.mini_boss_shapes import (
     QUARTER,
     WHITE,
 )
-from game.view.bosses.world_2.boreal_citadel_city import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.boreal_citadel_city import (
     AURORA,
     CITADEL_DECK,
     VIOLET,
     icicles,
     rect,
 )
-from game.view.bosses.world_2.w2_organic import ICE_FLESH  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.enemies.enemy_shapes import POD_SECTION, around, decal, radial  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.organic import RibSpec, ribs  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.solids import LoftOptions, Placement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.w2_organic import ICE_FLESH
+from game.view.enemies.enemy_shapes import POD_SECTION, around, decal, radial
+from render.geometry.organic import RibSpec, ribs
+from render.geometry.solids import LoftOptions, Placement
+
+# isort: split
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+# __pragma__ ("skip")
+from game.view.enemies.enemy_mesh import EnemyParts
+
+type Vec3 = list[float]
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 
@@ -76,9 +79,11 @@ DOME = [
 
 
 def draw_cannon(p: EnemyParts, pos: Vec3) -> None:
-    """FB-BOREAL-CITADEL-04: an aurora cannon on an outrigger, turning on its turntable (its turret,
-    FB-BOREAL-CITADEL-07): a frosted pod, a long barrel with charge coils, a lens where its laser
-    leaves, and lit aurora curtains rippling along its back."""
+    """FB-BOREAL-CITADEL-04: an aurora cannon on an outrigger, turning on its turntable.
+
+    Its turret (FB-BOREAL-CITADEL-07): a frosted pod, a long barrel with charge coils, a lens where
+    its laser leaves, and lit aurora curtains rippling along its back.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -96,7 +101,7 @@ def draw_cannon(p: EnemyParts, pos: Vec3) -> None:
         Placement(at),
         LoftOptions(
             False,
-            lambda side, band: ICE_FLESH.rime if side == POD_BACK else None,
+            lambda side, _band: ICE_FLESH.rime if side == POD_BACK else None,
         ),
     )
     m = BOREAL_CANNON[0]
@@ -128,8 +133,11 @@ def draw_cannon(p: EnemyParts, pos: Vec3) -> None:
 
 
 def draw_cannon_mount(p: EnemyParts, pos: Vec3) -> None:
-    """The turntable an aurora cannon turns on (FB-BOREAL-CITADEL-07: its turret, drawn by
-    `draw_cannon`, aims its laser): a low drum on the outrigger, ringed with violet neon."""
+    """Draw the turntable an aurora cannon turns on.
+
+    A low drum on the outrigger, ringed with violet neon. The cannon's turret, drawn by
+    `draw_cannon`, aims its laser (FB-BOREAL-CITADEL-07).
+    """
     x = pos[0]
     z = pos[2]
     # FB-BOREAL-CITADEL-04: a shoulder of muscle on the fin.
@@ -138,8 +146,11 @@ def draw_cannon_mount(p: EnemyParts, pos: Vec3) -> None:
 
 
 def draw_battery(p: EnemyParts, pos: Vec3) -> None:
-    """FB-BOREAL-CITADEL-04: a missile battery on the deck: a snowed-over armoured block, six
-    hatches lit as its missiles load, violet strips down its sides, icicles under its front."""
+    """FB-BOREAL-CITADEL-04: a missile battery on the deck.
+
+    A snowed-over armoured block, six hatches lit as its missiles load, violet strips down its
+    sides, icicles under its front.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -187,8 +198,11 @@ def draw_battery(p: EnemyParts, pos: Vec3) -> None:
 
 
 def draw_dome(p: EnemyParts, pos: Vec3) -> None:
-    """FB-BOREAL-CITADEL-04: a dome generator (no weapon; it shields the core): a heated glass dome
-    glowing aurora green through its ring of ice, three pylons with violet lights."""
+    """FB-BOREAL-CITADEL-04: a dome generator (no weapon; it shields the core).
+
+    A heated glass dome glowing aurora green through its ring of ice, three pylons with violet
+    lights.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon

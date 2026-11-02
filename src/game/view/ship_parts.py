@@ -1,6 +1,7 @@
-"""Parts shared by the player ships: panels, plates, lights, rods, and the reactors Each part is a
-Babylon mesh made by the render layer, parented to a node of the
-ship.
+# Copyright (c) 2026 Renaud Guillon
+"""Parts shared by the player ships: panels, plates, lights, rods, and the reactors.
+
+Each part is a Babylon mesh made by the render layer, parented to a node of the ship.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -18,13 +19,13 @@ from render.babylon import (
 from render.geometry.lathe_z import LatheHalves, create_faceted_lathe_along_z
 from render.geometry.prism import create_prism
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-Scene = Any  # noqa: E402
+Scene = Any
+# __pragma__ ("noskip")
 
-
-__pragma__("noskip")
 
 # Sides of polygonal parts (nacelles, canopies, intakes, pods): a hexagonal section (GFX-ART-09).
 PART_FACETS = 6
@@ -42,18 +43,6 @@ EXHAUST_WIDTH = 1.5  # relative to the nacelle radius
 CORE_RADIUS = 0.8  # relative to the nacelle radius
 
 
-def _set_part_metadata(node: Any, part: str) -> None:
-    """`node.metadata = { part }`: the object Babylon keeps as metadata."""
-    __pragma__("js", "{}", "node.metadata = {part: part};")
-
-
-def _part_of_metadata(node: Any) -> Any:
-    """`node.metadata?.part`, or undefined."""
-    result: Any = None
-    __pragma__("js", "{}", "result = node.metadata ? node.metadata.part : undefined;")
-    return result
-
-
 def _polyhedron_options(kind: int, size: float) -> Any:
     """Options for `CreatePolyhedron`: `{ type, size }`."""
     options: Any = None
@@ -68,17 +57,6 @@ def disc_options(radius: float, tessellation: int) -> Any:
     return options
 
 
-def tag_part(node: Any, part: str) -> Any:
-    """Tags a node with its ship part and returns it."""
-    _set_part_metadata(node, part)
-    return node
-
-
-def part_of(node: Any) -> Any:
-    """Returns the ship part a node was tagged with, if any."""
-    return _part_of_metadata(node)
-
-
 def mirror_x(outline: list[Any]) -> list[Any]:
     """Mirrors a planform outline across the ship's centre line (X = 0)."""
     return [[-point[0], point[1]] for point in outline]
@@ -91,7 +69,7 @@ def panel(
     material: Any,
     parent: Any,
 ) -> Any:
-    """Creates a flat panel (wing, tail...) with the given material, parented to `parent`."""
+    """Create a flat panel (wing, tail...) with the given material, parented to `parent`."""
     mesh = create_prism(name, outline, thickness, parent.getScene())
     mesh.material = material
     mesh.parent = parent
@@ -105,22 +83,20 @@ def plate(
     material: Any,
     parent: Any,
 ) -> Any:
-    """Creates a thin panel lying `y` above (or below, if negative) its parent's plane: trim,
-    stripes."""
+    """Create a thin trim or stripe panel `y` above (or below, if negative) its parent's plane."""
     mesh = panel(name, outline, PLATE_THICKNESS, material, parent)
     mesh.position.y = y
     return mesh
 
 
 def nav_light(name: str, position: Any, parent: Any) -> Any:
-    """Creates a small blue light (tagged `light`) at `position` in `parent`'s space: with the
-    trim and the flames, the only glow round the ship (GFX-SHIP-09)."""
+    """Create a small blue light (tagged `light`) at `position` in `parent`'s space.
+
+    With the trim and the flames, it is the only glow round the ship (GFX-SHIP-09).
+    """
     scene = parent.getScene()
     # An octahedron (8 triangles): at this size and glowing, it reads as a round light.
-    mesh = tag_part(
-        create_polyhedron(name, _polyhedron_options(1, NAV_LIGHT_SIZE / 2), scene),
-        "light",
-    )
+    mesh = create_polyhedron(name, _polyhedron_options(1, NAV_LIGHT_SIZE / 2), scene)
     mesh.material = get_ship_materials(scene).navLight
     mesh.position.copyFrom(position)
     mesh.parent = parent
@@ -135,7 +111,7 @@ def faceted_rod(
     parent: Any,
     sides: int = 4,
 ) -> Any:
-    """Creates a polygonal bar along Z (4 sides: a diamond section), centred on `position`."""
+    """Create a polygonal bar along Z (4 sides: a diamond section), centred on `position`."""
     length = size["length"]
     radius = size["radius"]
     mesh = create_faceted_lathe_along_z(
@@ -182,12 +158,14 @@ def _add_reactor_rings(name: str, size: dict[str, float], root: Any) -> None:
 
 
 def build_reactor(name: str, size: dict[str, float], scene: Scene) -> Any:
-    """Builds a reactor centred on its origin, thrusting towards -Z: a hexagonal metal nacelle, a
-    glowing blue core at the nozzle and an animated blue flame behind it (GFX-SHIP-06)."""
+    """Build a reactor centred on its origin, thrusting towards -Z: a hexagonal metal nacelle.
+
+    Plus a glowing blue core at the nozzle and an animated blue flame behind it (GFX-SHIP-06).
+    """
     mats = get_ship_materials(scene)
     radius = size["radius"]
     length = size["length"]
-    root = tag_part(new_transform_node(name, scene), "reactor")
+    root = new_transform_node(name, scene)
 
     profile = [
         [length / 2, 0],

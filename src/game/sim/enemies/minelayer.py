@@ -1,27 +1,30 @@
-"""The Minelayer (`specs/enemies/minelayer.md`)"""
+# Copyright (c) 2026 Renaud Guillon
+"""The Minelayer (`specs/enemies/minelayer.md`)."""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from core.entities.enemy import Enemy
 from core.systems.gun_muzzles import GunMuzzles
 from game.config.enemies_veteran import VETERAN_CONFIG
 from game.sim.enemies.enemy_helpers import DOWN, Cadence, on_playfield
 
-__pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from core.entities.enemy import EnemyContext
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 CFG = VETERAN_CONFIG.minelayer
 
 
 class Minelayer(Enemy):
-    """ENM-MINELAYER-07: crosses the top half of the screen sideways from `side`, like a Strafer
-    (ENM-STRAFER-05). Every 0.8 s it drops a mine from its belly rack (ENM-MINELAYER-08): a slow
-    bullet drifting down that bursts into a ring of 6 bullets 1.5 s later (ENM-MINELAYER-09,
-    `EnemyBulletSpec.burst`). Its `charge` lights its charge lights (ENM-MINELAYER-04).
+    """ENM-MINELAYER-07: crosses the top half of the screen sideways from `side`.
+
+    It moves like a Strafer (ENM-STRAFER-05). Every 0.8 s it drops a mine from its belly rack
+    (ENM-MINELAYER-08): a slow bullet drifting down that bursts into a ring of 6 bullets 1.5 s
+    later (ENM-MINELAYER-09, `EnemyBulletSpec.burst`). Its `charge` lights its charge lights
+    (ENM-MINELAYER-04).
     """
 
     def __init__(self, x: float, y: float, side: str) -> None:
@@ -32,6 +35,7 @@ class Minelayer(Enemy):
         self.heading = (self._direction * math.pi) / 2
 
     def update(self, ctx: EnemyContext, dt: float) -> None:
+        """Advance the enemy by `dt` seconds."""
         self.x += self._direction * CFG.speed * dt
         if not on_playfield(self, ctx):
             return

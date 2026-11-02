@@ -1,5 +1,8 @@
+# Copyright (c) 2026 Renaud Guillon
 """Stepping enemies of the sim tests the way the world does: `age` advances, then `update` runs.
-Also the spawn area the kinds of `game/sim/enemy_kinds.py` are given. CPython only."""
+
+Also the spawn area the kinds of `game/sim/enemy_kinds.py` are given. CPython only.
+"""
 
 from typing import Any
 
@@ -17,13 +20,16 @@ def area(
     seed: int = 1,
     top_range: tuple[float, float] | None = None,
 ) -> EnemySpawnArea:
-    """A spawn area of `width` x `height`; with `side`, a wave entry at `position` on that side."""
+    """Return a spawn area of `width` x `height`.
+
+    With `side`, a wave entry at `position` on that side.
+    """
     entry = None if side is None else EnemyEntry(side, position)
     return EnemySpawnArea(width, height, create_rng(seed), entry, top_range)
 
 
 def run(enemy: Any, ctx: Any, seconds: float, step: float = STEP) -> None:
-    """Steps `enemy` for `seconds`, advancing its age before each update (as the world does)."""
+    """Step `enemy` for `seconds`, advancing its age before each update (as the world does)."""
     steps = round(seconds / step)
     for _ in range(steps):
         enemy.age += step
@@ -31,7 +37,7 @@ def run(enemy: Any, ctx: Any, seconds: float, step: float = STEP) -> None:
 
 
 def run_until(enemy: Any, ctx: Any, done: Any, limit: float = 60.0, step: float = STEP) -> float:
-    """Steps `enemy` until `done()` holds (at most `limit` seconds); returns the seconds run."""
+    """Step `enemy` until `done()` holds (at most `limit` seconds); return the seconds run."""
     elapsed = 0.0
     while not done() and elapsed < limit:
         enemy.age += step

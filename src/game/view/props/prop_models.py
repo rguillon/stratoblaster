@@ -1,41 +1,45 @@
-"""One model per prop kind of this game, keyed by its id (GFX-PROP-02): the cars, the buildings and
-lots of the grid of tiles, the trees (D-212) and the road kit. D-207: the hand-made homes, huts,
-masts, farms and plants are gone."""
+# Copyright (c) 2026 Renaud Guillon
+"""One model per prop kind of this game, keyed by its id (GFX-PROP-02).
 
-from org.transcrypt.stubs.browser import __pragma__
+The cars, the buildings and lots of the grid of tiles, the trees (D-212) and the road kit. D-207:
+the hand-made homes, huts, masts, farms and plants are gone.
+"""
 
+from game.config.cars import CAR_IDS
+from game.config.prop_look import PROP_COLORS as C
+from game.config.prop_look import PROP_LIGHTS as L
+from game.view.props.car_props import build_car
+from game.view.props.road_kit import ROAD_KIT_MODELS
+from game.view.props.tile_models import TILE_PROP_MODELS
+from game.view.props.tree_props import TREE_MODELS
+
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
-
-from game.config.cars import CAR_IDS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.prop_look import PROP_COLORS as C  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.prop_look import PROP_LIGHTS as L  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.props.car_props import build_car  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.props.road_kit import ROAD_KIT_MODELS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.props.tile_models import TILE_PROP_MODELS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.props.tree_props import TREE_MODELS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
 
 def merged(parts: list[Any]) -> dict[str, Any]:
-    """The entries of `parts` in order, later ones replacing earlier ones (object spread)."""
+    """Return the entries of `parts` in order, later ones replacing earlier ones (object spread)."""
     result: dict[str, Any] = {}
     for part in parts:
-        for key in part.keys():  # noqa: SIM118 (Transcrypt: `for k in dict` is broken)
+        for key in part.keys():
             result[key] = part[key]
     return result
 
 
 def car_model(shape: str, paint: list[float], accent: list[float]) -> Any:
-    """A factory of one car model, its neon `accent` (D-211)."""
+    """Return a factory of one car model, its neon `accent` (D-211)."""
     return lambda: build_car(shape, paint, accent)
 
 
 def make_car_models() -> dict[str, Any]:
-    """The cars, at their own size: they drive in the lanes of the roads, not on tiles (D-162).
-    D-213: each kind has its own body."""
+    """Return the cars, at their own size: they drive in road lanes, not on tiles (D-162).
+
+    D-213: each kind has its own body.
+    """
     return {
         CAR_IDS.red: car_model("racer", C.containerRed, L.cyan),
         CAR_IDS.blue: car_model("sedan", C.containerBlue, L.pink),
@@ -49,18 +53,18 @@ def make_car_models() -> dict[str, Any]:
 
 
 def make_prop_models() -> dict[str, Any]:
-    """One model per prop kind of this game, keyed by its id: only kinds some level places, the
-    road kit apart (GFX-PROP-03)."""
-    return merged(
-        [
-            make_car_models(),
-            TILE_PROP_MODELS,
-            # D-212: the trees of the green land.
-            TREE_MODELS,
-            # The road kit, for the `props/` page (no level places it: its streets are drawn).
-            ROAD_KIT_MODELS,
-        ]
-    )
+    """One model per prop kind of this game, keyed by its id.
+
+    Only the kinds some level places, the road kit apart (GFX-PROP-03).
+    """
+    return merged([
+        make_car_models(),
+        TILE_PROP_MODELS,
+        # D-212: the trees of the green land.
+        TREE_MODELS,
+        # The road kit, for the `props/` page (no level places it: its streets are drawn).
+        ROAD_KIT_MODELS,
+    ])
 
 
 PROP_MODELS = make_prop_models()

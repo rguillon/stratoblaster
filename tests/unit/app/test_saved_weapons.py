@@ -1,8 +1,11 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/saved_weapons.py`."""
 # (the weapons kept between levels: GAME-WPN-15, GAME-LEVEL-14).
 
 import pytest
+from helpers.memory_storage import MemoryStorage
 
+from app import saved_weapons
 from app.saved_weapons import (
     load_saved_weapons,
     parse_weapon_levels,
@@ -10,7 +13,11 @@ from app.saved_weapons import (
     saved_weapons_key,
 )
 from core.systems.run_arsenal import WeaponLevels
-from host.key_value_storage import MemoryStorage
+
+# The JavaScript-only JSON helpers as the module defines them: the app conftest replaces them with
+# their Python twins for every test, after this module is imported.
+_READ_WEAPON_LEVELS = saved_weapons._read_weapon_levels
+_TO_JSON = saved_weapons._to_json
 
 
 def test_game_wpn_15_the_weapons_are_kept_under_the_game_id() -> None:
@@ -54,3 +61,12 @@ def test_game_wpn_15_saving_then_loading_keeps_the_weapon_levels() -> None:
 
 def test_game_wpn_15_nothing_saved_loads_as_none() -> None:
     assert load_saved_weapons(MemoryStorage(), "game") is None
+
+
+def test_game_wpn_15_the_json_helpers_are_javascript_only() -> None:
+    """`JSON.parse` and `JSON.stringify` run in the browser.
+
+    CPython runs only the placeholders: nothing read, an empty text written.
+    """
+    assert _READ_WEAPON_LEVELS('{"weapon":"guns","levels":{"guns":3}}') is None
+    assert _TO_JSON(WeaponLevels("guns", {"guns": 3})) == ""

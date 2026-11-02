@@ -1,8 +1,7 @@
-"""The Hive (`specs/enemies/hive.md`)"""
+# Copyright (c) 2026 Renaud Guillon
+"""The Hive (`specs/enemies/hive.md`)."""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from core.entities.jointed_enemy import JointedEnemy
 from core.entities.muzzle import muzzle_point
@@ -12,21 +11,25 @@ from game.sim.enemies.enemy_helpers import DEG, DOWN, Cadence, on_playfield
 from game.sim.enemies.wasp import Wasp
 from game.sim.joints import jointed_design
 
-__pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from core.entities.enemy import EnemyContext
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 CFG = ELITE_CONFIG.hive
 
 
 class Hive(JointedEnemy):
-    """ENM-HIVE-08: a huge rounded hive-ship with a launch ring turning on its back (its `spin`; it
-    has no destroyable parts). It flies slowly straight down the screen and leaves at the bottom.
-    Every 4 s a Wasp comes out of the hatch on its ring and attacks (ENM-HIVE-09); every 3 s it
-    fires a ring of 12 bullets from the vents around its rim (ENM-HIVE-10). It stops launching and
-    firing in the lower part of the screen (ENM-HIVE-11). Its `charge` is how close the next launch
-    is (ENM-HIVE-05). It is built from the engine's specs (ENM-HIVE-13).
+    """ENM-HIVE-08: a huge rounded hive-ship with a launch ring turning on its back.
+
+    Its `spin` turns the ring, and it has no destroyable parts. It flies slowly straight down the
+    screen and leaves at the bottom. Every 4 s a Wasp comes out of the hatch on its ring and attacks
+    (ENM-HIVE-09); every 3 s it fires a ring of 12 bullets from the vents around its rim
+    (ENM-HIVE-10). It stops launching and firing in the lower part of the screen (ENM-HIVE-11). Its
+    `charge` is how close the next launch is (ENM-HIVE-05). It is built from the engine's specs
+    (ENM-HIVE-13).
     """
 
     def __init__(self, x: float, y: float) -> None:
@@ -42,6 +45,7 @@ class Hive(JointedEnemy):
         return (point.x, point.y)
 
     def act(self, ctx: EnemyContext, dt: float) -> None:
+        """Advance the enemy by `dt` seconds."""
         self.spin += CFG.ringSpin * DEG * dt
         self.y -= CFG.speed * dt
         if not on_playfield(self, ctx) or self.y < CFG.lastFraction * ctx.height:

@@ -1,23 +1,27 @@
-"""The game's generated music and sound effects (AUD-MUSIC-01, AUD-SFX-01): the track for each
-music request (composed once, then kept), and the
-`AudioBindings` the engine takes.
+# Copyright (c) 2026 Renaud Guillon
+"""The game's generated music and sound effects (AUD-MUSIC-01, AUD-SFX-01).
+
+The track for each music request (composed once, then kept), and the `AudioBindings` the engine
+takes.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
+from audio.audio_bindings import AudioBindings, AudioMix
+from audio.audio_types import MusicEffects, Track
+from game.view.audio.compose_track import TrackRequest, compose_track, seed_of
+from game.view.audio.instruments import INSTRUMENTS
+from game.view.audio.jingles import JINGLES
+from game.view.audio.music_styles import MENU_STYLE, WORLD_STYLES, MusicStyle
+from game.view.audio.sound_designs import SOUND_DESIGNS
+
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from audio.audio_bindings import MusicRequest  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from audio.audio_bindings import MusicRequest
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
-from audio.audio_bindings import AudioBindings, AudioMix  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from audio.audio_types import MusicEffects, Track  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.audio.compose_track import TrackRequest, compose_track, seed_of  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.audio.instruments import INSTRUMENTS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.audio.jingles import JINGLES  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.audio.music_styles import MENU_STYLE, WORLD_STYLES, MusicStyle  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.audio.sound_designs import SOUND_DESIGNS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Explosions of enemies at least this big (hit radius, logical pixels) sound large.
 LARGE_BLAST_RADIUS = 18
@@ -34,13 +38,13 @@ made = {}  # type: dict[str, Track]
 
 
 def world_of(level_id: str) -> int:
-    """The world of a level id such as `2-3` (`Number.parseInt(levelId, 10)`)."""
+    """Return the world of a level id such as `2-3` (`Number.parseInt(levelId, 10)`)."""
     __pragma__("js", "{}", "return parseInt(level_id, 10);")
     return 0
 
 
 def style_of(level_id: str) -> MusicStyle | None:
-    """The style of a level's world, if the world exists."""
+    """Return the style of a level's world, if the world exists."""
     return WORLD_STYLES.get(world_of(level_id))
 
 
@@ -56,8 +60,11 @@ def cached(track_id: str, style: MusicStyle | None, boss: bool) -> Track | None:
 
 
 def game_music(request: MusicRequest) -> Track | None:
-    """The track for a request: each level its own, from its id (AUD-MUSIC-02); one boss track
-    per world (AUD-MUSIC-07); the menu theme (AUD-MUSIC-11); the jingles (AUD-MUSIC-10)."""
+    """Return the track for a request: each level its own, from its id (AUD-MUSIC-02).
+
+    One boss track per world (AUD-MUSIC-07); the menu theme (AUD-MUSIC-11); the jingles
+    (AUD-MUSIC-10).
+    """
     if request.kind == "menu":
         return cached("menu", MENU_STYLE, False)
     level = request.level_id or ""

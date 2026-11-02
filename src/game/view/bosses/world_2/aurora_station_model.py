@@ -1,11 +1,10 @@
-"""FB-AURORA-STATION-01 to FB-AURORA-STATION-06, 2-3: the Aurora Station
+# Copyright (c) 2026 Renaud Guillon
+"""FB-AURORA-STATION-01 to FB-AURORA-STATION-06, 2-3: the Aurora Station.
 
 Logical pixels, nose +Z, Y up (towards the camera).
 """
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.world_2.aurora_station import (
     AURORA_COLLAR,
@@ -13,31 +12,17 @@ from game.config.bosses.world_2.aurora_station import (
     AURORA_STATION,
 )
 from game.config.record import record
-from game.view.enemies.enemy_shapes import POD_SECTION, SIDES  # noqa: E402
-from game.view.enemies.organic_parts import reactor_sac  # noqa: E402
-from render.geometry.organic import curve, organ, tendril  # noqa: E402
-from render.geometry.solids import LoftOptions, Placement  # noqa: E402
-
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-__pragma__("noskip")
-
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.mini_boss_greebles import lamps, plate, rect, seam  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.mini_boss_shapes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.mini_boss_greebles import lamps, plate, rect, seam
+from game.view.bosses.mini_boss_shapes import (
     QUARTER,
     SHADE,
     WHITE,
     H,
     socket,
 )
-from game.view.bosses.world_2.aurora_station_parts import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.aurora_station_parts import (
     AURORA_GREEN,
     AURORA_VIOLET,
     cryo_cannon,
@@ -49,12 +34,28 @@ from game.view.bosses.world_2.aurora_station_parts import (  # noqa: E402 (after
     iced,
     icicles,
 )
-from game.view.bosses.world_2.w2_organic import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.w2_organic import (
     ICE_FLESH,
     crystals,
     glow_vein,
     sinew,
 )
+from game.view.enemies.enemy_shapes import POD_SECTION, SIDES
+from game.view.enemies.organic_parts import reactor_sac
+from render.geometry.organic import curve, organ, tendril
+from render.geometry.solids import LoftOptions, Placement
+
+# isort: split
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+# __pragma__ ("skip")
+from typing import TYPE_CHECKING, Any
+
+from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts
+
+if TYPE_CHECKING:
+    from render.geometry.outline import OutlinePoint
+# __pragma__ ("noskip")
+
 
 # The hub: a wide octagonal drum (a lathe profile).
 HUB = [  # type: list[list[float]]
@@ -92,7 +93,10 @@ RADIATOR_ICICLES = [  # type: list[list[float]]
 
 
 def draw_hub(p: EnemyParts) -> None:
-    """The hub, its module and the mast the turning dish stands on; the collar its spirals leave."""
+    """Draw the hub, its module and the mast the turning dish stands on.
+
+    It also draws the collar its spirals leave.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -131,7 +135,7 @@ def draw_hub(p: EnemyParts) -> None:
 
 
 def draw_truss(p: EnemyParts) -> None:
-    """The truss: a girder across to the cryo cannons, struts to the emitters, the spine."""
+    """Draw the truss: a girder across to the cryo cannons, struts to the emitters, the spine."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -165,7 +169,7 @@ def draw_truss(p: EnemyParts) -> None:
 
 
 def draw_habitats(p: EnemyParts) -> None:
-    """The habitat modules behind the hub (violet windows) and their reactors."""
+    """Draw the habitat modules behind the hub (violet windows) and their reactors."""
     hull = p.hull
     neon = p.neon
     for s in SIDES:
@@ -174,7 +178,7 @@ def draw_habitats(p: EnemyParts) -> None:
             HABITAT,
             ICE_FLESH.membrane,
             Placement([s * 12.0, 0.0, 0.0]),
-            LoftOptions(False, lambda side, band: iced(side)),
+            LoftOptions(False, lambda side, _band: iced(side)),
         )
         lamps(
             neon,
@@ -194,7 +198,7 @@ def draw_habitats(p: EnemyParts) -> None:
 
 
 def draw_radiators(p: EnemyParts) -> None:
-    """The radiator wings behind the truss: iced panels, dark ribs, a green edge light."""
+    """Draw the radiator wings behind the truss: iced panels, dark ribs, a green edge light."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -224,8 +228,10 @@ def draw_radiators(p: EnemyParts) -> None:
 
 
 def draw_guns(p: EnemyParts) -> None:
-    """The hub guns either side of the hangar's spine (the core's aimed shots, bursts and fans;
-    FB-AURORA-STATION-03)."""
+    """Draw the hub guns either side of the hangar's spine (FB-AURORA-STATION-03).
+
+    They fire the core's aimed shots, bursts and fans.
+    """
     hull = p.hull
     charge = p.charge
     muzzle = p.muzzle
@@ -241,7 +247,7 @@ def draw_guns(p: EnemyParts) -> None:
 
 
 def draw_core(p: EnemyParts) -> None:
-    """The core: the hub, the truss, the habitats, the radiators and the guns."""
+    """Draw the core: the hub, the truss, the habitats, the radiators and the guns."""
     draw_hub(p)
     draw_truss(p)
     draw_habitats(p)
@@ -250,18 +256,21 @@ def draw_core(p: EnemyParts) -> None:
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
-    """What `build_boss_model` draws a boss from."""
+    """Return what `build_boss_model` draws a boss from."""
     return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
 
 
 def build_aurora_station(scene: Any) -> BuiltEnemyModel:
-    """FB-AURORA-STATION-01, FB-AURORA-STATION-04: the Aurora Station, a flying research station in
-    green and violet neon: a hub under a slowly turning dish, two dish emitters and a drone hangar
-    at its nose, two cryo cannons at the ends of its truss, habitat modules and iced radiator wings
-    behind.
+    """FB-AURORA-STATION-01, FB-AURORA-STATION-04: the Aurora Station, a flying research station.
+
+    It is in green and violet neon: a hub under a slowly turning dish, two dish emitters and a
+    drone hangar at its nose, two cryo cannons at the ends of its truss, habitat modules and iced
+    radiator wings behind.
+
     FB-AURORA-STATION-02: now a living ice jellyfish, a bell of cold flesh under a frilled crown, a
     bone spine out to its cryo bladders, egg sacs and membrane fins behind, metal grafts on its
-    guns."""
+    guns.
+    """
     model: BuiltEnemyModel = build_boss_model(
         AURORA_STATION,
         scene,

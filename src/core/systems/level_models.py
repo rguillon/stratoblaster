@@ -1,19 +1,22 @@
-"""The enemy models a level needs (PERF-21): those of the enemies its waves and bosses bring, so
-a level builds its own models while it loads, not every model of the game.
+# Copyright (c) 2026 Renaud Guillon
+"""The enemy models a level needs (PERF-21).
+
+Those of the enemies its waves and bosses bring, so a level builds its own models while it loads,
+not every model of the game.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import TYPE_CHECKING, Any
 
-from core.entities.enemy import EnemyEntry, EnemyKindDefinition, EnemySpawnArea  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.systems.boss_fights import BossKindDefinition, LevelBoss  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.systems.wave_runner import Wave  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+if TYPE_CHECKING:
+    from collections.abc import Callable, Sequence
 
-__pragma__("noskip")
+    from core.entities.enemy import EnemyEntry, EnemyKindDefinition, EnemySpawnArea
+    from core.systems.boss_fights import BossKindDefinition, LevelBoss
+    from core.systems.wave_runner import Wave
+# __pragma__ ("noskip")
 
 
 def _add(keys: list[str], key: str) -> None:
@@ -21,7 +24,7 @@ def _add(keys: list[str], key: str) -> None:
         keys.append(key)
 
 
-def level_model_keys(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def level_model_keys(
     waves: "Sequence[Wave]",
     bosses: "Sequence[LevelBoss]",
     kinds: "Sequence[EnemyKindDefinition]",
@@ -29,9 +32,11 @@ def level_model_keys(  # noqa: PLR0917 (positional: Transcrypt has no keyword ar
     area_of: "Callable[[EnemyEntry | None], EnemySpawnArea]",
     extra: list[str],
 ) -> list[str]:
-    """The model keys of the enemies `waves` and `bosses` bring, then `extra` (e.g. the enemies
-    that others send out), each once, in that order. One group of each kind is spawned (in the
-    area `area_of` gives for the wave's entry) to read its models; unknown kinds give none.
+    """Return the model keys of the enemies `waves` and `bosses` bring.
+
+    Then `extra` (e.g. the enemies that others send out), each once, in that order. One group of
+    each kind is spawned (in the area `area_of` gives for the wave's entry) to read its models;
+    unknown kinds give none.
     """
     keys: list[str] = []
     seen: list[str] = []

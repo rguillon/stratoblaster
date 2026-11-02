@@ -1,5 +1,9 @@
-"""e2e: the pause menu, the settings and the audio (specs/ui/pause-menu.md, specs/ui/settings.md,
-specs/audio/), read through the app's state (DEV-API-02)."""
+# Copyright (c) 2026 Renaud Guillon
+"""e2e: the pause menu, the settings.
+
+The audio (specs/ui/pause-menu.md, specs/ui/settings.md, specs/audio/), read through the app's state
+(DEV-API-02).
+"""
 
 import re
 
@@ -117,7 +121,7 @@ def test_ui_pause_10_main_menu_then_yes_saves_a_score_above_the_saved_high_score
     add_cookie(page, base_url, "stratoblaster_high_score", "1000")
     open_debug(page, "?level=1-1&boss=final")
     step_until(page, lambda: boss_name(page), lambda n: n == "Storm Petrel")
-    # K destroys its four parts: 4 × 800 points.
+    # K destroys its four parts: 4 x 800 points.
     for stage in range(1, 5):
         page.keyboard.press("KeyK")
         step_until(page, lambda: boss_stage(page), lambda s, at=stage: s == at)
@@ -151,17 +155,17 @@ def test_ui_pause_11_a_hidden_page_pauses_the_level_and_suspends_the_audio(
     """Also AUD-ENGINE-11: the audio is suspended while the page is hidden."""
     play_first_level(page)
     poll(lambda: audio_state(page), lambda a: a == "running")
-    set_hidden(page, True)
+    set_hidden(page, hidden=True)
     expect_state(page, {"screen": "pause", "paused": True})
     poll(lambda: audio_state(page), lambda a: a == "suspended")
-    set_hidden(page, False)
+    set_hidden(page, hidden=False)
     poll(lambda: audio_state(page), lambda a: a == "running")
     step(page, 5)
     expect_state(page, {"screen": "pause", "paused": True})
     expect(page.locator(".pause-panel")).to_be_visible()
     # Hidden and shown again while paused: still paused.
-    set_hidden(page, True)
-    set_hidden(page, False)
+    set_hidden(page, hidden=True)
+    set_hidden(page, hidden=False)
     step(page, 5)
     assert game_state(page)["paused"] is True
 
@@ -281,8 +285,12 @@ def test_aud_music_09_the_boss_track_plays_in_its_fight(page: Page) -> None:
 def test_aud_engine_10_a_gun_shot_and_a_menu_move_are_among_the_last_sounds(
     page: Page,
 ) -> None:
-    """The menu sounds still play while paused. Also AUD-SFX-01 (the gun's sound) and DEV-API-02
-    (the last sounds)."""
+    """The menu sounds still play while paused.
+
+    Also AUD-SFX-01 (the gun's sound) and DEV-API-02
+
+        (the last sounds).
+    """
     open_debug(page, "?level=1-1&t=5")
     page.keyboard.down("Space")
     step_until(page, lambda: "gun-shot" in game_state(page)["sounds"], lambda heard: heard)

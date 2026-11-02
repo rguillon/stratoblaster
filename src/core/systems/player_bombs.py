@@ -1,4 +1,5 @@
-"""The player's bombs (`specs/gameplay/bombs.md`)"""
+# Copyright (c) 2026 Renaud Guillon
+"""The player's bombs (`specs/gameplay/bombs.md`)."""
 
 INFINITY = float("Infinity")
 
@@ -27,8 +28,10 @@ class BombRules:
 
 
 class ActiveBomb:
-    """A bomb going off, for the visuals: where the ship was when it went off, and how long it has
-    been going off (`age`) out of `seconds`.
+    """A bomb going off, for the visuals.
+
+    Where the ship was when it went off, and how long it has been going off (`age`) out of
+    `seconds`.
     """
 
     def __init__(self, x: float, y: float, age: float, seconds: float) -> None:
@@ -48,13 +51,14 @@ class _BombState:
 
 
 class PlayerBombs:
-    """The bombs left (GAME-BOMB-01) and the bomb going off: one goes off per press while some are
-    left and none is active (GAME-BOMB-03); lives lost top them back up to the starting count
-    (GAME-BOMB-02). Pure.
+    """The bombs left (GAME-BOMB-01) and the bomb going off.
+
+    One goes off per press while some are left and none is active (GAME-BOMB-03); lives lost top
+    them back up to the starting count (GAME-BOMB-02). Pure.
     """
 
     def __init__(self, rules: BombRules, count: float | None = None) -> None:
-        """Starts with `count` bombs: the rules' start, or those kept from the level before."""
+        """Start with `count` bombs: the rules' start, or those kept from the level before."""
         self.rules = rules
         self.count = rules.start if count is None else count
         self._active: _BombState | None = None
@@ -70,8 +74,10 @@ class PlayerBombs:
         return ActiveBomb(bomb.x, bomb.y, bomb.age, self.rules.seconds)
 
     def fire(self, x: float, y: float) -> bool:
-        """Sets a bomb off at (`x`, `y`) if one is left and none is active; returns whether it
-        did."""
+        """Set a bomb off at (`x`, `y`) if one is left and none is active.
+
+        Returns whether it did.
+        """
         if self.count <= 0 or self._active is not None:
             return False
         self.count -= 1
@@ -80,8 +86,9 @@ class PlayerBombs:
         return True
 
     def add(self) -> bool:
-        """A bomb bonus (GAME-BONUS-09): one more bomb, up to the most if any. Returns whether it
-        was added.
+        """Return a bomb bonus (GAME-BONUS-09): one more bomb, up to the most if any.
+
+        Returns whether it was added.
         """
         most = self.rules.max if self.rules.max is not None else INFINITY
         if self.count >= most:
@@ -94,7 +101,7 @@ class PlayerBombs:
         self.count = max(self.count, self.rules.start)
 
     def step(self, dt: float) -> None:
-        """Counts down the bomb going off, if any."""
+        """Count down the bomb going off, if any."""
         bomb = self._active
         if bomb is None:
             return

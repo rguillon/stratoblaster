@@ -1,27 +1,26 @@
-"""Seeded pseudo-random numbers
+# Copyright (c) 2026 Renaud Guillon
+"""Seeded pseudo-random numbers.
 
 The generator is mulberry32 (ENG-18), written on unsigned 32-bit integers (see `bits.py`), so a
 seed gives the same sequence, in the game and in the tests (ENG-46).
 """
 
-from org.transcrypt.stubs.browser import __pragma__
+from core.math.bits import imul, u32, ushr, xor
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import TypeVar  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
 
 Random = Callable[[], float]
-T = TypeVar("T")
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
-from core.math.bits import imul, u32, ushr, xor  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 U32 = 4294967296
 
 
 def create_rng(seed: int) -> Random:
-    """A generator whose values lie in [0, 1); the same seed gives the same sequence."""
+    """Return a generator whose values lie in [0, 1); the same seed gives the same sequence."""
     state = [u32(seed)]
 
     def next_value() -> float:
@@ -35,12 +34,13 @@ def create_rng(seed: int) -> Random:
 
 
 def random_in(random: Random, low: float, high: float) -> float:
-    """A number in [low, high)."""
+    """Return a number in [low, high)."""
     return low + (high - low) * random()
 
 
-def pick(random: Random, items: Sequence[T]) -> T:  # noqa: UP047 (Transcrypt has no PEP 695)
+def pick[T](random: Random, items: Sequence[T]) -> T:
     """One of `items`, chosen uniformly."""
     if len(items) == 0:
-        raise ValueError("Cannot pick from an empty list")
+        msg = "Cannot pick from an empty list"
+        raise ValueError(msg)
     return items[int(random() * len(items))]

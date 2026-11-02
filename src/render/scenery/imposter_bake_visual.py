@@ -1,7 +1,10 @@
-"""The imposters' bake (D-211, GFX-PROP-10): every frame of every model drawn once into an atlas (a
-render target texture) by an orthographic camera looking the way the playfield camera does, then the
-material that shows them. Needs a WebGL engine (a `*_visual` module, ENG-114). See `imposters.py`
-for the layout.
+# Copyright (c) 2026 Renaud Guillon
+"""The imposters' bake (D-211, GFX-PROP-10).
+
+Every frame of every model drawn once into an atlas (a render target texture) by an orthographic
+camera looking the way the playfield camera does, then the material that shows them.
+
+Needs a WebGL engine (a `*_visual` module, ENG-114). See `imposters.py` for the layout.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -21,13 +24,15 @@ from render.babylon import (
 )
 from render.scenery.imposters import atlas_size, bake_geometry, view_axes
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from render.geometry.gradient_shapes import ColoredGeometry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.gradient_shapes import ColoredGeometry
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The layer only the bake camera sees (the scene's cameras see 0x0FFFFFFF).
 BAKE_LAYER = 0x10000000
@@ -41,14 +46,16 @@ BRIGHTER = 1.3
 READY_FRAMES = 2
 
 
-def _remove(array: Any, value: Any) -> None:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
-    """Removes `value` from the JavaScript array `array` (not named `items`: Transcrypt renames
-    that, and the JavaScript below would miss it)."""
+def _remove(array: Any, value: Any) -> None:
+    """Remove `value` from the JavaScript array `array`.
+
+    Its name is not `items`: Transcrypt renames that, and the JavaScript below would miss it.
+    """
     __pragma__("js", "{}", "const i = array.indexOf(value); if (i >= 0) array.splice(i, 1);")
 
 
-def _bake_mesh(scene: Any, geometry: ColoredGeometry) -> Any:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
-    """The frames' mesh, drawn unlit in its baked colours, seen by the bake camera only."""
+def _bake_mesh(scene: Any, geometry: ColoredGeometry) -> Any:
+    """Return the frames' mesh, drawn unlit in its baked colours, seen by the bake camera only."""
     mesh = new_mesh("imposter-bake", scene)
     data = new_vertex_data()
     data.positions = geometry.positions
@@ -69,9 +76,11 @@ def _bake_mesh(scene: Any, geometry: ColoredGeometry) -> Any:  # noqa: ANN401 (a
     return mesh
 
 
-def _bake_camera(scene: Any, look: Any, size: list[int], tilt: float) -> Any:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
-    """The orthographic camera that sees the frames as the playfield camera would, one frame per
-    `look.frameSize` across."""
+def _bake_camera(scene: Any, look: Any, size: list[int], tilt: float) -> Any:
+    """Return the orthographic camera that sees the frames as the playfield camera would.
+
+    One frame per `look.frameSize` across.
+    """
     axes = view_axes(tilt)
     towards = axes[2]
     d = BAKE_DISTANCE
@@ -96,8 +105,11 @@ def _bake_camera(scene: Any, look: Any, size: list[int], tilt: float) -> Any:  #
     return camera
 
 
-def _imposter_material(scene: Any, texture: Any, tone: float) -> Any:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
-    """The material of the imposters' quads: the atlas, cut out by its alpha, lit by the scene."""
+def _imposter_material(scene: Any, texture: Any, tone: float) -> Any:
+    """Return the material of the imposters' quads.
+
+    The atlas, cut out by its alpha, lit by the scene.
+    """
     material = new_standard_material("imposters", scene)
     material.diffuseTexture = texture
     # A little brighter than the props: lit by one normal, a car has no face turned to the sun.
@@ -111,14 +123,16 @@ def _imposter_material(scene: Any, texture: Any, tone: float) -> Any:  # noqa: A
 
 
 class ImposterAtlas:
-    """The atlas of `kinds` kinds of model, and the material that shows it (`material`). Its
-    frames are drawn by `bake`, over the next frames drawn; `baked` turns true once done. `tone`:
-    how bright the scene keeps its props (the structure's diffuse)."""
+    """The atlas of `kinds` kinds of model, and the material that shows it (`material`).
+
+    Its frames are drawn by `bake`, over the next frames drawn; `baked` turns true once done.
+    `tone`: how bright the scene keeps its props (the structure's diffuse).
+    """
 
     def __init__(
         self,
-        scene: Any,  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
-        look: Any,  # noqa: ANN401 (a config record)
+        scene: Any,
+        look: Any,
         kinds: int,
         tone: float,
     ) -> None:
@@ -135,8 +149,12 @@ class ImposterAtlas:
         self.baked = False
 
     def bake(self, models: list[ColoredGeometry], tilt: float) -> None:
-        """Draws every frame of `models` (by kind) into the atlas as the camera tilted by `tilt`
-        sees them. Makes a mesh and a camera, gone once the bake is done."""
+        """Draws every frame of `models` (by kind) into the atlas.
+
+        It draws them as the camera tilted by `tilt` sees them.
+
+        Makes a mesh and a camera, gone once the bake is done.
+        """
         scene = self._scene
         texture = self.texture
         mesh = _bake_mesh(scene, bake_geometry(models, self.look, tilt))

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/bosses/world_4/caldera_throne.py`."""
 
 from helpers.config_checks import assert_boss_design, original_parts
@@ -12,7 +13,8 @@ def test_fb_caldera_throne_09_boss_design_is_well_formed() -> None:
 
 def test_boss_07_boss_id_is_a_lowercase_kebab_case_kind() -> None:
     assert CALDERA_THRONE.id == CALDERA_THRONE.id.lower()
-    assert " " not in CALDERA_THRONE.id and "_" not in CALDERA_THRONE.id
+    assert " " not in CALDERA_THRONE.id
+    assert "_" not in CALDERA_THRONE.id
 
 
 def test_fb_caldera_throne_08_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
@@ -25,5 +27,6 @@ def test_fb_caldera_throne_08_boss_stats_are_in_the_range_the_sim_relies_on() ->
 
 def test_fb_caldera_throne_13_boss_has_an_angry_pattern_and_its_stage_count() -> None:
     """Its rage, and one stage pattern more than its parts (FB-CALDERA-THRONE-11)."""
-    assert isinstance(CALDERA_THRONE.rage, list) and CALDERA_THRONE.rage
+    assert isinstance(CALDERA_THRONE.rage, list)
+    assert CALDERA_THRONE.rage
     assert len(CALDERA_THRONE.stages) == len(original_parts(CALDERA_THRONE)) + 1

@@ -1,6 +1,9 @@
-"""Mixing limits of the sound effects (AUD-ENGINE-07): at most `max_voices` at once; when they
-are all taken, a new sound replaces the oldest one of lower or equal priority (or is dropped); the
-same sound started again within `retrigger_seconds` is not played twice. Pure: time is given.
+# Copyright (c) 2026 Renaud Guillon
+"""Mixing limits of the sound effects (AUD-ENGINE-07): at most `max_voices` at once.
+
+When they are all taken, a new sound replaces the oldest one of lower or equal priority (or is
+dropped); the same sound started again within `retrigger_seconds` is not played twice. Pure: time is
+given.
 """
 
 
@@ -17,8 +20,10 @@ class PoolVoice:
 
 
 class PoolDecision:
-    """What the pool decided for a sound: play it (in place of `evicted`), or not (`play` false;
-    `retrigger` says it was started again too soon)."""
+    """What the pool decided for a sound: play it (in place of `evicted`), or not.
+
+    `play` is false, and `retrigger` says it was started again too soon.
+    """
 
     def __init__(
         self, play: bool, voice_id: int, evicted: PoolVoice | None, retrigger: bool
@@ -65,7 +70,7 @@ class VoicePool:
         return PoolDecision(True, voice.id, evicted, False)
 
     def release(self, voice_id: int) -> None:
-        """A voice stopped early (a looping sound let go, or every sound stopped)."""
+        """Forget a voice that stopped early (a looping sound let go, or every sound stopped)."""
         index = self._index_of(voice_id)
         if index >= 0:
             self._voices.pop(index)
@@ -104,7 +109,7 @@ class VoicePool:
             i -= 1
 
     def _victim(self, priority: float) -> PoolVoice | None:
-        """The oldest voice whose priority is not above `priority`."""
+        """Return the oldest voice whose priority is not above `priority`."""
         oldest: PoolVoice | None = None
         for voice in self._voices:
             if voice.priority <= priority and (oldest is None or voice.start < oldest.start):

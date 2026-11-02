@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/enemy_look_elite.py`."""
 
 from game.config.enemy_look_elite import ELITE_NEON

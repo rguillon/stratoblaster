@@ -1,4 +1,5 @@
-"""The Narwhal (FB-NARWHAL-01 to FB-NARWHAL-05, 2-1)
+# Copyright (c) 2026 Renaud Guillon
+"""The Narwhal (FB-NARWHAL-01 to FB-NARWHAL-05, 2-1).
 
 The final boss of the Ice floes level. Logical pixels, nose +Z, Y up (towards the camera). A long
 flying submarine: a round hull with a sail on its back, cruciform tail planes and a shrouded
@@ -7,28 +8,26 @@ propeller, teal neon along its back; its spiral horn, torpedo tubes and ballast 
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.boss_look import BOSS_LOOK
 from game.config.bosses.world_2.narwhal import NARWHAL, NARWHAL_EMITTER
 from game.config.enemy_look import ENEMY_LOOK
 from game.config.record import record
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.boss_model import build_boss_model
 from game.view.bosses.final_boss_shapes import edge_strips, shift, turret
 from game.view.bosses.mini_boss_greebles import plate, rect
-from game.view.bosses.world_2.floe_breaker_frost import FROST  # noqa: E402
-from game.view.bosses.world_2.narwhal_details import (  # noqa: E402
+from game.view.bosses.world_2.floe_breaker_frost import FROST
+from game.view.bosses.world_2.narwhal_details import (
     deck_dressing,
     hull_dressing,
 )
-from game.view.bosses.world_2.narwhal_parts import (  # noqa: E402
+from game.view.bosses.world_2.narwhal_parts import (
     SUB_SECTION,
     ballast_pod,
     horn_lance,
     torpedo_tube,
 )
-from game.view.bosses.world_2.w2_organic import (  # noqa: E402
+from game.view.bosses.world_2.w2_organic import (
     ICE_FLESH,
     crystals,
     gland,
@@ -39,17 +38,19 @@ from game.view.enemies.enemy_shapes import SIDES, flip_x, side_stripe
 from render.geometry.organic import RibSpec, organ, ribs
 from render.geometry.solids import LoftOptions, Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 N = BOSS_LOOK.neon.narwhal
-if N == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+if N == None:
     N = [0.05, 0.95, 0.75]
 WHITE = [1, 1, 1]
 QUARTER = math.pi / 2
@@ -121,15 +122,15 @@ def hull_paint(side: int, band: int) -> Any:
     return None
 
 
-def sail_paint(side: int, band: int) -> Any:
-    """The sail's flat top under its snow cap (FB-NARWHAL-05)."""
+def sail_paint(side: int, _band: int) -> Any:
+    """Return the sail's flat top under its snow cap (FB-NARWHAL-05)."""
     if side == BACK:
         return ICE_FLESH.rime
     return None
 
 
 def draw_hull(p: EnemyParts) -> None:
-    """The pressure hull, its teal neon along the back, and the ballast pods' pylons."""
+    """Draw the pressure hull, its teal neon along the back, and the ballast pods' pylons."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -158,7 +159,7 @@ def draw_hull(p: EnemyParts) -> None:
 
 
 def draw_sail(p: EnemyParts) -> None:
-    """The sail, its planes and the spiral emitter on its top."""
+    """Draw the sail, its planes and the spiral emitter on its top."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -191,7 +192,7 @@ def draw_sail(p: EnemyParts) -> None:
 
 
 def draw_tail(p: EnemyParts) -> None:
-    """The cruciform tail: stern planes, rudders, the propeller shroud and its reactor."""
+    """Draw the cruciform tail: stern planes, rudders, the propeller shroud and its reactor."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -245,14 +246,16 @@ def draw_deck(p: EnemyParts) -> None:
 
 
 def deck_gun(p: EnemyParts, at: list[float]) -> None:
-    """The deck gun on the forward deck (the core's turret, FB-NARWHAL-03), around its pivot
-    `at`."""
+    """Add the deck gun on the forward deck (the core's turret, FB-NARWHAL-03).
+
+    Drawn around its pivot `at`.
+    """
     p.hull.cylinder(6.5, 2, 8, H.dark, Placement(shift(at, [0, 15, 0])))
     turret(p, shift(at, [0, 16.5, 0]), 7, [2, N])
 
 
 def draw_core(p: EnemyParts) -> None:
-    """The core body: hull, sail, tail, deck, and the hull and deck dressing."""
+    """Draw the core body: hull, sail, tail, deck, and the hull and deck dressing."""
     draw_hull(p)
     draw_sail(p)
     draw_tail(p)
@@ -262,42 +265,42 @@ def draw_core(p: EnemyParts) -> None:
 
 
 def draw_lance(p: EnemyParts, at: list[float]) -> None:
-    """The horn lance, a part."""
+    """Draw the horn lance, a part."""
     horn_lance(p, at, N)
 
 
 def draw_tube(p: EnemyParts, at: list[float]) -> None:
-    """A torpedo tube on a flank, a part (both flanks)."""
+    """Draw a torpedo tube on a flank, a part (both flanks)."""
     torpedo_tube(p, at, N)
 
 
 def draw_pod(p: EnemyParts, at: list[float]) -> None:
-    """A ballast pod on its pylon, a part (both sides)."""
+    """Draw a ballast pod on its pylon, a part (both sides)."""
     ballast_pod(p, at, N)
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
-    """The `BossDrawing` of a boss model: what the model is drawn from."""
+    """Return the `BossDrawing` of a boss model: what the model is drawn from."""
     return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
 
 
 def build_narwhal(scene: Any) -> BuiltEnemyModel:
-    """FB-NARWHAL-01, FB-NARWHAL-04: the Narwhal, a long flying submarine 5 L from its tail to the
-    tip of its spiral horn, teal neon along its back; its horn lance, two torpedo tubes on its
-    flanks and two ballast pods on pylons are its parts, its deck gun and the emitter on its sail
-    the core's guns.
+    """FB-NARWHAL-01, FB-NARWHAL-04: the Narwhal.
+
+    A long flying submarine 5 L from its tail to the tip of its spiral horn, teal neon along its
+    back; its horn lance, two torpedo tubes on its flanks and two ballast pods on pylons are its
+    parts, its deck gun and the emitter on its sail the core's guns.
+
     FB-NARWHAL-02: now a living cyber-narwhal, a whale of cold flesh, ribbed, with fins and flukes,
     its horn of bone; its torpedo tubes and ballast sacs swell from its flanks, metal grafted on.
     """
-    parts = record(
-        {
-            "lance": draw_lance,
-            "tube-left": draw_tube,
-            "tube-right": draw_tube,
-            "pod-left": draw_pod,
-            "pod-right": draw_pod,
-        }
-    )
+    parts = record({
+        "lance": draw_lance,
+        "tube-left": draw_tube,
+        "tube-right": draw_tube,
+        "pod-left": draw_pod,
+        "pod-right": draw_pod,
+    })
     turrets = record({"core": deck_gun})
     return build_boss_model(
         NARWHAL,

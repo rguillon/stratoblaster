@@ -1,4 +1,5 @@
-"""Building blocks of the boss designs (BOSS-07: a boss is data and a model)
+# Copyright (c) 2026 Renaud Guillon
+"""Building blocks of the boss designs (BOSS-07: a boss is data and a model).
 
 Logical pixels with X right and Y up, from the boss's centre; the boss faces down the screen, so
 its nose is at -Y and its tail at +Y. Times in seconds, angles in degrees, speeds in px/s.
@@ -23,17 +24,17 @@ still while the beam fires), `gun` (bullets), `ring` (a ring of bullets; the `gu
 omitted), `missile` and `laser`, each a list of muzzles `[x, y, height]`.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.enemies import ENEMY_UNIT
 from game.config.record import concat, merge, record
 from game.config.scoring import boss_part_points
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # `L`, the length of the medium player ship (as for the enemies).
 L = ENEMY_UNIT
@@ -41,25 +42,23 @@ L = ENEMY_UNIT
 
 def _unset(value: Any) -> bool:
     """Whether a field is missing or null: `=== undefined` or `=== null` in the TS."""
-    return bool(value == None)  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    return bool(value == None)
 
 
 # Which of a piece's guns fire each kind of volley (`FIRED_BY` in the TS).
-FIRED_BY = record(
-    {
-        "aimed": lambda guns: guns.gun,
-        "fan": lambda guns: guns.gun,
-        "burst": lambda guns: guns.gun,
-        "ring": lambda guns: guns.gun if _unset(guns.ring) else guns.ring,
-        "missiles": lambda guns: guns.missile,
-        "laser": lambda guns: guns.laser,
-        "launch": lambda guns: [],
-    }
-)
+FIRED_BY = record({
+    "aimed": lambda guns: guns.gun,
+    "fan": lambda guns: guns.gun,
+    "burst": lambda guns: guns.gun,
+    "ring": lambda guns: guns.gun if _unset(guns.ring) else guns.ring,
+    "missiles": lambda guns: guns.missile,
+    "laser": lambda guns: guns.laser,
+    "launch": lambda _guns: [],
+})
 
 
 def volley_muzzles(design: Any, shot: Any) -> Any:
-    """The muzzles `volley` fires from, among its piece's guns (none for launches)."""
+    """Return the muzzles `volley` fires from, among its piece's guns (none for launches)."""
     guns = design.guns[shot["from"]]
     if _unset(guns):
         guns = record({})
@@ -97,38 +96,36 @@ def cells(xs: list[Any], ys: list[Any], height: float) -> list[list[Any]]:
 # `kind` ('gnats' or 'hornets'), `count`, `every` and `first` (optional).
 
 # Shared timings of every boss (tunable values of specs/bosses/common.md).
-BOSS_TIMING = record(
-    {
-        # No fire for this long after a part is destroyed (BOSS-22, `stage_change_pause`).
-        "stagePause": 1,
-        # Blasts over the hull for about 2 s, then the big one (BOSS-19).
-        "death": {"seconds": 2, "every": 0.16},
-        # How far above the top edge a boss appears, and how fast it comes in (about 3 s,
-        # BOSS-08).
-        "spawnMargin": 30,
-        "entrySpeed": 75,
-        # Speed it eases into its place at, and the distance over which it brakes.
-        "brakeDistance": 60,
-        # It rolls into its sideways moves (phase 7 review, BOSS-11): up to `maxDeg` at
-        # `fullSpeed` px/s across (about its fastest sway), easing towards it `easePerSec` of the
-        # way a second.
-        "roll": {"maxDeg": 12, "fullSpeed": 60, "easePerSec": 4},
-        # Degrees a second a turret turns at, following the player (phase 7 review).
-        "turretTurnDeg": 150,
-        # Degrees a second a laser turret follows the player at during the warning line (phase 8
-        # review): about half as fast as the ship crosses its aim from 300 px away, so it can be
-        # outrun.
-        "laserTurnDeg": 20,
-        # Seconds a boss is angry after the pause that follows each destroyed part (BOSS-27).
-        "rageSeconds": 3,
-        # Seconds a transformation lasts (its armour bursts off and its hidden weapons unfold,
-        # docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md, D-224): it neither
-        # fires nor takes damage meanwhile (BOSS-37).
-        "transformSeconds": 2.0,
-        # Blasts each armour region it sheds bursts in, at most.
-        "regionBlasts": 5,
-    }
-)
+BOSS_TIMING = record({
+    # No fire for this long after a part is destroyed (BOSS-22, `stage_change_pause`).
+    "stagePause": 1,
+    # Blasts over the hull for about 2 s, then the big one (BOSS-19).
+    "death": {"seconds": 2, "every": 0.16},
+    # How far above the top edge a boss appears, and how fast it comes in (about 3 s,
+    # BOSS-08).
+    "spawnMargin": 30,
+    "entrySpeed": 75,
+    # Speed it eases into its place at, and the distance over which it brakes.
+    "brakeDistance": 60,
+    # It rolls into its sideways moves (phase 7 review, BOSS-11): up to `maxDeg` at
+    # `fullSpeed` px/s across (about its fastest sway), easing towards it `easePerSec` of the
+    # way a second.
+    "roll": {"maxDeg": 12, "fullSpeed": 60, "easePerSec": 4},
+    # Degrees a second a turret turns at, following the player (phase 7 review).
+    "turretTurnDeg": 150,
+    # Degrees a second a laser turret follows the player at during the warning line (phase 8
+    # review): about half as fast as the ship crosses its aim from 300 px away, so it can be
+    # outrun.
+    "laserTurnDeg": 20,
+    # Seconds a boss is angry after the pause that follows each destroyed part (BOSS-27).
+    "rageSeconds": 3,
+    # Seconds a transformation lasts (its armour bursts off and its hidden weapons unfold,
+    # docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md, D-224): it neither
+    # fires nor takes damage meanwhile (BOSS-37).
+    "transformSeconds": 2.0,
+    # Blasts each armour region it sheds bursts in, at most.
+    "regionBlasts": 5,
+})
 
 
 def bullet(style: str, speed: float, radius: float = 4) -> Any:
@@ -137,45 +134,41 @@ def bullet(style: str, speed: float, radius: float = 4) -> Any:
 
 
 # Boss missiles: like the Rocketeer's, and shot down the same way (BOSS-23).
-MISSILE = record(
-    {
-        "speed": 140,
-        "turnRateDeg": 80,
-        "homingSeconds": 3,
-        "radius": 5,
-        "health": 10,
-        "style": "rocketeer",
-    }
-)
+MISSILE = record({
+    "speed": 140,
+    "turnRateDeg": 80,
+    "homingSeconds": 3,
+    "radius": 5,
+    "health": 10,
+    "style": "rocketeer",
+})
 
 
 def laser_of(firing_seconds: float, width: float = 12) -> Any:
     """Boss lasers: the Lancer's, with its 1 s warning line (BOSS-30)."""
-    return record(
-        {
-            "warningSeconds": 1,
-            "firingSeconds": firing_seconds,
-            "width": width,
-            "style": "lancer",
-        }
-    )
+    return record({
+        "warningSeconds": 1,
+        "firingSeconds": firing_seconds,
+        "width": width,
+        "style": "lancer",
+    })
 
 
 def bursting(style: str, speed: float, radius: float, spec: list[Any]) -> Any:
-    """A slow, big bullet of `style` that bursts into a ring of `count` small ones `after` seconds
-    from its firing (phase 8: the Aurora Station's cryo cannons).
+    """Return a slow.
+
+    Big bullet of `style` that bursts into a ring of `count` small ones `after` seconds from its
+    firing (phase 8: the Aurora Station's cryo cannons).
 
     `spec` is `[after, count, small]`, with `small` the bullet of the ring.
     """
     after, count, small = spec
-    return record(
-        {
-            "speed": speed,
-            "radius": radius,
-            "style": style,
-            "burst": {"after": after, "count": count, "bullet": small},
-        }
-    )
+    return record({
+        "speed": speed,
+        "radius": radius,
+        "style": style,
+        "burst": {"after": after, "count": count, "bullet": small},
+    })
 
 
 def part(
@@ -185,22 +178,23 @@ def part(
     health: float,
     options: Any = None,
 ) -> Any:
-    """A part: `options` holds `shields`, `drop`, `orbits`, `joint`, `reveal` and `retire` (all
-    optional; `drop`: its chance to drop a weapon bonus, a mini boss part's by default, BOSS-57,
-    GAME-BONUS-04; `reveal`: the transformation that reveals a hidden weapon part, 1 for the
-    first; `retire`: the transformation it leaves the fight at, D-228)."""
+    """Return a part.
+
+    `options` holds `shields`, `drop`, `orbits`, `joint`, `reveal` and `retire` (all optional;
+    `drop`: its chance to drop a weapon bonus, a mini boss part's by default, BOSS-57,
+    GAME-BONUS-04; `reveal`: the transformation that reveals a hidden weapon part, 1 for the first;
+    `retire`: the transformation it leaves the fight at, D-228).
+    """
     opts: Any = record({}) if _unset(options) else record(options)
-    result = record(
-        {
-            "id": part_id,
-            "x": position[0],
-            "y": position[1],
-            "radius": radius,
-            "health": health,
-            "shieldsCore": True if _unset(opts.shields) else opts.shields,
-            "dropChance": 0.5 if _unset(opts.drop) else opts.drop,
-        }
-    )
+    result = record({
+        "id": part_id,
+        "x": position[0],
+        "y": position[1],
+        "radius": radius,
+        "health": health,
+        "shieldsCore": True if _unset(opts.shields) else opts.shields,
+        "dropChance": 0.5 if _unset(opts.drop) else opts.drop,
+    })
     if opts.orbits:
         result["orbits"] = True
     if not _unset(opts.joint):
@@ -213,7 +207,7 @@ def part(
 
 
 def stats(options: Any) -> Any:
-    """The numbers of a boss of `size` L across.
+    """Return the numbers of a boss of `size` L across.
 
     `options`: `id`, `name`, `size`, `coreRadius`, `coreHealth`, `points`, `groundSpeed` (the
     fight's ground speed, BOSS-03), `parts`, and optionally `coreDrop` and `joints` (its moving
@@ -221,22 +215,20 @@ def stats(options: Any) -> Any:
     (GAME-SCORE-04).
     """
     options = record(options)
-    result = record(
-        {
-            "model": options.id,
-            "name": options["name"],
-            "radius": (options.size * L) / 2,
-            "coreRadius": options.coreRadius,
-            "health": options.coreHealth,
-            "points": options.points,
-            "partPoints": boss_part_points(options.points),
-            "groundSpeed": options.groundSpeed,
-            "parts": options.parts,
-            "stagePause": BOSS_TIMING.stagePause,
-            "death": BOSS_TIMING.death,
-            "roll": BOSS_TIMING.roll,
-        }
-    )
+    result = record({
+        "model": options.id,
+        "name": options["name"],
+        "radius": (options.size * L) / 2,
+        "coreRadius": options.coreRadius,
+        "health": options.coreHealth,
+        "points": options.points,
+        "partPoints": boss_part_points(options.points),
+        "groundSpeed": options.groundSpeed,
+        "parts": options.parts,
+        "stagePause": BOSS_TIMING.stagePause,
+        "death": BOSS_TIMING.death,
+        "roll": BOSS_TIMING.roll,
+    })
     if not _unset(options.coreDrop):
         result["coreDropChance"] = options.coreDrop
     if not _unset(options.joints):
@@ -245,16 +237,19 @@ def stats(options: Any) -> Any:
 
 
 def stages(parts: list[Any], core: list[list[Any]]) -> list[Any]:
-    """The stages of a boss: the parts' volleys in every stage (each stops with its part), and
-    the core's own volleys, one list per stage. The core's volleys differ from a stage to the
-    next, so every stage fires another pattern (BOSS-21).
+    """Return the stages of a boss.
+
+    The parts' volleys in every stage (each stops with its part), and the core's own volleys, one
+    list per stage. The core's volleys differ from a stage to the next, so every stage fires another
+    pattern (BOSS-21).
     """
     return [concat(parts, own) for own in core]
 
 
 def only_while(shot: Any, part_id: str) -> Any:
-    """`volley` fired only while the part `part` stands (`needs`, BOSS-24): phase 8, the Fjord
-    Lynx's radar mast.
+    """`volley` fired only while the part `part` stands (`needs`, BOSS-24).
+
+    Phase 8, the Fjord Lynx's radar mast.
     """
     return merge(shot, {"needs": part_id})
 
@@ -265,8 +260,11 @@ def only_after(shot: Any, part_id: str) -> Any:
 
 
 def sweeping(shot: Any) -> Any:
-    """A laser `volley` whose beam sweeps after the player while it fires (its turret keeps
-    following, as slowly as through its warning line, BOSS-31), instead of holding still."""
+    """Return a laser `volley` whose beam sweeps after the player while it fires.
+
+    Its turret keeps following, as slowly as through its warning line (BOSS-31), instead of holding
+    still.
+    """
     return merge(
         shot, {"shape": merge(shot.shape, {"laser": merge(shot.shape.laser, {"sweeps": True})})}
     )
@@ -286,7 +284,7 @@ def _volley_aimed(
     return _shot(source, every, first, shape)
 
 
-def _volley_fan(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def _volley_fan(
     source: str,
     every: float,
     count: float,
@@ -295,15 +293,13 @@ def _volley_fan(  # noqa: PLR0917 (positional: Transcrypt has no keyword argumen
     first: Any = None,
     heading_deg: float = 0,
 ) -> Any:
-    shape = record(
-        {
-            "kind": "fan",
-            "headingDeg": heading_deg,
-            "count": count,
-            "spacingDeg": spacing_deg,
-            "bullet": b,
-        }
-    )
+    shape = record({
+        "kind": "fan",
+        "headingDeg": heading_deg,
+        "count": count,
+        "spacingDeg": spacing_deg,
+        "bullet": b,
+    })
     return _shot(source, every, first, shape)
 
 
@@ -324,13 +320,16 @@ def _volley_burst(
 def _volley_missiles(
     source: str, every: float, count: float, spacing_deg: float, first: Any = None
 ) -> Any:
-    shape = record(
-        {"kind": "missiles", "count": count, "spacingDeg": spacing_deg, "missile": MISSILE}
-    )
+    shape = record({
+        "kind": "missiles",
+        "count": count,
+        "spacingDeg": spacing_deg,
+        "missile": MISSILE,
+    })
     return _shot(source, every, first, shape)
 
 
-def _volley_laser(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def _volley_laser(
     source: str, every: float, firing_seconds: float, first: Any = None, width: Any = None
 ) -> Any:
     beam = laser_of(firing_seconds) if _unset(width) else laser_of(firing_seconds, width)
@@ -339,21 +338,20 @@ def _volley_laser(  # noqa: PLR0917 (positional: Transcrypt has no keyword argum
 
 
 # Volleys, `from` a part id or `core` (BOSS-23). `first` defaults to `every`.
-volley = record(
-    {
-        "aimed": _volley_aimed,
-        "fan": _volley_fan,
-        "ring": _volley_ring,
-        "burst": _volley_burst,
-        "missiles": _volley_missiles,
-        "laser": _volley_laser,
-    }
-)
+volley = record({
+    "aimed": _volley_aimed,
+    "fan": _volley_fan,
+    "ring": _volley_ring,
+    "burst": _volley_burst,
+    "missiles": _volley_missiles,
+    "laser": _volley_laser,
+})
 
 
 def with_own_lasers(design: Any) -> Any:
-    """`design` with its lasers drawn in its own colour (phase 8 review, BOSS-32): their style is
-    its kind id, which the laser renderer colours with the boss's neon.
+    """`design` with its lasers drawn in its own colour (phase 8 review, BOSS-32).
+
+    Their style is its kind id, which the laser renderer colours with the boss's neon.
     """
 
     def own(pattern: list[Any]) -> list[Any]:

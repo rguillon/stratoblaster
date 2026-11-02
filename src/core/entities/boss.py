@@ -1,4 +1,5 @@
-"""Bosses (BOSS-07)
+# Copyright (c) 2026 Renaud Guillon
+"""Bosses (BOSS-07).
 
 Bosses are big enemies made of a core and destroyable parts (BOSS-12). Positions are playfield
 logical pixels, X to the right, Y up. A boss faces down the screen and does not turn: its parts
@@ -9,35 +10,33 @@ Subclasses override the hooks `_hit_targets` and `_shot_targets`, never the prop
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from core.entities.boss_joint import BossJoints
 from core.entities.boss_pieces import BossCore, BossPart
 from core.entities.boss_roll import roll_towards
 from core.entities.enemy import Enemy, EnemyStats
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Literal  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
+from typing import Literal
 
-from core.entities.boss_joint import BossJointSpec  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.entities.boss_roll import BossRoll  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.entities.boss_turret import BossTurretSpec  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.entities.shot_target import ShotTarget  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.boss_joint import BossJointSpec
+from core.entities.boss_roll import BossRoll
+from core.entities.boss_turret import BossTurretSpec
+from core.entities.enemy import EnemyContext
+from core.entities.shot_target import ShotTarget
 
 BossState = Literal["entering", "fighting", "transforming", "dying"]
-
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class BossPartSpec:
     """A destroyable part of a boss (BOSS-12): a turret, a pod, an armour plate..."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
-        id: str,
+        id_: str,
         x: float,
         y: float,
         radius: float,
@@ -49,18 +48,19 @@ class BossPartSpec:
         reveal: int | None = None,
         retire: int | None = None,
     ) -> None:
-        """`x` and `y` are its offset from the boss's centre (X right, Y up). `shields_core`: while
-        this part is there, the core takes no damage. `drop_chance` is the chance (0..1) that it
-        drops a bonus when the player destroys it (BOSS-57). `orbits`: whether it turns around the
-        boss's centre with `BossStats.spin` (e.g. on a turning ring). `joint`: the joint it hangs on
-        (phase 7 review): it moves with it, see `BossStats.joints`. `reveal`: the transformation
-        that reveals it (1 for the first); hidden until then, it cannot be hit, does not shield the
-        core and does not fire (BOSS-38). None for a part there from the start. `retire`: the
-        transformation it leaves the fight at (D-228: another part takes over from it), from the
-        moment it starts: hidden from then on, it is not destroyed (the boss's stage does not
-        change) and no longer counts in its health. None for a part there to the end.
+        """`x` and `y` are its offset from the boss's centre (X right, Y up).
+
+        `shields_core`: while this part is there, the core takes no damage. `drop_chance` is the
+        chance (0..1) that it drops a bonus when the player destroys it (BOSS-57). `orbits`: whether
+        it turns around the boss's centre with `BossStats.spin` (e.g. on a turning ring). `joint`:
+        the joint it hangs on (phase 7 review): it moves with it, see `BossStats.joints`. `reveal`:
+        the transformation that reveals it (1 for the first); hidden until then, it cannot be hit,
+        does not shield the core and does not fire (BOSS-38). None for a part there from the start.
+        `retire`: the transformation it leaves the fight at (D-228: another part takes over from
+        it), from the moment it starts: hidden from then on, it is not destroyed (the boss's stage
+        does not change) and no longer counts in its health. None for a part there to the end.
         """
-        self.id = id
+        self.id = id_
         self.x = x
         self.y = y
         self.radius = radius
@@ -78,7 +78,8 @@ class BossDeath:
 
     def __init__(self, seconds: float, every: float) -> None:
         if not every > 0:
-            raise ValueError("A boss's death blasts need a positive interval")
+            msg = "A boss's death blasts need a positive interval"
+            raise ValueError(msg)
         self.seconds = seconds
         self.every = every
 
@@ -86,7 +87,7 @@ class BossDeath:
 class BossStats(EnemyStats):
     """Fixed numbers of a boss. `health` is its core's, `radius` the size of the whole boss."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         model: str,
         radius: float,
@@ -109,7 +110,7 @@ class BossStats(EnemyStats):
         transform_parts: list[list[str]] | None = None,
         turns: list[float] | None = None,
     ) -> None:
-        """The optional fields come last:
+        """Set the boss's fixed numbers; the optional fields come last.
 
         - `core_radius`: hit radius of the core.
         - `ground_speed`: factor on the level's ground speed while it is fought (BOSS-03).
@@ -153,13 +154,14 @@ class BossStats(EnemyStats):
 
 
 class Boss(Enemy):
-    """Base of every boss (BOSS-12, BOSS-20): a core and destroyable parts that the player's
-    shots hit one by one. It goes through stages, one more each time a part is destroyed, pausing
-    its fire for `stage_pause` at each; it blows up over `death.seconds` once its core has no health
-    left; after each pause it may be angry for `rage_seconds`. Concrete bosses (in the game) say how
-    they come in (`enter`), move (`move`), fire (`update_pattern`) and fire when angry
-    (`update_rage`, optional: set it in the subclass); they may react to a new stage
-    (`on_stage_change`, optional).
+    """Base of every boss (BOSS-12, BOSS-20).
+
+    A core and destroyable parts that the player's shots hit one by one. It goes through stages, one
+    more each time a part is destroyed, pausing its fire for `stage_pause` at each; it blows up over
+    `death.seconds` once its core has no health left; after each pause it may be angry for
+    `rage_seconds`. Concrete bosses (in the game) say how they come in (`enter`), move (`move`),
+    fire (`update_pattern`) and fire when angry (`update_rage`, optional: set it in the subclass);
+    they may react to a new stage (`on_stage_change`, optional).
 
     Its `health` (as an `Enemy`) only says whether it is still there: it drops to 0 when its death
     blasts are over, and the enemy world then removes it as destroyed.
@@ -226,7 +228,7 @@ class Boss(Enemy):
     def core_shielded(self) -> bool:
         """Whether some part that shields the core is still there (and not hidden, BOSS-14)."""
         return any(
-            [part.shields_core and not part.destroyed and not part.hidden for part in self.parts]
+            part.shields_core and not part.destroyed and not part.hidden for part in self.parts
         )
 
     @property
@@ -236,8 +238,9 @@ class Boss(Enemy):
 
     @property
     def full_health(self) -> float:
-        """Health of the core and every part when it arrives (its health bar's full length,
-        BOSS-54).
+        """Health of the core and every part when it arrives.
+
+        This is its health bar's full length (BOSS-54).
         """
         total = self.stats.health
         for part in self.parts:
@@ -257,16 +260,17 @@ class Boss(Enemy):
         return self._targets
 
     def _shot_targets(self) -> list[ShotTarget]:
-        """Its intact parts, and its core unless it is fighting with its core shielded
-        (BOSS-15): shots then go through the core to the parts behind it. Coming in, shots spark on
-        all of it (BOSS-09).
+        """Return its intact parts, and its core unless it is fighting with its core shielded.
+
+        With its core shielded (BOSS-15), shots go through the core to the parts behind it. Coming
+        in, shots spark on all of it (BOSS-09).
         """
         if self.vulnerable and self.core_shielded:
             return self._intact_parts
         return self._targets
 
     def hurt_core(self, value: float) -> None:
-        """Sets the core's health; at 0 the boss starts blowing up. Used by its `core`."""
+        """Set the core's health; at 0 the boss starts blowing up. Used by its `core`."""
         if value > 0:
             self._core_health = value
         else:
@@ -274,8 +278,10 @@ class Boss(Enemy):
 
     def break_next(self) -> None:
         """Destroys its next intact part, or its core once they are all gone (debug, DEV-OPT-09).
+
         Hidden parts are skipped; a transformation going on is finished at once, and one it had no
-        time for (all its parts broken as it came in) is done at once."""
+        time for (all its parts broken as it came in) is done at once.
+        """
         if self.state == "dying":
             return
         if self.state == "transforming":
@@ -285,7 +291,7 @@ class Boss(Enemy):
             if not part.destroyed and not part.hidden:
                 part.destroy()
                 return
-        if any([part.hidden and not part.retired for part in self.parts]):
+        if any(part.hidden and not part.retired for part in self.parts):
             # Its parts all broken before it could transform (coming in): it reveals its next
             # weapons at once.
             self.form += 1
@@ -294,8 +300,10 @@ class Boss(Enemy):
         self._start_dying()
 
     def update(self, ctx: EnemyContext, dt: float) -> None:
-        """Steps the boss for `dt` seconds: its joints swing, a dying boss blows up, otherwise its
-        destroyed parts are broken off, it enters or moves, and its parts are placed."""
+        """Step the boss for `dt` seconds: its joints swing, a dying boss blows up.
+
+        Otherwise its destroyed parts are broken off, it enters or moves, and its parts are placed.
+        """
         self.core.since_hit += dt
         for part in self.parts:
             part.since_hit += dt
@@ -329,22 +337,24 @@ class Boss(Enemy):
 
     def enter(self, ctx: EnemyContext, dt: float) -> bool:
         """Comes in for `dt` seconds; returns True once in place (it can then be damaged).
+
         Abstract.
         """
         raise NotImplementedError
 
     def move(self, ctx: EnemyContext, dt: float) -> None:
-        """Moves for `dt` seconds once in place. Abstract."""
+        """Move for `dt` seconds once in place. Abstract."""
         raise NotImplementedError
 
     def update_pattern(self, ctx: EnemyContext, dt: float) -> None:
-        """Fires the pattern of the current stage for `dt` seconds (not during a pause).
+        """Fire the pattern of the current stage for `dt` seconds (not during a pause).
+
         Abstract.
         """
         raise NotImplementedError
 
     def _break_parts(self, ctx: EnemyContext) -> None:
-        """Takes the parts destroyed since the last step into account: a stage more for each."""
+        """Take the parts destroyed since the last step into account: a stage more for each."""
         changed = False
         for part in self.parts:
             if not part.destroyed or part.broken:
@@ -368,7 +378,7 @@ class Boss(Enemy):
             destroyed = [p.spec.id for p in self.parts if p.destroyed]
             due = 0
             for ids in wanted:
-                if not all([i in destroyed for i in ids]):
+                if not all(i in destroyed for i in ids):
                     break
                 due += 1
             return due
@@ -387,7 +397,7 @@ class Boss(Enemy):
         return turn
 
     def _maybe_transform(self, ctx: EnemyContext) -> None:
-        """Starts its next transformation if one is due and it is fighting."""
+        """Start its next transformation if one is due and it is fighting."""
         if self.state != "fighting" or self._forms_due() <= self.form:
             return
         self.state = "transforming"
@@ -401,8 +411,10 @@ class Boss(Enemy):
             self.on_transform(self.form + 1, ctx)
 
     def _transforming(self, ctx: EnemyContext, dt: float) -> None:
-        """Goes on with its transformation; once over, it reveals its parts, and may start the
-        next one."""
+        """Goes on with its transformation; once over, it reveals its parts.
+
+        And may start the next one.
+        """
         seconds = self.stats.transform_seconds
         self._transform_for += dt
         self.transform = min(1, self._transform_for / seconds) if seconds > 0 else 1
@@ -457,7 +469,7 @@ class Boss(Enemy):
             self.health = 0
 
     def _roll(self, dt: float) -> None:
-        """Rolls into its move across the screen since the last step, easing in and out."""
+        """Roll into its move across the screen since the last step, easing in and out."""
         rule = self.stats.roll
         vx = (self.x - self._last_x) / dt if dt > 0 else 0
         self._last_x = self.x

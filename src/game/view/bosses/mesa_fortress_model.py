@@ -1,20 +1,20 @@
-"""FB-MESA-FORTRESS-01 to FB-MESA-FORTRESS-04: the Mesa Fortress, the final boss of 1-3 Logical
-pixels, nose +Z, Y up (towards the camera). A colossal
-canyon tortoise: a wide skirt of hide under a high, stepped shell like the mesas, plated with
-grafted armour, a fan cannon on its brow, a forelimb on each side cradling a laser lance, two spore
-silos on its back, red veins along its shell.
+# Copyright (c) 2026 Renaud Guillon
+"""FB-MESA-FORTRESS-01 to FB-MESA-FORTRESS-04: the Mesa Fortress.
+
+The final boss of 1-3 Logical pixels, nose +Z, Y up (towards the camera). A colossal canyon
+tortoise: a wide skirt of hide under a high, stepped shell like the mesas, plated with grafted
+armour, a fan cannon on its brow, a forelimb on each side cradling a laser lance, two spore silos on
+its back, red veins along its shell.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.config.bosses.final_bosses import MESA_FORTRESS  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.final_boss_mesa import BASE_TOP, draw_lance, draw_silo  # noqa: E402
-from game.view.bosses.final_boss_shapes import edge_strips, mirrored, shift, sided  # noqa: E402
-from game.view.bosses.world_1_organic_kit import (  # noqa: E402
+from game.config.boss_look import BOSS_LOOK
+from game.config.bosses.final_bosses import MESA_FORTRESS
+from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.final_boss_mesa import BASE_TOP, draw_lance, draw_silo
+from game.view.bosses.final_boss_shapes import edge_strips, mirrored, shift, sided
+from game.view.bosses.world_1_organic_kit import (
     F,
     M,
     barbs,
@@ -28,33 +28,33 @@ from game.view.bosses.world_1_organic_kit import (  # noqa: E402
     tentacle,
     vein_line,
 )
-from game.view.enemies.enemy_shapes import SIDES  # noqa: E402
-from game.view.enemies.organic_parts import eyes, reactor_sac  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
+from game.view.enemies.enemy_shapes import SIDES
+from game.view.enemies.organic_parts import eyes, reactor_sac
+from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Vec3 = list[Any]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 N = BOSS_LOOK.neon["mesa-fortress"]
 WHITE = [1, 1, 1]
 QUARTER = math.pi / 2
 
 # The skirt of hide (right half, front to back): the silos stand on its rear.
-BASE = mirrored(
-    [
-        [0, 48],
-        [22, 46],
-        [40, 30],
-        [44, 10],
-        [44, -36],
-        [34, -50],
-        [0, -54],
-    ]
-)
+BASE = mirrored([
+    [0, 48],
+    [22, 46],
+    [40, 30],
+    [44, 10],
+    [44, -36],
+    [34, -50],
+    [0, -54],
+])
 # The right forelimb: an upper limb out from the body, then a forearm forward.
 ARM = [
     [40, -6],
@@ -85,8 +85,10 @@ SHELL_PLATES = [
 
 
 def _draw_body(p: Any) -> None:
-    """The body (FB-MESA-FORTRESS-02): the skirt, the stepped shell with its ribs, veins and
-    grafted plates, the head at its front."""
+    """Draw the body (FB-MESA-FORTRESS-02): the skirt, the stepped shell with its ribs.
+
+    Veins and grafted plates, the head at its front.
+    """
     mantle(p, BASE, [-6, BASE_TOP], F.sinew, N)
     hide(
         p,
@@ -148,8 +150,10 @@ def _draw_body(p: Any) -> None:
 
 
 def _draw_arms(p: Any) -> None:
-    """The forelimbs (FB-MESA-FORTRESS-02): a scaly limb out to each lance's cradle, a bone claw
-    at its front."""
+    """Draw the forelimbs (FB-MESA-FORTRESS-02): a scaly limb out to each lance's cradle.
+
+    A bone claw at its front.
+    """
     for s in SIDES:
         p.flesh.bevel_slab(sided(ARM, s), [-4, 0, 5], [1, 2], F.sinew, None, F.slate)
         tentacle(p, [s * 36, 6, -15], [s * 76, 7, -14], [0, 3, 0], [6, 4], F.slate, 5)
@@ -180,13 +184,16 @@ def _draw_arms(p: Any) -> None:
 
 
 def _fan_point(yaw: float, r: float) -> Vec3:
-    """A point of a fan barrel, `r` out along its yaw from the fan's pivot."""
+    """Return a point of a fan barrel, `r` out along its yaw from the fan's pivot."""
     return shift(FAN_AT, [math.sin(yaw) * r, 2.6, 4 + math.cos(yaw) * r])
 
 
-def _draw_fan_cannon(p: Any, at: Any = None) -> None:
-    """The fan cannon on the brow (the core's gun, FB-MESA-FORTRESS-03): a grafted housing and five
-    barrels fanned out forward, turning around the hub of its barrels (its pivot)."""
+def _draw_fan_cannon(p: Any, _at: Any = None) -> None:
+    """Draw the fan cannon on the brow (the core's gun, FB-MESA-FORTRESS-03).
+
+    A grafted housing and five barrels fanned out forward, turning around the hub of its barrels
+    (its pivot).
+    """
     p.hull.bevel_slab(FAN_HOUSING, [0, 0, 5], [0, 1.5], M.dark, Placement(FAN_AT), M.panel)  # type: ignore[arg-type]  # the argument does not match the parameter type mypy expects
     for k in range(5):
         yaw = (k - 2) * 0.28
@@ -209,9 +216,11 @@ def _draw_fan_cannon(p: Any, at: Any = None) -> None:
 
 
 def build_mesa_fortress(scene: Any) -> Any:
-    """FB-MESA-FORTRESS-01, FB-MESA-FORTRESS-04: the Mesa Fortress, a colossal canyon tortoise
-    5 L across with red veins; a laser lance in each forelimb, two spore silos on its back, and a
-    fan cannon on its armoured brow (the core)."""
+    """FB-MESA-FORTRESS-01, FB-MESA-FORTRESS-04: the Mesa Fortress, a colossal canyon tortoise.
+
+    It is 5 L across with red veins; a laser lance in each forelimb, two spore silos on its back,
+    and a fan cannon on its armoured brow (the core).
+    """
 
     def core(p: Any) -> None:
         _draw_body(p)

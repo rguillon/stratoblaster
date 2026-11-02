@@ -1,8 +1,9 @@
-"""FB-SKY-TEMPLE-02, 3-3: the living beast the Sky Temple grew on. Logical pixels, nose +Z, Y up: a
-huge, swollen body of moss-skinned flesh carrying the stone tiers on its back like a shell, roots of
-sinew hanging from it, veins climbing the stones to the sanctum."""
+# Copyright (c) 2026 Renaud Guillon
+"""FB-SKY-TEMPLE-02, 3-3: the living beast the Sky Temple grew on.
 
-from org.transcrypt.stubs.browser import __pragma__
+A huge, swollen body of moss-skinned flesh carrying the stone tiers on its back like a shell, roots
+of sinew hanging from it, veins climbing the stones to the sanctum. Logical pixels, nose +Z, Y up.
+"""
 
 from game.view.bosses.world_3.jungle_flesh import JUNGLE_FLESH, F, gland, sinew, table, vein_to
 from game.view.bosses.world_3.sky_temple_parts import SUMMIT, TEMPLE_CYAN, TIERS
@@ -10,17 +11,20 @@ from game.view.enemies.enemy_shapes import SIDES
 from game.view.enemies.organic_parts import reactor_sac
 from render.geometry.organic import ROUND_SECTION
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from game.view.enemies.enemy_mesh import EnemyParts
 
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def body_stations() -> list[list[float]]:
-    """The body under the lowest tier, tail to front (loft stations: z, half width, bottom,
-    top)."""
+    """Return the body under the lowest tier, tail to front.
+
+    Its loft stations: z, half width, bottom, top.
+    """
     half = TIERS.halves[0]
     top = TIERS.height + 1
     return [
@@ -33,7 +37,7 @@ def body_stations() -> list[list[float]]:
 
 
 def temple_body(p: EnemyParts) -> None:
-    """The body of the beast (FB-SKY-TEMPLE-02), in place of the lowest stone tier."""
+    """Add the body of the beast (FB-SKY-TEMPLE-02), in place of the lowest stone tier."""
     p.flesh.loft(ROUND_SECTION, body_stations(), JUNGLE_FLESH)
     half = TIERS.halves[0]
     for s in SIDES:

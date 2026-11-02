@@ -1,20 +1,22 @@
-"""Gamepad -> menu actions (UI-INPUT-07), polled once per
-frame. Buttons fire on press; the D-pad and the left stick repeat while held (UI-INPUT-06). All
-connected gamepads are merged."""
+# Copyright (c) 2026 Renaud Guillon
+"""Gamepad -> menu actions (UI-INPUT-07), polled once per frame.
+
+Buttons fire on press; the D-pad and the left stick repeat while held (UI-INPUT-06). All connected
+gamepads are merged.
+"""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from input.hold_repeater import HoldRepeater
 from input.menu_action import is_menu_direction
 
-__pragma__("skip")
-from collections.abc import Callable, Mapping, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Callable, Mapping, Sequence
+from typing import Any, Protocol
 
-from input.keyboard_menu_input import RepeatTiming  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from input.menu_action import MenuAction, MenuDirection  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from input.keyboard_menu_input import RepeatTiming
+from input.menu_action import MenuAction, MenuDirection
 
 
 class _Button(Protocol):
@@ -26,10 +28,12 @@ class GamepadLike(Protocol):
     """The parts of a `Gamepad` the menu input reads."""
 
     @property
-    def buttons(self) -> Sequence[_Button]: ...
+    def buttons(self) -> Sequence[_Button]:
+        """The buttons of the gamepad, by index."""
 
     @property
-    def axes(self) -> Sequence[float]: ...
+    def axes(self) -> Sequence[float]:
+        """The axes of the gamepad (its sticks)."""
 
 
 # Returns the connected gamepads, like `navigator.getGamepads()`.
@@ -40,13 +44,16 @@ class GamepadMenuBindings(RepeatTiming, Protocol):
     """Gamepad mapping and stick settings."""
 
     @property
-    def gamepad_buttons(self) -> Mapping[int, MenuAction]: ...
+    def gamepad_buttons(self) -> Mapping[int, MenuAction]:
+        """Gamepad button index -> menu action."""
 
     @property
-    def gamepad_stick(self) -> "_Stick": ...
+    def gamepad_stick(self) -> "_Stick":
+        """The stick the menu reads."""
 
     @property
-    def gamepad_dead_zone(self) -> float: ...
+    def gamepad_dead_zone(self) -> float:
+        """The dead zone of the stick (UI-INPUT-08)."""
 
 
 class _Stick(Protocol):
@@ -57,10 +64,11 @@ class _Stick(Protocol):
     def y_axis(self) -> int: ...
 
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def axis_value(axes: Sequence[float], index: int) -> float:
+    """Return the value of axis `index`, or 0 when the gamepad lacks it."""
     value = axes[index] if 0 <= index < len(axes) else None
     return 0 if value is None else value
 
@@ -75,7 +83,7 @@ def stick_direction(x: float, y: float, dead_zone: float) -> MenuDirection | Non
 
 
 def _add(items: list[str], item: str) -> None:
-    """Adds `item` to an insertion-ordered set (a list, as the order of the actions matters)."""
+    """Add `item` to an insertion-ordered set (a list, as the order of the actions matters)."""
     if item not in items:
         items.append(item)
 
@@ -111,7 +119,7 @@ class GamepadMenuInput:
         return held
 
     def update(self, dt_seconds: float) -> list[MenuAction]:
-        """Polls the gamepads and returns the actions of this frame."""
+        """Poll the gamepads and return the actions of this frame."""
         held = self._read_held()
         actions: list[MenuAction] = []
         for direction in self._repeater.held:

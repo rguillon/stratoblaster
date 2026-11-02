@@ -1,5 +1,7 @@
-"""How the World 1 levels look (WLD-1-12, WLD-1-16; reworked at the reviewer's request,
-2026-10-26)
+# Copyright (c) 2026 Renaud Guillon
+"""How the World 1 levels look (WLD-1-12, WLD-1-16; reworked at the reviewer's request,.
+
+2026-10-26).
 
 One ground for the whole world, from a turquoise sea over green grass and dry earth to the dried
 red land of an American desert (reviewer, 2026-10-30, D-200: not sand dunes), and
@@ -9,16 +11,16 @@ over the deep desert, its towns' lights on (1-5). Every look starts from Level Z
 RGB, 0..1.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.record import merge, record
 from game.config.scenery_look import BASE_SCENERY_LOOK, texture
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Desert sand, the sandy cover of World 1's beaches (WLD-1-12): warm, fine-grained, with dark
 # grains. World 2 starts on it too.
@@ -154,19 +156,17 @@ DRY_TERRAIN = merge(
 
 
 def sky(haze: list[float], horizon: list[float], zenith: list[float], intensity: float) -> Any:
-    """The sky script of a look: `haze` at the middle, `horizon` and `zenith` around it."""
-    return record(
-        {
-            "haze": haze,
-            "stops": [
-                {"at": -1, "color": [0.25, 0.22, 0.2]},
-                {"at": 0, "color": horizon},
-                {"at": 0.35, "color": haze},
-                {"at": 1, "color": zenith},
-            ],
-            "environmentIntensity": intensity,
-        }
-    )
+    """Return the sky script of a look: `haze` at the middle, `horizon` and `zenith` around it."""
+    return record({
+        "haze": haze,
+        "stops": [
+            {"at": -1, "color": [0.25, 0.22, 0.2]},
+            {"at": 0, "color": horizon},
+            {"at": 0.35, "color": haze},
+            {"at": 1, "color": zenith},
+        ],
+        "environmentIntensity": intensity,
+    })
 
 
 def sun(elevation_deg: float, azimuth_deg: float, color: list[float], intensity: float) -> Any:
@@ -188,7 +188,7 @@ def clouds(
     color: list[float] | None = None,
     shade: list[float] | None = None,
 ) -> Any:
-    """The two cloud layers of Level Zero, with another coverage and colour each."""
+    """Return the two cloud layers of Level Zero, with another coverage and colour each."""
     first = BASE_SCENERY_LOOK.clouds[0]
     second = BASE_SCENERY_LOOK.clouds[1]
     tint = {"color": color, "shade": shade} if color and shade else {}

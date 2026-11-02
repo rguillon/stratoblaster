@@ -1,8 +1,7 @@
-"""The Phantom (`specs/enemies/phantom.md`)"""
+# Copyright (c) 2026 Renaud Guillon
+"""The Phantom (`specs/enemies/phantom.md`)."""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from core.entities.enemy import Enemy
 from core.systems.enemy_motion import approach
@@ -11,11 +10,13 @@ from core.systems.projectile_motion import heading_to
 from game.config.enemies_veteran import VETERAN_CONFIG
 from game.sim.enemies.enemy_helpers import DOWN, bullet_shot, range_in
 
-__pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.entities.shot_target import ShotTarget  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from core.entities.enemy import EnemyContext
+from core.entities.shot_target import ShotTarget
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 CFG = VETERAN_CONFIG.phantom
 
@@ -26,12 +27,13 @@ TRIES = 8
 
 
 class Phantom(Enemy):
-    """ENM-PHANTOM-08: a cloaker. It comes in from the top to a place in the upper half, then three
-    times (ENM-PHANTOM-09): fades out over 0.4 s, stays invisible for 0.8 s, reappears at another
-    place in the upper half (fading in over 0.4 s, its nose to the player) and fires a spread of 5
-    bullets 12° apart centred on the player (ENM-PHANTOM-10, ENM-20). Then it leaves upward
-    (ENM-PHANTOM-11). While it is faded out (less than half visible), shots pass through it and it
-    cannot ram the player (ENM-PHANTOM-12).
+    """ENM-PHANTOM-08: a cloaker.
+
+    It comes in from the top to a place in the upper half, then three times (ENM-PHANTOM-09): fades
+    out over 0.4 s, stays invisible for 0.8 s, reappears at another place in the upper half (fading
+    in over 0.4 s, its nose to the player) and fires a spread of 5 bullets 12° apart centred on the
+    player (ENM-PHANTOM-10, ENM-20). Then it leaves upward (ENM-PHANTOM-11). While it is faded out
+    (less than half visible), shots pass through it and it cannot ram the player (ENM-PHANTOM-12).
     """
 
     def __init__(self, x: float, y: float, stop_y: float) -> None:
@@ -60,6 +62,7 @@ class Phantom(Enemy):
         return super()._hit_targets()
 
     def update(self, ctx: EnemyContext, dt: float) -> None:
+        """Advance the enemy by `dt` seconds."""
         self._timer += dt
         if self.state == "enter":
             self._enter(dt)
@@ -104,7 +107,7 @@ class Phantom(Enemy):
         )
 
     def _reappear(self, ctx: EnemyContext) -> None:
-        """Moves, unseen, to another place in the upper half, and starts fading in there."""
+        """Move, unseen, to another place in the upper half, and start fading in there."""
         place = self._pick_place(ctx)
         tries = 1
         while tries < TRIES and self._too_near(place):

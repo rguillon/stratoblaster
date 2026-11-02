@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/sim/veteran_kinds.py`."""
+
+import itertools
 
 from helpers.enemy_steps import area
 
@@ -7,8 +10,10 @@ from game.sim.veteran_kinds import VETERAN_KINDS
 
 
 def test_enm_01_the_five_veteran_kinds_are_listed_in_the_spec_order() -> None:
-    """The veteran tier (ENM-01): ENM-WASP-12, ENM-MORTAR-11, ENM-MANTIS-14, ENM-PHANTOM-14,
-    ENM-MINELAYER-11."""
+    """The veteran tier (ENM-01) has five kinds.
+
+    ENM-WASP-12, ENM-MORTAR-11, ENM-MANTIS-14, ENM-PHANTOM-14, ENM-MINELAYER-11.
+    """
     assert [kind.id for kind in VETERAN_KINDS] == [
         "wasp",
         "mortar",
@@ -25,7 +30,7 @@ def test_enm_wasp_07_a_wasp_group_is_the_configured_number_of_wasps_side_by_side
     xs = [w.x for w in group]
     assert xs == sorted(xs)
     spacing = VETERAN_CONFIG.wasp.groupSpacing
-    for a, b in zip(xs, xs[1:], strict=False):
+    for a, b in itertools.pairwise(xs):
         assert abs((b - a) - spacing) < 1e-9
 
 

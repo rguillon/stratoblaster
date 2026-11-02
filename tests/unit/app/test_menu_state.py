@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/menu_state.py`."""
 # (the menu flow's data).
 
@@ -14,14 +15,14 @@ def test_ui_flow_04_a_menu_state_keeps_the_fields_it_was_built_with() -> None:
         "beta",
         "alpha",
         "1-2",
-        True,
-        None,
-        1,
-        4,
-        None,
-        False,
-        False,
-        Volumes(5, 6),
+        transitioning=True,
+        level_result=None,
+        choice=1,
+        attempt=4,
+        resume=None,
+        paused=False,
+        leaving=False,
+        volumes=Volumes(5, 6),
     )
     assert (state.screen, state.selection, state.selected_id) == ("level-select", 2, "1-3")
     assert state.highlighted_ship_id == "beta"

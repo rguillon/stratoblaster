@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/bosses/world_3/jaguar.py`."""
 
 from helpers.config_checks import assert_boss_design, original_parts
@@ -12,7 +13,8 @@ def test_mb_jaguar_08_boss_design_is_well_formed() -> None:
 
 def test_boss_07_boss_id_is_a_lowercase_kebab_case_kind() -> None:
     assert JAGUAR.id == JAGUAR.id.lower()
-    assert " " not in JAGUAR.id and "_" not in JAGUAR.id
+    assert " " not in JAGUAR.id
+    assert "_" not in JAGUAR.id
 
 
 def test_mb_jaguar_07_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
@@ -25,5 +27,6 @@ def test_mb_jaguar_07_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
 
 def test_mb_jaguar_10_boss_has_an_angry_pattern_and_its_stage_count() -> None:
     """Its rage, and one stage pattern more than its parts (MB-JAGUAR-09)."""
-    assert isinstance(JAGUAR.rage, list) and JAGUAR.rage
+    assert isinstance(JAGUAR.rage, list)
+    assert JAGUAR.rage
     assert len(JAGUAR.stages) == len(original_parts(JAGUAR)) + 1

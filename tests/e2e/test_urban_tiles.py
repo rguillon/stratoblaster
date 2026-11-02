@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """e2e: districts on a grid of tiles, with the grid drawn (`tiles=1`, DEV-OPT-06)."""
 
 import pytest

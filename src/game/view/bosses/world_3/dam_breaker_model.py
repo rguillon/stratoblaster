@@ -1,12 +1,13 @@
-"""FB-DAM-BREAKER-01 to FB-DAM-BREAKER-05, 3-4: the Dam Breaker. Logical
-pixels, nose +Z, Y up (towards the camera). A giant armoured barge: a long, flat hull, the pump
-house amidships with its stack, two sluice gate houses either side of the bow, the armour plate
-and the drone hangar on the bow, the chemical tanks on outriggers at its sides, rust, moss and
-vines all over."""
+# Copyright (c) 2026 Renaud Guillon
+"""FB-DAM-BREAKER-01 to FB-DAM-BREAKER-05, 3-4: the Dam Breaker.
+
+Logical pixels, nose +Z, Y up (towards the camera). A giant armoured barge: a long, flat hull, the
+pump house amidships with its stack, two sluice gate houses either side of the bow, the armour
+plate and the drone hangar on the bow, the chemical tanks on outriggers at its sides, rust, moss
+and vines all over.
+"""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.world_3.dam_breaker import DAM_BREAKER, DAM_CORE_GUNS, DAM_STACK
 from game.view.bosses.boss_limbs import boss_point
@@ -48,47 +49,47 @@ from game.view.enemies.organic_parts import reactor_sac
 from render.geometry.organic import ROUND_SECTION, RibSpec, ribs
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_mesh import EnemyParts
 
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The hull seen from above (right half, bow to stern).
-HULL = mirrored(
-    [
-        [0, 74],
-        [22, 72],
-        [40, 64],
-        [54, 48],
-        [58, 30],
-        [58, -52],
-        [52, -66],
-        [36, -72],
-        [0, -72],
-    ]
-)
+HULL = mirrored([
+    [0, 74],
+    [22, 72],
+    [40, 64],
+    [54, 48],
+    [58, 30],
+    [58, -52],
+    [52, -66],
+    [36, -72],
+    [0, -72],
+])
 # Heights of the hull: its keel, its rim, its deck.
 HULL_Y = [-8, -1, DECK_Y]
 # The pump house amidships (loft stations along Z: z, half width, bottom, top).
-PUMP_HOUSE = table(
-    [
-        [-22, 16, DECK_Y, 14],
-        [-6, 20, DECK_Y, 18],
-        [10, 18, DECK_Y, 17],
-        [18, 13, DECK_Y, 12],
-    ]
-)
+PUMP_HOUSE = table([
+    [-22, 16, DECK_Y, 14],
+    [-6, 20, DECK_Y, 18],
+    [10, 18, DECK_Y, 17],
+    [18, 13, DECK_Y, 12],
+])
 # Where the stack stands on the pump house's back.
 STACK_FOOT = [0, 17, -8]
 
 
 def draw_hull(p: EnemyParts) -> None:
-    """The hull, its green-lit rim, rusty patches, deck seams, and the swamp growing over it
-    (FB-DAM-BREAKER-04)."""
+    """Draw the hull, its green-lit rim, rusty patches and deck seams.
+
+    And the swamp growing over it (FB-DAM-BREAKER-04).
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -139,7 +140,10 @@ def draw_hull(p: EnemyParts) -> None:
 
 
 def draw_pump_house(p: EnemyParts) -> None:
-    """The pump house: a lofted block, its windows lit as it charges, the stack and its pipes."""
+    """Draw the pump house.
+
+    A lofted block, its windows lit as it charges, the stack and its pipes.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -162,7 +166,7 @@ def draw_pump_house(p: EnemyParts) -> None:
 
 
 def draw_stack(p: EnemyParts) -> None:
-    """The stack on the pump house's back, its top where the core's rings leave from."""
+    """Draw the stack on the pump house's back, its top where the core's rings leave from."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -179,7 +183,7 @@ def draw_stack(p: EnemyParts) -> None:
 
 
 def draw_guns(p: EnemyParts) -> None:
-    """The pump house's twin guns at its front (the core's aimed shots, bursts and fans)."""
+    """Draw the pump house's twin guns at its front (the core's aimed shots, bursts and fans)."""
     for m in DAM_CORE_GUNS:
         tip = boss_point(m[0], m[1], m[2])
         length = 7
@@ -189,7 +193,7 @@ def draw_guns(p: EnemyParts) -> None:
 
 
 def draw_stern(p: EnemyParts) -> None:
-    """The stern: three reactors, a rudder housing and the dam-breaking ram's pistons."""
+    """Draw the stern: three reactors, a rudder housing and the dam-breaking ram's pistons."""
     for s in SIDES:
         reactor_sac(p, table([s * 20, 0, -72]), 4.5, TOXIC, F.sinew, None)
         p.hull.box([1.6, 8, 10], H.panel, Placement([s * 40, -8, -64]))
@@ -199,8 +203,10 @@ def draw_stern(p: EnemyParts) -> None:
 
 
 def draw_mounts(p: EnemyParts) -> None:
-    """A socket for each sluice and tank mount on the deck (left once the part is gone;
-    FB-DAM-BREAKER-03)."""
+    """Draw a socket for each sluice and tank mount on the deck (left once the part is gone).
+
+    FB-DAM-BREAKER-03.
+    """
     hull = p.hull
     for s in SIDES:
         hull.cylinder(9, 0.8, 8, H.dark, Placement([s * 46, DECK_Y, 20], math.pi / 8))
@@ -209,7 +215,7 @@ def draw_mounts(p: EnemyParts) -> None:
 
 
 def dam_breaker_core(p: EnemyParts) -> None:
-    """The core of the Dam Breaker: its hull, pump house, stack, guns, stern and mounts."""
+    """Add the core of the Dam Breaker: its hull, pump house, stack, guns, stern and mounts."""
     draw_hull(p)
     draw_pump_house(p)
     draw_stack(p)
@@ -219,10 +225,12 @@ def dam_breaker_core(p: EnemyParts) -> None:
 
 
 def build_dam_breaker(scene: Any) -> Any:
-    """FB-DAM-BREAKER-01, FB-DAM-BREAKER-05: the Dam Breaker, a giant armoured barge with toxic
-    green neon: sluice gate houses letting out sludge, glowing chemical tanks at its sides, an
-    armour plate and a drone hangar on its bow, a pump house and its stack amidships, swamp growth
-    over its rusty decks."""
+    """FB-DAM-BREAKER-01, FB-DAM-BREAKER-05: the Dam Breaker, a giant armoured barge.
+
+    With toxic green neon: sluice gate houses letting out sludge, glowing chemical tanks at its
+    sides, an armour plate and a drone hangar on its bow, a pump house and its stack amidships,
+    swamp growth over its rusty decks.
+    """
     parts: dict[str, Any] = {
         "sluice-left": sluice,
         "sluice-right": sluice,

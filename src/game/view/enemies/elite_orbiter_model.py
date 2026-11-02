@@ -1,25 +1,24 @@
-"""The Orbiter (specs/enemies/orbiter.md) Logical pixels,
-nose +Z, Y up (towards the camera).
-"""
+# Copyright (c) 2026 Renaud Guillon
+"""The Orbiter (specs/enemies/orbiter.md) Logical pixels, nose +Z, Y up (towards the camera)."""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.enemies_elite import ELITE_CONFIG  # noqa: E402
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.config.enemy_look_elite import ELITE_NEON  # noqa: E402
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.enemies.elite_shapes import WHITE, H, ahead, barrel  # noqa: E402
-from game.view.enemies.jointed_model import build_jointed_model  # noqa: E402
-from render.geometry.organic import SegmentedBody, curve, segmented_body  # noqa: E402
+from game.config.enemies_elite import ELITE_CONFIG
+from game.config.enemy_look import ENEMY_LOOK
+from game.config.enemy_look_elite import ELITE_NEON
+from game.view.bosses.boss_limbs import boss_point
+from game.view.enemies.elite_shapes import WHITE, H, ahead, barrel
+from game.view.enemies.jointed_model import build_jointed_model
+from render.geometry.organic import SegmentedBody, curve, segmented_body
 from render.geometry.organic import vein as vein_tube
-from render.geometry.solids import Placement  # noqa: E402
+from render.geometry.solids import Placement
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 CFG = ELITE_CONFIG.orbiter
 NEON = ELITE_NEON.orbiter
@@ -53,8 +52,10 @@ def _vein_point(a: float, r: float, y: float) -> list[float]:
 
 
 def body(p: Any) -> None:
-    """The core: a flesh heart in metal bands, its glowing equator and veins (ENM-ORBITER-03) and
-    its pole light."""
+    """Add the core: a flesh heart in metal bands, its glowing equator and veins (ENM-ORBITER-03).
+
+    Its pole light is there too.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -89,8 +90,10 @@ def body(p: Any) -> None:
 
 
 def drone(spec: Any) -> Any:
-    """A drone (ENM-ORBITER-05): a flesh pod under a metal shell, an eye slit and a gun on its
-    nose."""
+    """Return a drone (ENM-ORBITER-05): a flesh pod under a metal shell.
+
+    It has an eye slit and a gun on its nose.
+    """
     at = boss_point(spec.centre[0], spec.centre[1], 0)
     yaw = spec.aim
     tip = boss_point(spec.muzzle[0], spec.muzzle[1], spec.muzzle[2])
@@ -112,8 +115,10 @@ def drone(spec: Any) -> Any:
 
 
 def build_orbiter(scene: Any) -> Any:
-    """ENM-ORBITER-01: a flesh heart in armour bands with a white-gold equator, three armoured
-    drone pods orbiting it, within the elite triangle budget (ENM-ORBITER-06)."""
+    """ENM-ORBITER-01: a flesh heart in armour bands with a white-gold equator.
+
+    Three armoured drone pods orbit it, within the elite triangle budget (ENM-ORBITER-06).
+    """
     parts = {}
     for d in CFG.drones:
         parts[d.id] = drone(d)

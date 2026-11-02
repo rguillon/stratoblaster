@@ -1,4 +1,5 @@
-"""Player ships and their stats (GAME-SHIP-01; top speed GAME-SHIP-02, health GAME-SHIP-03)
+# Copyright (c) 2026 Renaud Guillon
+"""Player ships and their stats (GAME-SHIP-01; top speed GAME-SHIP-02, health GAME-SHIP-03).
 
 Speeds are multiples of the base speed, raised from 100 to 150 px/s, then to 225 px/s, at the
 reviewer's requests in phase 6 (D-044, D-047).
@@ -6,13 +7,11 @@ reviewer's requests in phase 6 (D-044, D-047).
 
 from game.config.record import record
 
-PLAYER_SHIPS = record(
-    {
-        "baseSpeedPxPerSec": 225,
-        "ships": [
-            {"id": "balanced", "name": "Balanced", "maxSpeedFactor": 1, "maxHealth": 100},
-            {"id": "heavy", "name": "Heavy", "maxSpeedFactor": 0.8, "maxHealth": 140},
-            {"id": "light", "name": "Light", "maxSpeedFactor": 1.4, "maxHealth": 80},
-        ],
-    }
-)
+PLAYER_SHIPS = record({
+    "baseSpeedPxPerSec": 225,
+    "ships": [
+        {"id": "balanced", "name": "Balanced", "maxSpeedFactor": 1, "maxHealth": 100},
+        {"id": "heavy", "name": "Heavy", "maxSpeedFactor": 0.8, "maxHealth": 140},
+        {"id": "light", "name": "Light", "maxSpeedFactor": 1.4, "maxHealth": 80},
+    ],
+})
