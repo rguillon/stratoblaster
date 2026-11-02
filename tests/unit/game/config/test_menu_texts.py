@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/menu_texts.py`."""
 
 from game.config.menu_texts import MENU_TEXTS, SCORE_DIGITS, padded
@@ -18,7 +19,8 @@ def test_ui_look_10_every_menu_text_is_a_non_empty_string_or_a_text_builder() ->
         if callable(text):
             assert text(*(["x"] * text.__code__.co_argcount)), key
         else:
-            assert isinstance(text, str) and text, key
+            assert isinstance(text, str), key
+            assert text, key
 
 
 def test_ui_load_07_the_context_lost_message_asks_for_a_reload_and_has_a_reload_button() -> None:

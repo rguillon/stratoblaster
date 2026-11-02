@@ -1,11 +1,13 @@
-"""A small debug tile with the frame rate and polygon count (DEV-PERF-04)"""
+# Copyright (c) 2026 Renaud Guillon
+"""A small debug tile with the frame rate and polygon count (DEV-PERF-04)."""
 
-from org.transcrypt.stubs.browser import __pragma__, window
+from org.transcrypt.stubs.browser import window
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class RenderStats:
@@ -18,8 +20,9 @@ class RenderStats:
 
 
 class StatsTile:
-    """A small debug tile with the frame rate and the number of polygons drawn. The text changes
-    at most every `refresh_seconds`, so the numbers stay readable.
+    """A small debug tile with the frame rate and the number of polygons drawn.
+
+    The text changes at most every `refresh_seconds`, so the numbers stay readable.
     """
 
     def __init__(self, doc: Any, parent: Any, refresh_seconds: float) -> None:
@@ -35,9 +38,7 @@ class StatsTile:
         self._since_refresh = float("Infinity")
 
     def update(self, dt: float, stats: RenderStats) -> None:
-        """Shows `stats` if `refresh_seconds` have passed since the last change (and the first
-        time).
-        """
+        """Show `stats` if `refresh_seconds` passed since the last change (or the first time)."""
         self._since_refresh += dt
         if self._since_refresh < self._refresh_seconds:
             return

@@ -1,8 +1,8 @@
-"""The Narwhal's hull dressing (phase 7 review: detail and some asymmetry, World 2 frost)
-(FB-NARWHAL-02,
-FB-NARWHAL-05, 2-1). Logical pixels, nose +Z, Y up."""
+# Copyright (c) 2026 Renaud Guillon
+"""The Narwhal's hull dressing (FB-NARWHAL-02, FB-NARWHAL-05, 2-1).
 
-from org.transcrypt.stubs.browser import __pragma__
+Phase 7 review: detail and some asymmetry, World 2 frost. Logical pixels, nose +Z, Y up.
+"""
 
 from game.config.enemy_look import ENEMY_LOOK
 from game.view.bosses.mini_boss_greebles import lamps, mast, plate, rect
@@ -10,12 +10,14 @@ from game.view.bosses.world_2.w2_organic import ICE_FLESH
 from game.view.enemies.enemy_shapes import SIDES
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from game.view.enemies.enemy_mesh import EnemyParts
 
 type Rgb = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 # Light metal: worn edges, rails.
@@ -33,7 +35,10 @@ _SLIT_GAP_TO = 14
 
 
 def _flank(z: float) -> float:
-    """The hull's half width at `z` (between its stations), for the dressing along its flanks."""
+    """Return the hull's half width at `z` (between its stations).
+
+    The dressing along its flanks follows it.
+    """
     if z < _STERN_Z:
         return 14 + (z - _STERN_Z) * 0.3
     if z > _BOW_Z:
@@ -42,8 +47,11 @@ def _flank(z: float) -> float:
 
 
 def hull_dressing(p: EnemyParts, n: Rgb) -> None:
-    """Along both flanks: rows of dark free-flood slots, the hull's ring seams, its bow planes; on
-    its belly a sonar window lit teal."""
+    """Add the dressing along both flanks and on the belly.
+
+    Along both flanks: rows of dark free-flood slots, the hull's ring seams, its bow planes; on its
+    belly a sonar window lit teal.
+    """
     flesh = p.flesh
     neon = p.neon
     for s in SIDES:
@@ -74,8 +82,11 @@ def hull_dressing(p: EnemyParts, n: Rgb) -> None:
 
 
 def deck_dressing(p: EnemyParts, n: Rgb) -> None:
-    """On its back (FB-NARWHAL-05): a frozen crust on the forward deck, a railing, a capstan, an
-    escape hatch, whip antennas off-centre, navigation lamps on the sail."""
+    """Add the dressing on its back (FB-NARWHAL-05).
+
+    A frozen crust on the forward deck, a railing, a capstan, an escape hatch, whip antennas
+    off-centre, navigation lamps on the sail.
+    """
     hull = p.hull
     neon = p.neon
     crust = [

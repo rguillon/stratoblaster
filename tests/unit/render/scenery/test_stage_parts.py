@@ -1,5 +1,8 @@
-"""Unit tests of `src/render/scenery/stage_parts.py` (GFX-CAM-02, GFX-CAM-05, GFX-WATER-02,
-PERF-28)."""
+# Copyright (c) 2026 Renaud Guillon
+"""Unit tests of `src/render/scenery/stage_parts.py`.
+
+Covers GFX-CAM-02, GFX-CAM-05, GFX-WATER-02 and PERF-28.
+"""
 
 from types import SimpleNamespace
 from typing import Any
@@ -23,12 +26,12 @@ from render.scenery.stage_parts import (
 def _babylon(monkeypatch: pytest.MonkeyPatch) -> None:
     patch_babylon(monkeypatch, stage_parts)
     monkeypatch.setattr(
-        stage_parts, "create_ground", lambda label, w, h, sub, scene: _ground(label, w, h, scene)
+        stage_parts, "create_ground", lambda label, w, h, _sub, scene: _ground(label, w, h, scene)
     )
     monkeypatch.setattr(
-        stage_parts, "new_free_camera", lambda label, pos, scene: _camera(label, scene)
+        stage_parts, "new_free_camera", lambda label, _pos, scene: _camera(label, scene)
     )
-    monkeypatch.setattr(stage_parts, "RainRings", lambda scene, rings, extent: ("rings", extent))
+    monkeypatch.setattr(stage_parts, "RainRings", lambda _scene, _rings, extent: ("rings", extent))
 
 
 def _ground(label: str, width: float, height: float, scene: Any) -> FakeNode:
@@ -38,7 +41,7 @@ def _ground(label: str, width: float, height: float, scene: Any) -> FakeNode:
     return node
 
 
-def _camera(label: str, scene: Any) -> SimpleNamespace:
+def _camera(label: str, _scene: Any) -> SimpleNamespace:
     return SimpleNamespace(name=label, fov=0.0, minZ=0.0, maxZ=0.0)
 
 
@@ -72,7 +75,7 @@ class _Mesh:
     def __init__(self, material: object) -> None:
         self._material = material
 
-    def getMaterial(self) -> object:  # noqa: N802
+    def getMaterial(self) -> object:
         return self._material
 
 
@@ -88,7 +91,7 @@ def test_the_terrain_is_drawn_after_the_other_meshes() -> None:
 def test_meshes_on_the_same_side_of_the_terrain_are_ordered_by_the_painter_sort(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    monkeypatch.setattr(stage_parts, "render_painter_sort_compare", lambda a, b: 7.0)
+    monkeypatch.setattr(stage_parts, "render_painter_sort_compare", lambda _a, _b: 7.0)
     compare = terrain_last(object())
     assert compare(_Mesh(1), _Mesh(2)) == 7.0
 
@@ -100,7 +103,9 @@ def test_the_sea_plane_is_a_pickable_free_ground_at_the_sea_level() -> None:
     assert sea.size == (100, 50)
     assert sea.position.y == 3
     assert sea.material is material
-    assert sea.isPickable is False and sea.receiveShadows is True and sea.alphaIndex == 0
+    assert sea.isPickable is False
+    assert sea.receiveShadows is True
+    assert sea.alphaIndex == 0
 
 
 def test_a_level_without_a_sea_has_no_sea_parts() -> None:

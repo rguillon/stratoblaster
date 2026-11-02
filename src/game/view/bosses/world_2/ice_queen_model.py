@@ -1,4 +1,5 @@
-"""The Ice Queen (MB-ICE-QUEEN-01 to MB-ICE-QUEEN-06, 2-5)
+# Copyright (c) 2026 Renaud Guillon
+"""The Ice Queen (MB-ICE-QUEEN-01 to MB-ICE-QUEEN-06, 2-5).
 
 Logical pixels, nose +Z (down the screen), Y up (towards the camera); +X is the screen's left.
 """
@@ -14,13 +15,13 @@ from game.config.bosses.world_2.ice_queen import (
     ICE_QUEEN_SPIRE,
 )
 from game.config.record import record
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.boss_model import build_boss_model
 from game.view.bosses.mini_boss_greebles import plate, rect
 from game.view.bosses.mini_boss_shapes import QUARTER, WHITE, H
-from game.view.bosses.overlord_city import edge_lights  # noqa: E402
-from game.view.bosses.world_2.ice_queen_details import draw_details  # noqa: E402
-from game.view.bosses.world_2.ice_queen_shards import (  # noqa: E402
+from game.view.bosses.overlord_city import edge_lights
+from game.view.bosses.world_2.ice_queen_details import draw_details
+from game.view.bosses.world_2.ice_queen_shards import (
     FROST,
     PALE_BLUE,
     VIOLET,
@@ -28,7 +29,7 @@ from game.view.bosses.world_2.ice_queen_shards import (  # noqa: E402
     ice_shard,
     icicles,
 )
-from game.view.bosses.world_2.w2_organic import (  # noqa: E402
+from game.view.bosses.world_2.w2_organic import (
     ICE_FLESH,
     gland,
     sinew,
@@ -38,13 +39,15 @@ from game.view.enemies.organic_parts import reactor_sac
 from render.geometry.organic import RibSpec, organ, ribs
 from render.geometry.solids import LoftOptions, Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The fuselage (loft stations, tail to nose): long and slender, closing to a needle nose.
 FUSELAGE = [  # type: list[list[float]]
@@ -119,7 +122,7 @@ NOSE_BAND = 4
 
 
 def fuselage_paint(side: int, band: int) -> Any:
-    """The canopy's seam, the nose's bone, and the rimed back of the fuselage."""
+    """Return the canopy's seam, the nose's bone, and the rimed back of the fuselage."""
     if band == CANOPY_BAND and side in CANOPY:
         return ICE_FLESH.seam
     if band == NOSE_BAND:
@@ -130,7 +133,7 @@ def fuselage_paint(side: int, band: int) -> Any:
 
 
 def draw_fuselage(p: EnemyParts) -> None:
-    """The fuselage, its snowed back and canopy, and the reactors at its tail."""
+    """Draw the fuselage, its snowed back and canopy, and the reactors at its tail."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -158,7 +161,10 @@ def draw_fuselage(p: EnemyParts) -> None:
 
 
 def draw_wings(p: EnemyParts) -> None:
-    """The swept wings and canards: frosted tops, violet leading edges, crystals at the tips."""
+    """Draw the swept wings and canards.
+
+    Frosted tops, violet leading edges, crystals at the tips.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -201,8 +207,10 @@ def draw_wings(p: EnemyParts) -> None:
 
 
 def draw_nose_guns(p: EnemyParts) -> None:
-    """The twin crystal cannons by the nose (MB-ICE-QUEEN-03), their tips at the design's
-    muzzles."""
+    """Draw the twin crystal cannons by the nose (MB-ICE-QUEEN-03).
+
+    Their tips are at the design's muzzles.
+    """
     hull = p.hull
     charge = p.charge
     muzzle = p.muzzle
@@ -218,8 +226,10 @@ def draw_nose_guns(p: EnemyParts) -> None:
 
 
 def draw_spire(p: EnemyParts) -> None:
-    """The crystal spire over the core, glowing at its tip where its spiral leaves from
-    (MB-ICE-QUEEN-03)."""
+    """Draw the crystal spire over the core (MB-ICE-QUEEN-03).
+
+    It glows at its tip, where its spiral leaves from.
+    """
     flesh = p.flesh
     neon = p.neon
     charge = p.charge
@@ -236,7 +246,7 @@ def draw_spire(p: EnemyParts) -> None:
 
 
 def draw_core(p: EnemyParts) -> None:
-    """The core body: fuselage, wings, nose guns and spire."""
+    """Draw the core body: fuselage, wings, nose guns and spire."""
     draw_fuselage(p)
     draw_wings(p)
     draw_nose_guns(p)
@@ -245,8 +255,10 @@ def draw_core(p: EnemyParts) -> None:
 
 
 def draw_ring(p: EnemyParts) -> None:
-    """The crown ring (MB-ICE-QUEEN-03; it turns, MB-ICE-QUEEN-06): a frosted rim lit violet,
-    held by three spokes from the hub."""
+    """Draw the crown ring (MB-ICE-QUEEN-03; it turns, MB-ICE-QUEEN-06).
+
+    A frosted rim lit violet, held by three spokes from the hub.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -276,7 +288,7 @@ def keyed(names: list[str], drawings: list[Any]) -> Any:
     """`Object.fromEntries`: a plain object from parallel lists of keys and values."""
     result: Any = None
     __pragma__("skip")
-    result = record({name: drawing for name, drawing in zip(names, drawings, strict=False)})
+    result = record(dict(zip(names, drawings, strict=False)))
     __pragma__("noskip")
     __pragma__(
         "js",
@@ -292,14 +304,16 @@ def keyed(names: list[str], drawings: list[Any]) -> Any:
 
 
 def shard_part(part_id: str) -> Any:
-    """The drawing of the crown shard `part_id`: its muzzles from the design (a factory, so
-    each shard keeps its own id)."""
+    """Return the drawing of the crown shard `part_id`: its muzzles from the design.
+
+    It is a factory, so each shard keeps its own id.
+    """
 
     def draw(parts: EnemyParts, _at: Any = None) -> None:
         # Drawn in model space: the point the part sits at (handed to every part) is not used.
         gun = ICE_QUEEN.guns[part_id]
         muzzles = []
-        if gun != None and gun.gun != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+        if gun != None and gun.gun != None:
             muzzles = gun.gun
         ice_shard(parts, muzzles, ICE_QUEEN_SHARD.height)
 
@@ -307,11 +321,11 @@ def shard_part(part_id: str) -> Any:
 
 
 def shard_parts() -> Any:
-    """The crown shards, one drawing per part of the design, by part id."""
+    """Return the crown shards, one drawing per part of the design, by part id."""
     names: list[str] = []
     drawings: list[Any] = []
     for part in ICE_QUEEN.stats.parts:
-        if part.reveal != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+        if part.reveal != None:
             continue  # A hidden weapon, drawn from its look (`hidden_weapon_shapes`).
         names.append(part.id)
         drawings.append(shard_part(part.id))
@@ -319,16 +333,17 @@ def shard_parts() -> Any:
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
-    """The `BossDrawing` of a boss model: what the model is drawn from."""
+    """Return the `BossDrawing` of a boss model: what the model is drawn from."""
     return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
 
 
 def build_ice_queen(scene: Any) -> BuiltEnemyModel:
-    """MB-ICE-QUEEN-01, MB-ICE-QUEEN-04: the Ice Queen, a slender crystal interceptor (3.5 L) with
-    pale blue and violet neon: swept frosted wings, a crystal spire over the core, and a crown ring
-    turning over it carrying three crystal shards. MB-ICE-QUEEN-02: now a living ice-wraith of
-    violet flesh, membrane wings on bone and crystals grown through it, its crown of bone carrying
-    three crystals grown from flesh sacs.
+    """MB-ICE-QUEEN-01, MB-ICE-QUEEN-04: the Ice Queen, a slender crystal interceptor (3.5 L).
+
+    It has pale blue and violet neon: swept frosted wings, a crystal spire over the core, and a
+    crown ring turning over it carrying three crystal shards. MB-ICE-QUEEN-02: now a living
+    ice-wraith of violet flesh, membrane wings on bone and crystals grown through it, its crown of
+    bone carrying three crystals grown from flesh sacs.
     """
     return build_boss_model(
         ICE_QUEEN,

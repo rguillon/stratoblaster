@@ -1,23 +1,21 @@
+# Copyright (c) 2026 Renaud Guillon
 """Draws enemies on a top-down playfield (ENM-26).
 
-The playfield is the XY plane at Z = 0, Y up, seen from -Z (see `game_view.ShotFrame`): one
-model per enemy, at its position, its nose along its heading. Models are kept per model key and
-reused when enemies come and go (ENG-19).
+The playfield is the XY plane at Z = 0, Y up, seen from -Z (see `game_view.ShotFrame`): one model
+per enemy, at its position, its nose along its heading. Models are kept per model key and reused
+when enemies come and go (ENG-19).
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from render.babylon import child_meshes, dispose_node, new_transform_node, node_name, set_enabled
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-EnemyModelFactory = Callable[[Any], Any]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class _Slot:
@@ -38,8 +36,12 @@ class EnemyLayer:
     """One model per enemy, shown at its position with its nose along its heading."""
 
     def __init__(self, scene: Any, models: dict[str, Any], keys: list[str] | None = None) -> None:
-        """`keys`: the models `prepare_next` builds ahead, in order (PERF-21: a level's own); every
-        model when None. A model left out is still built when its first enemy shows."""
+        """`keys`: the models `prepare_next` builds ahead, in order (PERF-21: a level's own).
+
+        Every model when None.
+
+        A model left out is still built when its first enemy shows.
+        """
         self._scene = scene
         self._models = models
         self._keys = keys
@@ -52,23 +54,18 @@ class EnemyLayer:
         # The kinds with a model built.
         self._built: list[str] = []
 
-    @property
-    def model_count(self) -> int:
-        """Number of models built so far (shown or kept for reuse)."""
-        return self._created
-
-    @property
-    def count(self) -> int:
-        """Number of enemies drawn."""
-        return len(self._slot_values)
-
     def sync(self, enemies: list[Any], dt_seconds: float) -> None:
-        """Shows `enemies` (and hides the models of the others)."""
-        enemies_now = list(self._slot_enemies)
-        slots_now = list(self._slot_values)
-        for i in range(len(enemies_now)):
-            if not _contains(enemies, enemies_now[i]):
-                self._release(enemies_now[i], slots_now[i])
+        """Show `enemies` (and hide the models of the others)."""
+        drawn_enemies: list[Any] = []
+        drawn_slots: list[_Slot] = []
+        for i in range(len(self._slot_enemies)):
+            if _contains(enemies, self._slot_enemies[i]):
+                drawn_enemies.append(self._slot_enemies[i])
+                drawn_slots.append(self._slot_values[i])
+            else:
+                self._release(self._slot_values[i])
+        self._slot_enemies = drawn_enemies
+        self._slot_values = drawn_slots
         for enemy in enemies:
             slot = self._find_slot(enemy)
             if slot is None:
@@ -78,22 +75,25 @@ class EnemyLayer:
             slot.model.sync(enemy, dt_seconds)
 
     def pivot_of(self, enemy: Any) -> Any:
-        """The node `enemy`'s model hangs from while it is drawn (None when it is not): `sync`
-        sets its position and its turn round Z only, so a viewer may turn it about the others
-        (DEV-MENU-10)."""
+        """Return the node `enemy`'s model hangs from while it is drawn (None when it is not).
+
+        `sync` sets its position and its turn round Z only, so a viewer may turn it about the others
+        (DEV-MENU-10).
+        """
         slot = self._find_slot(enemy)
         return slot.pivot if slot is not None else None
 
     def prepare_next(self) -> list[Any]:
-        """Builds one hidden model of the next kind not built yet, kept for reuse (PERF-23), and
-        returns its meshes (e.g. to compile their shaders), or none once every kind has one.
+        """Build one hidden model of the next kind not built yet, kept for reuse (PERF-23).
 
-        Called once per frame, it gets every kind ready before its first appearance without
-        freezing a frame.
+        It returns its meshes (e.g. to compile their shaders), or none once every kind has one.
+
+        Called once per frame, it gets every kind ready before its first appearance without freezing
+        a frame.
         """
         key = None
         # Transcrypt: iterate keys() explicitly.
-        keys = self._keys if self._keys is not None else list(self._models.keys())  # noqa: SIM118 (Transcrypt iterates keys() explicitly)
+        keys = self._keys if self._keys is not None else list(self._models.keys())
         for k in keys:
             if k in self._models and not _contains(self._built, k):
                 key = k
@@ -104,13 +104,6 @@ class EnemyLayer:
         set_enabled(slot.pivot, False)
         self._keep(key, slot)
         return child_meshes(slot.pivot, False)
-
-    def clear(self) -> None:
-        """Hides every model."""
-        enemies_now = list(self._slot_enemies)
-        slots_now = list(self._slot_values)
-        for i in range(len(enemies_now)):
-            self._release(enemies_now[i], slots_now[i])
 
     def _find_slot(self, enemy: Any) -> Any:
         for i in range(len(self._slot_enemies)):
@@ -126,13 +119,9 @@ class EnemyLayer:
         self._slot_values.append(slot)
         return slot
 
-    def _release(self, enemy: Any, slot: _Slot) -> None:
+    def _release(self, slot: _Slot) -> None:
+        """Hide the model of `slot` and keep it for reuse (its enemy is dropped by the caller)."""
         set_enabled(slot.pivot, False)
-        for i in range(len(self._slot_enemies)):
-            if self._slot_enemies[i] is enemy:
-                self._slot_enemies.pop(i)
-                self._slot_values.pop(i)
-                break
         self._keep(slot.key, slot)
 
     def _keep(self, key: str, slot: _Slot) -> None:
@@ -159,9 +148,10 @@ class EnemyLayer:
         return _Slot(pivot, model, key)
 
     def dispose(self) -> None:
+        """Disposes the model of every slot."""
         for slot in self._slot_values:
             dispose_node(slot.pivot)
-        for key in self._free.keys():  # noqa: SIM118 (Transcrypt: iterate keys() explicitly)
+        for key in self._free.keys():
             for slot in self._free[key]:
                 dispose_node(slot.pivot)
         self._slot_enemies = []

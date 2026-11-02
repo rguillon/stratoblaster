@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/input/pointer_menu_input.py`."""
 
 from input.menu_action import MenuSelect

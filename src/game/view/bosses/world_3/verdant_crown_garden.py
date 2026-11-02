@@ -1,12 +1,12 @@
-"""FB-VERDANT-CROWN-03, FB-VERDANT-CROWN-06, 3-5: the Verdant Crown's colours and its glass
-garden dome over the core: a lattice of
-ribs and glowing mullions, trees inside, the tallest one rising through the oculus at the top. Model
-space: logical pixels, nose +Z
-(down the screen), Y up towards the camera."""
+# Copyright (c) 2026 Renaud Guillon
+"""FB-VERDANT-CROWN-03, FB-VERDANT-CROWN-06, 3-5: the Verdant Crown's colours and its dome.
+
+Its glass garden dome over the core: a lattice of ribs and glowing mullions, trees inside, the
+tallest one rising through the oculus at the top. Model space: logical pixels, nose +Z (down the
+screen), Y up towards the camera.
+"""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.boss_look import BOSS_LOOK
 from game.config.bosses.world_3.verdant_crown import VERDANT_BLOOM
@@ -17,14 +17,16 @@ from game.view.bosses.world_3.jungle_flesh import F, table
 from game.view.enemies.enemy_shapes import around, radial
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from game.view.enemies.enemy_mesh import EnemyParts
+from render.geometry.solids import SolidBuilder
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 WHITE = [1, 1, 1]
@@ -34,28 +36,24 @@ WHITE = [1, 1, 1]
 EMERALD = BOSS_LOOK.neon["verdant-crown"]
 MAGENTA = [1, 0.15, 0.75]
 # The World 3 jungle over the dark metal: moss, bark, leaves, old stone.
-JUNGLE = record(
-    {
-        # D-231: a clear green moss and a grey bark (no khaki with the enemies' yellow and green).
-        "moss": [0.04, 0.19, 0.06],
-        "bark": [0.09, 0.08, 0.07],
-        "leaf": [0.07, 0.24, 0.09],
-        "stone": [0.2, 0.2, 0.17],
-    }
-)
+JUNGLE = record({
+    # D-231: a clear green moss and a grey bark (no khaki with the enemies' yellow and green).
+    "moss": [0.04, 0.19, 0.06],
+    "bark": [0.09, 0.08, 0.07],
+    "leaf": [0.07, 0.24, 0.09],
+    "stone": [0.2, 0.2, 0.17],
+})
 
 # Height of the deck's top, which the dome, the city and the parts stand on.
 DECK_TOP = 6
 # The dome: its radius, its ribs, the elevations of its mullions and of its oculus's rim.
-DOME = record(
-    {
-        "radius": 31,
-        "ribs": 8,
-        "mullions": [0.42, 0.85],
-        "oculus": 1.2,
-        "steps": 4,
-    }
-)
+DOME = record({
+    "radius": 31,
+    "ribs": 8,
+    "mullions": [0.42, 0.85],
+    "oculus": 1.2,
+    "steps": 4,
+})
 
 
 def strut(
@@ -65,8 +63,10 @@ def strut(
     color: Rgb,
     sides: int = 4,
 ) -> None:
-    """A cylinder from `ends[0]` to `ends[1]` (radius `radii[0]` at the start, `radii[1]` at the
-    end), `sides` facets."""
+    """Add a cylinder from `ends[0]` to `ends[1]`, `sides` facets.
+
+    Radius `radii[0]` at the start, `radii[1]` at the end.
+    """
     a = ends[0]
     b = ends[1]
     dx = b[0] - a[0]
@@ -78,13 +78,16 @@ def strut(
 
 
 def on_dome(a: float, e: float) -> Vec3:
-    """The point of the dome at the turn `a` (from the nose) and the elevation `e` (radians)."""
+    """Return the point of the dome at the turn `a` and the elevation `e`, in radians.
+
+    The turn `a` is from the nose.
+    """
     r = DOME.radius * math.cos(e)
     return [math.sin(a) * r, DECK_TOP + DOME.radius * math.sin(e), math.cos(a) * r]
 
 
 def draw_lattice(p: EnemyParts) -> None:
-    """The dome's lattice: dark ribs up to the oculus, glowing mullions round it, a lit rim."""
+    """Draw the dome's lattice: dark ribs up to the oculus, glowing mullions round it, a lit rim."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -118,23 +121,21 @@ def draw_lattice(p: EnemyParts) -> None:
 
 
 # A tree of the garden: where (model x, z), how tall, how wide its crown.
-TREES = table(
-    [
-        [14, 10, 18, 7],
-        [-15, 8, 16, 6.5],
-        [10, -15, 15, 7],
-        [-12, -14, 19, 6],
-        [0, 18, 13, 5.5],
-        [21, -4, 12, 5],
-        [-21, -2, 13, 5],
-    ]
-)
+TREES = table([
+    [14, 10, 18, 7],
+    [-15, 8, 16, 6.5],
+    [10, -15, 15, 7],
+    [-12, -14, 19, 6],
+    [0, 18, 13, 5.5],
+    [21, -4, 12, 5],
+    [-21, -2, 13, 5],
+])
 # A crown of leaves (a lathe profile in units of its radius): a squat, faceted ball.
 CROWN = table([[0.4, 0], [1, 0.35], [0.85, 0.8], [0, 1.1]])
 
 
 def tree(p: EnemyParts, t: list[float], i: int) -> None:
-    """A tree: a trunk and a faceted crown of leaves, a magenta flower or two in it."""
+    """Add a tree: a trunk and a faceted crown of leaves, a magenta flower or two in it."""
     hull = p.hull
     neon = p.neon
     tx = t[0]
@@ -160,7 +161,7 @@ def tree(p: EnemyParts, t: list[float], i: int) -> None:
 
 
 def great_tree(p: EnemyParts) -> None:
-    """The tallest tree, rising through the oculus, its bloom the core's ring emitter."""
+    """Add the tallest tree, rising through the oculus, its bloom the core's ring emitter."""
     hull = p.hull
     charge = p.charge
     muzzle = p.muzzle
@@ -191,8 +192,10 @@ def great_tree(p: EnemyParts) -> None:
 
 
 def draw_garden(p: EnemyParts) -> None:
-    """The glass garden dome over the core (FB-VERDANT-CROWN-03): its lattice, its garden, its great
-    tree."""
+    """Draw the glass garden dome over the core (FB-VERDANT-CROWN-03).
+
+    Its lattice, its garden, its great tree.
+    """
     p.hull.cylinder(DOME.radius, 0.4, 16, JUNGLE.moss, Placement([0, DECK_TOP, 0]))
     draw_lattice(p)
     for i in range(len(TREES)):

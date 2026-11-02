@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/ui/screens/ship_select_screen.py`."""
 
 from helpers.dom import FakeDocument
@@ -34,7 +35,7 @@ def test_ui_input_10_the_ship_select_has_a_back_button_heading_and_hint() -> Non
     backs: list[bool] = []
     view = ShipSelectView("Choose", "Hint", "Back", 0, [], 50)
     root = render_ship_select_screen(
-        FakeDocument(), view, ScreenHandlers(lambda i: None, lambda: backs.append(True))
+        FakeDocument(), view, ScreenHandlers(lambda _i: None, lambda: backs.append(True))
     )
     assert root.querySelector(".menu-heading").textContent == "Choose"
     assert root.querySelector(".menu-hint").textContent == "Hint"

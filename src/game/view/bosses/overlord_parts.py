@@ -1,25 +1,26 @@
-"""FB-OVERLORD-03: the Overlord's destroyable parts: wing
-laser cannons, missile batteries, shield generators, each drawn around its centre `at` (model
-space: logical pixels, nose +Z, Y up).
+# Copyright (c) 2026 Renaud Guillon
+"""FB-OVERLORD-03: the Overlord's destroyable parts: wing laser cannons, missile batteries.
+
+Shield generators, each drawn around its centre `at` (model space: logical pixels, nose +Z, Y up).
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from game.config.enemy_look import ENEMY_LOOK
+from game.view.bosses.overlord_city import OVERLORD_DECK, OVERLORD_NEON, box2d
+from game.view.bosses.world_1_organic_kit import F, graft, polygon, tentacle, vein_line
+from game.view.enemies.enemy_shapes import around, decal, radial, side_stripe
+from render.geometry.organic import ROUND_SECTION
+from render.geometry.solids import LoftOptions, Placement
 
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.view.bosses.overlord_city import OVERLORD_DECK, OVERLORD_NEON, box2d  # noqa: E402
-from game.view.bosses.world_1_organic_kit import F, graft, polygon, tentacle, vein_line  # noqa: E402
-from game.view.enemies.enemy_shapes import around, decal, radial, side_stripe  # noqa: E402
-from render.geometry.organic import ROUND_SECTION  # noqa: E402
-from render.geometry.solids import LoftOptions, Placement  # noqa: E402
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Vec3 = list[Any]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 WHITE = [1, 1, 1]
@@ -45,8 +46,10 @@ LASER_LENS = [
 
 
 def draw_laser(p: Any, at_point: Vec3) -> None:
-    """FB-OVERLORD-03: a wing laser cannon: a swollen gland on the wing, a grafted collar, a long
-    barrel, coils and a lens charging."""
+    """FB-OVERLORD-03: a wing laser cannon: a swollen gland on the wing, a grafted collar.
+
+    A long barrel, coils and a lens charging.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -103,8 +106,10 @@ CELLS = [[cx, cz] for cx in [-5, 5] for cz in [-7.5, 0, 7.5]]
 
 
 def draw_battery(p: Any, at_point: Vec3) -> None:
-    """FB-OVERLORD-03: a missile brood on the mantle: a swollen mound under a grafted plate, six
-    hatches lit as it loads."""
+    """FB-OVERLORD-03: a missile brood on the mantle: a swollen mound under a grafted plate.
+
+    Six hatches lit as it loads.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -157,8 +162,10 @@ DOME = [
 
 
 def draw_generator(p: Any, at_point: Vec3) -> None:
-    """FB-OVERLORD-03: a shield generator: a glowing neon gland in a ring of grafted coil,
-    swelling out of a flesh mound, three bone horns around it tipped with neon."""
+    """FB-OVERLORD-03: a shield generator: a glowing neon gland in a ring of grafted coil.
+
+    Swelling out of a flesh mound, three bone horns around it tipped with neon.
+    """
     hull = p.hull
     neon = p.neon
     x = at_point[0]

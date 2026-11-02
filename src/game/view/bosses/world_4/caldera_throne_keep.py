@@ -1,43 +1,45 @@
-"""FB-CALDERA-THRONE-02, 4-5: the Caldera Throne's keep over its core: three armoured tiers lit
-crimson, molten slits in their walls, battlements, and the throne tower crowned in gold whose crown
-fires the core's rings; the smokestacks aft, glowing at their mouths; watchtowers and lamps. Model
-space: logical pixels, nose +Z (down the screen), Y up towards the camera.
+# Copyright (c) 2026 Renaud Guillon
+"""FB-CALDERA-THRONE-02, 4-5: the Caldera Throne's keep over its core.
+
+Three armoured tiers lit crimson, molten slits in their walls, battlements, and the throne tower
+crowned in gold whose crown fires the core's rings; the smokestacks aft, glowing at their mouths;
+watchtowers and lamps. Model space: logical pixels, nose +Z (down the screen), Y up towards the
+camera.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.bosses.world_4.caldera_throne import CALDERA_CROWN  # noqa: E402
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.final_boss_greebles import studs  # noqa: E402
-from game.view.bosses.final_boss_mechanism import armour, conduit  # noqa: E402
-from game.view.bosses.mini_boss_shapes import SHADE, WHITE, H  # noqa: E402
-from game.view.bosses.overlord_city import edge_lights  # noqa: E402
-from game.view.bosses.world_4.caldera_throne_parts import (  # noqa: E402
+from game.config.bosses.world_4.caldera_throne import CALDERA_CROWN
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.final_boss_greebles import studs
+from game.view.bosses.final_boss_mechanism import armour, conduit
+from game.view.bosses.mini_boss_shapes import SHADE, WHITE, H
+from game.view.bosses.overlord_city import edge_lights
+from game.view.bosses.world_4.caldera_throne_parts import (
     CRIMSON,
     DECK_TOP,
     GOLD,
     HEAT,
 )
-from game.view.bosses.world_4.living_forge import SKIN  # noqa: E402
-from game.view.enemies.enemy_shapes import SIDES, around  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
+from game.view.bosses.world_4.living_forge import SKIN
+from game.view.enemies.enemy_shapes import SIDES, around
+from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type OutlinePoint = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
-
-# FB-CALDERA-THRONE-02: the keep's lowest tier is the flesh of its back swelling up, the upper ones
-# armour grafted on; its stacks are flesh spiracles, its watchtowers bone horns.
+# __pragma__ ("noskip")
 
 
 def _octagon(radius: float, centre: OutlinePoint) -> list[OutlinePoint]:
-    """An octagon of `radius` (to its corners) around `[x, z]`, its faces square to the axes."""
+    """Return an octagon of `radius` (to its corners) around `[x, z]`.
+
+    Its faces are square to the axes.
+    """
     x = centre[0]
     z = centre[1]
     out: list[OutlinePoint] = []
@@ -87,7 +89,10 @@ LAMP_ROWS = [
 
 
 def _draw_tiers(p: Any) -> None:
-    """The three tiers, their edges lit crimson, molten slits in the lowest, battlements on it."""
+    """Draw the three tiers, their edges lit crimson.
+
+    Molten slits in the lowest, battlements on it.
+    """
     hull = p.hull
     neon = p.neon
     flesh = p.flesh
@@ -101,7 +106,7 @@ def _draw_tiers(p: Any) -> None:
             armour(flesh, outline, [y0, y1], SKIN.base, 1.6, SKIN.dark)
         else:
             armour(hull, outline, [y0, y1], H.base, 1.6, H.panel)
-        every = [k for k in range(len(outline))]
+        every = list(range(len(outline)))
         edge_lights(neon, outline, every, [y1 - 3.2, y1 - 2.2], GOLD if i == 1 else CRIMSON)
     r0 = TIERS[0][0]
     y1 = TIERS[0][2]
@@ -126,7 +131,7 @@ def _draw_tiers(p: Any) -> None:
 
 
 def _draw_tower(p: Any) -> None:
-    """The throne tower: an armoured drum, a gold crown of spikes, its charge light on top."""
+    """Draw the throne tower: an armoured drum, a gold crown of spikes, its charge light on top."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -155,7 +160,10 @@ def _draw_tower(p: Any) -> None:
 
 
 def _draw_stacks(p: Any) -> None:
-    """The smokestacks aft: soot-black, banded crimson, their mouths glowing with the furnaces."""
+    """Draw the smokestacks aft: soot-black, banded crimson.
+
+    Their mouths glow with the furnaces.
+    """
     hull = p.hull
     neon = p.neon
     flesh = p.flesh
@@ -174,7 +182,10 @@ def _draw_stacks(p: Any) -> None:
 
 
 def _draw_watch(p: Any) -> None:
-    """The watchtowers by the prow, gold beacons on their roofs, and the deck's rows of lamps."""
+    """Draw the watchtowers by the prow and the deck's rows of lamps.
+
+    Gold beacons on the watchtowers' roofs.
+    """
     hull = p.hull
     neon = p.neon
     flesh = p.flesh
@@ -204,8 +215,10 @@ def _draw_watch(p: Any) -> None:
 
 
 def draw_keep(p: Any) -> None:
-    """The keep over the core, its throne tower, the smokestacks and watchtowers
-    (FB-CALDERA-THRONE-02)."""
+    """Draw the keep over the core (FB-CALDERA-THRONE-02).
+
+    With its throne tower, the smokestacks and watchtowers.
+    """
     _draw_tiers(p)
     _draw_tower(p)
     _draw_stacks(p)

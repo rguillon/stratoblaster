@@ -1,13 +1,20 @@
-"""Unit tests of `src/render/geometry/shatter.py`: carving a boss's armour out of its body and
-breaking it into chunks (docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md)."""
+# Copyright (c) 2026 Renaud Guillon
+"""Unit tests of `src/render/geometry/shatter.py`.
 
+Carving a boss's armour out of its body and breaking it into chunks
+(docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md).
+"""
+
+from types import SimpleNamespace
+
+from render.geometry.gradient_shapes import ColoredGeometry
 from render.geometry.shatter import (
     Carve,
     Vertex,
+    append_triangles,
     carve,
     centroid,
     chunk_cells,
-    geometry_of,
     inside,
     shatter,
     straddles,
@@ -36,18 +43,37 @@ def _area(tris: list) -> float:
     return total
 
 
-def test_triangles_and_geometry_of_round_trip_a_geometry() -> None:
+def test_triangles_gives_each_index_triple_as_its_three_vertices_in_index_order() -> None:
+    geo = SimpleNamespace(
+        positions=[0, 0, 0, 1, 0, 0, 0, 0, 1, 1, 0, 1],
+        colors=[1, 0, 0, 1, 0, 1, 0, 1, 0, 0, 1, 1, 1, 1, 1, 0.5],
+        indices=[0, 1, 2, 2, 1, 3],
+    )
+    tris = triangles(geo)
+    assert [[v.position for v in t] for t in tris] == [
+        [[0, 0, 0], [1, 0, 0], [0, 0, 1]],
+        [[0, 0, 1], [1, 0, 0], [1, 0, 1]],
+    ]
+    assert [v.color for v in tris[1]] == [[0, 0, 1, 1], [0, 1, 0, 1], [1, 1, 1, 0.5]]
+
+
+def test_append_triangles_adds_each_triangle_after_what_the_geometry_holds() -> None:
     tris = _slab()
-    geo = geometry_of(tris)
-    assert len(geo.indices) == 3 * len(tris)
+    geo = ColoredGeometry()
+    append_triangles(geo, tris)
+    append_triangles(geo, tris)
+    assert len(geo.indices) == 6 * len(tris)
     assert len(geo.colors) == 4 * len(geo.positions) // 3
-    assert _area(triangles(geo)) == _area(tris)
+    assert geo.indices[3 * len(tris)] == 3 * len(tris)
+    assert _area(triangles(geo)) == 2 * _area(tris)
 
 
-def test_geometry_of_moves_the_triangles_by_the_shift() -> None:
-    geo = geometry_of(_slab(), [1, 2, 3])
+def test_append_triangles_moves_the_triangles_by_the_shift() -> None:
+    geo = ColoredGeometry()
+    append_triangles(geo, _slab(), [1, 2, 3])
     xs = geo.positions[0::3]
-    assert min(xs) == -19 and max(xs) == 21
+    assert min(xs) == -19
+    assert max(xs) == 21
 
 
 def test_subdivide_cuts_every_edge_down_and_keeps_the_area_and_facing() -> None:
@@ -79,13 +105,15 @@ def test_carve_takes_the_triangles_inside_the_outline_and_the_heights() -> None:
     assert len(kept) + len(carved) == len(tris)
     for t in carved:
         c = centroid(t)
-        assert abs(c[0]) <= 10 and abs(c[2]) <= 10
+        assert abs(c[0]) <= 10
+        assert abs(c[2]) <= 10
     for t in kept:
         c = centroid(t)
         assert abs(c[0]) >= 9 or abs(c[2]) >= 9
     # Heights leave out what is above or below them: only the top face (y = 2) here.
     _, top = carve(tris, Carve([SQUARE], [1.5, 5]))
-    assert top and all(centroid(t)[1] == 2 for t in top)
+    assert top
+    assert all(centroid(t)[1] == 2 for t in top)
 
 
 def test_chunk_cells_bins_on_the_grid_and_merges_down_to_the_cap() -> None:
@@ -110,7 +138,8 @@ def test_shatter_puts_every_triangle_in_exactly_one_chunk_round_its_centre() -> 
 def test_up_facing_reads_the_babylon_front_normal() -> None:
     tris = _slab()
     tops = [t for t in tris if up_facing(t, 0.9)]
-    assert tops and all(centroid(t)[1] == 2 for t in tops)
+    assert tops
+    assert all(centroid(t)[1] == 2 for t in tops)
 
 
 def test_subdivide_cuts_only_the_triangles_that_need_it() -> None:

@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/enemies/carrier_model.py`."""
+
+from typing import Any
 
 from helpers.view_probes import drawings_of, probe_builder
 
@@ -6,12 +9,12 @@ from game.config.enemy_look import ENEMY_LOOK
 from game.view.enemies import carrier_model as module
 
 
-def test_enm_carrier_04_carrier_is_built_as_the_carrier_kind_in_its_neon(monkeypatch):
+def test_enm_carrier_04_carrier_is_built_as_the_carrier_kind_in_its_neon(monkeypatch: Any) -> None:
     capture = probe_builder(monkeypatch, module.build_carrier)
     assert capture.name == "carrier"
     assert capture.neon == ENEMY_LOOK.neon.carrier
 
 
-def test_enm_carrier_01_carrier_draws_its_body_on_real_builders(monkeypatch):
+def test_enm_carrier_01_carrier_draws_its_body_on_real_builders(monkeypatch: Any) -> None:
     capture = probe_builder(monkeypatch, module.build_carrier)
     assert len(drawings_of(capture)["body"]["parts"].hull.geometry.positions) > 0

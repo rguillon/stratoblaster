@@ -1,4 +1,5 @@
-"""How the World 3 levels look (WLD-3-14; reworked at the reviewer's request, 2026-10-27)
+# Copyright (c) 2026 Renaud Guillon
+"""How the World 3 levels look (WLD-3-14; reworked at the reviewer's request, 2026-10-27).
 
 World 2's stained industrial concrete where it ended, slowly giving way to the grass of gardens and
 parks (the `lush` cover the sections raise level after level), damp dark earth between them, grey
@@ -7,18 +8,18 @@ screen, asphalt roads; and for each level its time of day, clouds and weather al
 Gamma-space RGB, 0..1.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.record import merge, record
 from game.config.scenery_look import BASE_SCENERY_LOOK, texture
 from game.config.world_1.looks import GRASS
 from game.config.world_2.looks import INDUSTRIAL_PAVING
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Damp, dark earth: the ground of the yards and gardens wherever nothing covers it.
 DAMP_EARTH = texture(
@@ -93,7 +94,7 @@ RIVER_FLOW = [0, 16]
 
 
 def town(atmosphere: Any) -> Any:
-    """A World 3 look: the town ground (WLD-3-11), its water and the sky script."""
+    """Return a World 3 look: the town ground (WLD-3-11), its water and the sky script."""
     return record(
         merge(
             BASE_SCENERY_LOOK,
@@ -127,12 +128,10 @@ MORNING_MIST = record({"fog": 0.4, "white": 0.8})
 
 # 3-1 (LVL-3-1-03): a morning mist over the factories and canals, lifting over the first half.
 LEVEL_3_1_LOOK = town(
-    record(
-        {
-            "start": merge(MORNING, {"mist": MORNING_MIST}),
-            "changes": [{"from": 0, "to": 150, "look": MORNING}],
-        }
-    )
+    record({
+        "start": merge(MORNING, {"mist": MORNING_MIST}),
+        "changes": [{"from": 0, "to": 150, "look": MORNING}],
+    })
 )
 
 # Bright, humid midday light under tall white cumulus.
@@ -140,37 +139,31 @@ MIDDAY = record({"timeOfDay": "midday", "clouds": [0.5, 0.3]})
 
 # 3-2 (LVL-3-2-03): a rain shower over the middle third, then clearing.
 LEVEL_3_2_LOOK = town(
-    record(
-        {
-            "start": MIDDAY,
-            "changes": [
-                {"from": 92, "to": 108, "look": merge(MIDDAY, {"weather": rain(0.4)})},
-                {"from": 192, "to": 208, "look": MIDDAY},
-            ],
-        }
-    )
+    record({
+        "start": MIDDAY,
+        "changes": [
+            {"from": 92, "to": 108, "look": merge(MIDDAY, {"weather": rain(0.4)})},
+            {"from": 192, "to": 208, "look": MIDDAY},
+        ],
+    })
 )
 
 # The 3-3 thunderstorm: dark blue-grey clouds, heavy rain, lightning.
-THUNDERSTORM = record(
-    {
-        "timeOfDay": "afternoon",
-        "clouds": [0.9, 0.9],
-        "storm": 1,
-        "weather": rain(0.8),
-        "lightning": 1,
-    }
-)
+THUNDERSTORM = record({
+    "timeOfDay": "afternoon",
+    "clouds": [0.9, 0.9],
+    "storm": 1,
+    "weather": rain(0.8),
+    "lightning": 1,
+})
 
 # 3-3 (LVL-3-3-03): the storm builds over the first quarter, from half-covered skies without
 # rain.
 LEVEL_3_3_LOOK = town(
-    record(
-        {
-            "start": {"timeOfDay": "afternoon", "clouds": [0.5, 0.5], "storm": 0.3},
-            "changes": [{"from": 0, "to": 75, "look": THUNDERSTORM}],
-        }
-    )
+    record({
+        "start": {"timeOfDay": "afternoon", "clouds": [0.5, 0.5], "storm": 0.3},
+        "changes": [{"from": 0, "to": 75, "look": THUNDERSTORM}],
+    })
 )
 
 # 3-4 (LVL-3-4-03): a rainy dusk over the terraces and suburbs, their windows and streets lit.
@@ -181,12 +174,8 @@ LEVEL_3_4_LOOK = town(
 # 3-5 (LVL-3-5-03): a rainy night over the lit garden villages, the rain stopping and the clouds
 # opening before the final boss.
 LEVEL_3_5_LOOK = town(
-    record(
-        {
-            "start": {"timeOfDay": "night", "clouds": [0.6, 0.4], "weather": rain(0.5)},
-            "changes": [
-                {"from": 250, "to": 275, "look": {"timeOfDay": "night", "clouds": [0.2, 0.1]}}
-            ],
-        }
-    )
+    record({
+        "start": {"timeOfDay": "night", "clouds": [0.6, 0.4], "weather": rain(0.5)},
+        "changes": [{"from": 250, "to": 275, "look": {"timeOfDay": "night", "clouds": [0.2, 0.1]}}],
+    })
 )

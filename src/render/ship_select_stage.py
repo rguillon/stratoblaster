@@ -1,12 +1,11 @@
-"""The 3D part of the ship select screen (UI-SHIP-01)
+# Copyright (c) 2026 Renaud Guillon
+"""The 3D part of the ship select screen (UI-SHIP-01).
 
 The ships stand side by side, rotating. The highlighted ship is scaled up, lit by its own key
 light and sits on a neon ring; the others are smaller and only get the ambient light (UI-SHIP-03).
 """
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from render.babylon import (
     camera_fov_mode_horizontal_fixed,
@@ -23,13 +22,14 @@ from render.babylon import (
 )
 from render.model_showcase import ModelShowcase, ShowcaseOptions
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
+from typing import Any
 
 ModelFactory = Callable[[Any], Any]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class StageCameraLook:
@@ -81,7 +81,7 @@ class StageRingLook:
 class ShipSelectStageOptions(ShowcaseOptions):
     """Layout and look of a `ShipSelectStage`."""
 
-    def __init__(  # noqa: PLR0913, PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         spacing: float,
         rotation_speed_rad_per_sec: float,
@@ -143,7 +143,8 @@ class ShipSelectStage:
         """The key light of the highlighted ship."""
         spot = self._spots[self._selected] if self._selected < len(self._spots) else None
         if not spot:
-            raise ValueError("The ship select stage has no ship")
+            msg = "The ship select stage has no ship"
+            raise ValueError(msg)
         return spot
 
     @property

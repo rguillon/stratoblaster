@@ -1,4 +1,5 @@
-"""The Fjord Lynx (2-2's mini boss, specs/bosses/mini/2-2-fjord-lynx.md)
+# Copyright (c) 2026 Renaud Guillon
+"""The Fjord Lynx (2-2's mini boss, specs/bosses/mini/2-2-fjord-lynx.md).
 
 The mini boss of 2-2. Offsets in px from the boss's centre, X right and Y up (its nose
 points down, at -Y). Its radar mast aims its guns (MB-FJORD-LYNX-09): while the mast stands, the
@@ -44,64 +45,60 @@ CHIN = [[0, -41.64, 6.68]]
 
 # 2-2: a fast, low gunship crouched like a lynx, two forward paws and tufted antennas, white and
 # cyan neon. Both paw cannons (MB-FJORD-LYNX-08) and the radar mast shield the core.
-_FJORD_LYNX = record(
-    {
+_FJORD_LYNX = record({
+    "id": "fjord-lynx",
+    # Angry after each destroyed part (phase 7 review, MB-FJORD-LYNX-11).
+    "rage": rage.vortex(3.5, "blue", "magenta"),
+    # Its core, paws, radar mast and points (MB-FJORD-LYNX-13).
+    "stats": stats({
         "id": "fjord-lynx",
-        # Angry after each destroyed part (phase 7 review, MB-FJORD-LYNX-11).
-        "rage": rage.vortex(3.5, "blue", "magenta"),
-        # Its core, paws, radar mast and points (MB-FJORD-LYNX-13).
-        "stats": stats(
-            {
-                "id": "fjord-lynx",
-                "name": "Fjord Lynx",
-                "size": 3,
-                "coreRadius": 18,
-                "coreHealth": 1080,
-                "points": 3500,
-                "groundSpeed": 0.6,
-                "parts": [
-                    part("paw-left", PAW, 13, 600),
-                    part("paw-right", [-PAW[0], PAW[1]], 13, 600),
-                    part(RADAR, [-25, 22], 11, 600),
-                ],
-            }
-        ),
-        # Where it stops and how it moves in place (MB-FJORD-LYNX-07).
-        "stopFraction": 0.72,
-        "sway": {"amplitude": 75, "period": 6},
-        "bob": {"amplitude": 8, "period": 3},
-        "guns": {
-            "core": {"gun": CHIN, "turret": [0, -30]},
-            "paw-left": {"gun": mirror(PAW_CANNON), "turret": PAW},
-            "paw-right": {"gun": PAW_CANNON, "turret": [-PAW[0], PAW[1]]},
-        },
-        # The paws' volleys, then the core's pattern per stage (MB-FJORD-LYNX-10).
-        "stages": stages(
+        "name": "Fjord Lynx",
+        "size": 3,
+        "coreRadius": 18,
+        "coreHealth": 1080,
+        "points": 3500,
+        "groundSpeed": 0.6,
+        "parts": [
+            part("paw-left", PAW, 13, 600),
+            part("paw-right", [-PAW[0], PAW[1]], 13, 600),
+            part(RADAR, [-25, 22], 11, 600),
+        ],
+    }),
+    # Where it stops and how it moves in place (MB-FJORD-LYNX-07).
+    "stopFraction": 0.72,
+    "sway": {"amplitude": 75, "period": 6},
+    "bob": {"amplitude": 8, "period": 3},
+    "guns": {
+        "core": {"gun": CHIN, "turret": [0, -30]},
+        "paw-left": {"gun": mirror(PAW_CANNON), "turret": PAW},
+        "paw-right": {"gun": PAW_CANNON, "turret": [-PAW[0], PAW[1]]},
+    },
+    # The paws' volleys, then the core's pattern per stage (MB-FJORD-LYNX-10).
+    "stages": stages(
+        [
+            # Aimed spreads while the radar stands, then fans crossing in front of the nose.
+            only_while(volley.aimed("paw-left", 2.2, 3, 10, BLUE, 1), RADAR),
+            only_while(volley.aimed("paw-right", 2.2, 3, 10, BLUE, 2.1), RADAR),
+            only_after(volley.fan("paw-left", 2.2, 3, 12, BLUE, 1, 18), RADAR),
+            only_after(volley.fan("paw-right", 2.2, 3, 12, BLUE, 2.1, -18), RADAR),
+        ],
+        [
+            [only_while(volley.aimed("core", 3, 1, 0, MAGENTA, 1.5), RADAR)],
             [
-                # Aimed spreads while the radar stands, then fans crossing in front of the nose.
-                only_while(volley.aimed("paw-left", 2.2, 3, 10, BLUE, 1), RADAR),
-                only_while(volley.aimed("paw-right", 2.2, 3, 10, BLUE, 2.1), RADAR),
-                only_after(volley.fan("paw-left", 2.2, 3, 12, BLUE, 1, 18), RADAR),
-                only_after(volley.fan("paw-right", 2.2, 3, 12, BLUE, 2.1, -18), RADAR),
+                only_while(volley.aimed("core", 2.6, 3, 12, MAGENTA, 0.8), RADAR),
+                only_after(volley.fan("core", 2.6, 3, 16, MAGENTA, 0.8), RADAR),
             ],
             [
-                [only_while(volley.aimed("core", 3, 1, 0, MAGENTA, 1.5), RADAR)],
-                [
-                    only_while(volley.aimed("core", 2.6, 3, 12, MAGENTA, 0.8), RADAR),
-                    only_after(volley.fan("core", 2.6, 3, 16, MAGENTA, 0.8), RADAR),
-                ],
-                [
-                    only_while(volley.burst("core", 2.4, 4, 0.14, MAGENTA, 0.6), RADAR),
-                    only_after(volley.fan("core", 2.2, 5, 14, MAGENTA, 0.6), RADAR),
-                ],
-                [
-                    volley.fan("core", 2.4, 7, 12, MAGENTA, 0.6),
-                    volley.ring("core", 1.6, 12, 9, PURPLE, 0.4),
-                ],
+                only_while(volley.burst("core", 2.4, 4, 0.14, MAGENTA, 0.6), RADAR),
+                only_after(volley.fan("core", 2.2, 5, 14, MAGENTA, 0.6), RADAR),
             ],
-        ),
-    }
-)
+            [
+                volley.fan("core", 2.4, 7, 12, MAGENTA, 0.6),
+                volley.ring("core", 1.6, 12, 9, PURPLE, 0.4),
+            ],
+        ],
+    ),
+})
 
 # Its hidden weapons (boss transformations, D-224, MB-FJORD-LYNX-12): at transformation 1 its back
 # plating bursts off, baring a dark metal frame (MB-FJORD-LYNX-06), and a pair of ring emitters

@@ -1,4 +1,5 @@
-"""What hurts the player (phase 6 review; GAME-LIFE-03)
+# Copyright (c) 2026 Renaud Guillon
+"""What hurts the player (phase 6 review; GAME-LIFE-03).
 
 3 lives at the start (GAME-LIFE-02; then those kept from the level completed before, reviewer
 2026-10-28), as many as life bonuses add, each a full health bar (GAME-LIFE-01: the ship's
@@ -10,12 +11,10 @@ hitbox of 5 px around the ship's centre, much smaller than its model (GAME-SHIP-
 
 from game.config.record import record
 
-HULL_RULES = record(
-    {
-        "lives": 3,
-        "invincibleSeconds": 2,
-        "hitRadius": 5,
-        "damage": {"bullet": 10, "missile": 20, "laser": 25, "collision": 30},
-        "ramDamage": 40,
-    }
-)
+HULL_RULES = record({
+    "lives": 3,
+    "invincibleSeconds": 2,
+    "hitRadius": 5,
+    "damage": {"bullet": 10, "missile": 20, "laser": 25, "collision": 30},
+    "ramDamage": 40,
+})

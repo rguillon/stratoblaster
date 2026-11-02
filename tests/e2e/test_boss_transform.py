@@ -1,5 +1,9 @@
-"""e2e: bosses transform as they lose parts, revealing hidden weapons that fire (docs/superpowers/
-specs/2026-10-31-ship-glow-and-boss-transform-design.md, Part B)."""
+# Copyright (c) 2026 Renaud Guillon
+"""e2e: bosses transform as they lose parts.
+
+Revealing hidden weapons that fire (docs/superpowers/
+specs/2026-10-31-ship-glow-and-boss-transform-design.md, Part B).
+"""
 
 import pytest
 from e2e.menu_helpers import boss, boss_stage, open_debug, step_until, wait_out_transformation

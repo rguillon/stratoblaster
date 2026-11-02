@@ -1,17 +1,15 @@
-"""FB-OBSIDIAN-GOLEM-03 to FB-OBSIDIAN-GOLEM-05, 4-3: the Obsidian Golem's parts (its fists,
-shoulder cannons, chest emitter and armour plate), its arms (FB-OBSIDIAN-GOLEM-07) and its
-obsidian look.
-Logical
-pixels, nose +Z, Y up (towards the camera).
+# Copyright (c) 2026 Renaud Guillon
+"""FB-OBSIDIAN-GOLEM-03 to FB-OBSIDIAN-GOLEM-05, 4-3: the Obsidian Golem's parts, arms and look.
+
+The parts: its fists, shoulder cannons, chest emitter and armour plate. The arms:
+FB-OBSIDIAN-GOLEM-07. Logical pixels, nose +Z, Y up (towards the camera).
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.config.bosses.boss_kit import mirror  # noqa: E402
-from game.config.bosses.world_4.obsidian_golem import (  # noqa: E402
+from game.config.boss_look import BOSS_LOOK
+from game.config.bosses.boss_kit import mirror
+from game.config.bosses.world_4.obsidian_golem import (
     ARMS,
     GOLEM_ARM,
     GOLEM_CANNON_GUNS,
@@ -19,31 +17,32 @@ from game.config.bosses.world_4.obsidian_golem import (  # noqa: E402
     GOLEM_LENS,
     side_of,
 )
-from game.config.record import record  # noqa: E402
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.final_boss_shapes import mirrored  # noqa: E402
-from game.view.bosses.mini_boss_greebles import seam  # noqa: E402
-from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H, offset  # noqa: E402
-from game.view.bosses.world_3.toucan_jungle import segment  # noqa: E402
-from game.view.bosses.world_4.living_forge import SKIN, glands  # noqa: E402
-from game.view.bosses.world_4.magma_salamander_parts import barrel  # noqa: E402
-from game.view.enemies.enemy_shapes import SIDES  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
+from game.config.record import record
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.final_boss_shapes import mirrored
+from game.view.bosses.mini_boss_greebles import seam
+from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H, offset
+from game.view.bosses.world_3.toucan_jungle import segment
+from game.view.bosses.world_4.living_forge import SKIN, glands
+from game.view.bosses.world_4.magma_salamander_parts import barrel
+from game.view.enemies.enemy_shapes import SIDES
+from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Rgb = list[float]
 type Vec3 = list[float]
 type OutlinePoint = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def _neon_or(kind: str, fallback: Rgb) -> Rgb:
     """`BOSS_LOOK.neon[kind] ?? fallback`."""
     colour: Rgb = BOSS_LOOK.neon[kind]
-    if colour == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    if colour == None:
         return fallback
     return colour
 
@@ -66,13 +65,19 @@ OBSIDIAN = [0.045, 0.04, 0.055]
 
 
 def crack(neon: Any, path: list[OutlinePoint], y: float) -> None:
-    """A crack of magma across a surface at height `y`: glowing strips through the points `path`."""
+    """Add a crack of magma across a surface at height `y`.
+
+    Glowing strips through the points `path`.
+    """
     for i in range(1, len(path)):
         seam(neon, path[i - 1], path[i], [y, 0.7, 0.3], MAGMA)
 
 
 def arm_points(arm: str) -> list[Vec3]:
-    """The model-space points of `arm` at rest: its shoulder, its elbow and its fist's centre."""
+    """Return the model-space points of `arm` at rest.
+
+    Its shoulder, its elbow and its fist's centre.
+    """
     s = side_of(arm)
 
     def at(point: list[float], h: float) -> Vec3:
@@ -82,8 +87,10 @@ def arm_points(arm: str) -> list[Vec3]:
 
 
 def upper_arm(arm: str) -> Any:
-    """`arm`'s upper arm, on its shoulder (FB-OBSIDIAN-GOLEM-02): a thick, plated strut down to
-    the elbow's joint."""
+    """Return `arm`'s upper arm, on its shoulder (FB-OBSIDIAN-GOLEM-02).
+
+    A thick, plated strut down to the elbow's joint.
+    """
 
     def draw(p: Any) -> None:
         hull = p.hull
@@ -114,8 +121,10 @@ def upper_arm(arm: str) -> Any:
 
 
 def forearm(arm: str) -> Any:
-    """`arm`'s forearm, on its elbow (FB-OBSIDIAN-GOLEM-02): a massive tapering block of armour
-    down to the wrist."""
+    """Return `arm`'s forearm, on its elbow (FB-OBSIDIAN-GOLEM-02).
+
+    A massive tapering block of armour down to the wrist.
+    """
 
     def draw(p: Any) -> None:
         neon = p.neon
@@ -137,8 +146,10 @@ def forearm(arm: str) -> Any:
 
 
 def arm_limbs() -> Any:
-    """The limbs of the two arms (FB-OBSIDIAN-GOLEM-07): an upper arm on each shoulder and a
-    forearm on each elbow."""
+    """Return the limbs of the two arms (FB-OBSIDIAN-GOLEM-07).
+
+    An upper arm on each shoulder and a forearm on each elbow.
+    """
     limbs = {}
     for arm in ARMS:
         limbs["shoulder-" + arm] = record({"draw": upper_arm(arm)})
@@ -147,9 +158,11 @@ def arm_limbs() -> Any:
 
 
 def fist(p: Any, at: Vec3) -> None:
-    """A fist around its centre `at` (FB-OBSIDIAN-GOLEM-03), on its elbow: a huge block of obsidian,
-    four knuckles with magma glowing between them, a thumb on the inside, and the magma vent in the
-    middle of its knuckles that throws rings of slow, big globs."""
+    """Add a fist around its centre `at` (FB-OBSIDIAN-GOLEM-03), on its elbow.
+
+    A huge block of obsidian, four knuckles with magma glowing between them, a thumb on the inside,
+    and the magma vent in the middle of its knuckles that throws rings of slow, big globs.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -182,8 +195,10 @@ def fist(p: Any, at: Vec3) -> None:
 
 
 def cannon_mount(p: Any, at: Vec3) -> None:
-    """A shoulder cannon's mount around its centre `at` (FB-OBSIDIAN-GOLEM-04): a low armoured ring
-    on the back of its shoulder, its turret turning on it."""
+    """Add a shoulder cannon's mount around its centre `at` (FB-OBSIDIAN-GOLEM-04).
+
+    A low armoured ring on the back of its shoulder, its turret turning on it.
+    """
     hull = p.hull
     neon = p.neon
     p.flesh.cylinder(11, 11, 8, SKIN.base, Placement(offset(at, 0, 0, 0), math.pi / 8), 9.6)
@@ -202,8 +217,10 @@ DOME = [
 
 
 def cannon_turret(p: Any, at: Vec3) -> None:
-    """A shoulder cannon's turret around its pivot `at` (FB-OBSIDIAN-GOLEM-04, D-060): a faceted
-    dome on its mount and two heavy barrels, turning the way their aimed spreads fire."""
+    """Add a shoulder cannon's turret around its pivot `at` (FB-OBSIDIAN-GOLEM-04, D-060).
+
+    A faceted dome on its mount and two heavy barrels, turning the way their aimed spreads fire.
+    """
     hull = p.hull
     hull.lathe(DOME, 8, OBSIDIAN, Placement(offset(at, 0, 11, 0), math.pi / 8))
     hull.box([9, 4, 6], H.dark, Placement(offset(at, 0, 13, 7)), H.panel)
@@ -214,20 +231,20 @@ def cannon_turret(p: Any, at: Vec3) -> None:
 
 
 # The armour plate seen from above: a chevron of obsidian over the chest (right half).
-PLATE = mirrored(
-    [
-        [0, 14],
-        [12, 10],
-        [19, 2],
-        [16, -10],
-        [0, -6],
-    ]
-)
+PLATE = mirrored([
+    [0, 14],
+    [12, 10],
+    [19, 2],
+    [16, -10],
+    [0, -6],
+])
 
 
 def plate(p: Any, at: Vec3) -> None:
-    """The armour plate around its centre `at` (FB-OBSIDIAN-GOLEM-05, no weapon): a thick chevron of
-    obsidian on its chest, cracked with magma, bolted on with dark studs."""
+    """Add the armour plate around its centre `at` (FB-OBSIDIAN-GOLEM-05, no weapon).
+
+    A thick chevron of obsidian on its chest, cracked with magma, bolted on with dark studs.
+    """
     hull = p.hull
     neon = p.neon
     x = at[0]
@@ -267,9 +284,11 @@ HOUSING = [
 
 
 def emitter(p: Any, at: Vec3) -> None:
-    """The chest emitter around its centre `at` (FB-OBSIDIAN-GOLEM-05): a heavy housing on the prow
-    under the plate, ringed in orange, its lens glowing as the laser charges; the beam fires
-    straight down."""
+    """Add the chest emitter around its centre `at` (FB-OBSIDIAN-GOLEM-05).
+
+    A heavy housing on the prow under the plate, ringed in orange, its lens glowing as the laser
+    charges; the beam fires straight down.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge

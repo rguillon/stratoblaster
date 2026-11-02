@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/geometry/solids.py` (GFX-ART-10, GFX-PROP-04)."""
 
 import math
@@ -45,7 +46,8 @@ def test_a_box_is_six_closed_faces_with_outward_normals() -> None:
 def test_a_box_stands_on_its_base_at_zero() -> None:
     b = SolidBuilder().box([2, 4, 2], RED)
     ys = [p[1] for p in _polygon_points(b)]
-    assert min(ys) == 0 and max(ys) == 4
+    assert min(ys) == 0
+    assert max(ys) == 4
 
 
 def test_an_open_bottom_box_leaves_out_its_bottom_face() -> None:
@@ -146,8 +148,8 @@ def test_a_bevelled_slab_without_insets_is_a_plain_slab() -> None:
 
 
 def test_a_bevelled_slab_narrows_its_bottom_below_the_waist() -> None:
-    # Bottom face inset by 0.5 (a 1 × 1 square), full width at the waist and at the top:
-    # a frustum of 1 → 4 over 0.5 high, then a 2 × 2 prism of 0.5 high.
+    # Bottom face inset by 0.5 (a 1 x 1 square), full width at the waist and at the top:
+    # a frustum of 1 → 4 over 0.5 high, then a 2 x 2 prism of 0.5 high.
     b = SolidBuilder().bevel_slab(SQUARE, [0, 0.5, 1], [0.5, 0], RED)
     frustum = 0.5 / 3 * (1 + 4 + 2)
     assert enclosed_volume(b.geometry.positions, b.geometry.indices) == pytest.approx(
@@ -197,7 +199,8 @@ def test_a_loft_paint_colours_the_faces_it_is_asked_for() -> None:
     )
     assert sorted(set(seen)) == [(s, k) for s in range(4) for k in range(2)]
     blues = [tuple(b.geometry.colors[i : i + 3]) for i in range(0, len(b.geometry.colors), 4)]
-    assert tuple(BLUE) in blues and tuple(RED) in blues
+    assert tuple(BLUE) in blues
+    assert tuple(RED) in blues
 
 
 def test_the_babylon_normal_of_a_box_top_points_up() -> None:

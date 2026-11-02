@@ -89,7 +89,7 @@ When P18-R01 to P18-R06 pass, the TypeScript source, `package.json`, `package-lo
 > After the agent reports, write corrections here, then say **"Fix phase 18"**.
 > The agent ticks each item when fixed.
 
-- [ ] 
+- [ ]
 
 ---
 

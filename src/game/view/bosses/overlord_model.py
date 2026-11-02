@@ -1,4 +1,6 @@
-"""FB-OVERLORD-01 to FB-OVERLORD-04: the Overlord, World 1's last boss (1-5)
+# Copyright (c) 2026 Renaud Guillon
+"""FB-OVERLORD-01 to FB-OVERLORD-04: the Overlord, World 1's last boss (1-5).
+
 Model space: logical pixels, nose +Z (down the screen), Y up towards the camera. A city-sized
 organism: a vast mantle with a city of living towers grown on its back, a shelled spine down its
 middle carrying the citadel (its brain), membrane wings out to the laser cannons.
@@ -6,26 +8,24 @@ middle carrying the citadel (its brain), membrane wings out to the laser cannons
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.bosses.final_bosses import OVERLORD  # noqa: E402
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.overlord_city import (  # noqa: E402
+from game.config.bosses.final_bosses import OVERLORD
+from game.config.enemy_look import ENEMY_LOOK
+from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.overlord_city import (
     OVERLORD_DECK,
     OVERLORD_NEON,
     box2d,
     edge_lights,
     symmetric,
 )
-from game.view.bosses.overlord_parts import (  # noqa: E402
+from game.view.bosses.overlord_parts import (
     WING_TOP,
     draw_battery,
     draw_generator,
     draw_laser,
 )
-from game.view.bosses.overlord_skyline import draw_skyline  # noqa: E402
-from game.view.bosses.world_1_organic_kit import (  # noqa: E402
+from game.view.bosses.overlord_skyline import draw_skyline
+from game.view.bosses.world_1_organic_kit import (
     F,
     M,
     barbs,
@@ -36,20 +36,22 @@ from game.view.bosses.world_1_organic_kit import (  # noqa: E402
     tentacle,
     vein_line,
 )
-from game.view.enemies.enemy_shapes import SIDES, decal, flip_x  # noqa: E402
-from game.view.enemies.organic_parts import eyes, reactor_sac  # noqa: E402
-from render.geometry.organic import (  # noqa: E402
+from game.view.enemies.enemy_shapes import SIDES, decal, flip_x
+from game.view.enemies.organic_parts import eyes, reactor_sac
+from render.geometry.organic import (
     SegmentedBody,
     segmented_body,
 )
-from render.geometry.solids import Placement  # noqa: E402
+from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Vec3 = list[Any]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 WHITE = [1, 1, 1]
@@ -111,15 +113,16 @@ LENS = [
 
 
 def _draw_hull(p: Any) -> None:
-    """The body (FB-OVERLORD-02): a vast dark mantle with a neon rim, a shelled spine down its
-    middle (the boulevard) carrying the citadel, ribs across it, veins out to its edges, membrane
-    wings out to the laser cannons on bone struts, swim bladders across its tail."""
+    """Draw the body (FB-OVERLORD-02): a vast dark mantle with a neon rim.
+
+    A shelled spine down its middle (the boulevard) carrying the citadel, ribs across it, veins out
+    to its edges, membrane wings out to the laser cannons on bone struts, swim bladders across its
+    tail.
+    """
     top = OVERLORD_DECK["top"]
     boulevard = OVERLORD_DECK["boulevard"]
     mantle(p, DECK, [-8, top], F.graphite)
-    edges: list[int] = []
-    for i in range(len(DECK)):
-        edges.append(i)
+    edges: list[int] = list(range(len(DECK)))
     edge_lights(p.neon, DECK, edges, [-2.6, -1.4], N)
     mantle(p, BOULEVARD, [top - 1, boulevard], F.slate, N)
     rib_cage(
@@ -147,8 +150,11 @@ def _draw_hull(p: Any) -> None:
 
 
 def _draw_citadel(p: Any) -> None:
-    """The citadel over the core (FB-OVERLORD-03): a swollen, tiered brain-head ringed with neon,
-    eyes on its front, a ring emitter on top, the grafted weapon array before it."""
+    """Draw the citadel over the core (FB-OVERLORD-03): a swollen, tiered brain-head.
+
+    It is ringed with neon, with eyes on its front, a ring emitter on top and the grafted weapon
+    array before it.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -190,7 +196,7 @@ def _draw_citadel(p: Any) -> None:
 
 
 def _draw_hatches(p: Any) -> None:
-    """The missile hatches on the boulevard behind the citadel, lit as missiles load."""
+    """Draw the missile hatches on the boulevard behind the citadel, lit as missiles load."""
     hull = p.hull
     charge = p.charge
     muzzle = p.muzzle
@@ -204,7 +210,7 @@ def _draw_hatches(p: Any) -> None:
 
 
 def _draw_core(parts: Any) -> None:
-    """The core: body, city, citadel and hatches, four reactors in sacs across the tail."""
+    """Draw the core: body, city, citadel and hatches, four reactors in sacs across the tail."""
     _draw_hull(parts)
     draw_skyline(parts)
     _draw_citadel(parts)
@@ -215,11 +221,13 @@ def _draw_core(parts: Any) -> None:
 
 
 def build_overlord(scene: Any) -> Any:
-    """FB-OVERLORD-01, FB-OVERLORD-04: the Overlord, a city-sized organism (6 L) under purple
-    neon: living towers
-    lit with window glands grown out of its vast mantle, two wing laser cannons, two missile
-    batteries at the back, two shield generators in front, and a citadel over the core carrying a
-    laser, twin cannons, a ring emitter and missile hatches."""
+    """FB-OVERLORD-01, FB-OVERLORD-04: the Overlord.
+
+    A city-sized organism (6 L) under purple neon: living towers lit with window glands grown out of
+    its vast mantle, two wing laser cannons, two missile batteries at the back, two shield
+    generators in front, and a citadel over the core carrying a laser, twin cannons, a ring emitter
+    and missile hatches.
+    """
     return build_boss_model(
         OVERLORD,
         scene,

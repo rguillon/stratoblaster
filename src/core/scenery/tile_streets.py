@@ -1,27 +1,21 @@
+# Copyright (c) 2026 Renaud Guillon
 """GFX-ROAD-08, GFX-ROAD-14: the streets of a district laid on a grid of square tiles (phase 15).
+
 Rows (along X) may be wide roads (avenues and boulevards, N tiles wide); columns are one tile wide
 (GFX-ROAD-13). Every line covers whole tiles, and the columns sit where the junction pieces of the
-wide rows they cross fall on the rows' own N-tile lattice, so every wide row is made of whole N × N
-pieces."""
+wide rows they cross fall on the rows' own N-tile lattice, so every wide row is made of whole N x N
+pieces.
+"""
 
 import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.districts import District, DistrictPart  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.scenery_level import RoadRules, TileRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-__pragma__("noskip")
-
-from core.math.noise import hash_2d  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.math.rng import random_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.ordering import stable_sort_by  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.street_dead_ends import remove_dead_ends  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.street_links import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.noise import hash_2d
+from core.math.rng import random_in
+from core.scenery.ordering import stable_sort_by
+from core.scenery.street_dead_ends import remove_dead_ends
+from core.scenery.street_links import (
     Block,
     Link,
     Node,
@@ -31,7 +25,17 @@ from core.scenery.street_links import (  # noqa: E402 (after the Transcrypt skip
     pair,
     to_fixed3,
 )
-from core.scenery.street_runs import Point, straight_runs  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.street_runs import Point, straight_runs
+
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
+
+from core.math.rng import Random
+from core.scenery.districts import District, DistrictPart
+from core.scenery.scenery_level import RoadRules, TileRules
+
+# __pragma__ ("noskip")
 
 # `%` keeps JavaScript's sign rule.
 __pragma__("jsmod")
@@ -46,8 +50,10 @@ class StreetRun:
 
 
 class Line:
-    """A line of the grid: its first tile and its size in tiles (and, once placed, its middle
-    `z`)."""
+    """A line of the grid.
+
+    Its first tile and its size in tiles (and, once placed, its middle `z`).
+    """
 
     def __init__(self, start: int, size: int, z: float = 0) -> None:
         self.start = start
@@ -80,7 +86,7 @@ def _mod(a: float, n: float) -> float:
 
 
 def _int_set(values: Sequence[int]) -> dict[str, bool]:
-    """A set of tile numbers, as a dictionary keyed by their text."""
+    """Return a set of tile numbers, as a dictionary keyed by their text."""
     result: dict[str, bool] = {}
     for v in values:
         result[str(v)] = True
@@ -88,7 +94,7 @@ def _int_set(values: Sequence[int]) -> dict[str, bool]:
 
 
 def _unique(values: Sequence[int]) -> list[int]:
-    """The values once each, in their first order."""
+    """Return the values once each, in their first order."""
     seen: dict[str, bool] = {}
     result: list[int] = []
     for v in values:
@@ -100,7 +106,7 @@ def _unique(values: Sequence[int]) -> list[int]:
 
 
 def _unique_nodes(values: Sequence[Node]) -> list[Node]:
-    """The nodes once each (by identity), in their first order."""
+    """Return the nodes once each (by identity), in their first order."""
     result: list[Node] = []
     for n in values:
         if not any(m is n for m in result):
@@ -109,16 +115,20 @@ def _unique_nodes(values: Sequence[Node]) -> list[Node]:
 
 
 def column_fits(s: int, size: int) -> bool:
-    """Whether a one-tile column at tile `s` crosses a row of `size` tiles on that row's lattice
-    (GFX-ROAD-12): its junction piece, `size` wide, starts on a multiple of `size` with the column
-    in it as close to its middle as the grid allows."""
+    """Whether a one-tile column at tile `s` crosses a row of `size` tiles on its lattice.
+
+    The row's junction piece (GFX-ROAD-12), `size` wide, starts on a multiple of `size` with the
+    column in it as close to its middle as the grid allows.
+    """
     offset = _mod(s, size)
     return offset == math.floor((size - 1) / 2) or offset == math.ceil((size - 1) / 2)
 
 
 def _row_size(rules: RoadRules, t: int) -> int:
-    """Size in tiles of a row starting at tile `t` (GFX-ROAD-09): a share of them are avenues or
-    boulevards (GFX-ROAD-17)."""
+    """Size in tiles of a row starting at tile `t` (GFX-ROAD-09).
+
+    A share of them are avenues or boulevards (GFX-ROAD-17).
+    """
     h = hash_2d(t, 29, 211)
     total = 0.0
     for b in rules.boulevards if rules.boulevards is not None else []:
@@ -134,7 +144,7 @@ def _next_gap(gap: Sequence[float], tile: float, random: Random) -> int:
 
 
 def _part_rows(rules: RoadRules, tile: TileRules, part: DistrictPart, random: Random) -> list[Line]:
-    """The rows of a part, from its first to its last (both one tile wide)."""
+    """Return the rows of a part, from its first to its last (both one tile wide)."""
     first = _tile_at(part.z_min, tile.size)
     last = _tile_at(part.z_max, tile.size)
     previous = Line(first, 1)
@@ -154,7 +164,10 @@ def _part_rows(rules: RoadRules, tile: TileRules, part: DistrictPart, random: Ra
 
 
 def _fitting_tile(from_: int, step: int, sizes: Sequence[int], taken: dict[str, bool]) -> int:
-    """The nearest tile from `from_` on, going `step` (±1), where a column fits every row size."""
+    """Return the nearest tile where a column fits every row size.
+
+    The search starts at `from_` and goes `step` (±1) at a time.
+    """
     s = from_
     while True:
         fits = True
@@ -175,8 +188,11 @@ def _part_columns(
     before: Sequence[int],
     random: Random,
 ) -> list[int]:
-    """The columns of a part, from past one screen edge to past the other. `before` are the
-    columns of the part before (on the shared row): never one tile beside one of them."""
+    """Return the columns of a part, from past one screen edge to past the other.
+
+    `before` are the columns of the part before (on the shared row): never one tile beside one of
+    them.
+    """
     edge = rules.offscreen_x + rules.step
     sizes = _unique([s for s in row_sizes if s > 1])
     taken = _int_set(before)
@@ -201,12 +217,15 @@ def tile_street_runs(
     buildable: Callable[[float, float], bool],
     out_of_view: Callable[[Node], bool],
 ) -> tuple[list[StreetRun], list[Block]]:
-    """The streets of a district on the tile grid (phase 15), as `street_runs` lays them
-    otherwise: random links (rows of two tiles or more, the avenues and boulevards, are built along
-    their whole line, and become one-tile streets where their ground does not allow it), then no
-    dead end on screen. Streets cross: there is no T-junction-only rule here (GFX-ROAD-15).
+    """Return the streets of a district on the tile grid (phase 15).
 
-    Returns (runs, blocks)."""
+    As `street_runs` lays them otherwise: random links (rows of two tiles or more, the avenues and
+    boulevards, are built along their whole line, and become one-tile streets where their ground
+    does not allow it), then no dead end on screen. Streets cross: there is no T-junction-only rule
+    here (GFX-ROAD-15).
+
+    Returns (runs, blocks).
+    """
     layout = _TileLayout(rules, tile, random, buildable)
     last_index = len(district.parts) - 1
     for p, part in enumerate(district.parts):
@@ -285,17 +304,15 @@ class _TileLayout:
             self._add(a, b, True, boundary, line.size > 1, chance)
 
     def _lay_columns(self, laid: PartGrid, chance: float) -> None:
+        # The grid has a row of nodes per line, each with a node per column.
         grid = laid.grid
         for c, x in enumerate(laid.xs):
             self._widths["x" + to_fixed3(x)] = self._tile.size
             for r in range(len(laid.lines) - 1):
-                a = grid[r][c] if r < len(grid) and c < len(grid[r]) else None
-                b = grid[r + 1][c] if r + 1 < len(grid) and c < len(grid[r + 1]) else None
-                if a is not None and b is not None:
-                    self._add(a, b, False, False, False, chance)
+                self._add(grid[r][c], grid[r + 1][c], False, False, False, chance)
 
     def _merge_row(self, lower: Sequence[Node], upper: Sequence[Node], chance: float) -> None:
-        """The shared row between two parts, laid once over both parts' columns."""
+        """Lay the shared row between two parts, once over both parts' columns."""
         both = list(lower)
         both.extend(upper)
         row = stable_sort_by(_unique_nodes(both), lambda n: n.x)
@@ -311,7 +328,7 @@ class _TileLayout:
         wide: bool,
         chance: float,
     ) -> None:
-        """A link from `a0` to `b0`, built with the chance `chance` unless required or wide."""
+        """Add a link from `a0` to `b0`, built with the chance `chance` unless required or wide."""
         nodes = self._nodes
         a = nodes.use(a0)
         b = nodes.use(b0)
@@ -327,7 +344,7 @@ class _TileLayout:
         return self._widths.get(key, self._tile.size)
 
     def streets(self, out_of_view: Callable[[Node], bool]) -> tuple[list[StreetRun], list[Block]]:
-        """The straight runs and the blocks, once the dead ends on screen are removed."""
+        """Return the straight runs and the blocks, once the dead ends on screen are removed."""
         all_links = dedupe(self._links)
         used = self._nodes.used
         remove_dead_ends(links_by_node(all_links, len(used)), used, out_of_view, False, True)
@@ -354,9 +371,11 @@ def _tile_blocks(
     has: dict[str, bool],
     width_of: Callable[[str], float],
 ) -> list[Block]:
-    """The blocks of the cells of a part's grid, on whole tiles: up to the edge of each street
-    around them, and over the tiles of a missing street on their upper and right sides (so the
-    lower and left blocks take them, and blocks never share a tile)."""
+    """Return the blocks of the cells of a part's grid, on whole tiles.
+
+    Up to the edge of each street around them, and over the tiles of a missing street on their upper
+    and right sides (so the lower and left blocks take them, and blocks never share a tile).
+    """
     blocks: list[Block] = []
     for r in range(len(grid) - 1):
         for c in range(len(grid[r]) - 1):
@@ -366,17 +385,12 @@ def _tile_blocks(
     return blocks
 
 
-def _corners(
-    grid: Sequence[Sequence[Node]], c: int, r: int
-) -> tuple[Node, Node, Node, Node] | None:
-    """The corners of cell (`c`, `r`): bottom left, bottom right, top left, top right."""
-    found: list[Node] = []
-    for rr, cc in [(r, c), (r, c + 1), (r + 1, c), (r + 1, c + 1)]:
-        if 0 <= rr < len(grid) and 0 <= cc < len(grid[rr]):
-            found.append(grid[rr][cc])
-        else:
-            return None
-    return found[0], found[1], found[2], found[3]
+def _corners(grid: Sequence[Sequence[Node]], c: int, r: int) -> tuple[Node, Node, Node, Node]:
+    """Return the corners of cell (`c`, `r`) of `grid` (rows of equal length).
+
+    Bottom left, bottom right, top left, top right.
+    """
+    return grid[r][c], grid[r][c + 1], grid[r + 1][c], grid[r + 1][c + 1]
 
 
 def _cell_block(
@@ -386,11 +400,8 @@ def _cell_block(
     has: dict[str, bool],
     width_of: Callable[[str], float],
 ) -> Block | None:
-    """The block of cell (`c`, `r`), if it has room (see `_tile_blocks`)."""
-    cell = _corners(grid, c, r)
-    if cell is None:
-        return None
-    n00, n10, n01, n11 = cell
+    """Return the block of cell (`c`, `r`), if it has room (see `_tile_blocks`)."""
+    n00, n10, n01, n11 = _corners(grid, c, r)
 
     def built(a: Node, b: Node) -> bool:
         return (str(pair(a, b)) in has) or (str(pair(b, a)) in has)

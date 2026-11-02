@@ -287,8 +287,9 @@ number needs no code change. The engine refuses weapon data with a duplicate id,
 without streams, or impossible numbers (a rate, speed, radius or damage that is not positive, a
 negative acceleration, homing or blast, a speed cap under the launch speed).
 
-**Discrepancy:** the check (`validate_weapons`) exists and is unit tested, but nothing runs it on
-the game's weapons.
+**Discrepancy:** the engine has no check: nothing refuses weapon data at run time. The game's own
+weapons are checked by a unit test (`tests/unit/game/sim/test_player_build.py`); the engine's check,
+which nothing ran, was removed with the code only tests called (D-237).
 
 *Sources: D-015.*
 

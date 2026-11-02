@@ -1,8 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Image-based lighting, tone mapping and glow for a scene (GFX-ART-02, ENG-114, ENG-126)."""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from render.babylon import (
     babylon_constant,
@@ -18,20 +17,23 @@ from render.babylon import (
 )
 from render.environment.gradient_cube import build_gradient_cube_faces
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from render.environment.gradient_cube import GradientStop  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.handles import WeakMap  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.environment.gradient_cube import GradientStop
+from render.handles import WeakMap
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class ShowcaseGlow:
-    """Glow settings: `intensity`, `blur_kernel_size`, and optionally the resolution of the glow
-    image as a share of the screen's (`ratio`, Babylon's 0.5 when None) and its samples per pixel
-    (`samples`, Babylon's 1 when None; the ground's glow sets both, GFX-TERRAIN-15)."""
+    """Glow settings: `intensity`, `blur_kernel_size`, and optionally the resolution of the glow.
+
+    `ratio` is the glow image as a share of the screen's (Babylon's 0.5 when None), and `samples`
+    its samples per pixel (Babylon's 1 when None; the ground's glow sets both, GFX-TERRAIN-15).
+    """
 
     def __init__(
         self,
@@ -63,8 +65,12 @@ class ShowcaseEnvironmentOptions:
 
 
 def apply_showcase_environment(scene: Any, options: ShowcaseEnvironmentOptions) -> Any:
-    """Gives `scene` image-based lighting from a procedural sky gradient (no asset download),
-    ACES tone mapping and a glow layer for emissive parts (ENG-103). Returns the glow layer."""
+    """Give `scene` image-based lighting from a procedural sky gradient (no asset download).
+
+    Also ACES tone mapping and a glow layer for emissive parts (ENG-103).
+
+    Returns the glow layer.
+    """
     faces = build_gradient_cube_faces(options.cube_size, options.stops)
     texture = new_raw_cube_texture(
         scene,
@@ -104,9 +110,12 @@ def update_sky_environment(
     stops: list[GradientStop],
     intensity: float,
 ) -> None:
-    """Gives the scene's sky lighting the gradient `stops` and `intensity` (GFX-SKY-10: they
-    follow the time of day). The cube is only rebuilt when the gradient changed since the last
-    call."""
+    """Give the scene's sky lighting the gradient `stops` and `intensity`.
+
+    They follow the time of day (GFX-SKY-10).
+
+    The cube is only rebuilt when the gradient changed since the last call.
+    """
     scene.environmentIntensity = intensity
     texture = scene.environmentTexture
     key = _sky_key(stops)

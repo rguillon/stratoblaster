@@ -1,4 +1,5 @@
-"""One play of a level (`specs/gameplay/level-flow.md`)
+# Copyright (c) 2026 Renaud Guillon
+"""One play of a level (`specs/gameplay/level-flow.md`).
 
 The ground scrolls, the wave script brings the enemies in by distance (GAME-LEVEL-01), the player
 flies and shoots them. When the scroll reaches the end no more enemies come; once the last ones are
@@ -7,8 +8,6 @@ one is fought (GAME-LEVEL-06), and a level with a final boss ends once that boss
 instead. Pure and deterministic (GAME-LEVEL-15): everything depends on the `dt` and controls given
 to `step`.
 """
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from core.entities.enemy import EnemyEntry, EnemySpawnArea
 from core.entities.shot_target import damage_target
@@ -27,7 +26,6 @@ from core.systems.level_run_types import (
     Supplies,
 )
 from core.systems.player_bombs import PlayerBombs
-from core.systems.player_flight import PlayerFlight
 from core.systems.player_hits import find_player_hits
 from core.systems.player_hull import PlayerHull
 from core.systems.run_arsenal import RunArsenal
@@ -35,16 +33,21 @@ from core.systems.ship_journey import ShipJourney, flight_of
 from core.systems.shot_world import ShotImpact, ShotWorld, ShotWorldOptions
 from core.systems.wave_runner import WaveRunner, validate_wave_script
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
+from typing import TYPE_CHECKING
 
-from core.entities.enemy import DropSource  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.entities.shot_target import ShotTarget  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.systems.enemy_shots import EnemyLaser  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.enemy import DropSource, EnemyKindDefinition
+from core.entities.shot_target import ShotTarget
+from core.math.rng import Random
 
-__pragma__("noskip")
+if TYPE_CHECKING:
+    from core.systems.enemy_shots import EnemyLaser
+    from core.systems.player_flight import PlayerFlight
+# __pragma__ ("noskip")
+
 
 # Fight timings when the run is given none (only matters for levels with bosses).
 NO_BOSS_RULES = BossFightRules(0, 1)
@@ -63,9 +66,10 @@ def _player_systems(
     options: LevelRunOptions,
     reach: tuple[float, float],
 ) -> tuple[BonusWorld | None, PlayerHull | None, PlayerBombs | None]:
-    """The bonuses, hull and bombs of a run, each only when its rules are given. The bonuses draw
-    from the run's seed (GAME-BONUS-05); the life and bomb bonuses from a source of their own
-    (GAME-BONUS-03), so the weapon bonuses drop as before.
+    """Return the bonuses, hull and bombs of a run, each only when its rules are given.
+
+    The bonuses draw from the run's seed (GAME-BONUS-05); the life and bomb bonuses from a source of
+    their own (GAME-BONUS-03), so the weapon bonuses drop as before.
     """
     seed = options.seed
     supplies = options.start_supplies
@@ -91,9 +95,10 @@ def _player_systems(
 
 
 class LevelRun:
-    """One play of a level. `track` is the ground's scroll, `enemies` the enemies and their shots,
-    `shots` the player's shots, `ship` the player's ship; `blasts`, `impacts` and `hits` are what
-    the last step produced.
+    """One play of a level.
+
+    `track` is the ground's scroll, `enemies` the enemies and their shots, `shots` the player's
+    shots, `ship` the player's ship; `blasts`, `impacts` and `hits` are what the last step produced.
     last step produced.
     """
 
@@ -116,10 +121,12 @@ class LevelRun:
         kinds = options.kinds
         cull_margin = options.cull_margin
         max_enemy_age = options.max_enemy_age
-        kind_ids: list[str] = []
-        for kind in kinds:
-            kind_ids.append(kind.id)
+        kind_ids: list[str] = [kind.id for kind in kinds]
         validate_wave_script(level.waves, kind_ids)
+        # By id: `validate_wave_script` checked each wave's kind is one of them.
+        self._kinds: dict[str, EnemyKindDefinition] = {}
+        for kind in kinds:
+            self._kinds[kind.id] = kind
         self.track = ScrollTrack(level.scenery.scroll_speed, level_length(level.scenery))
         random = create_rng(options.seed)
         area = ShotWorldOptions(screen.width, screen.height, cull_margin)
@@ -149,7 +156,7 @@ class LevelRun:
         # A boss comes in with the ship's reach, and moves within it (BOSS-10).
         hooks = BossFightHooks(
             lambda: EnemySpawnArea(screen.width, screen.height, random, None, reach),
-            lambda boss: self.enemies.add(boss),  # noqa: PLW0108 (a method reference loses `self`)
+            lambda boss: self.enemies.add(boss),
         )
         self.fights = BossFights(bosses, boss_kinds, boss_rules, hooks)
         if options.start_weapons is not None:
@@ -165,8 +172,11 @@ class LevelRun:
 
     @property
     def result(self) -> LevelResult:
-        """Summary of the run so far: kills, spawns and score, and whether it is over (with the
-        checkpoint to continue from, if any)."""
+        """Summary of the run so far.
+
+        Kills, spawns and score, and whether it is over (with the checkpoint to continue from, if
+        any).
+        """
         over = self._phase == "over"
         checkpoint = self._checkpoint if over and self._checkpoint is not None else None
         return LevelResult(
@@ -181,14 +191,17 @@ class LevelRun:
 
     @property
     def score(self) -> float:
-        """Points scored so far in this attempt (GAME-SCORE-01), from the checkpoint's after a
-        Continue (GAME-SCORE-06)."""
+        """Points scored so far in this attempt (GAME-SCORE-01).
+
+        From the checkpoint's after a Continue (GAME-SCORE-06).
+        """
         return self.enemies.score
 
     @property
     def supplies(self) -> Supplies | None:
-        """The lives and bombs left, kept for the next level (reviewer, 2026-10-28); none without a
-        hull.
+        """The lives and bombs left, kept for the next level (reviewer, 2026-10-28).
+
+        None without a hull.
         """
         if self.hull is None:
             return None
@@ -228,9 +241,10 @@ class LevelRun:
             self._clear(dt)
 
     def seek(self, time: float) -> None:
-        """Starts again at `time` seconds into the level (DEV-OPT-02, DEV-OPT-08): the enemies and
-        shots on screen go, the waves before that point are skipped and the later ones come as
-        usual.
+        """Start again at `time` seconds into the level (DEV-OPT-02, DEV-OPT-08).
+
+        The enemies and shots on screen go, the waves before that point are skipped and the later
+        ones come as usual.
         """
         if self._phase == "over":
             return
@@ -248,8 +262,10 @@ class LevelRun:
         self._checkpoint = checkpoint
 
     def _restart_at(self, bosses_passed: int | None) -> None:
-        """Clears the playfield and goes on from the track's progress, as if the level began
-        there."""
+        """Clear the playfield and go on from the track's progress.
+
+        As if the level began there.
+        """
         self.enemies.clear()
         if self.bonuses:
             self.bonuses.clear()
@@ -261,9 +277,11 @@ class LevelRun:
         self._clearing_for = 0.0
 
     def _step_level(self, dt: float) -> None:
-        """The level goes on: bosses come and go, the waves come while no boss is fought
-        (GAME-LEVEL-06), the mini boss's death saves the checkpoint (BOSS-06), and the level ends
-        with its final boss, or at the end of its scroll without one (GAME-LEVEL-10).
+        """Move the level on: bosses come and go.
+
+        The waves come while no boss is fought (GAME-LEVEL-06), the mini boss's death saves the
+        checkpoint (BOSS-06), and the level ends with its final boss, or at the end of its scroll
+        without one (GAME-LEVEL-10).
         """
         fights = self.fights
         track = self.track
@@ -287,16 +305,19 @@ class LevelRun:
                 self.journey.clear()
 
     def break_boss_part(self) -> None:
-        """A debug key (DEV-OPT-09): destroys the next intact part of the boss fought, or its
-        core."""
+        """Destroy the next intact part of the boss fought, or its core.
+
+        A debug key (DEV-OPT-09).
+        """
         boss = self.fights.boss
         if boss is not None:
             boss.break_next()
 
     def _step_bomb(self, dt: float, pressed: bool) -> None:
-        """A bomb (GAME-BOMB-03): when one goes off, every enemy and boss piece on screen takes its
-        damage once (a shielded core takes none, GAME-BOMB-04); while it lasts, the enemy shots are
-        cleared (GAME-BOMB-05).
+        """Set off a bomb when pressed (GAME-BOMB-03).
+
+        When one goes off, every enemy and boss piece on screen takes its damage once (a shielded
+        core takes none, GAME-BOMB-04); while it lasts, the enemy shots are cleared (GAME-BOMB-05).
         """
         bombs = self.bombs
         if bombs is None:
@@ -309,10 +330,11 @@ class LevelRun:
             self.enemies.shots.clear()
 
     def _step_hull(self, dt: float) -> None:
-        """The most damaging enemy shot or enemy touching the ship lands (GAME-LIFE-06), unless the
-        ship cannot be hurt (GAME-LIFE-10): invincible after a hit (GAME-LIFE-07), a bomb going off
-        (GAME-BOMB-06) or the journey flying it; with no life left the game is over (GAME-LIFE-09).
-        A lost life tops the bombs back up (GAME-BOMB-02).
+        """Land the most damaging enemy shot or enemy touching the ship (GAME-LIFE-06).
+
+        Unless the ship cannot be hurt (GAME-LIFE-10): invincible after a hit (GAME-LIFE-07), a bomb
+        going off (GAME-BOMB-06) or the journey flying it; with no life left the game is over
+        (GAME-LIFE-09). A lost life tops the bombs back up (GAME-BOMB-02).
         """
         hull = self.hull
         rules = self._options.hull
@@ -333,8 +355,10 @@ class LevelRun:
         self._landed(LandedHit(hit.kind, hit.x, hit.y, hull.hit(hit.damage)))
 
     def _landed(self, hit: LandedHit) -> None:
-        """A hit landed: a lost life (GAME-LIFE-08) tops the bombs up, the last one ends the
-        game."""
+        """Record a hit that landed.
+
+        A lost life (GAME-LIFE-08) tops the bombs up, the last one ends the game.
+        """
         self.hits = [hit]
         if hit.event == "lifeLost" and self.bombs is not None:
             self.bombs.refill()
@@ -344,8 +368,9 @@ class LevelRun:
         self.waves.stop()
 
     def _step_bonuses(self, dt: float) -> None:
-        """Drops bonuses where enemies blew up (a life bonus where a mini boss did, GAME-BONUS-04),
-        moves them, and gives what each one picked up gives.
+        """Drop bonuses where enemies blew up, move them, and give what each one picks up gives.
+
+        A life bonus drops where a mini boss blew up (GAME-BONUS-04).
         """
         bonuses = self.bonuses
         if bonuses is None:
@@ -368,8 +393,10 @@ class LevelRun:
             self._collect(bonus.kind)
 
     def _collect(self, kind: str) -> None:
-        """A weapon bonus raises the weapon in use by a level, up to its last (the new level fires
-        at once, GAME-WPN-14); a life or a bomb bonus adds one (GAME-BONUS-09), or scores its points
+        """Give what a bonus of `kind` gives.
+
+        A weapon bonus raises the weapon in use by a level, up to its last (the new level fires at
+        once, GAME-WPN-14); a life or a bomb bonus adds one (GAME-BONUS-09), or scores its points
         at the most (GAME-BONUS-10).
         """
         if kind == "weapon":
@@ -389,8 +416,10 @@ class LevelRun:
             self.enemies.score += points
 
     def _aim_at_visible(self) -> None:
-        """Only what is on screen can be hit (GAME-WPN-16, ENM-13; see
-        `LevelRunOptions.in_view`)."""
+        """Only what is on screen can be hit (see `LevelRunOptions.in_view`).
+
+        Rules GAME-WPN-16 and ENM-13 apply.
+        """
         given = self._options.in_view
         if given is not None:
             in_view = given
@@ -402,8 +431,9 @@ class LevelRun:
                 self._targets.append(target)
 
     def _clear(self, dt: float) -> None:
-        """Completes the level once the last enemies are gone, or after the longest wait, and with a
-        journey once the ship has flown off the top of the screen (GAME-LEVEL-12).
+        """Completes the level once the last enemies are gone, or after the longest wait.
+
+        And with a journey once the ship has flown off the top of the screen (GAME-LEVEL-12).
         """
         self._clearing_for += dt
         done = self.journey.stage == "gone" if self.journey is not None else self._cleared
@@ -415,9 +445,10 @@ class LevelRun:
         return len(self.enemies.enemies) == 0 or self._clearing_for >= self._options.end_wait
 
     def _fly(self, dt: float, controls: LevelControls) -> bool:
-        """The player flies the ship (and switches weapon, GAME-WPN-13); whether they do: once the
-        game is over the ship is gone (the enemies go on until the overlay shows), and while it
-        arrives or leaves the journey flies it.
+        """Return the player flies the ship (and switches weapon, GAME-WPN-13); whether they do.
+
+        Once the game is over the ship is gone (the enemies go on until the overlay shows), and
+        while it arrives or leaves the journey flies it.
         """
         if self._phase == "over":
             return False
@@ -433,13 +464,7 @@ class LevelRun:
         return flying
 
     def _spawn(self, kind_id: str, entry: EnemyEntry, random: Random) -> None:
-        kind = None
-        for candidate in self._options.kinds:
-            if candidate.id == kind_id:
-                kind = candidate
-                break
-        if kind is None:
-            return
+        kind = self._kinds[kind_id]
         screen = self._options.screen
         # From the top, only where the ship can reach at the bottom of the screen (ENM-09).
         area = EnemySpawnArea(screen.width, screen.height, random, entry, self._reach)

@@ -1,7 +1,8 @@
-# ruff: noqa: E501
-"""The terrain's blend plugin (GFX-TERRAIN-08, GFX-TERRAIN-17): turns a standard material into a
-terrain material, blending generated textures by altitude and slope, with a beach, shallows and
-surf (or lava).
+# Copyright (c) 2026 Renaud Guillon
+"""The terrain's blend plugin (GFX-TERRAIN-08, GFX-TERRAIN-17).
+
+Turns a standard material into a terrain material, blending generated textures by altitude and
+slope, with a beach, shallows and surf (or lava).
 
 Transcrypt cannot subclass a JavaScript class, so the `MaterialPluginBase` subclass is made by
 `render.babylon.new_material_plugin` (ENG-158), whose hooks call the methods of
@@ -14,16 +15,17 @@ from org.transcrypt.stubs.browser import __pragma__
 from render.babylon import js_object, js_set, new_material_plugin
 from render.scenery.terrain_geometry import SURFACE_SCALE
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class TerrainTextures:
     """Textures the terrain blends between, plus a noise texture (R fine, G coarse)."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         low: Any,
         ground: Any,
@@ -45,11 +47,14 @@ class TerrainTextures:
 
 
 class TerrainBlendState:
-    """Values that change while the scene runs. `lava` (phase 10): the sea is lava, and the rock by
-    it glows (GFX-TERRAIN-17). `ground` (None when drawn as it is): how the ground is drawn, its
-    colours following the ground, not the world (`GroundTransform`)."""
+    """Values that change while the scene runs.
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    `lava` (phase 10): the sea is lava, and the rock by it glows (GFX-TERRAIN-17). `ground` (None
+    when drawn as it is): how the ground is drawn, its colours following the ground, not the world
+    (`GroundTransform`).
+    """
+
+    def __init__(
         self,
         sea_level: float,
         sea_enabled: bool,
@@ -99,7 +104,7 @@ def _to_fixed_4(value: float) -> str:
 
 
 # The GLSL text names `SURFACE_SCALE` where a template would interpolate it.
-_SURFACE_TOKEN = "@SURFACE_SCALE@"
+_SURFACE_MARK = "@SURFACE_SCALE@"
 _SURFACE_TEXT = _to_fixed_4(SURFACE_SCALE)
 
 _FRAGMENT_DEFINITIONS_TEXT = """
@@ -146,7 +151,8 @@ vec3 terrainShore(vec3 color, vec3 p, vec4 noise, float slope) {
   float gentle = 1.0 - smoothstep(terrainSlope.x, terrainSlope.y, slope);
   // Beach: dry sand fading into the ground, darker where the swash wets it.
   vec3 sand = terrainSand.rgb * (0.9 + 0.2 * fine);
-  float beach = 1.0 - smoothstep(terrainSand.w * 0.4, terrainSand.w, -depth + (noise.g - 0.5) * 3.0);
+  float beach = 1.0
+    - smoothstep(terrainSand.w * 0.4, terrainSand.w, -depth + (noise.g - 0.5) * 3.0);
   color = mix(color, sand, beach * gentle);
   color *= 1.0 - 0.3 * (1.0 - smoothstep(-1.2, 0.0, -depth)) * gentle;
   // Water: the deeper, the darker, up to the colour of the open sea.
@@ -168,7 +174,8 @@ vec3 terrainShore(vec3 color, vec3 p, vec4 noise, float slope) {
 // edge.
 vec3 terrainScorch(vec3 color, vec3 p) {
   float above = p.y - terrainSea.x;
-  return color * mix(vec3(0.55, 0.42, 0.38), vec3(1.0), smoothstep(0.0, terrainLava.w * 4.0, above));
+  return color
+    * mix(vec3(0.55, 0.42, 0.38), vec3(1.0), smoothstep(0.0, terrainLava.w * 4.0, above));
 }
 
 // The glow of the rock by the lava: a bright edge at its level and glowing cracks a little above.
@@ -224,7 +231,8 @@ vec3 terrainColor(vec3 p, vec3 n) {
   vec4 sum = terrainLayer(terrainLow, p, w, (1.0 - above) * (1.0 - high) * (1.0 - steep));
   if (bare > TERRAIN_SKIP) {
     float tint = smoothstep(0.3, 0.7, texture2D(terrainNoise, p.xz * terrainScale.z).g);
-    sum += terrainLayer(terrainGround, p, w, bare) * vec4(mix(terrainTintA, terrainTintB, tint), 1.0);
+    sum += terrainLayer(terrainGround, p, w, bare)
+      * vec4(mix(terrainTintA, terrainTintB, tint), 1.0);
   }
   sum += terrainLayer(terrainSandy, p, w, ground * sandy * (1.0 - lush) * (1.0 - paved));
   sum += terrainLayer(terrainLush, p, w, ground * lush * (1.0 - paved));
@@ -252,11 +260,11 @@ BEFORE_FOG = """
 #endif
 """
 
-FRAGMENT_DEFINITIONS = _SURFACE_TEXT.join(_FRAGMENT_DEFINITIONS_TEXT.split(_SURFACE_TOKEN))
+FRAGMENT_DEFINITIONS = _SURFACE_TEXT.join(_FRAGMENT_DEFINITIONS_TEXT.split(_SURFACE_MARK))
 
 
 def _uniform_spec(uniform_name: str, size: int, type_name: str) -> Any:
-    """A uniform of the UBO, as the plugin API reads it (`{name, size, type}`)."""
+    """Return a uniform of the UBO, as the plugin API reads it (`{name, size, type}`)."""
     spec = js_object()
     js_set(spec, "name", uniform_name)
     js_set(spec, "size", size)
@@ -273,13 +281,16 @@ class TerrainBlendOwner:
         self._state = state
 
     def prepare_defines(self, defines: Any) -> None:
+        """Prepare defines."""
         defines.TERRAIN_BLEND = True
 
     def get_samplers(self, samplers: Any) -> None:
+        """Get samplers."""
         for sampler in SAMPLERS:
             samplers.push(sampler)
 
     def get_uniforms(self) -> Any:
+        """Get uniforms."""
         ubo = []
         declarations = []
         for uniform_name, size, type_name in UNIFORMS:
@@ -295,6 +306,7 @@ class TerrainBlendOwner:
         return result
 
     def bind_for_sub_mesh(self, ubo: Any) -> None:
+        """Bind for sub mesh."""
         look = self._look
         state = self._state
         textures = self._textures
@@ -354,6 +366,7 @@ class TerrainBlendOwner:
         ubo.setTexture("terrainNoise", textures.noise)
 
     def get_custom_code(self, shader_type: str) -> Any:
+        """Get custom code."""
         if shader_type != "fragment":
             return None
         code = js_object()
@@ -366,13 +379,15 @@ class TerrainBlendOwner:
 def new_terrain_blend_plugin(
     material: Any, look: Any, textures: TerrainTextures, state: TerrainBlendState
 ) -> Any:
-    """Turns a `StandardMaterial` into a terrain material: the colour comes from four generated
-    textures blended by altitude and slope (GFX-TERRAIN-08), with noise so the borders wander,
-    large tinted patches, the sections' covers from the vertex colours (GFX-TERRAIN-09), and a
-    beach, shallows and surf where the ground meets the sea (GFX-WATER-04, GFX-WATER-05,
-    GFX-WATER-06; none without water, GFX-WATER-02; phase 10: or, by lava, scorched rock with a
-    glowing edge and cracks). Lighting, shadows and fog stay the standard material's. Returns the
-    plugin."""
+    """Turn a `StandardMaterial` into a terrain material.
+
+    The colour comes from four generated textures blended by altitude and slope (GFX-TERRAIN-08),
+    with noise so the borders wander, large tinted patches, the sections' covers from the vertex
+    colours (GFX-TERRAIN-09), and a beach, shallows and surf where the ground meets the sea
+    (GFX-WATER-04, GFX-WATER-05, GFX-WATER-06; none without water, GFX-WATER-02; phase 10: or, by
+    lava, scorched rock with a glowing edge and cracks). Lighting, shadows and fog stay the standard
+    material's. Returns the plugin.
+    """
     owner = TerrainBlendOwner(look, textures, state)
     return new_material_plugin(
         material, owner, "TerrainBlend", 200, "TERRAIN_BLEND", "TerrainBlendPlugin"

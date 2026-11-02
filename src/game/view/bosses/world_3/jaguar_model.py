@@ -1,9 +1,11 @@
-"""MB-JAGUAR-01 to MB-JAGUAR-05, 3-5: the Jaguar, the mini boss of the canopy city. Model space:
-logical pixels, nose +Z (down the screen), Y up towards the camera; +X is the screen's left."""
+# Copyright (c) 2026 Renaud Guillon
+"""MB-JAGUAR-01 to MB-JAGUAR-05, 3-5: the Jaguar, the mini boss of the canopy city.
+
+Model space: logical pixels, nose +Z (down the screen), Y up towards the camera; +X is the
+screen's left.
+"""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.world_3.jaguar import JAGUAR, JAGUAR_EYE, JAGUAR_FANGS, JAGUAR_PARTS
 from game.config.enemy_look import ENEMY_LOOK
@@ -35,15 +37,17 @@ from game.view.enemies.organic_parts import reactor_sac
 from render.geometry.organic import ROUND_SECTION
 from render.geometry.solids import LoftOptions, Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_mesh import EnemyParts
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 WHITE = [1, 1, 1]
@@ -73,43 +77,37 @@ WING_Y = [-3, 0, 3]
 # Its leading edges, lit amber (edges of WING, from point i to the next).
 LEADING = [3, 4, 5, 19, 20, 21]
 # The fuselage along the centre line, tail to nose (loft stations), the cockpit painted dark.
-FUSELAGE = table(
-    [
-        [-50, 6, 1, 6],
-        [-36, 10, 1, 9],
-        [-10, 12, 1, 11],
-        [14, 11, 1, 11],
-        [32, 8, 1, 9],
-        [46, 6, 1, 7],
-        [56, 3, 1, 4.5],
-        [61, 0, 2.5, 2.5],
-    ]
-)
+FUSELAGE = table([
+    [-50, 6, 1, 6],
+    [-36, 10, 1, 9],
+    [-10, 12, 1, 11],
+    [14, 11, 1, 11],
+    [32, 8, 1, 9],
+    [46, 6, 1, 7],
+    [56, 3, 1, 4.5],
+    [61, 0, 2.5, 2.5],
+])
 # The rosettes on the wings (right half, mirrored): where and how big.
-SPOTS = table(
-    [
-        [24, 4, 3.2],
-        [35, -9, 3],
-        [48, -18, 2.3],
-        [26, -20, 3.2],
-        [19, -33, 2.5],
-        [39, -27, 2],
-        [16, 18, 2.4],
-    ]
-)
+SPOTS = table([
+    [24, 4, 3.2],
+    [35, -9, 3],
+    [48, -18, 2.3],
+    [26, -20, 3.2],
+    [19, -33, 2.5],
+    [39, -27, 2],
+    [16, 18, 2.4],
+])
 # The tail curling from the fuselage's end out to the cannon's pod (points along it).
-TAIL = table(
-    [
-        [0, 2.5, -48],
-        [8, 2.5, -56],
-        [20, 2.5, -56],
-        boss_point(JAGUAR_PARTS.tail[0], JAGUAR_PARTS.tail[1], 1.5),
-    ]
-)
+TAIL = table([
+    [0, 2.5, -48],
+    [8, 2.5, -56],
+    [20, 2.5, -56],
+    boss_point(JAGUAR_PARTS.tail[0], JAGUAR_PARTS.tail[1], 1.5),
+])
 
 
 def segment(p: EnemyParts, ends: list[Vec3], radius: float, end: float) -> None:
-    """A cylinder lying from `ends[0]` to `ends[1]`."""
+    """Add a cylinder lying from `ends[0]` to `ends[1]`."""
     a = ends[0]
     b = ends[1]
     dx = b[0] - a[0]
@@ -121,9 +119,7 @@ def segment(p: EnemyParts, ends: list[Vec3], radius: float, end: float) -> None:
 
 def draw_sinews(p: EnemyParts) -> None:
     """MB-JAGUAR-02: its bone spine, the sinews and veins under its pelt."""
-    path: list[Vec3] = []
-    for st in FUSELAGE[1:5]:
-        path.append([0, st[3] + 0.3, st[0]])
+    path: list[Vec3] = [[0, st[3] + 0.3, st[0]] for st in FUSELAGE[1:5]]
     spine(
         p,
         path,
@@ -147,7 +143,10 @@ def draw_sinews(p: EnemyParts) -> None:
 
 
 def draw_body(p: EnemyParts) -> None:
-    """The wings and the fuselage, the cockpit dark, rosettes on the wings, lit leading edges."""
+    """Draw the wings and the fuselage.
+
+    The cockpit dark, rosettes on the wings, lit leading edges.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -183,7 +182,7 @@ def draw_body(p: EnemyParts) -> None:
 
 
 def draw_head(p: EnemyParts) -> None:
-    """The cat's head: ears on the fuselage, angry amber eyes, fang guns under the nose."""
+    """Draw the cat's head: ears on the fuselage, angry amber eyes, fang guns under the nose."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -238,7 +237,7 @@ def draw_head(p: EnemyParts) -> None:
 
 
 def jaguar_core(p: EnemyParts) -> None:
-    """The core of the Jaguar: its body, head and the reactors at its tail."""
+    """Add the core of the Jaguar: its body, head and the reactors at its tail."""
     draw_body(p)
     draw_head(p)
     for s in SIDES:
@@ -246,9 +245,11 @@ def jaguar_core(p: EnemyParts) -> None:
 
 
 def build_jaguar(scene: Any) -> Any:
-    """MB-JAGUAR-01, MB-JAGUAR-05: the Jaguar, a sleek stealth interceptor with spotted armour and
-    amber neon: a cat's head with ears and fang guns, claw guns reaching forward from its wing
-    roots, and a tail curling out to a cannon held high over its left wing."""
+    """MB-JAGUAR-01, MB-JAGUAR-05: the Jaguar, a sleek stealth interceptor.
+
+    It has spotted armour and amber neon: a cat's head with ears and fang guns, claw guns reaching
+    forward from its wing roots, and a tail curling out to a cannon held high over its left wing.
+    """
     parts: dict[str, Any] = {
         "claw-left": claw_mount,
         "claw-right": claw_mount,

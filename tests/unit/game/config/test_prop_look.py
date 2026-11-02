@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/prop_look.py`."""
 
 from game.config.prop_look import PROP_COLORS, PROP_LIGHTS

@@ -1,25 +1,27 @@
-"""The Mortar (`specs/enemies/mortar.md`)"""
-
-from org.transcrypt.stubs.browser import __pragma__
+# Copyright (c) 2026 Renaud Guillon
+"""The Mortar (`specs/enemies/mortar.md`)."""
 
 from core.entities.enemy import Enemy
 from core.systems.gun_muzzles import GunMuzzles, fire_aimed
 from game.config.enemies_veteran import VETERAN_CONFIG
 from game.sim.enemies.enemy_helpers import DOWN, Cadence, bullet_shot, on_playfield
 
-__pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from core.entities.enemy import EnemyContext
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 CFG = VETERAN_CONFIG.mortar
 
 
 class Mortar(Enemy):
-    """ENM-MORTAR-07: a squat gunship descending slowly. Every 2.5 s it lobs a big, slow shell
-    aimed at the player (ENM-MORTAR-08, ENM-20) from its barrel; 1.2 s later the shell bursts into
-    a ring of 8 bullets (ENM-MORTAR-09: a bursting bullet, `EnemyBulletSpec.burst`). Its `charge`
-    lights its charge light (ENM-MORTAR-04).
+    """ENM-MORTAR-07: a squat gunship descending slowly.
+
+    Every 2.5 s it lobs a big, slow shell aimed at the player (ENM-MORTAR-08, ENM-20) from its
+    barrel; 1.2 s later the shell bursts into a ring of 8 bullets (ENM-MORTAR-09: a bursting bullet,
+    `EnemyBulletSpec.burst`). Its `charge` lights its charge light (ENM-MORTAR-04).
     """
 
     def __init__(self, x: float, y: float) -> None:
@@ -29,6 +31,7 @@ class Mortar(Enemy):
         self.heading = DOWN
 
     def update(self, ctx: EnemyContext, dt: float) -> None:
+        """Advance the enemy by `dt` seconds."""
         self.y -= CFG.speed * dt
         if not on_playfield(self, ctx):
             return

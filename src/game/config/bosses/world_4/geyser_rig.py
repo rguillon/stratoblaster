@@ -1,5 +1,7 @@
-"""4-2: the Geyser Rig, the final boss of the Ash plains level
-(specs/bosses/final/4-2-geyser-rig.md).
+# Copyright (c) 2026 Renaud Guillon
+"""4-2: the Geyser Rig, the final boss of the Ash plains level.
+
+Specified in specs/bosses/final/4-2-geyser-rig.md.
 
 Offsets in px from the boss's centre, X right and Y up (its bow points down, at -Y). Its two drill
 heads hang on arms swinging on their shoulder joints (D-061), out of step, as if boring. The stage
@@ -9,23 +11,24 @@ earlier stage. Health (FB-GEYSER-RIG-09) tuned with the D-055 bot for WLD-4-22 (
 full health 9 200-10 200).
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import merge, record
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def fpart(part_id: str, at: Any, radius: float, health: float, options: Any = None) -> Any:
-    """A final boss's part: drops a bonus 60 % of the time (FB-GEYSER-RIG-19,
-    `part_drop_chance`)."""
+    """Return a final boss's part, which drops a bonus 60 % of the time (FB-GEYSER-RIG-19).
+
+    See `part_drop_chance`.
+    """
     return part(part_id, at, radius, health, merge({"drop": 0.6}, options))
 
 
@@ -59,7 +62,7 @@ def side_sign(side: str) -> Any:
 
 
 def shoulder(side: str) -> Any:
-    """The shoulder joint of the `side` drill arm, out of step with the other one."""
+    """Return the shoulder joint of the `side` drill arm, out of step with the other one."""
     s = side_sign(side)
     joints: dict[str, Any] = {}
     joints["arm-" + side] = {
@@ -102,74 +105,70 @@ def sweep(every: float, first: float) -> Any:
 # aimed bursts and, with the two steam vents firing spirals, shield the core; a drone hangar at the
 # bow launches Hornets (as the Dam Breaker's); the core fires fans. The hangar hangs in front of the
 # core, so it can always be shot.
-_GEYSER_RIG = record(
-    {
-        "id": "geyser-rig",
-        # Angry after each destroyed part (phase 7 review, D-063, FB-GEYSER-RIG-14): heat 11.
-        "rage": rage.curtain(11, "orange", "red"),
-        # Its core and parts, their health, and its points (FB-GEYSER-RIG-09).
-        "stats": stats(
-            record(
-                {
-                    "id": "geyser-rig",
-                    "name": "Geyser Rig",
-                    "size": 5,
-                    "coreRadius": 22,
-                    "coreHealth": 3900,
-                    "points": 16000,
-                    "groundSpeed": 0.4,
-                    "coreDrop": 1,
-                    "parts": [
-                        fpart("drill-left", [DX, DY], 14, 1300, {"joint": "arm-left"}),
-                        fpart("drill-right", [-DX, DY], 14, 1300, {"joint": "arm-right"}),
-                        fpart("vent-left", [VX, VY], 13, 1150),
-                        fpart("vent-right", [-VX, VY], 13, 1150),
-                        fpart("hangar", list(RIG_HANGAR), 14, 900, {"shields": False}),
-                    ],
-                    "joints": merge(shoulder("left"), shoulder("right")),
-                }
-            )
-        ),
-        # Where it stops and how it moves in place (FB-GEYSER-RIG-08).
-        "stopFraction": 0.74,
-        "sway": {"amplitude": 30, "period": 11},
-        "bob": {"amplitude": 5, "period": 5.5},
-        # The hangar's Hornets (FB-GEYSER-RIG-12).
-        "launches": [{"from": "hangar", "kind": "hornets", "count": 2, "every": 7, "first": 3.5}],
-        "guns": {
-            "core": {"gun": RIG_CORE_GUNS},
-            "drill-left": {"gun": RIG_DRILL_GUN},
-            "drill-right": {"gun": mirror(RIG_DRILL_GUN)},
-            "vent-left": {"ring": RIG_VENT_TOP},
-            "vent-right": {"ring": mirror(RIG_VENT_TOP)},
-        },
-        # In every stage the drills' bursts (FB-GEYSER-RIG-10) and the vents' spirals
-        # (FB-GEYSER-RIG-11); then the core's fans per stage (FB-GEYSER-RIG-13).
-        "stages": stages(
-            [
-                volley.burst("drill-left", 3.2, 4, 0.12, RED, 1),
-                volley.burst("drill-right", 3.2, 4, 0.12, RED, 2.6),
-                # The vents' steam spirals turn opposite ways.
-                volley.ring("vent-left", 0.8, 3, 17, ORANGE, 0.6),
-                volley.ring("vent-right", 0.8, 3, -17, ORANGE, 1),
+_GEYSER_RIG = record({
+    "id": "geyser-rig",
+    # Angry after each destroyed part (phase 7 review, D-063, FB-GEYSER-RIG-14): heat 11.
+    "rage": rage.curtain(11, "orange", "red"),
+    # Its core and parts, their health, and its points (FB-GEYSER-RIG-09).
+    "stats": stats(
+        record({
+            "id": "geyser-rig",
+            "name": "Geyser Rig",
+            "size": 5,
+            "coreRadius": 22,
+            "coreHealth": 3900,
+            "points": 16000,
+            "groundSpeed": 0.4,
+            "coreDrop": 1,
+            "parts": [
+                fpart("drill-left", [DX, DY], 14, 1300, {"joint": "arm-left"}),
+                fpart("drill-right", [-DX, DY], 14, 1300, {"joint": "arm-right"}),
+                fpart("vent-left", [VX, VY], 13, 1150),
+                fpart("vent-right", [-VX, VY], 13, 1150),
+                fpart("hangar", list(RIG_HANGAR), 14, 900, {"shields": False}),
             ],
+            "joints": merge(shoulder("left"), shoulder("right")),
+        })
+    ),
+    # Where it stops and how it moves in place (FB-GEYSER-RIG-08).
+    "stopFraction": 0.74,
+    "sway": {"amplitude": 30, "period": 11},
+    "bob": {"amplitude": 5, "period": 5.5},
+    # The hangar's Hornets (FB-GEYSER-RIG-12).
+    "launches": [{"from": "hangar", "kind": "hornets", "count": 2, "every": 7, "first": 3.5}],
+    "guns": {
+        "core": {"gun": RIG_CORE_GUNS},
+        "drill-left": {"gun": RIG_DRILL_GUN},
+        "drill-right": {"gun": mirror(RIG_DRILL_GUN)},
+        "vent-left": {"ring": RIG_VENT_TOP},
+        "vent-right": {"ring": mirror(RIG_VENT_TOP)},
+    },
+    # In every stage the drills' bursts (FB-GEYSER-RIG-10) and the vents' spirals
+    # (FB-GEYSER-RIG-11); then the core's fans per stage (FB-GEYSER-RIG-13).
+    "stages": stages(
+        [
+            volley.burst("drill-left", 3.2, 4, 0.12, RED, 1),
+            volley.burst("drill-right", 3.2, 4, 0.12, RED, 2.6),
+            # The vents' steam spirals turn opposite ways.
+            volley.ring("vent-left", 0.8, 3, 17, ORANGE, 0.6),
+            volley.ring("vent-right", 0.8, 3, -17, ORANGE, 1),
+        ],
+        [
+            [volley.fan("core", 2.6, 3, 16, PURPLE, 1.4)],
+            [volley.fan("core", 2.4, 5, 14, PURPLE, 0.8)],
             [
-                [volley.fan("core", 2.6, 3, 16, PURPLE, 1.4)],
-                [volley.fan("core", 2.4, 5, 14, PURPLE, 0.8)],
-                [
-                    volley.fan("core", 2.6, 4, 12, MAGENTA, 0.8, -18),
-                    volley.fan("core", 2.6, 4, 12, MAGENTA, 2.1, 18),
-                ],
-                [volley.fan("core", 2.3, 7, 12, PURPLE, 0.6)],
-                [
-                    volley.fan("core", 2.4, 9, 10, MAGENTA, 0.6),
-                    volley.fan("core", 1.2, 3, 6, RED, 1.2),
-                ],
-                sweep(3, 0.5),
+                volley.fan("core", 2.6, 4, 12, MAGENTA, 0.8, -18),
+                volley.fan("core", 2.6, 4, 12, MAGENTA, 2.1, 18),
             ],
-        ),
-    }
-)
+            [volley.fan("core", 2.3, 7, 12, PURPLE, 0.6)],
+            [
+                volley.fan("core", 2.4, 9, 10, MAGENTA, 0.6),
+                volley.fan("core", 1.2, 3, 6, RED, 1.2),
+            ],
+            sweep(3, 0.5),
+        ],
+    ),
+})
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off
 # (FB-GEYSER-RIG-15), baring a dark metal frame, and a pair of missile racks unfold

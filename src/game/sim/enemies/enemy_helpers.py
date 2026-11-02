@@ -1,21 +1,22 @@
-"""Helpers shared by the concrete enemies, each kind with its preset movement (ENM-24)"""
+# Copyright (c) 2026 Renaud Guillon
+"""Helpers shared by the concrete enemies, each kind with its preset movement (ENM-24)."""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from core.entities.enemy import Enemy
 from core.systems.enemy_motion import Path
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
 
-from core.entities.enemy import EnemyBulletSpec, EnemyContext, EnemySpawnArea  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.systems.enemy_motion import PathPoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.enemy import EnemyBulletSpec, EnemyContext, EnemySpawnArea
+from core.math.rng import Random
+from core.systems.enemy_motion import PathPoint
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Degrees to radians.
 DEG = math.pi / 180
@@ -31,8 +32,10 @@ ENTRY_INSET = 0.08
 
 
 class Cadence:
-    """A repeating timer: `tick` returns how many times it went off during `dt` (an attack every
-    `interval` seconds, the first one after `first`, `interval` when None).
+    """A repeating timer: an attack every `interval` seconds.
+
+    `tick` returns how many times it went off during `dt` (an attack every `interval` seconds, the
+    first one after `first`, `interval` when None).
     """
 
     def __init__(self, interval: float, first: float | None = None) -> None:
@@ -45,6 +48,7 @@ class Cadence:
         return min(1, max(0, 1 - self._left / self.interval))
 
     def tick(self, dt: float) -> int:
+        """Count down `dt` seconds and return how many times the interval came due."""
         self._left -= dt
         count = 0
         while self._left <= 0:
@@ -59,18 +63,20 @@ def on_playfield(enemy: Enemy, ctx: EnemyContext) -> bool:
 
 
 def clamp_entry(position: float) -> float:
-    """A wave's entry position (ENM-08), kept away from the corners of the playfield."""
+    """Return a wave's entry position (ENM-08), kept away from the corners of the playfield."""
     return min(1 - ENTRY_INSET, max(ENTRY_INSET, position))
 
 
 def coin(random: Random) -> bool:
-    """A coin toss, from a random number."""
+    """Return a coin toss, from a random number."""
     return random() < HALF
 
 
 def top_bounds(area: EnemySpawnArea) -> tuple[float, float]:
-    """The X range enemies coming in from the top keep to (ENM-09): `topRange`, or the whole
-    width."""
+    """Return the X range enemies from the top keep to (ENM-09).
+
+    It is `topRange`, or the whole width.
+    """
     if area.top_range is None:
         return (0, area.width)
     return (area.top_range[0], area.top_range[1])
@@ -83,20 +89,23 @@ def top_x(area: EnemySpawnArea, fraction: float) -> float:
 
 
 def range_in(random: Random, range_: tuple[float, float]) -> float:
-    """A random number in `range_` (a [low, high) pair)."""
+    """Return a random number in `range_` (a [low, high) pair)."""
     return range_[0] + (range_[1] - range_[0]) * random()
 
 
 def pick_x(random: Random, range_: tuple[float, float], area: EnemySpawnArea) -> float:
-    """A random X at a fraction in `range_` across the range enemies coming in from the top keep
-    to.
+    """Return a random X at a fraction in `range_` across the top enemies' range.
+
+    That is the range that enemies from the top keep to.
     """
     return top_x(area, range_in(random, range_))
 
 
 def playfield_path(points: list[list[float]], area: EnemySpawnArea, mirror: bool) -> Path:
-    """A path given in fractions of the playfield, mirrored left to right if `mirror` (ENM-25). It
-    comes in from the top, so its X fractions are taken across the area's `top_range`.
+    """Return a path given in fractions of the playfield, mirrored if `mirror` (ENM-25).
+
+    It is mirrored left to right. It comes in from the top, so its X fractions are taken across the
+    area's `top_range`.
     """
     controls: list[PathPoint] = []
     for point in points:
@@ -108,7 +117,7 @@ def playfield_path(points: list[list[float]], area: EnemySpawnArea, mirror: bool
 def bullet_shot(
     ctx: EnemyContext, bullet: EnemyBulletSpec
 ) -> Callable[[float, float, float], None]:
-    """A shot callback for `fire_aimed`: each shot is a `bullet` of the enemy's own."""
+    """Return a shot callback for `fire_aimed`: each shot is a `bullet` of the enemy's own."""
 
     def fire(x: float, y: float, heading: float) -> None:
         ctx.fire_bullet(x, y, heading, bullet)

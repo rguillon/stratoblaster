@@ -1,13 +1,14 @@
-"""FB-GULL-MOTHERSHIP-03: the Gull Mothership's destroyable parts, its brood pouches and flak
-growths Logical pixels, nose +Z, Y up."""
+# Copyright (c) 2026 Renaud Guillon
+"""FB-GULL-MOTHERSHIP-03: the Gull Mothership's destroyable parts.
+
+Its brood pouches and flak growths Logical pixels, nose +Z, Y up.
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.view.bosses.final_boss_shapes import edge_strips, shift, sided  # noqa: E402
-from game.view.bosses.world_1_organic_kit import (  # noqa: E402
+from game.config.boss_look import BOSS_LOOK
+from game.view.bosses.final_boss_shapes import edge_strips, shift, sided
+from game.view.bosses.world_1_organic_kit import (
     F,
     M,
     barbs,
@@ -18,15 +19,17 @@ from game.view.bosses.world_1_organic_kit import (  # noqa: E402
     tentacle,
     vein_line,
 )
-from render.geometry.organic import organ  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
+from render.geometry.organic import organ
+from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Vec3 = list[Any]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 N = BOSS_LOOK.neon["gull-mothership"]
 WHITE = [1, 1, 1]
@@ -60,9 +63,10 @@ def _sign_or_one(x: float) -> float:
 
 
 def draw_hangar(p: Any, at: Vec3) -> None:
-    """A hangar bay (FB-GULL-MOTHERSHIP-03): a swollen brood pouch on the mantle's flank, a glowing
-    birth slit in its top between fleshy lips, green glands down both sides, a grafted brace on its
-    outer side.
+    """Draw a hangar bay (FB-GULL-MOTHERSHIP-03): a swollen brood pouch on the mantle's flank.
+
+    A glowing birth slit in its top between fleshy lips, green glands down both sides, a grafted
+    brace on its outer side.
     """
     s = _sign_or_one(at[0])
     p.flesh.bevel_slab(
@@ -115,8 +119,10 @@ def draw_hangar(p: Any, at: Vec3) -> None:
 
 
 def draw_flak(p: Any, at: Vec3) -> None:
-    """A flak growth on the front of the mantle (FB-GULL-MOTHERSHIP-03): a swollen, plated mound
-    under its turret, a feeding sac behind it."""
+    """Draw a flak growth on the front of the mantle (FB-GULL-MOTHERSHIP-03): a swollen.
+
+    Plated mound under its turret, a feeding sac behind it.
+    """
     growth(p, shift(at, [0, DECK_TOP - 2.5, 0]), 12, N, {"flesh": F.slate, "height": 0.38})
     sac(
         p,

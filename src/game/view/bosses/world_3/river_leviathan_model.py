@@ -1,11 +1,12 @@
+# Copyright (c) 2026 Renaud Guillon
 """FB-RIVER-LEVIATHAN-01 to FB-RIVER-LEVIATHAN-07, 3-1: the River Leviathan.
+
 Logical pixels, nose +Z, Y up (towards the camera). A serpent-ship: an armoured, wedge-shaped head
 (its core) with a dorsal crest, glaring teal eyes, fang guns and a laser lens on its snout; behind
-it, its swaying body (`river-leviathan-body`)."""
+it, its swaying body (`river-leviathan-body`).
+"""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.world_3.river_leviathan import (
     LEVIATHAN_CREST,
@@ -36,28 +37,28 @@ from game.view.bosses.world_3.river_leviathan_body import (
 from game.view.enemies.enemy_shapes import SIDES, angry_eyes, decal
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_mesh import EnemyParts
 
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 N = LEVIATHAN_TEAL
 
 # The head (loft stations, neck to snout: z, half width, bottom, top).
-HEAD = table(
-    [
-        [-24, 13, -3, 10],
-        [-12, 17, -4, 13],
-        [2, 18, -4, 13.5],
-        [14, 15, -3, 11],
-        [23, 10, -1.5, 8],
-        [29, 5.5, 0.5, 6],
-    ]
-)
+HEAD = table([
+    [-24, 13, -3, 10],
+    [-12, 17, -4, 13],
+    [2, 18, -4, 13.5],
+    [14, 15, -3, 11],
+    [23, 10, -1.5, 8],
+    [29, 5.5, 0.5, 6],
+])
 # The dorsal crest on the head, seen from the side (z, height), rolled upright.
 CREST = table([[-18, 12.5], [-12, 17.5], [4, 17.5], [10, 13]])
 # The crest emitter's housing (a lathe profile from the crest's top).
@@ -65,7 +66,7 @@ EMITTER = table([[3.6, 0], [3.4, 0.8], [2.2, 1.3], [0, 1.5]])
 
 
 def draw_head(p: EnemyParts) -> None:
-    """The head's hull, its jaw line, the teal light along its back and its glaring eyes."""
+    """Draw the head's hull, its jaw line, the teal light along its back and its glaring eyes."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -81,10 +82,7 @@ def draw_head(p: EnemyParts) -> None:
     neon.box([1.2, 0.5, 30], N, Placement([0, 13.55, -6]))
     for eye in angry_eyes(table([0, 18]), 9, [6, 1.6], 0.35):
         decal(neon, eye, 11.4, N)
-    points: list[Vec3] = []
-    for z in [-16, -6]:
-        for s in SIDES:
-            points.append([s * 8, 13, z])
+    points: list[Vec3] = [[s * 8, 13, z] for z in [-16, -6] for s in SIDES]
     scutes(hull, points, 2)
     moss(
         hull,
@@ -95,7 +93,7 @@ def draw_head(p: EnemyParts) -> None:
 
 
 def draw_crest(p: EnemyParts) -> None:
-    """The crest on its back and the ring emitter at its top (the core's spirals)."""
+    """Draw the crest on its back and the ring emitter at its top (the core's spirals)."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -121,7 +119,7 @@ def draw_crest(p: EnemyParts) -> None:
 
 
 def draw_snout(p: EnemyParts) -> None:
-    """The snout: the laser lens at its tip, the fang guns at its cheeks, teeth under its lip."""
+    """Draw the snout: laser lens at its tip, fang guns at its cheeks, teeth under its lip."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -156,17 +154,19 @@ def draw_snout(p: EnemyParts) -> None:
 
 
 def river_leviathan_core(p: EnemyParts) -> None:
-    """The core of the River Leviathan: its head, crest and snout."""
+    """Add the core of the River Leviathan: its head, crest and snout."""
     draw_head(p)
     draw_crest(p)
     draw_snout(p)
 
 
 def build_river_leviathan(scene: Any) -> Any:
-    """FB-RIVER-LEVIATHAN-01, FB-RIVER-LEVIATHAN-07: the River Leviathan, a segmented serpent-ship 6
-    L long, teal neon along its spine: an armoured head with a crest, its four segments with their
-    ring turrets and its tail with a missile rack swaying one after the other behind it, moss and
-    vines from the river."""
+    """FB-RIVER-LEVIATHAN-01, FB-RIVER-LEVIATHAN-07: the River Leviathan.
+
+    A segmented serpent-ship 6 L long, teal neon along its spine: an armoured head with a crest, its
+    four segments with their ring turrets and its tail with a missile rack swaying one after the
+    other behind it, moss and vines from the river.
+    """
     parts: dict[str, Any] = {}
     turrets: dict[str, Any] = {}
     for k in SEGMENTS:

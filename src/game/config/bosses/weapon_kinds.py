@@ -1,6 +1,8 @@
-"""The kinds of hidden weapon a boss reveals as it transforms (BOSS-40; D-221, D-229;
-docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-shape-shifts-design.md): their sizes,
-muzzles and volleys.
+# Copyright (c) 2026 Renaud Guillon
+"""The kinds of hidden weapon a boss reveals as it transforms (BOSS-40; D-221, D-229).
+
+Design: docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-shape-shifts-design.md. Their
+sizes, muzzles and volleys.
 
 - `gatling`: a three-barrelled turret that follows the player (bursts);
 - `lance`: a laser lance pointing down the screen (lasers);
@@ -20,16 +22,16 @@ Y up (its nose points down, at -Y), and heights above the playfield.
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.bosses.boss_kit import bullet, bursting, sweeping, volley
 from game.config.record import record
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 KINDS = [
     "gatling",
@@ -59,47 +61,45 @@ KINDS = [
 # height up. The sweeper: its turret `sweeperTurret` r round, two prongs `prongGap` r apart and
 # `prongLength` r long, the lens between their tips `lensLift` of the turret over the pod. The
 # hangar: a box `bayWidth` r across and `bayDepth` r deep.
-WEAPON_SHAPE = record(
-    {
-        "pod": 0.9,
-        "height": 0.5,
-        "turret": 0.62,
-        "gap": 0.32,
-        "bore": 0.12,
-        "length": 0.9,
-        "lance": 1.9,
-        "lanceBore": 0.2,
-        "cell": 0.16,
-        "cellX": 0.32,
-        "cellY": 0.28,
-        "cellTop": 0.3,
-        "orb": 0.38,
-        "orbTop": 0.42,
-        "cannonTurret": 0.72,
-        "cannonBase": 0.8,
-        "cannonBore": 0.24,
-        "cannonLength": 1.5,
-        "mortarBase": 0.95,
-        "mortarBore": 0.32,
-        "mortarLength": 0.95,
-        "mortarBack": 0.2,
-        "mortarFoot": 0.15,
-        "mortarDeg": 55,
-        "deckWidth": 1.9,
-        "deckDepth": 0.9,
-        "barrels": 5,
-        "barrelGap": 0.4,
-        "barrelBore": 0.1,
-        "barrelLength": 0.7,
-        "barrelLift": 0.7,
-        "sweeperTurret": 0.6,
-        "prongGap": 0.36,
-        "prongLength": 1.25,
-        "lensLift": 0.3,
-        "bayWidth": 1.8,
-        "bayDepth": 1.5,
-    }
-)
+WEAPON_SHAPE = record({
+    "pod": 0.9,
+    "height": 0.5,
+    "turret": 0.62,
+    "gap": 0.32,
+    "bore": 0.12,
+    "length": 0.9,
+    "lance": 1.9,
+    "lanceBore": 0.2,
+    "cell": 0.16,
+    "cellX": 0.32,
+    "cellY": 0.28,
+    "cellTop": 0.3,
+    "orb": 0.38,
+    "orbTop": 0.42,
+    "cannonTurret": 0.72,
+    "cannonBase": 0.8,
+    "cannonBore": 0.24,
+    "cannonLength": 1.5,
+    "mortarBase": 0.95,
+    "mortarBore": 0.32,
+    "mortarLength": 0.95,
+    "mortarBack": 0.2,
+    "mortarFoot": 0.15,
+    "mortarDeg": 55,
+    "deckWidth": 1.9,
+    "deckDepth": 0.9,
+    "barrels": 5,
+    "barrelGap": 0.4,
+    "barrelBore": 0.1,
+    "barrelLength": 0.7,
+    "barrelLift": 0.7,
+    "sweeperTurret": 0.6,
+    "prongGap": 0.36,
+    "prongLength": 1.25,
+    "lensLift": 0.3,
+    "bayWidth": 1.8,
+    "bayDepth": 1.5,
+})
 
 # A giant laser (D-228): `width` px wide (four of the usual), firing `firing` seconds every
 # `every` seconds.
@@ -107,20 +107,18 @@ BEAM = record({"width": 44, "firing": 2.4, "every": 7})
 
 # What each kind fires (D-229): the cannon's shells and the battery's and mortar's bullets, and how
 # many a hangar launches of which kind.
-WEAPON_FIRE = record(
-    {
-        "cannon": {"every": 2.4, "count": 3, "spacingDeg": 12, "speed": 150, "radius": 7},
-        "mortar": {"every": 3.2, "speed": 110, "radius": 8, "after": 1.1, "count": 8, "small": 170},
-        "battery": {"every": 2.0, "count": 7, "spacingDeg": 9, "speed": 180},
-        "sweeper": {"every": 8, "firing": 2.0},
-        "hangar": {"kind": "gnats", "count": 2, "every": 7},
-    }
-)
+WEAPON_FIRE = record({
+    "cannon": {"every": 2.4, "count": 3, "spacingDeg": 12, "speed": 150, "radius": 7},
+    "mortar": {"every": 3.2, "speed": 110, "radius": 8, "after": 1.1, "count": 8, "small": 170},
+    "battery": {"every": 2.0, "count": 7, "spacingDeg": 9, "speed": 180},
+    "sweeper": {"every": 8, "firing": 2.0},
+    "hangar": {"kind": "gnats", "count": 2, "every": 7},
+})
 
 
 def pod_height(radius: float, height: Any) -> float:
-    """The height of a weapon's pod: `height` when given, else its share of the radius."""
-    if height == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    """Return the height of a weapon's pod: `height` when given, else its share of the radius."""
+    if height == None:
         value: float = radius * WEAPON_SHAPE.height
         return value
     given: float = height
@@ -128,40 +126,41 @@ def pod_height(radius: float, height: Any) -> float:
 
 
 def gatling_turret(radius: float) -> Any:
-    """The gatling turret's sizes (its radius, barrel gap, bore and length)."""
+    """Return the gatling turret's sizes (its radius, barrel gap, bore and length)."""
     rt = radius * WEAPON_SHAPE.turret
-    return record(
-        {
-            "radius": rt,
-            "gap": rt * WEAPON_SHAPE.gap,
-            "bore": rt * WEAPON_SHAPE.bore,
-            "length": rt * WEAPON_SHAPE.length,
-        }
-    )
+    return record({
+        "radius": rt,
+        "gap": rt * WEAPON_SHAPE.gap,
+        "bore": rt * WEAPON_SHAPE.bore,
+        "length": rt * WEAPON_SHAPE.length,
+    })
 
 
 def cannon_turret(radius: float) -> Any:
-    """The cannon's turret's sizes (as `gatling_turret`: one heavy barrel)."""
+    """Return the cannon's turret's sizes (as `gatling_turret`: one heavy barrel)."""
     rt = radius * WEAPON_SHAPE.cannonTurret
-    return record(
-        {
-            "radius": rt,
-            "gap": 0,
-            "bore": rt * WEAPON_SHAPE.cannonBore,
-            "length": rt * WEAPON_SHAPE.cannonLength,
-        }
-    )
+    return record({
+        "radius": rt,
+        "gap": 0,
+        "bore": rt * WEAPON_SHAPE.cannonBore,
+        "length": rt * WEAPON_SHAPE.cannonLength,
+    })
 
 
 def turret_tip(t: Any) -> list[float]:
-    """`[reach, lift]` of the tips of the barrels of a turret of sizes `t` (`mini_boss_shapes.
-    turret`, aimed down the screen) from its pivot on top of its pod: how far ahead, how high."""
+    """Return `[reach, lift]` of the barrel tips of a turret of sizes `t` from its pivot.
+
+    For a `mini_boss_shapes.turret` aimed down the screen, its pivot on top of its pod: how far
+    ahead the tips are, and how high.
+    """
     return [0.3 * t.radius + t.length + 0.5 * t.radius + 0.6 * t.bore, 0.28 * t.radius]
 
 
 def mortar_mouth(radius: float) -> list[float]:
-    """Where the mortar's tube ends from its pod's top centre: `[ahead, up]` (px towards the nose
-    and above the pod)."""
+    """Where the mortar's tube ends from its pod's top centre.
+
+    `[ahead, up]` (px towards the nose and above the pod).
+    """
     e = WEAPON_SHAPE.mortarDeg * math.pi / 180
     length = radius * WEAPON_SHAPE.mortarLength
     return [
@@ -171,7 +170,7 @@ def mortar_mouth(radius: float) -> list[float]:
 
 
 def battery_offsets(radius: float) -> list[float]:
-    """The offsets across (X) of the battery's barrels from its centre, left to right."""
+    """Return the offsets across (X) of the battery's barrels from its centre, left to right."""
     n = WEAPON_SHAPE.barrels
     gap = radius * WEAPON_SHAPE.barrelGap
     return [(i - (n - 1) / 2) * gap for i in range(n)]
@@ -197,9 +196,9 @@ def _rack_guns(x: float, y: float, h: float, radius: float) -> Any:
     dx = radius * WEAPON_SHAPE.cellX
     dy = radius * WEAPON_SHAPE.cellY
     top = h + radius * WEAPON_SHAPE.cellTop
-    return record(
-        {"missile": [[x + sx * dx, y + sy * dy, top] for sx in [-1, 1] for sy in [-1, 1]]}
-    )
+    return record({
+        "missile": [[x + sx * dx, y + sy * dy, top] for sx in [-1, 1] for sy in [-1, 1]]
+    })
 
 
 def _orb_guns(x: float, y: float, h: float, radius: float) -> Any:
@@ -249,7 +248,7 @@ def _known(kind: str) -> None:
 
 
 def weapon_guns(kind: str, at: list[Any], radius: float, height: Any) -> Any:
-    """The guns of a weapon of `kind` centred on `at` (see `BossDesign.guns`)."""
+    """Return the guns of a weapon of `kind` centred on `at` (see `BossDesign.guns`)."""
     _known(kind)
     return GUNS_OF[kind](at[0], at[1], pod_height(radius, height), radius)
 
@@ -316,17 +315,19 @@ FIRE_OF = {
 
 
 def weapon_volleys(kind: str, part_id: str, style: str, first: float) -> list[Any]:
-    """What a weapon of `kind` fires, first `first` seconds into a stage (bullets in `style`): the
-    gatling bursts of 4, the lance its laser, the rack 2 homing missiles, the orb rings of 10, the
-    cannon spreads of 3 large shells, the mortar flak, the battery fans of 7, the sweeper a sweeping
-    laser; a hangar launches instead (`weapon_launches`)."""
+    """Return what a weapon of `kind` fires, first `first` seconds into a stage.
+
+    Its bullets are in `style`. The gatling bursts of 4, the lance its laser, the rack 2 homing
+    missiles, the orb rings of 10, the cannon spreads of 3 large shells, the mortar flak, the
+    battery fans of 7, the sweeper a sweeping laser; a hangar launches instead (`weapon_launches`).
+    """
     _known(kind)
     volleys: list[Any] = FIRE_OF[kind](part_id, style, first)
     return volleys
 
 
 def weapon_launches(kind: str, part_id: str, first: float) -> list[Any]:
-    """What a weapon of `kind` launches (see `BossDesign.launches`): a hangar's Gnats."""
+    """Return what a weapon of `kind` launches (see `BossDesign.launches`): a hangar's Gnats."""
     if kind != "hangar":
         return []
     h = WEAPON_FIRE.hangar

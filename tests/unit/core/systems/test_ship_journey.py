@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/systems/ship_journey.py`."""
 
 from types import SimpleNamespace
@@ -26,7 +27,7 @@ class _Bounds:
     max_y = 100
     center_x = 50
 
-    def half_width_at(self, y: float) -> float:
+    def half_width_at(self, _y: float) -> float:
         return 50
 
 
@@ -41,7 +42,7 @@ def _kind(health: float = 10, points: float = 100, y: float = 30) -> EnemyKindDe
     return EnemyKindDefinition(
         "still",
         "Still",
-        lambda area: [Still(50, y, EnemyStats("still", 4, health, points))],
+        lambda _area: [Still(50, y, EnemyStats("still", 4, health, points))],
     )
 
 
@@ -60,19 +61,19 @@ def _level(
 
 
 def _run(**overrides: object) -> LevelRun:
-    options: dict = dict(
-        screen=SCREEN,
-        level=_level(),
-        kinds=[_kind()],
-        weapon=GUN,
-        weapon_level=1,
-        ship=SHIP,
-        bounds=_Bounds(),
-        cull_margin=10,
-        max_enemy_age=60,
-        end_wait=1,
-        seed=1,
-    )
+    options: dict = {
+        "screen": SCREEN,
+        "level": _level(),
+        "kinds": [_kind()],
+        "weapon": GUN,
+        "weapon_level": 1,
+        "ship": SHIP,
+        "bounds": _Bounds(),
+        "cull_margin": 10,
+        "max_enemy_age": 60,
+        "end_wait": 1,
+        "seed": 1,
+    }
     options.update(overrides)
     return LevelRun(LevelRunOptions(**options))  # type: ignore[arg-type]
 
@@ -101,7 +102,7 @@ class _BoundsShipJourney:
     max_y = 500.0
     center_x = 50.0
 
-    def half_width_at(self, y: float) -> float:
+    def half_width_at(self, _y: float) -> float:
         return 50.0
 
 
@@ -176,13 +177,13 @@ def test_game_level_11_a_new_journey_is_arriving_and_scripted() -> None:
 def test_game_level_11_the_ship_rises_from_below_the_screen_to_its_start() -> None:
     journey = _journey()
     ship = _Ship()
-    journey.step(0, ship, _BoundsShipJourney(), False)
+    journey.step(0, ship, _BoundsShipJourney(), ready=False)
     assert ship.y == pytest.approx(-10)
     assert ship.x == 50
-    journey.step(1, ship, _BoundsShipJourney(), False)
+    journey.step(1, ship, _BoundsShipJourney(), ready=False)
     assert ship.y == pytest.approx(-10 + 110 * _ease_out(0.5))
     assert journey.stage == "arriving"
-    journey.step(1, ship, _BoundsShipJourney(), False)
+    journey.step(1, ship, _BoundsShipJourney(), ready=False)
     assert ship.y == pytest.approx(100)
     assert journey.stage == "flying"
     assert journey.scripted is False
@@ -191,7 +192,7 @@ def test_game_level_11_the_ship_rises_from_below_the_screen_to_its_start() -> No
 def test_game_level_11_with_no_arrival_time_the_ship_is_flying_after_one_step() -> None:
     journey = ShipJourney(JourneyRules(0, 10, 3, 50, 100, 20), START, TOP)
     ship = _Ship()
-    journey.step(0.1, ship, _BoundsShipJourney(), False)
+    journey.step(0.1, ship, _BoundsShipJourney(), ready=False)
     assert journey.stage == "flying"
     assert ship.y == 100
 
@@ -233,9 +234,9 @@ def test_game_level_12_a_free_ship_waits_for_its_seconds_and_for_ready() -> None
     journey.skip_arrival(_Ship())
     journey.clear()
     ship = _Ship()
-    journey.step(3, ship, _BoundsShipJourney(), False)
+    journey.step(3, ship, _BoundsShipJourney(), ready=False)
     assert journey.stage == "free"
-    journey.step(0, ship, _BoundsShipJourney(), True)
+    journey.step(0, ship, _BoundsShipJourney(), ready=True)
     assert journey.stage == "leaving"
 
 
@@ -245,11 +246,11 @@ def test_game_level_12_the_ship_leaves_by_the_top_of_the_screen() -> None:
     journey.skip_arrival(ship)
     journey.clear()
     for _ in range(6):
-        journey.step(0.5, ship, _BoundsShipJourney(), True)
+        journey.step(0.5, ship, _BoundsShipJourney(), ready=True)
     assert journey.stage == "leaving"
     assert journey.scripted is True
     assert ship.y == pytest.approx(150)
-    journey.step(0.5, ship, _BoundsShipJourney(), True)
+    journey.step(0.5, ship, _BoundsShipJourney(), ready=True)
     assert journey.stage == "gone"
     assert journey.scripted is True
 
@@ -260,9 +261,9 @@ def test_game_level_12_leaving_starts_at_the_ships_speed_when_it_is_faster() -> 
     journey.skip_arrival(ship)
     journey.clear()
     for _ in range(5):
-        journey.step(0.5, ship, _BoundsShipJourney(), True)
+        journey.step(0.5, ship, _BoundsShipJourney(), ready=True)
     ship.vy = 80
-    journey.step(0.5, ship, _BoundsShipJourney(), True)
+    journey.step(0.5, ship, _BoundsShipJourney(), ready=True)
     assert journey.stage == "leaving"
     # Starts at 80 (faster than the 50 rule), gains 100 a second for half a second.
     assert ship.vy == pytest.approx(130)
@@ -274,7 +275,7 @@ def test_game_level_12_the_ship_slows_its_sideways_drift_as_it_leaves() -> None:
     journey.clear()
     ship = _Ship()
     ship.vx = 10
-    journey.step(3, ship, _BoundsShipJourney(), True)
+    journey.step(3, ship, _BoundsShipJourney(), ready=True)
     assert ship.vx == pytest.approx(10 * max(0, 1 - 4 * 3))
     assert ship.vx == 0
 
@@ -283,7 +284,7 @@ def test_game_level_12_a_free_ship_does_not_leave_while_not_ready() -> None:
     journey = _journey()
     journey.skip_arrival(_Ship())
     journey.clear()
-    journey.step(10, _Ship(), _BoundsShipJourney(), False)
+    journey.step(10, _Ship(), _BoundsShipJourney(), ready=False)
     assert journey.stage == "free"
 
 

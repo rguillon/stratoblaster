@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/entities/boss_joint.py`."""
 
 import math
@@ -22,7 +23,7 @@ class FakePart:
 
 def test_a_part_hanging_on_a_joint_moves_with_it(make_boss: Make) -> None:
     claw = BossPartSpec(
-        id="claw", x=0, y=10, radius=2, health=1, shields_core=False, drop_chance=0, joint="arm"
+        id_="claw", x=0, y=10, radius=2, health=1, shields_core=False, drop_chance=0, joint="arm"
     )
     joints = {"arm": BossJointSpec(0, 0, JointSwing(90, 1, 0.25))}
     boss = make_boss(parts=[claw], joints=joints)
@@ -82,12 +83,10 @@ def test_a_point_turns_around_its_joint() -> None:
 
 
 def test_a_point_on_a_child_joint_turns_with_its_parent_too() -> None:
-    joints = BossJoints(
-        {
-            "shoulder": BossJointSpec(0, 0, JointSwing(90, 1, 0.25)),
-            "elbow": BossJointSpec(0, 10, JointSwing(0, 1), parent="shoulder"),
-        }
-    )
+    joints = BossJoints({
+        "shoulder": BossJointSpec(0, 0, JointSwing(90, 1, 0.25)),
+        "elbow": BossJointSpec(0, 10, JointSwing(0, 1), parent="shoulder"),
+    })
     assert joints.move("elbow", 0, 20) == pytest.approx((20, 0))
 
 

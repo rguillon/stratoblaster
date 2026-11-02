@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/scenery/cloud_layers.py` (GFX-SKY-11)."""
 
 from types import SimpleNamespace
@@ -37,7 +38,7 @@ def _babylon(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(cloud_layers, "create_ground", _ground)
 
 
-def _ground(label: str, width: float, height: float, subdivisions: int, scene: Any) -> FakeNode:
+def _ground(label: str, width: float, height: float, _subdivisions: int, scene: Any) -> FakeNode:
     node = scene.add_node(label, is_mesh=True)
     node.size = (width, height)
     return node
@@ -176,5 +177,5 @@ def test_the_cloud_state_fades_into_the_haze_and_fog_of_the_atmosphere() -> None
 
 
 def test_a_state_built_by_hand_is_kept_on_the_layer() -> None:
-    state = CloudLayerState(False, 0.2, 0.3)
+    state = CloudLayerState(enabled=False, coverage=0.2, opacity=0.3)
     assert (state.enabled, state.coverage, state.opacity) == (False, 0.2, 0.3)

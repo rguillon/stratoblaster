@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/sim/enemies/gnat.py`."""
 
 import pytest
@@ -37,4 +38,5 @@ def test_enm_gnat_04_a_gnat_is_done_once_it_reaches_the_end_of_its_path() -> Non
 def test_enm_gnat_05_a_gnat_does_not_fire() -> None:
     ctx = FakeContext()
     run(Gnat(_path(), 0.0), ctx, 3.0)
-    assert ctx.bullets == [] and ctx.missiles == []
+    assert ctx.bullets == []
+    assert ctx.missiles == []

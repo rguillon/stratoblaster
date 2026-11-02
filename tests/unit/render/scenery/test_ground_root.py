@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/scenery/ground_root.py` (GFX-CAM-04, GFX-CAM-05)."""
 
 from types import SimpleNamespace
@@ -84,12 +85,12 @@ def test_the_ground_window_is_the_visible_ground_in_ground_units(
 ) -> None:
     seen: list[tuple[Any, ...]] = []
 
-    def fake_visible(framing: Any, aspect: float, camera_y: float, low: float, high: float) -> Any:
+    def fake_visible(_framing: Any, aspect: float, camera_y: float, low: float, high: float) -> Any:
         seen.append((aspect, camera_y, low, high))
         return SimpleNamespace(z_near=8.0, z_far=40.0, half_width=12.0)
 
     monkeypatch.setattr(ground_root, "visible_ground", fake_visible)
-    monkeypatch.setattr(ground_root, "lowest_ground", lambda level: 5.0)
+    monkeypatch.setattr(ground_root, "lowest_ground", lambda _level: 5.0)
     options = SimpleNamespace(
         screen=SimpleNamespace(width=400, height=600),
         camera=SimpleNamespace(flightAltitude=100),

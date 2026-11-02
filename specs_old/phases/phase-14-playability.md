@@ -124,7 +124,7 @@ The test API (Phase 13 tooling) exposes a way to measure readability so R01–R0
 > After the agent reports, write corrections here, then say **"Fix phase 14"**.
 > The agent ticks each item when fixed.
 
-- [ ] 
+- [ ]
 
 ---
 

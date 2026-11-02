@@ -1,22 +1,22 @@
-"""The Mantis (specs/enemies/mantis.md), its arms on their shoulders (ENM-28) Logical pixels,
-nose +Z, Y up. A point (x, y) of the design
-(X right, Y up, facing down) is at `boss_point(x, y)`.
+# Copyright (c) 2026 Renaud Guillon
+"""The Mantis (specs/enemies/mantis.md), its arms on their shoulders (ENM-28).
+
+Logical pixels, nose +Z, Y up. A point (x, y) of the design (X right, Y up, facing down) is at
+`boss_point(x, y)`.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.enemies_veteran import VETERAN_CONFIG  # noqa: E402
+from game.config.enemies_veteran import VETERAN_CONFIG
 from game.config.enemies_veteran import VETERAN_NEON as N
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.sim.enemies.mantis import MANTIS_DESIGN  # noqa: E402
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.enemies.jointed_model import build_jointed_model  # noqa: E402
-from game.view.enemies.organic_parts import eyes  # noqa: E402
-from game.view.enemies.vetelite_organic import LEAN_SECTION  # noqa: E402
-from game.view.enemies.veteran_shapes import back_band, nose_gun  # noqa: E402
-from render.geometry.organic import (  # noqa: E402
+from game.config.enemy_look import ENEMY_LOOK
+from game.sim.enemies.mantis import MANTIS_DESIGN
+from game.view.bosses.boss_limbs import boss_point
+from game.view.enemies.jointed_model import build_jointed_model
+from game.view.enemies.organic_parts import eyes
+from game.view.enemies.vetelite_organic import LEAN_SECTION
+from game.view.enemies.veteran_shapes import back_band, nose_gun
+from render.geometry.organic import (
     SegmentedBody,
     carapace,
     organ,
@@ -24,12 +24,14 @@ from render.geometry.organic import (  # noqa: E402
     segmented_body,
     tendril,
 )
-from render.geometry.solids import Placement  # noqa: E402
+from render.geometry.solids import Placement
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 F = ENEMY_LOOK.flesh
@@ -67,7 +69,7 @@ EDGE = [  # type: list[list[float]]
 
 
 def blade_point(s: float, tw: list[float], h: float = 0) -> list[float]:
-    """The blade's local point `(t, w)` on side `s`, in model space at height `h`."""
+    """Return the blade's local point `(t, w)` on side `s`, in model space at height `h`."""
     out = (ARM.outDeg * math.pi) / 180
     sx = s * CFG.shoulder[0]
     sy = CFG.shoulder[1]
@@ -79,7 +81,7 @@ def blade_point(s: float, tw: list[float], h: float = 0) -> list[float]:
 
 
 def outline(s: float, points: list[list[float]]) -> list[list[float]]:
-    """An outline of the blade's local points, on side `s`, in model XZ."""
+    """Return an outline of the blade's local points, on side `s`, in model XZ."""
     result = []
     for p in points:
         q = blade_point(s, p)
@@ -88,8 +90,10 @@ def outline(s: float, points: list[list[float]]) -> list[list[float]]:
 
 
 def draw_arm(s: float) -> Any:
-    """The arm on side `s`: a flesh forearm, a bone scythe, lime along its edge, its muzzles with
-    a charge light at each (ENM-MANTIS-04)."""
+    """Return the arm on side `s`: a flesh forearm and a bone scythe, lime along its edge.
+
+    Its muzzles have a charge light each (ENM-MANTIS-04).
+    """
 
     def draw(p: Any) -> None:
         flesh = p.flesh
@@ -111,7 +115,7 @@ def draw_arm(s: float) -> Any:
 
 
 def draw_shoulder(s: float) -> Any:
-    """The shoulder on side `s`: a metal knuckle turning with the arm, not to be shot off."""
+    """Return the shoulder on side `s`: a metal knuckle turning with the arm, not to be shot off."""
 
     def draw(p: Any) -> None:
         at = blade_point(s, [0, 0], 0.2)
@@ -121,8 +125,10 @@ def draw_shoulder(s: float) -> Any:
 
 
 def draw_body(p: Any) -> None:
-    """The body: abdomen striped with lime, plated thorax, the head with its eyes and gun, one
-    reactor at the tip of the abdomen (ENM-MANTIS-06)."""
+    """Draw the body: an abdomen striped with lime, a plated thorax, and the head.
+
+    The head has its eyes and gun; one reactor sits at the tip of the abdomen (ENM-MANTIS-06).
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -140,9 +146,12 @@ def draw_body(p: Any) -> None:
 
 
 def build_mantis(scene: Any) -> Any:
-    """ENM-MANTIS-01: an insect with a narrow head and two long bone scythes on flesh forearms,
-    folded forward, lime neon along the blades. The arms swing on their shoulders and go when shot
-    off (ENM-MANTIS-05). Within the veteran triangle budget (ENM-MANTIS-07)."""
+    """ENM-MANTIS-01: an insect with a narrow head and two long bone scythes on flesh forearms.
+
+    The scythes are folded forward, with lime neon along the blades. The arms swing on their
+    shoulders and go when shot off (ENM-MANTIS-05). Within the veteran triangle budget
+    (ENM-MANTIS-07).
+    """
     return build_jointed_model(
         "mantis",
         scene,

@@ -1,4 +1,7 @@
-"""3-4: the Dam Breaker, the final boss of the swamp works, fought over the giant dam
+# Copyright (c) 2026 Renaud Guillon
+"""3-4.
+
+The Dam Breaker, the final boss of the swamp works, fought over the giant dam
 (specs/bosses/final/3-4-dam-breaker.md).
 
 Offsets in px from the boss's centre, X right and Y up (its nose points down, at -Y). The stage
@@ -7,18 +10,18 @@ core fires something new at every stage, and its last stage (only the core left)
 earlier stage. Health (FB-DAM-BREAKER-07) tuned for WLD-3-20.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 RED = bullet("red", 205)
 MAGENTA = bullet("magenta", 200)
@@ -30,8 +33,10 @@ SLUDGE = bullet("green", 125, 7)
 
 
 def fpart(part_id: str, at: Any, radius: float, health: float, options: Any = None) -> Any:
-    """A final boss's part: drops a bonus 60 % of the time (FB-DAM-BREAKER-13,
-    `part_drop_chance`)."""
+    """Return a final boss's part.
+
+    Drops a bonus 60 % of the time (FB-DAM-BREAKER-13, `part_drop_chance`).
+    """
     return part(part_id, at, radius, health, merge({"drop": 0.6}, options))
 
 
@@ -58,78 +63,74 @@ TANK_Y = DAM_TANK[1]
 
 
 def waves(source: str, first: float) -> Any:
-    """A sluice's waves: a row of five globs, then a row of four between them."""
+    """Return a sluice's waves: a row of five globs, then a row of four between them."""
     return [
         volley.fan(source, 4, 5, 15, SLUDGE, first),
         volley.fan(source, 4, 4, 15, SLUDGE, first + 0.55),
     ]
 
 
-_DAM_BREAKER = record(
-    {
-        "id": "dam-breaker",
-        # Angry after each destroyed part (phase 7 review, D-063, FB-DAM-BREAKER-10).
-        "rage": rage.curtain(8, "green", "orange"),
-        "stats": stats(
-            record(
-                {
-                    "id": "dam-breaker",
-                    "name": "Dam Breaker",
-                    "size": 5.5,
-                    "coreRadius": 22,
-                    "coreHealth": 5300,
-                    "points": 15000,
-                    "groundSpeed": 0.3,
-                    "coreDrop": 1,
-                    "parts": [
-                        fpart("sluice-left", [SLUICE_X, SLUICE_Y], 15, 1650),
-                        fpart("sluice-right", [-SLUICE_X, SLUICE_Y], 15, 1650),
-                        fpart("plate", list(DAM_PLATE), 15, 1900),
-                        fpart("tank-left", [TANK_X, TANK_Y], 15, 1300, {"shields": False}),
-                        fpart("tank-right", [-TANK_X, TANK_Y], 15, 1300, {"shields": False}),
-                        fpart("hangar", list(DAM_HANGAR), 14, 900, {"shields": False}),
-                    ],
-                }
-            )
-        ),
-        # Where it stops and how it moves in place (FB-DAM-BREAKER-06).
-        "stopFraction": 0.74,
-        "sway": {"amplitude": 32, "period": 11},
-        "bob": {"amplitude": 5, "period": 5.5},
-        "launches": [{"from": "hangar", "kind": "hornets", "count": 2, "every": 7, "first": 3.5}],
-        "breakRings": {
-            "tank-left": {"count": 12, "bullet": GREEN},
-            "tank-right": {"count": 12, "bullet": GREEN},
-        },
-        "guns": {
-            "core": {"gun": DAM_CORE_GUNS, "ring": DAM_STACK},
-            "sluice-left": {"gun": DAM_SPOUT},
-            "sluice-right": {"gun": mirror(DAM_SPOUT)},
-        },
-        # The parts' volleys, then the core's pattern per stage (FB-DAM-BREAKER-09).
-        "stages": stages(
-            concat(waves("sluice-left", 1), waves("sluice-right", 3)),
-            [
-                [volley.aimed("core", 2.8, 1, 0, RED, 1.4)],
-                [volley.aimed("core", 2.4, 3, 12, RED, 0.8)],
-                [volley.burst("core", 2.4, 4, 0.13, ORANGE, 0.6)],
-                [volley.fan("core", 2.4, 5, 14, MAGENTA, 0.6)],
-                [
-                    volley.fan("core", 2.2, 7, 12, MAGENTA, 0.6),
-                    volley.burst("core", 2.8, 3, 0.13, RED, 1.2),
-                ],
-                [
-                    volley.ring("core", 1.8, 10, 7, GREEN, 0.5),
-                    volley.aimed("core", 2.6, 1, 0, RED, 1.2),
-                ],
-                [
-                    volley.ring("core", 1.3, 14, 9, GREEN, 0.4),
-                    volley.ring("core", 1.3, 14, -11, ORANGE, 1.05),
-                ],
+_DAM_BREAKER = record({
+    "id": "dam-breaker",
+    # Angry after each destroyed part (phase 7 review, D-063, FB-DAM-BREAKER-10).
+    "rage": rage.curtain(8, "green", "orange"),
+    "stats": stats(
+        record({
+            "id": "dam-breaker",
+            "name": "Dam Breaker",
+            "size": 5.5,
+            "coreRadius": 22,
+            "coreHealth": 5300,
+            "points": 15000,
+            "groundSpeed": 0.3,
+            "coreDrop": 1,
+            "parts": [
+                fpart("sluice-left", [SLUICE_X, SLUICE_Y], 15, 1650),
+                fpart("sluice-right", [-SLUICE_X, SLUICE_Y], 15, 1650),
+                fpart("plate", list(DAM_PLATE), 15, 1900),
+                fpart("tank-left", [TANK_X, TANK_Y], 15, 1300, {"shields": False}),
+                fpart("tank-right", [-TANK_X, TANK_Y], 15, 1300, {"shields": False}),
+                fpart("hangar", list(DAM_HANGAR), 14, 900, {"shields": False}),
             ],
-        ),
-    }
-)
+        })
+    ),
+    # Where it stops and how it moves in place (FB-DAM-BREAKER-06).
+    "stopFraction": 0.74,
+    "sway": {"amplitude": 32, "period": 11},
+    "bob": {"amplitude": 5, "period": 5.5},
+    "launches": [{"from": "hangar", "kind": "hornets", "count": 2, "every": 7, "first": 3.5}],
+    "breakRings": {
+        "tank-left": {"count": 12, "bullet": GREEN},
+        "tank-right": {"count": 12, "bullet": GREEN},
+    },
+    "guns": {
+        "core": {"gun": DAM_CORE_GUNS, "ring": DAM_STACK},
+        "sluice-left": {"gun": DAM_SPOUT},
+        "sluice-right": {"gun": mirror(DAM_SPOUT)},
+    },
+    # The parts' volleys, then the core's pattern per stage (FB-DAM-BREAKER-09).
+    "stages": stages(
+        concat(waves("sluice-left", 1), waves("sluice-right", 3)),
+        [
+            [volley.aimed("core", 2.8, 1, 0, RED, 1.4)],
+            [volley.aimed("core", 2.4, 3, 12, RED, 0.8)],
+            [volley.burst("core", 2.4, 4, 0.13, ORANGE, 0.6)],
+            [volley.fan("core", 2.4, 5, 14, MAGENTA, 0.6)],
+            [
+                volley.fan("core", 2.2, 7, 12, MAGENTA, 0.6),
+                volley.burst("core", 2.8, 3, 0.13, RED, 1.2),
+            ],
+            [
+                volley.ring("core", 1.8, 10, 7, GREEN, 0.5),
+                volley.aimed("core", 2.6, 1, 0, RED, 1.2),
+            ],
+            [
+                volley.ring("core", 1.3, 14, 9, GREEN, 0.4),
+                volley.ring("core", 1.3, 14, -11, ORANGE, 1.05),
+            ],
+        ],
+    ),
+})
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
 # baring a dark metal frame, and a pair of gun batteries unfold (FB-DAM-BREAKER-11); at

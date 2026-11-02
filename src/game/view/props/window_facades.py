@@ -1,45 +1,52 @@
-"""The windows of a building (D-210): one quad per wall, just off it, mapped on a block of the
-windows' atlas (`game/config/window_look.py`) picked at random, so no two walls look the same.
-They replace the lit bands and panels of Phase 15 (GFX-BLDG-13; GFX-BLDG-10: each face lit
-differently). D-215: so do the windows of one wall (a glass front) and the doors, one quad each, for
-every building (GFX-BLDG-14)."""
+# Copyright (c) 2026 Renaud Guillon
+"""The windows of a building (D-210): one quad per wall, just off it.
+
+Each quad is mapped on a block of the windows' atlas (`game/config/window_look.py`) picked at
+random, so no two walls look the same. They replace the lit bands and panels of Phase 15
+(GFX-BLDG-13; GFX-BLDG-10: each face lit differently). D-215: so do the windows of one wall (a glass
+front) and the doors, one quad each, for every building (GFX-BLDG-14).
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-from render.geometry.textured import QuadBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-Rgb = list[float]
-__pragma__("noskip")
-
-from game.config.window_look import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.window_look import (
     WINDOW_ATLAS,
     WINDOW_CELL,
     WINDOW_OFFSET,
     WINDOW_TINT,
 )
-from render.scenery.window_atlas import atlas_cells, door_column, style_columns  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.window_atlas import atlas_cells, door_column, style_columns
+
+# isort: split
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+# __pragma__ ("skip")
+from typing import Any
+
+from render.geometry.textured import QuadBuilder
+
+Rgb = list[float]
+# __pragma__ ("noskip")
+
 
 # Walls narrower or lower than this get no windows.
 MIN_WALL = 1
 
 
 def tint_of(color: Rgb) -> Rgb:
-    """The vertex colour of a building's windows: its window colour, `WINDOW_TINT` of it, over
-    white (the atlas has the colours)."""
+    """Return the vertex colour of a building's windows.
+
+    Its colour, `WINDOW_TINT` of it, over white. The atlas has the colours.
+    """
     k: float = WINDOW_TINT
     return [1 - k + color[0] * k, 1 - k + color[1] * k, 1 - k + color[2] * k]
 
 
-def wall_uv(random: Any, style: int, length: float, height: float) -> list[float]:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
-    """The `[u0, v0, u1, v1]` of a wall `length` × `height` in the band of `style`: one atlas cell
-    per `WINDOW_CELL`, the block at a random place in the band (no wider than the band: a longer
-    wall gets wider windows)."""
+def wall_uv(random: Any, style: int, length: float, height: float) -> list[float]:
+    """Return the `[u0, v0, u1, v1]` of a wall `length` x `height` in the band of `style`.
+
+    One atlas cell per `WINDOW_CELL`, the block at a random place in the band (no wider than the
+    band: a longer wall gets wider windows).
+    """
     cells = atlas_cells(WINDOW_ATLAS)
     band = style_columns(WINDOW_ATLAS)
     cols = min(band, max(1, math.floor(length / WINDOW_CELL.width + 0.5)))
@@ -50,19 +57,21 @@ def wall_uv(random: Any, style: int, length: float, height: float) -> list[float
     return [col / cells, row / cells, (col + cols) / cells, (row + rows) / cells]
 
 
-def facade_windows(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def facade_windows(
     windows: QuadBuilder,
-    random: Any,  # noqa: ANN401 (a seeded generator)
+    random: Any,
     lot: list[float],
     span: list[float],
     color: Rgb,
-    mixed: bool = False,  # noqa: FBT001, FBT002 (positional: Transcrypt has no keyword arguments)
+    mixed: bool = False,
     style: int | None = None,
 ) -> None:
-    """The windows of a `w` × `d` box at (x, z) (`lot`: `[x, z, w, d]`), from `y0` to `y1`
-    (`span`), tinted by `color` (see `tint_of`): one style for the whole box (`style`, or one at
-    random), or with `mixed` one per wall (GFX-BLDG-10: the asymmetric buildings, lit differently on
-    each side)."""
+    """Add the windows of a `w` x `d` box at (x, z), from `y0` to `y1`.
+
+    The box is `lot` (`[x, z, w, d]`), and `y0` to `y1` is `span`. Tinted by `color` (see
+    `tint_of`): one style for the whole box (`style`, or one at random), or with `mixed` one per
+    wall (GFX-BLDG-10: the asymmetric buildings, lit differently on each side).
+    """
     x = lot[0]
     z = lot[1]
     w = lot[2]
@@ -104,17 +113,20 @@ def facade_windows(  # noqa: PLR0917 (positional: Transcrypt has no keyword argu
         )
 
 
-def round_windows(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def round_windows(
     windows: QuadBuilder,
-    random: Any,  # noqa: ANN401 (a seeded generator)
+    random: Any,
     tower: list[float],
     span: list[float],
     color: Rgb,
 ) -> None:
-    """The windows of a round tower (`SolidBuilder.cylinder`, maybe tapered): one quad per facet,
-    just off it, from `y0` to `y1` (`span`), one style for the whole tower, tinted by `color`.
-    `tower` is `[x, z, base, height, radius, top_radius, sides]`: where it stands, the height of
-    its foot and how tall it is, its radius at the foot and at the top, and its facets."""
+    """Add the windows of a round tower (`SolidBuilder.cylinder`, maybe tapered).
+
+    One quad per facet, just off it, from `y0` to `y1` (`span`), one style for the whole tower,
+    tinted by `color`. `tower` is `[x, z, base, height, radius, top_radius, sides]`: where it
+    stands, the height of its foot and how tall it is, its radius at the foot and at the top, and
+    its facets.
+    """
     x = tower[0]
     z = tower[1]
     base = tower[2]
@@ -150,9 +162,11 @@ def round_windows(  # noqa: PLR0917 (positional: Transcrypt has no keyword argum
 
 
 def _front(face: list[float], width: float) -> list[float]:
-    """The ends `[xa, za, xb, zb]` of a quad `width` wide just off a wall facing -Z or +Z (`face`:
-    `[x, z, facing]`, the middle of the wall's foot and -1 or 1), in counter-clockwise order seen
-    from outside."""
+    """Return the ends `[xa, za, xb, zb]` of a quad `width` wide just off a wall facing -Z or +Z.
+
+    `face` is `[x, z, facing]`: the middle of the wall's foot and -1 or 1. The ends are in
+    counter-clockwise order seen from outside.
+    """
     x = face[0]
     facing = -1 if face[2] < 0 else 1
     z = face[1] + facing * WINDOW_OFFSET
@@ -161,7 +175,7 @@ def _front(face: list[float], width: float) -> list[float]:
     return [x + width / 2, z, x - width / 2, z]
 
 
-def _quad(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def _quad(
     windows: QuadBuilder,
     ends: list[float],
     span: list[float],
@@ -180,17 +194,19 @@ def _quad(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
     )
 
 
-def wall_windows(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def wall_windows(
     windows: QuadBuilder,
-    random: Any,  # noqa: ANN401 (a seeded generator)
+    random: Any,
     face: list[float],
     size: list[float],
     style: int,
     color: Rgb,
 ) -> None:
-    """The windows of one wall facing -Z or +Z (D-215: a glass front, a hut's window), one quad of
-    `style` just off it: `face` is `[x, z, facing]` (the middle of the wall's foot, -1 or 1), `size`
-    is `[width, y0, y1]`, tinted by `color`."""
+    """Add the windows of one wall facing -Z or +Z, one quad of `style` just off it.
+
+    `face` is `[x, z, facing]` (the middle of the wall's foot, -1 or 1), `size` is `[width, y0,
+    y1]`, tinted by `color`. A glass front or a hut's window (D-215).
+    """
     width = size[0]
     if width < MIN_WALL or size[2] - size[1] < MIN_WALL:
         return
@@ -198,17 +214,19 @@ def wall_windows(  # noqa: PLR0917 (positional: Transcrypt has no keyword argume
     _quad(windows, _front(face, width), [size[1], size[2]], uv, tint_of(color))
 
 
-def doorway(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def doorway(
     windows: QuadBuilder,
-    random: Any,  # noqa: ANN401 (a seeded generator)
+    random: Any,
     at: list[float],
     facing: float,
     door: int,
     color: Rgb,
 ) -> None:
-    """A door of style `door` (`DOOR_STYLES`) on a wall facing -Z or +Z (`facing`, -1 or 1), its
-    foot's middle at `at` (`[x, y, z]`), tinted by `color` (D-215): one quad of one atlas cell, a
-    window cell's size, the door standing on its bottom, lit or not as the atlas has it."""
+    """Add a door of style `door` (`DOOR_STYLES`) on a wall facing -Z or +Z (`facing`, -1 or 1).
+
+    Its foot's middle is at `at` (`[x, y, z]`), tinted by `color` (D-215): one quad of one atlas
+    cell, a window cell's size, the door standing on its bottom, lit or not as the atlas has it.
+    """
     cells = atlas_cells(WINDOW_ATLAS)
     col = door_column(WINDOW_ATLAS, door) + math.floor(random() * WINDOW_ATLAS.doorColumns)
     row = math.floor(random() * cells)

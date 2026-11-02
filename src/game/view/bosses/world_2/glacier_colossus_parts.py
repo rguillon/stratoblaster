@@ -1,56 +1,59 @@
-"""FB-GLACIER-COLOSSUS-03, 2-4: the Glacier Colossus's parts
+# Copyright (c) 2026 Renaud Guillon
+"""FB-GLACIER-COLOSSUS-03, 2-4: the Glacier Colossus's parts.
+
 Logical pixels, nose +Z, Y up (towards the camera); each part is drawn around its centre `at`
-(model space), the left ones at +X."""
+(model space), the left ones at +X.
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-type Vec3 = list[float]
-type Rgb = list[float]
-__pragma__("noskip")
-
-from game.config.boss_look import BOSS_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.bosses.boss_kit import mirror  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.bosses.world_2.glacier_colossus import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.boss_look import BOSS_LOOK
+from game.config.bosses.boss_kit import mirror
+from game.config.bosses.world_2.glacier_colossus import (
     COLOSSUS_CELLS,
     COLOSSUS_CUTTER_LASER,
     COLOSSUS_ORE_GUNS,
 )
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.mini_boss_greebles import vent  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.mini_boss_mechanism import GEAR, cog  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.mini_boss_shapes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.mini_boss_greebles import vent
+from game.view.bosses.mini_boss_mechanism import GEAR, cog
+from game.view.bosses.mini_boss_shapes import (
     WHITE,
     H,
     neon_band,
     offset,
     scaled,
 )
-from game.view.bosses.world_2.avalanche_frost import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.avalanche_frost import (
     PACKED,
     barrel_to,
     icicles,
     snow_cap,
 )
-from game.view.bosses.world_2.w2_organic import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.w2_organic import (
     ICE_FLESH,
     gland,
 )
-from game.view.enemies.enemy_shapes import POD_SECTION, side_stripe  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.organic import RibSpec, organ, ribs  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.solids import LoftOptions, Placement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_shapes import POD_SECTION, side_stripe
+from render.geometry.organic import RibSpec, organ, ribs
+from render.geometry.solids import LoftOptions, Placement
+
+# isort: split
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+# __pragma__ ("skip")
+from typing import Any
+
+from game.view.enemies.enemy_mesh import EnemyParts
+from render.geometry.outline import OutlinePoint
+
+type Vec3 = list[float]
+type Rgb = list[float]
+# __pragma__ ("noskip")
+
 
 # The Glacier Colossus's red-orange neon (FB-GLACIER-COLOSSUS-04).
 _COLOSSUS_NEON = BOSS_LOOK.neon["glacier-colossus"]
-COLOSSUS_NEON = [1.0, 0.35, 0.08] if _COLOSSUS_NEON == None else _COLOSSUS_NEON  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+COLOSSUS_NEON = [1.0, 0.35, 0.08] if _COLOSSUS_NEON == None else _COLOSSUS_NEON
 
 # The side of a section that faces the nose or the tail, painted with the frost.
 POD_BACK = 2
@@ -76,7 +79,7 @@ FIN_COUNT = 6
 
 
 def _octagon() -> list[OutlinePoint]:
-    """An octagon of radius 1, flat side to the front."""
+    """Return an octagon of radius 1, flat side to the front."""
     points: list[OutlinePoint] = []
     for k in range(8):
         a = (2 * math.pi * (k + 0.5)) / 8
@@ -102,17 +105,21 @@ def sided(at: Vec3, left: list[Any]) -> list[Any]:
 
 
 def cutter_mount(p: EnemyParts, at: Vec3) -> None:
-    """The mount a cutter turns on (FB-GLACIER-COLOSSUS-06: the cutter, `cutter`, is its turret
-    and aims its laser): a drum under its pod, ringed with neon."""
+    """Add the mount a cutter turns on: a drum under its pod, ringed with neon.
+
+    FB-GLACIER-COLOSSUS-06: the cutter, `cutter`, is its turret and aims its laser.
+    """
     # FB-GLACIER-COLOSSUS-03: a shoulder of muscle the cutter limb turns on.
     p.flesh.cylinder(8, 3, 7, ICE_FLESH.graphite, Placement(offset(at, 0, -7.5, 0)), 7)
     p.neon.ring(8.3, 0.6, 8, COLOSSUS_NEON, Placement(offset(at, 0, -5, 0)))
 
 
 def cutter(p: EnemyParts, at: Vec3) -> None:
-    """A cutter laser (FB-GLACIER-COLOSSUS-03), turning on its mount (its turret): a long pod out on
-    the beam, a red-orange stripe along its sides, its emitter at the front, a saw disc at its
-    flank, frost on its back."""
+    """Add a cutter laser (FB-GLACIER-COLOSSUS-03).
+
+    Turning on its mount (its turret): a long pod out on the beam, a red-orange stripe along its
+    sides, its emitter at the front, a saw disc at its flank, frost on its back.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -126,7 +133,7 @@ def cutter(p: EnemyParts, at: Vec3) -> None:
         Placement(at),
         LoftOptions(
             False,
-            lambda side, band: ICE_FLESH.teal if side == POD_BACK else None,
+            lambda side, _band: ICE_FLESH.teal if side == POD_BACK else None,
         ),
     )
     for side in [1, 3]:
@@ -156,8 +163,11 @@ def cutter(p: EnemyParts, at: Vec3) -> None:
 
 
 def ore_cannon(p: EnemyParts, at: Vec3) -> None:
-    """An ore cannon (FB-GLACIER-COLOSSUS-03): an armoured octagonal barbette, its housing with two
-    fat barrels that fire fans of big shells, a red-orange ring round its foot, snow on its roof."""
+    """Add an ore cannon (FB-GLACIER-COLOSSUS-03): an armoured octagonal barbette.
+
+    Its housing carries two fat barrels that fire fans of big shells; a red-orange ring goes round
+    its foot, snow lies on its roof.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -190,9 +200,11 @@ def ore_cannon(p: EnemyParts, at: Vec3) -> None:
 
 
 def heat_sink(p: EnemyParts, at: Vec3) -> None:
-    """The heat sink (FB-GLACIER-COLOSSUS-03, no weapon): a radiator block at the bow, its fins
-    glowing red-orange between them; the ice around it has melted, the frost only on its outer
-    rims."""
+    """Add the heat sink (FB-GLACIER-COLOSSUS-03, no weapon): a radiator block at the bow.
+
+    Red-orange glows between its fins; the ice around it has melted, the frost only on its outer
+    rims.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -241,8 +253,11 @@ def heat_sink(p: EnemyParts, at: Vec3) -> None:
 
 
 def missile_pod(p: EnemyParts, at: Vec3) -> None:
-    """The missile pod (FB-GLACIER-COLOSSUS-03): an armoured box on the stern, four missile tips
-    standing in their tubes (they light up as a salvo charges), vents and frost on its back."""
+    """Add the missile pod (FB-GLACIER-COLOSSUS-03): an armoured box on the stern.
+
+    Four missile tips stand in their tubes (they light up as a salvo charges), with vents and frost
+    on its back.
+    """
     hull = p.hull
     flesh = p.flesh
     charge = p.charge

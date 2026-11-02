@@ -1,20 +1,20 @@
+# Copyright (c) 2026 Renaud Guillon
 """The dev menu and the dev viewers' screens (D-199)."""
 
-from org.transcrypt.stubs.browser import __pragma__
+from ui.screens.elements import back_button, element, entry
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-from ui.menu_view import DevChoice, DevMenuView, DevViewerView  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from ui.screens.screen_handlers import ScreenHandlers  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.menu_view import DevChoice, DevMenuView, DevViewerView
+from ui.screens.screen_handlers import ScreenHandlers
 
-__pragma__("noskip")
-
-from ui.screens.elements import back_button, element, entry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
 
 def render_dev_screen(doc: Any, view: DevMenuView, handlers: ScreenHandlers) -> Any:
-    """The dev menu (DEV-MENU-03): one entry per viewer."""
+    """Return the dev menu (DEV-MENU-03): one entry per viewer."""
     root = element(doc, "div", "menu-screen dev-screen")
     entries = element(doc, "div", "dev-entries")
     for i, label in enumerate(view.entries):
@@ -45,8 +45,10 @@ def _wheel_listener(handlers: ScreenHandlers) -> Any:
 
 
 def _menu(doc: Any, entries: list[DevChoice], handlers: ScreenHandlers) -> Any:
-    """The scrolling menu of a dev viewer's items (DEV-MENU-07, D-206): each group's heading, then
-    its items; a tap on an entry shows its item."""
+    """Return the scrolling menu of a dev viewer's items (DEV-MENU-07, D-206): each group's heading.
+
+    Then its items; a tap on an entry shows its item.
+    """
     menu = element(doc, "div", "dev-menu")
     for choice in entries:
         kind = "dev-menu-group" if choice.heading else "dev-menu-item"
@@ -57,8 +59,10 @@ def _menu(doc: Any, entries: list[DevChoice], handlers: ScreenHandlers) -> Any:
 
 
 def _drag_to_turn(root: Any, handlers: ScreenHandlers) -> None:
-    """A drag on the screen (not on its Back button or its menu) goes to `on_turn`, by screen
-    pixels, to turn the model (DEV-MENU-10)."""
+    """Send drags on the screen to `on_turn`, by screen pixels, to turn the model (DEV-MENU-10).
+
+    Drags on its Back button or its menu are left alone.
+    """
     last: list[Any] = [None]
 
     def on_down(event: Any) -> None:
@@ -85,8 +89,10 @@ def _drag_to_turn(root: Any, handlers: ScreenHandlers) -> None:
 
 
 def centre_menu(screen: Any) -> None:
-    """Scrolls the menu of a shown dev viewer (D-206) so the item shown is in its middle (the menu
-    is made anew each time the item changes)."""
+    """Scrolls the menu of a shown dev viewer (D-206) so the item shown is in its middle.
+
+    The menu is made anew each time the item changes.
+    """
     menu = screen.querySelector(".dev-menu")
     if not menu:
         return
@@ -96,9 +102,11 @@ def centre_menu(screen: Any) -> None:
 
 
 def render_dev_viewer_screen(doc: Any, view: DevViewerView, handlers: ScreenHandlers) -> Any:
-    """A dev viewer, over its 3D view (DEV-MENU-05): the item's name and place in the list, a
-    status line (the viewer writes it), the scrolling menu of its items by group (D-206), the
-    hint. The wheel anywhere on the screen but the menu goes to `on_wheel`, a drag to `on_turn`."""
+    """Return a dev viewer, over its 3D view (DEV-MENU-05): the item's name and place in the list.
+
+    A status line (the viewer writes it), the scrolling menu of its items by group (D-206), the
+    hint. The wheel anywhere on the screen but the menu goes to `on_wheel`, a drag to `on_turn`.
+    """
     root = element(doc, "div", "menu-screen dev-viewer-screen")
     caption = element(doc, "div", "dev-caption")
     caption.append(

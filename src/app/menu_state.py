@@ -1,32 +1,32 @@
-"""The menu flow's data: the feedback of a command, the snapshot
-of the flow (`MenuState`) and the options of a `MenuFlow`.
+# Copyright (c) 2026 Renaud Guillon
+"""The menu flow's data: the feedback of a command.
+
+The snapshot of the flow (`MenuState`) and the options of a `MenuFlow`.
 
 Classes take their fields in the order listed, as positional arguments (Transcrypt drops keyword
 arguments). Optional fields are passed as None.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Literal  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Literal
 
-from app.settings_menu import Volumes  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.content.level_catalog import LevelCatalog  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.menu.menu_screen import MenuScreen  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.systems.level_run_types import LevelCheckpoint, LevelResult  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from app.settings_menu import Volumes
+from core.content.level_catalog import LevelCatalog
+from core.menu.menu_screen import MenuScreen
+from core.systems.level_run_types import LevelCheckpoint, LevelResult
 
 # What a command did, so the presentation can give feedback (and its sound, AUD-ENGINE-09): a
 # move, a new screen, a locked level, a level paused or resumed, a slider changed.
 MenuFeedback = Literal["none", "moved", "screen", "locked", "paused", "resumed", "adjusted"]
-
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class MenuState:
     """Snapshot of the menu flow."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         screen: MenuScreen,
         selection: int,
@@ -83,7 +83,7 @@ class MenuState:
 class MenuFlowOptions:
     """Data and settings of a `MenuFlow`."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         ship_ids: list[str],
         levels: LevelCatalog,

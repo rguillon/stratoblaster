@@ -1,31 +1,12 @@
-"""The HTML/CSS menu overlay (UI-LOOK-01) It renders a view and
-turns taps and clicks into menu commands (UI-INPUT-09); it never reads raw keys or gamepad
-buttons."""
+# Copyright (c) 2026 Renaud Guillon
+"""The HTML/CSS menu overlay (UI-LOOK-01) It renders a view and turns taps.
 
-from org.transcrypt.stubs.browser import __pragma__
+Clicks into menu commands (UI-INPUT-09); it never reads raw keys or gamepad buttons.
+"""
 
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-from ui.menu_view import MenuView  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from ui.screens.elements import MenuDocument  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-
-class GameTouchHandlers(Protocol):
-    """Touch controls of the game screen (GAME-CTRL-04), in logical pixels with Y up."""
-
-    def fire(self, held: bool) -> None: ...
-
-    def drag(self, dx: float, dy: float) -> None: ...
-
-
-__pragma__("noskip")
-
-from input.menu_action import MenuSet  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from input.pointer_menu_input import pointer_command  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from ui.menu_view import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from input.menu_action import MenuSet
+from input.pointer_menu_input import pointer_command
+from ui.menu_view import (
     DevMenuView,
     DevViewerView,
     GameScreenView,
@@ -34,19 +15,41 @@ from ui.menu_view import (  # noqa: E402 (after the Transcrypt skip block, ENG-1
     ShipSelectView,
     TitleView,
 )
-from ui.screens.dev_screen import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.screens.dev_screen import (
     centre_menu,
     render_dev_screen,
     render_dev_viewer_screen,
 )
-from ui.screens.game_screen import render_game_screen  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from ui.screens.level_select_screen import render_level_select_screen  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from ui.screens.loading_screen import render_loading_screen  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from ui.screens.screen_handlers import ScreenHandlers  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from ui.screens.settings_screen import render_settings_screen  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from ui.screens.ship_select_screen import render_ship_select_screen  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from ui.screens.title_screen import render_title_screen  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from ui.shrink_to_fit import shrink_to_fit  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.screens.game_screen import render_game_screen
+from ui.screens.level_select_screen import render_level_select_screen
+from ui.screens.loading_screen import render_loading_screen
+from ui.screens.screen_handlers import ScreenHandlers
+from ui.screens.settings_screen import render_settings_screen
+from ui.screens.ship_select_screen import render_ship_select_screen
+from ui.screens.title_screen import render_title_screen
+from ui.shrink_to_fit import shrink_to_fit
+
+# isort: split
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+# __pragma__ ("skip")
+from collections.abc import Callable
+from typing import Any, Protocol
+
+from ui.menu_view import MenuView
+from ui.screens.elements import MenuDocument
+
+
+class GameTouchHandlers(Protocol):
+    """Touch controls of the game screen (GAME-CTRL-04), in logical pixels with Y up."""
+
+    def fire(self, held: bool) -> None:
+        """Fire."""
+
+    def drag(self, dx: float, dy: float) -> None:
+        """Drag."""
+
+
+# __pragma__ ("noskip")
 
 
 class MenuOverlayOptions:
@@ -74,8 +77,10 @@ _RENDERERS: list[Any] = [
 
 
 def _render_screen(doc: MenuDocument, view: MenuView, handlers: ScreenHandlers) -> Any:
-    """Renders the screen `view` shows (the view's class picks the renderer; the settings screen
-    when none does)."""
+    """Render the screen `view` shows.
+
+    The view's class picks the renderer; the settings screen is used when none does.
+    """
     for pair in _RENDERERS:
         if isinstance(view, pair[0]):
             return pair[1](doc, view, handlers)
@@ -88,11 +93,12 @@ def _selected_index(view: MenuView) -> int:
 
 
 class MenuOverlay:
-    """The HTML/CSS menu overlay (UI-LOOK-01), laid out at the logical resolution. A new screen
-    fades in (UI-FLOW-08); `shake_selected` gives the "locked" feedback (UI-LEVEL-04).
+    """The HTML/CSS menu overlay (UI-LOOK-01), laid out at the logical resolution.
+
+    A new screen fades in (UI-FLOW-08); `shake_selected` gives the "locked" feedback (UI-LEVEL-04).
     """
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         doc: MenuDocument,
         root: Any,
@@ -102,8 +108,10 @@ class MenuOverlay:
         on_wheel: Callable[[float], None] | None = None,
         on_turn: Callable[[float, float], None] | None = None,
     ) -> None:
-        """`on_wheel(delta_y)`: the mouse wheel turned over a dev viewer; `on_turn(dx, dy)`: a drag
-        over it, in screen pixels (D-199)."""
+        """`on_wheel(delta_y)`: the mouse wheel turned over a dev viewer; `on_turn(dx, dy)`.
+
+        A drag over it, in screen pixels (D-199).
+        """
         self._doc = doc
         self._root = root
         self._on_command = on_command
@@ -115,9 +123,7 @@ class MenuOverlay:
         self._view: MenuView | None = None
 
     def _scale(self) -> float:
-        """Screen pixels per logical pixel: the overlay is laid out at the logical size and
-        scaled.
-        """
+        """Screen pixels per logical pixel: the overlay is laid out at logical size, then scaled."""
         shown = self._root.getBoundingClientRect().width
         laid_out = self._root.offsetWidth
         return shown / laid_out if shown > 0 and laid_out > 0 else 1
@@ -159,7 +165,7 @@ class MenuOverlay:
         )
 
     def show(self, view: MenuView) -> None:
-        """Replaces the overlay content with `view`, at once (PERF-04). A new screen fades in."""
+        """Replace the overlay content with `view`, at once (PERF-04). A new screen fades in."""
         is_new_screen = self._view is None or self._view.kind != view.kind
         self._view = view
         screen = _render_screen(self._doc, view, self._handlers_for(view))
@@ -177,7 +183,7 @@ class MenuOverlay:
         centre_menu(screen)
 
     def shake_selected(self, text: str) -> None:
-        """ "Locked" feedback (UI-LEVEL-04): shakes the selected entry and shows `text`."""
+        """Locked feedback (UI-LEVEL-04): shakes the selected entry and shows `text`."""
         if self._current is None:
             return
         selected = self._current.querySelector(".menu-entry.selected")
@@ -191,6 +197,7 @@ class MenuOverlay:
             status.textContent = text
 
     def dispose(self) -> None:
+        """Dispose."""
         if self._current is not None:
             self._current.remove()
         self._current = None

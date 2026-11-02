@@ -1,34 +1,37 @@
-"""Minigun tracers (GFX-SHOT-01): white-hot streaks cooling to cyan then deep blue along their tail,
-flickering, and a burst of sparkling metal sparks where they hit (GFX-FX-02).
+# Copyright (c) 2026 Renaud Guillon
+"""Minigun tracers (GFX-SHOT-01): white-hot streaks cooling to cyan, then blue, along their tail.
+
+Flickering, and a burst of sparkling metal sparks where they hit (GFX-FX-02).
 """
+
+import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import create_rng
+from game.config.shot_look import SHOT_LOOK
+from game.view.shot_geometry import build_glow_disc, build_tracer
+from game.view.shots.shot_meshes import additive_template
+from game.view.shots.spark_bursts import SparkBursts
+from render.node_pool import NodePool
 
-from render.game_view import ShotRenderer  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+from render.game_view import ShotRenderer
 
-import math  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-from core.math.rng import create_rng  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.shot_look import SHOT_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.shot_geometry import build_glow_disc, build_tracer  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.shots.shot_meshes import additive_template  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.shots.spark_bursts import SparkBursts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.node_pool import NodePool  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
 
 def _shot_renderer(sync: Any, dispose: Any) -> Any:
-    """A `ShotRenderer` as a plain object (the renderer calls `sync` and `dispose`)."""
+    """Return a `ShotRenderer` as a plain object (the renderer calls `sync` and `dispose`)."""
     __pragma__("js", "{}", "return {sync: sync, dispose: dispose};")
     return None
 
 
 def create_bullet_renderer(scene: Any) -> ShotRenderer:
-    """The minigun's tracers and the sparks of their hits (GFX-FX-01), drawn in `scene`."""
+    """Return the minigun's tracers and the sparks of their hits (GFX-FX-01), drawn in `scene`."""
     look = SHOT_LOOK.bullet
     template = additive_template("bullet", build_tracer(look.colors, look.rows), scene)
     pool = NodePool(lambda i: template.clone("bullet-" + str(i)))

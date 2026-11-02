@@ -1,27 +1,28 @@
-"""The road pieces painted once into one texture, an atlas (phase 15, experiment, reviewer
-2026-10-28), so each piece is drawn as one surface (no stacked layers to fight in depth). Pure: the
-atlas is an RGBA pixel array; the scenery stage uploads it.
+# Copyright (c) 2026 Renaud Guillon
+"""The road pieces painted once into one texture, an atlas.
+
+Phase 15, experiment (reviewer, 2026-10-28): with it each piece is drawn as one surface (no stacked
+layers to fight in depth). Pure: the atlas is an RGBA pixel array; the scenery stage uploads it.
 """
 
 import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.road_paint import paint_piece
 
-__pragma__("noskip")
-
-from render.scenery.road_paint import paint_piece  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from core.scenery.road_tiles import RoadPiece  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.scenery_level import TileRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.scenery.tile_road_geometry import TileRoadLook  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
+
+from core.scenery.road_tiles import RoadPiece
+from core.scenery.scenery_level import TileRules
+from render.scenery.tile_road_geometry import TileRoadLook
 
 AtlasRect = tuple[float, float, float, float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Pixels per tile in the atlas.
 ATLAS_PX = 64
@@ -36,7 +37,7 @@ ATLAS_SIZE = SLOT * SLOTS
 
 
 def _uint8_array(length: int) -> Any:
-    """A zero-filled `Uint8Array` of `length` bytes (the atlas is pure: no Babylon here)."""
+    """Return a zero-filled `Uint8Array` of `length` bytes (the atlas is pure: no Babylon here)."""
     __pragma__("js", "{}", "return new Uint8Array(length);")
     return None
 
@@ -62,8 +63,10 @@ def _key_of(p: RoadPiece) -> str:
 
 
 class RoadAtlas:
-    """The road pieces of one look, painted into the slots of an atlas as they are first asked
-    for (GFX-ROAD-20)."""
+    """The road pieces of one look.
+
+    Painted into the slots of an atlas as they are first asked for (GFX-ROAD-20).
+    """
 
     def __init__(self, tile: TileRules, look: TileRoadLook) -> None:
         self.data = _uint8_array(ATLAS_SIZE * ATLAS_SIZE * 4)
@@ -98,9 +101,10 @@ class RoadAtlas:
         return rect
 
     def _blit(self, pixels: list[Any], n: int, sx: int, sy: int) -> None:
-        """Writes `pixels` (`n` x `n`) at (sx + PAD, sy + PAD), its edge pixels repeated into the
-        pad."""
+        """Write `pixels` (`n` x `n`) at (sx + PAD, sy + PAD).
 
+        Its edge pixels are repeated into the pad.
+        """
         for y in range(-PAD, n + PAD):
             for x in range(-PAD, n + PAD):
                 c = pixels[_clamp_index(y, n) * n + _clamp_index(x, n)]

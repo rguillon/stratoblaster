@@ -1,8 +1,9 @@
-"""MB-STONE-IDOL-01 to MB-STONE-IDOL-05, 3-3: the Stone Idol. Logical
-pixels, nose +Z (the chin, down the screen), Y up (towards the camera): a carved head flying face
-up, so the camera sees its face."""
+# Copyright (c) 2026 Renaud Guillon
+"""MB-STONE-IDOL-01 to MB-STONE-IDOL-05, 3-3: the Stone Idol.
 
-from org.transcrypt.stubs.browser import __pragma__
+Logical pixels, nose +Z (the chin, down the screen), Y up (towards the camera): a carved head flying
+face up, so the camera sees its face.
+"""
 
 from game.config.bosses.world_3.stone_idol import (
     IDOL_JEWEL,
@@ -33,79 +34,73 @@ from game.view.enemies.organic_parts import reactor_sac
 from render.geometry.outline import reversed_copy
 from render.geometry.solids import LoftOptions, Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_mesh import EnemyParts
 
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The head seen from above (its right half, +X): a broad face, a flat crown, a heavy chin.
-HEAD_RIGHT = table(
-    [
-        [0, 50],
-        [24, 46],
-        [36, 36],
-        [44, 22],
-        [47, 6],
-        [47, -12],
-        [44, -30],
-        [36, -42],
-        [22, -48],
-        [0, -50],
-    ]
-)
+HEAD_RIGHT = table([
+    [0, 50],
+    [24, 46],
+    [36, 36],
+    [44, 22],
+    [47, 6],
+    [47, -12],
+    [44, -30],
+    [36, -42],
+    [22, -48],
+    [0, -50],
+])
 # The whole head: the right half, then its mirror image without the two ends on the centre line.
 HEAD = []
 HEAD.extend(HEAD_RIGHT)
 HEAD.extend(reversed_copy(flip_x(HEAD_RIGHT))[1:-1])
 # The helmet over the forehead (an Olmec headdress), outline seen from above.
-HELMET = table(
-    [
-        [0, -47],
-        [23, -45],
-        [35, -38],
-        [42, -26],
-        [41, -18],
-        [0, -21],
-        [-41, -18],
-        [-42, -26],
-        [-35, -38],
-        [-23, -45],
-    ]
-)
+HELMET = table([
+    [0, -47],
+    [23, -45],
+    [35, -38],
+    [42, -26],
+    [41, -18],
+    [0, -21],
+    [-41, -18],
+    [-42, -26],
+    [-35, -38],
+    [-23, -45],
+])
 # The nose: a rounded ridge (loft section) from between the brows to its tip over the mouth.
 NOSE_SECTION = table([[1, 0], [0.65, 0.75], [0, 1], [-0.65, 0.75], [-1, 0]])
-NOSE = table(
-    [
-        [-8, 4, FACE - 1, 14],
-        [6, 6, FACE - 1, 18],
-        [16, 8, FACE - 1, 18.5],
-        [20.5, 8, FACE - 1, 17],
-    ]
-)
+NOSE = table([
+    [-8, 4, FACE - 1, 14],
+    [6, 6, FACE - 1, 18],
+    [16, 8, FACE - 1, 18.5],
+    [20.5, 8, FACE - 1, 17],
+])
 # The neon cracks across the face (paths seen from above), lit from inside the stone.
-CRACKS = table(
-    [
-        [[-14, -46], [-10, -36], [-15, -28], [-12, -20]],
-        [[30, 16], [24, 22], [26, 30], [19, 38], [21, 45]],
-        [[-28, 14], [-36, 20], [-34, 30]],
-        [[8, -16], [14, -6]],
-    ]
-)
+CRACKS = table([
+    [[-14, -46], [-10, -36], [-15, -28], [-12, -20]],
+    [[30, 16], [24, 22], [26, 30], [19, 38], [21, 45]],
+    [[-28, 14], [-36, 20], [-34, 30]],
+    [[8, -16], [14, -6]],
+])
 
 
-def nose_paint(side: int, band: int) -> Any:
-    """The nose's paint: its +X side lit (the stone's light), the rest as its base."""
+def nose_paint(side: int, _band: int) -> Any:
+    """Return the nose's paint: its +X side lit (the stone's light), the rest as its base."""
     if side == 1:
         return STONE.light
     return None
 
 
 def draw_head(p: EnemyParts) -> None:
-    """The carved head: its block, the neon glowing under its rim, the helmet and the brows."""
+    """Draw the carved head: its block, the neon glowing under its rim, the helmet and the brows."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -128,7 +123,7 @@ def draw_head(p: EnemyParts) -> None:
 
 
 def draw_guns(p: EnemyParts) -> None:
-    """The forehead jewel (its last-stage spiral) and the nostrils (its fans), charge-lit."""
+    """Draw the forehead jewel (its last-stage spiral) and the nostrils (its fans), charge-lit."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -177,8 +172,11 @@ def draw_roots(p: EnemyParts) -> None:
 
 
 def draw_jungle(p: EnemyParts) -> None:
-    """Its cracks, the moss in its hollows, the vines over its crown (MB-STONE-IDOL-04), and the
-    thrusters it flies on."""
+    """Draw the idol's cracks, moss and vines (MB-STONE-IDOL-04), and its thrusters.
+
+    Its cracks, the moss in its hollows, the vines over its crown (MB-STONE-IDOL-04), and the
+    thrusters it flies on.
+    """
     hull = p.hull
     neon = p.neon
     for path in CRACKS:
@@ -188,7 +186,7 @@ def draw_jungle(p: EnemyParts) -> None:
         x = patch[0]
         z = patch[1]
         size = patch[2]
-        moss(hull, [x, FACE + 5 if z < -20 else FACE, z], size, x)  # noqa: PLR2004 (the TS cut-off of -20)
+        moss(hull, [x, FACE + 5 if z < -20 else FACE, z], size, x)
     vine(
         hull,
         [
@@ -216,7 +214,7 @@ MOUTH_AT = IDOL_PARTS.mouth
 
 
 def stone_idol_core(p: EnemyParts) -> None:
-    """The core of the Stone Idol: its head, guns (MB-STONE-IDOL-03) and carved jungle."""
+    """Add the core of the Stone Idol: its head, guns (MB-STONE-IDOL-03) and carved jungle."""
     draw_head(p)
     draw_guns(p)
     draw_jungle(p)
@@ -226,9 +224,11 @@ def stone_idol_core(p: EnemyParts) -> None:
 
 
 def build_stone_idol(scene: Any) -> Any:
-    """MB-STONE-IDOL-01, MB-STONE-IDOL-05: the Stone Idol, a flying stone head with neon cracks,
-    glowing eyes and mouth; moss and vines over its crown, an Olmec helmet, a jewel on its
-    forehead."""
+    """MB-STONE-IDOL-01, MB-STONE-IDOL-05: the Stone Idol, a flying stone head.
+
+    With neon cracks, glowing eyes and mouth; moss and vines over its crown, an Olmec helmet, a
+    jewel on its forehead.
+    """
     parts: dict[str, Any] = {
         "eye-left": eye_socket,
         "eye-right": eye_socket,

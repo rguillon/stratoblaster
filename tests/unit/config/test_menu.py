@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/config/menu.py`."""
 
 from config.menu import MENU_CONFIG
@@ -38,8 +39,10 @@ def test_ui_title_03_the_cookies_last_a_year_and_frames_are_capped() -> None:
 
 
 def test_ui_ship_03_the_ring_is_neon_blue_green_not_acid_yellow() -> None:
-    """The ring under the highlighted ship is the menus' neon cyan (UI-LOOK-03, D-198): no red and
-    a blue-green hue, where the old acid yellow had no blue."""
+    """The ring under the highlighted ship is the menus' neon cyan (UI-LOOK-03, D-198).
+
+    No red and a blue-green hue, where the old acid yellow had no blue.
+    """
     red, green, blue = MENU_CONFIG.ship_select.ring.color
     assert red == 0
     assert blue > 0.5

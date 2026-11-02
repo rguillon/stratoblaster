@@ -1,6 +1,8 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/bosses/boss_limbs.py`: the moving limbs (BOSS-33)."""
 
 from types import SimpleNamespace
+from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
@@ -20,7 +22,7 @@ from game.view.bosses.boss_limbs import (
 class Rec(dict):
     """A config record: a dict whose keys are also readable as attributes, as the game's are."""
 
-    def __getattr__(self, key: str):
+    def __getattr__(self, key: str) -> Any:
         try:
             return self[key]
         except KeyError as error:
@@ -42,11 +44,11 @@ class _Node:
 
 
 @pytest.fixture
-def scene_nodes(monkeypatch):
+def scene_nodes(monkeypatch: Any) -> Any:
     """Nodes made by `new_transform_node` are `_Node`s; visibility changes are recorded."""
     made: list[_Node] = []
 
-    def new_node(label: str, _scene) -> _Node:
+    def new_node(label: str, _scene: Any) -> _Node:
         node = _Node(label)
         made.append(node)
         return node
@@ -75,18 +77,17 @@ def _design(joints: dict, parts: list | None = None) -> SimpleNamespace:
     )
 
 
-def test_boss_point_puts_the_nose_down_the_screen_with_x_mirrored():
+def test_boss_point_puts_the_nose_down_the_screen_with_x_mirrored() -> None:
     assert boss_point(3, 4) == [-3, 0, -4]
     assert boss_point(3, 4, height=2) == [-3, 2, -4]
 
 
-def test_joint_frames_hang_each_joint_on_its_parent_at_its_pivot(scene_nodes):
-    design = _design(
-        {
-            "neck": {"parent": None, "x": 2, "y": 3},
-            "head": {"parent": "neck", "x": 4, "y": 3},
-        }
-    )
+@pytest.mark.usefixtures("scene_nodes")
+def test_joint_frames_hang_each_joint_on_its_parent_at_its_pivot() -> None:
+    design = _design({
+        "neck": {"parent": None, "x": 2, "y": 3},
+        "head": {"parent": "neck", "x": 4, "y": 3},
+    })
     frames = JointFrames(design, _root())
     neck = frames.frame("neck", None)
     head = frames.frame("head", None)
@@ -96,19 +97,22 @@ def test_joint_frames_hang_each_joint_on_its_parent_at_its_pivot(scene_nodes):
     assert head.node.at == pytest.approx([-2, 0, 0])
 
 
-def test_a_joint_on_no_joint_hangs_on_the_root(scene_nodes):
+@pytest.mark.usefixtures("scene_nodes")
+def test_a_joint_on_no_joint_hangs_on_the_root() -> None:
     root = _root()
     frames = JointFrames(_design({"hip": {"parent": None, "x": 0, "y": 0}}), root)
     assert frames.frame("hip", None).node.parent is root
 
 
-def test_joint_with_a_missing_parent_is_an_error(scene_nodes):
+@pytest.mark.usefixtures("scene_nodes")
+def test_joint_with_a_missing_parent_is_an_error() -> None:
     design = _design({"tail": {"parent": "ghost", "x": 0, "y": 0}, "ghost": None})
     with pytest.raises(ValueError, match='has no joint "ghost"'):
         JointFrames(design, _root())
 
 
-def test_frame_of_no_joint_is_the_holder_at_the_origin(scene_nodes):
+@pytest.mark.usefixtures("scene_nodes")
+def test_frame_of_no_joint_is_the_holder_at_the_origin() -> None:
     frames = JointFrames(_design({}), _root())
     holder = _Node("holder")
     found = frames.frame(None, holder)
@@ -116,21 +120,24 @@ def test_frame_of_no_joint_is_the_holder_at_the_origin(scene_nodes):
     assert found.origin == ORIGIN
 
 
-def test_frame_of_an_unknown_joint_is_an_error(scene_nodes):
+@pytest.mark.usefixtures("scene_nodes")
+def test_frame_of_an_unknown_joint_is_an_error() -> None:
     frames = JointFrames(_design({}), _root())
     with pytest.raises(ValueError, match='No boss joint "arm"'):
         frames.frame("arm", _Node("holder"))
 
 
-def test_show_turns_each_joint_as_the_boss_joints_are(scene_nodes):
+@pytest.mark.usefixtures("scene_nodes")
+def test_show_turns_each_joint_as_the_boss_joints_are() -> None:
     design = _design({"neck": Rec(parent=None, x=0, y=0)})
     frames = JointFrames(design, _root())
-    boss = SimpleNamespace(joints=SimpleNamespace(angle=lambda joint_id: 0.75))
+    boss = SimpleNamespace(joints=SimpleNamespace(angle=lambda _joint_id: 0.75))
     frames.show(boss)
     assert frames.frame("neck", None).node.rotation.y == pytest.approx(0.75)
 
 
-def test_show_without_a_boss_returns_the_joints_to_rest(scene_nodes):
+@pytest.mark.usefixtures("scene_nodes")
+def test_show_without_a_boss_returns_the_joints_to_rest() -> None:
     design = _design({"neck": Rec(parent=None, x=0, y=0)})
     frames = JointFrames(design, _root())
     frames.frame("neck", None).node.rotation.y = 2.0
@@ -138,7 +145,8 @@ def test_show_without_a_boss_returns_the_joints_to_rest(scene_nodes):
     assert frames.frame("neck", None).node.rotation.y == 0
 
 
-def test_hang_puts_a_node_on_a_frame_at_its_model_point(scene_nodes):
+@pytest.mark.usefixtures("scene_nodes")
+def test_hang_puts_a_node_on_a_frame_at_its_model_point() -> None:
     frame = JointFrame(_Node("joint"), [1, 1, 1])
     node = _Node("limb")
     hang(node, [4, 2, 1], frame)
@@ -146,20 +154,21 @@ def test_hang_puts_a_node_on_a_frame_at_its_model_point(scene_nodes):
     assert node.at == pytest.approx([3, 1, 0])
 
 
-def test_index_of_part_finds_the_part_by_id_or_is_minus_one():
+def test_index_of_part_finds_the_part_by_id_or_is_minus_one() -> None:
     parts = [SimpleNamespace(id="a"), SimpleNamespace(id="b")]
     assert _index_of_part(parts, "b") == 1
     assert _index_of_part(parts, "z") == -1
 
 
-def _limb_build(joint, draw):
-    """A limb group: a model with a root and a sync, and a `show` that is recorded."""
+def _limb_build(joint: Any, _draw: Any) -> Any:
+    """Return a limb group: a model with a root and a sync, and a `show` that is recorded."""
     group = MagicMock()
     group.model.root = _Node("limb-" + joint)
     return group
 
 
-def test_limbs_hang_on_their_joints_and_follow_their_parts(scene_nodes):
+@pytest.mark.usefixtures("scene_nodes")
+def test_limbs_hang_on_their_joints_and_follow_their_parts() -> None:
     design = _design(
         {"neck": Rec(parent=None, x=0, y=0)},
         parts=[SimpleNamespace(id="jaw")],
@@ -177,14 +186,15 @@ def test_limbs_hang_on_their_joints_and_follow_their_parts(scene_nodes):
     assert group.model.root.parent is joints.frame("neck", None).node
 
 
-def test_a_limb_for_an_unknown_part_is_an_error(scene_nodes):
+@pytest.mark.usefixtures("scene_nodes")
+def test_a_limb_for_an_unknown_part_is_an_error() -> None:
     design = _design({"neck": Rec(parent=None, x=0, y=0)}, parts=[])
     joints = JointFrames(design, _root())
     with pytest.raises(ValueError, match="belongs to no part"):
         BossLimbs(design, {"neck": Rec(draw=None, part="ghost")}, joints, _limb_build)
 
 
-def test_a_limb_of_a_destroyed_part_is_hidden_with_it(scene_nodes):
+def test_a_limb_of_a_destroyed_part_is_hidden_with_it(scene_nodes: Any) -> None:
     design = _design(
         {"neck": Rec(parent=None, x=0, y=0)},
         parts=[SimpleNamespace(id="jaw")],
@@ -195,7 +205,7 @@ def test_a_limb_of_a_destroyed_part_is_hidden_with_it(scene_nodes):
     group.show = MagicMock()
     destroyed = SimpleNamespace(destroyed=True, since_hit=0.0)
     boss = SimpleNamespace(
-        joints=SimpleNamespace(angle=lambda joint_id: 0.0),
+        joints=SimpleNamespace(angle=lambda _joint_id: 0.0),
         parts=[destroyed],
         core=SimpleNamespace(since_hit=1.0),
     )
@@ -205,7 +215,7 @@ def test_a_limb_of_a_destroyed_part_is_hidden_with_it(scene_nodes):
     group.show.assert_called_once_with(0.0)
 
 
-def test_a_limb_of_a_live_core_limb_flashes_with_the_core(scene_nodes):
+def test_a_limb_of_a_live_core_limb_flashes_with_the_core(scene_nodes: Any) -> None:
     design = _design({"neck": Rec(parent=None, x=0, y=0)}, parts=[])
     joints = JointFrames(design, _root())
     limbs = BossLimbs(design, {"neck": Rec(draw=None)}, joints, _limb_build)
@@ -213,7 +223,7 @@ def test_a_limb_of_a_live_core_limb_flashes_with_the_core(scene_nodes):
     assert part == -1
     group.show = MagicMock()
     boss = SimpleNamespace(
-        joints=SimpleNamespace(angle=lambda joint_id: 0.0),
+        joints=SimpleNamespace(angle=lambda _joint_id: 0.0),
         parts=[],
         core=SimpleNamespace(since_hit=0.5),
     )
@@ -222,7 +232,8 @@ def test_a_limb_of_a_live_core_limb_flashes_with_the_core(scene_nodes):
     assert (group.model.root, True) in scene_nodes.enabled
 
 
-def test_a_limb_without_a_boss_is_synced_but_not_shown(scene_nodes):
+@pytest.mark.usefixtures("scene_nodes")
+def test_a_limb_without_a_boss_is_synced_but_not_shown() -> None:
     design = _design({"neck": Rec(parent=None, x=0, y=0)}, parts=[])
     joints = JointFrames(design, _root())
     limbs = BossLimbs(design, {"neck": Rec(draw=None)}, joints, _limb_build)
@@ -231,3 +242,11 @@ def test_a_limb_without_a_boss_is_synced_but_not_shown(scene_nodes):
     limbs.show(None, "lit", 0.1)
     group.model.sync.assert_called_once_with("lit", 0.1)
     group.show.assert_not_called()
+
+
+def test_keys_and_entries_read_an_object_literal_in_order() -> None:
+    """`Object.keys` / `Object.entries` (JavaScript only): CPython runs their Python twins."""
+    joints = {"hip": 1, "knee": 2}
+    assert boss_limbs._keys(joints) == ["hip", "knee"]
+    assert boss_limbs._entries(joints) == [["hip", 1], ["knee", 2]]
+    assert boss_limbs._keys({}) == []

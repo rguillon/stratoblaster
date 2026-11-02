@@ -1,5 +1,7 @@
-"""Missiles (GFX-SHOT-06): turned along their heading, with flames, and explosions on impact
-(GFX-FX-03).
+# Copyright (c) 2026 Renaud Guillon
+"""Missiles (GFX-SHOT-06): turned along their heading, with flames and impact explosions.
+
+Explosions on impact are GFX-FX-03.
 
 Missiles are drawn behind the ship, which covers them as they leave its centre (GFX-SHOT-08). Each
 has a bright motor flare and a glowing exhaust trail, so it shows on any ground (GFX-SHOT-07).
@@ -7,29 +9,30 @@ has a bright motor flare and a glowing exhaust trail, so it shows on any ground 
 
 from org.transcrypt.stubs.browser import __pragma__
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.shot_look import SHOT_LOOK
+from game.view.shots.impact_flashes import ImpactFlashes, flash_look
+from game.view.shots.missile_exhaust import create_missile_exhaust
+from game.view.shots.missile_model import build_missile
+from render.model_animation import step_model_animations
+from render.node_pool import NodePool
 
-from render.game_view import ShotRenderer  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+from render.game_view import ShotRenderer
 
-from game.config.shot_look import SHOT_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.shots.impact_flashes import ImpactFlashes, flash_look  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.shots.missile_exhaust import create_missile_exhaust  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.shots.missile_model import build_missile  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.model_animation import step_model_animations  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.node_pool import NodePool  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
 
 def _shot_renderer(sync: Any, dispose: Any) -> Any:
-    """A `ShotRenderer` as a plain object (the renderer calls `sync` and `dispose`)."""
+    """Return a `ShotRenderer` as a plain object (the renderer calls `sync` and `dispose`)."""
     __pragma__("js", "{}", "return {sync: sync, dispose: dispose};")
     return None
 
 
 def create_missile_renderer(scene: Any) -> ShotRenderer:
-    """The missiles and their explosions, drawn in `scene`."""
+    """Return the missiles and their explosions, drawn in `scene`."""
     pool = NodePool(lambda i: build_missile("missile-" + str(i), scene))
     exhaust = create_missile_exhaust(scene)
     depth = SHOT_LOOK.missile.depth

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Moving limbs of a boss (BOSS-33).
 
 A joint turns what hangs on it (parts, their hit circles and muzzles, other joints) around its
@@ -7,12 +8,11 @@ elbow and the wrist.
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Sequence
+from typing import Protocol
 
 
 class JointedPart(Protocol):
@@ -30,12 +30,14 @@ class JointedPart(Protocol):
 
     @property
     def orbits(self) -> bool:
-        """Whether the part turns around the boss's centre with its spin, instead of hanging on a
-        joint."""
+        """Whether the part turns around the boss's centre with its spin.
+
+        Instead of hanging on a joint.
+        """
         ...
 
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class JointSwing:
@@ -58,8 +60,10 @@ class BossJointSpec:
         swing: JointSwing,
         parent: str | None = None,
     ) -> None:
-        """`x` and `y` are its pivot, from the boss's centre (X right, Y up), as the boss is drawn
-        at rest. `parent` is the joint it hangs on, if any: it moves with that one.
+        """`x` and `y` are its pivot, from the boss's centre (X right, Y up).
+
+        As the boss is drawn at rest. `parent` is the joint it hangs on, if any: it moves with that
+        one.
         """
         self.x = x
         self.y = y
@@ -68,9 +72,7 @@ class BossJointSpec:
 
 
 def _check_joints(specs: dict[str, BossJointSpec], parts: Sequence[JointedPart]) -> None:
-    """Raises when a joint or a part hangs on no joint or a joint on itself, or a part also
-    orbits.
-    """
+    """Raise if a joint or a part hangs on no joint or a joint on itself, or a part also orbits."""
     for part in parts:
         joint = part.joint
         if joint is None:
@@ -80,7 +82,7 @@ def _check_joints(specs: dict[str, BossJointSpec], parts: Sequence[JointedPart])
         if part.orbits:
             raise ValueError('Part "' + part.id + '" both orbits and hangs on a joint')
     # Transcrypt cannot iterate a dict directly: the keys are listed (ENG-159).
-    for joint_id in specs.keys():  # noqa: SIM118 (Transcrypt cannot iterate a dict directly, ENG-159)
+    for joint_id in specs.keys():
         seen: list[str] = []
         j: str | None = joint_id
         while j is not None:
@@ -100,7 +102,7 @@ class BossJoints:
         specs: dict[str, BossJointSpec] | None = None,
         parts: Sequence[JointedPart] | None = None,
     ) -> None:
-        """Raises when a joint or one of `parts` hangs on no joint, or a part also orbits."""
+        """Raise when a joint or one of `parts` hangs on no joint, or a part also orbits."""
         self._specs: dict[str, BossJointSpec] = dict(specs) if specs is not None else {}
         self._angles: dict[str, float] = {}
         self._time = 0.0
@@ -110,7 +112,7 @@ class BossJoints:
     def step(self, dt: float) -> None:
         """Swings them on by `dt` seconds."""
         self._time += dt
-        for joint_id in self._specs.keys():  # noqa: SIM118 (Transcrypt cannot iterate a dict directly, ENG-159)
+        for joint_id in self._specs.keys():
             swing = self._specs[joint_id].swing
             turns = self._time / swing.period + swing.phase
             self._angles[joint_id] = ((swing.amplitude_deg * math.pi) / 180) * math.sin(
@@ -118,15 +120,14 @@ class BossJoints:
             )
 
     def angle(self, joint_id: str) -> float:
-        """How far joint `joint_id` is turned on the one it hangs on: radians, clockwise on
-        screen.
-        """
+        """How far joint `joint_id` turns on the one it hangs on: radians, clockwise on screen."""
         return self._angles.get(joint_id, 0)
 
     def move(self, joint_id: str | None, x: float, y: float) -> tuple[float, float]:
-        """Where the point `(x, y)` (from the boss's centre, as drawn at rest) of something hanging
-        on joint `joint_id` is now, turned by that joint and those it hangs on. Unmoved without a
-        joint.
+        """Where the point `(x, y)` of something hanging on joint `joint_id` is now.
+
+        The point is from the boss's centre, as drawn at rest; it is turned by that joint and those
+        it hangs on. Unmoved without a joint.
         """
         px, py = x, y
         j = joint_id

@@ -1,7 +1,10 @@
-"""Fakes of the Web Audio context for the audio tests (ENG-47, AUD-ENGINE-13): nodes that record
-their connections, their scheduled parameter changes and their stops, so a test can read what the
-engine did. Parameters (`gain`, `frequency`, `threshold`...) are created on first use and hold a
-real `value`."""
+# Copyright (c) 2026 Renaud Guillon
+"""Fakes of the Web Audio context for the audio tests (ENG-47, AUD-ENGINE-13).
+
+Nodes that record their connections, their scheduled parameter changes and their stops, so a test
+can read what the engine did. Parameters (`gain`, `frequency`, `threshold`...) are created on first
+use and hold a real `value`.
+"""
 
 from typing import Any
 
@@ -13,20 +16,20 @@ class FakeParam:
         self.value = value
         self.events: list[tuple[str, tuple[Any, ...]]] = []
 
-    def setValueAtTime(self, value: float, when: float) -> None:  # noqa: N802
+    def setValueAtTime(self, value: float, when: float) -> None:
         self.events.append(("setValueAtTime", (value, when)))
         self.value = value
 
-    def setTargetAtTime(self, target: float, when: float, time_constant: float) -> None:  # noqa: N802
+    def setTargetAtTime(self, target: float, when: float, time_constant: float) -> None:
         self.events.append(("setTargetAtTime", (target, when, time_constant)))
 
-    def cancelScheduledValues(self, when: float) -> None:  # noqa: N802
+    def cancelScheduledValues(self, when: float) -> None:
         self.events.append(("cancelScheduledValues", (when,)))
 
-    def exponentialRampToValueAtTime(self, value: float, when: float) -> None:  # noqa: N802
+    def exponentialRampToValueAtTime(self, value: float, when: float) -> None:
         self.events.append(("exponentialRampToValueAtTime", (value, when)))
 
-    def linearRampToValueAtTime(self, value: float, when: float) -> None:  # noqa: N802
+    def linearRampToValueAtTime(self, value: float, when: float) -> None:
         self.events.append(("linearRampToValueAtTime", (value, when)))
 
     def names(self) -> list[str]:
@@ -88,7 +91,7 @@ class FakeBuffer:
     def __init__(self, channels: int, length: int) -> None:
         self.channels = [[0.0] * length for _ in range(channels)]
 
-    def getChannelData(self, channel: int) -> list[float]:  # noqa: N802
+    def getChannelData(self, channel: int) -> list[float]:
         return self.channels[channel]
 
 
@@ -96,8 +99,8 @@ class FakeContext:
     """An `AudioContext` with a clock and a sample rate the test sets."""
 
     def __init__(self, sample_rate: int = 1000) -> None:
-        self.currentTime = 0.0  # noqa: N815 (Web Audio name)
-        self.sampleRate = sample_rate  # noqa: N815
+        self.currentTime = 0.0
+        self.sampleRate = sample_rate
         self.state = "running"
         self.destination = FakeNode("destination")
         self.nodes: list[FakeNode] = []
@@ -111,31 +114,31 @@ class FakeContext:
         self.nodes.append(node)
         return node
 
-    def createGain(self) -> FakeNode:  # noqa: N802
+    def createGain(self) -> FakeNode:
         return self._make("gain")
 
-    def createStereoPanner(self) -> FakeNode:  # noqa: N802
+    def createStereoPanner(self) -> FakeNode:
         return self._make("panner")
 
-    def createDelay(self, max_seconds: float = 1) -> FakeNode:  # noqa: N802
+    def createDelay(self, _max_seconds: float = 1) -> FakeNode:
         return self._make("delay")
 
-    def createOscillator(self) -> FakeNode:  # noqa: N802
+    def createOscillator(self) -> FakeNode:
         return self._make("oscillator")
 
-    def createBiquadFilter(self) -> FakeNode:  # noqa: N802
+    def createBiquadFilter(self) -> FakeNode:
         return self._make("filter")
 
-    def createBufferSource(self) -> FakeNode:  # noqa: N802
+    def createBufferSource(self) -> FakeNode:
         return self._make("source")
 
-    def createDynamicsCompressor(self) -> FakeNode:  # noqa: N802
+    def createDynamicsCompressor(self) -> FakeNode:
         return self._make("compressor")
 
-    def createConvolver(self) -> FakeNode:  # noqa: N802
+    def createConvolver(self) -> FakeNode:
         return self._make("convolver")
 
-    def createBuffer(self, channels: int, length: int, rate: float) -> FakeBuffer:  # noqa: N802
+    def createBuffer(self, channels: int, length: int, _rate: float) -> FakeBuffer:
         buffer = FakeBuffer(channels, length)
         self.buffers.append(buffer)
         return buffer

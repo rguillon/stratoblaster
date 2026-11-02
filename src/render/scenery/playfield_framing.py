@@ -1,4 +1,5 @@
-"""Where the tilted camera stands relative to the playfield (GFX-CAM-03)
+# Copyright (c) 2026 Renaud Guillon
+"""Where the tilted camera stands relative to the playfield (GFX-CAM-03).
 
 The playfield is a `screen`-sized rectangle on the flight plane: X across (centred on 0), Z along
 the level from its bottom edge (GFX-CAM-01). The camera is tilted from straight down towards +Z.
@@ -6,22 +7,25 @@ the level from its bottom edge (GFX-CAM-01). The camera is tilted from straight 
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from core.content.game_definition import LogicalScreen  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.scenery.scenery_look import PlayfieldCameraLook  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from core.content.game_definition import LogicalScreen
+from render.scenery.scenery_look import PlayfieldCameraLook
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 DEG = math.pi / 180
 
 
 class PlayfieldFraming:
-    """Where the camera stands: `tilt` (radians), `half_fov` (half the vertical field of view,
-    radians), `height` above the flight plane, `back` (camera Z relative to the playfield's bottom
-    edge, negative: behind it) and `direction` (unit view direction (Y, Z); X is always 0)."""
+    """Where the camera stands: `tilt` (radians).
+
+    `half_fov` (half the vertical field of view, radians), `height` above the flight plane, `back`
+    (camera Z relative to the playfield's bottom edge, negative: behind it) and `direction` (unit
+    view direction (Y, Z); X is always 0).
+    """
 
     def __init__(
         self,
@@ -39,8 +43,10 @@ class PlayfieldFraming:
 
 
 class PlayfieldEyePoint:
-    """Where the camera's eye is over the playfield: `x`, `y` and `height` (the enemy shots are
-    projected from it, GFX-SHOT-09)."""
+    """Where the camera's eye is over the playfield: `x`, `y`.
+
+    `height` (the enemy shots are projected from it, GFX-SHOT-09).
+    """
 
     def __init__(self, x: float, y: float, height: float) -> None:
         self.x = x
@@ -49,8 +55,10 @@ class PlayfieldEyePoint:
 
 
 class GroundWindow:
-    """The ground the camera can see, relative to the camera's Z: `z_near`, `z_far` and the
-    half of the widest stretch of ground seen across X (`half_width`)."""
+    """The ground the camera can see, relative to the camera's Z: `z_near`, `z_far`.
+
+    The half of the widest stretch of ground seen across X (`half_width`).
+    """
 
     def __init__(self, z_near: float, z_far: float, half_width: float) -> None:
         self.z_near = z_near
@@ -63,7 +71,8 @@ def frame_playfield(screen: LogicalScreen, look: PlayfieldCameraLook) -> Playfie
     tilt = look.tiltDeg * DEG
     half_fov = (look.fovDeg * DEG) / 2
     if not (half_fov > 0) or tilt + half_fov >= math.pi / 2 or tilt - half_fov <= -math.pi / 2:
-        raise ValueError("The camera must see the whole playfield below the horizon")
+        msg = "The camera must see the whole playfield below the horizon"
+        raise ValueError(msg)
     height = screen.height / (math.tan(tilt + half_fov) - math.tan(tilt - half_fov))
     return PlayfieldFraming(
         tilt,
@@ -75,8 +84,11 @@ def frame_playfield(screen: LogicalScreen, look: PlayfieldCameraLook) -> Playfie
 
 
 def playfield_eye(screen: LogicalScreen, framing: PlayfieldFraming) -> PlayfieldEyePoint:
-    """Where the camera's eye is over a `screen`-sized playfield framed by `framing`: above the
-    playfield's centre line, behind its bottom edge (enemy shots leave from the barrels it sees)."""
+    """Where the camera's eye is over a `screen`-sized playfield framed by `framing`.
+
+    Above the playfield's centre line, behind its bottom edge (enemy shots leave from the barrels it
+    sees).
+    """
     return PlayfieldEyePoint(screen.width / 2, framing.back, framing.height)
 
 
@@ -87,9 +99,11 @@ def visible_ground(
     low: float,
     high: float,
 ) -> GroundWindow:
-    """The ground the camera can see when the ground lies between heights `low` and `high`, for a
-    screen of the given aspect ratio (width / height), with the camera `camera_y` high
-    (GFX-CAM-05)."""
+    """Return the ground the camera can see when the ground lies between heights `low` and `high`.
+
+    For a screen of the given aspect ratio (width / height), with the camera `camera_y` high
+    (GFX-CAM-05).
+    """
     bottom_ray = math.tan(framing.tilt - framing.half_fov)
     top_ray = framing.tilt + framing.half_fov
     near_heights = [max(0, camera_y - high) * bottom_ray, max(0, camera_y - low) * bottom_ray]
@@ -104,9 +118,11 @@ def visible_ground(
 
 
 def visible_half_width(framing: PlayfieldFraming, aspect: float, y: float) -> float:
-    """Half of the playfield width seen on screen at height `y` of the playfield (logical pixels
-    from its bottom edge), for a screen of the given aspect ratio (width / height). With the tilted
-    camera, less of the playfield is seen at the bottom than at the top (GAME-SCREEN-04)."""
+    """Half of the playfield width seen at height `y` (logical pixels from its bottom edge).
+
+    Seen on screen, for a screen of the given aspect ratio (width / height). With the tilted camera,
+    less of the playfield is seen at the bottom than at the top (GAME-SCREEN-04).
+    """
     dy = framing.direction[0]
     dz = framing.direction[1]
     # Depth of the point (0, flight plane, y) along the view axis, from the camera.

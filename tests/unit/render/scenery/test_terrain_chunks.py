@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/scenery/terrain_chunks.py` (GFX-TERRAIN-13, GFX-TERRAIN-14)."""
 
 from types import SimpleNamespace
@@ -9,12 +10,24 @@ from helpers.render_fakes import FakeNode, FakeScene, patch_babylon
 from render.scenery import terrain_chunks, terrain_geometry
 from render.scenery.terrain_chunks import TerrainChunkOptions, TerrainChunks
 
+# The JavaScript `Map` helpers as the module defines them, taken before the fixture below replaces
+# them, with the placeholder CPython returns after their `__pragma__("js")` body.
+JS_HELPERS: list[tuple[Any, tuple[Any, ...], Any]] = [
+    (terrain_chunks._empty_map, (), None),
+    (terrain_chunks._map_size, ({},), 0),
+    (terrain_chunks._map_keys, ({},), []),
+    (terrain_chunks._map_get, ({}, 1), None),
+    (terrain_chunks._map_has, ({}, 1), False),
+    (terrain_chunks._map_set, ({}, 1, "mesh"), None),
+    (terrain_chunks._map_delete, ({}, 1), None),
+]
+
 
 class Slope:
-    def height(self, x: float, z: float) -> float:
+    def height(self, _x: float, z: float) -> float:
         return z * 0.1
 
-    def surface(self, z: float) -> Any:
+    def surface(self, _z: float) -> Any:
         return None
 
 
@@ -35,10 +48,10 @@ def rec(monkeypatch: pytest.MonkeyPatch) -> _Recorder:
         node.refreshBoundingInfo = lambda: None  # type: ignore[attr-defined]
         return node
 
-    def apply_updatable(data: Any, mesh: FakeNode) -> None:
+    def apply_updatable(_data: Any, mesh: FakeNode) -> None:
         recorder.updatable.append(mesh)
 
-    def update(mesh: FakeNode, kind: str, values: Any) -> None:
+    def update(mesh: FakeNode, kind: str, _values: Any) -> None:
         recorder.updates.append((kind, mesh))
 
     monkeypatch.setattr(terrain_chunks, "new_mesh", new_mesh)
@@ -65,18 +78,21 @@ def _chunks(**overrides: Any) -> TerrainChunks:
     return TerrainChunks(FakeScene(), "material", options, Slope())
 
 
-def test_a_chunk_spans_its_length_along_z(rec: _Recorder) -> None:
+@pytest.mark.usefixtures("rec")
+def test_a_chunk_spans_its_length_along_z() -> None:
     chunks = _chunks()
     span = chunks.span(3)
     assert (span.index, span.z_min, span.z_max) == (3, 30, 40)
 
 
-def test_the_rows_of_a_chunk_follow_its_length_and_cell_size(rec: _Recorder) -> None:
+@pytest.mark.usefixtures("rec")
+def test_the_rows_of_a_chunk_follow_its_length_and_cell_size() -> None:
     chunks = _chunks(length=10, cell=2)
     assert chunks._rows == 5
 
 
-def test_covering_a_stretch_adds_the_chunks_it_touches(rec: _Recorder) -> None:
+@pytest.mark.usefixtures("rec")
+def test_covering_a_stretch_adds_the_chunks_it_touches() -> None:
     chunks = _chunks()
     changes = chunks.cover(0, 25)
     assert [s.index for s in changes.added] == [0, 1, 2]
@@ -84,9 +100,8 @@ def test_covering_a_stretch_adds_the_chunks_it_touches(rec: _Recorder) -> None:
     assert chunks.count == 3
 
 
-def test_chunks_that_scroll_out_of_view_are_hidden_and_their_meshes_reused(
-    rec: _Recorder,
-) -> None:
+@pytest.mark.usefixtures("rec")
+def test_chunks_that_scroll_out_of_view_are_hidden_and_their_meshes_reused() -> None:
     chunks = _chunks()
     chunks.cover(0, 25)
     first_mesh = chunks.meshes[0]
@@ -101,7 +116,8 @@ def test_chunks_that_scroll_out_of_view_are_hidden_and_their_meshes_reused(
     assert chunks.meshes[4].enabled is True
 
 
-def test_a_new_mesh_is_an_unpickable_shadow_receiver_with_the_material(rec: _Recorder) -> None:
+@pytest.mark.usefixtures("rec")
+def test_a_new_mesh_is_an_unpickable_shadow_receiver_with_the_material() -> None:
     seen: list[FakeNode] = []
     options = TerrainChunkOptions(10, 2, 0, 2)
     chunks = TerrainChunks(FakeScene(), "terrain", options, Slope(), on_mesh=seen.append)
@@ -120,9 +136,12 @@ def test_filling_a_chunk_updates_its_three_vertex_buffers(rec: _Recorder) -> Non
     assert kinds == ["PositionKind", "NormalKind", "ColorKind"]
 
 
-def test_a_rebuild_refills_every_live_chunk_with_the_new_source(rec: _Recorder) -> None:
-    chunks = _chunks()
-    chunks.cover(0, 25)
-    rec.updates.clear()
-    chunks.rebuild(Slope())
-    assert len(rec.updates) == 3 * chunks.count
+@pytest.mark.parametrize(("helper", "args", "placeholder"), JS_HELPERS)
+def test_the_map_helpers_are_javascript_only(
+    helper: Any, args: tuple[Any, ...], placeholder: Any
+) -> None:
+    """The live chunks' `Map` exists in the browser only (ENG-19's reuse runs on it there).
+
+    CPython runs the placeholder return after each `__pragma__("js")` body.
+    """
+    assert helper(*args) == placeholder

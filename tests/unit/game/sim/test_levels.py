@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/sim/levels.py`."""
 
 from game.sim.levels import GAME_LEVELS, LEVELS

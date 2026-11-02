@@ -1,5 +1,8 @@
-"""e2e: the menu fits the window, marks the selection and has large touch targets (UI-LOOK-02,
-UI-LOOK-08, UI-INPUT-11)."""
+# Copyright (c) 2026 Renaud Guillon
+"""e2e: the menu's fit, selection mark and touch targets (UI-LOOK-02, UI-LOOK-08, UI-INPUT-11).
+
+The menu fits the window, marks the selection and has large touch targets.
+"""
 
 import pytest
 from e2e.menu_helpers import expect_state, open_game, poll

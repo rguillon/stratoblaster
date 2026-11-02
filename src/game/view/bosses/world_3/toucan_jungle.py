@@ -1,21 +1,27 @@
-"""MB-TOUCAN-05, FB-CANOPY-SPIDER-05, 3-2: the jungle on the 3-2 bosses (the Toucan and the Canopy
-Spider): moss on their plates, vines hanging along them, leaves (BOSS-50, World 3: dark metal with
-neon, plus moss, vines and stone). Logical pixels, nose +Z, Y up."""
+# Copyright (c) 2026 Renaud Guillon
+"""MB-TOUCAN-05, FB-CANOPY-SPIDER-05, 3-2: the jungle on the 3-2 bosses.
+
+The Toucan and the Canopy Spider: moss on their plates, vines hanging along them, leaves (BOSS-50,
+World 3: dark metal with neon, plus moss, vines and stone). Logical pixels, nose +Z, Y up.
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import TYPE_CHECKING
 
+from render.geometry.solids import SolidBuilder
+
+if TYPE_CHECKING:
+    from render.geometry.outline import OutlinePoint
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Moss: a deep green, and a lighter one where the light catches it (D-231: clear greens, not
 # olive, so no khaki with the enemies' yellow and green).
@@ -33,8 +39,10 @@ def segment(
     color: Rgb,
     sides: int = 6,
 ) -> None:
-    """A cylinder from `ends[0]` (radius `radii[0]`) to `ends[1]` (`radii[1]`), `sides` facets: a
-    strut, a leg, a vine. Pitched off +Y, then yawed, so that its axis runs along the segment."""
+    """Add a cylinder from `ends[0]` (radius `radii[0]`) to `ends[1]` (`radii[1]`), `sides` facets.
+
+    A strut, a leg, a vine. Pitched off +Y, then yawed, so that its axis runs along the segment.
+    """
     a = ends[0]
     b = ends[1]
     dx = b[0] - a[0]
@@ -53,8 +61,11 @@ def segment(
 
 
 def moss(hull: SolidBuilder, at: Vec3, radius: float, seed: float = 0) -> None:
-    """A patch of moss `radius` wide lying at `at` (its top a little above it): an uneven, low
-    hexagon, lighter on top. `seed` turns and bends its outline so no two patches look alike."""
+    """Add a patch of moss `radius` wide lying at `at` (its top a little above it).
+
+    An uneven, low hexagon, lighter on top. `seed` turns and bends its outline so no two patches
+    look alike.
+    """
     outline: list[OutlinePoint] = []
     for k in range(6):
         a = (k * math.pi) / 3 + seed
@@ -71,8 +82,10 @@ def moss(hull: SolidBuilder, at: Vec3, radius: float, seed: float = 0) -> None:
 
 
 def vine(hull: SolidBuilder, points: list[Vec3], thickness: float = 0.5) -> None:
-    """A vine along `points`, a thin stem from one to the next, a leaf at every other joint (a
-    small slab turned along the stem)."""
+    """Add a vine along `points`, a thin stem from one to the next.
+
+    A leaf at every other joint (a small slab turned along the stem).
+    """
     for i in range(len(points) - 1):
         a = points[i]
         b = points[i + 1]
@@ -90,11 +103,9 @@ def sagging(a: Vec3, b: Vec3, count: int, sag: float) -> list[Vec3]:
     for i in range(count):
         t = i / (count - 1)
         drop = sag * 4 * t * (1 - t)
-        result.append(
-            [
-                a[0] + (b[0] - a[0]) * t,
-                a[1] + (b[1] - a[1]) * t - drop,
-                a[2] + (b[2] - a[2]) * t,
-            ]
-        )
+        result.append([
+            a[0] + (b[0] - a[0]) * t,
+            a[1] + (b[1] - a[1]) * t - drop,
+            a[2] + (b[2] - a[2]) * t,
+        ])
     return result

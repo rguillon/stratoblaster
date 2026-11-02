@@ -1,11 +1,10 @@
-"""The Glacier Colossus (FB-GLACIER-COLOSSUS-01 to FB-GLACIER-COLOSSUS-06, 2-4)
+# Copyright (c) 2026 Renaud Guillon
+"""The Glacier Colossus (FB-GLACIER-COLOSSUS-01 to FB-GLACIER-COLOSSUS-06, 2-4).
 
 Logical pixels, nose +Z, Y up (towards the camera).
 """
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.world_2.glacier_colossus import (
     COLOSSUS_CORE_GUNS,
@@ -13,19 +12,19 @@ from game.config.bosses.world_2.glacier_colossus import (
     GLACIER_COLOSSUS,
 )
 from game.config.record import record
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.boss_model import build_boss_model
 from game.view.bosses.final_boss_shapes import mirrored
 from game.view.bosses.mini_boss_greebles import lamps, mast, plate, rect, vent
 from game.view.bosses.mini_boss_shapes import SHADE, WHITE, H, neon_band, offset, scaled
-from game.view.bosses.world_2.avalanche_frost import (  # noqa: E402
+from game.view.bosses.world_2.avalanche_frost import (
     FROST,
     PACKED,
     barrel_to,
     icicles,
     snow_cap,
 )
-from game.view.bosses.world_2.glacier_colossus_parts import (  # noqa: E402
+from game.view.bosses.world_2.glacier_colossus_parts import (
     COLOSSUS_NEON,
     cutter,
     cutter_mount,
@@ -33,7 +32,7 @@ from game.view.bosses.world_2.glacier_colossus_parts import (  # noqa: E402
     missile_pod,
     ore_cannon,
 )
-from game.view.bosses.world_2.w2_organic import (  # noqa: E402
+from game.view.bosses.world_2.w2_organic import (
     ICE_FLESH,
     crystals,
     glow_vein,
@@ -45,43 +44,41 @@ from game.view.enemies.organic_parts import eyes, reactor_sac
 from render.geometry.organic import RibSpec, SegmentedBody, ribs
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 N = COLOSSUS_NEON
 
 # The hull seen from above (its right half, bow to stern): a broad, blunt mining ship.
-HULL = mirrored(
-    [
-        [0, 62],
-        [22, 58],
-        [46, 44],
-        [60, 22],
-        [64, -6],
-        [60, -40],
-        [46, -66],
-        [22, -78],
-        [0, -78],
-    ]
-)
+HULL = mirrored([
+    [0, 62],
+    [22, 58],
+    [46, 44],
+    [60, 22],
+    [64, -6],
+    [60, -40],
+    [46, -66],
+    [22, -78],
+    [0, -78],
+])
 # Heights of the hull: its keel, its waist (the widest), its deck.
 HULL_Y = [-8.0, 0.0, 10.0]
 # The raised upper deck along the middle.
-UPPER = mirrored(
-    [
-        [0, 40],
-        [18, 38],
-        [30, 24],
-        [32, -30],
-        [24, -56],
-        [0, -60],
-    ]
-)
+UPPER = mirrored([
+    [0, 40],
+    [18, 38],
+    [30, 24],
+    [32, -30],
+    [24, -56],
+    [0, -60],
+])
 UPPER_Y = [10.0, 11.0, 16.0]
 # The bridge tower on the upper deck, ahead of the heat stack.
 TOWER = [  # type: list[list[float]]
@@ -173,12 +170,12 @@ def snow_caps() -> list[Any]:
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
-    """The `BossDrawing` of a boss model: what the model is drawn from."""
+    """Return the `BossDrawing` of a boss model: what the model is drawn from."""
     return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
 
 
 def draw_hull(p: EnemyParts) -> None:
-    """The hull, its neon band, the upper deck and the bridge tower."""
+    """Draw the hull, its neon band, the upper deck and the bridge tower."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -207,7 +204,10 @@ def draw_hull(p: EnemyParts) -> None:
 
 
 def draw_stack(p: EnemyParts) -> None:
-    """The heat stack behind the tower, glowing at its top: the core's rings leave from there."""
+    """Draw the heat stack behind the tower, glowing at its top.
+
+    The core's rings leave from there.
+    """
     if len(COLOSSUS_STACK) == 0:
         return
     ring = COLOSSUS_STACK[0]
@@ -225,7 +225,7 @@ def draw_stack(p: EnemyParts) -> None:
 
 
 def draw_vents(p: EnemyParts) -> None:
-    """The heat vents along the deck: dark grilles glowing red-orange between their slats."""
+    """Draw the heat vents along the deck: dark grilles glowing red-orange between their slats."""
     hull = p.hull
     neon = p.neon
     for s in SIDES:
@@ -246,8 +246,10 @@ def draw_vents(p: EnemyParts) -> None:
 
 
 def draw_frost(p: EnemyParts) -> None:
-    """The frost (FB-GLACIER-COLOSSUS-05): snow caps on the decks and the tower's roof, icicles
-    under the hull's rim."""
+    """Draw the frost (FB-GLACIER-COLOSSUS-05).
+
+    Snow caps on the decks and the tower's roof, icicles under the hull's rim.
+    """
     hull = p.flesh
     for item in snow_caps():
         snow_cap(hull, item[0], item[1], 1.2, item[2])
@@ -273,7 +275,7 @@ def draw_wear(p: EnemyParts) -> None:
 
 
 def draw_core(p: EnemyParts) -> None:
-    """The core body: the hull, the stack, the vents, the frost and the wear."""
+    """Draw the core body: the hull, the stack, the vents, the frost and the wear."""
     draw_hull(p)
     draw_stack(p)
     draw_vents(p)
@@ -282,24 +284,22 @@ def draw_core(p: EnemyParts) -> None:
 
 
 def build_glacier_colossus(scene: Any) -> BuiltEnemyModel:
-    """FB-GLACIER-COLOSSUS-01, FB-GLACIER-COLOSSUS-04: the Glacier Colossus, a giant mining ship 5.5
-    L across, red-orange neon, glowing heat vents along its deck, crusted with snow and hung with
-    icicles; its cutters out on its beam, its ore cannons and heat sink at its bow, its missile pod
-    on its stern.
-    FB-GLACIER-COLOSSUS-02: now a living glacier titan, a vast shelled body of cold flesh with
-    glacier ice grown through it, gills glowing down its back; its parts armoured organs and fleshy
-    gun limbs.
+    """FB-GLACIER-COLOSSUS-01, FB-GLACIER-COLOSSUS-04: the Glacier Colossus.
+
+    A giant mining ship 5.5 L across, red-orange neon, glowing heat vents along its deck, crusted
+    with snow and hung with icicles; its cutters out on its beam, its ore cannons and heat sink at
+    its bow, its missile pod on its stern. FB-GLACIER-COLOSSUS-02: now a living glacier titan, a
+    vast shelled body of cold flesh with glacier ice grown through it, gills glowing down its back;
+    its parts armoured organs and fleshy gun limbs.
     """
-    parts = record(
-        {
-            "cutter-left": cutter_mount,
-            "cutter-right": cutter_mount,
-            "ore-left": ore_cannon,
-            "ore-right": ore_cannon,
-            "heat-sink": heat_sink,
-            "missile-pod": missile_pod,
-        }
-    )
+    parts = record({
+        "cutter-left": cutter_mount,
+        "cutter-right": cutter_mount,
+        "ore-left": ore_cannon,
+        "ore-right": ore_cannon,
+        "heat-sink": heat_sink,
+        "missile-pod": missile_pod,
+    })
     turrets = record({"cutter-left": cutter, "cutter-right": cutter})
     return build_boss_model(
         GLACIER_COLOSSUS,

@@ -1,5 +1,9 @@
-"""e2e: the ship, the enemies and the shots stand out from the background (GFX-READ-01, measured
-by the readability probe, DEV-API-09)."""
+# Copyright (c) 2026 Renaud Guillon
+"""e2e: the ship, the enemies.
+
+The shots stand out from the background (GFX-READ-01, measured by the readability probe,
+DEV-API-09).
+"""
 
 import json
 from typing import Any
@@ -12,7 +16,7 @@ from game.config.readability import READABILITY
 
 
 def readability(page: Page) -> dict[str, Any] | None:
-    """What `__GAME_TEST__.readability()` returns (`app/readability_probe.py`)."""
+    """Return what `__GAME_TEST__.readability()` returns (`app/readability_probe.py`)."""
     report: dict[str, Any] | None = page.evaluate(
         "(share) => window.__GAME_TEST__.readability(share)",
         READABILITY.backgroundBrightPixelBudget,
@@ -21,14 +25,16 @@ def readability(page: Page) -> dict[str, Any] | None:
 
 
 def full_frame(page: Page) -> dict[str, Any]:
-    """Steps the level until the ship, an enemy, an enemy bullet and a player shot are all on
-    screen. The frames are not drawn (`readability` draws the frames it measures), and the probe,
-    three drawn frames and two read back, runs only once the state has enemies, enemy shots and
-    player shots: under software WebGL, a probe on every check made the test last minutes
-    (DEV-API-11). The game only moves when stepped (ENG-58)."""
+    """Step the level until the ship, an enemy, an enemy bullet and a player shot are on screen.
+
+    The frames are not drawn (`readability` draws the frames it measures), and the probe, three
+    drawn frames and two read back, runs only once the state has enemies, enemy shots and player
+    shots: under software WebGL, a probe on every check made the test last minutes (DEV-API-11). The
+    game only moves when stepped (ENG-58).
+    """
     last: dict[str, Any] | None = None
     for _ in range(120):
-        step(page, 5, False)
+        step(page, 5, render=False)
         played = game(page) or {}
         if not (played.get("enemies") and played.get("enemyShots") and played.get("shots")):
             continue
@@ -37,7 +43,8 @@ def full_frame(page: Page) -> dict[str, Any]:
             continue
         if all(last[key] is not None for key in ["enemy", "enemyBullet", "playerShot"]):
             return last
-    raise AssertionError(f"No full frame: {json.dumps(last)}")
+    msg = f"No full frame: {json.dumps(last)}"
+    raise AssertionError(msg)
 
 
 # One level of each world, at a time it is busy with enemies shooting.
@@ -52,7 +59,6 @@ def test_dev_api_09_the_ship_enemies_and_shots_stand_out_from_the_background(
     page.keyboard.down("Space")
     report = full_frame(page)
     page.keyboard.up("Space")
-    print(f"readability {level_id}: {json.dumps(report)}")
     # GFX-READ-01: the background is dimmed, but for a few small lights; GFX-READ-03: the
     # gameplay objects are not.
     assert report["backgroundLuminance"] <= READABILITY.backgroundMaxLuminance

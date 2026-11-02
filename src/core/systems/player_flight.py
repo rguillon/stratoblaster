@@ -1,14 +1,14 @@
-"""The player ship's movement (GAME-SHIP-04)"""
+# Copyright (c) 2026 Renaud Guillon
+"""The player ship's movement (GAME-SHIP-04)."""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from core.entities.muzzle import PlanePoint
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Protocol
 
 
 class FlightBounds(Protocol):
@@ -30,13 +30,15 @@ class FlightBounds(Protocol):
         ...
 
     def half_width_at(self, y: float) -> float:
-        """Half the width the ship may use at height `y` (with a tilted camera the screen shows
-        less of the playfield at the bottom than at the top).
+        """Half the width the ship may use at height `y`.
+
+        With a tilted camera the screen shows less of the playfield at the bottom than at the top.
         """
         ...
 
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 INFINITY = float("Infinity")
 
@@ -50,15 +52,17 @@ class FlightInput:
 
 
 class PlayerFlight:
-    """The player ship's movement: its velocity eases towards the stick or keys at a high
-    acceleration, so it reaches its top speed after `acceleration_seconds`, and it stays inside
-    its `FlightBounds`. Pure and deterministic.
+    """The player ship's movement.
+
+    Its velocity eases towards the stick or keys at a high acceleration, so it reaches its top speed
+    after `acceleration_seconds`, and it stays inside its `FlightBounds`. Pure and deterministic.
     """
 
     def __init__(self, start: PlanePoint, max_speed: float, acceleration_seconds: float) -> None:
         """`acceleration_seconds`: seconds from rest to full speed (and from full speed to rest)."""
         if not (max_speed > 0) or not (acceleration_seconds >= 0):
-            raise ValueError("A ship needs a positive speed and a non-negative acceleration time")
+            msg = "A ship needs a positive speed and a non-negative acceleration time"
+            raise ValueError(msg)
         self.x = start.x
         self.y = start.y
         self.vx = 0.0
@@ -66,12 +70,12 @@ class PlayerFlight:
         self.max_speed = max_speed
         self.acceleration_seconds = acceleration_seconds
 
-    def step(self, dt: float, input: FlightInput, bounds: FlightBounds) -> None:
-        """Moves for `dt` seconds towards `input`, then keeps the ship inside `bounds`."""
-        length = math.hypot(input.x, input.y)
+    def step(self, dt: float, flight_input: FlightInput, bounds: FlightBounds) -> None:
+        """Move for `dt` seconds towards `flight_input`, then keep the ship inside `bounds`."""
+        length = math.hypot(flight_input.x, flight_input.y)
         scale = 1 / length if length > 1 else 1
-        tx = input.x * scale * self.max_speed
-        ty = input.y * scale * self.max_speed
+        tx = flight_input.x * scale * self.max_speed
+        ty = flight_input.y * scale * self.max_speed
         change = (
             (self.max_speed / self.acceleration_seconds) * dt
             if self.acceleration_seconds > 0
@@ -88,8 +92,10 @@ class PlayerFlight:
         self._keep_inside(bounds)
 
     def _keep_inside(self, bounds: FlightBounds) -> None:
-        """Puts the ship back inside `bounds`, stopping it against the edge it hit
-        (GAME-SCREEN-05)."""
+        """Put the ship back inside `bounds`.
+
+        Stopping it against the edge it hit (GAME-SCREEN-05).
+        """
         y = min(bounds.max_y, max(bounds.min_y, self.y))
         if y != self.y:
             self.vy = 0

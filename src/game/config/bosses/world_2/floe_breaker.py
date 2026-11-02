@@ -1,4 +1,5 @@
-"""The Floe Breaker (2-1's mini boss, specs/bosses/mini/2-1-floe-breaker.md)
+# Copyright (c) 2026 Renaud Guillon
+"""The Floe Breaker (2-1's mini boss, specs/bosses/mini/2-1-floe-breaker.md).
 
 The mini boss of 2-1 (Great erg). Offsets in px from the boss's centre, X right and Y up (its
 nose points down, at -Y). The stage patterns are the agent's design (MB-FLOE-BREAKER-10): the
@@ -29,53 +30,49 @@ FLOE_BEACON = [[0, 18, 24.6]]
 
 # 2-1: an icebreaker hovership with a sharp armoured bow and cyan neon; two side harpoon guns on
 # sponsons fire aimed bursts and shield the core (MB-FLOE-BREAKER-09).
-_FLOE_BREAKER = record(
-    {
+_FLOE_BREAKER = record({
+    "id": "floe-breaker",
+    # Angry after each destroyed part (phase 7 review, MB-FLOE-BREAKER-11).
+    "rage": rage.curtain(2.5, "blue", "magenta"),
+    # Its core, harpoon guns and points (MB-FLOE-BREAKER-13).
+    "stats": stats({
         "id": "floe-breaker",
-        # Angry after each destroyed part (phase 7 review, MB-FLOE-BREAKER-11).
-        "rage": rage.curtain(2.5, "blue", "magenta"),
-        # Its core, harpoon guns and points (MB-FLOE-BREAKER-13).
-        "stats": stats(
-            {
-                "id": "floe-breaker",
-                "name": "Floe Breaker",
-                "size": 3,
-                "coreRadius": 18,
-                "coreHealth": 1420,
-                "points": 5500,
-                "groundSpeed": 0.5,
-                "parts": [
-                    part("harpoon-left", [-30, -4], 13, 650),
-                    part("harpoon-right", [30, -4], 13, 650),
-                ],
-            }
-        ),
-        # Where it stops and how it moves in place (MB-FLOE-BREAKER-08).
-        "stopFraction": 0.72,
-        "sway": {"amplitude": 65, "period": 7},
-        "bob": {"amplitude": 8, "period": 3.5},
-        "guns": {
-            "core": {"gun": FLOE_CHASERS, "ring": FLOE_BEACON},
-            "harpoon-left": {"gun": mirror(FLOE_HARPOON), "turret": [-30, -4]},
-            "harpoon-right": {"gun": FLOE_HARPOON, "turret": [30, -4]},
-        },
-        # The harpoon guns' bursts, then the core's pattern per stage (MB-FLOE-BREAKER-10).
-        "stages": stages(
+        "name": "Floe Breaker",
+        "size": 3,
+        "coreRadius": 18,
+        "coreHealth": 1420,
+        "points": 5500,
+        "groundSpeed": 0.5,
+        "parts": [
+            part("harpoon-left", [-30, -4], 13, 650),
+            part("harpoon-right", [30, -4], 13, 650),
+        ],
+    }),
+    # Where it stops and how it moves in place (MB-FLOE-BREAKER-08).
+    "stopFraction": 0.72,
+    "sway": {"amplitude": 65, "period": 7},
+    "bob": {"amplitude": 8, "period": 3.5},
+    "guns": {
+        "core": {"gun": FLOE_CHASERS, "ring": FLOE_BEACON},
+        "harpoon-left": {"gun": mirror(FLOE_HARPOON), "turret": [-30, -4]},
+        "harpoon-right": {"gun": FLOE_HARPOON, "turret": [30, -4]},
+    },
+    # The harpoon guns' bursts, then the core's pattern per stage (MB-FLOE-BREAKER-10).
+    "stages": stages(
+        [
+            volley.burst("harpoon-left", 2.6, 3, 0.16, RED, 1),
+            volley.burst("harpoon-right", 2.6, 3, 0.16, RED, 2.3),
+        ],
+        [
+            [volley.fan("core", 3, 3, 18, MAGENTA, 1.8)],
+            [volley.aimed("core", 2.2, 3, 12, MAGENTA, 0.6)],
             [
-                volley.burst("harpoon-left", 2.6, 3, 0.16, RED, 1),
-                volley.burst("harpoon-right", 2.6, 3, 0.16, RED, 2.3),
+                volley.ring("core", 1.7, 10, 0, BLUE, 0.4),
+                volley.fan("core", 2.6, 5, 14, MAGENTA, 1.2),
             ],
-            [
-                [volley.fan("core", 3, 3, 18, MAGENTA, 1.8)],
-                [volley.aimed("core", 2.2, 3, 12, MAGENTA, 0.6)],
-                [
-                    volley.ring("core", 1.7, 10, 0, BLUE, 0.4),
-                    volley.fan("core", 2.6, 5, 14, MAGENTA, 1.2),
-                ],
-            ],
-        ),
-    }
-)
+        ],
+    ),
+})
 
 # Its hidden weapons (boss transformations, D-224, MB-FLOE-BREAKER-12): at transformation 1 its
 # back plating bursts off, baring a dark metal frame (MB-FLOE-BREAKER-07), and a pair of gatling

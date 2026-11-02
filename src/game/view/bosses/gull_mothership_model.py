@@ -1,19 +1,19 @@
-"""FB-GULL-MOTHERSHIP-01 to FB-GULL-MOTHERSHIP-04: the Gull Mothership, the final boss of 1-2
-Logical pixels, nose +Z, Y up (towards the camera). A
-brood-mother of the sea: a wide fleshy mantle, a shelled body along its middle ending in a huge
-glowing eye (its laser), a brood pouch at each flank and two flak growths on its front.
+# Copyright (c) 2026 Renaud Guillon
+"""FB-GULL-MOTHERSHIP-01 to FB-GULL-MOTHERSHIP-04: the Gull Mothership, the final boss of 1-2.
+
+Logical pixels, nose +Z, Y up (towards the camera). A brood-mother of the sea: a wide fleshy mantle,
+a shelled body along its middle ending in a huge glowing eye (its laser), a brood pouch at each
+flank and two flak growths on its front.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.config.bosses.final_bosses import GULL_MOTHERSHIP  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.final_boss_gull import DECK_TOP, draw_flak, draw_hangar  # noqa: E402
-from game.view.bosses.final_boss_shapes import mirrored, shift, turret  # noqa: E402
-from game.view.bosses.world_1_organic_kit import (  # noqa: E402
+from game.config.boss_look import BOSS_LOOK
+from game.config.bosses.final_bosses import GULL_MOTHERSHIP
+from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.final_boss_gull import DECK_TOP, draw_flak, draw_hangar
+from game.view.bosses.final_boss_shapes import mirrored, shift, turret
+from game.view.bosses.world_1_organic_kit import (
     F,
     M,
     barbs,
@@ -28,35 +28,35 @@ from game.view.bosses.world_1_organic_kit import (  # noqa: E402
     tentacle,
     vein_line,
 )
-from game.view.enemies.enemy_shapes import SIDES  # noqa: E402
-from game.view.enemies.organic_parts import eyes, reactor_sac  # noqa: E402
-from render.geometry.organic import SegmentedBody, segmented_body  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
+from game.view.enemies.enemy_shapes import SIDES
+from game.view.enemies.organic_parts import eyes, reactor_sac
+from render.geometry.organic import SegmentedBody, segmented_body
+from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Vec3 = list[Any]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 N = BOSS_LOOK.neon["gull-mothership"]
 WHITE = [1, 1, 1]
 QUARTER = math.pi / 2
 
 # The mantle seen from above (right half, front to back); the pouches sit on its flat sides.
-DECK = mirrored(
-    [
-        [0, 50],
-        [24, 46],
-        [40, 32],
-        [47, 20],
-        [47, -30],
-        [34, -48],
-        [14, -56],
-        [0, -56],
-    ]
-)
+DECK = mirrored([
+    [0, 50],
+    [24, 46],
+    [40, 32],
+    [47, 20],
+    [47, -30],
+    [34, -48],
+    [14, -56],
+    [0, -56],
+])
 # The laser eye's lens (a lathe profile along its axis), at the body's nose.
 LENS = [
     [0, 0],
@@ -67,8 +67,11 @@ LENS = [
 
 
 def _draw_hull(p: Any) -> None:
-    """The body (FB-GULL-MOTHERSHIP-02): a teal mantle lined with a green vein, a second fold on it,
-    a shelled body along its middle with ribs over its back and glands down its spine."""
+    """Draw the body (FB-GULL-MOTHERSHIP-02): a teal mantle lined with a green vein.
+
+    A second fold on it, a shelled body along its middle with ribs over its back and glands down its
+    spine.
+    """
     mantle(p, DECK, [-5, DECK_TOP], F.teal, N)
     mantle(p, scale_outline(DECK, 0.72, 0, -4), [DECK_TOP - 1, DECK_TOP + 1.6], F.graphite)
     hide(
@@ -105,8 +108,10 @@ def _draw_hull(p: Any) -> None:
 
 
 def _draw_emitter(p: Any) -> None:
-    """The laser eye at the nose (FB-GULL-MOTHERSHIP-03): a socket of flesh, a grafted ring, the
-    lens glowing as it charges."""
+    """Draw the laser eye at the nose (FB-GULL-MOTHERSHIP-03): a socket of flesh, a grafted ring.
+
+    The lens glowing as it charges.
+    """
     at = [0, DECK_TOP + 3, 58]
     p.flesh.cylinder(8, 6, 8, F.graphite, Placement(at, 0, QUARTER), 6.5)  # type: ignore[arg-type]  # the argument does not match the parameter type mypy expects
     p.hull.ring(7.3, 1.4, 8, M.dark, Placement(shift(at, [0, 0, 5.4]), 0, QUARTER))
@@ -121,7 +126,7 @@ def _draw_emitter(p: Any) -> None:
 
 
 def _draw_engines(p: Any) -> None:
-    """The swim bladders on the back of the mantle, their reactors in sacs."""
+    """Draw the swim bladders on the back of the mantle, their reactors in sacs."""
     for s in SIDES:
         segmented_body(
             p.flesh,
@@ -134,14 +139,17 @@ def _draw_engines(p: Any) -> None:
 
 
 def _flak_turret(p: Any, at: Vec3) -> None:
-    """A flak growth's twin guns, on its crown (FB-GULL-MOTHERSHIP-03)."""
+    """Add a flak growth's twin guns, on its crown (FB-GULL-MOTHERSHIP-03)."""
     turret(p, shift(at, [0, DECK_TOP + 2.5, 0]), 8.5, [2, N])
 
 
 def build_gull_mothership(scene: Any) -> Any:
-    """FB-GULL-MOTHERSHIP-01, FB-GULL-MOTHERSHIP-04: the Gull Mothership, a brood-mother of the
-    sea 5 L across: green veins and glands, a brood pouch on each flank (they launch the Gnats),
-    two flak growths on its front, and a huge laser eye at the nose of its body (the core)."""
+    """FB-GULL-MOTHERSHIP-01, FB-GULL-MOTHERSHIP-04: the Gull Mothership.
+
+    A brood-mother of the sea 5 L across: green veins and glands, a brood pouch on each flank (they
+    launch the Gnats), two flak growths on its front, and a huge laser eye at the nose of its body
+    (the core).
+    """
 
     def core(p: Any) -> None:
         _draw_hull(p)

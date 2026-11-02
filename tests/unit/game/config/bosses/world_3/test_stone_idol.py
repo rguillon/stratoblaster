@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/bosses/world_3/stone_idol.py`."""
 
 from helpers.config_checks import assert_boss_design, original_parts
@@ -12,7 +13,8 @@ def test_mb_stone_idol_08_boss_design_is_well_formed() -> None:
 
 def test_boss_07_boss_id_is_a_lowercase_kebab_case_kind() -> None:
     assert STONE_IDOL.id == STONE_IDOL.id.lower()
-    assert " " not in STONE_IDOL.id and "_" not in STONE_IDOL.id
+    assert " " not in STONE_IDOL.id
+    assert "_" not in STONE_IDOL.id
 
 
 def test_mb_stone_idol_07_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
@@ -25,5 +27,6 @@ def test_mb_stone_idol_07_boss_stats_are_in_the_range_the_sim_relies_on() -> Non
 
 def test_mb_stone_idol_10_boss_has_an_angry_pattern_and_its_stage_count() -> None:
     """Its rage, and one stage pattern more than its parts (MB-STONE-IDOL-09)."""
-    assert isinstance(STONE_IDOL.rage, list) and STONE_IDOL.rage
+    assert isinstance(STONE_IDOL.rage, list)
+    assert STONE_IDOL.rage
     assert len(STONE_IDOL.stages) == len(original_parts(STONE_IDOL)) + 1

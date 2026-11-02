@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Object literals of the game's config tables (`src/game/config/`).
 
 A TS object literal is a plain object whose fields are read as `CONFIG.field`. `record` keeps that
@@ -7,28 +8,30 @@ shape at run time (a Transcrypt dict is a plain JavaScript object) and types it 
 
 from org.transcrypt.stubs.browser import __pragma__
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
-
+# __pragma__ ("noskip")
 
 # CPython only (the unit tests, ENG-160): Transcrypt skips these, and the browser's objects read
 # their fields as attributes already.
-__pragma__("skip")
+# __pragma__ ("skip")
 
 
 class _Fields(dict):  # type: ignore[type-arg]  # a dict of fields keyed by name (config records, ENG-14)
-    """A record whose fields read as attributes, as they do in the browser. A field the record lacks
-    reads as None, as an absent field reads as undefined there."""
+    """A record whose fields read as attributes, as they do in the browser.
+
+    A field the record lacks reads as None, as an absent field reads as undefined there.
+    """
 
     def __getattr__(self, key: str) -> Any:
         return self.get(key)
 
 
 def fields_of(obj: Any) -> dict[str, Any]:
-    """The fields of a record or of an object (`Object.assign({}, obj)` copies them)."""
+    """Return the fields of a record or of an object (`Object.assign({}, obj)` copies them)."""
     return dict(obj) if isinstance(obj, dict) else dict(vars(obj))
 
 
@@ -41,11 +44,11 @@ def _as_fields(value: Any) -> Any:
     return value
 
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def record(fields: dict[str, Any]) -> Any:
-    """Returns `fields` as the object literal it stands for."""
+    """Return `fields` as the object literal it stands for."""
     __pragma__("skip")
     return _as_fields(fields)
     __pragma__("noskip")
@@ -53,7 +56,7 @@ def record(fields: dict[str, Any]) -> Any:
 
 
 def merge(base: dict[str, Any], extra: dict[str, Any]) -> Any:
-    """`{...base, ...extra}`: a copy of `base` with the fields of `extra` set over it."""
+    """Return `{...base, ...extra}`: a copy of `base` with the fields of `extra` set over it."""
     __pragma__("skip")
     return _as_fields({**base, **(extra or {})})
     __pragma__("noskip")
@@ -69,7 +72,7 @@ def merge(base: dict[str, Any], extra: dict[str, Any]) -> Any:
 
 
 def concat(*parts: list[Any]) -> list[Any]:
-    """`[...a, ...b]`: a new list with the items of each part, in order."""
+    """Return `[...a, ...b]`: a new list with the items of each part, in order."""
     out: list[Any] = []
     for part in parts:
         out.extend(part)
@@ -77,8 +80,10 @@ def concat(*parts: list[Any]) -> list[Any]:
 
 
 def field(obj: Any, key: str, default: Any) -> Any:
-    """`obj[key]`, or `default` when the record has no such field (`dict.get` is not on JS
-    objects)."""
+    """Return `obj[key]`, or `default` when the record has no such field.
+
+    `dict.get` is not on JS objects.
+    """
     value: Any = None
     __pragma__("skip")
     value = obj.get(key) if isinstance(obj, dict) else getattr(obj, key, None)
@@ -90,4 +95,4 @@ def field(obj: Any, key: str, default: Any) -> Any:
     value = obj[key];
     """,
     )
-    return default if value == None else value  # noqa: E711 (undefined for an absent field)
+    return default if value == None else value

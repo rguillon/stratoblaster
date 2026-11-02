@@ -1,10 +1,11 @@
+# Copyright (c) 2026 Renaud Guillon
 """MB-TOUCAN-04, 3-2: the Toucan's parts: its huge beak cannon and its two wing pods (ducted fans).
+
 Logical pixels, nose +Z, Y up (towards the
-camera)."""
+camera).
+"""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.boss_look import BOSS_LOOK
 from game.config.bosses.boss_kit import mirror
@@ -24,15 +25,17 @@ from game.view.enemies.enemy_shapes import SIDES
 from render.geometry.organic import ROUND_SECTION
 from render.geometry.solids import LoftOptions, Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_mesh import EnemyParts
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The Toucan's yellow neon, and the orange one of its accents (MB-TOUCAN-06).
 TOUCAN_YELLOW = BOSS_LOOK.neon["toucan"]
@@ -43,22 +46,20 @@ BEAK_YELLOW = [0.95, 0.66, 0.1]
 BEAK_ORANGE = [0.95, 0.34, 0.05]
 # The beak along Z, from its root on the head to just behind the emitter (loft stations;
 # MB-TOUCAN-01).
-BEAK = table(
-    [
-        [20, 10, -1, 12],
-        [28, 9.6, -0.6, 11.6],
-        [36, 8.2, 0.4, 10.6],
-        [44, 6.2, 1.8, 9.2],
-        [50, 3.8, 3, 7.4],
-        [53.6, 1.8, 3.9, 6.1],
-    ]
-)
+BEAK = table([
+    [20, 10, -1, 12],
+    [28, 9.6, -0.6, 11.6],
+    [36, 8.2, 0.4, 10.6],
+    [44, 6.2, 1.8, 9.2],
+    [50, 3.8, 3, 7.4],
+    [53.6, 1.8, 3.9, 6.1],
+])
 # The bands of the beak painted orange (towards its tip) and dark (its root).
 ORANGE_BANDS = [3, 4]
 
 
-def beak_paint(side: int, band: int) -> Any:
-    """The paint of the beak's faces: its root band dark, its last bands orange, yellow between."""
+def beak_paint(_side: int, band: int) -> Any:
+    """Return the paint of the beak's faces: root band dark, last bands orange, yellow between."""
     if band == 0:
         return H.dark
     if band in ORANGE_BANDS:
@@ -67,9 +68,12 @@ def beak_paint(side: int, band: int) -> Any:
 
 
 def beak(p: EnemyParts, _at: Any = None) -> None:
-    """The beak cannon (MB-TOUCAN-04): a huge, bright, faceted beak with neon along its ridge and
-    cutting edges, the laser emitter in its tip (its lens lights up as it charges). It is drawn in
-    model space, so the point its part sits at (`_at`, as every part is handed one) is not used."""
+    """Add the beak cannon (MB-TOUCAN-04): a huge, bright, faceted beak.
+
+    It has neon along its ridge and cutting edges, and the laser emitter in its tip (its lens lights
+    up as it charges). It is drawn in model space, so the point its part sits at (`_at`, as every
+    part is handed one) is not used.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -127,8 +131,11 @@ DUCT = table([[9.6, -1.5], [11.2, -0.5], [11.4, 3.5], [10.2, 5.2]])
 
 
 def wing_pod(p: EnemyParts, at: Vec3) -> None:
-    """A wing pod around its centre `at` (MB-TOUCAN-04): a ducted fan, its lip ringed with neon, a
-    gun housing under its front with the two barrels of its fans, moss on its back."""
+    """Add a wing pod around its centre `at` (MB-TOUCAN-04).
+
+    A ducted fan, its lip ringed with neon, a gun housing under its front with the two barrels of
+    its fans, moss on its back.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge

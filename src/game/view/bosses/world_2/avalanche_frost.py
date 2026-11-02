@@ -1,27 +1,29 @@
-"""The World 2 frost on the Avalanche and the Glacier Colossus (2-4; MB-AVALANCHE-05,
-FB-GLACIER-COLOSSUS-05), and the barrels drawn to their muzzles Logical pixels, nose +Z, Y up
-(towards the camera).
+# Copyright (c) 2026 Renaud Guillon
+"""The World 2 frost on the Avalanche and the Glacier Colossus (2-4).
+
+The frost follows MB-AVALANCHE-05 and FB-GLACIER-COLOSSUS-05; the barrels drawn to their muzzles are
+here too. Logical pixels, nose +Z, Y up (towards the camera).
 """
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.view.bosses.boss_limbs import boss_point
 from game.view.bosses.mini_boss_shapes import QUARTER, WHITE, H
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Sequence
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_mesh import EnemyParts
+from render.geometry.outline import OutlinePoint
+from render.geometry.solids import SolidBuilder
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Snow and ice crust on the tops of the hull: pale blue-white.
 FROST = [0.75, 0.82, 0.9]
@@ -46,7 +48,10 @@ def snow_cap(
     thick: float,
     color: Rgb = FROST,
 ) -> None:
-    """A snow cap: `outline` (seen from above) lying `thick` deep on a top surface at height `y`."""
+    """Add a snow cap: `outline` (seen from above) lying `thick` deep on a top surface.
+
+    The top surface is at height `y`.
+    """
     hull.bevel_slab(outline, [y - 0.3, y, y + thick], [0, thick * 0.8], color)
 
 
@@ -56,9 +61,11 @@ def barrel_to(
     dims: list[float],
     kind: str = "gun",
 ) -> None:
-    """A gun barrel pointing down the screen (+Z), drawn back from its muzzle `tip` (a design's
-    `Muzzle`): a dark barrel `length` long, a charge light at its mouth, and the muzzle's marker
-    (phase 7 review, D-057), firing `kind`."""
+    """Add a gun barrel pointing down the screen (+Z), firing `kind`.
+
+    It is drawn back from its muzzle `tip` (a design's `Muzzle`): a dark barrel `length` long, a
+    charge light at its mouth, and the muzzle's marker (phase 7 review, D-057).
+    """
     hull = parts.hull
     charge = parts.charge
     muzzle = parts.muzzle

@@ -1,5 +1,8 @@
-"""e2e: the menus with the mouse or taps only (UI-INPUT-09, UI-INPUT-10, UI-INPUT-12, UI-LEVEL-01,
-UI-SHIP-07, UI-PAUSE-01, UI-PAUSE-10)."""
+# Copyright (c) 2026 Renaud Guillon
+"""e2e: the menus with the mouse or taps only.
+
+UI-INPUT-09, UI-INPUT-10, UI-INPUT-12, UI-LEVEL-01, UI-SHIP-07, UI-PAUSE-01, UI-PAUSE-10.
+"""
 
 from collections.abc import Callable
 
@@ -11,8 +14,10 @@ TOUCH_PHONE = {"has_touch": True, "viewport": {"width": 390, "height": 844}}
 
 
 def run_flow(page: Page, press: Callable[[Locator], None]) -> None:
-    """Title → ship select → level select → game → pause → back to title with one kind of press: a
-    press selects, a second confirms (UI-INPUT-09); the Back button goes back (UI-INPUT-10)."""
+    """Title → ship select → level select → game → pause → back to title with one kind of press.
+
+    A press selects, a second confirms (UI-INPUT-09); the Back button goes back (UI-INPUT-10).
+    """
     open_game(page)
     press(page.locator(".title-start"))
     expect_state(page, {"screen": "ship-select", "selectedId": "balanced"})

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """e2e: the menus with a gamepad only (UI-INPUT-07, UI-INPUT-12, UI-PAUSE-01)."""
 
 from typing import Any
@@ -16,7 +17,7 @@ DPAD_RIGHT = 15
 
 @pytest.fixture(autouse=True)
 def fake_gamepad(page: Page) -> None:
-    """Replaces the Gamepad API with one fake standard gamepad the test controls."""
+    """Replace the Gamepad API with one fake standard gamepad the test controls."""
     page.add_init_script(
         """(() => {
             // Babylon's gamepad manager reads the same API, so the fake has the standard fields.
@@ -52,7 +53,7 @@ def set_pad(page: Page, change: dict[str, Any]) -> None:
 
 
 def press_button(page: Page, index: int, expected: dict[str, Any]) -> None:
-    """Holds a button until the game reaches `expected`, then releases it."""
+    """Hold a button until the game reaches `expected`, then release it."""
     set_pad(page, {"button": [index, True]})
     expect_state(page, expected)
     set_pad(page, {"button": [index, False]})

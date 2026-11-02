@@ -1,6 +1,12 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/config/scenery_stage.py`."""
 
+import math
+
+from fixtures.sample_game import PLAYFIELD_CAMERA, SAMPLE_GAME
+
 from config.scenery_stage import SCENERY_STAGE_CONFIG
+from render.scenery.playfield_framing import frame_playfield
 
 
 def test_gfx_terrain_14_the_terrain_is_built_in_chunks_of_cells() -> None:
@@ -26,12 +32,6 @@ def test_gfx_prop_05_props_show_from_a_reach_band_in_steps() -> None:
 
 def test_d216_the_near_clip_stays_well_before_the_flight_plane() -> None:
     """GFX-CAM-06."""
-    import math  # noqa: PLC0415
-
-    from fixtures.sample_game import PLAYFIELD_CAMERA, SAMPLE_GAME  # noqa: PLC0415
-
-    from render.scenery.playfield_framing import frame_playfield  # noqa: PLC0415
-
     framing = frame_playfield(SAMPLE_GAME.screen, PLAYFIELD_CAMERA)
     # The nearest the camera sees the flight plane: along the top edge of its view.
     nearest = framing.height / math.cos(framing.tilt - framing.half_fov)

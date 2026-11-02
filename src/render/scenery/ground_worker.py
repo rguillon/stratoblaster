@@ -1,19 +1,24 @@
-"""Generates levels' grounds and scenery textures off the main thread (PERF-14) The module is the
-worker's script: importing it installs the
-message handler on the worker's global scope. What it posts back is plain data (ENG-164).
+# Copyright (c) 2026 Renaud Guillon
+"""Generates levels' grounds and scenery textures off the main thread (PERF-14).
+
+`install_message_handler` (called by `worker_main.py`, the worker's script) installs the message
+handler on the worker's global scope.
+
+What it posts back is plain data (ENG-164).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
+from host.worker_data import to_plain
+from render.scenery.level_ground import generate_in_two
+from render.scenery.procedural_textures import texture_pixels
+
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
-
-from host.worker_data import to_plain  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.scenery.level_ground import generate_in_two  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.scenery.procedural_textures import texture_pixels  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
 
 def _install_handler(handler: Any) -> None:
@@ -61,7 +66,7 @@ def _post_roads(job_id: int, chunks: Any, atlas: Any) -> None:
 
 
 def _copy_pixels(pixels: Any) -> Any:
-    """A copy of the atlas's pixels (the worker's own array goes on changing)."""
+    """Return a copy of the atlas's pixels (the worker's own array goes on changing)."""
     if pixels is None:
         return None
     __pragma__("js", "{}", "return pixels.slice();")
@@ -133,4 +138,6 @@ def _on_message(event: Any) -> None:
     _post_pixels(data.id, pixels)
 
 
-_install_handler(_on_message)
+def install_message_handler() -> None:
+    """Install the message handler on the worker's global scope (`worker_main.py`)."""
+    _install_handler(_on_message)

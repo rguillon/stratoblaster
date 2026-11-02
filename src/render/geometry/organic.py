@@ -1,29 +1,30 @@
-"""Builders of living shapes for low-poly, flat-shaded models (GFX-ART-17): bodies of segments,
-shells, ribs, tendrils, membrane wings, organs, veins and armour plates, of which the game builds
-its Cyber-Organic bodies (GFX-ART-12, ENM-35), in code (GFX-ART-01).
+# Copyright (c) 2026 Renaud Guillon
+"""Builders of living shapes for low-poly, flat-shaded models (GFX-ART-17).
 
-Game-agnostic (ENG-140): they draw into a `SolidBuilder` and know nothing of what they are used
-for.
+They are bodies of segments, shells, ribs, tendrils, membrane wings, organs, veins and armour
+plates, of which the game builds its Cyber-Organic bodies (GFX-ART-12, ENM-35), in code
+(GFX-ART-01).
+
+Game-agnostic (ENG-140): they draw into a `SolidBuilder` and know nothing of what they are used for.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from render.geometry.outline import hypot3, reversed_copy
 from render.geometry.solids import LoftOptions, Placement, SolidBuilder, place_at
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
 
-from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.outline import OutlinePoint
 
 Rgb = list[float]
 Vec3 = list[float]
 SectionPoint = list[float]
+# __pragma__ ("noskip")
 
-__pragma__("noskip")
 
 # A rounded cross-section (counter-clockwise seen from the nose): a soft, swollen body.
 ROUND_SECTION = [
@@ -59,12 +60,12 @@ def _swollen(t: float) -> float:
 class SegmentedBody:
     """A body of segments along Z, from its tail to its nose.
 
-    `pinch` (how much thinner it is between two segments, 0 to 1) and `girth` (a function of t,
-    from tail 0 to nose 1; a swollen middle by default) may be None for the defaults.
-    `closed` is `[tail, nose]` (both closed to a point by default).
+    `pinch` (how much thinner it is between two segments, 0 to 1) and `girth` (a function of t, from
+    tail 0 to nose 1; a swollen middle by default) may be None for the defaults. `closed` is `[tail,
+    nose]` (both closed to a point by default).
     """
 
-    def __init__(  # noqa: PLR0913, PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         tail: float,
         nose: float,
@@ -91,7 +92,7 @@ class SegmentedBody:
 
 
 def _stations(body: SegmentedBody, default_pinch: float) -> list[list[float]]:
-    """The loft stations of a body: a bulge at each segment, a waist between."""
+    """Return the loft stations of a body: a bulge at each segment, a waist between."""
     pinch = body.pinch if body.pinch is not None else default_pinch
     girth = body.girth if body.girth is not None else _swollen
     closed = body.closed if body.closed is not None else [True, True]
@@ -123,7 +124,7 @@ def _stations(body: SegmentedBody, default_pinch: float) -> list[list[float]]:
 
 
 def segment_stations(body: SegmentedBody) -> list[list[float]]:
-    """The loft stations of a `SegmentedBody` (pinch 0.3 by default)."""
+    """Return the loft stations of a `SegmentedBody` (pinch 0.3 by default)."""
     return _stations(body, 0.3)
 
 
@@ -148,8 +149,10 @@ def carapace(
     colors: list[Rgb],
     place: Placement | None = None,
 ) -> SolidBuilder:
-    """A shell over a body: plates along Z, alternately `colors[0]` and `colors[1]` (the seam),
-    on a ridged section."""
+    """Return a shell over a body: plates along Z, alternately `colors[0]` and `colors[1]`.
+
+    The alternating colours mark the seam, on a ridged section.
+    """
     if place is None:
         place = Placement()
     color = colors[0]
@@ -176,8 +179,7 @@ UP_LIMIT = 0.9
 def _with_first(first: OutlinePoint, rest: list[OutlinePoint]) -> list[OutlinePoint]:
     """`[first, ...rest]`."""
     result: list[OutlinePoint] = [first]
-    for item in rest:
-        result.append(item)
+    result.extend(rest)
     return result
 
 
@@ -207,13 +209,16 @@ def tendril(
     color: Rgb,
     place: Placement | None = None,
 ) -> SolidBuilder:
-    """A tube along the polyline `path`, its radius going from `radii[0]` at the first point to
-    `radii[1]` at the last (0 closes it to a point): a tendril, a sinew, a strut, a vein.
-    `sides` facets round."""
+    """Return a tube along the polyline `path`: a tendril, a sinew, a strut, a vein.
+
+    Its radius goes from `radii[0]` at the first point to `radii[1]` at the last (0 closes it to a
+    point). `sides` facets round.
+    """
     if place is None:
         place = Placement()
     if len(path) < MIN_TENDRIL_POINTS:
-        raise ValueError("A tendril needs 2 points")
+        msg = "A tendril needs 2 points"
+        raise ValueError(msg)
     r0 = radii[0]
     r1 = radii[1]
     last_index = len(path) - 1
@@ -229,13 +234,11 @@ def tendril(
             angle = (2 * math.pi * k) / sides
             cos = math.cos(angle) * r
             sin = math.sin(angle) * r
-            ring.append(
-                [
-                    p[0] + a[0] * cos + c[0] * sin,
-                    p[1] + a[1] * cos + c[1] * sin,
-                    p[2] + a[2] * cos + c[2] * sin,
-                ]
-            )
+            ring.append([
+                p[0] + a[0] * cos + c[0] * sin,
+                p[1] + a[1] * cos + c[1] * sin,
+                p[2] + a[2] * cos + c[2] * sin,
+            ])
         rings.append(ring)
     for i in range(1, len(rings)):
         ring = rings[i]
@@ -263,19 +266,19 @@ def curve(from_: Vec3, to: Vec3, bow: Vec3, points: int = 4) -> list[Vec3]:
     for i in range(points + 1):
         t = i / points
         k = 4 * t * (1 - t)
-        result.append(
-            [
-                from_[0] + (to[0] - from_[0]) * t + bow[0] * k,
-                from_[1] + (to[1] - from_[1]) * t + bow[1] * k,
-                from_[2] + (to[2] - from_[2]) * t + bow[2] * k,
-            ]
-        )
+        result.append([
+            from_[0] + (to[0] - from_[0]) * t + bow[0] * k,
+            from_[1] + (to[1] - from_[1]) * t + bow[1] * k,
+            from_[2] + (to[2] - from_[2]) * t + bow[2] * k,
+        ])
     return result
 
 
 class RibSpec:
-    """Ribs across a body: each is an arch `half_width` out to each flank and `height` up from
-    `y`, of tube `thickness`."""
+    """Ribs across a body.
+
+    Each is an arch `half_width` out to each flank and `height` up from `y`, of tube `thickness`.
+    """
 
     def __init__(self, half_width: float, y: float, height: float, thickness: float) -> None:
         self.half_width = half_width
@@ -291,21 +294,18 @@ def ribs(
     color: Rgb,
     place: Placement | None = None,
 ) -> SolidBuilder:
-    """Ribs across a body: at each Z of `at`, an arch over its back from one flank to the
-    other."""
+    """Ribs across a body: at each Z of `at`, an arch over its back from one flank to the other."""
     if place is None:
         place = Placement()
     for z in at:
         arch: list[Vec3] = []
         for i in range(7):
             a = math.pi * (i / 6)
-            arch.append(
-                [
-                    math.cos(a) * spec.half_width,
-                    spec.y + math.sin(a) * spec.height,
-                    z,
-                ]
-            )
+            arch.append([
+                math.cos(a) * spec.half_width,
+                spec.y + math.sin(a) * spec.height,
+                z,
+            ])
         tendril(b, arch, [spec.thickness, spec.thickness], 3, color, place)
     return b
 
@@ -318,8 +318,10 @@ def organ(
     place: Placement | None = None,
     stretch: float = 1,
 ) -> SolidBuilder:
-    """An organ: a swollen, faceted bulb of `radius`, `stretch` times as tall, standing on its
-    base."""
+    """Return an organ: a swollen, faceted bulb of `radius` on its base.
+
+    It is `stretch` times as tall.
+    """
     if place is None:
         place = Placement()
     h = radius * 2 * stretch
@@ -340,9 +342,9 @@ def organ(
 class MembraneWing:
     """A wing: a membrane spread between its root and its tips, and a strut out to each tip.
 
-    `root` is where the wing joins the body, `tips` the points of its membrane out to its tips.
-    `y` is the height of the membrane, `thickness` its thickness, `strut` the struts' radius at
-    the root.
+    `root` is where the wing joins the body, `tips` the points of its membrane out to its tips. `y`
+    is the height of the membrane, `thickness` its thickness, `strut` the struts' radius at the
+    root.
     """
 
     def __init__(
@@ -367,8 +369,11 @@ def membrane_wing(
     colors: list[Rgb],
     place: Placement | None = None,
 ) -> None:
-    """Draws a `MembraneWing` (a living wing, GFX-ART-13): its membrane in `colors[0]` (from the
-    root along the tips and back), a strut along each tip in `colors[1]`, thinning out to it."""
+    """Draws a `MembraneWing` (a living wing, GFX-ART-13).
+
+    Its membrane is in `colors[0]` (from the root along the tips and back); a strut along each tip
+    is in `colors[1]`, thinning out to it.
+    """
     if place is None:
         place = Placement()
     root = wing.root
@@ -398,7 +403,7 @@ def vein(
     color: Rgb,
     place: Placement | None = None,
 ) -> SolidBuilder:
-    """A glowing vein along `path` (GFX-ART-14): a thin three-sided tube, `width` across."""
+    """Return a glowing vein along `path` (GFX-ART-14): a thin three-sided tube, `width` across."""
     return tendril(b, path, [width / 2, width / 4], 3, color, place)
 
 
@@ -415,8 +420,11 @@ def plate(
     colors: list[Rgb],
     place: Placement | None = None,
 ) -> SolidBuilder:
-    """An armour plate grafted on: a bevelled slab of `outline` from `heights[0]` to
-    `heights[1]`, and a rivet at each of its corners in `colors[1]`."""
+    """Return an armour plate grafted on.
+
+    A bevelled slab of `outline` from `heights[0]` to `heights[1]`, and a rivet at each of its
+    corners in `colors[1]`.
+    """
     if place is None:
         place = Placement()
     y0 = heights[0]
@@ -439,8 +447,12 @@ def grown(
     amount: float,
     random: Callable[[], float],
 ) -> list[OutlinePoint]:
-    """The outline with each point moved by up to `amount` at random: an uneven, grown edge
-    instead of a drawn one. The same `random` sequence gives the same outline."""
+    """Return the outline with each point moved by up to `amount` at random.
+
+    An uneven, grown edge instead of a drawn one.
+
+    The same `random` sequence gives the same outline.
+    """
     result: list[OutlinePoint] = []
     for p in outline:
         dx = (random() * 2 - 1) * amount

@@ -1,10 +1,11 @@
+# Copyright (c) 2026 Renaud Guillon
 """Tunables of the generated ground under the playfield camera (phase 4)."""
 
 
 class SceneryStageConfig:
     """The generated ground and sky around the camera, in the order of `SCENERY_STAGE_CONFIG`."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         chunk_length: float,
         cell: float,

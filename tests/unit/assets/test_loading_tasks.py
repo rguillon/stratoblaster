@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/assets/loading_tasks.py`."""
 
 import asyncio

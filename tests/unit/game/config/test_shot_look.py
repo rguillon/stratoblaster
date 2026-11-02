@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/shot_look.py`."""
 
 from game.config.shot_look import SHOT_LOOK

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/audio/sound_recipes.py`."""
 
 import pytest
@@ -16,26 +17,26 @@ from game.view.audio.sound_recipes import (
 )
 
 
-def test_aud_sfx_02_the_minigun_fires_six_rounds_about_48_a_second():
+def test_aud_sfx_02_the_minigun_fires_six_rounds_about_48_a_second() -> None:
     assert isinstance(MINIGUN, MinigunBurst)
     assert MINIGUN.rounds == 6
     assert 1 / MINIGUN.gap == pytest.approx(47.6, abs=0.5)
 
 
-def test_aud_sfx_02_a_minigun_burst_is_a_crack_and_a_thump_per_round():
+def test_aud_sfx_02_a_minigun_burst_is_a_crack_and_a_thump_per_round() -> None:
     layers = minigun(MinigunBurst(3, 0.02))
     assert len(layers) == 6
     assert [layer_.wave for layer_ in layers[:2]] == ["noise", "square"]
     assert [layer_.delay for layer_ in layers[::2]] == pytest.approx([0, 0.02, 0.04])
 
 
-def test_aud_sfx_02_alternate_rounds_are_quieter():
+def test_aud_sfx_02_alternate_rounds_are_quieter() -> None:
     layers = minigun(MinigunBurst(2, 0.02))
     crack_gains = [layer_.gain for layer_ in layers if layer_.wave == "noise"]
     assert crack_gains == [1, 0.75]
 
 
-def test_aud_sfx_02_the_thump_glides_down_from_its_pitch():
+def test_aud_sfx_02_the_thump_glides_down_from_its_pitch() -> None:
     thump = minigun(MinigunBurst(1, 0.02))[1]
     assert thump.pitch == 150
     assert thump.glide_to == 65
@@ -43,7 +44,7 @@ def test_aud_sfx_02_the_thump_glides_down_from_its_pitch():
     assert thump.filter.type == "lowpass"
 
 
-def test_eng_155_flatten_layers_spreads_recipes_and_keeps_single_layers():
+def test_eng_155_flatten_layers_spreads_recipes_and_keeps_single_layers() -> None:
     a = tone("sine", 1, 1, env(0.1, 0.1), {})
     b = tone("noise", 1, 1, env(0.1, 0.1), {})
     c = tone("square", 1, 1, env(0.1, 0.1), {})
@@ -51,19 +52,20 @@ def test_eng_155_flatten_layers_spreads_recipes_and_keeps_single_layers():
     assert flatten_layers([]) == []
 
 
-def test_env_defaults_to_zero_sustain_and_a_short_release():
+def test_env_defaults_to_zero_sustain_and_a_short_release() -> None:
     e = env(0.01, 0.2)
     assert isinstance(e, Envelope)
     assert (e.attack, e.decay, e.sustain, e.release) == (0.01, 0.2, 0, 0.03)
     assert env(0.01, 0.2, 0.5, 0.4).sustain == 0.5
 
 
-def test_tone_takes_the_pitch_and_optional_fields_from_its_rest():
+def test_tone_takes_the_pitch_and_optional_fields_from_its_rest() -> None:
     base = env(0.01, 0.1)
     plain = tone("sine", 440, 0.5, base, {})
     assert isinstance(plain, ToneLayer)
     assert plain.pitch == 440
-    assert plain.glide_to is None and plain.delay is None
+    assert plain.glide_to is None
+    assert plain.delay is None
     assert plain.envelope is base
     custom_env = env(0.2, 0.3)
     layer_ = tone(
@@ -88,7 +90,7 @@ def test_tone_takes_the_pitch_and_optional_fields_from_its_rest():
     assert layer_.delay == 0.5
 
 
-def test_aud_sfx_04_explosion_layers_a_crack_a_body_a_thump_and_debris():
+def test_aud_sfx_04_explosion_layers_a_crack_a_body_a_thump_and_debris() -> None:
     size = ExplosionSize(seconds=0.3, body=2600, thump=120, tail=0, debris=3)
     layers = explosion(size)
     # Crack, body, thump, then one crackle per piece of debris; no rumble without a tail.
@@ -97,7 +99,7 @@ def test_aud_sfx_04_explosion_layers_a_crack_a_body_a_thump_and_debris():
     assert all(layer_.delay == 0 for layer_ in layers[:3])
 
 
-def test_aud_sfx_04_a_big_explosion_rolls_a_rumble_on_after_it():
+def test_aud_sfx_04_a_big_explosion_rolls_a_rumble_on_after_it() -> None:
     size = ExplosionSize(seconds=1.1, body=3400, thump=70, tail=2, debris=8)
     layers = explosion(size)
     assert len(layers) == 3 + 1 + 8
@@ -106,7 +108,7 @@ def test_aud_sfx_04_a_big_explosion_rolls_a_rumble_on_after_it():
     assert rumble.envelope.decay == 2
 
 
-def test_aud_sfx_04_debris_crackles_come_later_and_fade():
+def test_aud_sfx_04_debris_crackles_come_later_and_fade() -> None:
     size = ExplosionSize(seconds=0.6, body=3000, thump=90, tail=0, debris=5)
     debris = explosion(size)[3:]
     delays = [layer_.delay for layer_ in debris]
@@ -116,13 +118,13 @@ def test_aud_sfx_04_debris_crackles_come_later_and_fade():
     assert gains == sorted(gains, reverse=True)
 
 
-def test_aud_sfx_04_explosion_starts_after_its_delay():
+def test_aud_sfx_04_explosion_starts_after_its_delay() -> None:
     size = ExplosionSize(seconds=0.3, body=2600, thump=120, tail=0, debris=0)
     layers = explosion(size, delay=0.5)
     assert all(layer_.delay == 0.5 for layer_ in layers)
 
 
-def test_aud_sfx_01_chime_plays_its_pitches_one_after_the_other():
+def test_aud_sfx_01_chime_plays_its_pitches_one_after_the_other() -> None:
     layers = chime("triangle", [523, 659, 784], 0.07, 0.6)
     assert [layer_.pitch for layer_ in layers] == [523, 659, 784]
     assert [layer_.delay for layer_ in layers] == pytest.approx([0, 0.07, 0.14])

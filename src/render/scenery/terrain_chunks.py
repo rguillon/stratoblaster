@@ -1,6 +1,8 @@
-"""The terrain as a row of chunks along Z (GFX-TERRAIN-14, ENG-19): only the chunks under the camera
-exist, and the meshes of
-chunks that scroll out of view are reused for new ones.
+# Copyright (c) 2026 Renaud Guillon
+"""The terrain as a row of chunks along Z (GFX-TERRAIN-14, ENG-19).
+
+Only the chunks under the camera exist, and the meshes of chunks that scroll out of view are reused
+for new ones.
 """
 
 import math
@@ -21,22 +23,20 @@ from render.scenery.terrain_geometry import (
     build_terrain_geometry,
 )
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
+from typing import Any
 
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-__pragma__("noskip")
-
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class TerrainChunkOptions:
-    """Size of the terrain chunks: `length` along Z, the grid `cell` size, and the chunks span X
-    from `x_min` over `columns` cells."""
+    """Size of the terrain chunks: `length` along Z and the grid `cell` size.
+
+    The chunks span X from `x_min` over `columns` cells.
+    """
 
     def __init__(self, length: float, cell: float, x_min: float, columns: int) -> None:
         # `length_`: Transcrypt cannot assign an attribute named `length`.
@@ -64,16 +64,19 @@ class ChunkChanges:
 
 
 def _empty_map() -> Any:
-    """An empty JavaScript `Map`."""
+    """Return an empty JavaScript `Map`."""
     __pragma__("js", "{}", "return new Map();")
     return None
 
 
 class TerrainChunks:
-    """The terrain as a row of chunks along Z (GFX-TERRAIN-14): only the chunks under the camera
-    exist, and the meshes of chunks that scroll out of view are reused for new ones (ENG-19).
+    """The terrain as a row of chunks along Z (GFX-TERRAIN-14).
 
-    The live chunks are kept in a JavaScript `Map` (insertion order)."""
+    Only the chunks under the camera exist, and the meshes of chunks that scroll out of view are
+    reused for new ones (ENG-19).
+
+    The live chunks are kept in a JavaScript `Map` (insertion order).
+    """
 
     def __init__(
         self,
@@ -111,7 +114,7 @@ class TerrainChunks:
         return ChunkSpan(index, z_min, z_min + self.options.length_)
 
     def cover(self, z_min: float, z_max: float) -> ChunkChanges:
-        """Keeps exactly the chunks that overlap [z_min, z_max]."""
+        """Keep exactly the chunks that overlap [z_min, z_max]."""
         first = math.floor(z_min / self.options.length_)
         last = math.floor(z_max / self.options.length_)
         removed: list[int] = []
@@ -129,12 +132,6 @@ class TerrainChunks:
                 _map_set(self._live, index, self._fill(mesh, index))
                 added.append(self.span(index))
         return ChunkChanges(added, removed)
-
-    def rebuild(self, source: Any) -> None:
-        """Rebuilds every chunk from a new height source (e.g. a new seed)."""
-        self.source = source
-        for index in _map_keys(self._live):
-            self._fill(_map_get(self._live, index), index)
 
     def _grid(self, index: int) -> TerrainGrid:
         options = self.options
@@ -179,7 +176,10 @@ def _map_size(cache: Any) -> int:
 
 
 def _map_keys(cache: Any) -> list[Any]:
-    """The keys of a JavaScript `Map`, as a list (a copy: safe to change the map while looping)."""
+    """Return the keys of a JavaScript `Map`, as a list.
+
+    A copy: safe to change the map while looping.
+    """
     __pragma__("js", "{}", "return Array.from(cache.keys());")
     return []
 

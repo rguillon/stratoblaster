@@ -1,6 +1,8 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/systems/gun_muzzles.py`."""
 
 import math
+from typing import Any
 
 import pytest
 
@@ -23,7 +25,7 @@ class _Source:
     def emitter(self) -> PlanePoint:
         return PlanePoint(self.x, self.y)
 
-    def place(self, muzzle, on_turret=False):  # type: ignore[no-untyped-def]
+    def place(self, muzzle: Any, on_turret: bool = False) -> Any:  # type: ignore[no-untyped-def]
         self.placed.append((muzzle, on_turret))
         mx, my, mh = muzzle
         return RaisedPoint(self.x + mx, self.y + my, mh)

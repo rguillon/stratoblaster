@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/input/hold_repeater.py`."""
 
 import pytest
@@ -62,5 +63,5 @@ def test_ui_input_06_repeats_come_in_press_order() -> None:
 
 @pytest.mark.parametrize(("delay", "interval"), [(0.1, 0.0), (0.1, -1.0), (-0.1, 0.1)])
 def test_ui_input_06_invalid_timing_is_refused(delay: float, interval: float) -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="interval_seconds must be > 0"):
         HoldRepeater(delay, interval)

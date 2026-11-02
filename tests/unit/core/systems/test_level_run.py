@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/systems/level_run.py`."""
 
 from types import SimpleNamespace
@@ -26,7 +27,7 @@ class _Bounds:
     max_y = 100
     center_x = 50
 
-    def half_width_at(self, y: float) -> float:
+    def half_width_at(self, _y: float) -> float:
         return 50
 
 
@@ -41,7 +42,7 @@ def _kind(health: float = 10, points: float = 100, y: float = 30) -> EnemyKindDe
     return EnemyKindDefinition(
         "still",
         "Still",
-        lambda area: [Still(50, y, EnemyStats("still", 4, health, points))],
+        lambda _area: [Still(50, y, EnemyStats("still", 4, health, points))],
     )
 
 
@@ -66,19 +67,19 @@ def _level(
 
 
 def _run(**overrides: object) -> LevelRun:
-    options: dict = dict(
-        screen=SCREEN,
-        level=_level(),
-        kinds=[_kind()],
-        weapon=GUN,
-        weapon_level=1,
-        ship=SHIP,
-        bounds=_Bounds(),
-        cull_margin=10,
-        max_enemy_age=60,
-        end_wait=1,
-        seed=1,
-    )
+    options: dict = {
+        "screen": SCREEN,
+        "level": _level(),
+        "kinds": [_kind()],
+        "weapon": GUN,
+        "weapon_level": 1,
+        "ship": SHIP,
+        "bounds": _Bounds(),
+        "cull_margin": 10,
+        "max_enemy_age": 60,
+        "end_wait": 1,
+        "seed": 1,
+    }
     options.update(overrides)
     return LevelRun(LevelRunOptions(**options))  # type: ignore[arg-type]
 
@@ -139,7 +140,7 @@ def test_game_ctrl_05_nothing_is_shot_while_the_player_holds_fire_back() -> None
 
 def test_enm_13_only_what_is_in_view_can_be_hit() -> None:
     """ENM-13, and GAME-WPN-16 for the player's shots."""
-    run = _run(level=_level([_wave(0)]), in_view=lambda x, y: False)
+    run = _run(level=_level([_wave(0)]), in_view=lambda _x, _y: False)
     for _ in range(10):
         _step(run, dt=0.1, fire=True)
     assert run.enemies.kills == 0
@@ -205,3 +206,12 @@ def test_dev_opt_02_seeking_clears_the_shots_in_flight() -> None:
     assert run.shots.active_count == 1
     run.seek(0)
     assert run.shots.active_count == 0
+
+
+def test_enm_04_a_wave_brings_in_the_kind_with_its_id_among_several() -> None:
+    other = EnemyKindDefinition(
+        "other", "Other", lambda _area: [Still(10, 10, EnemyStats("other", 4, 1, 1))]
+    )
+    run = _run(level=_level([_wave(0)]), kinds=[other, _kind(y=30)])
+    _step(run)
+    assert [e.model for e in run.enemies.enemies] == ["still"]

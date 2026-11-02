@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """e2e: World 2, its times of day and its final boss (specs/worlds/world-2/)."""
 
 import re
@@ -23,7 +24,7 @@ WORLD_2 = ["2-1", "2-2", "2-3", "2-4", "2-5"]
 
 
 def sky_at(page: Page, query: str, time: float) -> dict[str, Any]:
-    """The sky of the level opened with `query`, once its clock is past `time`."""
+    """Return the sky of the level opened with `query`, once its clock is past `time`."""
     open_debug(page, query)
     wait_for_level_time(page, time)
     sky: dict[str, Any] = game_state(page)["game"]["sky"]
@@ -46,8 +47,10 @@ def test_wld_2_02_the_world_2_row_shows_2_1_to_2_5_all_unlocked(page: Page) -> N
 def test_ui_level_08_a_level_can_be_confirmed_from_a_fresh_start_and_plays(
     page: Page, index: int, level_id: str
 ) -> None:
-    """Also UI-LEVEL-03 (none is locked), WLD-2-03 (about five minutes) and each level's duration
-    (LVL-2-1-02, LVL-2-2-02, LVL-2-3-02, LVL-2-4-02, LVL-2-5-02)."""
+    """Also UI-LEVEL-03 (none is locked) and WLD-2-03 (about five minutes).
+
+    And each level's duration (LVL-2-1-02, LVL-2-2-02, LVL-2-3-02, LVL-2-4-02, LVL-2-5-02).
+    """
     open_game(page)
     send_action(page, "confirm")
     send_action(page, "confirm")
@@ -101,8 +104,10 @@ def test_dev_opt_05_look_forces_a_time_of_day(page: Page) -> None:
 
 
 def test_fb_narwhal_15_k_destroys_the_narwhal_and_the_level_is_complete(page: Page) -> None:
-    """Also LVL-2-1-12 (2-1's final boss), WLD-2-02 (2-2 next), DEV-OPT-03 (`boss=`) and DEV-OPT-09
-    (K)."""
+    """Also LVL-2-1-12 (2-1's final boss), WLD-2-02 (2-2 next) and DEV-OPT-03 (`boss=`).
+
+    And DEV-OPT-09 (K).
+    """
     open_debug(page, "?level=2-1&boss=final")
     step_until(page, lambda: (boss(page) or {}).get("parts", 0), lambda parts: parts >= 4)
     destroy_boss(page, "Narwhal")

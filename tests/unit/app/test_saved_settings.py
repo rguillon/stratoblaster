@@ -1,8 +1,11 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/saved_settings.py`."""
 # (UI-SET-06, D-010).
 
 import pytest
+from helpers.memory_storage import MemoryStorage
 
+from app import saved_settings
 from app.saved_settings import (
     load_volumes,
     parse_volume,
@@ -10,7 +13,12 @@ from app.saved_settings import (
     saved_setting_keys,
 )
 from app.settings_menu import Volumes
-from host.key_value_storage import MemoryStorage
+
+# The JavaScript-only helpers as the module defines them: the app conftest replaces them with their
+# Python twins for every test, after this module is imported.
+_TRIMMED = saved_settings._trimmed
+_IS_STEP_TEXT = saved_settings._is_step_text
+_NUMBER_OF = saved_settings._number_of
 
 
 def test_ui_set_06_the_volume_keys_are_prefixed_with_the_game_id() -> None:
@@ -43,3 +51,13 @@ def test_ui_set_06_both_volumes_are_saved_on_a_change() -> None:
     assert storage.get("game_sfx_volume") == "9"
     loaded = load_volumes(storage, "game", 10, Volumes(0, 0))
     assert (loaded.music, loaded.sfx) == (2, 9)
+
+
+def test_ui_set_06_the_text_helpers_are_javascript_only() -> None:
+    """`trim`, the regular expression and `Number` run in the browser.
+
+    CPython runs only the placeholders: no text, not a step, the number 0.
+    """
+    assert _TRIMMED(" 7 ") == ""
+    assert _IS_STEP_TEXT("7") is False
+    assert _NUMBER_OF("7") == 0

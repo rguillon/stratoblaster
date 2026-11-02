@@ -1,22 +1,24 @@
-"""Materials, textures and shadows of a scenery scene (phases 4, 8-10): the kit's interfaces,
-and the plain stand-in kit that needs no WebGL.
+# Copyright (c) 2026 Renaud Guillon
+"""Materials, textures and shadows of a scenery scene (phases 4, 8-10).
+
+The kit's interfaces, and the plain stand-in kit that needs no WebGL.
 
 The interfaces are classes here. The materials are plain Python objects with a `material` attribute
-and a `set`
-method, so the kit's callers use them.
+and a `set` method, so the kit's callers use them.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
 from render.babylon import color3, color3_black, is_instance_of, new_standard_material
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
+from typing import Any, Protocol
 
 Rgb = tuple[float, float, float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class FogState:
@@ -31,7 +33,7 @@ class FogState:
 class CloudState:
     """What a cloud layer shows on one frame."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         coverage: float,
         opacity: float,
@@ -41,8 +43,10 @@ class CloudState:
         offset_x: float,
         offset_z: float,
     ) -> None:
-        """`color` follows the time of day (GFX-SKY-13) and `fog` is the haze it fades into. The
-        offsets are the drift of the pattern, in world units along X and Z."""
+        """`color` follows the time of day (GFX-SKY-13) and `fog` is the haze it fades into.
+
+        The offsets are the drift of the pattern, in world units along X and Z.
+        """
         self.coverage = coverage
         self.opacity = opacity
         self.color = color
@@ -53,8 +57,10 @@ class CloudState:
 
 
 class GroundTransform:
-    """How the ground is drawn (`PlayfieldCameraLook.groundScale`): a world point is `scale`
-    times its ground point, moved `offset_z` along Z."""
+    """How the ground is drawn (`PlayfieldCameraLook.groundScale`).
+
+    A world point is `scale` times its ground point, moved `offset_z` along Z.
+    """
 
     def __init__(self, scale: float, offset_z: float) -> None:
         self.scale = scale
@@ -64,7 +70,7 @@ class GroundTransform:
 class SceneryKitFrame:
     """What the materials need to know on each frame."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         time: float,
         camera_position: Any,
@@ -73,8 +79,10 @@ class SceneryKitFrame:
         ground: GroundTransform | None = None,
     ) -> None:
         """`time`: seconds since the scene started (animations, not the level time).
+
         `atmosphere`: the level's look here (GFX-SKY-04): shadows' darkness, ground lights.
-        `ground`: see {@link GroundTransform}; None when drawn as it is."""
+        `ground`: see {@link GroundTransform}; None when drawn as it is.
+        """
         self.time = time
         self.camera_position = camera_position
         self.sea_enabled = sea_enabled
@@ -83,8 +91,10 @@ class SceneryKitFrame:
 
 
 class PropMaterials:
-    """Vertex-coloured materials of the props: the lit structure, the self-lit accents and the
-    windows (D-210, set by the real kit: see `window_material_visual.py`; None: not drawn)."""
+    """Vertex-coloured materials of the props: the lit structure, the self-lit accents.
+
+    The windows (D-210, set by the real kit: see `window_material_visual.py`; None: not drawn).
+    """
 
     def __init__(self, structure: Any, lights: Any, windows: Any = None) -> None:
         self.structure = structure
@@ -104,8 +114,10 @@ class SceneryKitContext:
     """What a kit is built from."""
 
     def __init__(self, look: Any, sun: Any, sea_level: float, sea_size: SeaSize, seed: int) -> None:
-        """`sea_level`: height of the sea (0 when the level has none). `seed`: seed of the
-        generated textures."""
+        """`sea_level`: height of the sea (0 when the level has none).
+
+        `seed`: seed of the generated textures.
+        """
         self.look = look
         self.sun = sun
         self.sea_level = sea_level
@@ -121,12 +133,16 @@ class CloudMaterial(Protocol):
 
     material: Any
 
-    def set(self, state: CloudState) -> None: ...
+    def set(self, state: CloudState) -> None:
+        """Set."""
 
 
 class SceneryKit(Protocol):
-    """Materials, textures and shadows of a scenery scene. The real kit needs a WebGL engine; the
-    plain kit works anywhere, including the NullEngine of the unit tests."""
+    """Materials, textures and shadows of a scenery scene.
+
+    The real kit needs a WebGL engine; the plain kit works anywhere, including the NullEngine of the
+    unit tests.
+    """
 
     terrain: Any
     sea: Any
@@ -136,18 +152,25 @@ class SceneryKit(Protocol):
     rings: Callable[[Any, Any], Any]
     plume: Callable[[Any, Any], Any]
 
-    def cloud(self, look: Any) -> CloudMaterial: ...
+    def cloud(self, look: Any) -> CloudMaterial:
+        """Cloud."""
 
-    def aurora(self) -> Any: ...
+    def aurora(self) -> Any:
+        """Aurora."""
 
-    def imposter_atlas(self, look: Any, kinds: int) -> Any:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
-        """D-211: an `ImposterAtlas` of `look` (an imposter look, see `imposters.py`) for `kinds`
-        kinds of prop, or None (no look, or no imposters: the props drawn as they are)."""
+    def imposter_atlas(self, look: Any, kinds: int) -> Any:
+        """D-211: an `ImposterAtlas` of `look` for `kinds` kinds.
+
+        See `imposters.py` for the imposter look. The result is None when there is no look, or no
+        imposters (the props are drawn as they are).
+        """
         ...
 
-    def add_shadow_caster(self, mesh: Any) -> None: ...
+    def add_shadow_caster(self, mesh: Any) -> None:
+        """Add shadow caster."""
 
-    def update(self, frame: SceneryKitFrame) -> None: ...
+    def update(self, frame: SceneryKitFrame) -> None:
+        """Update."""
 
 
 SceneryKitFactory = Callable[[Any, SceneryKitContext], SceneryKit]
@@ -160,8 +183,10 @@ def _or_default(value: Any, fallback: Any) -> Any:
 
 
 def set_ground_lights(materials: PropMaterials, glow: float) -> None:
-    """Sets how bright the props' self-lit accents (windows, neon, street and car lights) are
-    (GFX-SKY-08: off by day, on at dusk and night)."""
+    """Set how bright the props' self-lit accents (windows, neon, street and car lights) are.
+
+    GFX-SKY-08: off by day, on at dusk and night.
+    """
     if is_instance_of(materials.lights, "StandardMaterial"):
         materials.lights.emissiveColor.set(glow, glow, glow)
     if is_instance_of(materials.windows, "StandardMaterial"):
@@ -173,8 +198,10 @@ LIGHTS_Z_OFFSET = -2
 
 
 def create_prop_materials(scene: Any, look: Any) -> PropMaterials:
-    """Vertex-coloured materials of the props: lit structure, toned by the world (GFX-READ-02),
-    and self-lit accents."""
+    """Return the vertex-coloured materials of the props.
+
+    The lit structure, toned by the world (GFX-READ-02), and the self-lit accents.
+    """
     structure = new_standard_material("prop-structure", scene)
     tone = _or_default(look.tone, 1)
     structure.diffuseColor = color3(tone, tone, tone)
@@ -193,8 +220,11 @@ def create_prop_materials(scene: Any, look: Any) -> PropMaterials:
 
 
 def create_road_material(scene: Any) -> Any:
-    """Vertex-coloured, lit, see-through material of the road ribbons (their vertex alpha fades
-    the edges), pulled towards the camera in depth so they never flicker against the terrain."""
+    """Vertex-coloured, lit, see-through material of the road ribbons.
+
+    Their vertex alpha fades the edges, and they are pulled towards the camera in depth so they
+    never flicker against the terrain.
+    """
     roads = new_standard_material("roads", scene)
     roads.diffuseColor = color3(1, 1, 1)
     roads.specularColor = color3_black()
@@ -213,7 +243,7 @@ def _plain_material(label: str, color: Rgb, scene: Any) -> Any:
 
 
 def _plain_sea(scene: Any, sea: Any) -> Any:
-    """A flat sea; phase 10: lava glows by itself, opaque."""
+    """Return a flat sea; phase 10: lava glows by itself, opaque."""
     material = _plain_material("sea", sea.color, scene)
     material.alpha = sea.alpha
     if sea.lava:
@@ -229,9 +259,9 @@ class PlainMaterial:
     def __init__(self, material: Any) -> None:
         self.material = material
 
-    def set(self, frame: Any) -> None:
+    def set(self, _frame: Any) -> None:
         """Nothing to drive."""
-        return None
+        return
 
 
 class PlainCloudMaterial:
@@ -241,6 +271,7 @@ class PlainCloudMaterial:
         self.material = material
 
     def set(self, state: CloudState) -> None:
+        """Set."""
         self.material.alpha = state.opacity if state.coverage > 0 else 0
         self.material.diffuseColor.set(state.color[0], state.color[1], state.color[2])
 
@@ -264,8 +295,10 @@ def _plain_plume(scene: Any, kind: Any) -> PlainMaterial:
 
 
 class PlainSceneryKit:
-    """Flat-coloured stand-ins for every material, with no texture and no shadow
-    (`create_plain_scenery_kit`)."""
+    """Flat-coloured stand-ins for every material, with no texture and no shadow.
+
+    See `create_plain_scenery_kit`.
+    """
 
     def __init__(self, scene: Any, look: Any) -> None:
         self._scene = scene
@@ -278,26 +311,30 @@ class PlainSceneryKit:
         self.plume = _plain_plume
 
     def cloud(self, look: Any) -> PlainCloudMaterial:
+        """Cloud."""
         return PlainCloudMaterial(
             _plain_material("cloud-" + str(look.altitude), look.color, self._scene)
         )
 
-    def imposter_atlas(self, look: Any, kinds: int) -> Any:  # noqa: ANN401 (a JavaScript handle or config record, ENG-14)
+    def imposter_atlas(self, _look: Any, _kinds: int) -> Any:
         """No imposters (they need a render target): the props are drawn as they are."""
         return None
 
     def aurora(self) -> PlainMaterial:
+        """Aurora."""
         material = _plain_material("aurora", (0.2, 1, 0.5), self._scene)
         material.alpha = 0.3
         return PlainMaterial(material)
 
-    def add_shadow_caster(self, mesh: Any) -> None:
-        return None
+    def add_shadow_caster(self, _mesh: Any) -> None:
+        """Add shadow caster."""
+        return
 
     def update(self, frame: SceneryKitFrame) -> None:
+        """Update."""
         set_ground_lights(self.props, frame.atmosphere.ground_lights)
 
 
 def create_plain_scenery_kit(scene: Any, context: SceneryKitContext) -> PlainSceneryKit:
-    """A flat-coloured scenery kit (the `SceneryKitFactory` that needs no WebGL)."""
+    """Return a flat-coloured scenery kit (the `SceneryKitFactory` that needs no WebGL)."""
     return PlainSceneryKit(scene, context.look)

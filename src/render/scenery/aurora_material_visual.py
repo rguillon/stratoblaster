@@ -1,14 +1,15 @@
+# Copyright (c) 2026 Renaud Guillon
 """The aurora's material (GFX-SKY-17): curtains added on top of the scene, no depth written."""
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-from org.transcrypt.stubs.browser import __pragma__
-
 from render.babylon import babylon_constant, new_glsl_material, vector2
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 VERTEX = """
 precision highp float;
@@ -55,13 +56,17 @@ class AuroraMaterialImpl:
         self._fog = fog
 
     def set(self, frame: Any) -> None:
+        """Set the aurora's shader parameters from `frame`."""
         self.material.setVector2("auroraParams", self._params.set(frame.time, frame.strength))
         self.material.setVector2("fogRange", self._fog.set(frame.fog.start, frame.fog.end))
         self.material.setVector3("cameraPosition", frame.camera_position)
 
 
 def create_aurora_material(scene: Any) -> AuroraMaterialImpl:
-    """The aurora's material (GFX-SKY-17): curtains added on top of the scene, no depth written."""
+    """Return the aurora's material (GFX-SKY-17).
+
+    Curtains added on top of the scene, no depth written.
+    """
     material = new_glsl_material(
         "aurora",
         scene,

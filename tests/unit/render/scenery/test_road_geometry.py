@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/scenery/road_geometry.py` (GFX-ROAD-06)."""
 
 from typing import Any
@@ -26,7 +27,7 @@ RED = (1.0, 0.0, 0.0)
 class Flat:
     """Flat ground at height 0."""
 
-    def height(self, x: float, z: float) -> float:
+    def height(self, _x: float, _z: float) -> float:
         return 0.0
 
 
@@ -75,6 +76,15 @@ def test_across_of_a_zero_length_step_is_still_a_unit_vector() -> None:
     run = [RoadPoint(0, 0, 1), RoadPoint(0, 0, 1)]
     nx, nz = _across(run, 0)
     assert nx**2 + nz**2 == pytest.approx(1)
+
+
+def test_a_street_ending_on_a_repeated_point_is_not_pushed_past_that_end() -> None:
+    street = Road(2, "street", 6, 2, [RoadPoint(0, 0, 6), RoadPoint(0, 10, 6), RoadPoint(0, 10, 6)])
+    points = _ribbon_points(street, [])
+    # The last step has no length, so no direction: that end stays put (nothing divides by 0).
+    assert len(points) == 5
+    assert (points[-1].x, points[-1].z) == pytest.approx((0, 10))
+    assert points[0].z == pytest.approx(-3)
 
 
 def test_a_street_reaches_past_its_end_points_by_half_its_width() -> None:
@@ -142,7 +152,7 @@ def test_the_middles_of_streets_go_to_their_own_geometry_opaque() -> None:
 def test_the_centre_line_is_painted_over_the_ribbons(monkeypatch: pytest.MonkeyPatch) -> None:
     painted: list[Any] = []
 
-    def fake_paint(painter: Any, roads: Any, z_min: float, z_max: float) -> None:
+    def fake_paint(_painter: Any, roads: Any, z_min: float, z_max: float) -> None:
         painted.append((roads, z_min, z_max))
 
     monkeypatch.setattr(road_geometry, "paint_centre_lines", fake_paint)
@@ -158,7 +168,7 @@ def test_the_geometry_is_a_coloured_geometry() -> None:
 @pytest.fixture(autouse=True)
 def _babylon(monkeypatch: pytest.MonkeyPatch) -> None:
     patch_babylon(monkeypatch, road_geometry)
-    monkeypatch.setattr(road_geometry, "cached_street_lines", lambda roads: [])
+    monkeypatch.setattr(road_geometry, "cached_street_lines", lambda _roads: [])
     monkeypatch.setattr(road_geometry, "road_z_span", _span)
 
 

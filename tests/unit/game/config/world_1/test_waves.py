@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/world_1/waves.py`."""
+
+from typing import Any
 
 import pytest
 from helpers.config_checks import assert_beats_well_formed, enemy_kind_ids
@@ -22,7 +25,7 @@ SCRIPTS = [WAVES_1_1, WAVES_1_2, WAVES_1_3, WAVES_1_4, WAVES_1_5]
 
 
 @pytest.mark.parametrize("beats", SCRIPTS)
-def test_wld_1_19_each_beat_names_a_kind_and_a_side_in_order(beats) -> None:
+def test_wld_1_19_each_beat_names_a_kind_and_a_side_in_order(beats: Any) -> None:
     """Each level's written beats (LVL-1-1-09 … LVL-1-5-09), of known kinds (WLD-1-17)."""
     assert_beats_well_formed(beats, KINDS)
 
@@ -73,3 +76,24 @@ def test_wld_1_21_fill_adds_filler_groups_into_the_lulls_between_beats() -> None
     assert len(filled) > len(beats)
     assert all(b[0] >= 0 for b in filled)
     assert filled == sorted(filled, key=lambda b: b[0])
+
+
+def test_wld_1_21_fill_puts_the_beats_in_time_order_first() -> None:
+    beats = [[20, "gnat", 1, 0, "top", 0.5], [0, "hornet", 1, 0, "top", 0.5]]
+    filled = fill(beats, record({"kinds": ["scout"], "maxGap": [5, 5]}))
+    assert filled[0][:2] == [0, "hornet"]
+    assert [b[1] for b in filled if b[0] == 20] == ["gnat"]
+    assert filled == sorted(filled, key=lambda b: b[0])
+
+
+def test_wld_1_21_a_single_beat_has_no_lull_to_fill() -> None:
+    beat = [10, "gnat", 1, 0, "top", 0.5]
+    assert fill([beat], record({"kinds": ["scout"], "maxGap": [5, 2]})) == [beat]
+
+
+def test_wld_1_21_a_filler_kind_left_empty_leaves_its_slot_quiet() -> None:
+    beats = [[0, "gnat", 1, 0, "top", 0.5], [20, "gnat", 1, 0, "top", 0.5]]
+    filled = fill(beats, record({"kinds": ["scout", ""], "maxGap": [5, 5]}))
+    fillers = [b for b in filled if b not in beats]
+    # Every 5 s from 5 to 15: scout, nothing, scout.
+    assert [(b[0], b[1]) for b in fillers] == [(5, "scout"), (15, "scout")]

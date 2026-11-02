@@ -1,24 +1,26 @@
-"""FB-REFINERY-TITAN-03: the Refinery Titan's destroyable parts (fuel bladders, rotary turrets,
-missile brood), each drawn around its centre `at` (model
-space: logical pixels, nose +Z, Y up).
+# Copyright (c) 2026 Renaud Guillon
+"""The Refinery Titan's destroyable parts (FB-REFINERY-TITAN-03).
+
+Fuel bladders, rotary turrets and a missile brood, each drawn around its centre `at` (model space:
+logical pixels, nose +Z, Y up).
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from game.config.boss_look import BOSS_LOOK
+from game.config.enemy_look import ENEMY_LOOK
+from game.view.bosses.world_1_organic_kit import F, graft, polygon, vein_line
+from game.view.enemies.enemy_shapes import POD_SECTION, decal
+from render.geometry.solids import Placement
 
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.view.bosses.world_1_organic_kit import F, graft, polygon, vein_line  # noqa: E402
-from game.view.enemies.enemy_shapes import POD_SECTION, decal  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Vec3 = list[Any]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 WHITE = [1, 1, 1]
@@ -31,9 +33,9 @@ TITAN_DECK = {"beam": 3, "sponson": 8, "back": 13}
 
 
 def rect(w: float, d: float, at: Any = None) -> list[Any]:
-    """A rectangle `w` wide and `d` long around (x, z)."""
-    x = 0 if at == None else at[0]  # noqa: E711 (absent value is undefined in the browser, ENG-161)
-    z = 0 if at == None else at[1]  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    """Return a rectangle `w` wide and `d` long around (x, z)."""
+    x = 0 if at == None else at[0]
+    z = 0 if at == None else at[1]
     return [
         [x - w / 2, z - d / 2],
         [x + w / 2, z - d / 2],
@@ -61,8 +63,10 @@ TANK_WINDOWS = [-6, 6]
 
 
 def draw_tank(parts: Any, at_point: Vec3) -> None:
-    """FB-REFINERY-TITAN-03: a big fuel bladder held in the limbs, a swollen sac of flesh, orange
-    bands of neon and glowing veins on it, grafted valves at its ends."""
+    """FB-REFINERY-TITAN-03: a big fuel bladder held in the limbs, a swollen sac of flesh.
+
+    Orange bands of neon and glowing veins on it, grafted valves at its ends.
+    """
     hull = parts.hull
     flesh = parts.flesh
     neon = parts.neon
@@ -111,8 +115,10 @@ BARREL_RADIUS = 1.3
 
 
 def draw_turret(p: Any, at_point: Vec3) -> None:
-    """FB-REFINERY-TITAN-03: a rotary turret's base on the front apron, a swollen growth plated
-    round its crown, under its turret (`draw_rotary`)."""
+    """FB-REFINERY-TITAN-03: a rotary turret's base on the front apron.
+
+    A swollen growth plated round its crown, under its turret (`draw_rotary`).
+    """
     x = at_point[0]
     y = at_point[1]
     z = at_point[2]
@@ -123,7 +129,7 @@ def draw_turret(p: Any, at_point: Vec3) -> None:
 
 
 def draw_rotary(p: Any, at_point: Vec3) -> None:
-    """A rotary turret: its housing and three barrels with charge-lit muzzles, on its base."""
+    """Draw a rotary turret: its housing and three barrels with charge-lit muzzles, on its base."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -165,8 +171,10 @@ BLOCK = [
 
 
 def draw_missile_battery(p: Any, at_point: Vec3) -> None:
-    """FB-REFINERY-TITAN-03: a missile brood on the body's back, a swollen mound under a grafted
-    plate with six hatches lit as it loads."""
+    """FB-REFINERY-TITAN-03: a missile brood on the body's back.
+
+    A swollen mound under a grafted plate with six hatches lit as it loads.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge

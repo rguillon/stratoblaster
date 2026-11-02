@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """3-2: the Toucan, the mini boss of the Rainforest level (specs/bosses/mini/3-2-toucan.md).
 
 Offsets in px from the boss's centre, X right and Y up (its nose, the beak, points down, at -Y). The
@@ -39,63 +40,59 @@ TOUCAN_CREST = [[0, -6, 17]]
 # 3-2: a stubby gunship with a huge bright beak, yellow and orange neon. Its beak cannon fires a
 # laser after its warning line, two wing pods fire fans and shield the core (MB-TOUCAN-09). The beak
 # hangs in front of the core, so it can always be shot.
-_TOUCAN = record(
-    {
-        "id": "toucan",
-        # Angry after each destroyed part (phase 7 review, MB-TOUCAN-11).
-        "rage": rage.curtain(5.5, "orange", "red"),
-        # Its core and parts, and its points (MB-TOUCAN-13).
-        "stats": stats(
-            record(
-                {
-                    "id": "toucan",
-                    "name": "Toucan",
-                    "size": 3,
-                    "coreRadius": 17,
-                    "coreHealth": 1640,
-                    "points": 6000,
-                    "groundSpeed": 0.6,
-                    "parts": [
-                        part("pod-left", [-38, 2], 13, 780),
-                        part("pod-right", [38, 2], 13, 780),
-                        part("beak", [0, -38], 12, 580, {"shields": False}),
-                    ],
-                }
-            )
-        ),
-        # Where it stops and how it moves in place (MB-TOUCAN-07).
-        "stopFraction": 0.73,
-        "sway": {"amplitude": 60, "period": 7},
-        "bob": {"amplitude": 8, "period": 3.6},
-        "guns": {
-            "core": {"gun": TOUCAN_CHEEK_GUNS, "ring": TOUCAN_CREST},
-            "pod-left": {"gun": mirror(TOUCAN_POD_GUNS)},
-            "pod-right": {"gun": TOUCAN_POD_GUNS},
-            "beak": {"laser": TOUCAN_BEAK_TIP},
-        },
-        # The parts' volleys, then the core's pattern per stage (MB-TOUCAN-10).
-        "stages": stages(
+_TOUCAN = record({
+    "id": "toucan",
+    # Angry after each destroyed part (phase 7 review, MB-TOUCAN-11).
+    "rage": rage.curtain(5.5, "orange", "red"),
+    # Its core and parts, and its points (MB-TOUCAN-13).
+    "stats": stats(
+        record({
+            "id": "toucan",
+            "name": "Toucan",
+            "size": 3,
+            "coreRadius": 17,
+            "coreHealth": 1640,
+            "points": 6000,
+            "groundSpeed": 0.6,
+            "parts": [
+                part("pod-left", [-38, 2], 13, 780),
+                part("pod-right", [38, 2], 13, 780),
+                part("beak", [0, -38], 12, 580, {"shields": False}),
+            ],
+        })
+    ),
+    # Where it stops and how it moves in place (MB-TOUCAN-07).
+    "stopFraction": 0.73,
+    "sway": {"amplitude": 60, "period": 7},
+    "bob": {"amplitude": 8, "period": 3.6},
+    "guns": {
+        "core": {"gun": TOUCAN_CHEEK_GUNS, "ring": TOUCAN_CREST},
+        "pod-left": {"gun": mirror(TOUCAN_POD_GUNS)},
+        "pod-right": {"gun": TOUCAN_POD_GUNS},
+        "beak": {"laser": TOUCAN_BEAK_TIP},
+    },
+    # The parts' volleys, then the core's pattern per stage (MB-TOUCAN-10).
+    "stages": stages(
+        [
+            # The pods' fans cross under the gunship, each leaning towards the other side.
+            volley.fan("pod-left", 2.4, 3, 14, ORANGE, 0.9, 10),
+            volley.fan("pod-right", 2.4, 3, 14, ORANGE, 2.1, -10),
+            volley.laser("beak", 6, 1.4, 3),
+        ],
+        [
+            [volley.burst("core", 2.8, 3, 0.15, RED, 1.4)],
+            [volley.burst("core", 2.5, 4, 0.13, RED, 0.8)],
             [
-                # The pods' fans cross under the gunship, each leaning towards the other side.
-                volley.fan("pod-left", 2.4, 3, 14, ORANGE, 0.9, 10),
-                volley.fan("pod-right", 2.4, 3, 14, ORANGE, 2.1, -10),
-                volley.laser("beak", 6, 1.4, 3),
+                volley.burst("core", 2.6, 4, 0.12, RED, 0.6),
+                volley.aimed("core", 2.6, 3, 12, MAGENTA, 1.9),
             ],
             [
-                [volley.burst("core", 2.8, 3, 0.15, RED, 1.4)],
-                [volley.burst("core", 2.5, 4, 0.13, RED, 0.8)],
-                [
-                    volley.burst("core", 2.6, 4, 0.12, RED, 0.6),
-                    volley.aimed("core", 2.6, 3, 12, MAGENTA, 1.9),
-                ],
-                [
-                    volley.ring("core", 1.3, 12, 11, PURPLE, 0.4),
-                    volley.burst("core", 2.4, 3, 0.14, RED, 1),
-                ],
+                volley.ring("core", 1.3, 12, 11, PURPLE, 0.4),
+                volley.burst("core", 2.4, 3, 0.14, RED, 1),
             ],
-        ),
-    }
-)
+        ],
+    ),
+})
 
 # Its hidden weapons (boss transformations, D-224, MB-TOUCAN-12): at transformation 1 its back
 # plating bursts off, baring a dark metal frame, and a pair of missile racks unfold.

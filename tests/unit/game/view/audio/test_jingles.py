@@ -1,10 +1,11 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/audio/jingles.py`."""
 
 from game.view.audio.instruments import DRUM_PITCH
 from game.view.audio.jingles import CHECKPOINT, COMPLETE, JINGLES, OVER, jingle, line
 
 
-def test_aud_music_10_line_builds_notes_from_beat_length_pitch_triples():
+def test_aud_music_10_line_builds_notes_from_beat_length_pitch_triples() -> None:
     notes = line("lead-saw", [[0, 0.5, 72], [1, 2, 60]], 0.9)
     assert [(n.beat, n.beats, n.pitch, n.velocity, n.instrument) for n in notes] == [
         (0, 0.5, 72, 0.9, "lead-saw"),
@@ -12,7 +13,7 @@ def test_aud_music_10_line_builds_notes_from_beat_length_pitch_triples():
     ]
 
 
-def test_aud_music_10_jingle_is_a_track_played_once_with_sorted_notes():
+def test_aud_music_10_jingle_is_a_track_played_once_with_sorted_notes() -> None:
     notes = line("bell", [[2, 1, 80], [0, 1, 79]], 1)
     track = jingle("jingle-test", 100, 4, notes)
     assert track.id == "jingle-test"
@@ -22,7 +23,7 @@ def test_aud_music_10_jingle_is_a_track_played_once_with_sorted_notes():
     assert [n.beat for n in track.notes] == [0, 2]
 
 
-def test_aud_music_10_the_three_jingles_are_played_once():
+def test_aud_music_10_the_three_jingles_are_played_once() -> None:
     assert set(JINGLES) == {"complete", "over", "checkpoint"}
     for track in JINGLES.values():
         assert track.loop is False
@@ -30,7 +31,7 @@ def test_aud_music_10_the_three_jingles_are_played_once():
         assert beats == sorted(beats)
 
 
-def test_aud_music_10_level_complete_is_a_rising_fanfare_with_a_tom_roll():
+def test_aud_music_10_level_complete_is_a_rising_fanfare_with_a_tom_roll() -> None:
     assert JINGLES["complete"] is COMPLETE
     assert COMPLETE.id == "jingle-complete"
     assert COMPLETE.bpm == 132
@@ -41,14 +42,14 @@ def test_aud_music_10_level_complete_is_a_rising_fanfare_with_a_tom_roll():
     assert lead[0] < lead[-1]
 
 
-def test_aud_music_10_game_over_falls_slowly_on_brass():
+def test_aud_music_10_game_over_falls_slowly_on_brass() -> None:
     assert JINGLES["over"] is OVER
     assert OVER.bpm == 84
     lead = [n.pitch for n in OVER.notes if n.instrument == "lead-brass"]
     assert lead == sorted(lead, reverse=True)
 
 
-def test_aud_music_10_checkpoint_is_a_short_bell_chime():
+def test_aud_music_10_checkpoint_is_a_short_bell_chime() -> None:
     assert JINGLES["checkpoint"] is CHECKPOINT
     assert CHECKPOINT.beats == 3
     assert {n.instrument for n in CHECKPOINT.notes} == {"bell"}

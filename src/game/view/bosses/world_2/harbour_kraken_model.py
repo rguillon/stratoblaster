@@ -1,36 +1,35 @@
-"""The Harbour Kraken (FB-HARBOUR-KRAKEN-01 to FB-HARBOUR-KRAKEN-06, 2-2)
+# Copyright (c) 2026 Renaud Guillon
+"""The Harbour Kraken (FB-HARBOUR-KRAKEN-01 to FB-HARBOUR-KRAKEN-06, 2-2).
 
 Logical pixels, nose +Z, Y up (towards the camera). A cargo ship flying over the harbour: a long
 hull, a forecastle with its laser emitter and twin guns, a bridge tower amidships, four crane
 pedestals, the container bay at the stern.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.bosses.world_2.harbour_kraken import CRANE_REST, HARBOUR_KRAKEN
 from game.config.record import record
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.boss_model import build_boss_model
 from game.view.bosses.final_boss_shapes import barrels, edge_strips, mirrored
 from game.view.bosses.mini_boss_greebles import lamps, mast, plate, rect
 from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H, offset
-from game.view.bosses.world_2.fjord_lynx_frost import (  # noqa: E402
+from game.view.bosses.world_2.fjord_lynx_frost import (
     icicles,
     snow_cap,
     spread,
 )
-from game.view.bosses.world_2.harbour_kraken_cargo import (  # noqa: E402
+from game.view.bosses.world_2.harbour_kraken_cargo import (
     container_bay,
     hatch_covers,
 )
-from game.view.bosses.world_2.harbour_kraken_cranes import (  # noqa: E402
+from game.view.bosses.world_2.harbour_kraken_cranes import (
     DECK_Y,
     ORANGE_NEON,
     crane_limbs,
     grab,
     pedestal,
 )
-from game.view.bosses.world_2.w2_organic import (  # noqa: E402
+from game.view.bosses.world_2.w2_organic import (
     ICE_FLESH,
     crystals,
     fringe,
@@ -42,40 +41,38 @@ from game.view.enemies.organic_parts import reactor_sac
 from render.geometry.organic import SegmentedBody, organ
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The hull seen from above (right half, bow to stern).
-HULL = mirrored(
-    [
-        [0, 78],
-        [10, 72],
-        [22, 56],
-        [28, 36],
-        [30, 10],
-        [30, -40],
-        [27, -58],
-        [18, -66],
-        [0, -66],
-    ]
-)
+HULL = mirrored([
+    [0, 78],
+    [10, 72],
+    [22, 56],
+    [28, 36],
+    [30, 10],
+    [30, -40],
+    [27, -58],
+    [18, -66],
+    [0, -66],
+])
 # Heights of the hull: its keel, its rim, its deck.
 HULL_Y = [-7.0, -1.0, DECK_Y]
 # The forecastle, raised over the bow (right half).
-FORECASTLE = mirrored(
-    [
-        [0, 72],
-        [9, 68],
-        [19, 54],
-        [22, 48],
-        [0, 48],
-    ]
-)
+FORECASTLE = mirrored([
+    [0, 72],
+    [9, 68],
+    [19, 54],
+    [22, 48],
+    [0, 48],
+])
 FORECASTLE_TOP = 8
 # The bridge tower amidships (loft stations along Z: z, half width, bottom, top).
 BRIDGE = [
@@ -97,8 +94,10 @@ GUNS = [9.0, 9.5, 58.0]
 
 
 def draw_hull(p: EnemyParts) -> None:
-    """The hull, its orange-lit rim, the forecastle, frost and icicles along its sides
-    (FB-HARBOUR-KRAKEN-05)."""
+    """Draw the hull, its orange-lit rim and the forecastle.
+
+    Frost and icicles along its sides (FB-HARBOUR-KRAKEN-05).
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -144,7 +143,10 @@ def draw_hull(p: EnemyParts) -> None:
 
 
 def draw_bridge(p: EnemyParts) -> None:
-    """The bridge tower: a lofted block, dark windows lit as it charges, a funnel and a mast."""
+    """Draw the bridge tower.
+
+    A lofted block, dark windows lit as it charges, a funnel and a mast.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -165,8 +167,10 @@ def draw_bridge(p: EnemyParts) -> None:
 
 
 def draw_bow(p: EnemyParts) -> None:
-    """The bow (FB-HARBOUR-KRAKEN-03): the laser emitter, its neon rings, and the twin guns either
-    side of it."""
+    """Draw the bow (FB-HARBOUR-KRAKEN-03).
+
+    The laser emitter, its neon rings, and the twin guns either side of it.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -194,7 +198,7 @@ def draw_bow(p: EnemyParts) -> None:
 
 
 def draw_stern(p: EnemyParts) -> None:
-    """The stern: the reactors and the hull's rudder fins."""
+    """Draw the stern: the reactors and the hull's rudder fins."""
     for s in SIDES:
         reactor_sac(p, [s * 12, 1.5, -66], 4, ORANGE_NEON, ICE_FLESH.graphite)
         p.flesh.box([1.4, 6, 8], ICE_FLESH.sinew, Placement([s * 21, -6, -62]))
@@ -202,7 +206,7 @@ def draw_stern(p: EnemyParts) -> None:
 
 
 def draw_core(p: EnemyParts) -> None:
-    """The core body: hull, bridge, bow, stern, hatches, and the crane pedestals."""
+    """Draw the core body: hull, bridge, bow, stern, hatches, and the crane pedestals."""
     draw_hull(p)
     draw_bridge(p)
     draw_bow(p)
@@ -217,26 +221,26 @@ def draw_core(p: EnemyParts) -> None:
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
-    """The `BossDrawing` of a boss model: what the model is drawn from."""
+    """Return the `BossDrawing` of a boss model: what the model is drawn from."""
     return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
 
 
 def build_harbour_kraken(scene: Any) -> BuiltEnemyModel:
-    """FB-HARBOUR-KRAKEN-01, FB-HARBOUR-KRAKEN-04: the Harbour Kraken, a cargo crane-ship with four
-    crane arms swinging at the shoulder and the elbow, a grab cannon hanging from each, orange neon,
-    frost over its deck.
+    """FB-HARBOUR-KRAKEN-01, FB-HARBOUR-KRAKEN-04: the Harbour Kraken.
+
+    A cargo crane-ship with four crane arms swinging at the shoulder and the elbow, a grab cannon
+    hanging from each, orange neon, frost over its deck.
+
     FB-HARBOUR-KRAKEN-02: now a living kraken, a shelled mantle of cold flesh with a head and beak
     amidships, four tentacles ending in clawed gun-fists, a brood sac of eggs at its stern.
     """
-    parts = record(
-        {
-            "crane-fore-left": grab,
-            "crane-fore-right": grab,
-            "crane-aft-left": grab,
-            "crane-aft-right": grab,
-            "container-bay": container_bay,
-        }
-    )
+    parts = record({
+        "crane-fore-left": grab,
+        "crane-fore-right": grab,
+        "crane-aft-left": grab,
+        "crane-aft-right": grab,
+        "container-bay": container_bay,
+    })
     return build_boss_model(
         HARBOUR_KRAKEN,
         scene,

@@ -1,26 +1,29 @@
-"""One model per enemy model key (`EnemyStats.model`): the kinds of specs/enemies/*.md, each
-generated in code (ENM-34, GFX-ART-01)"""
+# Copyright (c) 2026 Renaud Guillon
+"""One model per enemy model key (`EnemyStats.model`): the kinds of specs/enemies/*.md.
 
-from game.view.enemies.carrier_model import build_carrier  # noqa: E402
-from game.view.enemies.elite_models import ELITE_MODELS  # noqa: E402
-from game.view.enemies.heavy_beetle_models import (  # noqa: E402
+Each is generated in code (ENM-34, GFX-ART-01).
+"""
+
+from game.view.enemies.carrier_model import build_carrier
+from game.view.enemies.elite_models import ELITE_MODELS
+from game.view.enemies.heavy_beetle_models import (
     build_bulwark,
     build_splitter,
     build_splitter_pod,
 )
-from game.view.enemies.heavy_enemy_models import (  # noqa: E402
+from game.view.enemies.heavy_enemy_models import (
     build_lancer,
     build_rocketeer,
     build_spinner,
 )
-from game.view.enemies.small_enemy_models import (  # noqa: E402
+from game.view.enemies.small_enemy_models import (
     build_gnat,
     build_hornet,
     build_scout,
     build_strafer,
     build_weaver,
 )
-from game.view.enemies.veteran_models import VETERAN_MODELS  # noqa: E402
+from game.view.enemies.veteran_models import VETERAN_MODELS
 
 ENEMY_MODELS = {
     "gnat": build_gnat,
@@ -37,7 +40,5 @@ ENEMY_MODELS = {
     "carrier": build_carrier,
 }
 # `...VETERAN_MODELS, ...ELITE_MODELS`: the veteran and elite models follow.
-for _key, _model in VETERAN_MODELS.items():
-    ENEMY_MODELS[_key] = _model
-for _key, _model in ELITE_MODELS.items():
-    ENEMY_MODELS[_key] = _model
+ENEMY_MODELS.update(VETERAN_MODELS)
+ENEMY_MODELS.update(ELITE_MODELS)

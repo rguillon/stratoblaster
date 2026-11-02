@@ -1,4 +1,5 @@
-"""Tunables of the game screen (specs/gameplay/*.md; debug options DEV-OPT-08)
+# Copyright (c) 2026 Renaud Guillon
+"""Tunables of the game screen (specs/gameplay/*.md; debug options DEV-OPT-08).
 
 Logical pixels, Y up, origin at the bottom left of the playfield; times in seconds.
 """
@@ -7,9 +8,11 @@ from config.scenery_stage import SCENERY_STAGE_CONFIG, SceneryStageConfig
 
 
 class ShipMargin:
-    """How close to the edges of what the camera shows the ship may fly (GAME-SCREEN-05), and its
-    bottom margin, which keeps it above the HUD's bar, 48 px high (UI-HUD-07; reviewer,
-    2026-10-28)."""
+    """How close to the edges of what the camera shows the ship may fly (GAME-SCREEN-05).
+
+    And its bottom margin, which keeps it above the HUD's bar, 48 px high (UI-HUD-07; reviewer,
+    2026-10-28).
+    """
 
     def __init__(self, side: float, bottom: float, top: float) -> None:
         self.side = side
@@ -18,9 +21,11 @@ class ShipMargin:
 
 
 class ShipRoll:
-    """The ship banks as it moves sideways (GAME-SHIP-05, GFX-SHIP-08): up to `max_deg` at full
-    sideways speed, easing to its target at `ease_per_sec` (share of the gap closed per
-    second)."""
+    """The ship banks as it moves sideways (GAME-SHIP-05, GFX-SHIP-08).
+
+    Up to `max_deg` at full sideways speed, easing to its target at `ease_per_sec` (share of the gap
+    closed per second).
+    """
 
     def __init__(self, max_deg: float, ease_per_sec: float) -> None:
         self.max_deg = max_deg
@@ -28,10 +33,12 @@ class ShipRoll:
 
 
 class ShipDamage:
-    """Hits on the player (phase 6 review): the ship blinks `blink_hz` times a second while
-    invincible (GAME-LIFE-07); a hit makes a spark of radius `hit_spark`, a lost life a blast of
-    radius `ship_blast` (GFX-FX-04); the "Game over" overlay shows `game_over_delay` after the
-    last life is lost (GAME-LIFE-09, UI-OVER-05)."""
+    """Hits on the player (phase 6 review).
+
+    The ship blinks `blink_hz` times a second while invincible (GAME-LIFE-07); a hit makes a spark
+    of radius `hit_spark`, a lost life a blast of radius `ship_blast` (GFX-FX-04); the "Game over"
+    overlay shows `game_over_delay` after the last life is lost (GAME-LIFE-09, UI-OVER-05).
+    """
 
     def __init__(
         self, blink_hz: float, hit_spark: float, ship_blast: float, game_over_delay: float
@@ -43,12 +50,14 @@ class ShipDamage:
 
 
 class ShipJourney:
-    """The ship's arrival and departure (GAME-LEVEL-11, GAME-LEVEL-12): it rises from `below`
-    under the bottom edge to its start in `arrive_seconds`; once the final boss is destroyed the
-    player keeps it `free_seconds`, then it flies off the top, from `leave_speed` px/s,
-    accelerating."""
+    """The ship's arrival and departure (GAME-LEVEL-11, GAME-LEVEL-12).
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    It rises from `below` under the bottom edge to its start in `arrive_seconds`; once the final
+    boss is destroyed the player keeps it `free_seconds`, then it flies off the top, from
+    `leave_speed` px/s, accelerating.
+    """
+
+    def __init__(
         self,
         arrive_seconds: float,
         below: float,
@@ -74,8 +83,11 @@ class DebugOptions:
 
 
 class DebugStats:
-    """Debug tile (DEV-PERF-05, ENG-111): FPS averaged over `fps_window` s, text refreshed every
-    `refresh` s, shown or hidden in any level with `key` (D-212)."""
+    """Debug tile (DEV-PERF-05, ENG-111): the FPS, in any level.
+
+    FPS averaged over `fps_window` s, text refreshed every `refresh` s, shown or hidden in any level
+    with `key` (D-212).
+    """
 
     def __init__(self, fps_window: float, refresh: float, key: str) -> None:
         self.fps_window = fps_window
@@ -84,9 +96,12 @@ class DebugStats:
 
 
 class ReadabilityProbe:
-    """Phase 14 (DEV-API-09): the readability probe measures round the ship and round a player shot
-    `ship_radius` / `shot_radius` (logical pixels; enemies and bullets use their hit radius), only
-    objects `margin` inside the view, and only player shots `shot_ahead` ahead of the ship."""
+    """Phase 14 (DEV-API-09): the readability probe.
+
+    It measures round the ship and round a player shot, `ship_radius` / `shot_radius` (logical
+    pixels; enemies and bullets use their hit radius), only objects `margin` inside the view, and
+    only player shots `shot_ahead` ahead of the ship.
+    """
 
     def __init__(
         self, ship_radius: float, shot_radius: float, margin: float, shot_ahead: float
@@ -100,7 +115,7 @@ class ReadabilityProbe:
 class GamePlayConfig:
     """The game screen's tunables, in the order of `GAME_PLAY_CONFIG`."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         step_hz: float,
         max_steps_per_frame: float,

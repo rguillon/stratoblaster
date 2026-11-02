@@ -1,25 +1,27 @@
-"""The Hive (specs/enemies/hive.md) Logical pixels, nose +Z,
-Y up (towards the camera).
+# Copyright (c) 2026 Renaud Guillon
+"""The Hive (specs/enemies/hive.md).
+
+Logical pixels, nose +Z, Y up (towards the camera).
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from game.config.enemies_elite import ELITE_CONFIG
+from game.config.enemy_look import ENEMY_LOOK
+from game.config.enemy_look_elite import ELITE_NEON
+from game.view.bosses.boss_limbs import boss_point
+from game.view.enemies.elite_shapes import WHITE, H, barrel
+from game.view.enemies.enemy_shapes import around, radial
+from game.view.enemies.jointed_model import build_jointed_model
+from game.view.enemies.organic_parts import reactor_sac
+from render.geometry.solids import Placement
 
-from game.config.enemies_elite import ELITE_CONFIG  # noqa: E402
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.config.enemy_look_elite import ELITE_NEON  # noqa: E402
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.enemies.elite_shapes import WHITE, H, barrel  # noqa: E402
-from game.view.enemies.enemy_shapes import around, radial  # noqa: E402
-from game.view.enemies.jointed_model import build_jointed_model  # noqa: E402
-from game.view.enemies.organic_parts import reactor_sac  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
-__pragma__("noskip")
 
 CFG = ELITE_CONFIG.hive
 NEON = ELITE_NEON.hive
@@ -55,8 +57,11 @@ RING = [
 
 
 def body(p: Any) -> None:
-    """The swollen flesh dome, its glowing brood cells (ENM-HIVE-03), the vents round its rim
-    (ENM-HIVE-04), reactor sacs (ENM-HIVE-06)."""
+    """Add the swollen flesh dome.
+
+    Its glowing brood cells (ENM-HIVE-03), the vents round its rim (ENM-HIVE-04), reactor sacs
+    (ENM-HIVE-06).
+    """
     hull = p.hull
     flesh = p.flesh
     vein = p.vein
@@ -85,8 +90,10 @@ def body(p: Any) -> None:
 
 
 def ring(p: Any) -> None:
-    """The launch ring with its hatch (ENM-HIVE-04), glowing as the next Wasp comes
-    (ENM-HIVE-05)."""
+    """Add the launch ring with its hatch (ENM-HIVE-04).
+
+    Glowing as the next Wasp comes (ENM-HIVE-05).
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -101,9 +108,11 @@ def ring(p: Any) -> None:
 
 
 def build_hive(scene: Any) -> Any:
-    """ENM-HIVE-01: a huge swollen hive of flesh, a metal launch ring turning on its back, glowing
-    honey-amber brood cells, armour plates and vents grafted on, within the elite triangle budget
-    (ENM-HIVE-07)."""
+    """ENM-HIVE-01: a huge swollen hive of flesh.
+
+    A metal launch ring turning on its back, glowing honey-amber brood cells, armour plates and
+    vents grafted on, within the elite triangle budget (ENM-HIVE-07).
+    """
     return build_jointed_model(
         "hive", scene, NEON, CFG.design, {"body": body, "ring": ring, "parts": {}}
     )

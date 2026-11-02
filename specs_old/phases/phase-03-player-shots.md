@@ -87,8 +87,8 @@ The game shall provide a player_shots/ debug endpoint that shows the different s
 ## 🧑 Manual validation checklist
 <!-- What YOU will check in the browser before validating. The agent should make these easy to check. -->
 - [ ] Runs on GitHub Pages / `make dev` without console errors
-- [ ] 
-- [ ] 
+- [ ]
+- [ ]
 
 ## 🧑 Notes, references, sketches
 <!-- Links, images, pseudo-code, example level layouts... -->

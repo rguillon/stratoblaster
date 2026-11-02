@@ -1,23 +1,25 @@
-"""The Scout (`specs/enemies/scout.md`)"""
-
-from org.transcrypt.stubs.browser import __pragma__
+# Copyright (c) 2026 Renaud Guillon
+"""The Scout (`specs/enemies/scout.md`)."""
 
 from core.entities.enemy import Enemy
 from core.systems.gun_muzzles import GunMuzzles, fire_aimed
 from game.config.enemies import ENEMY_CONFIG
 from game.sim.enemies.enemy_helpers import DOWN, Cadence, bullet_shot, on_playfield
 
-__pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from core.entities.enemy import EnemyContext
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 CFG = ENEMY_CONFIG.scout
 
 
 class Scout(Enemy):
-    """ENM-SCOUT-05: flies straight down slowly and fires one bullet aimed at the player every
-    1.5 s (ENM-SCOUT-06, ENM-20) from its nose gun while it is over the playfield.
+    """ENM-SCOUT-05: flies straight down slowly and fires aimed bullets at the player.
+
+    One bullet every 1.5 s (ENM-SCOUT-06, ENM-20), from its nose gun while it is over the playfield.
     """
 
     def __init__(self, x: float, y: float) -> None:
@@ -27,6 +29,7 @@ class Scout(Enemy):
         self.heading = DOWN
 
     def update(self, ctx: EnemyContext, dt: float) -> None:
+        """Advance the enemy by `dt` seconds."""
         self.y -= CFG.speed * dt
         if not on_playfield(self, ctx):
             return

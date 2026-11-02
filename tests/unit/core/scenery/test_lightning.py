@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/lightning.py`."""
 
 import pytest
@@ -16,7 +17,7 @@ from core.scenery.lightning import (
 
 
 def rules(**overrides: object) -> LightningRules:
-    """The engine's lightning, with some values replaced."""
+    """Return the engine's lightning, with some values replaced."""
     values: dict[str, object] = {
         "gap": [4, 10],
         "flash": 0.15,
@@ -32,20 +33,17 @@ def rules(**overrides: object) -> LightningRules:
     return LightningRules(**values)  # type: ignore[arg-type]
 
 
+def _flashes(schedule: LightningSchedule, until: float) -> list[float]:
+    """Every flash start of `schedule` before `until`."""
+    return [t for strike in schedule.strikes_before(until) for t in strike.flashes if t < until]
+
+
 def test_gfx_weather_10_the_same_seed_flashes_at_the_same_times() -> None:
-    first = LightningSchedule(11).flashes_between(0, 200)
-    second = LightningSchedule(11).flashes_between(0, 200)
+    first = _flashes(LightningSchedule(11), 200)
+    second = _flashes(LightningSchedule(11), 200)
     assert first == second
     assert first
-    assert LightningSchedule(12).flashes_between(0, 200) != first
-
-
-def test_gfx_weather_10_flashes_between_are_the_flashes_in_the_range() -> None:
-    schedule = LightningSchedule(3)
-    everything = schedule.flashes_between(0, 500)
-    middle = schedule.flashes_between(100, 200)
-    assert middle == [t for t in everything if 100 <= t < 200]
-    assert schedule.flashes_between(50, 50) == []
+    assert _flashes(LightningSchedule(12), 200) != first
 
 
 def test_gfx_weather_12_a_strike_can_flash_twice_and_draw_a_bolt() -> None:

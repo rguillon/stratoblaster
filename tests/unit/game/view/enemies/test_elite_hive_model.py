@@ -1,11 +1,16 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/enemies/elite_hive_model.py`."""
+
+from typing import Any
 
 from helpers.view_probes import drawings_of, probe_builder
 
 from game.view.enemies import elite_hive_model as module
 
 
-def test_enm_hive_04_hive_has_a_ring_with_a_gun_and_a_body_with_many_spore_mouths(monkeypatch):
+def test_enm_hive_04_hive_has_a_ring_with_a_gun_and_a_body_with_many_spore_mouths(
+    monkeypatch: Any,
+) -> None:
     """Also ENM-HIVE-06: the body's two reactors."""
     capture = probe_builder(monkeypatch, module.build_hive)
     assert capture.name == "hive"

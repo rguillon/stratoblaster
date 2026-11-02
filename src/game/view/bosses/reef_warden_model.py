@@ -1,14 +1,14 @@
-"""MB-REEF-WARDEN-01 to MB-REEF-WARDEN-04, 1-1: the Reef Warden Logical
-pixels, nose +Z, Y up (towards the camera).
+# Copyright (c) 2026 Renaud Guillon
+"""MB-REEF-WARDEN-01 to MB-REEF-WARDEN-04, 1-1: the Reef Warden Logical pixels, nose +Z.
+
+Y up (towards the camera).
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.config.bosses.mini_bosses import REEF_WARDEN  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.mini_boss_greebles import lamps, mast  # noqa: E402
-from game.view.bosses.mini_boss_shapes import (  # noqa: E402
+from game.config.boss_look import BOSS_LOOK
+from game.config.bosses.mini_bosses import REEF_WARDEN
+from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.mini_boss_greebles import lamps, mast
+from game.view.bosses.mini_boss_shapes import (
     neon_band,
     offset,
     radius_of,
@@ -16,7 +16,7 @@ from game.view.bosses.mini_boss_shapes import (  # noqa: E402
     socket,
     turret,
 )
-from game.view.bosses.world_1_organic_kit import (  # noqa: E402
+from game.view.bosses.world_1_organic_kit import (
     F,
     M,
     barbs,
@@ -33,15 +33,17 @@ from game.view.bosses.world_1_organic_kit import (  # noqa: E402
     tentacle,
     vein_line,
 )
-from game.view.enemies.enemy_shapes import SIDES  # noqa: E402
-from game.view.enemies.organic_parts import eyes, reactor_sac  # noqa: E402
+from game.view.enemies.enemy_shapes import SIDES
+from game.view.enemies.organic_parts import eyes, reactor_sac
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Vec3 = list[Any]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 CYAN = BOSS_LOOK.neon["reef-warden"]
 # Navigation lights: red to port (+X, the screen's left), green to starboard.
@@ -71,8 +73,11 @@ SKIRT = [-5, 3]
 
 
 def _draw_body(p: Any) -> None:
-    """The reef creature's body (MB-REEF-WARDEN-02): a teal ray-like mantle lined with a cyan vein,
-    a dark shelled back along its spine, bone ribs and coral barbs, gill glands either side."""
+    """Draw the reef creature's body (MB-REEF-WARDEN-02).
+
+    A teal ray-like mantle lined with a cyan vein, a dark shelled back along its spine, bone ribs
+    and coral barbs, gill glands either side.
+    """
     mantle(p, MANTLE, SKIRT, F.teal, CYAN)
     neon_band(p.neon, MANTLE, [-3.4, -1.1], [0.97, 1], CYAN)
     mantle(p, scale_outline(MANTLE, 0.7, 0, -3), [SKIRT[1] - 1, SKIRT[1] + 1.5], F.graphite)
@@ -118,7 +123,7 @@ def _draw_grafts(p: Any) -> None:
 
 
 def _prow_turret(p: Any, at: Vec3) -> None:
-    """The prow cannon (the core's gun), grafted on the snout, turning around its pivot `at`."""
+    """Add the prow cannon (the core's gun), grafted on the snout, turning around its pivot `at`."""
     turret(
         p,
         offset(at, 0, SKIRT[1], 0),
@@ -134,8 +139,11 @@ def _prow_turret(p: Any, at: Vec3) -> None:
 
 
 def _cannon(p: Any, at: Vec3) -> None:
-    """A side cannon (MB-REEF-WARDEN-03): an armoured coral growth on the flank under its
-    twin-barrelled turret, a feeding sac behind it, barbs before it."""
+    """Add a side cannon (MB-REEF-WARDEN-03).
+
+    An armoured coral growth on the flank under its twin-barrelled turret, a feeding sac behind it,
+    barbs before it.
+    """
     r = radius_of(REEF_WARDEN.stats.parts, 0, 14)
     growth(p, offset(at, 0, -1, 0), r * 0.95, CYAN, {"flesh": F.graphite, "height": 0.32})
     sac(p, offset(at, sign_of(at[0]) * 5, 1, -9), 4, F.slate, {"stretch": 0.5})
@@ -143,7 +151,7 @@ def _cannon(p: Any, at: Vec3) -> None:
 
 
 def _cannon_turret(p: Any, at: Vec3) -> None:
-    """A side cannon's twin-barrelled turret."""
+    """Add a side cannon's twin-barrelled turret."""
     turret(
         p,
         offset(at, 0, 4, 0),
@@ -160,9 +168,11 @@ def _cannon_turret(p: Any, at: Vec3) -> None:
 
 
 def build_reef_warden(scene: Any) -> Any:
-    """MB-REEF-WARDEN-01, MB-REEF-WARDEN-04: the Reef Warden, a wide ray-like reef creature, a
-    cyan vein ring round its mantle and a prow cannon grafted on its snout; its two side cannons
-    grow from its flanks."""
+    """MB-REEF-WARDEN-01, MB-REEF-WARDEN-04: the Reef Warden, a wide ray-like reef creature.
+
+    A cyan vein ring round its mantle and a prow cannon grafted on its snout; its two side cannons
+    grow from its flanks.
+    """
 
     def core(p: Any) -> None:
         _draw_body(p)

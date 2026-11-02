@@ -1,4 +1,5 @@
-"""FB-BOREAL-CITADEL-01 to FB-BOREAL-CITADEL-07, 2-5: the Boreal Citadel, World 2's last boss
+# Copyright (c) 2026 Renaud Guillon
+"""FB-BOREAL-CITADEL-01 to FB-BOREAL-CITADEL-07, 2-5: the Boreal Citadel, World 2's last boss.
 
 Model space: logical pixels, nose +Z (down the screen), Y up towards the camera. A polar city on
 a flying hull: a snowed deck with towers and heated domes, an avenue down its middle carrying
@@ -7,8 +8,6 @@ the keep, outriggers out to the aurora cannons.
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.bosses.world_2.boreal_citadel import (
     BOREAL_CITADEL,
     BOREAL_GUNS,
@@ -16,26 +15,12 @@ from game.config.bosses.world_2.boreal_citadel import (
     BOREAL_LENS,
     BOREAL_SPIRE,
 )
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
+from game.config.enemy_look import ENEMY_LOOK
 from game.config.record import record
-from game.view.enemies.enemy_shapes import SIDES, decal, flip_x  # noqa: E402
-from game.view.enemies.organic_parts import reactor_sac  # noqa: E402
-from render.geometry.organic import RibSpec, ribs  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
-
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-__pragma__("noskip")
-
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.overlord_city import edge_lights, symmetric  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.world_2.boreal_citadel_city import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.overlord_city import edge_lights, symmetric
+from game.view.bosses.world_2.boreal_citadel_city import (
     AURORA,
     CITADEL_DECK,
     VIOLET,
@@ -43,19 +28,35 @@ from game.view.bosses.world_2.boreal_citadel_city import (  # noqa: E402 (after 
     icicles,
     rect,
 )
-from game.view.bosses.world_2.boreal_citadel_details import draw_details  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.world_2.boreal_citadel_parts import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.boreal_citadel_details import draw_details
+from game.view.bosses.world_2.boreal_citadel_parts import (
     OUTRIGGER_TOP,
     draw_battery,
     draw_cannon,
     draw_cannon_mount,
     draw_dome,
 )
-from game.view.bosses.world_2.w2_organic import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.w2_organic import (
     ICE_FLESH,
     glow_vein,
     sinew,
 )
+from game.view.enemies.enemy_shapes import SIDES, decal, flip_x
+from game.view.enemies.organic_parts import reactor_sac
+from render.geometry.organic import RibSpec, ribs
+from render.geometry.solids import Placement
+
+# isort: split
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+# __pragma__ ("skip")
+from typing import TYPE_CHECKING, Any
+
+from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts
+
+if TYPE_CHECKING:
+    from render.geometry.outline import OutlinePoint
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 WHITE = [1.0, 1.0, 1.0]
@@ -136,7 +137,7 @@ LENS = [
 
 
 def draw_hull(p: EnemyParts) -> None:
-    """The deck with its snow and lit rim, the avenue, the engine block, the outriggers."""
+    """Draw the deck with its snow and lit rim, the avenue, the engine block, the outriggers."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -148,7 +149,7 @@ def draw_hull(p: EnemyParts) -> None:
     edge_lights(
         neon,
         DECK,
-        [i for i in range(len(DECK))],
+        list(range(len(DECK))),
         [-2.6, -1.4],
         AURORA,
     )
@@ -197,7 +198,10 @@ def draw_hull(p: EnemyParts) -> None:
 
 
 def draw_keep(p: EnemyParts) -> None:
-    """The keep over the core: tiers lit green and violet, its spire and ring emitter on top."""
+    """Draw the keep over the core.
+
+    Tiers lit green and violet, its spire and ring emitter on top.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -230,8 +234,10 @@ def draw_keep(p: EnemyParts) -> None:
 
 
 def draw_gun_deck(p: EnemyParts) -> None:
-    """The gun deck on the keep's front (FB-BOREAL-CITADEL-04): twin cannons and a laser lens,
-    charging to fire."""
+    """Draw the gun deck on the keep's front (FB-BOREAL-CITADEL-04).
+
+    Twin cannons and a laser lens, charging to fire.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -273,8 +279,10 @@ def draw_gun_deck(p: EnemyParts) -> None:
 
 
 def draw_hatches(p: EnemyParts) -> None:
-    """The missile hatches on the avenue behind the keep, lit as missiles load
-    (FB-BOREAL-CITADEL-04)."""
+    """Draw the missile hatches on the avenue behind the keep (FB-BOREAL-CITADEL-04).
+
+    They are lit as missiles load.
+    """
     hull = p.hull
     charge = p.charge
     muzzle = p.muzzle
@@ -289,7 +297,7 @@ def draw_hatches(p: EnemyParts) -> None:
 
 
 def draw_core(parts: EnemyParts) -> None:
-    """The core: hull, city, keep, gun deck and hatches, four reactors in the engine block."""
+    """Draw the core: hull, city, keep, gun deck and hatches, four reactors in the engine block."""
     draw_hull(parts)
     draw_city(parts)
     draw_keep(parts)
@@ -302,20 +310,21 @@ def draw_core(parts: EnemyParts) -> None:
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
-    """What `build_boss_model` draws a boss from."""
+    """Return what `build_boss_model` draws a boss from."""
     return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
 
 
 def build_boreal_citadel(scene: Any) -> BuiltEnemyModel:
-    """FB-BOREAL-CITADEL-01, FB-BOREAL-CITADEL-05: the Boreal Citadel, the polar city's flying
-    fortress (6 L) under aurora green and
-    violet neon: towers and heated domes on a snowed deck, two aurora cannons on its outriggers,
-    two missile batteries aft, two dome generators ahead, and a keep over the core carrying a
-    laser, twin cannons, a ring emitter and missile hatches.
+    """FB-BOREAL-CITADEL-01, FB-BOREAL-CITADEL-05: the Boreal Citadel.
+
+    The polar city's flying fortress (6 L) under aurora green and violet neon: towers and heated
+    domes on a snowed deck, two aurora cannons on its outriggers, two missile batteries aft, two
+    dome generators ahead, and a keep over the core carrying a laser, twin cannons, a ring emitter
+    and missile hatches.
     FB-BOREAL-CITADEL-02, FB-BOREAL-CITADEL-03: now a colossal living beast carrying its city on
-    its back: rimed flesh, a spine of
-    bone, spires of crystal and flesh where the towers were, its heart (the keep) banded in metal,
-    membrane fins out to its cannons, glowing blisters for domes."""
+    its back: rimed flesh, a spine of bone, spires of crystal and flesh where the towers were, its
+    heart (the keep) banded in metal, membrane fins out to its cannons, glowing blisters for domes.
+    """
     model: BuiltEnemyModel = build_boss_model(
         BOREAL_CITADEL,
         scene,

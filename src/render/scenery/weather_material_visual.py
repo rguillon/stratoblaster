@@ -1,10 +1,10 @@
-"""The material of a weather's particles (GFX-WEATHER-02, phases 9-10): soft discs, streaks or
-sparks moved on the GPU in a box of air that follows the view.
+# Copyright (c) 2026 Renaud Guillon
+"""The material of a weather's particles (GFX-WEATHER-02, phases 9-10): soft discs.
+
+Streaks or sparks moved on the GPU in a box of air that follows the view.
 """
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-from org.transcrypt.stubs.browser import __pragma__
-
 from render.babylon import (
     babylon_constant,
     color3,
@@ -14,10 +14,12 @@ from render.babylon import (
     vector4,
 )
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # volume: half width, length, bottom, top. motion: time, slowest fall, fastest fall, wind.
 # shape: smallest size, largest size, streak, sway. drift: box start Z, sway frequency.
@@ -109,7 +111,7 @@ UNIFORMS = [
 class WeatherMaterialImpl:
     """The particles' material, driven frame by frame (the `WeatherMaterial` of `weather_layer`)."""
 
-    def __init__(self, scene: Any, material: Any, kind: Any) -> None:
+    def __init__(self, _scene: Any, material: Any, kind: Any) -> None:
         self.material = material
         self._kind = kind
         self._motion = vector4(0, 0, 0, 0)
@@ -119,6 +121,7 @@ class WeatherMaterialImpl:
         self._fog_color = color3(0, 0, 0)
 
     def set(self, frame: Any) -> None:
+        """Set."""
         kind = self._kind
         material = self.material
         along_fall = kind.align == "fall"
@@ -146,14 +149,16 @@ class WeatherMaterialImpl:
 
 
 def create_weather_material(scene: Any, kind: Any) -> WeatherMaterialImpl:
-    """The material of a weather's particles (GFX-WEATHER-02): soft, faint discs (snow, ash:
-    GFX-WEATHER-07, GFX-WEATHER-13) placed and moved on the GPU in a box of air that follows the
-    view, falling, swaying and blown sideways by a wind that grows with the strength (streaking
-    them at 1), fading into the haze. Phase 9: a kind aligned with its fall (rain) is drawn as thin
-    streaks along the way it falls, at every strength (GFX-WEATHER-08). Blended (phase 10: or
-    added, for self-lit sparks that flicker and cool as they rise: embers, GFX-WEATHER-14),
-    without writing depth, so they never hide what is drawn after them (the playfield,
-    GFX-WEATHER-04)."""
+    """Return the material of a weather's particles (GFX-WEATHER-02).
+
+    Soft, faint discs (snow, ash: GFX-WEATHER-07, GFX-WEATHER-13) placed and moved on the GPU in a
+    box of air that follows the view, falling, swaying and blown sideways by a wind that grows with
+    the strength (streaking them at 1), fading into the haze. Phase 9: a kind aligned with its fall
+    (rain) is drawn as thin streaks along the way it falls, at every strength (GFX-WEATHER-08).
+    Blended (phase 10: or added, for self-lit sparks that flicker and cool as they rise: embers,
+    GFX-WEATHER-14), without writing depth, so they never hide what is drawn after them (the
+    playfield, GFX-WEATHER-04).
+    """
     material = new_glsl_material(
         "weather",
         scene,

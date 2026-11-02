@@ -1,14 +1,14 @@
-"""The models of the hidden weapon parts a boss reveals as it transforms (see
-`game/config/bosses/weapon_kinds.py`, which works out their muzzles from the same sizes;
-BOSS-40, D-229). Which weapons each boss hides is its own boss file's (its hidden weapons
+# Copyright (c) 2026 Renaud Guillon
+"""The models of the hidden weapon parts a boss reveals as it transforms.
+
+See `game/config/bosses/weapon_kinds.py`, which works out their muzzles from the same sizes
+(BOSS-40, D-229). Which weapons each boss hides is its own boss file's (its hidden weapons
 requirements, specs/bosses/mini/*.md and specs/bosses/final/*.md).
 
 Model space of a boss: logical pixels, +Y up, its nose at +Z (`boss_limbs.boss_point`).
 """
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.weapon_kinds import (
     WEAPON_SHAPE,
@@ -21,12 +21,14 @@ from game.config.record import record
 from game.view.bosses.mini_boss_shapes import offset, turned, turret
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 Vec3 = list[Any]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 QUARTER = math.pi / 2
@@ -47,8 +49,11 @@ def _rectangle(width: float, depth: float) -> list[list[float]]:
 
 
 def _pod(p: Any, at: Vec3, look: Any, neon: Any) -> None:
-    """The pod a weapon stands on: a bevelled octagon with a neon ring round its top (a square one
-    for a cannon); the mortar's is round, the battery's a long low deck, the hangar's a box."""
+    """Add the pod a weapon stands on.
+
+    A bevelled octagon with a neon ring round its top (a square one for a cannon); the mortar's is
+    round, the battery's a long low deck, the hangar's a box.
+    """
     kind = look.kind
     if kind == "mortar":
         _round_base(p, at, look, neon)
@@ -67,7 +72,7 @@ def _pod(p: Any, at: Vec3, look: Any, neon: Any) -> None:
 
 
 def _round_base(p: Any, at: Vec3, look: Any, neon: Any) -> None:
-    """The mortar's squat round base, a neon ring round its top."""
+    """Add the mortar's squat round base, a neon ring round its top."""
     r = look.radius * WEAPON_SHAPE.mortarBase
     h = look.height
     p.hull.cylinder(r, h, 10, H.panel, Placement(at), r * 0.82)
@@ -75,8 +80,10 @@ def _round_base(p: Any, at: Vec3, look: Any, neon: Any) -> None:
 
 
 def _deck(p: Any, at: Vec3, look: Any, neon: Any) -> None:
-    """The battery's long, low gun deck (a neon strip along its front), or the hangar's box (a
-    glowing bay floor on top, under its doors)."""
+    """Add the battery's long, low gun deck (a neon strip along its front).
+
+    Or the hangar's box (a glowing bay floor on top, under its doors).
+    """
     r = look.radius
     h = look.height
     if look.kind == "battery":
@@ -97,7 +104,7 @@ def _deck(p: Any, at: Vec3, look: Any, neon: Any) -> None:
 
 
 def _lance(p: Any, at: Vec3, look: Any, neon: Any) -> None:
-    """A laser lance pointing down the screen (+Z), a glowing tip at its muzzle."""
+    """Add a laser lance pointing down the screen (+Z), a glowing tip at its muzzle."""
     r = look.radius
     bore = r * WEAPON_SHAPE.lanceBore
     length = r * WEAPON_SHAPE.lance
@@ -128,7 +135,7 @@ def _rack(p: Any, at: Vec3, look: Any, neon: Any) -> None:
 
 
 def _orb(p: Any, at: Vec3, look: Any, neon: Any) -> None:
-    """A glowing emitter orb held in a cradle on top of the pod."""
+    """Add a glowing emitter orb held in a cradle on top of the pod."""
     r = look.radius
     o = r * WEAPON_SHAPE.orb
     centre = offset(at, 0, look.height + r * WEAPON_SHAPE.orbTop, 0)
@@ -145,8 +152,10 @@ def _orb(p: Any, at: Vec3, look: Any, neon: Any) -> None:
 
 
 def weapon_drawing(look: Any, neon: Any) -> Any:
-    """The drawing of a hidden weapon part's pod (`look`: kind, radius, pod height), `draw(p, at)`;
-    what slides out of it is drawn apart (`weapon_slides`)."""
+    """Return the drawing of a hidden weapon part's pod (`look`: kind, radius, pod height).
+
+    `draw(p, at)`; what slides out of it is drawn apart (`weapon_slides`).
+    """
 
     def draw(p: Any, at: Vec3) -> None:
         _pod(p, at, look, neon)
@@ -155,8 +164,10 @@ def weapon_drawing(look: Any, neon: Any) -> Any:
 
 
 def _mortar_tube(p: Any, at: Vec3, look: Any, neon: Any) -> None:
-    """The mortar's short, wide tube on a trunnion block, tilted up towards the nose, its mouth
-    glowing (`weapon_kinds.mortar_mouth`)."""
+    """Add the mortar's short, wide tube on a trunnion block, tilted up towards the nose.
+
+    Its mouth glowing (`weapon_kinds.mortar_mouth`).
+    """
     r = look.radius
     bore = r * WEAPON_SHAPE.mortarBore
     length = r * WEAPON_SHAPE.mortarLength
@@ -173,7 +184,7 @@ def _mortar_tube(p: Any, at: Vec3, look: Any, neon: Any) -> None:
 
 
 def _battery_barrels(p: Any, at: Vec3, look: Any, neon: Any) -> None:
-    """The battery's barrels, in a row out of its deck's front, their tips glowing."""
+    """Add the battery's barrels, in a row out of its deck's front, their tips glowing."""
     r = look.radius
     bore = r * WEAPON_SHAPE.barrelBore
     length = r * WEAPON_SHAPE.barrelLength
@@ -258,10 +269,12 @@ SLIDES_OF = {
 
 
 def weapon_slides(look: Any, neon: Any) -> list[Any]:
-    """What slides out of a hidden weapon's pod as it unfolds: a list of `[draw(p, at), axis,
-    distance]` (model space), none for a turret (it rises instead, see `turret_slide`): the lance's
-    barrel, the rack's cells, the orb, the mortar's tube, the battery's barrels, the hangar's two
-    doors (sliding open)."""
+    """Return what slides out of a hidden weapon's pod as it unfolds.
+
+    A list of `[draw(p, at), axis, distance]` (model space), none for a turret (it rises instead,
+    see `turret_slide`): the lance's barrel, the rack's cells, the orb, the mortar's tube, the
+    battery's barrels, the hangar's two doors (sliding open).
+    """
     if look.kind not in SLIDES_OF:
         return []
     slides: list[Any] = SLIDES_OF[look.kind](look, neon)
@@ -269,8 +282,10 @@ def weapon_slides(look: Any, neon: Any) -> list[Any]:
 
 
 def turret_slide(look: Any) -> float:
-    """How far a weapon's turret (a gatling's, a cannon's or a sweeper's) rises out of its pod as
-    it unfolds."""
+    """How far a weapon's turret rises out of its pod as it unfolds.
+
+    The turret is a gatling's, a cannon's or a sweeper's.
+    """
     if look.kind == "cannon":
         return float(cannon_turret(look.radius).radius * 0.9)
     if look.kind == "sweeper":
@@ -279,8 +294,10 @@ def turret_slide(look: Any) -> float:
 
 
 def _sweeper_turret(p: Any, top: Vec3, look: Any, neon: Any) -> None:
-    """The sweeper's turret on top of its pod (`top`): a low dome, two prongs reaching forward
-    (+Z), a glowing lens between their tips."""
+    """Add the sweeper's turret on top of its pod (`top`).
+
+    A low dome, two prongs reaching forward (+Z), a glowing lens between their tips.
+    """
     r = look.radius
     rt = r * WEAPON_SHAPE.sweeperTurret
     length = r * WEAPON_SHAPE.prongLength
@@ -313,9 +330,11 @@ def place_inner(top: Vec3, x: float, side: float, lift: float, length: float, th
 
 
 def weapon_turret_drawing(look: Any, neon: Any) -> Any:
-    """The drawing of a weapon's turret, `draw(p, at)` round its pivot `at` (on top of its pod): a
-    gatling's three barrels, a cannon's heavy one (a neon ring round its muzzle), a sweeper's
-    prongs; None for other kinds."""
+    """Return the drawing of a weapon's turret, `draw(p, at)` round its pivot `at`.
+
+    The pivot is on top of its pod. A gatling's three barrels, a cannon's heavy one (a neon ring
+    round its muzzle), a sweeper's prongs; None for other kinds.
+    """
     kind = look.kind
     if kind == "sweeper":
 
@@ -333,16 +352,14 @@ def weapon_turret_drawing(look: Any, neon: Any) -> Any:
         turret(
             p,
             top,
-            record(
-                {
-                    "radius": t.radius,
-                    "barrels": barrels,
-                    "gap": t.gap,
-                    "bore": t.bore,
-                    "length": t.length,
-                    "neon": neon,
-                }
-            ),
+            record({
+                "radius": t.radius,
+                "barrels": barrels,
+                "gap": t.gap,
+                "bore": t.bore,
+                "length": t.length,
+                "neon": neon,
+            }),
         )
         if kind == "cannon":
             foot = [0, t.radius * 0.28, t.radius * 0.3]

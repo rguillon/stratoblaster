@@ -1,6 +1,9 @@
-"""The parts of the browser's `window` the UI reads (`window.Math`, `window.Number`), with the
-JavaScript rules that matter here: `Math.round` rounds halves up, and numbers print as JavaScript
-does. Installed on the stub's `window` by `install(monkeypatch)`."""
+# Copyright (c) 2026 Renaud Guillon
+"""The parts of the browser's `window` the UI reads (`window.Math`, `window.Number`).
+
+They follow the JavaScript rules that matter here: `Math.round` rounds halves up, and numbers print
+as JavaScript does. Installed on the stub's `window` by `install(monkeypatch)`.
+"""
 
 import math
 from typing import Any
@@ -17,10 +20,10 @@ class JsNumber(float):
             return str(int(self))
         return repr(float(self))
 
-    def toFixed(self, digits: int = 0) -> str:  # noqa: N802
+    def toFixed(self, digits: int = 0) -> str:
         return f"{float(self):.{digits}f}"
 
-    def toLocaleString(self, locale: str = "en-US") -> str:  # noqa: N802
+    def toLocaleString(self, _locale: str = "en-US") -> str:
         return f"{int(self):,}"
 
 
@@ -51,11 +54,11 @@ class FakeNumber:
         return JsNumber(value)
 
     @staticmethod
-    def parseFloat(text: str) -> JsNumber:  # noqa: N802
+    def parseFloat(text: str) -> JsNumber:
         return JsNumber(float(text.strip().rstrip("px")))
 
 
 def install(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Gives the stub's `window` the `Math` and `Number` objects for the test."""
+    """Give the stub's `window` the `Math` and `Number` objects for the test."""
     monkeypatch.setattr(browser_window, "Math", FakeMath, raising=False)
     monkeypatch.setattr(browser_window, "Number", FakeNumber, raising=False)

@@ -1,20 +1,21 @@
-"""The lighter veteran kinds, the Wasp and the Phantom (specs/enemies/wasp.md, phantom.md)
-Logical pixels, nose +Z, Y up (to the camera)."""
+# Copyright (c) 2026 Renaud Guillon
+"""The lighter veteran kinds, the Wasp and the Phantom (specs/enemies/wasp.md, phantom.md).
+
+Logical pixels, nose +Z, Y up (to the camera).
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.enemies_veteran import VETERAN_NEON as N  # noqa: E402
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.sim.enemies.phantom import Phantom  # noqa: E402
-from game.view.enemies.enemy_mesh import BuiltEnemyModel, build_enemy_model  # noqa: E402
-from game.view.enemies.enemy_shapes import POD_SECTION, SIDES, flip_x  # noqa: E402
-from game.view.enemies.organic_parts import eyes  # noqa: E402
-from game.view.enemies.vetelite_organic import LEAN_SECTION, mandibles, membrane_pair, sinew  # noqa: E402
-from game.view.enemies.veteran_shapes import back_band, edge_strip, nose_gun  # noqa: E402
-from render.babylon import child_meshes  # noqa: E402
-from render.geometry.organic import (  # noqa: E402
+from game.config.enemies_veteran import VETERAN_NEON as N
+from game.config.enemy_look import ENEMY_LOOK
+from game.sim.enemies.phantom import Phantom
+from game.view.enemies.enemy_mesh import BuiltEnemyModel, build_enemy_model
+from game.view.enemies.enemy_shapes import POD_SECTION, SIDES, flip_x
+from game.view.enemies.organic_parts import eyes
+from game.view.enemies.vetelite_organic import LEAN_SECTION, mandibles, membrane_pair, sinew
+from game.view.enemies.veteran_shapes import back_band, edge_strip, nose_gun
+from render.babylon import child_meshes
+from render.geometry.organic import (
     SegmentedBody,
     carapace,
     curve,
@@ -25,12 +26,14 @@ from render.geometry.organic import (  # noqa: E402
 from render.geometry.organic import (
     vein as vein_tube,
 )
-from render.geometry.solids import Placement  # noqa: E402
+from render.geometry.solids import Placement
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 F = ENEMY_LOOK.flesh
@@ -65,10 +68,12 @@ WASP_WINGS = [
 
 
 def build_wasp(scene: Any) -> Any:
-    """A small, wasp-like insect (ENM-WASP-01, ENM-WASP-02): a swollen abdomen striped with
-    yellow neon bands and a yellow neon sting (ENM-WASP-03), two pairs of fluttering membrane wings
-    with reactors under them (ENM-WASP-05), bone mandibles round a gun grafted in its jaws, within
-    the veteran triangle budget (ENM-WASP-06)."""
+    """Return a small, wasp-like insect (ENM-WASP-01, ENM-WASP-02).
+
+    It has a swollen abdomen striped with yellow neon bands and a yellow neon sting (ENM-WASP-03),
+    two pairs of fluttering membrane wings with reactors under them (ENM-WASP-05), and bone
+    mandibles round a gun grafted in its jaws, within the veteran triangle budget (ENM-WASP-06).
+    """
 
     def draw(p: Any) -> None:
         hull = p.hull
@@ -122,8 +127,10 @@ PHANTOM_STRUTS = [
 
 
 def phantom_edges() -> list[list[list[float]]]:
-    """The wing's edges lit in neon: from the nose to each tip, and across each tip
-    (ENM-PHANTOM-03)."""
+    """Return the wing's edges lit in neon: from the nose to each tip, and across each tip.
+
+    ENM-PHANTOM-03.
+    """
     nose = PHANTOM_WING[0]
     tip = PHANTOM_WING[1]
     tail = PHANTOM_WING[2]
@@ -140,10 +147,12 @@ def mirror_point(s: float, q: list[float]) -> list[float]:
 
 
 def build_phantom(scene: Any) -> Any:
-    """ENM-PHANTOM-01: a sleek flying wing with a faceted hull and pale violet neon edges, two
-    reactors at the back of its body (ENM-PHANTOM-05), within the veteran triangle budget
+    """ENM-PHANTOM-01: a sleek flying wing with a faceted hull and pale violet neon edges.
+
+    Two reactors sit at the back of its body (ENM-PHANTOM-05), within the veteran triangle budget
     (ENM-PHANTOM-07). It fades out and in with the Phantom (ENM-PHANTOM-06): every mesh is as
-    visible as the Phantom is (`Phantom.opacity`)."""
+    visible as the Phantom is (`Phantom.opacity`).
+    """
 
     def draw(p: Any) -> None:
         hull = p.hull

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/ui/stage_fit.py`."""
 
 from helpers.dom import FakeDocument

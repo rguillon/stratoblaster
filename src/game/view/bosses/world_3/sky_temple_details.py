@@ -1,8 +1,9 @@
-"""FB-SKY-TEMPLE-02, FB-SKY-TEMPLE-05, 3-3: the Sky Temple's dressing (phase 7 review: detail and
-some asymmetry; World 3 theme: dark metal with neon, plus moss, vines and stone). Logical pixels,
-nose +Z, Y up."""
+# Copyright (c) 2026 Renaud Guillon
+"""FB-SKY-TEMPLE-02, FB-SKY-TEMPLE-05, 3-3: the Sky Temple's dressing.
 
-from org.transcrypt.stubs.browser import __pragma__
+Phase 7 review: detail and some asymmetry; World 3 theme: dark metal with neon, plus moss, vines and
+stone. Logical pixels, nose +Z, Y up.
+"""
 
 from game.config.record import record
 from game.view.bosses.mini_boss_greebles import lamps
@@ -14,20 +15,24 @@ from game.view.bosses.world_3.stone_idol_stone import STONE, leaf, moss, vine
 from game.view.enemies.enemy_shapes import SIDES
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from game.view.enemies.enemy_mesh import EnemyParts
 
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The thrusters' bank behind the pyramid: its centre along Z, and its nozzles across.
 THRUSTERS = record({"z": -81, "nozzles": [-22, 0, 22]})
 
 
 def temple_machinery(p: EnemyParts) -> None:
-    """The fortress under the stones: a bank of thrusters at the back, and armoured buttresses on
-    the sides with gold and cyan lights."""
+    """Add the fortress under the stones.
+
+    A bank of thrusters at the back, and armoured buttresses on the sides with gold and cyan lights.
+    """
     hull = p.hull
     neon = p.neon
     hull.box([66, 12, 14], H.base, Placement([0, -6, THRUSTERS.z]), H.panel)
@@ -54,43 +59,41 @@ def temple_machinery(p: EnemyParts) -> None:
 
 
 # Moss patches on the tiers' steps (x, z, which tier's top, size).
-MOSS = table(
-    [
-        [-48, 64, 1, 5],
-        [62, 30, 1, 4],
-        [-64, -20, 1, 4.5],
-        [30, -62, 1, 5],
-        [-49, -30, 2, 3.5],
-        [48, 30, 2, 3],
-        [-24, 40, 3, 3.2],
-        [20, -30, 4, 3],
-    ]
-)
+MOSS = table([
+    [-48, 64, 1, 5],
+    [62, 30, 1, 4],
+    [-64, -20, 1, 4.5],
+    [30, -62, 1, 5],
+    [-49, -30, 2, 3.5],
+    [48, 30, 2, 3],
+    [-24, 40, 3, 3.2],
+    [20, -30, 4, 3],
+])
 # Vines draped over a tier's edge: from its top, down its side (x, z on the edge, tier).
-DRAPED = table(
-    [
-        [-30, 1, 0],
-        [20, 1, 1],
-        [-12, -1, 2],
-        [30, 1, 3],
-        [-50, -1, 0],
-    ]
-)
+DRAPED = table([
+    [-30, 1, 0],
+    [20, 1, 1],
+    [-12, -1, 2],
+    [30, 1, 3],
+    [-50, -1, 0],
+])
 # Roots hanging under the rock's rim, and shrubs grown on the second tier.
 ROOTS = table([[40, 70], [-66, 30], [70, -50], [-20, -72]])
 SHRUBS = table([[-38, 50], [-30, 52]])
 
 
 def drape_point(along: float, side: float, half: float, inset: float, y: float) -> Vec3:
-    """A point on a tier's edge (`side`: +-1 an east or west edge, 0 the back edge), `inset`
-    out from it, at height `y`."""
+    """Return a point on a tier's edge, `inset` out from it, at height `y`.
+
+    `side`: +-1 an east or west edge, 0 the back edge.
+    """
     if side == 0:
         return [along, y, -half - inset]
     return [side * (half + inset), y, along]
 
 
 def temple_jungle(p: EnemyParts) -> None:
-    """The jungle over the stones: moss on the steps, vines over the edges, shrubs on a tier."""
+    """Add the jungle over the stones: moss on the steps, vines over the edges, shrubs on a tier."""
     hull = p.hull
     for m in MOSS:
         x = m[0]

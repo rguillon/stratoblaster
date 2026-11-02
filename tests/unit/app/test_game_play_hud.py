@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/game_play_hud.py`."""
 # (specs/ui/hud.md; the debug tile, DEV-PERF-05).
 
@@ -6,13 +7,16 @@ from types import SimpleNamespace
 from helpers.dom import FakeDocument
 
 from app.game_play_hud import (
+    STATS_SHOWN,
     LevelOverlaysOptions,
     boss_bar_frame,
     create_hud,
     create_level_overlays,
+    create_stats,
     hud_frame,
 )
 from ui.game_hud import GameHud
+from ui.stats_tile import StatsTile
 
 
 def texts() -> SimpleNamespace:
@@ -113,36 +117,50 @@ def test_dev_perf_05_the_overlays_build_the_hud_and_the_debug_tile_only_in_debug
     hud_parent = doc.createElement("div")
     stats_parent = doc.createElement("div")
     hud, stats = create_level_overlays(
-        LevelOverlaysOptions(doc, True, stats_parent, hud_parent), "Ship A", hud_texts(), None
+        LevelOverlaysOptions(doc, debug=True, stats_parent=stats_parent, hud_parent=hud_parent),
+        "Ship A",
+        hud_texts(),
+        None,
     )
     assert hud is not None
     assert stats is not None
     assert stats.root.parentElement is stats_parent
     hud2, stats2 = create_level_overlays(
-        LevelOverlaysOptions(doc, False, stats_parent, None), "Ship A", hud_texts(), None
+        LevelOverlaysOptions(doc, debug=False, stats_parent=stats_parent, hud_parent=None),
+        "Ship A",
+        hud_texts(),
+        None,
     )
     assert hud2 is None
     assert stats2 is None
 
 
 def test_d212_the_debug_tile_shows_as_last_chosen_with_its_key() -> None:
-    from app.game_play_hud import STATS_SHOWN  # noqa: PLC0415
 
     doc = FakeDocument()
     parent = doc.createElement("div")
     try:
         STATS_SHOWN.chosen = True
         _, stats = create_level_overlays(
-            LevelOverlaysOptions(doc, False, parent, None), "Ship A", hud_texts(), None
+            LevelOverlaysOptions(doc, debug=False, stats_parent=parent, hud_parent=None),
+            "Ship A",
+            hud_texts(),
+            None,
         )
         assert stats is not None
         STATS_SHOWN.chosen = False
         _, hidden = create_level_overlays(
-            LevelOverlaysOptions(doc, True, parent, None), "Ship A", hud_texts(), None
+            LevelOverlaysOptions(doc, debug=True, stats_parent=parent, hud_parent=None),
+            "Ship A",
+            hud_texts(),
+            None,
         )
         assert hidden is None
         _, orphan = create_level_overlays(
-            LevelOverlaysOptions(doc, True, None, None), "Ship A", hud_texts(), None
+            LevelOverlaysOptions(doc, debug=True, stats_parent=None, hud_parent=None),
+            "Ship A",
+            hud_texts(),
+            None,
         )
         assert orphan is None
     finally:
@@ -150,15 +168,24 @@ def test_d212_the_debug_tile_shows_as_last_chosen_with_its_key() -> None:
 
 
 def test_d212_its_key_flips_the_choice_even_without_a_tile() -> None:
-    from app.game_play_hud import STATS_SHOWN  # noqa: PLC0415
 
     try:
         # Not in debug mode: hidden, then shown, then hidden again.
-        assert STATS_SHOWN.toggle(False) is True
-        assert STATS_SHOWN.toggle(False) is False
-        assert STATS_SHOWN.shown(True) is False
+        assert STATS_SHOWN.toggle(debug=False) is True
+        assert STATS_SHOWN.toggle(debug=False) is False
+        assert STATS_SHOWN.shown(debug=True) is False
         STATS_SHOWN.chosen = None
         # In debug mode the tile starts shown: the first press hides it.
-        assert STATS_SHOWN.toggle(True) is False
+        assert STATS_SHOWN.toggle(debug=True) is False
     finally:
         STATS_SHOWN.chosen = None
+
+
+def test_dev_perf_05_the_debug_tile_is_made_only_with_a_parent() -> None:
+    """Its key may ask for it where the page has no place for it (D-212)."""
+    doc = FakeDocument()
+    parent = doc.createElement("div")
+    assert create_stats(LevelOverlaysOptions(doc, True, None, None)) is None
+    tile = create_stats(LevelOverlaysOptions(doc, False, parent, None))
+    assert isinstance(tile, StatsTile)
+    assert tile.root.parentElement is parent

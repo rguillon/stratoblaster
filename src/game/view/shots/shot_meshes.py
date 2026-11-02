@@ -1,16 +1,10 @@
-"""Disabled template meshes for shots (P03)
+# Copyright (c) 2026 Renaud Guillon
+"""Disabled template meshes for shots (P03).
 
 Clones of a template share its geometry; the renderers show or hide them through `NodePool`.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-__pragma__("noskip")
-
-from render.babylon import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.babylon import (
     apply_vertex_data,
     babylon_constant,
     color3,
@@ -19,6 +13,13 @@ from render.babylon import (  # noqa: E402 (after the Transcrypt skip block, ENG
     new_standard_material,
     vertex_data_of,
 )
+
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
+
+# __pragma__ ("noskip")
+
 
 # Vertex colours are RGBA: every fourth component is the alpha.
 RGBA = 4
@@ -31,14 +32,16 @@ def _vertex_colour(colour: float, index: int, alphas: list[float]) -> float:
         return colour
     alpha = alphas[index // RGBA]
     # `??`: an alpha that is missing (undefined) keeps the colour's own value.
-    return colour if alpha == None else alpha  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    return colour if alpha == None else alpha
 
 
 def additive_template(name: str, geo: Any, scene: Any, on_top: bool = False) -> Any:
-    """A disabled template mesh showing its vertex colours, unlit, added onto what is behind it
-    (black is transparent), without writing depth. Clones of it share its geometry. `on_top`
-    draws it over everything, models included (phase 8 review: a laser leaving a lens set into a
-    raised hull is seen leaving the lens, not from under the hull).
+    """Return a disabled template mesh showing its vertex colours, unlit.
+
+    Its colours are added onto what is behind it: black is transparent, and it writes no depth.
+    Clones of it share its geometry. `on_top` draws it over everything, models included (phase 8
+    review: a laser leaving a lens set into a raised hull is seen leaving the lens, not from under
+    the hull).
     """
     mesh = new_mesh(name, scene)
     data = vertex_data_of(geo.positions, geo.indices, None, geo.colors)
@@ -62,9 +65,11 @@ def additive_template(name: str, geo: Any, scene: Any, on_top: bool = False) -> 
 
 
 def blended_template(name: str, geo: Any, alphas: list[float], scene: Any) -> Any:
-    """A disabled template mesh of colours that hide what is behind them as much as their vertex
-    alpha says (phase 8 review): unlit, blended, without writing depth. Unlike an additive glow,
-    its colours stay as they are over bright ground (snow) instead of washing out to white.
+    """Return a disabled, unlit, blended template mesh (phase 8 review).
+
+    Its colours hide what is behind as much as their alpha says, without writing depth. Unlike an
+    additive glow, its colours stay as they are over bright ground (snow) instead of washing out to
+    white.
     """
     mesh = new_mesh(name, scene)
     colors = [_vertex_colour(c, i, alphas) for i, c in enumerate(geo.colors)]

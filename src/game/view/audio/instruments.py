@@ -1,31 +1,32 @@
-"""The instruments of the generated music (AUD-MUSIC-03): darksynth (reviewer, 2026-10-26),
-all synthesised from oscillators and
-noise through filters and envelopes. An 80s drum machine (punchy kicks, big gated snares, synth
-toms), pumping and rolling saw basses, detuned saw pads, plucked arpeggios and leads sent to the
-track's echo, and the music reverb. Drums play at `DRUM_PITCH` (toms higher or lower for fills);
-their layers' pitches are ratios of it.
+# Copyright (c) 2026 Renaud Guillon
+"""The instruments of the generated music (AUD-MUSIC-03): darksynth (reviewer, 2026-10-26).
+
+All synthesised from oscillators and noise through filters and envelopes. An 80s drum machine
+(punchy kicks, big gated snares, synth toms), pumping and rolling saw basses, detuned saw pads,
+plucked arpeggios and leads sent to the track's echo, and the music reverb. Drums play at
+`DRUM_PITCH` (toms higher or lower for fills); their layers' pitches are ratios of it.
 
 Partial layer objects are plain dicts with snake_case keys
 (`glide_to`, `detune_cents`, `filter`, ...); absent keys take the defaults.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
+from audio.audio_types import Envelope, FilterSpec, Instrument, ToneLayer
+from game.view.audio.sound_recipes import flatten_layers
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
-from audio.audio_types import Envelope, FilterSpec, Instrument, ToneLayer  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.audio.sound_recipes import flatten_layers  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # The MIDI pitch drum notes are played at (their layers' pitches are ratios of it).
 DRUM_PITCH = 36
 
 
 def env(attack: float, decay: float, sustain: float, release: float) -> Envelope:
-    """A gain envelope."""
+    """Return a gain envelope."""
     return Envelope(attack, decay, sustain, release)
 
 
@@ -49,15 +50,16 @@ def saws(cents: list[float], gain: float, rest: dict[str, Any]) -> list[ToneLaye
     layers: list[ToneLayer] = []
     for detune in cents:
         options: dict[str, Any] = {"detune_cents": detune}
-        for key, value in rest.items():
-            options[key] = value
+        options.update(rest)
         layers.append(layer("sawtooth", gain, options))
     return layers
 
 
 def _instrument(gain: float, layers: list[Any], rest: dict[str, Any]) -> Instrument:
-    """An instrument from its gain, layers (or lists of layers) and optional `echo` and `reverb`
-    shares."""
+    """Return an instrument from its gain.
+
+    Layers (or lists of layers) and optional `echo` and `reverb` shares.
+    """
     return Instrument(flatten_layers(layers), gain, rest.get("echo"), rest.get("reverb"))
 
 
@@ -473,8 +475,7 @@ def _boss() -> dict[str, Instrument]:
 def _all_instruments() -> dict[str, Instrument]:
     instruments: dict[str, Instrument] = {}
     for group in [_drums(), _basses(), _pads(), _arps(), _leads(), _boss()]:
-        for key, value in group.items():
-            instruments[key] = value
+        instruments.update(group)
     return instruments
 
 

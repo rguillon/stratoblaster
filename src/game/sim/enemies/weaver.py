@@ -1,26 +1,28 @@
-"""The Weaver (`specs/enemies/weaver.md`)"""
+# Copyright (c) 2026 Renaud Guillon
+"""The Weaver (`specs/enemies/weaver.md`)."""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from core.entities.enemy import Enemy
 from core.systems.gun_muzzles import GunMuzzles, fire_aimed
 from game.config.enemies import ENEMY_CONFIG
 from game.sim.enemies.enemy_helpers import Cadence, bullet_shot, on_playfield
 
-__pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from core.entities.enemy import EnemyContext
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 CFG = ENEMY_CONFIG.weaver
 
 
 class Weaver(Enemy):
-    """ENM-WEAVER-04: moves down along a sine wave: its X is a sine of the distance it has come
-    down. Every 2 s it fires a pair of bullets aimed at the player, one from each hull
-    (ENM-WEAVER-05).
+    """ENM-WEAVER-04: moves down along a sine wave.
+
+    Its X is a sine of the distance it has come down. Every 2 s it fires a pair of bullets aimed at
+    the player, one from each hull (ENM-WEAVER-05).
     """
 
     def __init__(self, center_x: float, y: float) -> None:
@@ -38,6 +40,7 @@ class Weaver(Enemy):
         return x
 
     def update(self, ctx: EnemyContext, dt: float) -> None:
+        """Advance the enemy by `dt` seconds."""
         before = self.x
         self.y -= CFG.speed * dt
         self.x = Weaver.sway_at(self.center_x, self._start_y - self.y)

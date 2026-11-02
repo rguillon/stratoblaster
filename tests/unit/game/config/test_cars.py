@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/cars.py`."""
 
 from game.config.cars import CAR_IDS, CAR_RULES

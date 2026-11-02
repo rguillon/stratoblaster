@@ -1,7 +1,15 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/debug_options.py`."""
 # (DEV-OPT-01 to DEV-OPT-06, DEV-MENU-01).
 
+from app import debug_options
 from app.debug_options import dev_mode, parse_debug_options
+
+# The JavaScript-only query helpers as the module defines them: the app conftest replaces them with
+# their Python twins for every test, after this module is imported.
+_QUERY_TEXT = debug_options._query_text
+_HAS_KEY = debug_options._has_key
+_TIME_TEXT = debug_options._time_text
 
 
 def test_dev_opt_01_the_level_in_the_query_turns_debug_on() -> None:
@@ -63,3 +71,14 @@ def test_d199_dev_in_the_query_asks_for_the_dev_menu() -> None:
     assert dev_mode("?level=1-1&dev=1")
     assert not dev_mode("")
     assert not dev_mode("?level=1-1")
+
+
+def test_dev_opt_01_the_query_helpers_are_javascript_only() -> None:
+    """`URLSearchParams` reads the query in the browser; CPython runs only the placeholders.
+
+    No value, no key and a start time of 0, whatever the query (DEV-OPT-02 for the time, DEV-MENU-01
+    for the key).
+    """
+    assert _QUERY_TEXT("?level=1-3", "level") is None
+    assert _HAS_KEY("?dev", "dev") is False
+    assert _TIME_TEXT("?t=120") == 0

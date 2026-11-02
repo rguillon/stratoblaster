@@ -1,39 +1,31 @@
+# Copyright (c) 2026 Renaud Guillon
 """What the game gives the engine to draw it ().
 
 The interfaces are plain classes here, so they can be imported at run time and implemented
-structurally (no base class needed). The type aliases are for annotations only: import them
-inside a `__pragma__("skip")` block.
+structurally (no base class needed). The type aliases are for annotations only: import them inside a
+`__pragma__("skip")` block.
 
-Models face +Z (nose), with +Y up, and are centred on the origin. The playfield is the XY plane
-at Z = 0, one world unit per logical pixel, Y up, seen from -Z.
+Models face +Z (nose), with +Y up, and are centred on the origin. The playfield is the XY plane at Z
+= 0, one world unit per logical pixel, Y up, seen from -Z.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
+from typing import Any
 
 # Builds a model in the scene and returns its root node.
 ModelFactory = Callable[[Any], Any]
-# Builds a model in the scene from a value (e.g. a size) and returns its root node.
-ModelFactoryOf = Callable[[Any, Any], Any]
-# Fills `scene` with the game's menu backdrop.
-MenuBackdropFactory = Callable[[Any], Any]
-# Builds the renderer of one weapon's shots in `scene`.
-ShotRendererFactory = Callable[[Any], Any]
-# Builds one enemy model in `scene`.
-EnemyModelFactory = Callable[[Any], Any]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class MenuBackdrop:
     """The animated 3D scene behind the menus, built by the game.
 
-    Implementations provide `update(dt_seconds)`, `show_screen(screen)` (called when the menu
-    screen changes, e.g. to hide parts that a screen draws itself) and the attribute
-    `glow_excluded_meshes` (self-lit meshes, sky and sun, that must not bloom in the glow layer).
+    Implementations provide `update(dt_seconds)`, `show_screen(screen)` (called when the menu screen
+    changes, e.g. to hide parts that a screen draws itself) and the attribute `glow_excluded_meshes`
+    (self-lit meshes, sky and sun, that must not bloom in the glow layer).
     """
 
 
@@ -58,8 +50,10 @@ class ShotFrame:
 
 
 class BombFrame:
-    """What the bomb renderer draws on one frame, in playfield space: `bomb` is the bomb going
-    off, if any."""
+    """What the bomb renderer draws on one frame, in playfield space.
+
+    `bomb` is the bomb going off, if any.
+    """
 
     def __init__(self, bomb: Any, dt_seconds: float) -> None:
         self.bomb = bomb
@@ -71,8 +65,11 @@ class BombRenderer:
 
 
 class BonusFrame:
-    """What the bonus renderer draws on one frame: `bonuses` falling, `picked` up since the
-    previous frame (where they were)."""
+    """What the bonus renderer draws on one frame.
+
+    It shows the `bonuses` falling, and the `picked` ones up since the previous frame (where they
+    were).
+    """
 
     def __init__(self, bonuses: list[Any], picked: list[Any], dt_seconds: float) -> None:
         self.bonuses = bonuses
@@ -81,19 +78,17 @@ class BonusFrame:
 
 
 class BonusRenderer:
-    """Draws the bonuses falling, each kind its own look, and a flash where the ship picks one
-    up: `sync(frame)`, `dispose()`."""
+    """Draws the bonuses falling, each kind its own look, and a flash where the ship picks one up.
 
-
-class EnemyModel:
-    """The model of one enemy: `root` (a node, built facing +Z with +Y up, centred on the origin,
-    in logical pixels) and `sync(enemy, dt_seconds)` to show the enemy's state and step the
-    model's animations."""
+    Methods: `sync(frame)`, `dispose()`.
+    """
 
 
 class EnemyShotFrame:
-    """What the enemy shot renderer draws on one frame: `bullets` and `missiles` in flight, and
-    `lasers` in their warning or firing phase."""
+    """What the enemy shot renderer draws on one frame.
+
+    `bullets` and `missiles` in flight, and `lasers` in their warning or firing phase.
+    """
 
     def __init__(
         self,
@@ -108,15 +103,6 @@ class EnemyShotFrame:
         self.dt_seconds = dt_seconds
 
 
-class EnemyShotRenderer:
-    """Draws the enemies' shots, frame after frame: `sync(frame)`, `dispose()`."""
-
-
-class BlastRenderer:
-    """Draws explosions where enemies and missiles were destroyed: `sync(blasts, dt_seconds)`
-    (`blasts` are the new ones since the previous frame), `dispose()`."""
-
-
 class GlowLook:
     """Glow of the self-lit parts: `intensity` and the blur kernel size."""
 
@@ -128,14 +114,16 @@ class GlowLook:
 class EnemyBindings:
     """Presentation of the enemies (`GameDefinition.enemyKinds`).
 
-    `models`: one model per `EnemyStats.model` key. `shots(scene, style)`: the enemy shot
-    renderer, in the level's style if any. `blasts(scene)`: the explosion renderer. `glow`: a
-    `GlowLook`. `set_idle_motion(on)` (optional): turns the idle animation on or off.
-    `child_models`: the models of the enemies other enemies send out (e.g. a carrier's drones),
-    built with every level's own models (PERF-21).
+    `models`: one model per `EnemyStats.model` key, a `root` node (facing +Z with +Y up, centred on
+    the origin, in logical pixels) and `sync(enemy, dt_seconds)`. `shots(scene, style)`: the enemy
+    shot renderer (`sync(frame)`, `dispose()`), in the level's style if any. `blasts(scene)`: the
+    explosion renderer (`sync(blasts, dt_seconds)` with the blasts new since the previous frame,
+    `dispose()`). `glow`: a `GlowLook`. `set_idle_motion(on)` (optional): turns the idle animation
+    on or off. `child_models`: the models of the enemies other enemies send out (e.g. a carrier's
+    drones), built with every level's own models (PERF-21).
     """
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         models: dict[str, Any],
         shots: Any,
@@ -155,8 +143,8 @@ class EnemyBindings:
 class PropGroup:
     """A named group of prop model ids, shown together on the `props/` page.
 
-    `notes` (optional, a dict of id to text) is a note shown after some ids' names. `streets`
-    says whether the props stand in blocks ringed by road tiles.
+    `notes` (optional, a dict of id to text) is a note shown after some ids' names. `streets` says
+    whether the props stand in blocks ringed by road tiles.
     """
 
     def __init__(
@@ -173,8 +161,11 @@ class PropGroup:
 
 
 class PropTiles:
-    """The grid of tiles of the `props/` page's ground (`tile`), how its road tiles look
-    (`look`), and the models drawn as road pieces by id (`pieces`, optional)."""
+    """The ground of the `props/` page: its tiles, their look and its road pieces.
+
+    `tile` is the grid of tiles, `look` how its road tiles look, and `pieces` (optional) the models
+    drawn as road pieces by id.
+    """
 
     def __init__(self, tile: Any, look: Any, pieces: dict[str, list[Any]] | None = None) -> None:
         self.tile = tile
@@ -208,14 +199,15 @@ class SceneryBindings:
 class GameView:
     """Presentation bindings a game provides to the engine (`GameDefinition.view`).
 
-    The fields, in order: `player_ship_models` (one model per player ship id),
-    `player_ship_scale` (logical pixels per model unit), `player_shot_renderers` (one per player
-    weapon id), `menu_backdrop` (a `MenuBackdropFactory`), `scenery` (`SceneryBindings`),
-    `enemies` (`EnemyBindings`), `bonuses` (`scene -> BonusRenderer`). Optional, None when left
-    out: `bombs` (`scene -> BombRenderer`), `audio` (`AudioBindings`), `outline` (`OutlineLook`).
+    The fields, in order: `player_ship_models` (one model per player ship id), `player_ship_scale`
+    (logical pixels per model unit), `player_shot_renderers` (one per player weapon id),
+    `menu_backdrop` (`scene -> None`: fills it with the menu backdrop), `scenery`
+    (`SceneryBindings`), `enemies` (`EnemyBindings`), `bonuses` (`scene -> BonusRenderer`).
+    Optional, None when left out: `bombs` (`scene -> BombRenderer`), `audio` (`AudioBindings`),
+    `outline` (`OutlineLook`).
     """
 
-    def __init__(  # noqa: PLR0913, PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         player_ship_models: dict[str, Any],
         player_ship_scale: float,

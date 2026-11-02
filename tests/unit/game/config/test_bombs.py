@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/bombs.py`."""
 
 from game.config.bombs import BOMB_RULES

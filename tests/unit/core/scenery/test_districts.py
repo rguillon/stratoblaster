@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/districts.py`."""
+
+from typing import Any
 
 from helpers.level_builders import flat, make_level, section, street_grid
 
@@ -15,18 +18,16 @@ from core.scenery.scenery_level import layout_sections
 SPAN = ZRange(-100.0, 4100.0)
 
 
-def _placed():
+def _placed() -> Any:
     """Four sections of 1000 units: streets in the first two and the last, none in the third."""
     grid = street_grid()
     return layout_sections(
-        make_level(
-            [
-                section("a", 10, flat(), streets=grid),
-                section("b", 10, flat(), streets=grid),
-                section("c", 10, flat()),
-                section("d", 10, flat(), streets=grid),
-            ]
-        )
+        make_level([
+            section("a", 10, flat(), streets=grid),
+            section("b", 10, flat(), streets=grid),
+            section("c", 10, flat()),
+            section("d", 10, flat(), streets=grid),
+        ])
     )
 
 
@@ -69,3 +70,11 @@ def test_a_district_without_parts_left_in_a_range_is_dropped() -> None:
     districts = find_districts(_placed(), SPAN)
     assert districts_from(districts, 9000.0) == []
     assert all(isinstance(d, District) for d in districts)
+
+
+def test_split_districts_between_two_districts_cuts_neither() -> None:
+    districts = find_districts(_placed(), SPAN)
+    before, after = split_districts(districts, 2500.0)
+    assert before == [districts[0]]
+    assert after == [districts[1]]
+    assert after[0].continues is None

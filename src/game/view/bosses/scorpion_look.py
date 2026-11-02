@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """The Scorpion's look (MB-SCORPION-05): its yellow neon."""
 
 from game.config.boss_look import BOSS_LOOK

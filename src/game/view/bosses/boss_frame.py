@@ -1,25 +1,28 @@
-"""The dark metal frame a boss's shed armour leaves (docs/superpowers/specs/2026-10-31-boss-armour-
-shedding-design.md): a dark floor in the armour's own top-view shape, metal ribs across it (wing,
-shell or ring), neon seams on every other rib and pipes along the longest (BOSS-44). Its pylons
-and bridges hold pieces up so the boss stays one object (BOSS-52).
+# Copyright (c) 2026 Renaud Guillon
+"""The dark metal frame a boss's shed armour leaves.
+
+See docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md: a dark floor in the armour's
+own top-view shape, metal ribs across it (wing, shell or ring), neon seams on every other rib and
+pipes along the longest (BOSS-44). Its pylons and bridges hold pieces up so the boss stays one
+object (BOSS-52).
 
 Model space of a boss: logical pixels, +Y up (towards the camera), see `boss_limbs.boss_point`.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.boss_look import BOSS_LOOK
 from render.geometry.frame_lines import Footprint, clip_line, frame_lines
 from render.geometry.shatter import Vertex, append_triangles, up_facing
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 QUARTER = math.pi / 2
 # How steep a face of the armour may be and still count in its top view (unit normal Y).
@@ -27,7 +30,10 @@ UP = 0.3
 
 
 def floor_height(tris: list[list[Vertex]]) -> float:
-    """The height of the frame's floor under armour made of `tris`: just over its lowest point."""
+    """Return the height of the frame's floor under armour made of `tris`.
+
+    Just over its lowest point.
+    """
     low = math.inf
     for tri in tris:
         for v in tri:
@@ -37,22 +43,23 @@ def floor_height(tris: list[list[Vertex]]) -> float:
 
 
 def floor_triangles(tris: list[list[Vertex]], y: float) -> list[list[Vertex]]:
-    """The up-facing faces of `tris` laid flat at height `y`, in the frame's floor colour."""
+    """Return the up-facing faces of `tris` laid flat at height `y`, in the frame's floor colour."""
     c = BOSS_LOOK.frame.floor
     color = [c[0], c[1], c[2], 1]
-    result: list[list[Vertex]] = []
-    for tri in tris:
-        if up_facing(tri, UP):
-            result.append([Vertex([v.position[0], y, v.position[2]], color) for v in tri])
+    result: list[list[Vertex]] = [
+        [Vertex([v.position[0], y, v.position[2]], color) for v in tri]
+        for tri in tris
+        if up_facing(tri, UP)
+    ]
     return result
 
 
 def frame_segments(tris: list[list[Vertex]], style: str) -> list[list[Any]]:
-    """The frame's ribs over the top view of `tris`, each `[a, b]` (XZ), in the `style`."""
+    """Return the frame's ribs over the top view of `tris`, each `[a, b]` (XZ), in the `style`."""
     look = BOSS_LOOK.frame
-    shape = Footprint(
-        [[[v.position[0], v.position[2]] for v in tri] for tri in tris if up_facing(tri, UP)]
-    )
+    shape = Footprint([
+        [[v.position[0], v.position[2]] for v in tri] for tri in tris if up_facing(tri, UP)
+    ])
     if shape.empty():
         return []
     result: list[list[Any]] = []
@@ -66,14 +73,14 @@ def _length(segment: list[Any]) -> float:
 
 
 def longest_two(segments: list[list[Any]]) -> list[list[Any]]:
-    """The two longest of `segments` (fewer if there are fewer), longest first."""
+    """Return the two longest of `segments` (fewer if there are fewer), longest first."""
     result: list[list[Any]] = []
     for segment in segments:
-        if len(result) < 2 or _length(segment) > _length(result[1]):  # noqa: PLR2004 (a count of points, not a tunable)
+        if len(result) < 2 or _length(segment) > _length(result[1]):
             result.append(segment)
-            if len(result) == 2 and _length(result[1]) > _length(result[0]):  # noqa: PLR2004 (a count of points, not a tunable)
+            if len(result) == 2 and _length(result[1]) > _length(result[0]):
                 result = [result[1], result[0]]
-            elif len(result) == 3:  # noqa: PLR2004 (a count of points, not a tunable)
+            elif len(result) == 3:
                 if _length(result[2]) > _length(result[0]):
                     result = [result[2], result[0]]
                 else:
@@ -82,13 +89,15 @@ def longest_two(segments: list[list[Any]]) -> list[list[Any]]:
 
 
 def draw_pylon(p: Any, floor: float, support: list[float], neon: Any) -> None:
-    """A pylon up to the base of a piece standing over the frame (`support`: `[x, z, height,
-    width]`, and the height it stands on when known, else the frame's `floor`), so it does not
-    hover (D-227): a base plate, a column, a collar and a neon band."""
+    """Draw a pylon up to the base of a piece standing over the frame.
+
+    Its `support` is `[x, z, height, width]`, and the height it stands on when known, else the
+    frame's `floor`, so it does not hover (D-227): a base plate, a column, a collar and a neon band.
+    """
     look = BOSS_LOOK.frame
     x = support[0]
     z = support[1]
-    if len(support) > 4:  # noqa: PLR2004 (a count of points, not a tunable)
+    if len(support) > 4:
         floor = support[4]
     height = support[2] - floor
     if height <= look.lift:
@@ -101,8 +110,11 @@ def draw_pylon(p: Any, floor: float, support: list[float], neon: Any) -> None:
 
 
 def draw_bridge(p: Any, bridge: list[Any], neon: Any) -> None:
-    """A beam holding a patch of frame to the boss (D-227), `[from, to]`: along the floor from
-    `from` to under `to`, then a post up (or down) to `to`, a neon seam along the beam."""
+    """Draw a beam `[from, to]` holding a patch of frame to the boss (D-227).
+
+    Along the floor from `from` to under `to`, then a post up (or down) to `to`, a neon seam along
+    the beam.
+    """
     look = BOSS_LOOK.frame
     a = bridge[0]
     b = bridge[1]
@@ -124,7 +136,7 @@ def draw_bridge(p: Any, bridge: list[Any], neon: Any) -> None:
     p.hull.box([w, high - low + look.ribHeight, w], look.metal, Placement([b[0], low, b[2]]))
 
 
-def frame_drawings(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def frame_drawings(
     tris: list[list[Vertex]],
     style: str,
     neon: Any,
@@ -132,14 +144,17 @@ def frame_drawings(  # noqa: PLR0917 (positional: Transcrypt has no keyword argu
     floor: Any = None,
     bridges: list[Any] | None = None,
 ) -> list[Any]:
-    """The drawings (`draw(p)`) of the frame left where the armour `tris` was: `[floor, ribs]`
-    (the floor alone carries the frame's glowing outline), at height `floor` (else just over the
-    armour's lowest point); the ribs hold up the pieces standing over it (`supports`, see
-    `draw_pylon`) and beams hold its patches to the boss (`bridges`, see `draw_bridge`)."""
+    """Return the drawings (`draw(p)`) of the frame left where the armour `tris` was.
+
+    They are `[floor, ribs]` (the floor alone carries the frame's glowing outline), at height
+    `floor` (else just over the armour's lowest point); the ribs hold up the pieces standing over it
+    (`supports`, see `draw_pylon`) and beams hold its patches to the boss (`bridges`, see
+    `draw_bridge`).
+    """
     held = supports if supports is not None else []
     beams = bridges if bridges is not None else []
     look = BOSS_LOOK.frame
-    y = floor if floor != None else floor_height(tris)  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    y = floor if floor != None else floor_height(tris)
     floor = floor_triangles(tris, y)
     segments = frame_segments(tris, style)
     longest = longest_two(segments)

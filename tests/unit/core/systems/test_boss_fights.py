@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/systems/boss_fights.py`."""
 
 import subprocess
@@ -47,9 +48,9 @@ class _Boss:
 
 
 class _Kind:
-    def __init__(self, id: str, boss: _Boss) -> None:
-        self.id = id
-        self.name = id
+    def __init__(self, item_id: str, boss: _Boss) -> None:
+        self.id = item_id
+        self.name = item_id
         self.boss = boss
         self.areas: list[object] = []
 
@@ -59,7 +60,7 @@ class _Kind:
 
 
 def _seek(track: ScrollTrack, progress: float) -> None:
-    """Puts the level at `progress` world units (`ScrollTrack.seek` takes seconds)."""
+    """Put the level at `progress` world units (`ScrollTrack.seek` takes seconds)."""
     track.seek(progress / track.speed)
 
 
@@ -90,7 +91,7 @@ class _Bounds:
     max_y = 100
     center_x = 50
 
-    def half_width_at(self, y: float) -> float:
+    def half_width_at(self, _y: float) -> float:
         return 50
 
 
@@ -130,7 +131,7 @@ class FakeBossKind:
     id = "hulk"
     name = "Hulk"
 
-    def spawn(self, area: object) -> FakeBoss:
+    def spawn(self, _area: object) -> FakeBoss:
         return FakeBoss(50, 60)
 
 
@@ -138,7 +139,7 @@ def _kind(health: float = 10, points: float = 100, y: float = 30) -> EnemyKindDe
     return EnemyKindDefinition(
         "still",
         "Still",
-        lambda area: [Still(50, y, EnemyStats("still", 4, health, points))],
+        lambda _area: [Still(50, y, EnemyStats("still", 4, health, points))],
     )
 
 
@@ -157,19 +158,19 @@ def _level(
 
 
 def _run(**overrides: object) -> LevelRun:
-    options: dict = dict(
-        screen=SCREEN,
-        level=_level(),
-        kinds=[_kind()],
-        weapon=GUN,
-        weapon_level=1,
-        ship=SHIP,
-        bounds=_Bounds(),
-        cull_margin=10,
-        max_enemy_age=60,
-        end_wait=1,
-        seed=1,
-    )
+    options: dict = {
+        "screen": SCREEN,
+        "level": _level(),
+        "kinds": [_kind()],
+        "weapon": GUN,
+        "weapon_level": 1,
+        "ship": SHIP,
+        "bounds": _Bounds(),
+        "cull_margin": 10,
+        "max_enemy_age": 60,
+        "end_wait": 1,
+        "seed": 1,
+    }
     options.update(overrides)
     return LevelRun(LevelRunOptions(**options))  # type: ignore[arg-type]
 
@@ -197,7 +198,7 @@ def test_game_level_04_a_boss_must_come_at_a_non_negative_distance() -> None:
 
 
 def test_game_level_04_creating_the_fights_validates_the_bosses() -> None:
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match="Unknown boss kind"):
         _fights([LevelBoss("ghost", "final", 10)])
 
 
@@ -246,7 +247,7 @@ def test_game_level_07_with_no_ease_time_the_ground_changes_speed_at_once() -> N
 
 def test_boss_02_no_other_boss_comes_in_while_one_is_fought() -> None:
     boss = _Boss([10])
-    fights, track, kind, added = _fights(
+    fights, track, _, added = _fights(
         [LevelBoss("hulk", "mini", 10), LevelBoss("hulk", "final", 20)], boss=boss
     )
     _seek(track, 30)
@@ -385,8 +386,10 @@ def test_game_life_11_skipping_with_a_count_passes_that_many_bosses() -> None:
 
 
 def test_boss_modules_import_in_a_clean_interpreter() -> None:
-    """The boss modules import each other only for annotations: a clean interpreter can import
-    the systems that use them first."""
+    """The boss modules import each other only for annotations.
+
+    A clean interpreter can import the systems that use them first.
+    """
     repo = Path(__file__).resolve().parents[4]
     stubs = Path(next(iter(transcrypt.__path__))).resolve() / "modules"
     code = (
@@ -413,3 +416,21 @@ def test_game_level_10_a_final_boss_ends_the_level_when_it_is_destroyed() -> Non
     _step(run)
     assert run.phase == "complete"
     assert run.checkpoint is None
+
+
+def test_boss_07_a_level_boss_brings_in_the_kind_with_its_id_among_several() -> None:
+    hulk = _Boss([10])
+    other = _Kind("ghost", _Boss([5]))
+    kind = _Kind("hulk", hulk)
+    added: list[_Boss] = []
+    hooks = BossFightHooks(lambda: "AREA", added.append)  # type: ignore[arg-type]
+    fights = BossFights(
+        [LevelBoss("hulk", "mini", 0)],
+        [other, kind],  # type: ignore[list-item]
+        BossFightRules(0, 2),
+        hooks,
+    )
+    fights.step(0.1, ScrollTrack(10, 1000))
+    assert added == [hulk]
+    assert kind.areas == ["AREA"]
+    assert other.areas == []

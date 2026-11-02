@@ -1,13 +1,15 @@
-"""Exhaust flame of a reactor (GFX-SHIP-06, ENM-40): the blue light behind each
-reactor is a living flame: an outer exhaust cone and a hotter inner cone that flicker in length,
-width and brightness, and plasma puffs that flow from the nozzle down the exhaust.
+# Copyright (c) 2026 Renaud Guillon
+"""Exhaust flame of a reactor (GFX-SHIP-06, ENM-40): the blue light behind each reactor.
+
+It is a living flame: an outer exhaust cone and a hotter inner cone that flicker in length, width
+and brightness, and plasma puffs that flow from the nozzle down the exhaust.
 """
 
 import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
-from game.config.record import field  # noqa: E402
+from game.config.record import field
 from game.config.ship_look import REACTOR_FLAME as FLAME
 from game.view.ship_materials import get_ship_materials
 
@@ -20,15 +22,15 @@ from render.babylon import (
 )
 from render.model_animation import add_model_animation
 
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
+
+Scene = Any
+# __pragma__ ("noskip")
+
 __pragma__("jsmod")
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-Scene = Any  # noqa: E402
-
-
-__pragma__("noskip")
 
 TAU = math.pi * 2
 # Puffs fade in over this first fraction of their travel, then fade out.
@@ -72,8 +74,10 @@ def _polyhedron_options(kind: int, size: float) -> Any:
 
 
 def flicker(time_sec: float, phase: float, hz: list[float]) -> float:
-    """Irregular flicker in [-1, 1]: the mean of sines at the given frequencies, phase-shifted
-    (GFX-ART-11)."""
+    """Irregular flicker in [-1, 1]: the mean of sines at the given frequencies, phase-shifted.
+
+    See GFX-ART-11.
+    """
     total = 0.0
     for i, f in enumerate(hz):
         total += math.sin(TAU * f * time_sec + phase * (i + 1))
@@ -102,18 +106,20 @@ def puff_opacity(progress: float) -> float:
 
 
 def _around(value: float, amount: float) -> float:
-    """Maps a flicker value in [-1, 1] to a factor in [1 - amount, 1 + amount]."""
+    """Map a flicker value in [-1, 1] to a factor in [1 - amount, 1 + amount]."""
     return 1 + amount * value
 
 
 def _dimmed(value: float, amount: float) -> float:
-    """Maps a flicker value in [-1, 1] to a visibility in [1 - amount, 1]."""
+    """Map a flicker value in [-1, 1] to a visibility in [1 - amount, 1]."""
     return 1 - (amount * (1 - value)) / 2
 
 
 class Cone:
-    """A cone of the flame: `pivot` is at the nozzle (scaling it stretches the cone from there),
-    `mesh` the cone itself."""
+    """A cone of the flame: `pivot` at the nozzle, `mesh` the cone itself.
+
+    Scaling the pivot stretches the cone from the nozzle.
+    """
 
     def __init__(self, pivot: Any, mesh: Any) -> None:
         self.pivot = pivot
@@ -121,7 +127,7 @@ class Cone:
 
 
 def _cone(name: str, size: dict[str, Any], material: Any, parent: Any) -> Cone:
-    """A cone of the flame, from the nozzle towards -Z."""
+    """Return a cone of the flame, from the nozzle towards -Z."""
     scene = parent.getScene()
     pivot = new_transform_node(name + "-pivot", scene)
     pivot.parent = parent
@@ -165,7 +171,7 @@ def _build_puffs(
 
 
 def _player_flame(parent: Any) -> dict[str, Any]:
-    """The player ships' blue flame materials (GFX-ART-04)."""
+    """Return the player ships' blue flame materials (GFX-ART-04)."""
     mats = get_ship_materials(parent.getScene())
     return {
         "exhaust": mats.reactorExhaust,
@@ -180,12 +186,14 @@ def build_reactor_flame(
     parent: Any,
     materials: dict[str, Any] | None = None,
 ) -> None:
-    """Builds an animated reactor flame (GFX-SHIP-06) under `parent`, named after `name`, blue like
-    the player ships' unless other `materials` are given (enemies, ENM-40).
+    """Build an animated reactor flame (GFX-SHIP-06) under `parent`, named after `name`.
+
+    It is blue like the player ships' unless other `materials` are given (enemies, ENM-40).
 
     `size` holds `nozzleZ`, `length`, `diameter` (exhaust cone at the nozzle), `puffDiameter`,
     `sides`, and optionally `light` (`{ "puffs": n }`): lighter flames (enemies) have no caps on
-    the cones, that many puffs, and tetrahedra instead of icosahedra."""
+    the cones, that many puffs, and tetrahedra instead of icosahedra.
+    """
     if materials is None:
         materials = _player_flame(parent)
     sides = size["sides"]

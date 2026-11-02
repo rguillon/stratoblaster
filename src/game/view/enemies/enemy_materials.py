@@ -1,25 +1,15 @@
-"""The materials of the enemy models: flesh and hull (ENM-36, GFX-ART-15), and neon. Babylon's
-dirty marking is blocked while they are made (PERF-31)."""
+# Copyright (c) 2026 Renaud Guillon
+"""The materials of the enemy models: flesh and hull (ENM-36, GFX-ART-15), and neon.
+
+Babylon's dirty marking is blocked while they are made (PERF-31).
+"""
 
 from org.transcrypt.stubs.browser import __pragma__
 
-__pragma__("skip")
-from game.config.record import fields_of, record  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-__pragma__("noskip")
-
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-type Rgb = list[float]
-__pragma__("noskip")
-
-from core.math.color import capped_saturation, hue_saturation, snap_to_hues  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.readability import READABILITY  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.babylon import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.color import capped_saturation, hue_saturation, snap_to_hues
+from game.config.enemy_look import ENEMY_LOOK
+from game.config.readability import READABILITY
+from render.babylon import (
     apply_vertex_data,
     block_material_marks,
     color3,
@@ -31,16 +21,32 @@ from render.babylon import (  # noqa: E402 (after the Transcrypt skip block, ENG
     vertex_data_of,
 )
 
+# isort: split
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+# __pragma__ ("skip")
+from collections.abc import Sequence
+from typing import Any
+
+from game.config.record import fields_of, record
+
+type Rgb = list[float]
+# __pragma__ ("noskip")
+
 
 def enemy_color(color: Rgb) -> Sequence[float]:
-    """`color` moved into the enemies' colour family (ENM-38, GFX-READ-06; a boss's too, BOSS-50):
-    to the nearest of its hues, bright yellow or bright green (D-231)."""
+    """`color` moved into the enemies' colour family (ENM-38, GFX-READ-06).
+
+    A boss's too (BOSS-50): to the nearest of its hues, bright yellow or bright green (D-231).
+    """
     return snap_to_hues(color, READABILITY.enemyHues)
 
 
 def body_color(color: Sequence[float]) -> Sequence[float]:
-    """A shade of an enemy's body (hull, flesh): kept in the window of `READABILITY.enemyBody`,
-    greyed out of it (ENM-39, GFX-ART-06; D-231: no khaki, no pink)."""
+    """Return a shade of an enemy's body (hull, flesh), greyed outside its readable window.
+
+    A colour in the window of `READABILITY.enemyBody` is kept; one out of it is greyed (ENM-39,
+    GFX-ART-06; D-231: no khaki, no pink).
+    """
     body = READABILITY.enemyBody
     hue, saturation = hue_saturation(color)
     if saturation <= body.maxSaturation:
@@ -120,7 +126,7 @@ def _cached(cache: list[list[Any]], scene: Any) -> list[Any] | None:
 
 
 def unlit(name: str, scene: Any) -> Any:
-    """An unlit material: white emissive, black diffuse and specular."""
+    """Return an unlit material: white emissive, black diffuse and specular."""
     was = block_material_marks(scene, True)
     mat = new_standard_material(name, scene)
     mat.emissiveColor = color3(1, 1, 1)
@@ -132,7 +138,7 @@ def unlit(name: str, scene: Any) -> Any:
 
 
 def enemy_materials(scene: Any) -> EnemyMaterials:
-    """The scene's enemy materials, created on first use."""
+    """Return the scene's enemy materials, created on first use."""
     pair = _cached(_ENEMY_CACHE, scene)
     if pair is None:
         mats = EnemyMaterials(
@@ -147,8 +153,10 @@ def enemy_materials(scene: Any) -> EnemyMaterials:
 
 
 def metal(name: str, albedo: Any, scene: Any) -> Any:
-    """Dark metal lit by the hull settings of the enemy look, brighter than the scenery
-    (`hullLight`, GFX-ART-08)."""
+    """Dark metal lit by the hull settings of the enemy look, brighter than the scenery.
+
+    The light is `hullLight` (GFX-ART-08).
+    """
     was = block_material_marks(scene, True)
     hull = new_pbr_material(name, scene)
     hull.albedoColor = albedo
@@ -161,7 +169,7 @@ def metal(name: str, albedo: Any, scene: Any) -> Any:
 
 
 def flesh_of(name: str, albedo: Any, scene: Any) -> Any:
-    """A waxy, barely metallic flesh (GFX-ART-15), lit as the hulls are."""
+    """Return a waxy, barely metallic flesh (GFX-ART-15), lit as the hulls are."""
     was = block_material_marks(scene, True)
     mat = metal(name, albedo, scene)
     mat.metallic = ENEMY_LOOK.flesh.metallic
@@ -175,8 +183,10 @@ BODY_MATERIALS = ["enemy-hull", "enemy-flesh"]
 
 
 def tinted_hull(scene: Any, neon: Sequence[float], flesh: bool = False) -> Any:
-    """The dark metal of an enemy whose neon is `neon` (phase 5 review: enemies easier to see on
-    the ground): tinted towards its neon colour, and faintly lit by it."""
+    """Return the dark metal of an enemy whose neon is `neon`: tinted towards its neon colour.
+
+    Faintly lit by it too (phase 5 review: enemies easier to see on the ground).
+    """
     look = ENEMY_LOOK.hull
     pair = _cached(_TINTED_CACHE, scene)
     if pair is None:
@@ -198,8 +208,10 @@ def tinted_hull(scene: Any, neon: Sequence[float], flesh: bool = False) -> Any:
 
 
 def rim_of(neon: Sequence[float]) -> Rgb:
-    """The rim colour of an enemy whose neon is `neon` (GFX-TRIM-06): lifted towards white, so it
-    stands out from the ground (ENM-47)."""
+    """Return the rim colour of an enemy whose neon is `neon` (GFX-TRIM-06).
+
+    Lifted towards white, so it stands out from the ground (ENM-47).
+    """
     outline = READABILITY.enemyTrim
     whiten = outline.whiten
     strength = outline.strength
@@ -212,7 +224,7 @@ def rim_of(neon: Sequence[float]) -> Rgb:
 
 
 def mesh_of(name: str, geo: Any, material: Any, scene: Any) -> Any:
-    """A flat-shaded, vertex-coloured mesh."""
+    """Return a flat-shaded, vertex-coloured mesh."""
     mesh = new_mesh(name, scene)
     normals = compute_normals(geo.positions, geo.indices)
     data = vertex_data_of(geo.positions, geo.indices, normals, geo.colors)
@@ -223,7 +235,7 @@ def mesh_of(name: str, geo: Any, material: Any, scene: Any) -> Any:
 
 
 def glowing(name: str, color: Sequence[float], alpha: float, scene: Any) -> Any:
-    """An unlit, see-through material of `color` at `alpha`, drawn both sides."""
+    """Return an unlit, see-through material of `color` at `alpha`, drawn both sides."""
     was = block_material_marks(scene, True)
     mat = unlit(name, scene)
     mat.emissiveColor = color3(color[0], color[1], color[2])

@@ -1,17 +1,22 @@
+# Copyright (c) 2026 Renaud Guillon
 """Movement keys held down, as a direction to fly in (GAME-CTRL-03).
+
 `DIRECTION_KEYS`: `KeyboardEvent.code` -> direction; arrows and WASD by key position (AZERTY works
-too, GAME-CTRL-01)."""
+too, GAME-CTRL-01).
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from core.systems.player_flight import FlightInput
 
-__pragma__("skip")
-from input.menu_action import MenuDirection  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import TYPE_CHECKING
 
-__pragma__("noskip")
+if TYPE_CHECKING:
+    from input.menu_action import MenuDirection
+# __pragma__ ("noskip")
+
 
 DIRECTION_KEYS = {
     "ArrowUp": "up",
@@ -26,14 +31,16 @@ DIRECTION_KEYS = {
 
 
 class HeldDirections:
-    """The movement keys held down, as a direction to fly in: X right, Y up, at most length 1 (so
-    diagonals are not faster)."""
+    """The movement keys held down, as a direction to fly in: X right, Y up, length at most 1.
+
+    So diagonals are not faster.
+    """
 
     def __init__(self) -> None:
         self._held: list[str] = []
 
     def key(self, code: str, down: bool) -> bool:
-        """Records a key going down or up; returns whether it is a movement key."""
+        """Record a key going down or up; return whether it is a movement key."""
         if code not in DIRECTION_KEYS:
             return False
         if down:
@@ -49,6 +56,7 @@ class HeldDirections:
 
     @property
     def direction(self) -> FlightInput:
+        """The movement direction of the held keys (X right, Y up)."""
         held: list[MenuDirection] = [DIRECTION_KEYS[code] for code in self._held]
         x = (1 if "right" in held else 0) - (1 if "left" in held else 0)
         y = (1 if "up" in held else 0) - (1 if "down" in held else 0)

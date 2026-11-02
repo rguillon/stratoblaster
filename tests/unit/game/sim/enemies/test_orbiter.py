@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/sim/enemies/orbiter.py`."""
 
 from helpers.enemy_steps import area, run, run_until
@@ -5,7 +6,7 @@ from helpers.fakes import FakeContext
 
 from core.entities.jointed_enemy import EnemyPartSpec
 from game.sim.elite_kinds import ELITE_KINDS
-from game.sim.enemies.orbiter import Orbiter
+from game.sim.enemies.orbiter import CFG, Orbiter
 
 ORBITER = next(kind for kind in ELITE_KINDS if kind.id == "orbiter")
 
@@ -44,3 +45,13 @@ def test_enm_orbiter_13_an_orbiter_builds_its_drones_as_part_specs_not_config_re
         assert isinstance(part.spec, EnemyPartSpec)
         assert part.spec.joint is None
         assert part.spec.orbits
+
+
+def test_enm_orbiter_10_destroyed_drones_fire_no_more_but_the_ring_goes_on() -> None:
+    ctx = FakeContext()
+    orbiter = Orbiter(200, 300, 300)
+    for drone in CFG.drones:
+        orbiter.part(drone.id).health = 0
+    run(orbiter, ctx, 3.0)  # each drone would have fired by then
+    assert [b for b in ctx.bullets if b[3] is CFG.droneBullet] == []
+    assert len([b for b in ctx.bullets if b[3] is CFG.ringBullet]) == CFG.ringCount

@@ -1,4 +1,5 @@
-"""Data-only description of player weapons (GAME-WPN-19)
+# Copyright (c) 2026 Renaud Guillon
+"""Data-only description of player weapons (GAME-WPN-19).
 
 Positions and distances are in logical pixels, with X to the right and Y up (forward); angles are
 in degrees from forward, positive to the right.
@@ -25,9 +26,9 @@ class ProjectileWeaponDefinition:
 
     kind = "projectile"
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
-        id: str,
+        id_: str,
         name: str,
         launch_point: str,
         shots_per_second: float,
@@ -58,7 +59,7 @@ class ProjectileWeaponDefinition:
         - `launch_back`: shots start this far behind the launch point (px, towards the ship's
           tail), so they leave from inside the ship (GFX-SHOT-02); 0 when omitted.
         """
-        self.id = id
+        self.id = id_
         self.name = name
         self.launch_point = launch_point
         self.shots_per_second = shots_per_second
@@ -83,15 +84,17 @@ class BeamLevel:
 
 
 class BeamWeaponDefinition:
-    """A continuous beam fired straight ahead. At level 1 it stops at the first target it hits;
-    above, it goes through the target and continues one level lower.
+    """A continuous beam fired straight ahead.
+
+    At level 1 it stops at the first target it hits above, it goes through the target and continues
+    one level lower.
     """
 
     kind = "beam"
 
-    def __init__(self, id: str, name: str, levels: list[BeamLevel]) -> None:
+    def __init__(self, id_: str, name: str, levels: list[BeamLevel]) -> None:
         """`levels[i]` is level `i + 1`."""
-        self.id = id
+        self.id = id_
         self.name = name
         self.levels = levels
 
@@ -99,65 +102,3 @@ class BeamWeaponDefinition:
 __pragma__("skip")
 type WeaponDefinition = ProjectileWeaponDefinition | BeamWeaponDefinition
 __pragma__("noskip")
-
-
-def _validate_projectile(weapon: ProjectileWeaponDefinition) -> None:
-    positive = [
-        ("shots_per_second", weapon.shots_per_second),
-        ("launch_speed", weapon.launch_speed),
-        ("radius", weapon.radius),
-        ("damage", weapon.damage),
-    ]
-    for key, value in positive:
-        if not (value > 0):  # noqa: SIM201 (NaN fails this check too)
-            raise ValueError('Weapon "' + weapon.id + '": ' + key + " must be positive")
-    non_negative = [
-        ("acceleration", weapon.acceleration),
-        ("homing_turn_rate_deg", weapon.homing_turn_rate_deg),
-        ("homing_range", weapon.homing_range),
-        ("blast_radius", weapon.blast_radius),
-    ]
-    for key, value in non_negative:
-        if not (value >= 0):
-            raise ValueError('Weapon "' + weapon.id + '": ' + key + " must be >= 0")
-    if not (weapon.launch_back >= 0):
-        raise ValueError('Weapon "' + weapon.id + '": launch_back must be >= 0')
-    if weapon.acceleration > 0 and not (weapon.max_speed >= weapon.launch_speed):
-        raise ValueError('Weapon "' + weapon.id + '": max_speed must be >= launch_speed')
-    for streams in weapon.levels:
-        if len(streams) == 0:
-            raise ValueError('Weapon "' + weapon.id + '": every level needs at least one stream')
-
-
-def _validate_beam(weapon: BeamWeaponDefinition) -> None:
-    for level in weapon.levels:
-        if not (level.damage_per_second > 0) or not (level.width > 0):
-            raise ValueError('Weapon "' + weapon.id + '": damage and width must be positive')
-
-
-def validate_weapons(weapons: list[WeaponDefinition]) -> None:
-    """Raises a descriptive error if the weapons have duplicate ids, no levels or invalid values."""
-    ids: list[str] = []
-    for weapon in weapons:
-        if weapon.id in ids:
-            raise ValueError('Duplicate weapon id "' + weapon.id + '"')
-        ids.append(weapon.id)
-        if len(weapon.levels) == 0:
-            raise ValueError('Weapon "' + weapon.id + '" has no level')
-        if isinstance(weapon, ProjectileWeaponDefinition):
-            _validate_projectile(weapon)
-        else:
-            _validate_beam(weapon)
-
-
-def weapon_level_count(weapon: WeaponDefinition) -> int:
-    """Number of levels of a weapon."""
-    return len(weapon.levels)
-
-
-def find_weapon(weapons: list[WeaponDefinition], id: str) -> WeaponDefinition:
-    """Returns the weapon with the given id, or raises if there is none."""
-    for weapon in weapons:
-        if weapon.id == id:
-            return weapon
-    raise ValueError('Unknown weapon "' + id + '"')

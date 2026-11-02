@@ -1,12 +1,13 @@
-"""The Boreal Citadel's polar city: its colours, the towers and heated domes on its deck, the
-icicles under its edges (FB-BOREAL-CITADEL-03, FB-BOREAL-CITADEL-06, 2-5).
+# Copyright (c) 2026 Renaud Guillon
+"""The Boreal Citadel's polar city (FB-BOREAL-CITADEL-03, FB-BOREAL-CITADEL-06, 2-5).
+
+Its colours, the towers and heated domes on its deck, and the icicles under its edges.
+
 Model space: logical pixels, nose +Z (down the screen), Y up towards the camera; +X is the
 screen's left.
 """
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.boss_look import BOSS_LOOK
 from game.config.enemy_look import ENEMY_LOOK
@@ -15,41 +16,41 @@ from game.view.bosses.world_2.w2_organic import ICE_FLESH
 from game.view.enemies.enemy_shapes import SIDES
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from game.view.enemies.enemy_mesh import EnemyParts
+from render.geometry.outline import OutlinePoint
+from render.geometry.solids import SolidBuilder
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 
 _AURORA_NEON = BOSS_LOOK.neon["boreal-citadel"]
 # Aurora green: the boss's registered neon (FB-BOREAL-CITADEL-05, BOSS-50).
-AURORA = [1, 1, 1] if _AURORA_NEON == None else _AURORA_NEON  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+AURORA = [1, 1, 1] if _AURORA_NEON == None else _AURORA_NEON
 # Violet: the boss's second neon colour.
 VIOLET = [0.62, 0.28, 1]
 
 # World 2 frost (FB-BOREAL-CITADEL-06): snow on top faces, pale ice, and frosted (snow-dusted)
 # panels.
-FROST = record(
-    {
-        "snow": [0.75, 0.82, 0.9],
-        "ice": [0.56, 0.7, 0.92],
-        "frosted": [0.36, 0.4, 0.47],
-    }
-)
+FROST = record({
+    "snow": [0.75, 0.82, 0.9],
+    "ice": [0.56, 0.7, 0.92],
+    "frosted": [0.36, 0.4, 0.47],
+})
 
 # Heights of the deck's top and of the raised avenue down its middle.
 CITADEL_DECK = record({"top": 6, "avenue": 12})
 
 
 def rect(w: float, d: float, centre: list[float] | None = None) -> list[OutlinePoint]:
-    """A rectangle `w` wide and `d` long around `centre` (x, z), the origin by default."""
-    if centre == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    """Return a rectangle `w` wide and `d` long around `centre` (x, z), the origin by default."""
+    if centre == None:
         centre = [0, 0]
     x = centre[0]
     z = centre[1]
@@ -62,9 +63,11 @@ def rect(w: float, d: float, centre: list[float] | None = None) -> list[OutlineP
 
 
 class Tower:
-    """A tower of the city: its footprint `w` by `d` at `x`, `z`
-    on the deck, its height `h`, a setback `tier` `[w, d, h]` on top (or None), and the colour
-    `lit` of its windows."""
+    """A tower of the city.
+
+    Its footprint `w` by `d` at `x`, `z` on the deck, its height `h`, a setback `tier` `[w, d, h]`
+    on top (or None), and the colour `lit` of its windows.
+    """
 
     def __init__(
         self,
@@ -104,8 +107,10 @@ TOWERS = [
 
 
 def windows(neon: SolidBuilder, at: Vec3, size: list[float], lit: Rgb) -> None:
-    """Lit window bands on a block's front (+Z) face: `at` is its left foot and front, `size`
-    is `[w, h]`."""
+    """Add lit window bands on a block's front (+Z) face.
+
+    `at` is its left foot and front, `size` is `[w, h]`.
+    """
     x = at[0]
     y0 = at[1]
     front = at[2]
@@ -128,7 +133,7 @@ def windows(neon: SolidBuilder, at: Vec3, size: list[float], lit: Rgb) -> None:
 
 
 def _draw_tower(p: EnemyParts, t: Tower, s: float) -> None:
-    """A tower on the deck: a dark block, its snowed roof, lit windows, a setback tier."""
+    """Draw a tower on the deck: a dark block, its snowed roof, lit windows, a setback tier."""
     flesh = p.flesh
     neon = p.neon
     base = CITADEL_DECK.top
@@ -146,7 +151,7 @@ def _draw_tower(p: EnemyParts, t: Tower, s: float) -> None:
     # The left half's towers have the other colour, so the city is not a mirror image.
     lit = t.lit if s > 0 else (VIOLET if t.lit is AURORA else AURORA)
     windows(neon, [x, base, t.z + t.d / 2 + 0.1], [t.w, t.h], lit)
-    if t.tier == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    if t.tier == None:
         return
     w = t.tier[0]
     d = t.tier[1]
@@ -174,8 +179,10 @@ CITY_DOME = [
 
 
 def draw_city(p: EnemyParts) -> None:
-    """The city on the deck (FB-BOREAL-CITADEL-03): its towers, two small heated domes, a few
-    roof masts."""
+    """Draw the city on the deck (FB-BOREAL-CITADEL-03).
+
+    Its towers, two small heated domes and a few roof masts.
+    """
     for s in SIDES:
         for t in TOWERS:
             _draw_tower(p, t, s)
@@ -200,8 +207,11 @@ def draw_city(p: EnemyParts) -> None:
 
 
 def icicles(hull: SolidBuilder, pair: list[OutlinePoint], y: float, count: int) -> None:
-    """Icicles (FB-BOREAL-CITADEL-06) hanging under the deck's edge between the two points of `pair`
-    (seen from above, at height `y`), `count` of them, a little longer and shorter by turns."""
+    """Icicles (FB-BOREAL-CITADEL-06) hanging under the deck's edge.
+
+    Between the two points of `pair` (seen from above, at height `y`), `count` of them, a little
+    longer and shorter by turns.
+    """
     a = pair[0]
     b = pair[1]
     for i in range(count):

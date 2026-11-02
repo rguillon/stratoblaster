@@ -1,39 +1,38 @@
-"""FB-CALDERA-THRONE-03 to FB-CALDERA-THRONE-06, 4-5: the Caldera Throne's colours and its
-destroyable parts (magma cannons, missile
-batteries, heat shield generators), each drawn around its centre `at`, each turret around its
-pivot. Model space: logical pixels, nose +Z,
-Y up.
+# Copyright (c) 2026 Renaud Guillon
+"""FB-CALDERA-THRONE-03 to FB-CALDERA-THRONE-06, 4-5: the Caldera Throne's colours and parts.
+
+Its destroyable parts (magma cannons, missile batteries, heat shield generators), each drawn around
+its centre `at`, each turret around its pivot. Model space: logical pixels, nose +Z, Y up.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from game.config.boss_look import BOSS_LOOK
+from game.config.bosses.boss_kit import mirror
+from game.config.bosses.world_4.caldera_throne import CALDERA_CELLS, CALDERA_MAGMA
+from game.config.record import record
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.final_boss_greebles import rect
+from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H
+from game.view.bosses.world_4.living_forge import SKIN
+from game.view.enemies.enemy_shapes import POD_SECTION, around, decal
+from render.geometry.solids import LoftOptions, Placement
 
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.config.bosses.boss_kit import mirror  # noqa: E402
-from game.config.bosses.world_4.caldera_throne import CALDERA_CELLS, CALDERA_MAGMA  # noqa: E402
-from game.config.record import record  # noqa: E402
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.final_boss_greebles import rect  # noqa: E402
-from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H  # noqa: E402
-from game.view.bosses.world_4.living_forge import SKIN  # noqa: E402
-from game.view.enemies.enemy_shapes import POD_SECTION, around, decal  # noqa: E402
-from render.geometry.solids import LoftOptions, Placement  # noqa: E402
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Rgb = list[float]
 type Vec3 = list[float]
 type OutlinePoint = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def _neon_or(kind: str, fallback: Rgb) -> Rgb:
     """`BOSS_LOOK.neon[kind] ?? fallback`."""
     colour: Rgb = BOSS_LOOK.neon[kind]
-    if colour == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    if colour == None:
         return fallback
     return colour
 
@@ -44,14 +43,12 @@ CRIMSON = _neon_or("caldera-throne", [1, 1, 1])
 GOLD = [1.0, 0.72, 0.16]
 # World 4 heat over the dark metal (FB-CALDERA-THRONE-02): molten seams and glow, soot, heat-blued
 # plates.
-HEAT = record(
-    {
-        "molten": [1, 0.36, 0.04],
-        "glow": [0.75, 0.16, 0.03],
-        "soot": SHADE["soot"],
-        "blued": [0.09, 0.08, 0.12],
-    }
-)
+HEAT = record({
+    "molten": [1, 0.36, 0.04],
+    "glow": [0.75, 0.16, 0.03],
+    "soot": SHADE["soot"],
+    "blued": [0.09, 0.08, 0.12],
+})
 
 # Height of the deck's top, which the keep and the parts stand on, and the bastions' top.
 DECK_TOP = 8
@@ -81,14 +78,16 @@ COILS = [3.0, 7.0, 11.0, 15.0]
 
 
 def _along_z(x: float, y: float, z: float) -> Any:
-    """A barrel's placement at `[x, y, z]`, lying along Z (`{ at, pitch: QUARTER }`)."""
+    """Return a barrel's placement at `[x, y, z]`, lying along Z (`{ at, pitch: QUARTER }`)."""
     return Placement([x, y, z], 0, QUARTER)
 
 
 def magma_cannon(p: Any, centre: Vec3) -> None:
-    """A magma cannon (FB-CALDERA-THRONE-03), turning on its bastion's turntable (D-073): a heavy
-    housing with gold neon flanks, a long barrel ringed with molten coils, its lens glowing as the
-    laser charges."""
+    """Add a magma cannon (FB-CALDERA-THRONE-03), turning on its bastion's turntable (D-073).
+
+    A heavy housing with gold neon flanks, a long barrel ringed with molten coils, its lens glowing
+    as the laser charges.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -120,7 +119,7 @@ def magma_cannon(p: Any, centre: Vec3) -> None:
 
 
 def magma_mount(p: Any, centre: Vec3) -> None:
-    """The turntable a magma cannon turns on: a low drum on the bastion, ringed with crimson."""
+    """Add the turntable a magma cannon turns on: a low drum on the bastion, ringed with crimson."""
     x = centre[0]
     z = centre[2]
     p.flesh.cylinder(12, BASTION_TOP, 8, SKIN.base, Placement([x, 0, z]))
@@ -144,8 +143,11 @@ HATCH = [7.6, 6.4]
 
 
 def missile_battery(p: Any, centre: Vec3) -> None:
-    """A missile battery (FB-CALDERA-THRONE-04): an armoured box on the aft deck, six hatches lit as
-    its missiles load, crimson strips down its sides, a heat-blued blast shield at its front."""
+    """Add a missile battery (FB-CALDERA-THRONE-04).
+
+    An armoured box on the aft deck, six hatches lit as its missiles load, crimson strips down its
+    sides, a heat-blued blast shield at its front.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -183,9 +185,11 @@ CORE = [
 
 
 def shield_generator(p: Any, centre: Vec3) -> None:
-    """A heat shield generator (FB-CALDERA-THRONE-05; no weapon, it shields the core): a molten core
-    glowing in a crown of heat-sink fins edged with gold, on an armoured drum ringed with
-    crimson."""
+    """Add a heat shield generator (FB-CALDERA-THRONE-05; no weapon, it shields the core).
+
+    A molten core glowing in a crown of heat-sink fins edged with gold, on an armoured drum ringed
+    with crimson.
+    """
     hull = p.hull
     neon = p.neon
     flesh = p.flesh

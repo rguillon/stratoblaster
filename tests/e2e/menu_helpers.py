@@ -1,12 +1,13 @@
-"""Helpers of the e2e tests: read the game through `window.__GAME_TEST__` (`src/debug/test_api.py`)
-and step it (ENG-52).
+# Copyright (c) 2026 Renaud Guillon
+"""Helpers of the e2e tests.
 
-e2e builds have no render loop: the game only moves when a test steps it, so no test waits on game
-time (ENG-58). `getState()` returns plain objects with camelCase keys, read here as dicts.
+Read the game through `window.__GAME_TEST__` (`src/debug/test_api.py`) and step it (ENG-52). e2e
+builds have no render loop: the game only moves when a test steps it, so no test waits on game time
+(ENG-58). `getState()` returns plain objects with camelCase keys, read here as dicts.
 """
 
 # Real time, for the timeouts only: the game's own time is stepped (ENG-52).
-import time  # noqa: TID251
+import time
 from collections.abc import Callable
 from typing import Any
 
@@ -24,19 +25,19 @@ _API = "const api = window.__GAME_TEST__; if (!api) throw new Error('__GAME_TEST
 
 
 def game_state(page: Page) -> dict[str, Any]:
-    """What `__GAME_TEST__.getState()` returns."""
+    """Return what `__GAME_TEST__.getState()` returns."""
     state: dict[str, Any] = page.evaluate(f"() => {{ {_API} return api.getState(); }}")
     return state
 
 
 def game(page: Page) -> dict[str, Any] | None:
-    """The level being played, or None."""
+    """Return the level being played, or None."""
     level_state: dict[str, Any] | None = game_state(page)["game"]
     return level_state
 
 
 def boss(page: Page) -> dict[str, Any] | None:
-    """The boss being fought, or None."""
+    """Return the boss being fought, or None."""
     level_state = game(page)
     return level_state["boss"] if level_state else None
 
@@ -52,12 +53,12 @@ def boss_stage(page: Page) -> int:
 
 
 def step(page: Page, frames: int = 1, render: bool = True) -> None:
-    """Runs the app by `frames` frames of 1/60 s, then renders once (unless `render` is False)."""
+    """Run the app by `frames` frames of 1/60 s, then render once (unless `render` is False)."""
     page.evaluate(f"([n, r]) => {{ {_API} api.step(n, r); }}", [frames, render])
 
 
 def advance(page: Page, seconds: float) -> None:
-    """Runs the app by `seconds` of game time (whole frames), then renders once."""
+    """Run the app by `seconds` of game time (whole frames), then render once."""
     page.evaluate(f"(s) => {{ {_API} api.advance(s); }}", seconds)
 
 
@@ -67,15 +68,18 @@ def poll[T](
     timeout: float = LOAD_TIMEOUT,
     message: str = "",
 ) -> T:
-    """Reads `read()` until `check` accepts it (the value is returned); fails after `timeout` ms of
-    real time."""
+    """Read `read()` until `check` accepts it (the value is returned).
+
+    Fails after `timeout` ms of real time.
+    """
     deadline = time.monotonic() + timeout / 1000
     while True:
         value = read()
         if check(value):
             return value
         if time.monotonic() > deadline:
-            raise AssertionError(f"{message or 'poll'}: timed out, last value {value!r}")
+            msg = f"{message or 'poll'}: timed out, last value {value!r}"
+            raise AssertionError(msg)
         time.sleep(0.02)
 
 
@@ -86,23 +90,30 @@ def step_until[T](
     frames: int = POLL_FRAMES,
     timeout: float = LOAD_TIMEOUT,
 ) -> T:
-    """Steps the app `frames` frames at a time until `check(read())` holds; returns the value read.
-    The frames are not drawn while it waits (only the game's state is read), the frame it stops
-    at is (DEV-API-11). Fails after `timeout` ms of real time."""
+    """Step the app `frames` frames at a time until `check(read())` holds; return the value read.
+
+    .
+
+        The frames are not drawn while it waits (only the game's state is read), the frame it stops
+        at is (DEV-API-11). Fails after `timeout` ms of real time.
+    """
     deadline = time.monotonic() + timeout / 1000
     while True:
-        step(page, frames, False)
+        step(page, frames, render=False)
         value = read()
         if check(value):
             step(page, 0)
             return value
         if time.monotonic() > deadline:
-            raise AssertionError(f"step_until: timed out, last value {value!r}")
+            msg = f"step_until: timed out, last value {value!r}"
+            raise AssertionError(msg)
 
 
 def matches(actual: Any, expected: Any) -> bool:
-    """Whether `actual` has every key of `expected` with the same value (nested dicts too), like
-    Playwright's `toMatchObject`."""
+    """Return whether `actual` has every key of `expected` with the same value.
+
+    Nested dicts too, like Playwright's `toMatchObject`.
+    """
     if isinstance(expected, dict):
         return isinstance(actual, dict) and all(
             key in actual and matches(actual[key], value) for key, value in expected.items()
@@ -111,8 +122,10 @@ def matches(actual: Any, expected: Any) -> bool:
 
 
 def wait_idle(page: Page) -> None:
-    """Steps the app until no screen transition runs (input is ignored during one, UI-FLOW-08), then
-    renders the frame it stopped at."""
+    """Step the app until no screen transition runs (input is ignored during one, UI-FLOW-08).
+
+    Then renders the frame it stopped at.
+    """
     page.evaluate(
         f"""() => {{
             {_API}
@@ -126,7 +139,7 @@ def wait_idle(page: Page) -> None:
 
 
 def open_game(page: Page) -> None:
-    """Opens the game and waits for the title screen, faded in."""
+    """Open the game and wait for the title screen, faded in."""
     page.goto("./")
     page.wait_for_function(
         "() => window.__GAME_TEST__?.getState().screen === 'title'", timeout=LOAD_TIMEOUT
@@ -135,7 +148,7 @@ def open_game(page: Page) -> None:
 
 
 def open_debug(page: Page, query: str) -> None:
-    """Opens the game with debug options (DEV-OPT-01) and waits for their level to be playing."""
+    """Open the game with debug options (DEV-OPT-01) and wait for their level to be playing."""
     page.goto(f"./{query}")
     page.wait_for_function(
         "() => window.__GAME_TEST__?.getState().screen === 'game'", timeout=LOAD_TIMEOUT
@@ -145,7 +158,7 @@ def open_debug(page: Page, query: str) -> None:
 
 
 def send_action(page: Page, action: str) -> None:
-    """Sends a menu action through the test API, once the screen accepts input."""
+    """Send a menu action through the test API, once the screen accepts input."""
     page.evaluate(
         f"""(a) => {{
             {_API}
@@ -158,8 +171,10 @@ def send_action(page: Page, action: str) -> None:
 
 
 def expect_state(page: Page, expected: dict[str, Any]) -> None:
-    """Steps the app a frame at a time, without rendering, until the state matches `expected`
-    (screen, selection...), then until it takes input again."""
+    """Step the app a frame at a time, without rendering, until the state matches `expected`.
+
+    `expected` is the screen, selection...; then it steps until the app takes input again.
+    """
 
     def read() -> dict[str, Any]:
         state: dict[str, Any] = page.evaluate(
@@ -173,7 +188,11 @@ def expect_state(page: Page, expected: dict[str, Any]) -> None:
 
 def leave_level(page: Page) -> None:
     """Leaves the level being played through the pause menu (UI-PAUSE-10): pause, Main menu, Yes.
-    The title screen shows."""
+
+    .
+
+        The title screen shows.
+    """
     send_action(page, "pause")
     expect_state(page, {"screen": "pause", "paused": True})
     for action in ["down", "down", "confirm", "right", "confirm"]:
@@ -182,11 +201,13 @@ def leave_level(page: Page) -> None:
 
 
 def wait_for_load(page: Page) -> None:
-    """Steps through the loading of the level chosen, if one is loading (DEV-API-11; PERF-09: a
-    level loads in steps, one per frame, behind its loading screen; its ground comes from a worker,
-    so the page must get its messages between two checks). The loading frames are not drawn:
-    under software WebGL a drawn frame of a level costs some 200 ms, and no test looks at them.
-    The frame the loading stopped at is drawn once."""
+    """Step through the loading of the level chosen.
+
+    If one is loading (DEV-API-11; PERF-09: a level loads in steps, one per frame, behind its
+    loading screen; its ground comes from a worker, so the page must get its messages between two
+    checks). The loading frames are not drawn: under software WebGL a drawn frame of a level costs
+    some 200 ms, and no test looks at them. The frame the loading stopped at is drawn once.
+    """
     script = f"""() => {{
         {_API}
         const still = () => {{
@@ -207,16 +228,17 @@ def wait_for_load(page: Page) -> None:
 
 
 def level(page: Page) -> dict[str, Any]:
-    """The level being played, once loaded; fails the test when there is none."""
+    """Return the level being played, once loaded; fails the test when there is none."""
     wait_for_load(page)
     level_state = game(page)
     if level_state is None:
-        raise AssertionError("No level is being played")
+        msg = "No level is being played"
+        raise AssertionError(msg)
     return level_state
 
 
 def wait_for_level_time(page: Page, seconds: float) -> None:
-    """Runs the level being played on to `seconds` of level time."""
+    """Run the level being played on to `seconds` of level time."""
     now: float = level(page)["time"]
     if now <= seconds:
         advance(page, seconds - now + 0.05)
@@ -224,16 +246,18 @@ def wait_for_level_time(page: Page, seconds: float) -> None:
 
 
 def wait_out_transformation(page: Page) -> None:
-    """Steps on while the boss is transforming (it can then be neither hit nor broken by K)."""
+    """Step on while the boss is transforming (it can then be neither hit nor broken by K)."""
     step_until(
         page, lambda: (level(page)["boss"] or {}).get("state"), lambda s: s != "transforming"
     )
 
 
 def destroy_boss(page: Page, name: str) -> None:
-    """Destroys the parts left then the core of the boss `name` with K (DEV-OPT-09), one at a time
-    (the stage goes up, read from the boss's state, DEV-API-04), waiting out its transformations
-    (they reveal more parts), and steps on to the "Level complete" overlay."""
+    """Destroy the parts left then the core of the boss `name` with K (DEV-OPT-09), one at a time.
+
+    The stage goes up with each, read from the boss's state (DEV-API-04). It waits out its
+    transformations (they reveal more parts), and steps on to the "Level complete" overlay.
+    """
     step_until(page, lambda: boss_name(page), lambda n: n == name)
 
     def progress() -> Any:
@@ -267,10 +291,11 @@ def overlap(a: Locator, b: Locator) -> bool:
 
 
 def box_of(locator: Locator) -> dict[str, float]:
-    """The box of an element shown on screen."""
+    """Return the box of an element shown on screen."""
     box = locator.bounding_box()
     if not box:
-        raise AssertionError("not shown")
+        msg = "not shown"
+        raise AssertionError(msg)
     return dict(box)
 
 
@@ -289,5 +314,5 @@ def set_hidden(page: Page, hidden: bool) -> None:
 
 
 def add_cookie(page: Page, base_url: str, name: str, value: str) -> None:
-    """Stores the cookie `name` for the game's origin, before the page is opened."""
+    """Store the cookie `name` for the game's origin, before the page is opened."""
     page.context.add_cookies([{"name": name, "value": value, "url": base_url}])

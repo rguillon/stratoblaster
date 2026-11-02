@@ -1,22 +1,26 @@
-"""Settings screen (UI-SET-02): the Music and Sound
-effects sliders. Over a paused level, the playfield shows dimmed behind it (UI-SET-07)."""
+# Copyright (c) 2026 Renaud Guillon
+"""Settings screen (UI-SET-02): the Music and Sound effects sliders.
 
-from org.transcrypt.stubs.browser import __pragma__, window
+Over a paused level, the playfield shows dimmed behind it (UI-SET-07).
+"""
 
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from org.transcrypt.stubs.browser import window
 
-from ui.menu_view import SettingsView, SliderView  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from ui.screens.screen_handlers import ScreenHandlers  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.screens.elements import back_button, element, entry
 
-__pragma__("noskip")
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Callable
+from typing import Any
 
-from ui.screens.elements import back_button, element, entry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.menu_view import SettingsView, SliderView
+from ui.screens.screen_handlers import ScreenHandlers
+
+# __pragma__ ("noskip")
 
 
 def _value_at(track: Any, client_x: float, max_value: int) -> float:
-    """The slider value under a pointer at `client_x` over `track`: its nearest step."""
+    """Return the slider value under a pointer at `client_x` over `track`: its nearest step."""
     box = track.getBoundingClientRect()
     if box.width <= 0:
         return 0
@@ -25,7 +29,7 @@ def _value_at(track: Any, client_x: float, max_value: int) -> float:
 
 
 def _slider_bar(doc: Any, slider: SliderView) -> Any:
-    """A bar of `max` cells, the first `value` of them lit, like the settings sketch."""
+    """Return a bar of `max` cells, the first `value` of them lit, like the settings sketch."""
     bar = element(doc, "div", "slider-bar")
     for i in range(slider.max):
         bar.append(element(doc, "span", "slider-cell on" if i < slider.value else "slider-cell"))
@@ -88,7 +92,7 @@ def _slider_row(
 
 
 def render_settings_screen(doc: Any, view: SettingsView, handlers: ScreenHandlers) -> Any:
-    """Renders the settings screen (UI-SET-08)."""
+    """Render the settings screen (UI-SET-08)."""
     over = " over-level" if view.over_level else ""
     root = element(doc, "div", "menu-screen settings-screen" + over)
     sliders = element(doc, "div", "settings-list")

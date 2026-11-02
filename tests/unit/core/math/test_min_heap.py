@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/math/min_heap.py`."""
 
 from core.math.min_heap import MinHeap

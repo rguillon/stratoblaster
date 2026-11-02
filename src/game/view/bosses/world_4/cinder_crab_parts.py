@@ -1,25 +1,25 @@
-"""MB-CINDER-CRAB-03, MB-CINDER-CRAB-04, 4-1: the Cinder Crab's arms (on their shoulders) and outer
-fingers (on their wrists), moving limbs (MB-CINDER-CRAB-06, D-061), its claws and its back mortar
-(its parts). Logical pixels, nose +Z, Y up; the left claw (the screen's left, -X on the playfield)
-is drawn at +X.
+# Copyright (c) 2026 Renaud Guillon
+"""MB-CINDER-CRAB-03, MB-CINDER-CRAB-04, 4-1: the Cinder Crab's moving limbs and parts.
+
+Its arms (on their shoulders) and outer fingers (on their wrists), moving limbs (MB-CINDER-CRAB-06,
+D-061), its claws and its back mortar (its parts). Logical pixels, nose +Z, Y up; the left claw (the
+screen's left, -X on the playfield) is drawn at +X.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.config.bosses.boss_kit import mirror  # noqa: E402
-from game.config.bosses.world_4.cinder_crab import (  # noqa: E402
+from game.config.boss_look import BOSS_LOOK
+from game.config.bosses.boss_kit import mirror
+from game.config.bosses.world_4.cinder_crab import (
     CRAB_ARM,
     CRAB_MORTAR,
     CRAB_PALM_GUN,
     CRAB_SWING,
 )
-from game.config.record import record  # noqa: E402
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.mini_boss_shapes import SHADE, H, offset  # noqa: E402
-from game.view.bosses.world_4.black_sands_kit import (  # noqa: E402
+from game.config.record import record
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.mini_boss_shapes import SHADE, H, offset
+from game.view.bosses.world_4.black_sands_kit import (
     FORGE,
     barrel_to,
     blot,
@@ -27,19 +27,20 @@ from game.view.bosses.world_4.black_sands_kit import (  # noqa: E402
     soot,
     strut,
 )
-from game.view.bosses.world_4.living_forge import SKIN, glands  # noqa: E402
-from game.view.enemies.enemy_shapes import flip_x  # noqa: E402
-from render.geometry.outline import hypot3  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
+from game.view.bosses.world_4.living_forge import SKIN, glands
+from game.view.enemies.enemy_shapes import flip_x
+from render.geometry.outline import hypot3
+from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Rgb = list[float]
 type Vec3 = list[float]
 type OutlinePoint = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def _sign(v: float) -> float:
@@ -54,7 +55,7 @@ def _sign(v: float) -> float:
 def _neon_or(kind: str, fallback: Rgb) -> Rgb:
     """`BOSS_LOOK.neon[kind] ?? fallback`."""
     colour: Rgb = BOSS_LOOK.neon[kind]
-    if colour == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    if colour == None:
         return fallback
     return colour
 
@@ -98,7 +99,7 @@ FINGER_OUT = 4.6
 
 
 def side_at(at: list[float]) -> float:
-    """The side of a claw drawn at `at`: +1 for the left one (at +X), -1 for the right one."""
+    """Return the side of a claw drawn at `at`: +1 for the left one (at +X), -1 for the right."""
     s = _sign(at[0])
     if s == 0:
         return 1
@@ -119,9 +120,11 @@ def _sided(outline: Any, s: float) -> Any:
 
 
 def claw(p: Any, at: Vec3) -> None:
-    """The claw on side `s` (MB-CINDER-CRAB-03), around its centre `at`: an armoured palm with a
-    molten seam across it, an orange light along its outer side, the fixed finger on its inner side
-    and the palm gun between the fingers."""
+    """Add the claw on side `s` (MB-CINDER-CRAB-03), around its centre `at`.
+
+    An armoured palm with a molten seam across it, an orange light along its outer side, the fixed
+    finger on its inner side and the palm gun between the fingers.
+    """
     hull = p.hull
     neon = p.neon
     flesh = p.flesh
@@ -157,7 +160,10 @@ ELBOW_Z = 22
 
 
 def arm(s: float) -> Any:
-    """The arm on side `s`: a shoulder ball, an armoured upper arm out to the elbow, a forearm."""
+    """Return the arm on side `s`.
+
+    A shoulder ball, an armoured upper arm out to the elbow, a forearm.
+    """
 
     def draw(p: Any) -> None:
         hull = p.hull
@@ -218,8 +224,10 @@ def turn(p: Vec3, yaw: float) -> Vec3:
 
 
 def finger(s: float) -> Any:
-    """The moving finger on side `s`, on its wrist, drawn half open (as at rest): it swings from
-    shut to wide open with its joint (D-061), a hot glow along its inner edge."""
+    """Return the moving finger on side `s`, on its wrist, drawn half open (as at rest).
+
+    It swings from shut to wide open with its joint (D-061), a hot glow along its inner edge.
+    """
 
     def draw(p: Any) -> None:
         hull = p.hull
@@ -270,9 +278,11 @@ BORE = 3.2
 
 
 def mortar(p: Any, at: Vec3, base: float) -> None:
-    """The back mortar (MB-CINDER-CRAB-04) around its centre `at`, standing on the carapace at
-    height `base`: a squat turntable with an orange ring, a fat barrel leaning forward over the
-    carapace on its trunnions, its mouth glowing as it loads."""
+    """Add the back mortar (MB-CINDER-CRAB-04) around its centre `at`.
+
+    It stands on the carapace at height `base`: a squat turntable with an orange ring, a fat barrel
+    leaning forward over the carapace on its trunnions, its mouth glowing as it loads.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge

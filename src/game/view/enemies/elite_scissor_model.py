@@ -1,25 +1,22 @@
-"""The Scissor (specs/enemies/scissor.md) Logical pixels, nose
-+Z, Y up (towards the camera).
-"""
+# Copyright (c) 2026 Renaud Guillon
+"""The Scissor (specs/enemies/scissor.md) Logical pixels, nose +Z, Y up (towards the camera)."""
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.enemies_elite import ELITE_CONFIG  # noqa: E402
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.config.enemy_look_elite import ELITE_NEON  # noqa: E402
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.enemies.elite_shapes import QUARTER, WHITE, H, ahead, strip  # noqa: E402
+from game.config.enemies_elite import ELITE_CONFIG
+from game.config.enemy_look import ENEMY_LOOK
+from game.config.enemy_look_elite import ELITE_NEON
+from game.view.bosses.boss_limbs import boss_point
+from game.view.enemies.elite_shapes import QUARTER, WHITE, H, ahead, strip
 
 # Shared with the other elite models: `FIGHTER_SECTION` is in enemy_shapes.
-from game.view.enemies.enemy_shapes import (  # noqa: E402
-    FIGHTER_SECTION,  # noqa: E402
+from game.view.enemies.enemy_shapes import (
+    FIGHTER_SECTION,
     SIDES,
     canopy_paint,
     flip_x,
 )
-from game.view.enemies.jointed_model import build_jointed_model  # noqa: E402
-from game.view.enemies.organic_parts import eyes, reactor_sac  # noqa: E402
-from render.geometry.organic import (  # noqa: E402
+from game.view.enemies.jointed_model import build_jointed_model
+from game.view.enemies.organic_parts import eyes, reactor_sac
+from render.geometry.organic import (
     SegmentedBody,
     carapace,
     curve,
@@ -30,12 +27,14 @@ from render.geometry.organic import (  # noqa: E402
 from render.geometry.organic import (
     vein as vein_tube,
 )
-from render.geometry.solids import LoftOptions, Placement  # noqa: E402
+from render.geometry.solids import LoftOptions, Placement
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 CFG = ELITE_CONFIG.scissor
 NEON = ELITE_NEON.scissor
@@ -57,8 +56,10 @@ BLADE = [[-2.8, -2.5], [2.8, -2.5], [2.2, 27], [-2.2, 27]]  # type: list[list[fl
 
 
 def body(p: Any) -> None:
-    """The body and its shell, crimson veins (ENM-SCISSOR-03), metal tail fins, a nose cap,
-    reactors in sacs (ENM-SCISSOR-04)."""
+    """Add the body and its shell, with crimson veins (ENM-SCISSOR-03).
+
+    Metal tail fins, a nose cap, and reactors in sacs (ENM-SCISSOR-04).
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -84,7 +85,7 @@ def body(p: Any) -> None:
 
 
 def shoulder(arm: Any) -> Any:
-    """A shoulder hinge, a metal joint turning with its arm."""
+    """Return a shoulder hinge, a metal joint turning with its arm."""
     at = boss_point(arm.pivot[0], arm.pivot[1], -1.5)
 
     def draw(p: Any) -> None:
@@ -95,8 +96,10 @@ def shoulder(arm: Any) -> Any:
 
 
 def arm(spec: Any) -> Any:
-    """A laser arm (ENM-SCISSOR-05): a flesh limb, a bone blade with a crimson edge, metal cuffs,
-    the emitter."""
+    """Return a laser arm (ENM-SCISSOR-05): a flesh limb with a bone blade.
+
+    The blade has a crimson edge; metal cuffs and the emitter complete the arm.
+    """
     pivot = boss_point(spec.pivot[0], spec.pivot[1], ARM_Y)
     tip = boss_point(spec.muzzle[0], spec.muzzle[1], spec.muzzle[2])
     yaw = spec.aim
@@ -124,8 +127,11 @@ def arm(spec: Any) -> Any:
 
 
 def build_scissor(scene: Any) -> Any:
-    """ENM-SCISSOR-01: a long, narrow, shelled body with two crimson laser arms, bone blades on
-    flesh limbs, hinged at its shoulders, within the elite triangle budget (ENM-SCISSOR-07)."""
+    """ENM-SCISSOR-01: a long, narrow, shelled body with two crimson laser arms.
+
+    Bone blades on flesh limbs, hinged at its shoulders, within the elite triangle budget
+    (ENM-SCISSOR-07).
+    """
     limbs = {}
     parts = {}
     for a in CFG.arms:

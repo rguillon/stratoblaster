@@ -1,47 +1,48 @@
-"""One model per boss, keyed by its model key (the boss kind id, BOSS-01, BOSS-47)"""
+# Copyright (c) 2026 Renaud Guillon
+"""One model per boss, keyed by its model key (the boss kind id, BOSS-01, BOSS-47)."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
-from game.view.bosses.breakwater_model import build_breakwater  # noqa: E402
-from game.view.bosses.dust_devil_model import build_dust_devil  # noqa: E402
-from game.view.bosses.gull_mothership_model import build_gull_mothership  # noqa: E402
-from game.view.bosses.mesa_fortress_model import build_mesa_fortress  # noqa: E402
-from game.view.bosses.overlord_model import build_overlord  # noqa: E402
-from game.view.bosses.reef_warden_model import build_reef_warden  # noqa: E402
-from game.view.bosses.refinery_titan_model import build_refinery_titan  # noqa: E402
-from game.view.bosses.scorpion_model import build_scorpion  # noqa: E402
-from game.view.bosses.sentinel_model import build_sentinel  # noqa: E402
-from game.view.bosses.storm_petrel_model import build_storm_petrel  # noqa: E402
-from game.view.bosses.world_2.aurora_station_model import build_aurora_station  # noqa: E402
-from game.view.bosses.world_2.avalanche_model import build_avalanche  # noqa: E402
-from game.view.bosses.world_2.boreal_citadel_model import build_boreal_citadel  # noqa: E402
-from game.view.bosses.world_2.fjord_lynx_model import build_fjord_lynx  # noqa: E402
-from game.view.bosses.world_2.floe_breaker_model import build_floe_breaker  # noqa: E402
-from game.view.bosses.world_2.glacier_colossus_model import build_glacier_colossus  # noqa: E402
-from game.view.bosses.world_2.harbour_kraken_model import build_harbour_kraken  # noqa: E402
-from game.view.bosses.world_2.ice_queen_model import build_ice_queen  # noqa: E402
-from game.view.bosses.world_2.narwhal_model import build_narwhal  # noqa: E402
-from game.view.bosses.world_2.snow_owl_model import build_snow_owl  # noqa: E402
-from game.view.bosses.world_3.canopy_spider_model import build_canopy_spider  # noqa: E402
-from game.view.bosses.world_3.dam_breaker_model import build_dam_breaker  # noqa: E402
-from game.view.bosses.world_3.jaguar_model import build_jaguar  # noqa: E402
-from game.view.bosses.world_3.mangrove_croc_model import build_mangrove_croc  # noqa: E402
-from game.view.bosses.world_3.mosquito_model import build_mosquito  # noqa: E402
-from game.view.bosses.world_3.river_leviathan_model import build_river_leviathan  # noqa: E402
-from game.view.bosses.world_3.sky_temple_model import build_sky_temple  # noqa: E402
-from game.view.bosses.world_3.stone_idol_model import build_stone_idol  # noqa: E402
-from game.view.bosses.world_3.toucan_model import build_toucan  # noqa: E402
-from game.view.bosses.world_3.verdant_crown_model import build_verdant_crown  # noqa: E402
-from game.view.bosses.world_4.ash_wraith_model import build_ash_wraith  # noqa: E402
-from game.view.bosses.world_4.caldera_throne_model import build_caldera_throne  # noqa: E402
-from game.view.bosses.world_4.cinder_crab_model import build_cinder_crab  # noqa: E402
-from game.view.bosses.world_4.ember_herald_model import build_ember_herald  # noqa: E402
-from game.view.bosses.world_4.foundry_ark_model import build_foundry_ark  # noqa: E402
-from game.view.bosses.world_4.furnace_drake_model import build_furnace_drake  # noqa: E402
-from game.view.bosses.world_4.geyser_rig_model import build_geyser_rig  # noqa: E402
-from game.view.bosses.world_4.magma_salamander_model import build_magma_salamander  # noqa: E402
-from game.view.bosses.world_4.obsidian_golem_model import build_obsidian_golem  # noqa: E402
-from game.view.bosses.world_4.steam_dreadnought_model import build_steam_dreadnought  # noqa: E402
+from game.view.bosses.breakwater_model import build_breakwater
+from game.view.bosses.dust_devil_model import build_dust_devil
+from game.view.bosses.gull_mothership_model import build_gull_mothership
+from game.view.bosses.mesa_fortress_model import build_mesa_fortress
+from game.view.bosses.overlord_model import build_overlord
+from game.view.bosses.reef_warden_model import build_reef_warden
+from game.view.bosses.refinery_titan_model import build_refinery_titan
+from game.view.bosses.scorpion_model import build_scorpion
+from game.view.bosses.sentinel_model import build_sentinel
+from game.view.bosses.storm_petrel_model import build_storm_petrel
+from game.view.bosses.world_2.aurora_station_model import build_aurora_station
+from game.view.bosses.world_2.avalanche_model import build_avalanche
+from game.view.bosses.world_2.boreal_citadel_model import build_boreal_citadel
+from game.view.bosses.world_2.fjord_lynx_model import build_fjord_lynx
+from game.view.bosses.world_2.floe_breaker_model import build_floe_breaker
+from game.view.bosses.world_2.glacier_colossus_model import build_glacier_colossus
+from game.view.bosses.world_2.harbour_kraken_model import build_harbour_kraken
+from game.view.bosses.world_2.ice_queen_model import build_ice_queen
+from game.view.bosses.world_2.narwhal_model import build_narwhal
+from game.view.bosses.world_2.snow_owl_model import build_snow_owl
+from game.view.bosses.world_3.canopy_spider_model import build_canopy_spider
+from game.view.bosses.world_3.dam_breaker_model import build_dam_breaker
+from game.view.bosses.world_3.jaguar_model import build_jaguar
+from game.view.bosses.world_3.mangrove_croc_model import build_mangrove_croc
+from game.view.bosses.world_3.mosquito_model import build_mosquito
+from game.view.bosses.world_3.river_leviathan_model import build_river_leviathan
+from game.view.bosses.world_3.sky_temple_model import build_sky_temple
+from game.view.bosses.world_3.stone_idol_model import build_stone_idol
+from game.view.bosses.world_3.toucan_model import build_toucan
+from game.view.bosses.world_3.verdant_crown_model import build_verdant_crown
+from game.view.bosses.world_4.ash_wraith_model import build_ash_wraith
+from game.view.bosses.world_4.caldera_throne_model import build_caldera_throne
+from game.view.bosses.world_4.cinder_crab_model import build_cinder_crab
+from game.view.bosses.world_4.ember_herald_model import build_ember_herald
+from game.view.bosses.world_4.foundry_ark_model import build_foundry_ark
+from game.view.bosses.world_4.furnace_drake_model import build_furnace_drake
+from game.view.bosses.world_4.geyser_rig_model import build_geyser_rig
+from game.view.bosses.world_4.magma_salamander_model import build_magma_salamander
+from game.view.bosses.world_4.obsidian_golem_model import build_obsidian_golem
+from game.view.bosses.world_4.steam_dreadnought_model import build_steam_dreadnought
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 __pragma__("skip")

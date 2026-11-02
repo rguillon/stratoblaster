@@ -1,11 +1,13 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/systems/boss_pattern.py`."""
 
 import math
+from typing import Any
 
 import pytest
 
 from core.entities.boss_turret import BossTurret, BossTurretSpec
-from core.entities.enemy import EnemyBulletSpec, EnemyBurstSpec, EnemyLaserSpec, EnemyMissileSpec
+from core.entities.enemy import EnemyBulletSpec, EnemyLaserSpec, EnemyMissileSpec
 from core.entities.muzzle import PlanePoint, RaisedPoint
 from core.systems.boss_pattern import (
     BossAimedShape,
@@ -17,7 +19,6 @@ from core.systems.boss_pattern import (
     BossPattern,
     BossRingShape,
     BossVolley,
-    pattern_signature,
 )
 
 DEG = math.pi / 180
@@ -81,12 +82,12 @@ class _Src:
     def emitter(self) -> PlanePoint:
         return PlanePoint(self.x, self.y)
 
-    def place(self, muzzle, on_turret=False):  # type: ignore[no-untyped-def]
+    def place(self, muzzle: Any, _on_turret: bool = False) -> Any:  # type: ignore[no-untyped-def]
         mx, my, mh = muzzle
         return RaisedPoint(self.x + mx, self.y + my, mh)
 
 
-def _sources(parts: dict[str, _Src]):  # type: ignore[no-untyped-def]
+def _sources(parts: dict[str, _Src]) -> Any:  # type: ignore[no-untyped-def]
     return parts.get
 
 
@@ -104,7 +105,9 @@ def _turret(turn_rate: float, laser_rate: float | None = None, x: float = 0) -> 
 
 def test_boss_23_a_volley_keeps_its_fields() -> None:
     shape = _aimed()
-    volley = BossVolley("arm", 3, shape, [(1, 2, 3)], True, "radar", "core", 0.5)
+    volley = BossVolley(
+        "arm", 3, shape, [(1, 2, 3)], turret=True, needs="radar", after="core", first=0.5
+    )
     assert (volley.from_, volley.every, volley.shape) == ("arm", 3, shape)
     assert (volley.muzzles, volley.turret, volley.needs, volley.after, volley.first) == (
         [(1, 2, 3)],
@@ -122,7 +125,7 @@ def test_boss_23_each_shape_names_its_kind() -> None:
     assert BossBurstShape(3, 0.2, BULLET).kind == "burst"
     assert BossMissilesShape(2, 10, MISSILE).kind == "missiles"
     assert BossLaserShape(LASER).kind == "laser"
-    assert BossLaunchShape(lambda x, y: []).kind == "launch"
+    assert BossLaunchShape(lambda _x, _y: []).kind == "launch"
 
 
 def test_boss_23_an_aimed_volley_fans_its_bullets_around_the_player() -> None:
@@ -341,7 +344,7 @@ def test_a_sweeping_laser_turret_keeps_following_the_player_while_the_beam_fires
     # design.md): a sweeper's beam sweeps after the player, as slowly as its warning line.
     ctx = _Ctx(player=(100, 0))
     turret = _turret(1000, laser_rate=10)
-    sweeping = EnemyLaserSpec(1, 1, 2, "beam", True)
+    sweeping = EnemyLaserSpec(1, 1, 2, "beam", sweeps=True)
     pattern = BossPattern([_volley(BossLaserShape(sweeping), turret=True, first=0)])
     sources = _sources({"core": _Src(turret=turret)})
     pattern.step(ctx, 0.5, sources)
@@ -402,13 +405,11 @@ def test_boss_29_a_turret_with_no_volley_ready_still_aims_at_the_first_one() -> 
 
 
 def test_boss_29_volleys_from_the_same_turret_share_one_turret_group() -> None:
-    pattern = BossPattern(
-        [
-            _volley(_aimed(), turret=True),
-            _volley(_aimed(), from_="arm", turret=True),
-            _volley(_aimed(), turret=True),
-        ]
-    )
+    pattern = BossPattern([
+        _volley(_aimed(), turret=True),
+        _volley(_aimed(), from_="arm", turret=True),
+        _volley(_aimed(), turret=True),
+    ])
     assert [(g.from_, g.volleys) for g in pattern._turrets] == [("core", [0, 2]), ("arm", [1])]
 
 
@@ -453,85 +454,13 @@ def test_boss_30_a_laser_from_a_piece_without_a_turret_is_a_plain_owner() -> Non
     assert owner.heading == pytest.approx(DOWN)
 
 
-def test_boss_21_the_stage_signature_names_only_the_volleys_that_still_fire() -> None:
-    volleys = [
-        _volley(_aimed(), from_="core"),
-        _volley(_aimed(), from_="arm"),
-        _volley(_aimed(), from_="core", after="arm"),
-    ]
-    arm_gone = lambda f: f == "core"  # noqa: E731
-    full = pattern_signature(volleys, lambda f: True)
-    partial = pattern_signature(volleys, arm_gone)
-    assert full != partial
-    assert partial == pattern_signature([volleys[0], volleys[2]], arm_gone)
-    assert partial != pattern_signature([volleys[0]], arm_gone)
-
-
-def test_boss_21_the_signature_does_not_depend_on_the_order_of_the_volleys() -> None:
-    a = _volley(_aimed(), from_="core")
-    b = _volley(BossFanShape(0, 3, 10, BULLET), from_="arm")
-    assert pattern_signature([a, b], lambda f: True) == pattern_signature([b, a], lambda f: True)
-
-
-def test_boss_21_the_signature_separates_volleys_that_fire_differently() -> None:
-    variants = [
-        _volley(_aimed()),
-        _volley(_aimed(count=2)),
-        _volley(_aimed(), every=11),
-        _volley(_aimed(), first=1),
-        _volley(_aimed(), muzzles=[(1, 2, 3)]),
-        _volley(_aimed(), turret=True),
-        _volley(_aimed(), turret=False),
-        _volley(_aimed(), needs="radar"),
-        _volley(_aimed(), after="shield"),
-        _volley(BossAimedShape(1, 0, EnemyBulletSpec(11, 1, "round"))),
-        _volley(
-            BossAimedShape(1, 0, EnemyBulletSpec(10, 1, "round", EnemyBurstSpec(1, 2, BULLET)))
-        ),
-        _volley(BossAimedShape(1, 0, EnemyBulletSpec(10, 1, "other"))),
-        _volley(BossFanShape(0, 1, 0, BULLET)),
-        _volley(BossFanShape(5, 1, 0, BULLET)),
-        _volley(BossRingShape(4, 30, BULLET)),
-        _volley(BossRingShape(4, 31, BULLET)),
-        _volley(BossBurstShape(3, 0.5, BULLET)),
-        _volley(BossBurstShape(3, 0.6, BULLET)),
-        _volley(BossMissilesShape(2, 5, MISSILE)),
-        _volley(BossMissilesShape(2, 5, EnemyMissileSpec(5, 90, 1, 1, 9, "rocket"))),
-        _volley(BossLaserShape(LASER)),
-        _volley(BossLaserShape(EnemyLaserSpec(1, 1, 2, "beam", True))),
-        _volley(BossLaserShape(EnemyLaserSpec(2, 1, 2, "beam"))),
-    ]
-    signatures = {pattern_signature([v], lambda f: True) for v in variants}
-    assert len(signatures) == len(variants)
-
-
-def test_boss_21_a_launch_is_named_without_its_function() -> None:
-    a = _volley(BossLaunchShape(lambda x, y: []))
-    b = _volley(BossLaunchShape(lambda x, y: [object()]))
-    text = pattern_signature([a], lambda f: True)
-    assert text == pattern_signature([b], lambda f: True)
-    assert '"kind":"launch"' in text
-
-
-def test_boss_21_the_signature_quotes_its_names() -> None:
-    text = pattern_signature([_volley(_aimed())], lambda f: True)
-    assert text.startswith('{"from":"core","every":10')
-    assert '"style":"round"' in text
-
-
-def test_boss_21_a_pattern_with_no_live_volley_has_an_empty_signature() -> None:
-    assert pattern_signature([_volley(_aimed(), from_="arm")], lambda f: f == "core") == ""
-
-
 def test_boss_31_a_turret_follows_the_laser_still_showing_when_an_older_one_is_over() -> None:
     ctx = _Ctx(player=(100, 0))
     turret = _turret(1000, laser_rate=10)
-    pattern = BossPattern(
-        [
-            _volley(BossLaserShape(LASER), turret=True, first=10),
-            _volley(BossLaserShape(LASER), turret=True, first=10),
-        ]
-    )
+    pattern = BossPattern([
+        _volley(BossLaserShape(LASER), turret=True, first=10),
+        _volley(BossLaserShape(LASER), turret=True, first=10),
+    ])
     pattern._states[0].laser_age = 100
     pattern._states[1].laser_age = 0
     pattern.turn_turrets(ctx, 0.5, _sources({"core": _Src(turret=turret)}))
@@ -550,6 +479,6 @@ def test_boss_29_the_soonest_volley_wins_whichever_order_they_are_listed_in() ->
 def test_boss_29_a_turret_for_a_launch_has_no_aim_of_its_own() -> None:
     turret = _turret(100000)
     turret.aim = 0.5
-    pattern = BossPattern([_volley(BossLaunchShape(lambda x, y: []), turret=True, first=10)])
+    pattern = BossPattern([_volley(BossLaunchShape(lambda _x, _y: []), turret=True, first=10)])
     pattern.turn_turrets(_Ctx(), 1, _sources({"core": _Src(turret=turret)}))
     assert turret.aim == pytest.approx(0)

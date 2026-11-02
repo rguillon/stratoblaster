@@ -1,9 +1,8 @@
-"""MB-AVALANCHE-01 to MB-AVALANCHE-06, 2-4: the Avalanche
+# Copyright (c) 2026 Renaud Guillon
+"""MB-AVALANCHE-01 to MB-AVALANCHE-06, 2-4: the Avalanche.
 
 Logical pixels, nose +Z, Y up (towards the camera).
 """
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.world_2.avalanche import (
     AVALANCHE,
@@ -11,34 +10,12 @@ from game.config.bosses.world_2.avalanche import (
     AVALANCHE_CHUTE,
     AVALANCHE_CORE_GUNS,
 )
-from game.config.record import merge, record  # noqa: E402
-from game.view.enemies.enemy_shapes import (  # noqa: E402
-    FIGHTER_SECTION,
-    SIDES,
-    angry_eyes,
-    canopy_paint,
-    decal,
-    side_stripe,
-)
-from game.view.enemies.organic_parts import reactor_sac  # noqa: E402
-from render.geometry.organic import RibSpec, SegmentedBody, ribs, segmented_body  # noqa: E402
-from render.geometry.solids import LoftOptions, Placement  # noqa: E402
-
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-type Vec3 = list[float]
-__pragma__("noskip")
-
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.mini_boss_greebles import lamps, plate, rect  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.mini_boss_mechanism import GEAR  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.mini_boss_shapes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.record import merge, record
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.mini_boss_greebles import lamps, plate, rect
+from game.view.bosses.mini_boss_mechanism import GEAR
+from game.view.bosses.mini_boss_shapes import (
     SHADE,
     WHITE,
     H,
@@ -46,19 +23,19 @@ from game.view.bosses.mini_boss_shapes import (  # noqa: E402 (after the Transcr
     offset,
     socket,
 )
-from game.view.bosses.world_2.avalanche_arms import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.avalanche_arms import (
     AVALANCHE_YELLOW,
     arm_limbs,
     drill,
 )
-from game.view.bosses.world_2.avalanche_frost import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.avalanche_frost import (
     FROST,
     PACKED,
     barrel_to,
     icicles,
     snow_cap,
 )
-from game.view.bosses.world_2.w2_organic import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.w2_organic import (
     ICE_FLESH,
     crystals,
     gland,
@@ -67,6 +44,30 @@ from game.view.bosses.world_2.w2_organic import (  # noqa: E402 (after the Trans
     sinew,
     spine_row,
 )
+from game.view.enemies.enemy_shapes import (
+    FIGHTER_SECTION,
+    SIDES,
+    angry_eyes,
+    canopy_paint,
+    decal,
+    side_stripe,
+)
+from game.view.enemies.organic_parts import reactor_sac
+from render.geometry.organic import RibSpec, SegmentedBody, ribs, segmented_body
+from render.geometry.solids import LoftOptions, Placement
+
+# isort: split
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+# __pragma__ ("skip")
+from typing import TYPE_CHECKING, Any
+
+from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts
+
+type Vec3 = list[float]
+if TYPE_CHECKING:
+    from render.geometry.outline import OutlinePoint
+# __pragma__ ("noskip")
+
 
 # Yellow neon of the Avalanche.
 YELLOW = AVALANCHE_YELLOW
@@ -158,13 +159,13 @@ PATCH = [  # type: list[list[float]]
 ]
 
 
-def unit_girth(t: float) -> float:
-    """A body of even girth from tail to nose (`girth: () => 1`)."""
+def unit_girth(_t: float) -> float:
+    """Return a body of even girth from tail to nose (`girth: () => 1`)."""
     return 1.0
 
 
 def draw_body(p: EnemyParts) -> None:
-    """The chassis, its tracks, the cab and the engine deck."""
+    """Draw the chassis, its tracks, the cab and the engine deck."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -205,7 +206,7 @@ def draw_body(p: EnemyParts) -> None:
 
 
 def draw_track(p: EnemyParts, s: float) -> None:
-    """A track on side `s`: its belt, fender, road wheels and the packed snow in its treads."""
+    """Draw a track on side `s`: its belt, fender, road wheels and the packed snow in its treads."""
     hull = p.hull
     flesh = p.flesh
     x = s * TRACK_X
@@ -266,8 +267,10 @@ def draw_track(p: EnemyParts, s: float) -> None:
 
 
 def draw_frost(p: EnemyParts) -> None:
-    """Frost over the deck, icicles under the nose and along the flanks (MB-AVALANCHE-05), hazard
-    paint, sockets."""
+    """Draw the frost over the deck, icicles under the nose and along the flanks (MB-AVALANCHE-05).
+
+    Also the hazard paint and the sockets.
+    """
     hull = p.hull
     flesh = p.flesh
     for item in SNOW:
@@ -291,7 +294,7 @@ def draw_frost(p: EnemyParts) -> None:
 
 
 def draw_guns(p: EnemyParts) -> None:
-    """The core's twin guns under the cab's chin, on a mount (MB-AVALANCHE-03)."""
+    """Draw the core's twin guns under the cab's chin, on a mount (MB-AVALANCHE-03)."""
     p.hull.box([18.0, 4.0, 7.0], H.dark, Placement([0.0, 3.0, 28.0]), H.panel)
     for tip in AVALANCHE_CORE_GUNS:
         barrel_to(p, tip, [1.7, 9.0])
@@ -299,7 +302,7 @@ def draw_guns(p: EnemyParts) -> None:
 
 
 def draw_core(p: EnemyParts) -> None:
-    """The core: the body, the frost, the guns and the reactor sacs."""
+    """Draw the core: the body, the frost, the guns and the reactor sacs."""
     draw_body(p)
     draw_frost(p)
     draw_guns(p)
@@ -308,8 +311,11 @@ def draw_core(p: EnemyParts) -> None:
 
 
 def hopper(p: EnemyParts, at: Vec3) -> None:
-    """The rock hopper (MB-AVALANCHE-03): a bin on struts, heaped with rocks and snow, a yellow band
-    round its rim and a chute at its front, where its rocks drop from."""
+    """Add the rock hopper (MB-AVALANCHE-03).
+
+    A bin on struts, heaped with rocks and snow, a yellow band round its rim and a chute at its
+    front, where its rocks drop from.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -367,17 +373,21 @@ def hopper(p: EnemyParts, at: Vec3) -> None:
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
-    """What `build_boss_model` draws a boss from: a plain
-    object, with `ring` and `limbs` None when absent."""
+    """Return what `build_boss_model` draws a boss from: a plain object.
+
+    Its `ring` and `limbs` are None when absent.
+    """
     return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
 
 
 def build_avalanche(scene: Any) -> BuiltEnemyModel:
-    """MB-AVALANCHE-01, MB-AVALANCHE-04: the Avalanche, a heavy drilling machine 3.5 L across,
-    yellow neon: a tracked chassis crusted with snow and icicles, a cab at its nose, two drill arms
-    swinging in front of it and a rock hopper heaped with ice and stone on its back.
+    """MB-AVALANCHE-01, MB-AVALANCHE-04: the Avalanche, a heavy drilling machine 3.5 L across.
+
+    In yellow neon: a tracked chassis crusted with snow and icicles, a cab at its nose, two drill
+    arms swinging in front of it and a rock hopper heaped with ice and stone on its back.
     MB-AVALANCHE-02: now a burrowing beast of flesh under a ridged shell, crawling on segmented
-    flanks, a crop sac of rock and ice on its back and fleshy arms ending in grafted drills."""
+    flanks, a crop sac of rock and ice on its back and fleshy arms ending in grafted drills.
+    """
     limbs = merge(arm_limbs("left"), arm_limbs("right"))
     model: BuiltEnemyModel = build_boss_model(
         AVALANCHE,

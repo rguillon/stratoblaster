@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/scenery/road_lines.py` (GFX-ROAD-07)."""
 
 import pytest
@@ -24,14 +25,14 @@ LOOK = CentreLineLook(RED, WHITE, 0.5, 4, 0.1)
 class Flat:
     """Flat ground at height 0."""
 
-    def height(self, x: float, z: float) -> float:
+    def height(self, _x: float, _z: float) -> float:
         return 0.0
 
 
 class Sloped:
     """Ground that rises along X."""
 
-    def height(self, x: float, z: float) -> float:
+    def height(self, x: float, _z: float) -> float:
         return 0.2 * x
 
 
@@ -100,7 +101,7 @@ def test_a_run_over_a_straight_slope_is_one_quad() -> None:
 class Step:
     """Flat ground that steps up at X = 10."""
 
-    def height(self, x: float, z: float) -> float:
+    def height(self, x: float, _z: float) -> float:
         return 0.0 if x < 10 else 1.0
 
 
@@ -138,3 +139,23 @@ def test_a_cross_road_gets_no_centre_line() -> None:
     paint = _painter()
     paint_centre_lines(paint, [_road("cross", 1, 2, [(0, 0), (0, 20)])], 0, 100)
     assert paint.geo.indices == []
+
+
+def test_a_quad_of_no_length_is_still_a_finite_strip() -> None:
+    paint = _painter()
+    stripe = _stripes(_road("street", 1, 4, [(0, 0), (10, 0)]), LOOK)[0]
+    _quad(paint, stripe, (3, 3), (3, 3), 0, 0)
+    geo = paint.geo
+    assert len(geo.positions) == 4 * 3
+    assert all(abs(v) < 1e6 for v in geo.positions)
+
+
+def test_a_road_reaching_into_the_range_is_painted_from_its_first_segment_starting_there() -> None:
+    paint = _painter()
+    road = _road("street", 1, 8, [(0, 0), (0, 20), (0, 40)])
+    paint_centre_lines(paint, [road], 20, 100)
+    # Only the second segment, 20 to 40, starts in the range: one solid quad along it.
+    zs = [paint.geo.positions[i + 2] for i in range(0, len(paint.geo.positions), 3)]
+    assert len(paint.geo.indices) // 6 == 1
+    assert min(zs) == pytest.approx(20)
+    assert max(zs) == pytest.approx(40)

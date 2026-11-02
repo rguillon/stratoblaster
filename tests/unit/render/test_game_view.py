@@ -1,6 +1,9 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/game_view.py`: the bindings a game hands to the engine."""
 
 from render.game_view import (
+    BombFrame,
+    BonusFrame,
     EnemyBindings,
     EnemyShotFrame,
     GameView,
@@ -22,6 +25,19 @@ def test_a_shot_frame_keeps_what_it_was_given() -> None:
     )
 
 
+def test_a_bomb_frame_keeps_the_bomb_going_off_and_the_time_step() -> None:
+    bomb = object()
+    frame = BombFrame(bomb, 0.125)
+    assert frame.bomb is bomb
+    assert frame.dt_seconds == 0.125
+    assert BombFrame(None, 0.5).bomb is None
+
+
+def test_a_bonus_frame_keeps_the_bonuses_falling_and_those_picked() -> None:
+    frame = BonusFrame(["falling"], ["picked"], 0.75)
+    assert (frame.bonuses, frame.picked, frame.dt_seconds) == (["falling"], ["picked"], 0.75)
+
+
 def test_an_enemy_shot_frame_keeps_bullets_missiles_and_lasers() -> None:
     frame = EnemyShotFrame(["u"], ["m"], ["l"], 0.25)
     assert (frame.bullets, frame.missiles, frame.lasers, frame.dt_seconds) == (
@@ -34,8 +50,10 @@ def test_an_enemy_shot_frame_keeps_bullets_missiles_and_lasers() -> None:
 
 def test_a_prop_group_leaves_its_optional_fields_out_by_default() -> None:
     group = PropGroup("Rocks", ["rock-1"])
-    assert group.label == "Rocks" and group.ids == ["rock-1"]
-    assert group.notes is None and group.streets is None
+    assert group.label == "Rocks"
+    assert group.ids == ["rock-1"]
+    assert group.notes is None
+    assert group.streets is None
 
 
 def test_prop_tiles_pieces_are_optional() -> None:
@@ -59,6 +77,9 @@ def test_the_game_view_keeps_its_fields_and_leaves_the_optional_ones_out() -> No
     assert view.player_ship_scale == 2.0
     assert view.enemies.glow is glow
     assert glow.blur_kernel_size == 16
-    assert view.scenery.prop_groups is None and view.scenery.prop_tiles is None
-    assert view.bombs is None and view.audio is None and view.outline is None
+    assert view.scenery.prop_groups is None
+    assert view.scenery.prop_tiles is None
+    assert view.bombs is None
+    assert view.audio is None
+    assert view.outline is None
     assert enemies.set_idle_motion is None

@@ -1,5 +1,8 @@
-"""Measures how fast a running total grows, over a sliding time window (the FPS of the debug
-tile, DEV-PERF-04)."""
+# Copyright (c) 2026 Renaud Guillon
+"""Measures how fast a running total grows, over a sliding time window.
+
+It gives the FPS of the debug tile (DEV-PERF-04).
+"""
 
 
 class RateMeter:
@@ -13,7 +16,7 @@ class RateMeter:
         self._time = 0.0
 
     def add(self, dt: float, total: float) -> None:
-        """Records the running `total` after `dt` more seconds."""
+        """Record the running `total` after `dt` more seconds."""
         self._time += dt
         self._times.append(self._time)
         self._totals.append(total)

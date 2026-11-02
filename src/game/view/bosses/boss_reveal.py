@@ -1,25 +1,27 @@
-"""How a boss's hidden weapon parts come out as it transforms (docs/superpowers/specs/2026-10-31-
-boss-armour-shedding-design.md, BOSS-43, D-224): folded flat into the frame its shed armour leaves,
-each swings up on its hinge, rising, then slides its barrel out (overshooting and settling). Nothing
-grows from nothing.
+# Copyright (c) 2026 Renaud Guillon
+"""How a boss's hidden weapon parts come out as it transforms.
+
+(docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md, BOSS-43, D-224): folded flat into
+the frame its shed armour leaves, each swings up on its hinge, rising, then slides its barrel out
+(overshooting and settling). Nothing grows from nothing.
 
 Model space of a boss: logical pixels, +Y up (towards the camera), see `boss_limbs.boss_point`.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.boss_look import BOSS_LOOK
 from game.view.bosses.boss_limbs import boss_point
 from render.babylon import set_enabled
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 HIDDEN = "hidden"
 REVEALING = "revealing"
@@ -27,9 +29,11 @@ SHOWN = "shown"
 
 
 def reveal_phase(reveal: int | None, form: int, transforming_into: int) -> str:
-    """Whether something revealed (or shed) by transformation `reveal` is still hidden, coming
-    out, or shown, for a boss that has done `form` transformations and is doing
-    `transforming_into` (0: none)."""
+    """Whether something revealed (or shed) by transformation `reveal` is still hidden.
+
+    Coming out, or shown, for a boss that has done `form` transformations and is doing
+    `transforming_into` (0: none).
+    """
     if reveal is None or form >= reveal:
         return SHOWN
     if transforming_into == reveal:
@@ -63,8 +67,11 @@ class Pose:
 
 
 def hinge_pose(base: Vec3, hinge: Vec3, fold: float, sink: float, t: float) -> Pose:
-    """The pose of a part's root (at `base` on its frame) swinging up about `hinge` (model space),
-    `t` of the way: turned by `fold` and `sink` px down at first, as it rests at the end."""
+    """Return the pose of a part's root swinging up about `hinge` (model space), `t` of the way.
+
+    The root is at `base` on its frame. It is turned by `fold` and `sink` px down at first, as it
+    rests at the end.
+    """
     e = ease(t)
     yaw = (1 - e) * fold
     c = math.cos(yaw)
@@ -76,17 +83,21 @@ def hinge_pose(base: Vec3, hinge: Vec3, fold: float, sink: float, t: float) -> P
 
 
 def slide_offset(axis: Vec3, distance: float, t: float) -> Vec3:
-    """Where a sliding barrel is from its rest, `t` of the way out: `distance` back along `axis`
-    at first, overshooting its rest a little before it settles."""
+    """Where a sliding barrel is from its rest, `t` of the way out.
+
+    `distance` back along `axis` at first, overshooting its rest a little before it settles.
+    """
     back = (1 - back_out(t, BOSS_LOOK.reveal.overshoot)) * distance
     return [-axis[0] * back, -axis[1] * back, -axis[2] * back]
 
 
 def weapon_hinge(at: Vec3, radius: float, mount: Any) -> list[Any]:
-    """`[hinge, fold]` of a hidden weapon drawn round `at` (model space): from its `mount`
-    `[dx, dy, fold]` (px, X right, Y up) if it has one, else on its inner side (towards the centre
-    line, or its tail for one on it), folded back along the hull."""
-    if mount != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    """Return `[hinge, fold]` of a hidden weapon drawn round `at` (model space).
+
+    From its `mount` (`[dx, dy, fold]`, px, X right, Y up) if it has one, else on its inner side
+    (towards the centre line, or its tail for one on it), folded back along the hull.
+    """
+    if mount != None:
         offset = boss_point(mount[0], mount[1])
         return [[at[0] + offset[0], 0, at[2] + offset[2]], mount[2]]
     if abs(at[0]) < 1:
@@ -96,8 +107,10 @@ def weapon_hinge(at: Vec3, radius: float, mount: Any) -> list[Any]:
 
 
 class Slide:
-    """A piece of a weapon that slides out: its `node`, its `rest` position, along `axis` by
-    `distance`."""
+    """A piece of a weapon that slides out.
+
+    Its `node` and its `rest` position; it slides out along `axis` by `distance`.
+    """
 
     def __init__(self, node: Any, rest: Vec3, axis: Vec3, distance: float) -> None:
         self.node = node
@@ -107,10 +120,13 @@ class Slide:
 
 
 class RevealView:
-    """How one hidden part of a boss model comes out: its part's root (`root`, at `base` on its
-    frame), its hinge and fold (`weapon_hinge`), how far it sinks, and what slides out."""
+    """How one hidden part of a boss model comes out.
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    Its part's root (`root`, at `base` on its frame), its hinge and fold (`weapon_hinge`), how far
+    it sinks, and what slides out.
+    """
+
+    def __init__(
         self,
         reveal: int,
         root: Any,
@@ -127,8 +143,11 @@ class RevealView:
         self.slides = slides
 
     def show(self, form: int, transforming_into: int, transform: float) -> str:
-        """Poses the part for a boss that has done `form` transformations, doing
-        `transforming_into` `transform` of the way. Returns its phase (see `reveal_phase`)."""
+        """Pose the part for a boss that has done `form` transformations, and return its phase.
+
+        The boss is doing `transforming_into` `transform` of the way. See `reveal_phase` for the
+        phase.
+        """
         phase = reveal_phase(self.reveal, form, transforming_into)
         look = BOSS_LOOK.reveal
         if phase == REVEALING and transform < look.swing[0]:
@@ -159,16 +178,18 @@ class RevealView:
 
 
 def build_reveal(design: Any, spec: Any, model_root: Any, slides: list[Slide]) -> RevealView:
-    """The reveal of the hidden part `spec` of a boss of `design`, its model under `model_root`,
-    the pieces that slide out `slides`."""
+    """Return the reveal of the hidden part `spec` of a boss of `design`.
+
+    Its model is under `model_root`, and the pieces that slide out are `slides`.
+    """
     at = boss_point(spec.x, spec.y)
     weapons = design.weapons
-    look = weapons[spec.id] if weapons != None and spec.id in weapons else None  # noqa: E711 (absent value is undefined in the browser, ENG-161)
-    mount = look.mount if look != None and "mount" in look else None  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    look = weapons[spec.id] if weapons != None and spec.id in weapons else None
+    mount = look.mount if look != None and "mount" in look else None
     base = [model_root.position.x, model_root.position.y, model_root.position.z]
     hinge = weapon_hinge(at, spec.radius, mount)
     sink = spec.radius * BOSS_LOOK.reveal.sink
-    if look != None and "rig" in look and look.rig:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    if look != None and "rig" in look and look.rig:
         # At the end of a rig (D-228): it rises into place as the rig unfolds, no swing.
         hinge = [at, 0]
         sink = spec.radius * 0.5

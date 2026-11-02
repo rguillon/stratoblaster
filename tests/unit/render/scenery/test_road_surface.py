@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/scenery/road_surface.py` (GFX-ROAD-20)."""
 
 from types import SimpleNamespace
@@ -14,7 +15,7 @@ LOOK = SimpleNamespace(lift=0.5)
 
 
 class Flat:
-    def height(self, x: float, z: float) -> float:
+    def height(self, _x: float, _z: float) -> float:
         return 0.0
 
 
@@ -56,7 +57,9 @@ def test_a_surface_is_a_grid_of_cells_half_a_tile_wide_with_its_texture_coordina
 
 
 def test_the_surface_sits_on_the_ground_lifted_by_the_look() -> None:
-    surfaces, _ = build_road_surfaces([_piece(0, 0)], TILE, LOOK, _Atlas(), lambda x, z: 3.0, 0, 10)
+    surfaces, _ = build_road_surfaces(
+        [_piece(0, 0)], TILE, LOOK, _Atlas(), lambda _x, _z: 3.0, 0, 10
+    )
     assert {p[1] for p in points_of(surfaces.positions)} == {3.5}
 
 
@@ -65,9 +68,9 @@ def test_a_piece_the_atlas_cannot_hold_goes_to_the_layered_geometry(
 ) -> None:
     added: list[Any] = []
     monkeypatch.setattr(
-        road_surface, "add_piece", lambda geo, piece, tile, look, ground: added.append(piece)
+        road_surface, "add_piece", lambda _geo, piece, _tile, _look, _ground: added.append(piece)
     )
-    surfaces, layered = build_road_surfaces(
+    surfaces, _layered = build_road_surfaces(
         [_piece(0, 5)], TILE, LOOK, _Atlas(full={5}), Flat().height, 0, 100
     )
     assert surfaces.positions == []
@@ -86,4 +89,5 @@ def test_a_piece_whose_middle_is_outside_the_chunk_is_skipped() -> None:
     surfaces, layered = build_road_surfaces(
         [_piece(0, 50)], TILE, LOOK, _Atlas(), Flat().height, 0, 10
     )
-    assert surfaces.positions == [] and layered.positions == []
+    assert surfaces.positions == []
+    assert layered.positions == []

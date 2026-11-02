@@ -889,7 +889,7 @@ same fight drops the same bonuses.
 | boss missile | 140 px/s, turns 80°/s, homes 3 s, radius 5, health 10 | BOSS-23; `boss_kit.MISSILE` |
 | `boss_transform_seconds` | 2.0 s | BOSS-37; `BOSS_TIMING.transformSeconds` |
 | `boss_region_blasts` | 5 blasts a region at most | BOSS-37; `BOSS_TIMING.regionBlasts` |
-| `hidden_weapon_health` | 0.8 (first transformation) / 1.0 (second) of the sturdiest original part | BOSS-38; `src/game/config/bosses/hidden_weapons.py` `health_of` |
+| `hidden_weapon_health` | 0.8 (first transformation) / 1.0 (second) of the sturdiest original part | BOSS-38; written by hand in each boss's config, no code applies or checks the rule (128 of 129 hidden parts follow it on 2026-11-02; the Scorpion's tail cannon has 1100, the rule gives 580) |
 | `hidden_weapon_drop` | 0.3 | BOSS-38, BOSS-57; `hidden_weapons.hidden_weapon` |
 | fire-rate weights | bullet 1, missile 2, laser 8, launched enemy 2 | BOSS-39; `tests/unit/game/sim/test_boss_kinds.py` |
 | gatling | bursts of 4, 0.12 s apart, 190 px/s, every 2.2 s | BOSS-40; `src/game/config/bosses/weapon_kinds.py` |
@@ -922,9 +922,7 @@ same fight drops the same bonuses.
 - **Sparks on a shielded core.** P07-R01 had shots spark on a shielded core; D-053 then kept
   shielding parts out of the core's shadow. Since D-062 shots go through a shielded core, so the
   parts behind it can be hit.
-- **Gaps (no test since the Python port).** No unit test checks the part counts (BOSS-13), the new
-  pattern at every stage in every order of destruction (BOSS-21; `pattern_signature` exists in
-  `src/core/systems/boss_pattern.py` but no game test uses it), the triangle budgets (BOSS-53, see
+- **Gaps (no test since the Python port).** No unit test checks the triangle budgets (BOSS-53, see
   D-220), the World 1 health order (BOSS-55) or the simulated fight times (BOSS-56: the simulated
   player of the TypeScript version, `tests/helpers/boss-bot.ts`, was not ported). The fight times
   were last measured before the hidden weapons (D-221) added 1 000 to 7 000 health a boss, so they

@@ -1,20 +1,20 @@
-"""The Juggernaut (specs/enemies/juggernaut.md) Logical
-pixels, nose +Z, Y up (towards the camera).
+# Copyright (c) 2026 Renaud Guillon
+"""The Juggernaut (specs/enemies/juggernaut.md).
+
+Logical pixels, nose +Z, Y up (towards the camera).
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.enemies_elite import ELITE_CONFIG  # noqa: E402
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402
-from game.config.enemy_look_elite import ELITE_NEON  # noqa: E402
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.enemies.elite_shapes import QUARTER, H, barrel  # noqa: E402
-from game.view.enemies.enemy_shapes import SIDES, angry_eyes  # noqa: E402
-from game.view.enemies.jointed_model import build_jointed_model  # noqa: E402
-from game.view.enemies.organic_parts import reactor_sac  # noqa: E402
-from render.geometry.organic import (  # noqa: E402
+from game.config.enemies_elite import ELITE_CONFIG
+from game.config.enemy_look import ENEMY_LOOK
+from game.config.enemy_look_elite import ELITE_NEON
+from game.view.bosses.boss_limbs import boss_point
+from game.view.enemies.elite_shapes import QUARTER, H, barrel
+from game.view.enemies.enemy_shapes import SIDES, angry_eyes
+from game.view.enemies.jointed_model import build_jointed_model
+from game.view.enemies.organic_parts import reactor_sac
+from render.geometry.organic import (
     SegmentedBody,
     carapace,
     curve,
@@ -24,12 +24,14 @@ from render.geometry.organic import (  # noqa: E402
 from render.geometry.organic import (
     vein as vein_tube,
 )
-from render.geometry.solids import Placement  # noqa: E402
+from render.geometry.solids import Placement
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 CFG = ELITE_CONFIG.juggernaut
 NEON = ELITE_NEON.juggernaut
@@ -61,8 +63,10 @@ PLATE = [  # type: list[list[float]]
 
 
 def body(p: Any) -> None:
-    """The armoured beast: a flesh body under a plated shell, the turret, its eyes and strips
-    (ENM-JUGGERNAUT-03), reactor sacs (ENM-JUGGERNAUT-05)."""
+    """Add the armoured beast: a flesh body under a plated shell, the turret, its eyes and strips.
+
+    Its eyes and strips are ENM-JUGGERNAUT-03, its reactor sacs ENM-JUGGERNAUT-05.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -88,7 +92,7 @@ def body(p: Any) -> None:
 
 
 def shoulder(cannon: Any) -> Any:
-    """A shoulder mount, a metal joint turning with its joint, a sinew into the body."""
+    """Return a shoulder mount, a metal joint turning with its joint, a sinew into the body."""
     at = boss_point(cannon.pivot[0], cannon.pivot[1], -2.5)
 
     def draw(p: Any) -> None:
@@ -98,8 +102,10 @@ def shoulder(cannon: Any) -> Any:
 
 
 def cannon(spec: Any) -> Any:
-    """A shoulder cannon (ENM-JUGGERNAUT-06): a flesh pod in a metal band, a steel-blue gland and
-    a long barrel."""
+    """Return a shoulder cannon (ENM-JUGGERNAUT-06): a flesh pod in a metal band.
+
+    It has a steel-blue gland and a long barrel.
+    """
     at = boss_point(spec.centre[0], spec.centre[1], 0)
     tip = boss_point(spec.muzzle[0], spec.muzzle[1], spec.muzzle[2])
 
@@ -114,7 +120,7 @@ def cannon(spec: Any) -> Any:
 
 
 def front_plate(spec: Any) -> Any:
-    """A front armour plate, riveted on, a steel-blue light along its edge."""
+    """Return a front armour plate, riveted on, a steel-blue light along its edge."""
     at = boss_point(spec.x, spec.y, 0)
 
     def draw(p: Any) -> None:
@@ -129,8 +135,11 @@ def front_plate(spec: Any) -> Any:
 
 
 def build_juggernaut(scene: Any) -> Any:
-    """ENM-JUGGERNAUT-01: a massive, armoured beast with two riveted front plates and a flesh
-    cannon pod on each shoulder, within the elite triangle budget (ENM-JUGGERNAUT-07)."""
+    """ENM-JUGGERNAUT-01: a massive, armoured beast with two riveted front plates.
+
+    It has a flesh cannon pod on each shoulder, within the elite triangle budget
+    (ENM-JUGGERNAUT-07).
+    """
     limbs = {}
     parts = {}
     for c in CFG.cannons:

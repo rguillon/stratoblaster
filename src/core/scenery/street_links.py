@@ -1,12 +1,14 @@
-"""The nodes and links of a district's street grid (phase 4 review)"""
+# Copyright (c) 2026 Renaud Guillon
+"""The nodes and links of a district's street grid (phase 4 review)."""
 
 from org.transcrypt.stubs.browser import __pragma__
 
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
 
 LinksAt = Sequence[Sequence["Link"]]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def to_fixed3(x: float) -> str:
@@ -16,8 +18,10 @@ def to_fixed3(x: float) -> str:
 
 
 class Block:
-    """A city block: the ground between the streets around one cell of a district's grid, up to
-    the street edges."""
+    """A city block.
+
+    The ground between the streets around one cell of a district's grid, up to the street edges.
+    """
 
     def __init__(self, x_min: float, x_max: float, z_min: float, z_max: float) -> None:
         self.x_min = x_min
@@ -27,14 +31,16 @@ class Block:
 
 
 class Node:
-    """A point of the street network: one object per place (to within 0.001), numbered in the
-    order it is first used (reviewer, 2026-10-28: numbers, not text keys, in the dead-end
-    removal)."""
+    """A point of the street network.
 
-    def __init__(self, x: float, z: float, id: int) -> None:
+    One object per place (to within 0.001), numbered in the order it is first used (reviewer,
+    2026-10-28: numbers, not text keys, in the dead-end removal).
+    """
+
+    def __init__(self, x: float, z: float, node_id: int) -> None:
         self.x = x
         self.z = z
-        self.id = id
+        self.id = node_id
         """Order of first use, the order dead ends are fixed in; -1 until used."""
 
 
@@ -62,7 +68,7 @@ class Nodes:
         """The nodes used, by number."""
 
     def at(self, x: float, z: float) -> Node:
-        """The node at (`x`, `z`)."""
+        """Return the node at (`x`, `z`)."""
         k = _key(x, z)
         node = self._by_place.get(k)
         if node is None:
@@ -91,7 +97,7 @@ class Nodes:
 class Link:
     """A stretch of street between two neighbouring crossings."""
 
-    def __init__(  # noqa: PLR0917 (positional data fields: Transcrypt drops keyword arguments)
+    def __init__(
         self,
         a: Node,
         b: Node,
@@ -119,7 +125,7 @@ class Link:
 
 
 def dedupe(links: Sequence[Link]) -> list[Link]:
-    """Drops links laid twice (the shared boundary rows), keeping the first."""
+    """Drop links laid twice (the shared boundary rows), keeping the first."""
     seen: dict[str, bool] = {}
     result: list[Link] = []
     for link in links:
@@ -132,7 +138,7 @@ def dedupe(links: Sequence[Link]) -> list[Link]:
 
 
 def links_by_node(links: Sequence[Link], count: int) -> LinksAt:
-    """The links at each of the `count` nodes, by node number."""
+    """Return the links at each of the `count` nodes, by node number."""
     at: list[list[Link]] = [[] for _ in range(count)]
     for link in links:
         for n in [link.a, link.b]:

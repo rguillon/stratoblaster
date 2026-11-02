@@ -1,52 +1,29 @@
-"""MB-FJORD-LYNX-01 to MB-FJORD-LYNX-05, 2-2: the Fjord Lynx
+# Copyright (c) 2026 Renaud Guillon
+"""MB-FJORD-LYNX-01 to MB-FJORD-LYNX-05, 2-2: the Fjord Lynx.
 
 Logical pixels, nose +Z, Y up (towards the camera).
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.bosses.world_2.fjord_lynx import FJORD_LYNX
 from game.config.record import record
-from game.view.enemies.enemy_shapes import (  # noqa: E402
-    FIGHTER_SECTION,
-    POD_SECTION,
-    SIDES,
-    angry_eyes,
-    canopy_paint,
-    decal,
-    side_stripe,
-)
-from game.view.enemies.organic_parts import reactor_sac  # noqa: E402
-from render.geometry.organic import RibSpec, ribs  # noqa: E402
-from render.geometry.solids import LoftOptions, Placement, place_at  # noqa: E402
-
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-type Vec3 = list[float]
-__pragma__("noskip")
-
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.mini_boss_greebles import plate  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.mini_boss_shapes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.mini_boss_greebles import plate
+from game.view.bosses.mini_boss_shapes import (
     SHADE,
     H,
     offset,
     scaled,
     socket,
 )
-from game.view.bosses.world_2.fjord_lynx_frost import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.fjord_lynx_frost import (
     RIME,
     icicles,
     snow_cap,
     spread,
 )
-from game.view.bosses.world_2.fjord_lynx_parts import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.fjord_lynx_parts import (
     CYAN,
     WHITE_NEON,
     chin_turret,
@@ -55,7 +32,7 @@ from game.view.bosses.world_2.fjord_lynx_parts import (  # noqa: E402 (after the
     paw_turret,
     radar_mast,
 )
-from game.view.bosses.world_2.w2_organic import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.w2_organic import (
     ICE_FLESH,
     crystals,
     gland,
@@ -63,6 +40,29 @@ from game.view.bosses.world_2.w2_organic import (  # noqa: E402 (after the Trans
     sinew,
     spine_row,
 )
+from game.view.enemies.enemy_shapes import (
+    FIGHTER_SECTION,
+    POD_SECTION,
+    SIDES,
+    angry_eyes,
+    canopy_paint,
+    decal,
+    side_stripe,
+)
+from game.view.enemies.organic_parts import reactor_sac
+from render.geometry.organic import RibSpec, ribs
+from render.geometry.solids import LoftOptions, Placement, place_at
+
+# isort: split
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+# __pragma__ ("skip")
+from typing import Any
+
+from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts
+
+type Vec3 = list[float]
+# __pragma__ ("noskip")
+
 
 # The low hull seen from above: a crouched body, broad at the shoulders, narrow at the haunches.
 BODY = [  # type: list[list[float]]
@@ -131,7 +131,7 @@ TAIL = [  # type: list[list[float]]
 
 
 def tip(length: float, place: Placement) -> Vec3:
-    """The point `length` along the +Y axis of a solid placed by `place` (its tip)."""
+    """Return the point `length` along the +Y axis of a solid placed by `place` (its tip)."""
     at: Vec3 = place.at if place.at is not None else [0.0, 0.0, 0.0]
     y1 = length * math.cos(place.pitch)
     z1 = length * math.sin(place.pitch)
@@ -139,7 +139,7 @@ def tip(length: float, place: Placement) -> Vec3:
 
 
 def draw_body(p: EnemyParts) -> None:
-    """The hull, the back and head, the haunches and the forelegs out to the paws."""
+    """Draw the hull, the back and head, the haunches and the forelegs out to the paws."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -177,7 +177,7 @@ def draw_body(p: EnemyParts) -> None:
 
 
 def draw_ears(p: EnemyParts) -> None:
-    """The tufted antennas: an ear on each side of the head, a whip with a light on its tip."""
+    """Draw the tufted antennas: an ear on each side of the head, a whip with a light on its tip."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -204,15 +204,17 @@ def draw_ears(p: EnemyParts) -> None:
 
 
 def draw_deck(p: EnemyParts) -> None:
-    """Deck details: vents, seams, the sponson for the radar mast, frost and icicles
-    (MB-FJORD-LYNX-05), the eyes."""
+    """Draw the deck details: vents, seams, the sponson for the radar mast, the eyes.
+
+    Also frost and icicles (MB-FJORD-LYNX-05).
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
     mast = FJORD_LYNX.stats.parts[2]
     # `mast?.x ?? -25` and `mast?.y ?? 22`.
-    mast_x = -25.0 if mast == None or mast.x == None else mast.x  # noqa: E711 (absent value is undefined in the browser, ENG-161)
-    mast_y = 22.0 if mast == None or mast.y == None else mast.y  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    mast_x = -25.0 if mast == None or mast.x == None else mast.x
+    mast_y = 22.0 if mast == None or mast.y == None else mast.y
     at: Vec3 = [-mast_x, 0.0, -mast_y]
     sponson = [[x + at[0], z + at[2]] for x, z in SPONSON]
     flesh.bevel_slab(
@@ -231,7 +233,7 @@ def draw_deck(p: EnemyParts) -> None:
 
 
 def draw_core(p: EnemyParts) -> None:
-    """The core: the body, the ears, the deck and the reactor sacs."""
+    """Draw the core: the body, the ears, the deck and the reactor sacs."""
     draw_body(p)
     draw_ears(p)
     draw_deck(p)
@@ -240,16 +242,18 @@ def draw_core(p: EnemyParts) -> None:
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
-    """What `build_boss_model` draws a boss from."""
+    """Return what `build_boss_model` draws a boss from."""
     return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
 
 
 def build_fjord_lynx(scene: Any) -> BuiltEnemyModel:
-    """MB-FJORD-LYNX-01, MB-FJORD-LYNX-04: the Fjord Lynx, a fast, low gunship crouched like a lynx:
-    two forward paws with cannons, tufted antennas over its head, a radar mast on its left flank,
+    """MB-FJORD-LYNX-01, MB-FJORD-LYNX-04: the Fjord Lynx, a fast, low gunship crouched like a lynx.
+
+    Two forward paws with cannons, tufted antennas over its head, a radar mast on its left flank,
     white and cyan neon, snow on its back. MB-FJORD-LYNX-02: now a living cyber-lynx of cold flesh,
     ribs and ice spines down its back, sinews to its paws, metal plates on its haunches and grafted
-    guns."""
+    guns.
+    """
     model: BuiltEnemyModel = build_boss_model(
         FJORD_LYNX,
         scene,

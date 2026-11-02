@@ -1,6 +1,10 @@
-"""The sample `GameDefinition` (ENG-145): one enemy kind that never spawns in these tests, one
-projectile weapon, one level of the sample scenery (`tests/helpers/sample_level.py`) with one wave,
-and the menu texts of `tests/helpers/menu_game.py`."""
+# Copyright (c) 2026 Renaud Guillon
+"""The sample `GameDefinition` (ENG-145): one enemy kind, one projectile weapon, one level.
+
+The enemy kind never spawns in these tests. The level is one of the sample scenery
+(`tests/helpers/sample_level.py`) with one wave, and the menu texts are those of
+`tests/helpers/menu_game.py`.
+"""
 
 from types import SimpleNamespace
 from typing import Any
@@ -24,12 +28,12 @@ from fixtures.sample_game.look import PLAYFIELD_CAMERA, WINDOW_ATLAS
 
 
 def _no_spawn(_area: Any) -> list[Any]:
-    """The sample's enemy makes no enemy: the tests that use it never run its waves."""
+    """Return the sample's enemy makes no enemy: the tests that use it never run its waves."""
     return []
 
 
 def make_sample_game() -> GameDefinition:
-    """A new sample game (`SAMPLE_GAME` is the one the tests share)."""
+    """Return a new sample game (`SAMPLE_GAME` is the one the tests share)."""
     gun = ProjectileWeaponDefinition(
         "sample-gun",
         "Sample gun",
@@ -48,12 +52,12 @@ def make_sample_game() -> GameDefinition:
     waves = [Wave(0, "sample-enemy", 1, 0.5, EnemyEntry("top", 0.5))]
     level = GameLevel("sample-1", sample_level(), waves, EnemyDifficulty(1, 1))
     return GameDefinition(
-        id="sample",
+        id_="sample",
         title="Sample game",
         screen=LogicalScreen(480, 640),
         player_ships=PlayerShipRoster(100, [PlayerShipDefinition("alpha", "Alpha", 1, 5)]),
         player_weapons=[gun],
-        levels=LevelCatalog(1, [LevelEntry("sample-1", "1-1", 1, 1, True)]),
+        levels=LevelCatalog(1, [LevelEntry("sample-1", "1-1", 1, 1, unlocked=True)]),
         game_levels=[level],
         enemy_kinds=[EnemyKindDefinition("sample-enemy", "Sample enemy", _no_spawn)],
         boss_kinds=[],

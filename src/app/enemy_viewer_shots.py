@@ -1,23 +1,26 @@
-"""The shots and explosions of the enemy viewer (Dev menu)
+# Copyright (c) 2026 Renaud Guillon
+"""The shots and explosions of the enemy viewer (Dev menu).
 
 Everything is drawn on the playfield layer: the player's shots (one renderer per weapon, hits
 included: GFX-FX-01), the enemies' shots and the explosions (GFX-FX-05).
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from render.game_view import EnemyShotFrame, ShotFrame
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class ShotsToDraw:
-    """What `EnemyViewerShots.sync` draws: the `enemies` and the `shots` (their worlds), the new
-    `blasts` and `impacts`, and the `dt` seconds of the frame."""
+    """What `EnemyViewerShots.sync` draws.
+
+    The `enemies` and the `shots` (their worlds), the new `blasts` and `impacts`, and the `dt`
+    seconds of the frame.
+    """
 
     def __init__(self, enemies: Any, shots: Any, blasts: Any, impacts: Any, dt: float) -> None:
         self.enemies = enemies
@@ -83,11 +86,14 @@ class EnemyViewerShots:
         self.playfield.run(draw)
 
     def warm(self, on: bool) -> None:
-        """Shows (or hides) one enemy bullet of each colour, so their shaders compile (see
-        `warm_bullets`, PERF-20)."""
+        """Show (or hide) one enemy bullet of each colour, so their shaders compile.
+
+        See `warm_bullets` (PERF-20).
+        """
         self._enemy.warm(on)
 
     def dispose(self) -> None:
+        """Releases the renderers of the shots."""
         for renderer in self._player.values():
             renderer.dispose()
         self._enemy.dispose()

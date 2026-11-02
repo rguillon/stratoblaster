@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/audio/level_cues.py`: a case for each event of AUD-SFX-01."""
 
 from types import SimpleNamespace
@@ -7,7 +8,7 @@ from audio.level_cues import LevelCues
 
 
 def make_run(**overrides: Any) -> SimpleNamespace:
-    """A `LevelRun` stand-in with the fields the cues read, all quiet at the start."""
+    """Return a `LevelRun` stand-in with the fields the cues read, all quiet at the start."""
     run = SimpleNamespace(
         shots=SimpleNamespace(volleys=0, weapon=SimpleNamespace(id="blaster"), beam=[], level=1),
         ship=SimpleNamespace(x=100.0),
@@ -190,4 +191,19 @@ def test_aud_engine_09_a_level_without_a_hull_or_bombs_counts_zero() -> None:
     cues = LevelCues(40)
     run = make_run(hull=None, bombs=None)
     cues.observe(run)
+    assert cues.observe(run) == []
+
+
+def test_aud_engine_09_each_laser_is_followed_on_its_own() -> None:
+    cues = LevelCues(40)
+    run = make_run()
+    cues.observe(run)
+    first = SimpleNamespace(phase="warning", x=30.0)
+    second = SimpleNamespace(phase="warning", x=60.0)
+    run.enemies.shots.lasers.extend([first, second])
+    assert names(cues.observe(run)) == ["laser-warning"]
+    second.phase = "firing"
+    fired = cues.observe(run)
+    assert names(fired) == ["laser-fire"]
+    assert fired[0].x == 60.0
     assert cues.observe(run) == []

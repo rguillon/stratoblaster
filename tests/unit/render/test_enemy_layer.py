@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/enemy_layer.py`."""
 
 import math
@@ -57,7 +58,8 @@ def test_an_enemy_is_drawn_at_its_position_with_its_nose_along_its_heading() -> 
 
     layer.sync([enemy], 0.1)
 
-    assert layer.count == 1 and layer.model_count == 1
+    assert len(layer._slot_values) == 1
+    assert layer._created == 1
     slot_pivot = made[0].root.parent.parent
     assert (slot_pivot.position.x, slot_pivot.position.y, slot_pivot.position.z) == (10, 20, 0)
     assert slot_pivot.rotation.z == pytest.approx(-math.pi / 2)
@@ -81,11 +83,11 @@ def test_a_model_that_leaves_is_hidden_and_reused_by_its_kind() -> None:
     pivot = made[0].root.parent.parent
 
     layer.sync([], 0)
-    assert layer.count == 0
+    assert len(layer._slot_values) == 0
     assert pivot.enabled is False
 
     layer.sync([_enemy("drone", x=5)], 0)
-    assert layer.model_count == 1
+    assert layer._created == 1
     assert pivot.enabled is True
 
 
@@ -94,8 +96,8 @@ def test_a_new_kind_gets_a_new_model() -> None:
     layer, _ = _layer(made)
     layer.sync([_enemy("drone")], 0)
     layer.sync([_enemy("drone"), _enemy("tank")], 0)
-    assert layer.model_count == 2
-    assert layer.count == 2
+    assert layer._created == 2
+    assert len(layer._slot_values) == 2
 
 
 def test_an_enemy_of_an_unknown_kind_is_an_error() -> None:
@@ -110,12 +112,12 @@ def test_prepare_next_builds_one_hidden_model_per_kind_until_all_are_built() -> 
 
     first = layer.prepare_next()
     assert len(first) == 1  # The model's meshes, to compile their shaders.
-    assert layer.model_count == 1
+    assert layer._created == 1
     assert made[0].root.parent.parent.enabled is False
 
     assert len(layer.prepare_next()) == 1
     assert layer.prepare_next() == []
-    assert layer.model_count == 2
+    assert layer._created == 2
 
 
 def test_a_prepared_model_is_reused_for_the_first_enemy_of_its_kind() -> None:
@@ -123,16 +125,7 @@ def test_a_prepared_model_is_reused_for_the_first_enemy_of_its_kind() -> None:
     layer, _ = _layer(made)
     layer.prepare_next()
     layer.sync([_enemy("drone")], 0)
-    assert layer.model_count == 1
-
-
-def test_clear_hides_every_drawn_enemy() -> None:
-    made: list[FakeModel] = []
-    layer, _ = _layer(made)
-    layer.sync([_enemy("drone"), _enemy("tank")], 0)
-    layer.clear()
-    assert layer.count == 0
-    assert all(model.root.parent.parent.enabled is False for model in made)
+    assert layer._created == 1
 
 
 def test_dispose_disposes_every_model_and_forgets_them() -> None:
@@ -142,7 +135,7 @@ def test_dispose_disposes_every_model_and_forgets_them() -> None:
     layer.sync([], 0)
     layer.dispose()
     assert made[0].root.parent.parent.disposed is True
-    assert layer.count == 0
+    assert len(layer._slot_values) == 0
 
 
 def test_perf_21_prepare_next_builds_only_the_kinds_it_is_given_in_their_order() -> None:
@@ -158,9 +151,9 @@ def test_perf_21_prepare_next_builds_only_the_kinds_it_is_given_in_their_order()
     layer = EnemyLayer(scene, {"drone": factory, "tank": factory}, ["tank", "missing"])
     assert len(layer.prepare_next()) == 1
     assert layer.prepare_next() == []
-    assert layer.model_count == 1
+    assert layer._created == 1
     layer.sync([_enemy("drone")], 0)
-    assert layer.model_count == 2  # A kind left out is still built when it first shows.
+    assert layer._created == 2  # A kind left out is still built when it first shows.
 
 
 def test_d199_the_pivot_of_a_drawn_enemy_is_its_slot_s_and_sync_keeps_its_x_and_y_turns() -> None:
@@ -175,3 +168,33 @@ def test_d199_the_pivot_of_a_drawn_enemy_is_its_slot_s_and_sync_keeps_its_x_and_
     pivot.rotation.y = 0.2
     layer.sync([enemy], 0)
     assert (pivot.rotation.x, pivot.rotation.y) == (0.3, 0.2)
+
+
+def test_eng_19_enemies_of_one_kind_each_get_a_model_and_all_are_kept_for_reuse() -> None:
+    made: list[FakeModel] = []
+    layer, _ = _layer(made)
+    first, second, third = _enemy("drone"), _enemy("drone"), _enemy("drone")
+    layer.sync([first, second, third], 0)
+    assert layer._created == 3
+    # The second leaves first, while the others stay: each one's model is hidden and kept.
+    layer.sync([first, third], 0)
+    assert layer.pivot_of(second) is None
+    assert layer.pivot_of(third) is made[2].root.parent.parent
+    layer.sync([], 0)
+    assert len(layer._slot_values) == 0
+    # Three new drones reuse the three models kept.
+    layer.sync([_enemy("drone"), _enemy("drone"), _enemy("drone")], 0)
+    assert layer._created == 3
+    assert all(model.root.parent.parent.enabled for model in made)
+
+
+def test_dispose_disposes_the_models_shown_and_those_kept() -> None:
+    made: list[FakeModel] = []
+    layer, _ = _layer(made)
+    shown, gone = _enemy("drone"), _enemy("tank")
+    layer.sync([shown, gone], 0)
+    layer.sync([shown], 0)
+    layer.dispose()
+    assert [model.root.parent.parent.disposed for model in made] == [True, True]
+    assert len(layer._slot_values) == 0
+    assert layer.pivot_of(shown) is None

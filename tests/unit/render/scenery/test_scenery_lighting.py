@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/scenery/scenery_lighting.py`."""
 
 from types import SimpleNamespace
@@ -108,9 +109,11 @@ def test_targets_that_differ_only_along_the_light_keep_the_same_shadow_grid() ->
     first = snapped_light_position(direction, FakeVector(0.1, 0, 0.1), 10, 1)
     second = snapped_light_position(direction, forward.scale(3).add(FakeVector(0.1, 0, 0.1)), 10, 1)
     shift = first.subtract(second)
-    assert (shift.x, shift.y, shift.z) == pytest.approx(
-        (-3 * forward.x, -3 * forward.y, -3 * forward.z)
-    )
+    assert (shift.x, shift.y, shift.z) == pytest.approx((
+        -3 * forward.x,
+        -3 * forward.y,
+        -3 * forward.z,
+    ))
 
 
 def test_a_target_a_whole_texel_away_moves_the_light() -> None:

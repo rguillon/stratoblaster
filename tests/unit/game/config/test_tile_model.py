@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/tile_model.py`."""
 
 from game.config.tile_model import model

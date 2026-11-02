@@ -1,4 +1,5 @@
-"""The enemies' shots in playfield space: bullets (GFX-SHOT-10), missiles (GFX-SHOT-15), lasers
+# Copyright (c) 2026 Renaud Guillon
+"""The enemies' shots in playfield space: bullets (GFX-SHOT-10), missiles (GFX-SHOT-15), lasers.
 
 Bullets are thin instances of a template per layer (as the blasts, D-034, ENG-104): one draw call
 however many bullets are flying.
@@ -8,38 +9,35 @@ import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
-__pragma__("skip")
-__pragma__("noskip")
-
-from render.geometry.solids import Placement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-__pragma__("noskip")
-
-from game.config.enemy_look import ENEMY_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.readability import READABILITY  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.enemies.enemy_lasers import EnemyLasers  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.enemies.enemy_materials import enemy_materials, mesh_of  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.shot_geometry import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.enemy_look import ENEMY_LOOK
+from game.config.readability import READABILITY
+from game.view.enemies.enemy_lasers import EnemyLasers
+from game.view.enemies.enemy_materials import enemy_materials, mesh_of
+from game.view.shot_geometry import (
     build_glow_disc,
     build_swirl,
 )
-from game.view.shots.shot_meshes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shots.shot_meshes import (
     additive_template,
     blended_template,
 )
-from render.babylon import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.babylon import (
     babylon_constant,
     new_transform_node,
     node_name,
 )
-from render.geometry.solids import SolidBuilder  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.node_adopter import ON_TOP_ALPHA_INDEX  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.node_pool import NodePool  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.outline import set_outline  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import Placement, SolidBuilder
+from render.node_adopter import ON_TOP_ALPHA_INDEX
+from render.node_pool import NodePool
+from render.outline import set_outline
+
+# isort: split
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+# __pragma__ ("skip")
+from typing import Any
+
+# __pragma__ ("noskip")
+
 
 LOOK = ENEMY_LOOK
 # Draw order of the bullets: after every other see-through mesh of the playfield, the missiles'
@@ -57,7 +55,7 @@ def _object_keys(obj: Any) -> list[str]:
 
 
 def _float32_array(length: int) -> Any:
-    """A zero-filled `Float32Array` of `length` values."""
+    """Return a zero-filled `Float32Array` of `length` values."""
     __pragma__("skip")
     return [0.0] * length
     __pragma__("noskip")
@@ -88,8 +86,10 @@ def disc_alphas(segments: int, fade: list[float]) -> list[float]:
 
 
 class BulletLayer:
-    """One layer of the bullets of one colour, drawn as thin instances of a template: one draw call
-    however many bullets are flying (GFX-SHOT-13)."""
+    """One layer of the bullets of one colour, drawn as thin instances of a template.
+
+    One draw call, however many bullets are flying (GFX-SHOT-13).
+    """
 
     def __init__(self, mesh: Any, z: float, order: int) -> None:
         self.mesh = mesh
@@ -134,14 +134,17 @@ class BulletLayer:
             self.mesh.thinInstanceBufferUpdated("matrix")
 
     def dispose(self) -> None:
+        """Disposes the layer's material and mesh."""
         if self.mesh.material:
             self.mesh.material.dispose()
         self.mesh.dispose()
 
 
 def contrast_spark(name: str, scene: Any) -> Any:
-    """The white spark of a bullet in the contrast style (GFX-READ-11). It has no dark rim any more
-    (reviewer, 2026-10-30, D-194, GFX-SHOT-12)."""
+    """Return the white spark of a bullet in the contrast style (GFX-READ-11).
+
+    It has no dark rim any more (reviewer, 2026-10-30, D-194, GFX-SHOT-12).
+    """
     segments = LOOK.bullets.segments
     spark = LOOK.contrast.spark
     return additive_template(name + "-spark", build_glow_disc(segments, spark.colors), scene)
@@ -162,38 +165,41 @@ def core_scale(age: float) -> float:
 
 
 def drawn_radius(b: Any) -> float:
-    """A bullet's drawn radius, from its hit radius (so shells and mines are bigger, GFX-SHOT-14):
-    never under half `minEnemyBulletSize` (GFX-READ-10); its hitbox is kept."""
+    """Return a bullet's drawn radius, from its hit radius (GFX-SHOT-14).
+
+    Shells and mines are bigger. It is never under half `minEnemyBulletSize` (GFX-READ-10); its
+    hitbox is kept.
+    """
     radius: float = max(b.radius * LOOK.bullets.scale, READABILITY.minEnemyBulletSize / 2)
     return radius
 
 
-def body_placement(b: Any, r: float) -> list[float]:
-    """The body is drawn at the bullet's radius."""
+def body_placement(_b: Any, r: float) -> list[float]:
+    """Return the body is drawn at the bullet's radius."""
     return [r, 0]
 
 
 def halo_placement(b: Any, r: float) -> list[float]:
-    """The aura breathes with the bullet's age."""
+    """Return the aura breathes with the bullet's age."""
     return [r * halo_scale(b.age), 0]
 
 
 def core_placement(b: Any, r: float) -> list[float]:
-    """The core pulses with the bullet's age."""
+    """Return the core pulses with the bullet's age."""
     return [r * core_scale(b.age), 0]
 
 
 def fixed_placement(factor: float) -> Any:
-    """A layer drawn at a fixed factor of the bullet's radius."""
+    """Return a layer drawn at a fixed factor of the bullet's radius."""
 
-    def place(b: Any, r: float) -> list[float]:
+    def place(_b: Any, r: float) -> list[float]:
         return [r * factor, 0]
 
     return place
 
 
 def swirl_placement(swirl: Any) -> Any:
-    """A swirl grows with its size and turns with the bullet's heading and age."""
+    """Return a swirl grows with its size and turns with the bullet's heading and age."""
 
     def place(b: Any, r: float) -> list[float]:
         return [r * swirl.size, b.heading * 3 + swirl.spinRadPerSec * b.age]
@@ -204,7 +210,7 @@ def swirl_placement(swirl: Any) -> Any:
 def swirl_layer(name: str, scene: Any, swirl: Any, i: int, colors: Any) -> list[Any]:
     """One swirl of plasma, spinning with its bullet."""
     color = colors.swirls[i]
-    if color == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    if color == None:
         color = colors.halo
     mesh = additive_template(
         name + "-swirl-" + str(i),
@@ -215,9 +221,12 @@ def swirl_layer(name: str, scene: Any, swirl: Any, i: int, colors: Any) -> list[
 
 
 def bullet_layers(style: str, scene: Any, contrast: bool) -> list[list[Any]]:
-    """A ball of plasma (GFX-SHOT-10), back to front: a faint flickering aura, a solid body, two
-    curled swirls of brighter plasma spinning opposite ways, and a pulsing white-hot core. In the
-    contrast style (GFX-READ-11), a white spark over the core."""
+    """Return a ball of plasma (GFX-SHOT-10), back to front, as a list of layers.
+
+    A faint flickering aura, a solid body, two curled swirls of brighter plasma spinning opposite
+    ways, and a pulsing white-hot core. In the contrast style (GFX-READ-11), a white spark sits over
+    the core.
+    """
     segments = LOOK.bullets.segments
     fade = LOOK.bullets.fade
     colors = LOOK.bullets.styles[style]
@@ -232,12 +241,10 @@ def bullet_layers(style: str, scene: Any, contrast: bool) -> list[list[Any]]:
     ]
     for i, swirl in enumerate(LOOK.bullets.swirls):
         layers.append(swirl_layer(name, scene, swirl, i, colors))
-    layers.append(
-        [
-            additive_template(name + "-core", build_glow_disc(segments, colors.core), scene),
-            core_placement,
-        ]
-    )
+    layers.append([
+        additive_template(name + "-core", build_glow_disc(segments, colors.core), scene),
+        core_placement,
+    ])
     if contrast:
         spark = LOOK.contrast.spark
         layers.append([contrast_spark(name, scene), fixed_placement(spark.size)])
@@ -257,9 +264,11 @@ def bullet_pools(scene: Any, contrast: bool) -> dict[str, list[list[Any]]]:
 
 
 def warm_bullets(pools: dict[str, list[list[Any]]], on: bool) -> None:
-    """Shows one bullet in each layer of each colour (`on`), or hides them all: the loading draws
-    them, so the shaders of the layers (some only drawn with their instances) compile before play
-    (PERF-20), not on the frame of the first shot of each colour."""
+    """Show one bullet in each layer of each colour (`on`), or hide them all.
+
+    The loading draws them, so the shaders of the layers (some only drawn with their instances)
+    compile before play (PERF-20), not on the frame of the first shot of each colour.
+    """
     spot = [[0, 0, 0, 0]] if on else []
     for style in STYLES:
         for entry in pools[style]:
@@ -282,9 +291,11 @@ def sync_bullets(pools: dict[str, list[list[Any]]], bullets: list[Any]) -> None:
 
 
 def build_missile(scene: Any, flame: Any, i: int) -> Any:
-    """A small dark missile pointing +Y with an orange tip and a flame behind it, and (GFX-SHOT-15,
-    GFX-READ-12) a rim glow in the enemy shots' colour, so it shows over blasts and bright
-    ground."""
+    """Return a small dark missile pointing +Y with an orange tip and a flame behind it.
+
+    It has a rim glow in the enemy shots' colour, so it shows over blasts and bright ground
+    (GFX-SHOT-15, GFX-READ-12).
+    """
     look = LOOK.missile
     root = new_transform_node("enemy-missile-" + str(i), scene)
     body = SolidBuilder().cylinder(
@@ -329,8 +340,10 @@ def sync_missiles(pool: Any, missiles: list[Any]) -> None:
 
 
 class ShotRendererHandle:
-    """The enemy shot renderer: its `sync`, `dispose`, and
-    `warm(on)` (one bullet shown in each colour's layers, or none: see `warm_bullets`)."""
+    """The enemy shot renderer: its `sync`, `dispose`, and `warm(on)`.
+
+    `warm` shows one bullet in each colour's layers, or none (see `warm_bullets`).
+    """
 
     def __init__(self, sync: Any, dispose: Any, warm: Any) -> None:
         self.sync = sync
@@ -339,8 +352,10 @@ class ShotRendererHandle:
 
 
 def create_enemy_shot_renderer(scene: Any) -> ShotRendererHandle:
-    """The enemies' shots of one scene: bullets, missiles, and lasers (contrast look, GFX-READ-11,
-    used in every level)."""
+    """Return the enemies' shots of one scene: bullets, missiles, and lasers.
+
+    The contrast look (GFX-READ-11) is used in every level.
+    """
     contrast = True
     bullets = bullet_pools(scene, contrast)
     flame = additive_template("enemy-missile-flame", build_glow_disc(8, LOOK.missile.flame), scene)

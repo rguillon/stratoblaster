@@ -1,25 +1,24 @@
-"""The Snow Owl (MB-SNOW-OWL-01 to MB-SNOW-OWL-06, 2-3)
+# Copyright (c) 2026 Renaud Guillon
+"""The Snow Owl (MB-SNOW-OWL-01 to MB-SNOW-OWL-06, 2-3).
 
 Logical pixels, nose +Z, Y up (towards the camera).
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.bosses.world_2.snow_owl import OWL_CHIN_GUNS, OWL_CROWN, SNOW_OWL
 from game.config.record import record
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.boss_model import build_boss_model
 from game.view.bosses.mini_boss_greebles import lamps, seam
 from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H, scaled
-from game.view.bosses.world_2.snow_owl_parts import (  # noqa: E402
+from game.view.bosses.world_2.snow_owl_parts import (
     OWL_WHITE,
     eye,
     icicles,
     radar_pod,
 )
-from game.view.bosses.world_2.w2_organic import (  # noqa: E402
+from game.view.bosses.world_2.w2_organic import (
     ICE_FLESH,
     crystals,
     gland,
@@ -31,13 +30,15 @@ from game.view.enemies.organic_parts import reactor_sac
 from render.geometry.organic import RibSpec, ribs
 from render.geometry.solids import LoftOptions, Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Navigation lights: red to port (+X, the screen's left), green to starboard.
 PORT_RED = [1, 0.1, 0.12]
@@ -65,7 +66,7 @@ HALF_WING = [  # type: list[list[float]]
 ]
 # Both wings: an owl's broad, rounded wing, its trailing edge cut into feathers. The left half
 # is the right one mirrored and walked back from the tip to the root (without its end points).
-WING = [point for point in HALF_WING]
+WING = list(HALF_WING)
 for j in range(len(HALF_WING) - 2):
     i = len(HALF_WING) - 2 - j
     WING.append([-HALF_WING[i][0], HALF_WING[i][1]])
@@ -96,8 +97,10 @@ WING_ICICLES = [  # type: list[list[float]]
 
 
 def draw_wings(p: EnemyParts) -> None:
-    """The wings: dark metal under a crust of snow (MB-SNOW-OWL-05), white neon along their
-    leading edges."""
+    """Draw the wings: dark metal under a crust of snow (MB-SNOW-OWL-05).
+
+    White neon along their leading edges.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -141,7 +144,7 @@ def draw_wings(p: EnemyParts) -> None:
 
 
 def draw_body(p: EnemyParts) -> None:
-    """The body: a rounded fuselage, snow on its back, ear tufts, vents and twin reactors."""
+    """Draw the body: a rounded fuselage, snow on its back, ear tufts, vents and twin reactors."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -178,8 +181,10 @@ def draw_body(p: EnemyParts) -> None:
 
 
 def draw_guns(p: EnemyParts) -> None:
-    """The crown emitter on the back (its rings) and the chin guns either side of the eye
-    (MB-SNOW-OWL-03)."""
+    """Draw the crown emitter on the back (its rings) and the chin guns (MB-SNOW-OWL-03).
+
+    The chin guns sit either side of the eye.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -203,7 +208,7 @@ def draw_guns(p: EnemyParts) -> None:
 
 
 def draw_core(p: EnemyParts) -> None:
-    """The core body: wings, body, the guns, and the sensor's hood."""
+    """Draw the core body: wings, body, the guns, and the sensor's hood."""
     draw_wings(p)
     draw_body(p)
     draw_guns(p)
@@ -211,16 +216,17 @@ def draw_core(p: EnemyParts) -> None:
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
-    """The `BossDrawing` of a boss model: what the model is drawn from."""
+    """Return the `BossDrawing` of a boss model: what the model is drawn from."""
     return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
 
 
 def build_snow_owl(scene: Any) -> BuiltEnemyModel:
-    """MB-SNOW-OWL-01, MB-SNOW-OWL-04: the Snow Owl, a wide-winged recon drone with white neon: snow
-    on its broad wings, two radar pods with turning antennas on them and a big round sensor eye at
-    its front.
-    MB-SNOW-OWL-02: now a living owl of cold flesh with membrane wings on bone, its radomes grafted
-    on swollen nacelles, its eye a real eye in a lid of flesh.
+    """MB-SNOW-OWL-01, MB-SNOW-OWL-04: the Snow Owl.
+
+    A wide-winged recon drone with white neon: snow on its broad wings, two radar pods with turning
+    antennas on them and a big round sensor eye at its front. MB-SNOW-OWL-02: now a living owl of
+    cold flesh with membrane wings on bone, its radomes grafted on swollen nacelles, its eye a real
+    eye in a lid of flesh.
     """
     parts = record({"pod-left": radar_pod, "pod-right": radar_pod, "eye": eye})
     return build_boss_model(

@@ -1,9 +1,9 @@
-"""Builds what the menu overlay shows for the current state: the screens of specs/ui/ (title, ship
-select, level select, game, pause, settings) and the dev menu, every text from the game
-(UI-LOOK-10).
-"""
+# Copyright (c) 2026 Renaud Guillon
+"""Builds what the menu overlay shows for the current state.
 
-from org.transcrypt.stubs.browser import __pragma__
+The screens of specs/ui/ (title, ship select, level select, game, pause, settings) and the dev menu,
+every text from the game (UI-LOOK-10).
+"""
 
 from app.dev_groups import group_of, group_starts
 from app.settings_menu import SETTINGS_SLIDERS
@@ -27,21 +27,22 @@ from ui.menu_view import (
 )
 from ui.ship_caption import ship_caption
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from app.menu_state import MenuState  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.content.game_definition import GameDefinition  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.systems.level_run_types import LevelResult  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from app.menu_state import MenuState
+from core.content.game_definition import GameDefinition
+from core.systems.level_run_types import LevelResult
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class MenuViewContext:
     """What a menu view needs besides the flow state."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         game: GameDefinition,
         high_score: int,
@@ -72,8 +73,10 @@ class MenuViewContext:
 
 
 def _pause_view(state: MenuState, ctx: MenuViewContext) -> PauseView:
-    """The pause menu (UI-PAUSE-07), and its `Leave the level?` question when it shows
-    (UI-PAUSE-10)."""
+    """Return the pause menu (UI-PAUSE-07).
+
+    With its `Leave the level?` question when it shows (UI-PAUSE-10).
+    """
     texts: Any = ctx.game.texts
     question = None
     if state.leaving:
@@ -87,8 +90,10 @@ def _pause_view(state: MenuState, ctx: MenuViewContext) -> PauseView:
 
 
 def _settings_view(state: MenuState, ctx: MenuViewContext) -> SettingsView:
-    """The settings screen (UI-SET-02): one slider per volume; over the paused level when opened
-    from the pause menu (UI-SET-07)."""
+    """Return the settings screen (UI-SET-02): one slider per volume.
+
+    Over the paused level when opened from the pause menu (UI-SET-07).
+    """
     texts: Any = ctx.game.texts
     labels = {"music": texts.musicVolume, "sfx": texts.sfxVolume}
     sliders: list[SliderView] = []
@@ -111,8 +116,10 @@ def _complete_view(
     ctx: MenuViewContext,
     label: Any,
 ) -> LevelCompleteView:
-    """The "Level complete" (or "Game over") panel (UI-OVER-01, UI-OVER-05), with its choices
-    (UI-OVER-06; none without a checkpoint, UI-OVER-08)."""
+    """Return the "Level complete" (or "Game over") panel (UI-OVER-01, UI-OVER-05).
+
+    With its choices (UI-OVER-06; none without a checkpoint, UI-OVER-08).
+    """
     texts: Any = ctx.game.texts
     choices = None
     if result.checkpoint is not None:
@@ -134,7 +141,7 @@ def _complete_view(
 
 
 def _selected_on_game(state: MenuState, paused: PauseView | None) -> int:
-    """The entry taps select on the game screen: the pause menu's, or the panel's choice."""
+    """Return the entry taps select on the game screen: the pause menu's, or the panel's choice."""
     if paused is not None:
         return state.choice if paused.question is not None else state.selection
     result = state.level_result
@@ -165,7 +172,10 @@ def _game_view(state: MenuState, ctx: MenuViewContext) -> GameScreenView:
 
 
 def _dev_view(state: MenuState, ctx: MenuViewContext) -> Any:
-    """The dev menu (DEV-MENU-03), or the screen of the dev viewer shown (DEV-MENU-05, D-199)."""
+    """Return the dev menu (DEV-MENU-03), or the screen of the dev viewer shown.
+
+    The dev viewers' screens: DEV-MENU-05, D-199.
+    """
     texts = DEV_VIEWER_CONFIG.texts
     back: str = ctx.game.texts.back
     viewer = state.dev_viewer
@@ -204,8 +214,11 @@ def _dev_view(state: MenuState, ctx: MenuViewContext) -> Any:
 
 
 def build_menu_view(state: MenuState, ctx: MenuViewContext) -> Any:
-    """The view of the current screen: one of the classes of `ui/menu_view`: the title's
-    (UI-TITLE-01, with the Dev entry under `?dev`: DEV-MENU-01), the ships' cards (UI-SHIP-02)..."""
+    """Return the view of the current screen: one of the classes of `ui/menu_view`.
+
+    The title's (UI-TITLE-01, with the Dev entry under `?dev`: DEV-MENU-01), the ships' cards
+    (UI-SHIP-02)...
+    """
     game = ctx.game
     texts: Any = game.texts
     screen = state.screen

@@ -1,12 +1,15 @@
-"""The straight runs of the street grids' built links (phase 4 review)"""
+# Copyright (c) 2026 Renaud Guillon
+"""The straight runs of the street grids' built links (phase 4 review)."""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from core.scenery.ordering import stable_sort_by
+from core.scenery.street_links import to_fixed3
 
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
+from typing import Protocol
 
 
 class GridNode(Protocol):
@@ -42,10 +45,7 @@ class GridLink(Protocol):
         ...
 
 
-__pragma__("noskip")
-
-from core.scenery.ordering import stable_sort_by  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.street_links import to_fixed3  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
 
 class Point:
@@ -88,8 +88,8 @@ def straight_runs(links: Sequence[GridLink], step: float) -> list[list[Point]]:
                 if len(run) > 1:
                     runs.append(_resample(run, step))
                 run = [link.a, link.b]
-        if len(run) > 1:
-            runs.append(_resample(run, step))
+        # A line has at least one link, so its last run has two nodes or more.
+        runs.append(_resample(run, step))
     return runs
 
 
@@ -98,7 +98,7 @@ def _along(n: GridNode, across: bool) -> float:
 
 
 def _along_key(across: bool) -> Callable[[GridLink], float]:
-    """The sort key of a line of links: their start along the line."""
+    """Return the sort key of a line of links: their start along the line."""
 
     def key(link: GridLink) -> float:
         return _along(link.a, across)

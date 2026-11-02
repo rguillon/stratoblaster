@@ -1,13 +1,14 @@
-"""The damage shown on a boss's parts (BOSS-17): its hit flash and its smoke. A destroyed part
-leaves nothing behind (BOSS-18, D-225)."""
+# Copyright (c) 2026 Renaud Guillon
+"""The damage shown on a boss's parts (BOSS-17): its hit flash and its smoke.
+
+A destroyed part leaves nothing behind (BOSS-18, D-225).
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.view.enemies.enemy_materials import mesh_of  # noqa: E402
-from render.babylon import (  # noqa: E402
+from game.config.boss_look import BOSS_LOOK
+from game.view.enemies.enemy_materials import mesh_of
+from render.babylon import (
     color3,
     new_standard_material,
     new_transform_node,
@@ -15,23 +16,25 @@ from render.babylon import (  # noqa: E402
     weak_map_get,
     weak_map_set,
 )
-from render.geometry.solids import SolidBuilder  # noqa: E402
+from render.geometry.solids import SolidBuilder
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from render.handles import StandardMaterial, WeakMap  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.handles import StandardMaterial, WeakMap
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 FLASH_CACHE: WeakMap[dict[str, StandardMaterial]] = new_weak_map()
 
 
 def effect_materials(scene: Any) -> Any:
-    """The flash and smoke materials of the scene, created on first use."""
+    """Return the flash and smoke materials of the scene, created on first use."""
     mats = weak_map_get(FLASH_CACHE, scene)
-    if mats == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    if mats == None:
         flash = new_standard_material("boss-flash", scene)
         flash.emissiveColor = color3(
             BOSS_LOOK.flash.color[0], BOSS_LOOK.flash.color[1], BOSS_LOOK.flash.color[2]
@@ -59,7 +62,7 @@ class Smoke:
         self._time = 0.0
 
     def step(self, dt: float) -> None:
-        """Moves the puffs: each rises and drifts back, growing and fading, then starts again."""
+        """Move the puffs: each rises and drifts back, growing and fading, then starts again."""
         look = BOSS_LOOK.smoke
         self._time += dt
         count = len(self._puffs)
@@ -72,7 +75,10 @@ class Smoke:
 
 
 def build_smoke(name: str, radius: float, scene: Any, parent: Any) -> Smoke:
-    """The smoke rising from a damaged part (BOSS-17): a few puffs drifting back and fading."""
+    """Return the smoke rising from a damaged part (BOSS-17).
+
+    A few puffs drifting back and fading.
+    """
     look = BOSS_LOOK.smoke
     node = new_transform_node(name + "-smoke", scene)
     node.parent = parent

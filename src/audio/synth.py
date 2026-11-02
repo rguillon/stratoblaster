@@ -1,21 +1,23 @@
-"""Plays one voice's layers into a destination: each layer is an oscillator or looped noise,
-through its filter and envelope, so every sound is generated in code and no sound file is shipped
-(AUD-ENGINE-01, ENG-126). The Web Audio context is passed in (a fake one in the tests); nothing
-here reads a browser global.
+# Copyright (c) 2026 Renaud Guillon
+"""Plays one voice's layers into a destination: each layer is an oscillator or looped noise.
+
+Through its filter and envelope, so every sound is generated in code and no sound file is shipped
+(AUD-ENGINE-01, ENG-126). The Web Audio context is passed in (a fake one in the tests); nothing here
+reads a browser global.
 
 Gain values ramp from and to 0.0001 instead of 0, which exponential ramps cannot reach.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from audio.audio_types import INFINITY, ToneLayer, is_finite, xorshift
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Seconds of white noise, looped by the noise layers.
 NOISE_SECONDS = 1
@@ -67,9 +69,9 @@ class Voice:
         for part in self._parts:
             part.gain.gain.cancelScheduledValues(at)
             part.gain.gain.setTargetAtTime(SILENT, at, max(0.001, fade / 4))
-            try:  # noqa: SIM105 (Transcrypt has no contextlib)
+            try:
                 part.source.stop(at + fade + STOP_MARGIN)
-            except:  # noqa: E722 (the browser throws when the node has already stopped)
+            except:
                 # Already stopped earlier than that: nothing to do.
                 pass
 
@@ -92,7 +94,7 @@ def noise_buffer(ctx: Any) -> Any:
 
 
 def _source(ctx: Any, layer: ToneLayer, start: float, base: float) -> Any:
-    """The layer's source: an oscillator at its pitch (gliding), or looped noise."""
+    """Return the layer's source: an oscillator at its pitch (gliding), or looped noise."""
     pitch = layer.pitch * base
     glide = layer.glide_to * base if layer.glide_to is not None else None
     seconds = layer.glide_seconds if layer.glide_seconds is not None else 0
@@ -117,7 +119,10 @@ def _source(ctx: Any, layer: ToneLayer, start: float, base: float) -> Any:
 
 
 def _layer_filter(ctx: Any, layer: ToneLayer, start: float) -> Any:
-    """The layer's filter, its cut-off gliding from `from` to `frequency`; None without one."""
+    """Return the layer's filter, or None without one.
+
+    Its cut-off glides from `from` to `frequency`.
+    """
     spec = layer.filter
     if spec is None:
         return None
@@ -132,8 +137,7 @@ def _layer_filter(ctx: Any, layer: ToneLayer, start: float) -> Any:
 
 
 def _envelope(param: Any, layer: ToneLayer, start: float, peak: float, hold: float) -> float:
-    """Shapes `param` with the layer's envelope; returns when its release ends (Infinity if
-    held)."""
+    """Shapes `param` with the layer envelope; returns once its release ends (Infinity if held)."""
     envelope = layer.envelope
     level = max(SILENT, peak * envelope.sustain)
     param.setValueAtTime(SILENT, start)
@@ -148,8 +152,10 @@ def _envelope(param: Any, layer: ToneLayer, start: float, peak: float, hold: flo
 
 
 def play_voice(ctx: Any, destination: Any, layers: list[ToneLayer], options: VoiceOptions) -> Voice:
-    """Plays the `layers` of one voice into `destination` (AUD-ENGINE-01). Returns a handle to stop
-    it early."""
+    """Plays the `layers` of one voice into `destination` (AUD-ENGINE-01).
+
+    Returns a handle to stop it early.
+    """
     parts: list[_Part] = []
     end = 0.0
     for layer in layers:

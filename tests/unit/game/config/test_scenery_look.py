@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/scenery_look.py`."""
 
 from game.config.scenery_look import BASE_SCENERY_LOOK, PLAYFIELD_CAMERA, texture

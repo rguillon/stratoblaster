@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/bosses/world_3/river_leviathan.py`."""
 
 from helpers.config_checks import assert_boss_design, original_parts
@@ -12,7 +13,8 @@ def test_fb_river_leviathan_10_boss_design_is_well_formed() -> None:
 
 def test_boss_07_boss_id_is_a_lowercase_kebab_case_kind() -> None:
     assert RIVER_LEVIATHAN.id == RIVER_LEVIATHAN.id.lower()
-    assert " " not in RIVER_LEVIATHAN.id and "_" not in RIVER_LEVIATHAN.id
+    assert " " not in RIVER_LEVIATHAN.id
+    assert "_" not in RIVER_LEVIATHAN.id
 
 
 def test_fb_river_leviathan_09_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
@@ -25,5 +27,6 @@ def test_fb_river_leviathan_09_boss_stats_are_in_the_range_the_sim_relies_on() -
 
 def test_fb_river_leviathan_12_boss_has_an_angry_pattern_and_its_stage_count() -> None:
     """Its rage, and one stage pattern more than its parts (FB-RIVER-LEVIATHAN-11)."""
-    assert isinstance(RIVER_LEVIATHAN.rage, list) and RIVER_LEVIATHAN.rage
+    assert isinstance(RIVER_LEVIATHAN.rage, list)
+    assert RIVER_LEVIATHAN.rage
     assert len(RIVER_LEVIATHAN.stages) == len(original_parts(RIVER_LEVIATHAN)) + 1

@@ -1,4 +1,8 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/street_grid.py`."""
+
+import itertools
+from typing import Any
 
 from helpers.level_builders import flat, make_level, road_rules, section
 
@@ -6,14 +10,22 @@ from core.math.rng import create_rng
 from core.scenery.districts import ZRange, find_districts
 from core.scenery.lanes import main_road_width
 from core.scenery.scenery_level import StreetGrid, layout_sections
-from core.scenery.street_grid import _merge_columns, _spaced, block_parts, street_runs
+from core.scenery.street_grid import (
+    _merge_columns,
+    _spaced,
+    block_parts,
+    street_runs,
+)
 from core.scenery.street_links import Block
 
 SPAN = ZRange(-3000.0, 6000.0)
 
 
-def _district(grid: StreetGrid, middle: bool = True):
-    """A district of one section (the middle one of three, so its rows start and end inside)."""
+def _district(grid: StreetGrid, middle: bool = True) -> Any:
+    """Return a district of one section.
+
+    The middle one of three, so its rows start and end inside.
+    """
     sections = [
         section("a", 10, flat()),
         section("b", 10, flat(), streets=grid),
@@ -25,11 +37,11 @@ def _district(grid: StreetGrid, middle: bool = True):
     return find_districts(placed, SPAN)[0]
 
 
-def _ground(x: float, z: float) -> bool:
+def _ground(_x: float, _z: float) -> bool:
     return True
 
 
-def _in_view(node) -> bool:
+def _in_view(node: Any) -> bool:
     return abs(node.x) >= 300.0
 
 
@@ -50,8 +62,9 @@ def test_block_parts_cut_a_block_into_equal_parts() -> None:
 
 def test_spaced_positions_include_both_ends() -> None:
     positions = _spaced(0.0, 100.0, (30.0, 30.0), create_rng(1))
-    assert positions[0] == 0.0 and positions[-1] == 100.0
-    assert all(b - a >= 15.0 for a, b in zip(positions, positions[1:], strict=False))
+    assert positions[0] == 0.0
+    assert positions[-1] == 100.0
+    assert all(b - a >= 15.0 for a, b in itertools.pairwise(positions))
 
 
 def test_merged_columns_are_the_sorted_union() -> None:

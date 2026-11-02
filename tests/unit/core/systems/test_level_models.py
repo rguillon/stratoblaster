@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/systems/level_models.py`."""
 
 from types import SimpleNamespace
@@ -11,12 +12,16 @@ from core.systems.wave_runner import Wave
 TOP = EnemyEntry("top", 0.5)
 
 
-def _kind(id: str, models: list[str]) -> EnemyKindDefinition:
-    return EnemyKindDefinition(id, id, lambda area: [SimpleNamespace(model=m) for m in models])
+def _kind(item_id: str, models: list[str]) -> EnemyKindDefinition:
+    return EnemyKindDefinition(
+        item_id, item_id, lambda _area: [SimpleNamespace(model=m) for m in models]
+    )
 
 
-def _boss(id: str, model: str) -> Any:
-    return SimpleNamespace(id=id, name=id, spawn=lambda area: SimpleNamespace(model=model))
+def _boss(item_id: str, model: str) -> Any:
+    return SimpleNamespace(
+        id=item_id, name=item_id, spawn=lambda _area: SimpleNamespace(model=model)
+    )
 
 
 def _area(entry: EnemyEntry | None) -> Any:

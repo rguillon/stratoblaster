@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/enemies_elite.py`."""
 
 import math
@@ -52,7 +53,8 @@ def test_enm_11_elite_radius_is_a_fraction_of_half_the_model_size() -> None:
 def test_enm_hydra_08_hydra_necks_each_have_a_pivot_and_a_head() -> None:
     assert HYDRA_NECKS
     for neck in HYDRA_NECKS:
-        assert len(neck["pivot"]) == 2 and len(neck["head"]) == 2
+        assert len(neck["pivot"]) == 2
+        assert len(neck["head"]) == 2
 
 
 def test_enm_hydra_08_hydra_heads_are_one_per_neck_and_the_list_is_exposed_on_the_config() -> None:

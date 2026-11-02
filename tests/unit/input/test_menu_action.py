@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/input/menu_action.py`."""
 
 from input.menu_action import (

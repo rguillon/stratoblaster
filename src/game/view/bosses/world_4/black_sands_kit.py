@@ -1,47 +1,48 @@
-"""MB-CINDER-CRAB-02, FB-STEAM-DREADNOUGHT-02, 4-1: the heavy industry on the Black sands'
-bosses (the Cinder Crab and the Steam Dreadnought): soot, molten seams glowing between the
-plates, steam, struts and barrels (BOSS-50,
-World 4: dark metal with neon, plus soot, heat glow and molten seams). Logical pixels, nose +Z, Y up
-(towards the camera).
+# Copyright (c) 2026 Renaud Guillon
+"""MB-CINDER-CRAB-02, FB-STEAM-DREADNOUGHT-02, 4-1: the heavy industry on the Black sands' bosses.
+
+The Cinder Crab and the Steam Dreadnought: soot, molten seams glowing between the plates, steam,
+struts and barrels (BOSS-50, World 4: dark metal with neon, plus soot, heat glow and molten seams).
+Logical pixels, nose +Z, Y up (towards the camera).
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from game.config.record import record
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.final_boss_shapes import edge_strips
+from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H
+from game.view.enemies.enemy_shapes import decal
+from render.geometry.outline import hypot2, hypot3
+from render.geometry.solids import Placement
 
-from game.config.record import record  # noqa: E402
-from game.view.bosses.final_boss_shapes import edge_strips  # noqa: E402
-from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H  # noqa: E402
-from game.view.enemies.enemy_shapes import decal  # noqa: E402
-from render.geometry.outline import hypot2, hypot3  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Rgb = list[float]
 type Vec3 = list[float]
 type OutlinePoint = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402 (after the Transcrypt skip block, ENG-153)
 
 # Volcanic shades: molten metal in the seams, soot, ash dust, steam lit by the furnaces.
-FORGE = record(
-    {
-        "molten": [1, 0.3, 0.02],
-        "ember": [0.75, 0.12, 0.01],
-        "soot": SHADE["soot"],
-        "ash": [0.2, 0.19, 0.18],
-        "steam": [0.2, 0.19, 0.19],
-    }
-)
+FORGE = record({
+    "molten": [1, 0.3, 0.02],
+    "ember": [0.75, 0.12, 0.01],
+    "soot": SHADE["soot"],
+    "ash": [0.2, 0.19, 0.18],
+    "steam": [0.2, 0.19, 0.19],
+})
 
 
 def strut(builder: Any, ends: list[Vec3], radii: list[float], color: Rgb, sides: int = 6) -> None:
-    """A cylinder from `a` to `b` (radius `r` at `a`, `rb` at `b`, `sides` facets): a strut, a leg,
-    a barrel. Pitched off +Y, then yawed, so that its axis runs along `b - a`."""
+    """Add a cylinder from `a` to `b` (`ends`), `sides` facets: a strut, a leg, a barrel.
+
+    Radius `r` at `a`, `rb` at `b` (`radii`). Pitched off +Y, then yawed, so that its axis runs
+    along `b - a`.
+    """
     a = ends[0]
     b = ends[1]
     dx = b[0] - a[0]
@@ -55,8 +56,11 @@ def strut(builder: Any, ends: list[Vec3], radii: list[float], color: Rgb, sides:
 
 
 def barrel_to(parts: Any, tip: list[float], dims: list[float], kind: str = "gun") -> None:
-    """A barrel along +Z ending at the muzzle `tip` (playfield, `boss_point`), `[radius, length]`:
-    its dark tube, a charge light at its mouth, and the muzzle's mark (of `kind`)."""
+    """Add a barrel along +Z ending at the muzzle `tip` (playfield, `boss_point`).
+
+    `dims` is `[radius, length]`. Its dark tube, a charge light at its mouth, and the muzzle's mark
+    (of `kind`).
+    """
     p = boss_point(tip[0], tip[1], tip[2])
     x = p[0]
     y = p[1]
@@ -79,18 +83,20 @@ def barrel_to(parts: Any, tip: list[float], dims: list[float], kind: str = "gun"
 
 
 def molten_seam(neon: Any, points: list[OutlinePoint], y: float, width: float = 0.7) -> None:
-    """A molten seam along `points` (seen from above) at height `y`: a thin glowing line."""
+    """Add a molten seam along `points` (seen from above) at height `y`: a thin glowing line."""
     edge_strips(neon, points, width, [y - 0.15, y + 0.12], FORGE.molten)
 
 
 def soot(hull: Any, outline: Any, y: float) -> None:
-    """A soot stain over `outline` lying on a hull at height `y`."""
+    """Add a soot stain over `outline` lying on a hull at height `y`."""
     decal(hull, outline, y + 0.04, FORGE.soot)
 
 
 def blot(centre: OutlinePoint, radius: float, stretch: float = 1, seed: float = 0) -> list[Any]:
-    """A rough, roundish outline `radius` wide around `[x, z]`, stretched `stretch` times along
-    Z."""
+    """Return a rough, roundish outline `radius` wide around `[x, z]`.
+
+    It is stretched `stretch` times along Z.
+    """
     x = centre[0]
     z = centre[1]
     out: list[OutlinePoint] = []
@@ -102,9 +108,11 @@ def blot(centre: OutlinePoint, radius: float, stretch: float = 1, seed: float = 
 
 
 def steam(neon: Any, origin: Vec3, count: int, size: float) -> None:
-    """Puffs of steam (FB-STEAM-DREADNOUGHT-03) trailing back (towards -Z) and rising from `from`:
-    low-poly lumps growing as they go, faintly lit by the furnaces below (drawn as lights, so the
-    hull's tint leaves them)."""
+    """Puffs of steam (FB-STEAM-DREADNOUGHT-03) trailing back (towards -Z) and rising from `from`.
+
+    Low-poly lumps growing as they go, faintly lit by the furnaces below (drawn as lights, so the
+    hull's tint leaves them).
+    """
     for i in range(count):
         r = size * (1 + 0.45 * i)
         at = [

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/geometry/branches.py` (D-214, GFX-PROP-09)."""
 
 import math
@@ -26,8 +27,11 @@ def _tree(seed: int, depth: int = 2) -> SolidBuilder:
 def test_d214_across_gives_two_unit_vectors_square_to_the_direction() -> None:
     for d in [[0, 1, 0], [1, 0.2, -0.3], [0, -1, 0.01]]:
         u, v = across(d)
-        assert abs(_dot(u, u) - 1) < 1e-9 and abs(_dot(v, v) - 1) < 1e-9
-        assert abs(_dot(u, d)) < 1e-9 and abs(_dot(v, d)) < 1e-9 and abs(_dot(u, v)) < 1e-9
+        assert abs(_dot(u, u) - 1) < 1e-9
+        assert abs(_dot(v, v) - 1) < 1e-9
+        assert abs(_dot(u, d)) < 1e-9
+        assert abs(_dot(v, d)) < 1e-9
+        assert abs(_dot(u, v)) < 1e-9
 
 
 def test_d214_a_limb_is_a_capped_prism_or_a_pyramid_open_at_its_start() -> None:

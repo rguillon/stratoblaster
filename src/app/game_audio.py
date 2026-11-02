@@ -1,13 +1,12 @@
-"""The game's audio (specs/audio/): which music plays on which
-screen, the level and boss tracks following the boss bar, the jingles, the sound effects of the
-level's cues and of the menus, and pausing it all with the game. It only reads the menu and core
-state (ENG-11).
+# Copyright (c) 2026 Renaud Guillon
+"""The game's audio (specs/audio/): which music plays on which screen.
+
+The level and boss tracks following the boss bar, the jingles, the sound effects of the level's cues
+and of the menus, and pausing it all with the game. It only reads the menu and core state (ENG-11).
 
 Options are a plain class (`GameAudioOptions`), passed by position (Transcrypt has no keyword
 arguments). `create_context` and `can_start` are None when omitted.
 """
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from audio.audio_bindings import AudioBindings, AudioMix, MusicRequest
 from audio.audio_output import AudioOutput, AudioOutputOptions, volume_gain
@@ -17,22 +16,23 @@ from audio.music_player import MusicPlayer, MusicTimings
 from audio.sfx_player import SfxPlayer, SfxSettings, pan_at
 from config.audio import AUDIO_CONFIG
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-from app.menu_state import MenuFeedback, MenuState  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from app.settings_menu import Volumes  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.systems.level_run import LevelRun  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.systems.level_run_types import LevelResult  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from input.menu_action import MenuCommand  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from app.menu_state import MenuFeedback, MenuState
+from app.settings_menu import Volumes
+from core.systems.level_run import LevelRun
+from core.systems.level_run_types import LevelResult
+from input.menu_action import MenuCommand
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class GameAudioOptions:
     """Browser pieces the audio needs."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         create_context: Any | None,
         can_start: Any | None,
@@ -125,6 +125,7 @@ class GameAudio:
 
     @property
     def state(self) -> GameAudioState:
+        """The audio state: the id of the music track that plays, if any."""
         track = self._music.track
         music = track.id if track is not None else None
         return GameAudioState(music, self._recent[:], self._output.state)
@@ -135,18 +136,18 @@ class GameAudio:
         return self._music
 
     def unlock(self) -> None:
-        """A user gesture: the audio may start (AUD-ENGINE-03)."""
+        """Unlock the audio on a user gesture, so it may start (AUD-ENGINE-03)."""
         can_start = self._options.can_start
         if can_start is not None and not can_start():
             return
         self._output.unlock()
 
     def set_hidden(self, hidden: bool) -> None:
-        """The page is hidden or shown again (AUD-ENGINE-11)."""
+        """Pause or resume the audio as the page is hidden or shown again (AUD-ENGINE-11)."""
         self._output.set_hidden(hidden)
 
     def set_volumes(self, volumes: Volumes) -> None:
-        """The volumes of the settings, heard at once (UI-SET-04)."""
+        """Apply the volumes of the settings, heard at once (UI-SET-04)."""
         steps = AUDIO_CONFIG.volume_steps
         self._output.set_volumes(volume_gain(volumes.music, steps), volume_gain(volumes.sfx, steps))
 
@@ -155,8 +156,10 @@ class GameAudio:
         self._music.update()
 
     def menu_changed(self, state: MenuState) -> None:
-        """The menus changed: the music of their screen (the menu theme, AUD-MUSIC-11; the level's
-        fades on its end panel, AUD-MUSIC-08), pausing with the game."""
+        """Play the music of the menus' screen as they change (the menu theme, AUD-MUSIC-11).
+
+        The level's track fades on its end panel (AUD-MUSIC-08); the music pauses with the game.
+        """
         self.set_volumes(state.volumes)
         if state.paused != self._paused:
             self._set_paused(state.paused)
@@ -172,15 +175,17 @@ class GameAudio:
         self._want(MusicRequest("menu", None, None), AUDIO_CONFIG.crossfade_seconds)
 
     def menu_feedback(self, command: MenuCommand, feedback: MenuFeedback, volumes: Volumes) -> None:
-        """What a menu command did: its sound, at the volumes it may have just set (UI-SET-04)."""
+        """Play a menu command's sound, at the volumes it may have just set (UI-SET-04)."""
         self.set_volumes(volumes)
         cue = _menu_cue(command, feedback)
         if cue is not None:
             self._cue(cue, None)
 
     def level_started(self, level_id: str) -> None:
-        """A level starts, or starts again from its checkpoint: its track from the start
-        (AUD-MUSIC-08)."""
+        """Play the level's track from the start (AUD-MUSIC-08).
+
+        The level starts, or starts again from its checkpoint.
+        """
         self._level_id = level_id
         bindings = self._bindings
         radius = bindings.large_blast_radius if bindings is not None else INFINITY
@@ -191,8 +196,10 @@ class GameAudio:
         self._play(MusicRequest("level", level_id, None), AUDIO_CONFIG.crossfade_seconds)
 
     def level_step(self, run: LevelRun) -> None:
-        """A level step was run: its sounds (AUD-ENGINE-09), and the music following the boss
-        fights."""
+        """Play the sounds of a level step that was run (AUD-ENGINE-09).
+
+        The music also follows the boss fights.
+        """
         cues = self._cues
         if cues is None or self._paused or self._ended:
             return
@@ -202,8 +209,10 @@ class GameAudio:
         self._boss_music(run)
 
     def level_ended(self, result: LevelResult) -> None:
-        """The level is complete or over (AUD-MUSIC-08): the music fades, its jingle plays once
-        (AUD-MUSIC-10)."""
+        """Fade the music as the level is complete or over (AUD-MUSIC-08).
+
+        Its jingle plays once (AUD-MUSIC-10).
+        """
         self._ended = True
         self._stop_beam()
         self._want(None, AUDIO_CONFIG.fade_seconds)
@@ -219,9 +228,11 @@ class GameAudio:
             self._music.resume()
 
     def _boss_music(self, run: LevelRun) -> None:
-        """The boss track while a boss bar shows, the level track (from its start) after it
-        (AUD-MUSIC-09, BOSS-05); a jingle when the mini boss's checkpoint is saved
-        (GAME-LEVEL-09)."""
+        """Play the boss track while a boss bar shows, the level track (from its start) after it.
+
+        Music follows AUD-MUSIC-09 and BOSS-05; a jingle plays when the mini boss's checkpoint is
+        saved (GAME-LEVEL-09).
+        """
         level_id = self._level_id
         if level_id is None:
             return
@@ -237,7 +248,7 @@ class GameAudio:
             self._want(MusicRequest("level", level_id, None), AUDIO_CONFIG.crossfade_seconds)
 
     def _beam(self, weapon: str | None) -> None:
-        """The laser's hum plays while it fires (AUD-SFX-03)."""
+        """Play the laser's hum while it fires (AUD-SFX-03)."""
         hum = None
         if weapon is not None and self._bindings is not None:
             hum = self._bindings.sounds.get("beam:" + weapon)
@@ -272,7 +283,7 @@ class GameAudio:
             self._recent.pop(0)
 
     def _track_of(self, request: MusicRequest | None) -> Any:
-        """The track for `request` (None: silence, or no bindings)."""
+        """Return the track for `request` (None: silence, or no bindings)."""
         if request is None or self._bindings is None:
             return None
         return self._bindings.music(request)

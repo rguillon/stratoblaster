@@ -1,40 +1,47 @@
-"""Keyboard -> menu actions (UI-INPUT-04) Keys are matched
-by `KeyboardEvent.code` (physical position), so WASD positions work on AZERTY. Held directions
-repeat with our own timing (UI-INPUT-06); the browser's auto-repeat events are ignored, and a
-bound key's browser default is cancelled (UI-INPUT-05)."""
+# Copyright (c) 2026 Renaud Guillon
+"""Keyboard -> menu actions (UI-INPUT-04).
 
-from org.transcrypt.stubs.browser import __pragma__
+Keys are matched by `KeyboardEvent.code` (physical position), so WASD positions work on AZERTY. Held
+directions repeat with our own timing (UI-INPUT-06); the browser's auto-repeat events are ignored,
+and a bound key's browser default is cancelled (UI-INPUT-05).
+"""
 
 from input.hold_repeater import HoldRepeater
 from input.menu_action import is_menu_direction
 
-__pragma__("skip")
-from collections.abc import Callable, Mapping  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Callable, Mapping
+from typing import Protocol
 
-from input.menu_action import MenuAction  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from input.menu_action import MenuAction
 
 
 class MenuKeyEvent(Protocol):
     """The parts of a keyboard event the menu input reads."""
 
     @property
-    def code(self) -> str: ...
+    def code(self) -> str:
+        """The key's `KeyboardEvent.code`."""
 
     @property
-    def repeat(self) -> bool: ...
+    def repeat(self) -> bool:
+        """Whether this is the browser's auto-repeat event."""
 
-    def preventDefault(self) -> None: ...  # noqa: N802 (DOM name)
+    def preventDefault(self) -> None:
+        """Stop the browser's default action for the key."""
 
 
 class RepeatTiming(Protocol):
     """Key repeat timing."""
 
     @property
-    def repeat_delay_seconds(self) -> float: ...
+    def repeat_delay_seconds(self) -> float:
+        """Delay before a held key repeats."""
 
     @property
-    def repeat_interval_seconds(self) -> float: ...
+    def repeat_interval_seconds(self) -> float:
+        """Interval between the repeats of a held key."""
 
 
 class _KeyUpEvent(Protocol):
@@ -43,12 +50,12 @@ class _KeyUpEvent(Protocol):
 
 
 class _Target(Protocol):
-    def addEventListener(self, kind: str, listener: Callable[..., None]) -> None: ...  # noqa: N802 (the DOM method name, as the browser calls it)
+    def addEventListener(self, kind: str, listener: Callable[..., None]) -> None: ...
 
-    def removeEventListener(self, kind: str, listener: Callable[..., None]) -> None: ...  # noqa: N802 (the DOM method name, as the browser calls it)
+    def removeEventListener(self, kind: str, listener: Callable[..., None]) -> None: ...
 
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class KeyboardMenuInput:
@@ -62,6 +69,7 @@ class KeyboardMenuInput:
         self._held: list[str] = []
 
     def key_down(self, event: MenuKeyEvent) -> None:
+        """Handle a key going down."""
         action = self._bindings.get(event.code)
         if action is None:
             return
@@ -74,6 +82,7 @@ class KeyboardMenuInput:
             self._queue.append(action)
 
     def key_up(self, event: _KeyUpEvent) -> None:
+        """Handle a key going up."""
         action = self._bindings.get(event.code)
         if action is None or not is_menu_direction(action):
             return
@@ -91,14 +100,14 @@ class KeyboardMenuInput:
         self._held.clear()
 
     def update(self, dt_seconds: float) -> list[MenuAction]:
-        """Returns the actions since the last call: presses first, then the repeats due."""
+        """Return the actions since the last call: presses first, then the repeats due."""
         actions: list[MenuAction] = list(self._queue)
         actions.extend(self._repeater.update(dt_seconds))
         self._queue.clear()
         return actions
 
     def listen(self, target: _Target) -> Callable[[], None]:
-        """Listens to `keydown`, `keyup` and `blur` on `target`. Returns a function that stops."""
+        """Listen to `keydown`, `keyup` and `blur` on `target`. Returns a function that stops."""
 
         def down(e: MenuKeyEvent) -> None:
             self.key_down(e)

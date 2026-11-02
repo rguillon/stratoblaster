@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/world_1/looks.py`."""
+
+from typing import Any
 
 import pytest
 
@@ -25,13 +28,13 @@ def test_wld_1_16_every_level_of_the_world_has_a_look() -> None:
 
 
 @pytest.mark.parametrize("look", LOOKS)
-def test_wld_1_12_a_look_has_every_section_the_scenery_reads(look) -> None:
+def test_wld_1_12_a_look_has_every_section_the_scenery_reads(look: Any) -> None:
     for section in SECTIONS:
         assert look[section] is not None, section
 
 
 @pytest.mark.parametrize("look", LOOKS)
-def test_wld_1_16_sky_stops_are_colours_in_range(look) -> None:
+def test_wld_1_16_sky_stops_are_colours_in_range(look: Any) -> None:
     assert look.sky.stops
     for stop in look.sky.stops:
         assert len(stop.color) == 3
@@ -39,7 +42,7 @@ def test_wld_1_16_sky_stops_are_colours_in_range(look) -> None:
 
 
 @pytest.mark.parametrize("look", LOOKS)
-def test_wld_1_16_fog_fades_out_between_its_start_and_end(look) -> None:
+def test_wld_1_16_fog_fades_out_between_its_start_and_end(look: Any) -> None:
     assert 0 < look.fog.start < look.fog.end
 
 

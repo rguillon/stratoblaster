@@ -1,6 +1,5 @@
-"""World 3"""
-
-from org.transcrypt.stubs.browser import __pragma__
+# Copyright (c) 2026 Renaud Guillon
+"""World 3."""
 
 from core.content.game_level import GameLevel
 from game.config.world_2.waves import compose_beats
@@ -17,23 +16,21 @@ from game.config.world_3.waves import (
 )
 from game.sim.assemble_level import WorldTables, assemble_level
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
 # A wave plan or a beat is a config record (`game/config/record.py`), typed as Any there.
-__pragma__("skip")
 WavePlan = Any
-__pragma__("noskip")
-
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 TABLES = WorldTables(WORLD_3_DIFFICULTY, WORLD_3_FILLERS, WORLD_3_BOSSES)
 
 
-def _level(id: str, scenery: Any, plan: WavePlan) -> GameLevel:
+def _level(level_id: str, scenery: Any, plan: WavePlan) -> GameLevel:
     # Its waves composed from its plan (WLD-3-16).
-    return assemble_level(id, scenery, compose_beats(plan), TABLES)
+    return assemble_level(level_id, scenery, compose_beats(plan), TABLES)
 
 
 # World 3 (WLD-3-01; reworked at the reviewer's request, 2026-10-27): five levels of about 5

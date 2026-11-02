@@ -1,5 +1,7 @@
-"""4-1: the Steam Dreadnought, the Black sands' final boss
-(specs/bosses/final/4-1-steam-dreadnought.md).
+# Copyright (c) 2026 Renaud Guillon
+"""4-1: the Steam Dreadnought, the Black sands' final boss.
+
+Specified in specs/bosses/final/4-1-steam-dreadnought.md.
 
 Offsets in px from the boss's centre, X right and Y up (its bow points down the screen, at -Y). The
 stage patterns are the agent's design (FB-STEAM-DREADNOUGHT-12): the parts fire the same while they
@@ -8,24 +10,25 @@ stand, the core fires its bow laser at every stage with something new beside it,
 with the D-055 bot for WLD-4-22.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.bosses.boss_kit import bullet, cells, mirror, part, stages, stats, twin, volley
 from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.bosses.moving_regions import moving_region, swing
 from game.config.record import concat, merge, record
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def fpart(part_id: str, at: Any, radius: float, health: float, options: Any = None) -> Any:
-    """A final boss's part: drops a bonus 60 % of the time (FB-STEAM-DREADNOUGHT-19,
-    `part_drop_chance`)."""
+    """Return a final boss's part (FB-STEAM-DREADNOUGHT-19).
+
+    It drops a bonus 60 % of the time (`part_drop_chance`).
+    """
     return part(part_id, at, radius, health, merge({"drop": 0.6}, options))
 
 
@@ -66,86 +69,82 @@ TURRET_Y = DREAD_PARTS.turret[1]
 # smokestacks puffing steam (FB-STEAM-DREADNOUGHT-01). The smokestacks fire rings of bullets and
 # the two broadside turrets aimed bursts; the four shield the core. The missile rack on the stern
 # fires homing missiles; the bow fires its laser after a warning line. The ground slows (x0.6).
-_STEAM_DREADNOUGHT = record(
-    {
-        "id": "steam-dreadnought",
-        # Angry after each destroyed part (D-063, FB-STEAM-DREADNOUGHT-14), heat 10: World 4 goes
-        # on from World 3's 9, up to 14.
-        "rage": rage.flower(10, "red", "orange"),
-        # Its core and parts, their health, and its points (FB-STEAM-DREADNOUGHT-08).
-        "stats": stats(
-            record(
-                {
-                    "id": "steam-dreadnought",
-                    "name": "Steam Dreadnought",
-                    "size": 5,
-                    "coreRadius": 18,
-                    "coreHealth": 3600,
-                    "points": 21000,
-                    "groundSpeed": 0.6,
-                    "coreDrop": 1,
-                    "parts": [
-                        fpart("turret-left", [TURRET_X, TURRET_Y], 10, 950),
-                        fpart("turret-right", [-TURRET_X, TURRET_Y], 10, 950),
-                        fpart("stack-left", [STACK_X, STACK_Y], 10, 850),
-                        fpart("stack-right", [-STACK_X, STACK_Y], 10, 850),
-                        fpart("rack", list(DREAD_PARTS.rack), 10, 600, {"shields": False}),
-                    ],
-                }
-            )
-        ),
-        # Where it stops and how it moves in place (FB-STEAM-DREADNOUGHT-07).
-        "stopFraction": 0.74,
-        "sway": {"amplitude": 40, "period": 10},
-        "bob": {"amplitude": 5, "period": 5},
-        "guns": {
-            "core": {"gun": DREAD_BOW_GUNS, "laser": DREAD_LENS, "ring": DREAD_BEACON},
-            "stack-left": {"gun": DREAD_STACK},
-            "stack-right": {"gun": mirror(DREAD_STACK)},
-            "turret-left": {"gun": DREAD_TURRET_GUNS, "turret": [TURRET_X, TURRET_Y]},
-            "turret-right": {"gun": mirror(DREAD_TURRET_GUNS), "turret": [-TURRET_X, TURRET_Y]},
-            "rack": {"missile": DREAD_RACK},
-        },
-        # In every stage the stacks' rings (FB-STEAM-DREADNOUGHT-09), the turrets' bursts
-        # (FB-STEAM-DREADNOUGHT-10) and the rack's missiles (FB-STEAM-DREADNOUGHT-11); then the
-        # core's laser and pattern per stage (FB-STEAM-DREADNOUGHT-12).
-        "stages": stages(
+_STEAM_DREADNOUGHT = record({
+    "id": "steam-dreadnought",
+    # Angry after each destroyed part (D-063, FB-STEAM-DREADNOUGHT-14), heat 10: World 4 goes
+    # on from World 3's 9, up to 14.
+    "rage": rage.flower(10, "red", "orange"),
+    # Its core and parts, their health, and its points (FB-STEAM-DREADNOUGHT-08).
+    "stats": stats(
+        record({
+            "id": "steam-dreadnought",
+            "name": "Steam Dreadnought",
+            "size": 5,
+            "coreRadius": 18,
+            "coreHealth": 3600,
+            "points": 21000,
+            "groundSpeed": 0.6,
+            "coreDrop": 1,
+            "parts": [
+                fpart("turret-left", [TURRET_X, TURRET_Y], 10, 950),
+                fpart("turret-right", [-TURRET_X, TURRET_Y], 10, 950),
+                fpart("stack-left", [STACK_X, STACK_Y], 10, 850),
+                fpart("stack-right", [-STACK_X, STACK_Y], 10, 850),
+                fpart("rack", list(DREAD_PARTS.rack), 10, 600, {"shields": False}),
+            ],
+        })
+    ),
+    # Where it stops and how it moves in place (FB-STEAM-DREADNOUGHT-07).
+    "stopFraction": 0.74,
+    "sway": {"amplitude": 40, "period": 10},
+    "bob": {"amplitude": 5, "period": 5},
+    "guns": {
+        "core": {"gun": DREAD_BOW_GUNS, "laser": DREAD_LENS, "ring": DREAD_BEACON},
+        "stack-left": {"gun": DREAD_STACK},
+        "stack-right": {"gun": mirror(DREAD_STACK)},
+        "turret-left": {"gun": DREAD_TURRET_GUNS, "turret": [TURRET_X, TURRET_Y]},
+        "turret-right": {"gun": mirror(DREAD_TURRET_GUNS), "turret": [-TURRET_X, TURRET_Y]},
+        "rack": {"missile": DREAD_RACK},
+    },
+    # In every stage the stacks' rings (FB-STEAM-DREADNOUGHT-09), the turrets' bursts
+    # (FB-STEAM-DREADNOUGHT-10) and the rack's missiles (FB-STEAM-DREADNOUGHT-11); then the
+    # core's laser and pattern per stage (FB-STEAM-DREADNOUGHT-12).
+    "stages": stages(
+        [
+            volley.ring("stack-left", 3.6, 10, 9, ORANGE, 1.2),
+            volley.ring("stack-right", 3.6, 10, -9, ORANGE, 3),
+            volley.burst("turret-left", 3.2, 4, 0.12, RED, 0.8),
+            volley.burst("turret-right", 3.2, 4, 0.12, RED, 2.4),
+            volley.missiles("rack", 6.5, 2, 30, 3.5),
+        ],
+        [
+            [volley.laser("core", 7, 1.5, 4)],
             [
-                volley.ring("stack-left", 3.6, 10, 9, ORANGE, 1.2),
-                volley.ring("stack-right", 3.6, 10, -9, ORANGE, 3),
-                volley.burst("turret-left", 3.2, 4, 0.12, RED, 0.8),
-                volley.burst("turret-right", 3.2, 4, 0.12, RED, 2.4),
-                volley.missiles("rack", 6.5, 2, 30, 3.5),
+                volley.laser("core", 6.5, 1.5, 2),
+                volley.aimed("core", 2.8, 3, 12, MAGENTA, 1),
             ],
             [
-                [volley.laser("core", 7, 1.5, 4)],
-                [
-                    volley.laser("core", 6.5, 1.5, 2),
-                    volley.aimed("core", 2.8, 3, 12, MAGENTA, 1),
-                ],
-                [
-                    volley.laser("core", 6.5, 1.5, 2),
-                    volley.fan("core", 2.6, 5, 14, MAGENTA, 0.8),
-                ],
-                [
-                    volley.laser("core", 6, 1.6, 2),
-                    volley.ring("core", 2.4, 12, 11, PURPLE, 0.7),
-                ],
-                [
-                    volley.laser("core", 5.5, 1.6, 2),
-                    volley.fan("core", 2.4, 7, 12, MAGENTA, 0.6),
-                    volley.aimed("core", 2.4, 1, 0, RED, 1.8),
-                ],
-                # Alone: two spirals turning opposite ways from the bridge, under the laser.
-                [
-                    volley.laser("core", 5, 1.6, 1.5),
-                    volley.ring("core", 0.5, 4, 19, BLUE, 0.4),
-                    volley.ring("core", 0.5, 4, -23, PURPLE, 0.65),
-                ],
+                volley.laser("core", 6.5, 1.5, 2),
+                volley.fan("core", 2.6, 5, 14, MAGENTA, 0.8),
             ],
-        ),
-    }
-)
+            [
+                volley.laser("core", 6, 1.6, 2),
+                volley.ring("core", 2.4, 12, 11, PURPLE, 0.7),
+            ],
+            [
+                volley.laser("core", 5.5, 1.6, 2),
+                volley.fan("core", 2.4, 7, 12, MAGENTA, 0.6),
+                volley.aimed("core", 2.4, 1, 0, RED, 1.8),
+            ],
+            # Alone: two spirals turning opposite ways from the bridge, under the laser.
+            [
+                volley.laser("core", 5, 1.6, 1.5),
+                volley.ring("core", 0.5, 4, 19, BLUE, 0.4),
+                volley.ring("core", 0.5, 4, -23, PURPLE, 0.65),
+            ],
+        ],
+    ),
+})
 
 # Its transformations (D-230): once both its turrets are gone its front side decks fan out forward
 # on hinges at their bows (FB-STEAM-DREADNOUGHT-15), a gun battery riding each

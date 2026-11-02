@@ -1,17 +1,18 @@
-"""The Lancer (`specs/enemies/lancer.md`)"""
-
-from org.transcrypt.stubs.browser import __pragma__
+# Copyright (c) 2026 Renaud Guillon
+"""The Lancer (`specs/enemies/lancer.md`)."""
 
 from core.entities.enemy import Enemy
 from core.entities.muzzle import RaisedPoint
 from game.config.enemies import ENEMY_CONFIG
 from game.sim.enemies.enemy_helpers import DOWN
 
-__pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.entities.muzzle import Muzzle  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from core.entities.enemy import EnemyContext
+from core.entities.muzzle import Muzzle
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 CFG = ENEMY_CONFIG.lancer
 
@@ -20,8 +21,10 @@ CREEP = 20
 
 
 class LancerBeam:
-    """What the Lancer's laser leaves from and follows: its emitter at the nose (raised above the
-    playfield), along the Lancer's heading. It stops with the Lancer.
+    """What the Lancer's laser leaves from and follows.
+
+    Its emitter at the nose (raised above the playfield), along the Lancer's heading. It stops with
+    the Lancer.
     """
 
     def __init__(self, lancer: "Lancer", muzzle: Muzzle) -> None:
@@ -30,25 +33,31 @@ class LancerBeam:
 
     @property
     def emitter(self) -> RaisedPoint:
+        """Where the laser leaves from, raised above the playfield."""
         return self._lancer.place(self._muzzle)
 
     @property
     def heading(self) -> float:
+        """The direction the laser points."""
         return self._lancer.heading
 
     @property
     def gone(self) -> bool:
+        """Whether the laser is gone."""
         return self._lancer.gone
 
     @property
     def health(self) -> float:
+        """The health of the laser."""
         return self._lancer.health
 
 
 class Lancer(Enemy):
-    """ENM-LANCER-05: moves to a fixed point in the top part of the screen and stops. A warning
-    line shows straight down from its emitter for 1 s, then it fires a laser along that line for
-    1.5 s, without moving (ENM-LANCER-06, ENM-19); then it backs away upward (ENM-LANCER-07).
+    """ENM-LANCER-05: moves to a fixed point in the top part of the screen and stops.
+
+    A warning line shows straight down from its emitter for 1 s, then it fires a laser along that
+    line for 1.5 s, without moving (ENM-LANCER-06, ENM-19); then it backs away upward
+    (ENM-LANCER-07).
     """
 
     def __init__(self, x: float, y: float, stop_y: float) -> None:
@@ -59,6 +68,7 @@ class Lancer(Enemy):
         self.heading = DOWN
 
     def update(self, ctx: EnemyContext, dt: float) -> None:
+        """Advance the enemy by `dt` seconds."""
         if self.state == "enter":
             self._enter(ctx, dt)
         elif self.state == "attack":

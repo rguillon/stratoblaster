@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/game_play_state.py`."""
 # (the snapshots of the test API, DEV-API-03, DEV-API-04, DEV-API-05).
 
@@ -112,7 +113,20 @@ def test_dev_api_04_the_snapshot_describes_the_boss_being_fought() -> None:
 
 def test_dev_api_05_the_sky_snapshot_keeps_the_weather_and_the_look() -> None:
     sky = game_play_sky(
-        "rain", "snow", 300, 0.5, 1.0, 0.2, 0.3, 0.4, 0.9, 800.0, False, 0.0, 2, "laser"
+        "rain",
+        "snow",
+        300,
+        0.5,
+        1.0,
+        0.2,
+        0.3,
+        0.4,
+        0.9,
+        800.0,
+        lava=False,
+        liquid_depth=0.0,
+        plumes=2,
+        shot_style="laser",
     )
     assert sky["weather"] == "rain"
     assert sky["secondWeather"] == "snow"

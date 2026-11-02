@@ -1,49 +1,52 @@
-"""MB-FJORD-LYNX-03, 2-2: the Fjord Lynx's parts (its two paw cannons and its radar mast) Logical
-pixels, nose +Z, Y up (towards the camera)."""
+# Copyright (c) 2026 Renaud Guillon
+"""MB-FJORD-LYNX-03, 2-2: the Fjord Lynx's parts (its two paw cannons and its radar mast).
+
+Logical pixels, nose +Z, Y up (towards the camera).
+"""
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-type Vec3 = list[float]
-__pragma__("noskip")
-
-from game.config.boss_look import BOSS_LOOK  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.bosses.world_2.fjord_lynx import FJORD_LYNX  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.config.record import record  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.mini_boss_greebles import hazard  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.mini_boss_mechanism import GEAR  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.bosses.mini_boss_shapes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.boss_look import BOSS_LOOK
+from game.config.bosses.world_2.fjord_lynx import FJORD_LYNX
+from game.config.record import record
+from game.view.bosses.mini_boss_greebles import hazard
+from game.view.bosses.mini_boss_mechanism import GEAR
+from game.view.bosses.mini_boss_shapes import (
     SHADE,
     WHITE,
     H,
     offset,
     turret,
 )
-from game.view.bosses.world_2.fjord_lynx_frost import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.fjord_lynx_frost import (
     RIME,
     icicles,
     snow_cap,
     spread,
 )
-from game.view.bosses.world_2.w2_organic import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.bosses.world_2.w2_organic import (
     ICE_FLESH,
     crystals,
     gland,
     sinew,
 )
-from render.geometry.solids import Placement  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.geometry.solids import Placement
+
+# isort: split
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+# __pragma__ ("skip")
+from collections.abc import Sequence
+
+from game.view.enemies.enemy_mesh import EnemyParts
+from render.geometry.outline import OutlinePoint
+
+type Vec3 = list[float]
+# __pragma__ ("noskip")
+
 
 # The lynx's neon: cyan, and white for its secondary lights.
 CYAN = BOSS_LOOK.neon["fjord-lynx"]
-if CYAN == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+if CYAN == None:
     CYAN = [0.55, 0.95, 1.0]
 WHITE_NEON = [0.9, 0.95, 1.0]
 
@@ -71,7 +74,7 @@ PAD_TOP = 3.5
 
 
 def _mount_octagon() -> list[OutlinePoint]:
-    """The radar mast's mount: an octagon of radius 7 around its centre."""
+    """Return the radar mast's mount: an octagon of radius 7 around its centre."""
     points: list[OutlinePoint] = []
     for k in range(8):
         a = (2 * math.pi * (k + 0.5)) / 8
@@ -103,8 +106,11 @@ def at2(outline: Sequence[OutlinePoint], at: Vec3) -> list[OutlinePoint]:
 
 
 def paw(p: EnemyParts, at: Vec3) -> None:
-    """A paw (MB-FJORD-LYNX-03): an armoured pad with three toe claws, frosted on top, its cannon on
-    a turret (`paw_turret`); a ram from the foreleg works it."""
+    """Add a paw (MB-FJORD-LYNX-03).
+
+    An armoured pad with three toe claws, frosted on top, its cannon on a turret (`paw_turret`); a
+    ram from the foreleg works it.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -141,26 +147,24 @@ def paw(p: EnemyParts, at: Vec3) -> None:
 
 
 def paw_turret(p: EnemyParts, at: Vec3) -> None:
-    """A paw's twin-barrelled cannon, on its turret."""
+    """Add a paw's twin-barrelled cannon, on its turret."""
     turret(
         p,
         offset(at, 0, PAD_TOP, 0),
-        record(
-            {
-                "radius": 8,
-                "barrels": 2,
-                "gap": 3.6,
-                "bore": 1.2,
-                "length": 6,
-                "neon": CYAN,
-                "hatch": -_sign(at[0]),
-            }
-        ),
+        record({
+            "radius": 8,
+            "barrels": 2,
+            "gap": 3.6,
+            "bore": 1.2,
+            "length": 6,
+            "neon": CYAN,
+            "hatch": -_sign(at[0]),
+        }),
     )
 
 
 def chin_turret(p: EnemyParts, at: Vec3) -> None:
-    """The chin cannon (the core's gun), turning on the deck in front of the head."""
+    """Add the chin cannon (the core's gun), turning on the deck in front of the head."""
     turret(
         p,
         offset(at, 0, 5, 0),
@@ -169,8 +173,11 @@ def chin_turret(p: EnemyParts, at: Vec3) -> None:
 
 
 def radar_mast(p: EnemyParts, at: Vec3) -> None:
-    """The radar mast (MB-FJORD-LYNX-03): a mount on the sponson, a tapered mast, a scanner bar with
-    a dish and white lights at its ends; while it stands, the guns aim at the player."""
+    """Add the radar mast (MB-FJORD-LYNX-03).
+
+    A mount on the sponson, a tapered mast, a scanner bar with a dish and white lights at its ends;
+    while it stands, the guns aim at the player.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -210,8 +217,8 @@ def radar_mast(p: EnemyParts, at: Vec3) -> None:
 
 
 def paw_centre(side: float) -> Vec3:
-    """The left paw's centre in model space (for the forelegs drawn on the core)."""
+    """Return the left paw's centre in model space (for the forelegs drawn on the core)."""
     spec = FJORD_LYNX.stats.parts[0]
-    x = -30 if spec == None else spec.x  # noqa: E711 (absent value is undefined in the browser, ENG-161)
-    y = -26 if spec == None else spec.y  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    x = -30 if spec == None else spec.x
+    y = -26 if spec == None else spec.y
     return [side * -x, 0.0, -y]

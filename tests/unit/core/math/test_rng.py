@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/math/rng.py`."""
 
 import pytest
@@ -17,7 +18,10 @@ def _drain(heap: MinHeap) -> list[float]:
 
 
 def _mulberry32(seed: int) -> list[float]:
-    """An independent reference of mulberry32, on plain Python integers, for the first values."""
+    """Return the first values of an independent reference of mulberry32.
+
+    It runs on plain Python integers.
+    """
     state = seed & 0xFFFFFFFF
     out: list[float] = []
     for _ in range(5):

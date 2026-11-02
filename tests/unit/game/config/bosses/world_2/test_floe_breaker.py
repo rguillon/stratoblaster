@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/bosses/world_2/floe_breaker.py`."""
 
 from helpers.config_checks import assert_boss_design, original_parts
@@ -12,7 +13,8 @@ def test_mb_floe_breaker_09_boss_design_is_well_formed() -> None:
 
 def test_boss_07_boss_id_is_a_lowercase_kebab_case_kind() -> None:
     assert FLOE_BREAKER.id == FLOE_BREAKER.id.lower()
-    assert " " not in FLOE_BREAKER.id and "_" not in FLOE_BREAKER.id
+    assert " " not in FLOE_BREAKER.id
+    assert "_" not in FLOE_BREAKER.id
 
 
 def test_mb_floe_breaker_13_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
@@ -25,5 +27,6 @@ def test_mb_floe_breaker_13_boss_stats_are_in_the_range_the_sim_relies_on() -> N
 
 def test_mb_floe_breaker_11_boss_has_an_angry_pattern_and_its_stage_count() -> None:
     """Its rage, and one stage pattern more than its parts (MB-FLOE-BREAKER-10)."""
-    assert isinstance(FLOE_BREAKER.rage, list) and FLOE_BREAKER.rage
+    assert isinstance(FLOE_BREAKER.rage, list)
+    assert FLOE_BREAKER.rage
     assert len(FLOE_BREAKER.stages) == len(original_parts(FLOE_BREAKER)) + 1

@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/entities/shot_target.py`."""
 
 from dataclasses import dataclass

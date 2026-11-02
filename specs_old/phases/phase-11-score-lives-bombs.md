@@ -180,7 +180,7 @@ In e2e builds, `getState()` also gives the score, the high score, the bombs left
 > After the agent reports, write corrections here, then say **"Fix phase 11"**.
 > The agent ticks each item when fixed.
 
-- [ ] 
+- [ ]
 
 ---
 

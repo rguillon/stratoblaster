@@ -1,10 +1,9 @@
-"""The basic enemy kinds, and every enemy kind of the game (ENM-01)
+# Copyright (c) 2026 Renaud Guillon
+"""The basic enemy kinds, and every enemy kind of the game (ENM-01).
 
 The kinds live in the game, the engine knows enemies only as abstractions (ENM-04); none of their
 gameplay depends on their look (ENM-46).
 """
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from core.entities.enemy import EnemyKindDefinition
 from core.math.rng import random_in
@@ -31,11 +30,12 @@ from game.sim.enemies.strafer import Strafer
 from game.sim.enemies.weaver import Weaver
 from game.sim.veteran_kinds import VETERAN_KINDS
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from core.entities.enemy import Enemy, EnemySpawnArea  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from core.entities.enemy import Enemy, EnemySpawnArea
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def _top(area: EnemySpawnArea) -> float:
@@ -48,8 +48,9 @@ def _coin(area: EnemySpawnArea) -> bool:
 
 
 def _entry_x(area: EnemySpawnArea, range_: tuple[float, float]) -> float:
-    """X where a kind comes in from the top: the wave's entry (ENM-08), or random in `range_`,
-    both taken across the area's `top_range` (phase 6 review).
+    """X where a kind comes in from the top: the wave's entry (ENM-08), or random in `range_`.
+
+    Both taken across the area's `top_range` (phase 6 review).
     """
     entry = area.entry
     if entry is not None and entry.side == "top":
@@ -58,8 +59,9 @@ def _entry_x(area: EnemySpawnArea, range_: tuple[float, float]) -> float:
 
 
 def _mirror_for(area: EnemySpawnArea, start_x: float) -> bool:
-    """Whether to mirror a path that starts at `start_x` (a fraction of the width): towards the
-    wave's entry when it has one, at random otherwise.
+    """Whether to mirror a path that starts at `start_x` (a fraction of the width).
+
+    Towards the wave's entry when it has one, at random otherwise.
     """
     entry = area.entry
     if entry is None:
@@ -74,8 +76,9 @@ def _mirror_for(area: EnemySpawnArea, start_x: float) -> bool:
 
 
 def side_pass(area: EnemySpawnArea, height_fraction: float) -> tuple[bool, float]:
-    """A side pass comes from the entry's side, at its height; at random otherwise. Returns
-    whether it comes from the left, and its height.
+    """Return a side pass comes from the entry's side, at its height; at random otherwise.
+
+    Returns whether it comes from the left, and its height.
     """
     entry = area.entry
     if entry is not None and entry.side != "top":
@@ -136,7 +139,7 @@ def _spawn_carrier(area: EnemySpawnArea) -> list[Enemy]:
 
 
 def _first_kinds() -> list[EnemyKindDefinition]:
-    """The 11 basic enemy kinds, in the order of the spec (ENM-01)."""
+    """Return the 11 basic enemy kinds, in the order of the spec (ENM-01)."""
     return [
         EnemyKindDefinition("gnat", "Gnat", _spawn_gnat),
         EnemyKindDefinition("hornet", "Hornet", _spawn_hornet),

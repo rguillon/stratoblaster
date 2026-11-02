@@ -1,16 +1,19 @@
+# Copyright (c) 2026 Renaud Guillon
 """The volume settings kept between visits (UI-SET-06, D-010).
+
 Keys are prefixed with the game's id.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
+from app.settings_menu import Volumes
+
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from host.key_value_storage import KeyValueStorage  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from host.key_value_storage import KeyValueStorage
 
-__pragma__("noskip")
-
-from app.settings_menu import Volumes  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
 
 class SettingKeys:
@@ -22,12 +25,14 @@ class SettingKeys:
 
 
 def saved_setting_keys(game_id: str) -> SettingKeys:
+    """Return the storage keys of the music and sound volumes of `game_id`."""
     return SettingKeys(game_id + "_music_volume", game_id + "_sfx_volume")
 
 
 def parse_volume(raw: str | None, max_step: int, fallback: int) -> int:
-    """A stored volume step: anything but a whole number from 0 to `max_step` reads as
-    `fallback`.
+    """Return a stored volume step.
+
+    Anything but a whole number from 0 to `max_step` reads as `fallback`.
     """
     text = "" if raw is None else _trimmed(raw)
     if not _is_step_text(text):
@@ -55,7 +60,7 @@ def _number_of(text: str) -> int:
 def load_volumes(
     storage: KeyValueStorage, game_id: str, max_step: int, defaults: Volumes
 ) -> Volumes:
-    """The saved volumes, or the defaults where nothing valid is saved (UI-SET-06)."""
+    """Return the saved volumes, or the defaults where nothing valid is saved (UI-SET-06)."""
     keys = saved_setting_keys(game_id)
     return Volumes(
         parse_volume(storage.get(keys.music), max_step, defaults.music),
@@ -64,7 +69,7 @@ def load_volumes(
 
 
 def save_volumes(storage: KeyValueStorage, game_id: str, volumes: Volumes) -> None:
-    """Saves both volumes (on every change, UI-SET-06)."""
+    """Save both volumes (on every change, UI-SET-06)."""
     keys = saved_setting_keys(game_id)
     storage.set(keys.music, str(volumes.music))
     storage.set(keys.sfx, str(volumes.sfx))

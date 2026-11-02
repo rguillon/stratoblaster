@@ -1,26 +1,26 @@
-"""MB-MAGMA-SALAMANDER-01 to MB-MAGMA-SALAMANDER-06, 4-3: the Magma Salamander. Logical pixels, nose
-+Z, Y up (towards the camera). A segmented lizard-ship: a flat, wedge-shaped head, a body of
-overlapping armour plates with magma glowing in the seams between them, four clawed legs splayed
-out, a spiny fin on each side of its back (its parts) and a tail curling back to its right (on two
-joints). MB-MAGMA-SALAMANDER-02: a living lizard, its scorched flesh body under bony scale plates
-and metal grafts, magma glands along its spine, its reactors set in flesh sacs.
+# Copyright (c) 2026 Renaud Guillon
+"""MB-MAGMA-SALAMANDER-01 to MB-MAGMA-SALAMANDER-06, 4-3: the Magma Salamander.
+
+Logical pixels, nose +Z, Y up (towards the camera). A segmented lizard-ship: a flat, wedge-shaped
+head, a body of overlapping armour plates with magma glowing in the seams between them, four clawed
+legs splayed out, a spiny fin on each side of its back (its parts) and a tail curling back to its
+right (on two joints). MB-MAGMA-SALAMANDER-02: a living lizard, its scorched flesh body under bony
+scale plates and metal grafts, magma glands along its spine, its reactors set in flesh sacs.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.bosses.world_4.magma_salamander import (  # noqa: E402
+from game.config.bosses.world_4.magma_salamander import (
     MAGMA_SALAMANDER,
     SALAMANDER_JAWS,
     SALAMANDER_VENT,
 )
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.mini_boss_greebles import vent  # noqa: E402
-from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H, offset, socket  # noqa: E402
-from game.view.bosses.world_3.toucan_jungle import segment  # noqa: E402
-from game.view.bosses.world_4.living_forge import (  # noqa: E402
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.mini_boss_greebles import vent
+from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H, offset, socket
+from game.view.bosses.world_3.toucan_jungle import segment
+from game.view.bosses.world_4.living_forge import (
     SKIN,
     back_ribs,
     glands,
@@ -28,7 +28,7 @@ from game.view.bosses.world_4.living_forge import (  # noqa: E402
     magma_vein,
     reactor_sacs,
 )
-from game.view.bosses.world_4.magma_salamander_parts import (  # noqa: E402
+from game.view.bosses.world_4.magma_salamander_parts import (
     MOLTEN,
     SALAMANDER_NEON,
     SCORCH,
@@ -38,16 +38,18 @@ from game.view.bosses.world_4.magma_salamander_parts import (  # noqa: E402
     tail,
     tail_limbs,
 )
-from game.view.enemies.enemy_shapes import FIGHTER_SECTION, HULL_SECTION, SIDES  # noqa: E402
-from render.geometry.organic import RibSpec  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
+from game.view.enemies.enemy_shapes import FIGHTER_SECTION, HULL_SECTION, SIDES
+from render.geometry.organic import RibSpec
+from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The underbody along the centre line, tail to neck (loft stations: z, half width, bottom, top).
 BELLY = [
@@ -81,7 +83,7 @@ LEGS = [
 
 
 def _draw_body(p: Any) -> None:
-    """The underbody and its plates, a molten seam glowing between each plate and the next."""
+    """Draw the underbody and its plates, a molten seam glowing between each plate and the next."""
     hull = p.hull
     neon = p.neon
     flesh = p.flesh
@@ -122,7 +124,7 @@ def _draw_body(p: Any) -> None:
 
 
 def _draw_head(p: Any) -> None:
-    """The head: a flat wedge with orange eyes, the jaw guns either side of the snout."""
+    """Draw the head: a flat wedge with orange eyes, the jaw guns either side of the snout."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -175,7 +177,7 @@ def _sign(v: float) -> float:
 
 
 def _draw_back(p: Any) -> None:
-    """The fins' sockets on its back, the magma vent between them, and its reactors."""
+    """Draw the fins' sockets on its back, the magma vent between them, and its reactors."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -220,9 +222,11 @@ def _draw_back(p: Any) -> None:
 
 
 def build_magma_salamander(scene: Any) -> Any:
-    """MB-MAGMA-SALAMANDER-01, MB-MAGMA-SALAMANDER-05: the Magma Salamander, a segmented
-    lizard-ship with a molten glow between its plates,
-    orange-yellow neon, spiny back fins and a lashing tail."""
+    """MB-MAGMA-SALAMANDER-01, MB-MAGMA-SALAMANDER-05: the Magma Salamander.
+
+    A segmented lizard-ship with a molten glow between its plates, orange-yellow neon, spiny back
+    fins and a lashing tail.
+    """
 
     def core(p: Any) -> None:
         _draw_body(p)

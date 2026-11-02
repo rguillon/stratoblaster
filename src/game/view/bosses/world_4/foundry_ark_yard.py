@@ -1,29 +1,32 @@
-"""FB-FOUNDRY-ARK-02, 4-4: the Foundry Ark's yard, the heavy industry on its deck around the
-furnace: casting sheds with lit windows, ore wagons on their rails, pipe runs, molten seams between
-the plates. Model space: logical pixels, nose +Z, Y up; drawn for the right side (+X) and mirrored.
+# Copyright (c) 2026 Renaud Guillon
+"""FB-FOUNDRY-ARK-02, 4-4: the Foundry Ark's yard, round the furnace on its deck.
+
+Its heavy industry: casting sheds with lit windows, ore wagons on their rails, pipe runs, molten
+seams between the plates. Model space: logical pixels, nose +Z, Y up; drawn for the right side
+(+X) and mirrored.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.view.bosses.final_boss_greebles import rod  # noqa: E402
-from game.view.bosses.mini_boss_greebles import seam  # noqa: E402
-from game.view.bosses.mini_boss_shapes import SHADE, H  # noqa: E402
-from game.view.bosses.world_4.foundry_ark_parts import (  # noqa: E402
+from game.view.bosses.final_boss_greebles import rod
+from game.view.bosses.mini_boss_greebles import seam
+from game.view.bosses.mini_boss_shapes import SHADE, H
+from game.view.bosses.world_4.foundry_ark_parts import (
     ARK_ORANGE,
     DECK_TOP,
     MOLTEN,
     SOOT,
 )
-from game.view.bosses.world_4.living_forge import SKIN  # noqa: E402
-from game.view.enemies.enemy_shapes import SIDES  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
+from game.view.bosses.world_4.living_forge import SKIN
+from game.view.enemies.enemy_shapes import SIDES
+from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The casting sheds along the deck's sides (right side): centre, width, length, height.
 SHEDS = [
@@ -56,7 +59,7 @@ PIPE = [
 
 
 def _shed(p: Any, s: float, spec: list[float]) -> None:
-    """A casting shed: a long block with a sawtooth roof, a row of furnace-lit windows."""
+    """Add a casting shed: a long block with a sawtooth roof, a row of furnace-lit windows."""
     hull = p.hull
     neon = p.neon
     flesh = p.flesh
@@ -77,7 +80,7 @@ def _shed(p: Any, s: float, spec: list[float]) -> None:
 
 
 def _wagon(p: Any, z: float) -> None:
-    """An ore wagon on the rails, heaped with glowing ore."""
+    """Add an ore wagon on the rails, heaped with glowing ore."""
     hull = p.hull
     neon = p.neon
     hull.box([7, 3.2, 10], H.dark, Placement([0, DECK_TOP + 0.6, z]), SHADE["edge"])
@@ -86,7 +89,7 @@ def _wagon(p: Any, z: float) -> None:
 
 
 def draw_yard(p: Any) -> None:
-    """The yard on the deck: sheds, wagons, pipe runs and glowing seams between the plates."""
+    """Draw the yard on the deck: sheds, wagons, pipe runs and glowing seams between the plates."""
     flesh = p.flesh
     neon = p.neon
     for s in SIDES:

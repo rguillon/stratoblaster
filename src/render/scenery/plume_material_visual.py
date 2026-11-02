@@ -1,17 +1,18 @@
-# ruff: noqa: E501
-"""The material of a kind of plume (phase 10, GFX-PROP-18): soft puffs rising from a prop's
-column, drawn with instancing.
+# Copyright (c) 2026 Renaud Guillon
+"""The material of a kind of plume (phase 10, GFX-PROP-18).
+
+Soft puffs rising from a prop's column, drawn with instancing.
 """
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-from org.transcrypt.stubs.browser import __pragma__
-
 from render.babylon import color3, new_glsl_material, vector2, vector4
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # motion: time, seconds to rise, height, lean. size: bottom, top.
 VERTEX = """
@@ -61,7 +62,8 @@ void main() {
   float lumps = 0.85 + 0.15 * sin(atan(vCorner.y, vCorner.x) * 5.0 + vFade * 3.0);
   float soft = 1.0 - smoothstep(0.25 * lumps, lumps, r);
   float fog = clamp((vDistance - fogRange.x) / (fogRange.y - fogRange.x), 0.0, 1.0);
-  gl_FragColor = vec4(mix(plumeColor, fogColor, fog), soft * vFade * plumeAlpha * (1.0 - 0.6 * fog));
+  gl_FragColor = vec4(
+    mix(plumeColor, fogColor, fog), soft * vFade * plumeAlpha * (1.0 - 0.6 * fog));
 }
 """
 
@@ -98,6 +100,7 @@ class PlumeMaterialImpl:
         self._fog_range = vector2(0, 0)
 
     def set(self, frame: Any) -> None:
+        """Set."""
         material = self.material
         self._motion.x = frame.time
         material.setVector4("motion", self._motion)
@@ -120,11 +123,13 @@ class PlumeMaterialImpl:
 
 
 def create_plume_material(scene: Any, kind: Any) -> PlumeMaterialImpl:
-    """The material of a kind of plume (phase 10, GFX-PROP-18): soft puffs facing the camera,
-    rising from the column's foot, growing, bending with the wind and fading out at the top, lit by
+    """Return the material of a kind of plume (phase 10, GFX-PROP-18): soft puffs facing the camera.
+
+    Rising from the column's foot, growing, bending with the wind and fading out at the top, lit by
     the scene (a little self-lit, as if from the fire below at night). Blended without writing
     depth, so the ground in front hides it but it never hides what is drawn after it (the
-    playfield)."""
+    playfield).
+    """
     material = new_glsl_material(
         "plume",
         scene,

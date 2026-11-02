@@ -1,15 +1,16 @@
-"""Builds the core types of the bosses from their config records (each boss is data the boss
-engine runs, BOSS-07): the one place where the config layer meets `core/`.
+# Copyright (c) 2026 Renaud Guillon
+"""Builds the core types of the bosses from their config records.
 
-The config (`game/config/`) keeps camelCase keys; `core/` is snake_case
-and tests `is None` for an omitted optional field. Under Transcrypt an omitted field is `undefined`,
-not `None`, so every optional field is mapped here (`opt`), and every field is copied under its
-core name. Nothing else in `game/sim/` builds core boss types from config.
+Each boss is data the boss engine runs (BOSS-07): the one place where the config layer meets
+`core/`.
+
+The config (`game/config/`) keeps camelCase keys; `core/` is snake_case and tests `is None` for an
+omitted optional field. Under Transcrypt an omitted field is `undefined`, not `None`, so every
+optional field is mapped here (`opt`), and every field is copied under its core name. Nothing else
+in `game/sim/` builds core boss types from config.
 """
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from core.entities.boss import BossDeath, BossPartSpec, BossStats
 from core.entities.boss_roll import BossRoll
@@ -31,25 +32,26 @@ from game.sim.config_access import keys_of as _keys
 from game.sim.config_access import opt
 from game.sim.joints import joint_specs
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
+from typing import Any
 
 # A config record (`game/config/record.py`), typed as Any there.
 ConfigRecord = Any
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def _maybe(value: Any, convert: Callable[[Any], Any]) -> Any:
     """`convert(value)`, or None when the config leaves the field out."""
-    if value == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    if value == None:
         return None
     return convert(value)
 
 
 def bullet_spec(bullet: ConfigRecord) -> EnemyBulletSpec:
-    """An enemy bullet of the config, with its burst when it has one (BOSS-23)."""
+    """Return an enemy bullet of the config, with its burst when it has one (BOSS-23)."""
     burst = opt(bullet.burst)
     burst_spec = None
     if burst is not None:
@@ -79,7 +81,7 @@ def _laser_spec(laser: ConfigRecord) -> EnemyLaserSpec:
 
 
 def _shape(shape: ConfigRecord) -> Any:
-    """The core shape of a config volley's shape (its `kind` says which)."""
+    """Return the core shape of a config volley's shape (its `kind` says which)."""
     kind = shape.kind
     if kind == "aimed":
         return BossAimedShape(shape.count, shape.spacingDeg, bullet_spec(shape.bullet))
@@ -99,9 +101,11 @@ def _shape(shape: ConfigRecord) -> Any:
 
 
 def armed_volley(design: ConfigRecord, volley: ConfigRecord) -> BossVolley:
-    """A volley of the design's stages, fired from the muzzles and turret of its gun (the TS
-    `#armed`), only while the part it `needs` stands or once the part it comes `after` is destroyed
-    (BOSS-24). Each boss's own volleys are its boss file's stage patterns (`specs/bosses/`).
+    """Return a volley of the design's stages, fired from the muzzles and turret of its gun.
+
+    This is the TS `#armed`. The volley fires only while the part it `needs` stands or once the part
+    it comes `after` is destroyed (BOSS-24). Each boss's own volleys are its boss file's stage
+    patterns (`specs/bosses/`).
     """
     return BossVolley(
         volley["from"],
@@ -117,15 +121,14 @@ def armed_volley(design: ConfigRecord, volley: ConfigRecord) -> BossVolley:
 
 def armed_pattern(design: ConfigRecord, volleys: list[ConfigRecord]) -> list[BossVolley]:
     """`volleys` armed (see `armed_volley`), in the same order."""
-    result: list[BossVolley] = []
-    for volley in volleys:
-        result.append(armed_volley(design, volley))
+    result: list[BossVolley] = [armed_volley(design, volley) for volley in volleys]
     return result
 
 
 def launch_volley(launch: ConfigRecord, side: int) -> BossVolley:
-    """The volley of a part's launch (BOSS-25: hangars, drone bays). `side` is which side of the
-    boss the part is on (-1 left, 1 right), for the Gnats' way out.
+    """Return the volley of a part's launch (BOSS-25: hangars, drone bays).
+
+    `side` is which side of the boss the part is on (-1 left, 1 right), for the Gnats' way out.
     """
     fire = launch_fire(launch.kind, launch.count, side)
     return BossVolley(
@@ -141,8 +144,10 @@ def launch_volley(launch: ConfigRecord, side: int) -> BossVolley:
 
 
 def break_ring_ids(design: ConfigRecord) -> list[str]:
-    """The ids of the parts that burst into a ring of bullets when destroyed, in their order
-    (BOSS-23)."""
+    """Return the ids of the parts that burst into a ring of bullets when destroyed (BOSS-23).
+
+    The ids come in the parts' order.
+    """
     rings = opt(design.breakRings)
     if rings is None:
         return []
@@ -166,11 +171,13 @@ def _part_spec(part: ConfigRecord) -> BossPartSpec:
 
 
 def default_transforms(design: ConfigRecord) -> list[int] | None:
-    """When a boss of `design` transforms (BOSS-36): its design's `transforms`, or, for K
-    transformations (its hidden parts' highest `reveal`) and n original parts, the k-th once
+    """When a boss of `design` transforms (BOSS-36): its design's `transforms`, or.
+
+    For K transformations (its hidden parts' highest `reveal`) and n original parts, the k-th once
     ceil(k n / (K + 1)) of them are destroyed: half of them for a mini boss's one, a third and two
     thirds for a final boss's two (BOSS-35). None when it has no hidden part. Each boss's own
-    transformations are in its boss file (`specs/bosses/`)."""
+    transformations are in its boss file (`specs/bosses/`).
+    """
     given = opt(design.transforms)
     if given is not None:
         result: list[int] = given
@@ -189,8 +196,10 @@ def default_transforms(design: ConfigRecord) -> list[int] | None:
 
 
 def _turret_specs(design: ConfigRecord) -> Any:
-    """The turrets of the design's pieces, by piece (`BossStats.turrets`): a piece has one when its
-    guns name a turret pivot (BOSS-29), its lasers turning at the laser rate (BOSS-31).
+    """Return the turrets of the design's pieces, by piece (`BossStats.turrets`).
+
+    A piece has one when its guns name a turret pivot (BOSS-29), its lasers turning at the laser
+    rate (BOSS-31).
     """
     result: Any = {}
     for piece in _keys(design.guns):
@@ -216,13 +225,13 @@ def _roll(rule: ConfigRecord) -> BossRoll:
 
 
 def boss_stats(design: ConfigRecord) -> BossStats:
-    """The stats of a boss of `design` (its turrets, and its angry time when it has a rage), with
-    the parts its design may name for each transformation (BOSS-36)."""
+    """Return the stats of a boss of `design` (its turrets, and its angry time when it has a rage).
+
+    With the parts its design may name for each transformation (BOSS-36).
+    """
     stats = design.stats
     rage_seconds = BOSS_TIMING.rageSeconds if design.rage else opt(stats.rageSeconds)
-    parts: list[BossPartSpec] = []
-    for part in stats.parts:
-        parts.append(_part_spec(part))
+    parts: list[BossPartSpec] = [_part_spec(part) for part in stats.parts]
     return BossStats(
         stats.model,
         stats.radius,

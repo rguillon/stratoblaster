@@ -1,4 +1,5 @@
-"""Data that describes the ground of a scrolling level (GFX-TERRAIN-01)
+# Copyright (c) 2026 Renaud Guillon
+"""Data that describes the ground of a scrolling level (GFX-TERRAIN-01).
 
 World units are logical pixels (GFX-CAM-01): X across the level (0 under the middle of the
 playfield), Z along it (the level scrolls towards +Z), Y up. Heights are absolute; the sea, when
@@ -8,16 +9,15 @@ The records are classes here, with the optional fields last (default None). A
 partial record is a record whose missing fields are None.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Sequence
 
 Range = tuple[float, float]
 Point2 = tuple[float, float]
 IntPair = tuple[int, int]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class Relief:
@@ -32,12 +32,14 @@ class Relief:
         style: str,
         max_height: float | None = None,
     ) -> None:
-        """`base`: height of the ground where the relief is zero. `amplitude`: largest height the
-        relief adds (or removes, for smooth relief). `frequency`: cycles per world unit of the
-        first octave. `style`: `smooth` (rolling ground from `base - amplitude` to
-        `base + amplitude`) or `ridged` (sharp crests from `base` up to `base + amplitude`, mountain
-        ranges). `max_height`: heights above this are softly squashed, so peaks stay under the
-        flight altitude."""
+        """Keep the relief's settings.
+
+        `base`: height of the ground where the relief is zero. `amplitude`: largest height the
+        relief adds (or removes, for smooth relief). `frequency`: cycles per world unit of the first
+        octave. `style`: `smooth` (rolling ground from `base - amplitude` to `base + amplitude`) or
+        `ridged` (sharp crests from `base` up to `base + amplitude`, mountain ranges). `max_height`:
+        heights above this are softly squashed, so peaks stay under the flight altitude.
+        """
         self.base = base
         self.amplitude = amplitude
         self.frequency = frequency
@@ -56,8 +58,10 @@ class Meander:
 
 
 class Flatten:
-    """Flattens a band of ground around a meander line (room for buildings). `Flatten`, `Channel`
-    and `Shore` are the sculpt operations (GFX-TERRAIN-03)."""
+    """Flattens a band of ground around a meander line (room for buildings).
+
+    `Flatten`, `Channel` and `Shore` are the sculpt operations (GFX-TERRAIN-03).
+    """
 
     def __init__(
         self,
@@ -67,8 +71,10 @@ class Flatten:
         height: float,
         roughness: float,
     ) -> None:
-        """`edge`: width of the slope from the flat band back to the relief. `roughness`: small
-        relief left on the flat band."""
+        """`edge`: width of the slope from the flat band back to the relief.
+
+        `roughness`: small relief left on the flat band.
+        """
         self.path = path
         self.half_width = half_width
         self.edge = edge
@@ -80,9 +86,11 @@ class Channel:
     """Carves a canyon along a meander line."""
 
     def __init__(self, path: Meander, half_width: float, wall: float, floor: float) -> None:
-        """`half_width`: half-width of the canyon floor. `wall`: width of each wall, from the floor
-        to the rim. `floor`: height of the canyon floor (below the sea level, it holds a river; its
-        walls are its banks or quays, GFX-WATER-08)."""
+        """`half_width`: half-width of the canyon floor.
+
+        `wall`: width of each wall, from the floor to the rim. `floor`: height of the canyon floor
+        (below the sea level, it holds a river; its walls are its banks or quays, GFX-WATER-08).
+        """
         self.path = path
         self.half_width = half_width
         self.wall = wall
@@ -94,7 +102,9 @@ class Shore:
 
     def __init__(self, path: Meander, land_side: float, width: float, seabed: float) -> None:
         """`land_side`: the land is at X greater than the shore line (`1`) or smaller (`-1`).
-        `width`: width of the slope from the land down to the sea bed."""
+
+        `width`: width of the slope from the land down to the sea bed.
+        """
         self.path = path
         self.land_side = land_side
         self.width = width
@@ -102,9 +112,11 @@ class Shore:
 
 
 class Surface:
-    """What covers the ground of a section, as shares (0..1) of alternative ground textures over
-    the default one: `lush` (grass), `paved` (concrete, asphalt) and `sandy` (desert sand)
-    (GFX-TERRAIN-09)."""
+    """What covers the ground of a section.
+
+    As shares (0..1) of alternative ground textures over the default one: `lush` (grass), `paved`
+    (concrete, asphalt) and `sandy` (desert sand) (GFX-TERRAIN-09).
+    """
 
     def __init__(self, lush: float | None, paved: float | None, sandy: float | None) -> None:
         self.lush = lush
@@ -113,14 +125,20 @@ class Surface:
 
 
 class Dunes:
-    """Sand dunes (GFX-TERRAIN-04): parallel crests every `wavelength`, each with a long gentle
-    windward slope and a short steep lee slope, whose lines wander with noise and whose heights
-    vary, added on top of the section's relief."""
+    """Sand dunes (GFX-TERRAIN-04).
+
+    Parallel crests every `wavelength`, each with a long gentle windward slope and a short steep lee
+    slope, whose lines wander with noise and whose heights vary, added on top of the section's
+    relief.
+    """
 
     def __init__(self, height: float, wavelength: float, angle_deg: float, warp: float) -> None:
-        """`height`: height of the highest crests above the relief. `wavelength`: distance between
-        two crests. `angle_deg`: direction the crests face, in degrees from +Z (the wind blows that
-        way). `warp`: how far the crest lines wander, in wavelengths."""
+        """`height`: height of the highest crests above the relief.
+
+        `wavelength`: distance between two crests. `angle_deg`: direction the crests face, in
+        degrees from +Z (the wind blows that way). `warp`: how far the crest lines wander, in
+        wavelengths.
+        """
         self.height = height
         self.wavelength = wavelength
         self.angle_deg = angle_deg
@@ -128,9 +146,12 @@ class Dunes:
 
 
 class Lakes:
-    """Frozen lakes (phase 8, GFX-TERRAIN-05): round basins scattered over a section, one chance in
-    each square of `spacing` units, flattened to `level` (below the terrain look's `lowHeight`, so
-    they get its low ground: ice) over `radius`, with a shore `edge` wide."""
+    """Frozen lakes (phase 8, GFX-TERRAIN-05).
+
+    Round basins scattered over a section, one chance in each square of `spacing` units, flattened
+    to `level` (below the terrain look's `lowHeight`, so they get its low ground: ice) over
+    `radius`, with a shore `edge` wide.
+    """
 
     def __init__(
         self,
@@ -149,9 +170,12 @@ class Lakes:
 
 
 class Crevasses:
-    """Crevasses (phase 8, GFX-TERRAIN-05): narrow cuts `depth` deep and `width` wide, about every
-    `spacing` units, running across the level at `angle_deg` from +X, their lines bent by noise
-    (`warp`, in spacings) and broken into pieces: about `share` (0..1) of each line is cut."""
+    """Crevasses (phase 8, GFX-TERRAIN-05).
+
+    Narrow cuts `depth` deep and `width` wide, about every `spacing` units, running across the level
+    at `angle_deg` from +X, their lines bent by noise (`warp`, in spacings) and broken into pieces:
+    about `share` (0..1) of each line is cut.
+    """
 
     def __init__(
         self,
@@ -171,38 +195,52 @@ class Crevasses:
 
 
 class StreetGrid:
-    """A dense network of straight streets over a section (phase 4 review): streets across the
-    level (rows) every `rows` units and streets along it (columns) every `columns` units, of which
-    each stretch between two crossings is built with the chance `links`. Streets meet at crossings
-    and T-junctions; none ends on screen. The winding roads and the paths stay out of these
-    sections."""
+    """A dense network of straight streets over a section (phase 4 review).
+
+    Streets across the level (rows) every `rows` units and streets along it (columns) every
+    `columns` units, of which each stretch between two crossings is built with the chance `links`.
+    Streets meet at crossings and T-junctions; none ends on screen. The winding roads and the paths
+    stay out of these sections.
+    """
 
     def __init__(self, rows: Range, columns: Range, links: float) -> None:
-        """`rows`: distance along Z between two rows. `columns`: distance along X between two
-        columns. `links`: chance (0..1) that a stretch of street between two crossings is built."""
+        """`rows`: distance along Z between two rows.
+
+        `columns`: distance along X between two columns. `links`: chance (0..1) that a stretch of
+        street between two crossings is built.
+        """
         self.rows = rows
         self.columns = columns
         self.links = links
 
 
 class BlockFill:
-    """How the blocks of a section's street grid are filled (phase 4 review): a podium covering the
-    whole block, of a random height, with towers of the section's building groups on its roof; or,
-    without podiums, buildings standing on the ground side by side over the whole block."""
+    """How the blocks of a section's street grid are filled (phase 4 review).
+
+    A podium covering the whole block, of a random height, with towers of the section's building
+    groups on its roof; or, without podiums, buildings standing on the ground side by side over the
+    whole block.
+    """
 
     def __init__(self, podiums: Sequence[str], podium_height: Range, towers: Range) -> None:
-        """`podiums`: ids of podium models: a unit square plan, 1 high, stretched to each block
-        (may be empty). `towers`: how many towers stand on a podium, or buildings on a block."""
+        """`podiums`: ids of podium models.
+
+        A unit square plan, 1 high, stretched to each block (may be empty). `towers`: how many
+        towers stand on a podium, or buildings on a block.
+        """
         self.podiums = podiums
         self.podium_height = podium_height
         self.towers = towers
 
 
 class Woods:
-    """How the trees of a section grow, where its ground is not grass (D-214, GFX-PROP-08, e.g. dead
-    trees in the desert): the woods (see `Forests`) cover the ground by `cover` (0..1, in place of
-    the grass share), only `keep` (0..1) of a wood's trees grow (sparse woods), and `scatter` (0..1)
-    of the trees tried outside the woods grow alone."""
+    """How the trees of a section grow.
+
+    Where its ground is not grass (D-214, GFX-PROP-08, e.g. dead trees in the desert): the woods
+    (see `Forests`) cover the ground by `cover` (0..1, in place of the grass share), only `keep`
+    (0..1) of a wood's trees grow (sparse woods), and `scatter` (0..1) of the trees tried outside
+    the woods grow alone.
+    """
 
     def __init__(self, cover: float, keep: float, scatter: float) -> None:
         self.cover = cover
@@ -213,7 +251,7 @@ class Woods:
 class TerrainSection:
     """One stretch of a level, sculpted from a relief and optional operations."""
 
-    def __init__(  # noqa: PLR0917 (positional data fields: Transcrypt drops keyword arguments)
+    def __init__(
         self,
         name: str,
         seconds: float,
@@ -234,18 +272,18 @@ class TerrainSection:
         blocks: BlockFill | None = None,
         woods: Woods | None = None,
     ) -> None:
-        """`name`: shown by debug tools, e.g. `canyon`. `seconds`: how long the section takes to fly
-        over, at the level's scroll speed. `float_density`: chance (0..1) that a cell of the sea
-        gets
-        floating props (`PropRules.floating`). `building_density`: chance (0..1) that a building
-        slot
-        along a road of this section gets a building. `tree_density`: chance (0..1) that an empty
-        candidate spot of this section gets trees. `surface`: ground cover (default: none, the
-        level's default ground). `trees`: ids of the tree kinds that grow here (default: all of
-        them). `groups`: ids of the building groups that stand here (default: all of them).
-        `streets`: a network of straight streets over this section, instead of roads and paths.
-        `blocks`: fill each block of the street grid with buildings (on a podium), instead of
-        street fronts."""
+        """`name`: shown by debug tools, e.g. `canyon`.
+
+        `seconds`: how long the section takes to fly over, at the level's scroll speed.
+        `float_density`: chance (0..1) that a cell of the sea gets floating props
+        (`PropRules.floating`). `building_density`: chance (0..1) that a building slot along a road
+        of this section gets a building. `tree_density`: chance (0..1) that an empty candidate spot
+        of this section gets trees. `surface`: ground cover (default: none, the level's default
+        ground). `trees`: ids of the tree kinds that grow here (default: all of them). `groups`: ids
+        of the building groups that stand here (default: all of them). `streets`: a network of
+        straight streets over this section, instead of roads and paths. `blocks`: fill each block of
+        the street grid with buildings (on a podium), instead of street fronts.
+        """
         self.name = name
         self.seconds = seconds
         self.relief = relief
@@ -267,8 +305,10 @@ class TerrainSection:
 
 
 class Drift:
-    """Floating props drift slowly to and fro (or a line of props, as ore wagons do): up to `x` and
-    `z` world units from where they were placed, over `period` seconds."""
+    """Floating props drift slowly to and fro (or a line of props, as ore wagons do).
+
+    Up to `x` and `z` world units from where they were placed, over `period` seconds.
+    """
 
     def __init__(self, x: float, z: float, period: float) -> None:
         self.x = x
@@ -279,9 +319,9 @@ class Drift:
 class PropKindRule:
     """A kind of prop the placement can choose, with its relative weight."""
 
-    def __init__(  # noqa: PLR0917 (positional data fields: Transcrypt drops keyword arguments)
+    def __init__(
         self,
-        id: str,
+        id_: str,
         weight: float,
         footprint: float,
         scale: Range,
@@ -289,14 +329,17 @@ class PropKindRule:
         drift: Drift | None = None,
         tiles: IntPair | None = None,
     ) -> None:
-        """`id`: key of the prop's model in the game's view. `footprint`: radius of ground the prop
-        stands on (at its largest scale); it must be about flat. `scale`: random scale range.
-        `frontage`: half the side of the square the model fits in, at scale 1, for buildings with a
-        square plan: they then stand right at the street setback and pack against their neighbours,
-        instead of keeping the whole `footprint` circle clear (phase 4 review). `drift`: floating
-        props (phase 8: ice floes) drift slowly to and fro. `tiles`: phase 15 (GFX-BLDG-03): the
-        W × D tiles the model stands on, in its own X and Z (its front is -Z)."""
-        self.id = id
+        """`id`: key of the prop's model in the game's view.
+
+        `footprint`: radius of ground the prop stands on (at its largest scale); it must be about
+        flat. `scale`: random scale range. `frontage`: half the side of the square the model fits
+        in, at scale 1, for buildings with a square plan: they then stand right at the street
+        setback and pack against their neighbours, instead of keeping the whole `footprint` circle
+        clear (phase 4 review). `drift`: floating props (phase 8: ice floes) drift slowly to and
+        fro. `tiles`: phase 15 (GFX-BLDG-03): the W x D tiles the model stands on, in its own X and
+        Z (its front is -Z).
+        """
+        self.id = id_
         self.weight = weight
         self.footprint = footprint
         self.scale = scale
@@ -306,9 +349,12 @@ class PropKindRule:
 
 
 class FloatRules:
-    """Props floating on the sea (phase 8, GFX-PROP-15: ice floes and icebergs): in cells of
-    `cell_size`, up to `per_cell` each with the chance of their section's `float_density`, where
-    the sea is at least `depth` deep under their whole footprint. They float at the sea level."""
+    """Props floating on the sea (phase 8, GFX-PROP-15: ice floes and icebergs).
+
+    In cells of `cell_size`, up to `per_cell` each with the chance of their section's
+    `float_density`, where the sea is at least `depth` deep under their whole footprint. They float
+    at the sea level.
+    """
 
     def __init__(
         self,
@@ -324,12 +370,14 @@ class FloatRules:
 
 
 class PropLine:
-    """A line of props along the level (phase 8, GFX-PROP-16: a pipeline on stilts): one `kind`
-    every `spacing` along `path`, turned along it, standing where the ground is above the sea level
-    and no steeper than `max_slope`, in the sections whose names are listed (all when omitted). They
-    are placed before the buildings, which keep clear of them."""
+    """A line of props along the level (phase 8, GFX-PROP-16: a pipeline on stilts).
 
-    def __init__(  # noqa: PLR0917 (positional data fields: Transcrypt drops keyword arguments)
+    One `kind` every `spacing` along `path`, turned along it, standing where the ground is above the
+    sea level and no steeper than `max_slope`, in the sections whose names are listed (all when
+    omitted). They are placed before the buildings, which keep clear of them.
+    """
+
+    def __init__(
         self,
         kind: str,
         path: Meander,
@@ -341,9 +389,11 @@ class PropLine:
         drift: Drift | None = None,
     ) -> None:
         """`footprint`: radius of ground each piece takes, for the buildings to keep clear of.
+
         `over_water` (phase 9): the line also crosses water (a pipeline on stilts over a swamp): its
         pieces stand on the ground, or at the sea level where the ground is under it. `drift`
-        (phase 10): the pieces move to and fro together (ore wagons along a rail line)."""
+        (phase 10): the pieces move to and fro together (ore wagons along a rail line).
+        """
         self.kind = kind
         self.path = path
         self.spacing = spacing
@@ -355,14 +405,16 @@ class PropLine:
 
 
 class Landmark:
-    """A set piece (phase 9, GFX-PROP-17: a dam across a lake, a waterfall on a river, a temple):
-    one prop of `kind` at `z` along the level, at `x` across it or on `path` (its width then across
-    the path), standing on the ground or, with `on_water`, at the sea level. It is placed first,
-    whatever the slope, and the buildings and trees keep clear of its `footprint` (but not the
-    blocks of a street grid: no set piece goes in one) (a box `footprint` wide each way, or
-    `[half_x, half_z]`)."""
+    """A set piece: a dam across a lake, a waterfall on a river or a temple (GFX-PROP-17).
 
-    def __init__(  # noqa: PLR0917 (positional data fields: Transcrypt drops keyword arguments)
+    It is phase 9, one prop of `kind` at `z` along the level, at `x` across it or on `path` (its
+    width then across the path), standing on the ground or, with `on_water`, at the sea level. It is
+    placed first, whatever the slope, and the buildings and trees keep clear of its `footprint` (but
+    not the blocks of a street grid: no set piece goes in one) (a box `footprint` wide each way, or
+    `[half_x, half_z]`).
+    """
+
+    def __init__(
         self,
         kind: str,
         z: float,
@@ -373,8 +425,10 @@ class Landmark:
         scale: float | None = None,
         on_water: bool | None = None,
     ) -> None:
-        """`rotation`: turn around the vertical axis (radians), added to the path's heading if
-        any."""
+        """`rotation`.
+
+        Turn around the vertical axis (radians), added to the path's heading if any.
+        """
         self.kind = kind
         self.z = z
         self.footprint = footprint
@@ -390,18 +444,21 @@ class PropGroupRule:
 
     def __init__(
         self,
-        id: str,
+        group_id: str,
         weight: float,
         kinds: Sequence[PropKindRule],
     ) -> None:
-        self.id = id
+        self.id = group_id
         self.weight = weight
         self.kinds = kinds
 
 
 class Loners:
-    """A few lone buildings away from the roads: one per square of `cell` units, with the chance
-    `chance` times the section's building density, at least `clearance` from every road edge."""
+    """A few lone buildings away from the roads.
+
+    One per square of `cell` units, with the chance `chance` times the section's building density,
+    at least `clearance` from every road edge.
+    """
 
     def __init__(self, cell: float, chance: float, clearance: float) -> None:
         self.cell = cell
@@ -410,10 +467,13 @@ class Loners:
 
 
 class HamletRules:
-    """Hamlets (phase 6 review): one every `spacing` along the level, in sections with buildings
-    (`building_density` > 0) and no street grid. A hamlet is `buildings` buildings of one group,
-    all turned the same way, within `radius` of its centre, `gap` apart and at least `clearance`
-    from every road edge. Its centre is tried at a few places across the level."""
+    """Hamlets (phase 6 review).
+
+    One every `spacing` along the level, in sections with buildings (`building_density` > 0) and no
+    street grid. A hamlet is `buildings` buildings of one group, all turned the same way, within
+    `radius` of its centre, `gap` apart and at least `clearance` from every road edge. Its centre is
+    tried at a few places across the level.
+    """
 
     def __init__(
         self,
@@ -433,7 +493,7 @@ class HamletRules:
 class CarRules:
     """Cars driving on the streets and main roads: one chance per road point to start there."""
 
-    def __init__(  # noqa: PLR0917 (positional data fields: Transcrypt drops keyword arguments)
+    def __init__(
         self,
         kinds: Sequence[str],
         density: float,
@@ -443,11 +503,13 @@ class CarRules:
         speed: Range,
         sidewalk: float | None = None,
     ) -> None:
-        """`density`: chance that a point of a street or main road has a car. `lift`: cars stand on
-        the road surface, this high above the ground. `length`: about the length of a car: cars are
-        hidden this close to the ends of their road. `speed`: speeds (world units per second); all
-        the cars of one lane share one. `sidewalk` (phase 15): width of the sidewalks of the
-        streets, which cars keep off (default 0)."""
+        """`density`: chance that a point of a street or main road has a car.
+
+        `lift`: cars stand on the road surface, this high above the ground. `length`: about the
+        length of a car: cars are hidden this close to the ends of their road. `speed`: speeds
+        (world units per second); all the cars of one lane share one. `sidewalk` (phase 15): width
+        of the sidewalks of the streets, which cars keep off (default 0).
+        """
         self.kinds = kinds
         self.density = density
         self.lift = lift
@@ -458,10 +520,13 @@ class CarRules:
 
 
 class Forests:
-    """Trees gather in woods on the grass (D-212, GFX-PROP-07): a low-frequency noise of `frequency`
-    cycles per world unit over the ground; on full grass at full tree density, a tree stands only
-    where it is over `threshold` (0..1), surely `edge` over it, by chance in between (ragged edges).
-    Less grass or a lower density raises the threshold towards 1: fewer woods."""
+    """Trees gather in woods on the grass (D-212, GFX-PROP-07).
+
+    A low-frequency noise of `frequency` cycles per world unit over the ground; on full grass at
+    full tree density, a tree stands only where it is over `threshold` (0..1), surely `edge` over
+    it, by chance in between (ragged edges). Less grass or a lower density raises the threshold
+    towards 1: fewer woods.
+    """
 
     def __init__(self, frequency: float, threshold: float, edge: float) -> None:
         self.frequency = frequency
@@ -470,10 +535,12 @@ class Forests:
 
 
 class PropRules:
-    """Where and which props stand on the ground (GFX-PROP-06). Buildings follow the roads
-    (GFX-BLDG-01)."""
+    """Where and which props stand on the ground (GFX-PROP-06).
 
-    def __init__(  # noqa: PLR0917 (positional data fields: Transcrypt drops keyword arguments)
+    Buildings follow the roads (GFX-BLDG-01).
+    """
+
+    def __init__(
         self,
         cell_size: float,
         tree_clearance: float,
@@ -493,17 +560,20 @@ class PropRules:
         lots: Sequence[PropKindRule] | None = None,
         forests: Forests | None = None,
     ) -> None:
-        """`cell_size`: trees grow in the cells of a grid of this size. `tree_clearance`: trees keep
-        this far from the road edges. `max_slope`: steepest ground (height difference over the
-        footprint radius) a building stands on. `tree_max_slope`: trees stand on steeper ground than
-        buildings. `min_height`: no prop stands below this height (e.g. just above the sea).
-        `zone_frequency`: cycles per world unit of the noise that picks a building group per area.
-        `trees_per_cell`: most trees in one empty cell. `cars`: cars driving on the streets and main
-        roads. `hamlets`: bunches of buildings close together away from the roads. `floating`: props
-        floating on the sea. `lines`: lines of props along the level. `landmarks`: set pieces at
-        given places. `lots` (phase 15, GFX-BLDG-11): props of whole tiles (car parks, yards,
-        plazas, parks) for the tiles of a district's blocks that no building of their group fits.
-        `forests` (D-212): trees gather in woods (default: they grow evenly)."""
+        """`cell_size`: trees grow in the cells of a grid of this size.
+
+        `tree_clearance`: trees keep this far from the road edges. `max_slope`: steepest ground
+        (height difference over the footprint radius) a building stands on. `tree_max_slope`: trees
+        stand on steeper ground than buildings. `min_height`: no prop stands below this height (e.g.
+        just above the sea). `zone_frequency`: cycles per world unit of the noise that picks a
+        building group per area. `trees_per_cell`: most trees in one empty cell. `cars`: cars
+        driving on the streets and main roads. `hamlets`: bunches of buildings close together away
+        from the roads. `floating`: props floating on the sea. `lines`: lines of props along the
+        level. `landmarks`: set pieces at given places. `lots` (phase 15, GFX-BLDG-11): props of
+        whole tiles (car parks, yards, plazas, parks) for the tiles of a district's blocks that no
+        building of their group fits. `forests` (D-212): trees gather in woods (default: they grow
+        evenly).
+        """
         self.cell_size = cell_size
         self.tree_clearance = tree_clearance
         self.max_slope = max_slope
@@ -524,9 +594,11 @@ class PropRules:
 
 
 class TileRules:
-    """The grid of square tiles the districts are laid on (phase 15, GFX-ROAD-08): `size` world
-    units a side, the width of a one-lane-each-way street with its two sidewalks, each `sidewalk`
-    wide."""
+    """The grid of square tiles the districts are laid on (phase 15, GFX-ROAD-08).
+
+    `size` world units a side, the width of a one-lane-each-way street with its two sidewalks, each
+    `sidewalk` wide.
+    """
 
     def __init__(self, size: float, sidewalk: float) -> None:
         self.size = size
@@ -552,8 +624,11 @@ class MeanderRange:
 
 
 class Dual:
-    """2×2 roads (phase 4 review): the first `main_roads` main roads, and a share `avenues` of the
-    lines of the street grids, are `width` wide with two lanes each way."""
+    """2x2 roads (phase 4 review).
+
+    The first `main_roads` main roads, and a share `avenues` of the lines of the street grids, are
+    `width` wide with two lanes each way.
+    """
 
     def __init__(self, width: float, main_roads: int, avenues: float) -> None:
         self.width = width
@@ -562,8 +637,10 @@ class Dual:
 
 
 class Junction:
-    """Where a path meets a road it widens to `width`, narrowing back to `cross_width` over
-    `length`, so it merges into the road."""
+    """Where a path meets a road it widens to `width`.
+
+    Narrowing back to `cross_width` over `length`, so it merges into the road.
+    """
 
     def __init__(self, width: float, length: float) -> None:
         self.width = width
@@ -572,20 +649,24 @@ class Junction:
 
 class NoCrossings:
     """Phase 6 review (GFX-ROAD-05): roads never cross, they only meet where a path joins a road.
+
     Main roads keep at least `gap` apart (each one after the first follows the one before it, on one
     side); a path starts on a main road and ends off the screen or on another main road or street,
-    `gap` clear of everything else; street grids have T-junctions only."""
+    `gap` clear of everything else; street grids have T-junctions only.
+    """
 
     def __init__(self, gap: float) -> None:
         self.gap = gap
 
 
 class RoadRules:
-    """Randomly generated roads and paths (GFX-ROAD-01, GFX-ROAD-02): `main_roads` roads wind along
-    the whole level, and paths branch off them across it to past the screen edges. Buildings stand
-    only along them."""
+    """Randomly generated roads and paths (GFX-ROAD-01, GFX-ROAD-02).
 
-    def __init__(  # noqa: PLR0917 (positional data fields: Transcrypt drops keyword arguments)
+    `main_roads` roads wind along the whole level, and paths branch off them across it to past the
+    screen edges. Buildings stand only along them.
+    """
+
+    def __init__(
         self,
         main_roads: int,
         spread: float,
@@ -609,19 +690,19 @@ class RoadRules:
         tiles: TileRules | None = None,
     ) -> None:
         """`spread`: main roads are centred somewhere within X in [-spread, spread].
-        `cross_spacing`:
-        distance along Z between two paths. `cross_bend`: largest sideways bend of a path.
-        `boulevards` (reviewer, 2026-10-28): a share `share` of the grid lines are `width` wide with
-        `lanes` lanes each way. They run straight through their district: every stretch is built,
-        and where a crossing must go (`no_crossings`), the side street is cut. `offscreen_x`: roads
-        only start and end beyond X = ±offscreen_x, outside the screen. `turn_rate`: sharpest turn
-        of
-        a road leaving the screen, in radians per `step`. `min_height`: no road on ground lower than
-        this (the sea) or steeper than `max_slope`. `min_run`: pieces of road shorter than this many
-        points are dropped. `step`: distance between two points of a road's centre line.
-        `slot_spacing`: distance between two building slots along a road. `setback`: gap between the
-        road edge and a building's footprint. `no_crossings`: see `NoCrossings`. `tiles` (phase 15):
-        the districts are laid on a grid of tiles."""
+
+        `cross_spacing`: distance along Z between two paths. `cross_bend`: largest sideways bend of
+        a path. `boulevards` (reviewer, 2026-10-28): a share `share` of the grid lines are `width`
+        wide with `lanes` lanes each way. They run straight through their district: every stretch is
+        built, and where a crossing must go (`no_crossings`), the side street is cut. `offscreen_x`:
+        roads only start and end beyond X = ±offscreen_x, outside the screen. `turn_rate`: sharpest
+        turn of a road leaving the screen, in radians per `step`. `min_height`: no road on ground
+        lower than this (the sea) or steeper than `max_slope`. `min_run`: pieces of road shorter
+        than this many points are dropped. `step`: distance between two points of a road's centre
+        line. `slot_spacing`: distance between two building slots along a road. `setback`: gap
+        between the road edge and a building's footprint. `no_crossings`: see `NoCrossings`. `tiles`
+        (phase 15): the districts are laid on a grid of tiles.
+        """
         self.main_roads = main_roads
         self.spread = spread
         self.meander = meander
@@ -654,9 +735,9 @@ class Sea:
 class SceneryLevel:
     """The ground of a scrolling level: terrain, optional sea, roads and props."""
 
-    def __init__(  # noqa: PLR0917 (positional data fields: Transcrypt drops keyword arguments)
+    def __init__(
         self,
-        id: str,
+        id_: str,
         name: str,
         seed: int,
         scroll_speed: float,
@@ -667,11 +748,14 @@ class SceneryLevel:
         sea: Sea | None = None,
         runout: float | None = None,
     ) -> None:
-        """`scroll_speed`: ground speed under the playfield, in world units per second
-        (GAME-LEVEL-02). `transition`: width of ground (in Z) over which two sections blend into
-        each other. `runout`: seconds at the end of the last section that are only flown over past
-        the level's end, during a final boss fight (GAME-LEVEL-08, see `with_runout`)."""
-        self.id = id
+        """`scroll_speed`.
+
+        Ground speed under the playfield, in world units per second (GAME-LEVEL-02). `transition`:
+        width of ground (in Z) over which two sections blend into each other. `runout`: seconds at
+        the end of the last section that are only flown over past the level's end, during a final
+        boss fight (GAME-LEVEL-08, see `with_runout`).
+        """
+        self.id = id_
         self.name = name
         self.seed = seed
         self.scroll_speed = scroll_speed
@@ -693,12 +777,15 @@ class PlacedSection:
 
 
 def layout_sections(level: SceneryLevel) -> list[PlacedSection]:
-    """Places the sections end to end from Z = 0, each `seconds × scroll_speed` long
-    (GFX-TERRAIN-01)."""
+    """Places the sections end to end from Z = 0.
+
+    Each `seconds x scroll_speed` long (GFX-TERRAIN-01).
+    """
     if len(level.sections) == 0:
         raise ValueError('Level "' + level.id + '" has no section')
     if not (level.scroll_speed > 0):
-        raise ValueError("The scroll speed must be positive")
+        msg = "The scroll speed must be positive"
+        raise ValueError(msg)
     placed: list[PlacedSection] = []
     start = 0.0
     for section in level.sections:
@@ -724,8 +811,10 @@ def level_length(level: SceneryLevel) -> float:
 
 
 def with_runout(level: SceneryLevel, seconds: float) -> SceneryLevel:
-    """`level` with `seconds` more of its last section (GAME-LEVEL-08): ground drawn past the
-    level's end, for a final boss fight that keeps the ground scrolling."""
+    """`level` with `seconds` more of its last section (GAME-LEVEL-08).
+
+    Ground drawn past the level's end, for a final boss fight that keeps the ground scrolling.
+    """
     if len(level.sections) == 0 or seconds <= 0:
         return level
     last = level.sections[len(level.sections) - 1]
@@ -748,7 +837,7 @@ def with_runout(level: SceneryLevel, seconds: float) -> SceneryLevel:
 
 
 def _with_seconds(section: TerrainSection, seconds: float) -> TerrainSection:
-    """A copy of `section` with another length."""
+    """Return a copy of `section` with another length."""
     return TerrainSection(
         section.name,
         seconds,

@@ -1,5 +1,8 @@
-"""Unit tests of `src/render/scenery/weather_layer.py` (GFX-WEATHER-02, GFX-WEATHER-03,
-GFX-WEATHER-15)."""
+# Copyright (c) 2026 Renaud Guillon
+"""Unit tests of `src/render/scenery/weather_layer.py`.
+
+Covers GFX-WEATHER-02, GFX-WEATHER-03 and GFX-WEATHER-15.
+"""
 
 from types import SimpleNamespace
 from typing import Any
@@ -47,7 +50,7 @@ def _babylon(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(weather_layer, "vertex_data_of", _vertex_data_of)
     monkeypatch.setattr(weather_layer, "apply_vertex_data", _apply_vertex_data)
     monkeypatch.setattr(
-        weather_layer, "babylon_class", lambda name: SimpleNamespace(AddToMesh=_add_to_mesh)
+        weather_layer, "babylon_class", lambda _name: SimpleNamespace(AddToMesh=_add_to_mesh)
     )
 
 
@@ -55,7 +58,9 @@ def _new_mesh(label: str, scene: FakeScene) -> FakeNode:
     node = scene.add_node(label, is_mesh=True)
     node.subMeshes = []
     node.flakes = []
-    node.setVerticesData = lambda name, values, updatable, stride: _set_vertices(node, name, values)
+    node.setVerticesData = lambda name, values, _updatable, _stride: _set_vertices(
+        node, name, values
+    )
     node.releaseSubMeshes = node.subMeshes.clear
     node.getTotalVertices = lambda: node.vertexCount
     node.vertexCount = 0
@@ -80,13 +85,13 @@ def _apply_vertex_data(data: SimpleNamespace, mesh: FakeNode) -> None:
 
 
 def _add_to_mesh(
-    index: int, _end: int, _vertices: int, start: int, count: int, mesh: FakeNode
+    _index: int, _end: int, _vertices: int, start: int, count: int, mesh: FakeNode
 ) -> None:
     _SUB_MESHES.append((start, count))
     mesh.subMeshes = [SimpleNamespace(indexCount=count)]
 
 
-def _material_factory(scene: Any, kind: Any) -> _Material:
+def _material_factory(_scene: Any, kind: Any) -> _Material:
     return _Material(kind)
 
 
@@ -203,7 +208,7 @@ def test_the_material_is_driven_with_the_frame_of_the_view_and_the_fog() -> None
 def test_each_kind_has_one_material_and_one_mesh_however_many_frames() -> None:
     made: list[Any] = []
 
-    def factory(scene: Any, kind: Any) -> _Material:
+    def factory(_scene: Any, kind: Any) -> _Material:
         material = _Material(kind)
         made.append(material)
         return material

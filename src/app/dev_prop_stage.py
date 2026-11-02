@@ -1,14 +1,14 @@
-"""The props viewer's stage (DEV-MENU-16, D-205): the prop picked alone on a plain floor ruled in
-blocks (one square per tile of the game's grid), under studio lights, with no level's ground
-loaded. The camera turns round the prop as dragged; it is either at the game's distance with the
-game's field of view (the prop as big as in game) or close enough for the prop to fill the
-close-up's share of the screen (DEV-MENU-17). The prop's materials are those of the first level
-that has it (its world's tone).
+# Copyright (c) 2026 Renaud Guillon
+"""The props viewer's stage (DEV-MENU-16, D-205).
+
+The prop picked alone on a plain floor ruled in blocks (one square per tile of the game's grid),
+under studio lights, with no level's ground loaded. The camera turns round the prop as dragged; it
+is either at the game's distance with the game's field of view (the prop as big as in game) or close
+enough for the prop to fill the close-up's share of the screen (DEV-MENU-17). The prop's materials
+are those of the first level that has it (its world's tone).
 """
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from app.level_prepare import level_of
 from app.level_scene import scenery_look
@@ -43,13 +43,15 @@ from render.scenery.prop_field import mesh_of, prop_bounds, prop_geometry
 from render.scenery.scenery_kit import create_prop_materials
 from render.scenery.window_material_visual import add_window_material, glow_windows
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from app.dev_catalog import DevItem  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from app.dev_catalog import DevItem
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The size of a block when the game names no grid of tiles (ground units).
 DEFAULT_BLOCK = 10.0
@@ -59,18 +61,22 @@ BLOCK_SLACK = 1e-6
 
 def blocks_of(length: float, block: float) -> int:
     """How many blocks a footprint `length` long covers (at least one)."""
-    return max(1, int(math.ceil(length / block - BLOCK_SLACK)))
+    return max(1, math.ceil(length / block - BLOCK_SLACK))
 
 
 def block_centre(blocks: int, block: float) -> float:
-    """Where a footprint of `blocks` blocks is centred so it covers whole squares of the grid:
-    on a line of the grid for an even number, in the middle of a square for an odd one."""
+    """Return where a footprint of `blocks` blocks is centred so it covers whole grid squares.
+
+    On a line of the grid for an even number, in the middle of a square for an odd one.
+    """
     return (blocks % 2) * block / 2
 
 
 def game_distance(game: Any) -> float:
-    """How far the game's camera is from the ground it looks at, in ground units: a prop that far,
-    seen with the game's field of view, is as big as in game."""
+    """How far the game's camera is from the ground it looks at, in ground units: a prop that far.
+
+    Seen with the game's field of view, is as big as in game.
+    """
     look = game.view.scenery.camera
     framing = frame_playfield(game.screen, look)
     scale = look.groundScale if look.groundScale is not None else 1
@@ -80,8 +86,10 @@ def game_distance(game: Any) -> float:
 
 
 def close_up_distance(size: float, fov: float, fill: float) -> float:
-    """How far something `size` across is when it fills `fill` of the screen's height, seen with
-    the vertical field of view `fov` (the close-up, DEV-MENU-09)."""
+    """How far something `size` across is when it fills `fill` of the screen's height.
+
+    Seen with the vertical field of view `fov` (the close-up, DEV-MENU-09).
+    """
     return size / (2 * math.tan(fov / 2) * fill)
 
 
@@ -94,8 +102,10 @@ def _block_size(game: Any) -> float:
 
 
 class DevPropStage:
-    """See the module doc. `show(item)` puts the prop of `item` on the floor; `update(turn,
-    close_up)` places the camera."""
+    """See the module doc.
+
+    `show(item)` puts the prop of `item` on the floor; `update(turn, close_up)` places the camera.
+    """
 
     def __init__(self, engine: Any, game: Any, environment: bool) -> None:
         props = CFG.props
@@ -148,8 +158,10 @@ class DevPropStage:
         self.target = [0.0, 0.0, 0.0]
 
     def show(self, item: DevItem) -> None:
-        """Puts the prop of `item` on the middle of the floor, its footprint on whole squares,
-        and rules the floor round it."""
+        """Put the prop of `item` on the middle of the floor, its footprint on whole squares.
+
+        And rules the floor round it.
+        """
         self._drop()
         factory = self._game.view.scenery["propModels"].get(item.id)
         if factory is None:
@@ -176,12 +188,12 @@ class DevPropStage:
         for part in parts:
             geo = part[0]
             # `== None`: a field left out is undefined in the browser.
-            if geo == None or part[1] == None or len(geo.indices) == 0:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+            if geo == None or part[1] == None or len(geo.indices) == 0:
                 continue
             mesh = mesh_of("dev-prop-" + item.id, geo, part[1], self.scene)
             mesh.parent = root
             set_enabled(mesh, True)
-            if part[1] == materials.windows and self._glow != None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+            if part[1] == materials.windows and self._glow != None:
                 glow_windows(self._glow, mesh)
         self._prop = root
         self.size = max(b[3] - b[0], b[4] - b[1], b[5] - b[2])
@@ -190,9 +202,11 @@ class DevPropStage:
         self._floor = self._rule_floor(max(across, along) // 2 + 1 + reach)
 
     def update(self, turn: list[float], close_up: bool, zoom: float) -> None:
-        """Turns the camera round the prop as far as dragged (`turn`: radians across and up or
-        down, as Babylon's own orbiting camera turns), at the close-up's distance or the game's,
-        divided by `zoom` (DEV-MENU-11, D-208)."""
+        """Turn the camera round the prop as far as dragged (`turn`).
+
+        `turn` is radians across and up or down, as Babylon's own orbiting camera turns. The camera
+        is at the close-up's distance or the game's, divided by `zoom` (DEV-MENU-11, D-208).
+        """
         props = CFG.props
         camera = self.camera
         camera.alpha = -math.pi / 2 - turn[0]
@@ -221,8 +235,10 @@ class DevPropStage:
         return materials
 
     def _rule_floor(self, half: int) -> Any:
-        """A floor `half` blocks each way from the middle, ruled with a line on every block's
-        edge."""
+        """Return a floor `half` blocks each way from the middle.
+
+        It has a line along each block edge.
+        """
         props = CFG.props
         block = self.block
         extent = half * block
@@ -239,8 +255,9 @@ class DevPropStage:
             at = k * block
             lines.append([vector3(at, y, -extent), vector3(at, y, extent)])
             lines.append([vector3(-extent, y, at), vector3(extent, y, at)])
-            for _ in range(2):
-                colors.append([color4(g[0], g[1], g[2], 1), color4(g[0], g[1], g[2], 1)])
+            colors.extend([
+                [color4(g[0], g[1], g[2], 1), color4(g[0], g[1], g[2], 1)] for _ in range(2)
+            ])
         grid = create_colored_line_system("dev-props-grid", lines, colors, self.scene)
         grid.isPickable = False
         grid.parent = root
@@ -256,5 +273,6 @@ class DevPropStage:
         self.size = 0.0
 
     def dispose(self) -> None:
+        """Releases the grid and the scene of the stage."""
         self._drop()
         self.scene.dispose()

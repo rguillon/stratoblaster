@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/props/tile_works.py`."""
+
+from typing import Any
 
 import pytest
 from helpers.geometry_checks import check_colored, height
@@ -51,7 +54,9 @@ BUILDERS = [
 
 
 @pytest.mark.parametrize("builder", BUILDERS, ids=lambda b: b.__name__)
-def test_gfx_bldg_09_each_works_building_is_a_well_formed_structure_on_the_ground(builder):
+def test_gfx_bldg_09_each_works_building_is_a_well_formed_structure_on_the_ground(
+    builder: Any,
+) -> None:
     k = tile_kit(30.0, 40.0, TILE.size, 3)
     builder(k)
     prop = geometry_of(k)
@@ -59,7 +64,7 @@ def test_gfx_bldg_09_each_works_building_is_a_well_formed_structure_on_the_groun
     assert height(prop.structure) > 0
 
 
-def test_gfx_bldg_09_a_flare_stack_is_taller_than_a_solar_array():
+def test_gfx_bldg_09_a_flare_stack_is_taller_than_a_solar_array() -> None:
     flare = tile_kit(30.0, 40.0, TILE.size, 3)
     build_flare(flare)
     solar = tile_kit(30.0, 40.0, TILE.size, 3)

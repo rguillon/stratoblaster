@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/world_2/props.py`."""
 
 from game.config.world_2.props import WORLD_2_GROUPS, WORLD_2_PROPS
@@ -16,7 +17,9 @@ def test_wld_2_13_each_group_is_a_non_empty_set_of_weighted_props() -> None:
     for group in WORLD_2_PROPS.groups:
         assert group.kinds, group.id
         for kind in group.kinds:
-            assert kind.id and kind.weight > 0 and kind.footprint > 0, kind.id
+            assert kind.id, kind.id
+            assert kind.weight > 0, kind.id
+            assert kind.footprint > 0, kind.id
             assert 0 < kind.scale[0] <= kind.scale[1], kind.id
 
 

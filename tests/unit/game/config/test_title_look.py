@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/title_look.py`."""
 
 from game.config.title_look import NEON, TITLE_LOOK, WINDOW_COLORS
@@ -20,8 +21,11 @@ def _stop_colors() -> list[list[float]]:
 
 
 def test_ui_title_08_the_sky_haze_and_towers_stay_dark_and_red_free() -> None:
-    """The sky's glow, the haze and the towers, streets and signs panels: dark (no channel above
-    0.35) and never red, magenta or violet (red no more than green or blue)."""
+    """The sky's glow, the haze and the towers, streets and signs panels are dark.
+
+    No channel is above 0.35, and they are never red, magenta or violet (red no more than green or
+    blue).
+    """
     dark = [
         *_stop_colors(),
         TITLE_LOOK.horizon,
@@ -32,7 +36,8 @@ def test_ui_title_08_the_sky_haze_and_towers_stay_dark_and_red_free() -> None:
     ]
     for r, g, b in dark:
         assert max(r, g, b) <= 0.35, (r, g, b)
-        assert r <= g and r <= b, (r, g, b)
+        assert r <= g, (r, g, b)
+        assert r <= b, (r, g, b)
 
 
 def test_ui_title_08_the_neon_and_window_colours_stay_bright() -> None:

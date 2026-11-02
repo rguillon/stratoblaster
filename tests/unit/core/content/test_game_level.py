@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/content/game_level.py`."""
 
 from core.content.game_level import GameLevel, find_game_level

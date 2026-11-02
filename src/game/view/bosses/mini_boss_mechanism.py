@@ -1,31 +1,36 @@
-"""BOSS-49 (phase 7 review: fat armour over a complex mechanism): the machinery seen through the
-gaps between the World 1 mini bosses' armour plates
-Logical pixels, nose +Z, Y up. Darker than the armour, and set a little lower, so it reads in the
-gaps under the ~35° camera.
+# Copyright (c) 2026 Renaud Guillon
+"""BOSS-49 (phase 7 review: fat armour over a complex mechanism).
+
+The machinery seen through the gaps between the World 1 mini bosses' armour plates Logical pixels,
+nose +Z, Y up. Darker than the armour, and set a little lower, so it reads in the gaps under the
+~35° camera.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from game.view.bosses.mini_boss_shapes import SHADE, H
+from render.geometry.outline import hypot3
+from render.geometry.solids import Placement
 
-from game.view.bosses.mini_boss_shapes import SHADE, H  # noqa: E402
-from render.geometry.outline import hypot3  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Rgb = list[Any]
 type Vec3 = list[Any]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Gear metal: darker than the hull's panels, lighter than its shadows.
 GEAR = [0.07, 0.07, 0.085]
 
 
 def cog(hull: Any, at: Vec3, radius: float, teeth: int, yaw: float = 0) -> None:
-    """A cog lying flat at `at`: a toothed disc `radius` wide with `teeth` teeth, and its hub."""
+    """Add a cog lying flat at `at`: a toothed disc and its hub.
+
+    The disc is `radius` wide, with `teeth` teeth.
+    """
     outline: list[Any] = []
     for k in range(teeth * 2):
         a = (math.pi * k) / teeth
@@ -36,7 +41,7 @@ def cog(hull: Any, at: Vec3, radius: float, teeth: int, yaw: float = 0) -> None:
 
 
 def aim(a: Vec3, b: Vec3) -> list[Any]:
-    """The length, and the pitch and yaw that turn a solid's +Y axis along `a` -> `b`."""
+    """Return the length, and the pitch and yaw that turn a solid's +Y axis along `a` -> `b`."""
     dx = b[0] - a[0]
     dy = b[1] - a[1]
     dz = b[2] - a[2]
@@ -45,7 +50,10 @@ def aim(a: Vec3, b: Vec3) -> list[Any]:
 
 
 def ram(hull: Any, start: Vec3, end: Vec3, radius: float) -> None:
-    """A hydraulic ram from `start` to `end`: a fat dark cylinder, then its bright piston rod."""
+    """Add a hydraulic ram from `start` to `end`.
+
+    A fat dark cylinder, then its bright piston rod.
+    """
     aimed = aim(start, end)
     length = aimed[0]
     pitch = aimed[1]
@@ -56,7 +64,7 @@ def ram(hull: Any, start: Vec3, end: Vec3, radius: float) -> None:
 
 
 def conduit(hull: Any, start: Vec3, end: Vec3, radius: float, ribs: int) -> None:
-    """A ribbed conduit from `start` to `end`: a pipe with `ribs` collars along it."""
+    """Add a ribbed conduit from `start` to `end`: a pipe with `ribs` collars along it."""
     aimed = aim(start, end)
     length = aimed[0]
     pitch = aimed[1]
@@ -73,6 +81,6 @@ def conduit(hull: Any, start: Vec3, end: Vec3, radius: float, ribs: int) -> None
 
 
 def glow_line(neon: Any, start: Vec3, end: Vec3, width: float, color: Rgb) -> None:
-    """A glowing line deep in a gap, from `start` to `end`: a lit coolant or power conduit."""
+    """Add a glowing line deep in a gap, from `start` to `end`: a lit coolant or power conduit."""
     aimed = aim(start, end)
     neon.cylinder(width / 2, aimed[0], 4, color, Placement(start, aimed[2], aimed[1]))

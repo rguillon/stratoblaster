@@ -1,16 +1,18 @@
-"""Tap / click on a menu entry (UI-INPUT-09, UI-INPUT-01):
-tapping the selected entry confirms it, tapping another entry selects it."""
+# Copyright (c) 2026 Renaud Guillon
+"""Tap / click on a menu entry (UI-INPUT-09, UI-INPUT-01).
 
-from org.transcrypt.stubs.browser import __pragma__
+Tapping the selected entry confirms it, tapping another entry selects it.
+"""
 
 from input.menu_action import MenuSelect
 
-__pragma__("skip")
-from input.menu_action import MenuCommand  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from input.menu_action import MenuCommand
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def pointer_command(tapped: int, selected: int) -> MenuCommand:
-    """The command for tapping entry `tapped` while entry `selected` is selected."""
+    """Return the command for tapping entry `tapped` while entry `selected` is selected."""
     return "confirm" if tapped == selected else MenuSelect(tapped)

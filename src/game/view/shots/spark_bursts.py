@@ -1,4 +1,5 @@
-"""Bursts of metal sparks where bullets hit (GFX-FX-02)
+# Copyright (c) 2026 Renaud Guillon
+"""Bursts of metal sparks where bullets hit (GFX-FX-02).
 
 Each burst throws `count` sparks back from the hit, spread around straight down; they slow down
 with drag, twinkle, and shrink to nothing over their life.
@@ -6,22 +7,21 @@ with drag, twinkle, and shrink to nothing over their life.
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from core.math.rng import random_in
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import Random
 
-__pragma__("noskip")
-
-from core.math.rng import random_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
 
 class Spark:
     """A spark in flight (internal to `SparkBursts`)."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         x: float,
         y: float,
@@ -92,15 +92,13 @@ class SparkBursts:
             )
 
     def step(self, dt: float) -> list[SparkSpot]:
-        """Moves and ages the sparks by `dt`, drops the dead ones, returns where to draw them."""
+        """Move and ages the sparks by `dt`, drops the dead ones, returns where to draw them."""
         slow = math.exp(-self._options.drag * dt)
         spots: list[SparkSpot] = []
         i = len(self._sparks) - 1
         while i >= 0:
             s: Any = self._sparks[i]
             i -= 1
-            if not s:
-                continue
             s.age += dt
             if s.age >= s.life:
                 self._sparks.pop(i + 1)

@@ -1,11 +1,11 @@
-"""MB-MANGROVE-CROC-03, 3-1: the Mangrove Croc's jaws (on their hinges, MB-MANGROVE-CROC-04,
-D-061), its jaw cannon and its side
-pontoons. Logical pixels, nose +Z,
-Y up; the left jaw and pontoon (the screen's left, -X on the playfield) are drawn at +X."""
+# Copyright (c) 2026 Renaud Guillon
+"""MB-MANGROVE-CROC-03, 3-1: the Mangrove Croc's jaws, its jaw cannon and its side pontoons.
+
+The jaws are on their hinges (MB-MANGROVE-CROC-04, D-061). Logical pixels, nose +Z, Y up; the left
+jaw and pontoon (the screen's left, -X on the playfield) are drawn at +X.
+"""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.boss_look import BOSS_LOOK
 from game.config.bosses.boss_kit import mirror
@@ -37,33 +37,33 @@ from game.view.enemies.enemy_shapes import POD_SECTION, flip_x, side_stripe
 from render.geometry.organic import RibSpec, ribs
 from render.geometry.solids import LoftOptions, Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.geometry.outline import OutlinePoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_mesh import EnemyParts
+from render.geometry.outline import OutlinePoint
 
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The Mangrove Croc's green neon (MB-MANGROVE-CROC-06).
 CROC_GREEN = BOSS_LOOK.neon["mangrove-croc"]
 
 # The left jaw seen from above, from its hinge (x across, z along), as it is shut: wide at the
 # hinge, its inner edge along the croc's centre line, tapering to the tip.
-JAW = table(
-    [
-        [-6.5, 0],
-        [4, 0],
-        [5, 6],
-        [3.5, 16],
-        [0, 24.5],
-        [-2, 26.5],
-        [-4.5, 25],
-        [-6.5, 14],
-    ]
-)
+JAW = table([
+    [-6.5, 0],
+    [4, 0],
+    [5, 6],
+    [3.5, 16],
+    [0, 24.5],
+    [-2, 26.5],
+    [-4.5, 25],
+    [-6.5, 14],
+])
 # The jaw's heights: its bottom, its waist and its top.
 JAW_Y = [0, 2, 5]
 # How far along the jaw (z from the hinge) its teeth stand on the inner edge.
@@ -85,8 +85,11 @@ def scaled_about(outline: list[OutlinePoint], k: float, centre: list[float]) -> 
 
 
 def draw_jaw(s: float) -> Any:
-    """A jaw (side `s`, +1 the left one at +X), drawn half open as at rest: an armoured wedge with
-    a row of teeth along its inner edge, green neon along its outer edge and moss on its back."""
+    """Return a jaw (side `s`, +1 the left one at +X), drawn half open as at rest.
+
+    An armoured wedge with a row of teeth along its inner edge, green neon along its outer edge and
+    moss on its back.
+    """
 
     def draw(p: EnemyParts) -> None:
         hull = p.hull
@@ -143,9 +146,11 @@ CROC_JAWS = {
 
 
 def jaw_cannon(p: EnemyParts, at: Vec3) -> None:
-    """The jaw cannon (MB-MANGROVE-CROC-03) in the croc's throat between the jaws: a ribbed housing
-    with a neon collar, its barrel reaching for the jaws' tips, a charge light glowing in its
-    maw."""
+    """Add the jaw cannon (MB-MANGROVE-CROC-03) in the croc's throat between the jaws.
+
+    A ribbed housing with a neon collar, its barrel reaching for the jaws' tips, a charge light
+    glowing in its maw.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -165,20 +170,21 @@ def jaw_cannon(p: EnemyParts, at: Vec3) -> None:
 
 
 # A pontoon's float (loft stations from its centre: z, half width, bottom, top).
-FLOAT = table(
-    [
-        [-22, 3, 1, 4],
-        [-16, 7.5, -2, 7],
-        [2, 8.5, -2, 7.5],
-        [11, 6.5, -1, 6.5],
-        [14, 3, 1, 4.5],
-    ]
-)
+FLOAT = table([
+    [-22, 3, 1, 4],
+    [-16, 7.5, -2, 7],
+    [2, 8.5, -2, 7.5],
+    [11, 6.5, -1, 6.5],
+    [14, 3, 1, 4.5],
+])
 
 
 def pontoon(p: EnemyParts, at: Vec3) -> None:
-    """A side pontoon (MB-MANGROVE-CROC-03): a long armoured float with its twin fan guns at its
-    bow, a green light along its outer side, moss on its back and a vine trailing from it."""
+    """Add a side pontoon (MB-MANGROVE-CROC-03): a long armoured float.
+
+    Its twin fan guns at its bow, a green light along its outer side, moss on its back and a vine
+    trailing from it.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon

@@ -1,28 +1,29 @@
-"""MB-ASH-WRAITH-03, MB-ASH-WRAITH-04, 4-2: the Ash Wraith's parts: its two shroud pods (ducted fans
-under ragged shrouds) and its eye cannon (a mount on the nose, the eye itself on a turret). Logical
-pixels, nose +Z, Y up (towards the camera).
+# Copyright (c) 2026 Renaud Guillon
+"""MB-ASH-WRAITH-03, MB-ASH-WRAITH-04, 4-2: the Ash Wraith's parts.
+
+Its two shroud pods (ducted fans under ragged shrouds) and its eye cannon (a mount on the nose, the
+eye itself on a turret). Logical pixels, nose +Z, Y up (towards the camera).
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
+from game.config.boss_look import BOSS_LOOK
+from game.config.bosses.boss_kit import mirror
+from game.config.bosses.world_4.ash_wraith import WRAITH_EYE_LENS, WRAITH_POD_GUNS
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H, offset
+from game.view.bosses.world_4.ash_plains_soot import ASH_THIN, EMBER, ash_drift
+from game.view.bosses.world_4.living_forge import SKIN, glands
+from render.geometry.solids import Placement
 
-from game.config.boss_look import BOSS_LOOK  # noqa: E402
-from game.config.bosses.boss_kit import mirror  # noqa: E402
-from game.config.bosses.world_4.ash_wraith import WRAITH_EYE_LENS, WRAITH_POD_GUNS  # noqa: E402
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H, offset  # noqa: E402
-from game.view.bosses.world_4.ash_plains_soot import ASH_THIN, EMBER, ash_drift  # noqa: E402
-from game.view.bosses.world_4.living_forge import SKIN, glands  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def _sign(v: float) -> float:
@@ -37,7 +38,7 @@ def _sign(v: float) -> float:
 def _neon_or(kind: str, fallback: Rgb) -> Rgb:
     """`BOSS_LOOK.neon[kind] ?? fallback`."""
     colour: Rgb = BOSS_LOOK.neon[kind]
-    if colour == None:  # noqa: E711 (absent value is undefined in the browser, ENG-161)
+    if colour == None:
         return fallback
     return colour
 
@@ -73,9 +74,11 @@ def _tatters(flesh: Any, at: Vec3, s: float) -> None:
 
 
 def shroud_pod(p: Any, at: Vec3) -> None:
-    """A shroud pod around its centre `at` (MB-ASH-WRAITH-03): a ducted fan, its lip ringed with
-    pale cyan neon, torn grey shroud strips trailing off it, ash on its lip, a gun housing under its
-    front with the two barrels of its fans."""
+    """Add a shroud pod around its centre `at` (MB-ASH-WRAITH-03).
+
+    A ducted fan, its lip ringed with pale cyan neon, torn grey shroud strips trailing off it, ash
+    on its lip, a gun housing under its front with the two barrels of its fans.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -113,8 +116,10 @@ COLLAR = [
 
 
 def eye_mount(p: Any, at: Vec3) -> None:
-    """The eye cannon's mount around its pivot `at` (MB-ASH-WRAITH-04): a collar on the nose, a cyan
-    ring."""
+    """Add the eye cannon's mount around its pivot `at` (MB-ASH-WRAITH-04).
+
+    A collar on the nose, a cyan ring.
+    """
     p.flesh.lathe(COLLAR, 9, SKIN.panel, Placement(at, math.pi / 9))
     p.neon.ring(9.5, 0.5, 9, WRAITH_CYAN, Placement(offset(at, 0, 1.2, 0), math.pi / 9))
     p.hull.cylinder(6.2, 3.3, 9, H.dark, Placement(at))
@@ -138,8 +143,11 @@ BALL = [
 
 
 def eye_turret(p: Any, at: Vec3) -> None:
-    """The eye cannon (MB-ASH-WRAITH-04), turning on its mount: a dark armoured ball, a heavy lid
-    over it, the lens barrel reaching forward, its pale iris and lens lit as the laser charges."""
+    """Add the eye cannon (MB-ASH-WRAITH-04), turning on its mount.
+
+    A dark armoured ball, a heavy lid over it, the lens barrel reaching forward, its pale iris and
+    lens lit as the laser charges.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge

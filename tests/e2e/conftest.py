@@ -1,5 +1,8 @@
-"""Shared set-up of the e2e tests (ENG-30, ENG-50 to ENG-53): Playwright (Python, Chromium) on
-the e2e build in `dist-e2e/` (`make e2e-build`), served on a free local port for the whole session.
+# Copyright (c) 2026 Renaud Guillon
+"""Shared set-up of the e2e tests (ENG-30, ENG-50 to ENG-53).
+
+Playwright (Python, Chromium) runs on the e2e build in `dist-e2e/` (`make e2e-build`), served on a
+free local port for the whole session.
 
 - `base_url`: the server's address, never a dev server (ENG-51); `page.goto("./")` opens the game;
 - the Transcrypt browser stubs are on the path, so a test can read the game's config (`src/`);
@@ -42,13 +45,17 @@ def shard_of(value: str) -> tuple[int, int]:
     """`K/N` read as (K, N); fails on anything else."""
     k, _, n = value.partition("/")
     if not (k.isdigit() and n.isdigit() and 1 <= int(k) <= int(n)):
-        raise pytest.UsageError(f"--shard: expected K/N with 1 <= K <= N, got {value!r}")
+        msg = f"--shard: expected K/N with 1 <= K <= N, got {value!r}"
+        raise pytest.UsageError(msg)
     return int(k), int(n)
 
 
 def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item]) -> None:
-    """With `--shard K/N`, keeps every N-th test from the K-th, in collection order: the cases of
-    one parametrised test (the levels of a world) go to different slices, which balances them."""
+    """With `--shard K/N`, keeps every N-th test from the K-th, in collection order.
+
+    The cases of one parametrised test (the levels of a world) go to different slices, which
+    balances them.
+    """
     value = config.getoption("--shard")
     if value is None:
         return
@@ -61,7 +68,7 @@ def pytest_collection_modifyitems(config: pytest.Config, items: list[pytest.Item
 class QuietHandler(SimpleHTTPRequestHandler):
     """Serves `dist-e2e/` without logging every request."""
 
-    def log_message(self, format: str, *args: Any) -> None:  # noqa: A002
+    def log_message(self, _format: str, *_args: Any) -> None:
         pass
 
 

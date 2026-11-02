@@ -1,24 +1,24 @@
-"""Smoke and steam columns rising from props (phase 10, GFX-PROP-18): the quads of the puffs and
-the meshes that draw them. The material of each kind lifts, grows and fades the puffs frame by
+# Copyright (c) 2026 Renaud Guillon
+"""Smoke and steam columns rising from props (phase 10, GFX-PROP-18): the quads of the puffs.
+
+The meshes that draw them. The material of each kind lifts, grows and fades the puffs frame by
 frame.
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
 from config.plumes import PLUME_KINDS
+from render.babylon import apply_vertex_data, new_mesh, set_enabled, vertex_data_of
 
-# `%` keeps JavaScript's rounding.
-__pragma__("jsmod")
-from render.babylon import apply_vertex_data, new_mesh, set_enabled, vertex_data_of  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any, Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
+from typing import Any, Protocol
 
-from config.plumes import PlumeKind  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.atmosphere import Atmosphere  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.scenery.scenery_look import PropPlume  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from config.plumes import PlumeKind
+from core.scenery.atmosphere import Atmosphere
+from render.scenery.scenery_look import PropPlume
 
 Rgb = tuple[float, float, float]
 
@@ -28,11 +28,15 @@ class PlumeMaterial(Protocol):
 
     material: Any
 
-    def set(self, frame: "PlumeFrame") -> None: ...
+    def set(self, frame: "PlumeFrame") -> None:
+        """Set."""
 
 
 PlumeMaterialFactory = Callable[[Any, PlumeKind], PlumeMaterial]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
+# `%` keeps JavaScript's rounding.
+__pragma__("jsmod")
 
 
 class PlumeFog:
@@ -101,9 +105,11 @@ class PlumeGeometry:
 
 
 def plume_geometry(plumes: list[PropPlume], kind: PlumeKind) -> PlumeGeometry:
-    """The quads of `plumes` (phase 10): `kind.puffs` per column, each puff a quad around the
-    column's foot whose `phase` spreads the puffs evenly up the column; the material lifts, grows
-    and fades them."""
+    """Return the quads of `plumes` (phase 10): `kind.puffs` per column.
+
+    Each puff a quad around the column's foot whose `phase` spreads the puffs evenly up the column;
+    the material lifts, grows and fades them.
+    """
     positions: list[float] = []
     puffs: list[float] = []
     scales: list[float] = []
@@ -148,22 +154,24 @@ def build_plume_meshes(
     material: Callable[[str], Any],
     kinds: Any = None,
 ) -> list[Any]:
-    """The plume meshes of a prop kind (phase 10, GFX-PROP-18): one per plume kind it has, drawn
-    with the prop's own thin instances (so every placed prop smokes), always selected (the puffs
-    rise far above the prop's bounds), see-through and never writing depth."""
+    """Return the plume meshes of a prop kind (phase 10, GFX-PROP-18): one per plume kind it has.
+
+    Each is drawn with the prop's own thin instances (so every placed prop smokes), always selected
+    (the puffs rise far above the prop's bounds), see-through and never writing depth.
+    """
     table = PLUME_KINDS if kinds is None else kinds
     ids: list[str] = []
     for p in plumes:
         if p.kind not in ids:
             ids.append(p.kind)
     meshes: list[Any] = []
-    for id in ids:
-        kind = table.get(id)
-        mat = material(id)
+    for kind_id in ids:
+        kind = table.get(kind_id)
+        mat = material(kind_id)
         if not kind or not mat:
             continue
-        geometry = plume_geometry([p for p in plumes if p.kind == id], kind)
-        mesh = new_mesh(name + "-plume-" + id, scene)
+        geometry = plume_geometry([p for p in plumes if p.kind == kind_id], kind)
+        mesh = new_mesh(name + "-plume-" + kind_id, scene)
         data = vertex_data_of(geometry.positions, geometry.indices)
         apply_vertex_data(data, mesh)
         mesh.setVerticesData("puff", geometry.puffs, False, 4)

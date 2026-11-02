@@ -1,4 +1,5 @@
-"""Measures how readable a level's frame is (DEV-API-09)
+# Copyright (c) 2026 Renaud Guillon
+"""Measures how readable a level's frame is (DEV-API-09).
 
 The frame is drawn once as it is and once without the playfield (the background alone), and the
 two are compared around each object. The report is a plain JavaScript object with camelCase
@@ -6,17 +7,19 @@ key names, for the test API; the e2e test checks the readability thresholds with
 background's bright pixels: GFX-READ-01).
 """
 
-from org.transcrypt.stubs.browser import __pragma__, window
+from org.transcrypt.stubs.browser import window
 
 from config.game_play import GAME_PLAY_CONFIG
 from core.math.pixel_contrast import PixelBox, Pixels, box_contrast, brightest_but
 from render.babylon import babylon_class, js_object, js_set, set_enabled, vector3
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 CFG = GAME_PLAY_CONFIG.readability_probe
 
@@ -44,7 +47,7 @@ class _Spots:
 
 
 def _first_in_view(items: Any, in_view: Any, radius: Any) -> Any:
-    """The first of `items` wholly in view (a margin round it), as a spot of its `radius`."""
+    """Return the first of `items` wholly in view (a margin round it), as a spot of its `radius`."""
     for item in items:
         m = radius(item) + CFG.margin
         if in_view(item.x - m, item.y - m) and in_view(item.x + m, item.y + m):
@@ -53,8 +56,9 @@ def _first_in_view(items: Any, in_view: Any, radius: Any) -> Any:
 
 
 def _spots_of(run: Any, in_view: Any) -> _Spots:
-    """Where each kind of object is on the playfield, if any is in view: player shots away from
-    the ship (not over it, nor leaving its guns).
+    """Where each kind of object is on the playfield, if any is in view.
+
+    Player shots away from the ship (not over it, nor leaving its guns).
     """
     ship = run.ship
     enemies = run.enemies
@@ -77,7 +81,7 @@ def _spots_of(run: Any, in_view: Any) -> _Spots:
 
 
 async def _read_frame(scene: Any) -> Any:
-    """Reads the canvas back, row 0 at the bottom (as WebGL reads it)."""
+    """Read the canvas back, row 0 at the bottom (as WebGL reads it)."""
     engine = scene.getEngine()
     width = engine.getRenderWidth()
     height = engine.getRenderHeight()
@@ -87,11 +91,12 @@ async def _read_frame(scene: Any) -> Any:
 
 
 def _pixel_box(scene: Any, root: Any, spot: Spot) -> PixelBox:
-    """The box of pixels (WebGL rows, bottom up) that `spot` covers on screen."""
+    """Return the box of pixels (WebGL rows, bottom up) that `spot` covers on screen."""
     engine = scene.getEngine()
     camera = scene.activeCamera
     if camera is None:
-        raise ValueError("The level has no camera")
+        msg = "The level has no camera"
+        raise ValueError(msg)
     width = engine.getRenderWidth()
     height = engine.getRenderHeight()
     world = root.getWorldMatrix()
@@ -116,8 +121,10 @@ async def probe_readability(
     in_view: Any,
     bright_share: float,
 ) -> Any:
-    """Measures how readable the level's current frame is (DEV-API-09): draws it once as it is and
-    once without the playfield (the background alone), and compares the two around each object.
+    """Measures how readable the level's current frame is (DEV-API-09).
+
+    Draws it once as it is and once without the playfield (the background alone), and compares the
+    two around each object.
     """
     spots = _spots_of(run, in_view)
     frame = await _read_frame(scene)

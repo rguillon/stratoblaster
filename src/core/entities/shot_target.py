@@ -1,14 +1,14 @@
-"""Something shots can hit: a circle with health (ENG-09)
+# Copyright (c) 2026 Renaud Guillon
+"""Something shots can hit: a circle with health (ENG-09).
 
 Positions are in logical pixels, Y up.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Protocol  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Sequence
+from typing import Protocol
 
 
 class ShotTarget(Protocol):
@@ -42,7 +42,8 @@ class ShotTarget(Protocol):
         ...
 
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 INFINITY = float("Infinity")
 
@@ -53,8 +54,9 @@ def is_alive(target: ShotTarget) -> bool:
 
 
 def damage_target(target: ShotTarget, amount: float) -> float:
-    """Removes `amount` health, never below 0. Returns the damage actually dealt: 0 when the
-    target ignores it (a blocked hit, GAME-WPN-17: e.g. a shielded core, BOSS-14).
+    """Remove `amount` health, never below 0. Returns the damage actually dealt.
+
+    0 when the target ignores it (a blocked hit, GAME-WPN-17: e.g. a shielded core, BOSS-14).
     """
     before = target.health
     target.health = before - min(before, max(0, amount))
@@ -64,7 +66,7 @@ def damage_target(target: ShotTarget, amount: float) -> float:
 def closest_target(
     targets: Sequence[ShotTarget], x: float, y: float, reach: float = INFINITY
 ) -> ShotTarget | None:
-    """The living target closest to (x, y) and within `reach`, or None if there is none."""
+    """Return the living target closest to (x, y) and within `reach`, or None if there is none."""
     best: ShotTarget | None = None
     best_distance = reach**2
     for target in targets:

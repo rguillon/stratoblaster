@@ -1,16 +1,16 @@
-"""Weather kinds and lightning tunables (phase 8-10, specs/graphics/weather.md)
+# Copyright (c) 2026 Renaud Guillon
+"""Weather kinds and lightning tunables (phase 8-10, specs/graphics/weather.md).
 
 The classes are defined here (not im), so `config/` never imports `core/` at
 runtime: `core/scenery/lightning.py` imports this module.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Sequence
 
 Rgb = tuple[float, float, float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class WeatherHaze:
@@ -22,9 +22,11 @@ class WeatherHaze:
 
 
 class WeatherRings:
-    """Phase 9: faint rings spreading on the water where drops land (rain): about `per_cell` in
-    each square of `cell` world units at strength 1, each growing to `radius` over `period`
-    seconds, as opaque as `alpha` at most, in `color`."""
+    """Phase 9: faint rings spreading on the water where drops land (rain).
+
+    About `per_cell` in each square of `cell` world units at strength 1, each growing to `radius`
+    over `period` seconds, as opaque as `alpha` at most, in `color`.
+    """
 
     def __init__(
         self,
@@ -44,8 +46,7 @@ class WeatherRings:
 
 
 class WeatherFlicker:
-    """Phase 10: each particle's brightness flickers by up to `amount` (0..1), `hz` times a
-    second."""
+    """Phase 10: each particle's brightness flickers up to `amount` (0..1), `hz` times a second."""
 
     def __init__(self, amount: float, hz: float) -> None:
         self.amount = amount
@@ -53,8 +54,10 @@ class WeatherFlicker:
 
 
 class WeatherVolume:
-    """The box of air a weather fills around the view: half its width across the level, its
-    length along it, and its bottom and top heights."""
+    """The box of air a weather fills around the view: half its width across the level.
+
+    Its length along it, and its bottom and top heights.
+    """
 
     def __init__(self, half_width: float, length: float, bottom: float, top: float) -> None:
         self.half_width = half_width
@@ -64,11 +67,13 @@ class WeatherVolume:
 
 
 class WeatherKind:
-    """A kind of weather (GFX-WEATHER-01): particles falling through the air between the ground
-    and the flight altitude, drawn behind everything on the playfield. Kinds are data; each caps
-    its particles (`max_particles`, ENG-105)."""
+    """A kind of weather (GFX-WEATHER-01).
 
-    def __init__(  # noqa: PLR0917 (positional data fields: Transcrypt drops keyword arguments)
+    Particles falling through the air between the ground and the flight altitude, drawn behind
+    everything on the playfield. Kinds are data; each caps its particles (`max_particles`, ENG-105).
+    """
+
+    def __init__(
         self,
         max_particles: int,
         fog_at_1: float,
@@ -87,17 +92,17 @@ class WeatherKind:
         flicker: WeatherFlicker | None = None,
         fade_high: float | None = None,
     ) -> None:
-        """`max_particles`: particles drawn at strength 1. `fog_at_1`: how far the fog ends at
-        strength
-        1, as a share of its clear-weather distance. `fall`: speed they fall at, [min, max]. `wind`:
-        the sideways wind at strength 0 and 1 (world units / s). `size`: size of a particle, [min,
-        max]. `streak`: how much longer it streaks along the wind at 1. `sway`: [amplitude,
-        frequency]
-        of the slow sway of each particle. `alpha`: opacity of a particle. `align` (phase 9): `fall`
-        stretches each particle along the way it falls (rain), `wind` (the default) sideways at
-        strength 1 only. `blend` (phase 10): `add` draws them added onto what is behind (embers).
-        `fade_high` (phase 10): particles fade out over the top share of the box of air they
-        fill."""
+        """`max_particles`: particles drawn at strength 1.
+
+        `fog_at_1`: how far the fog ends at. strength 1, as a share of its clear-weather distance.
+        `fall`: speed they fall at, [min, max]. `wind`: the sideways wind at strength 0 and 1 (world
+        units / s). `size`: size of a particle, [min, max]. `streak`: how much longer it streaks
+        along the wind at 1. `sway`: [amplitude, frequency] of the slow sway of each particle.
+        `alpha`: opacity of a particle. `align` (phase 9): `fall` stretches each particle along the
+        way it falls (rain), `wind` (the default) sideways at strength 1 only. `blend` (phase 10):
+        `add` draws them added onto what is behind (embers). `fade_high` (phase 10): particles fade
+        out over the top share of the box of air they fill.
+        """
         self.max_particles = max_particles
         self.fog_at_1 = fog_at_1
         self.fall = fall
@@ -119,7 +124,7 @@ class WeatherKind:
 class LightningRules:
     """How lightning comes and how bright it gets (see `LIGHTNING`)."""
 
-    def __init__(  # noqa: PLR0917 (positional data fields: Transcrypt drops keyword arguments)
+    def __init__(
         self,
         gap: Sequence[float],
         flash: float,
@@ -131,14 +136,15 @@ class LightningRules:
         bolt_chance: float,
         max_per_second: int,
     ) -> None:
-        """`gap`: seconds between two strikes, [min, max]. `flash` and `rise`: seconds a flash
-        lasts,
-        and how long it takes to rise to full brightness. `double_chance` and `double_after`: chance
-        that a strike flashes twice, and the seconds between its two flashes. `brightness`: ambient
-        light and sky at most this many times as bright as the storm's. `max_haze`: a flash
-        brightens
-        no channel of the haze past this (0..1). `bolt_chance`: chance that a strike draws a bolt in
-        the clouds. `max_per_second`: never more flashes than this in any second."""
+        """`gap`: seconds between two strikes, [min, max].
+
+        `flash` and `rise`: seconds a flash lasts, and how long it takes to rise to full brightness.
+        `double_chance` and `double_after`: chance that a strike flashes twice, and the seconds
+        between its two flashes. `brightness`: ambient light and sky at most this many times as
+        bright as the storm's. `max_haze`: a flash brightens no channel of the haze past this
+        (0..1). `bolt_chance`: chance that a strike draws a bolt in the clouds. `max_per_second`:
+        never more flashes than this in any second.
+        """
         self.gap = gap
         self.flash = flash
         self.rise = rise

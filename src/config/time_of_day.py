@@ -1,15 +1,15 @@
-"""The six times of day (GFX-SKY-03) and the light tunables of the sky (GFX-SKY-06, GFX-SKY-14)
+# Copyright (c) 2026 Renaud Guillon
+"""The six times of day (GFX-SKY-03) and the light tunables of the sky (GFX-SKY-06, GFX-SKY-14).
 
 Colours are gamma-space RGB, 0..1, as the scenery looks.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
-__pragma__("skip")
-from collections.abc import Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Sequence
 
 Rgb = tuple[float, float, float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class PresetSun:
@@ -25,8 +25,11 @@ class PresetSun:
 
 
 class PresetSky:
-    """The sky of a time of day: the haze, and the gradient used for reflections only (the camera
-    never sees the sky): under the horizon, at it, a little above, and straight up."""
+    """The sky of a time of day: the haze.
+
+    And the gradient used for reflections only (the camera never sees the sky): under the horizon,
+    at it, a little above, and straight up.
+    """
 
     def __init__(
         self,
@@ -68,9 +71,11 @@ class TimeOfDayPreset:
         ground_lights: float,
         fog: float,
     ) -> None:
-        """`clouds`: colour of the clouds and of their thin edges (GFX-SKY-13). `ground_lights`:
-        brightness of the ground's window, street, neon and car lights (GFX-SKY-08). `fog`: factor
-        on the level's fog distances (the haze comes closer at night, GFX-SKY-07)."""
+        """`clouds`: colour of the clouds and of their thin edges (GFX-SKY-13).
+
+        `ground_lights` brightness of the ground's window, street, neon and car lights (GFX-SKY-08).
+        `fog`: factor on the level's fog distances (the haze comes closer at night, GFX-SKY-07).
+        """
         self.sun = sun
         self.sky = sky
         self.ambient = ambient
@@ -162,13 +167,15 @@ TIME_OF_DAY = {
 
 
 class Overcast:
-    """How clouds and storms change the light (GFX-SKY-06): a heavy low cover (from `overcast[0]` to
-    full at `overcast[1]`) dims the sun by up to `sun_dim`, softens the shadows towards
-    `soft_shadows`, brightens the ambient light by up to `ambient_gain` and greys the haze by up to
-    `haze_grey`; heavy layers turn see-through by up to `thinning` so the ground still shows. A
-    storm turns the clouds towards `storm` (GFX-SKY-13)."""
+    """How clouds and storms change the light (GFX-SKY-06).
 
-    def __init__(  # noqa: PLR0917 (positional data fields: Transcrypt drops keyword arguments)
+    A heavy low cover (from `overcast[0]` to full at `overcast[1]`) dims the sun by up to
+    `sun_dim`, softens the shadows towards `soft_shadows`, brightens the ambient light by up to
+    `ambient_gain` and greys the haze by up to `haze_grey`; heavy layers turn see-through by up to
+    `thinning` so the ground still shows. A storm turns the clouds towards `storm` (GFX-SKY-13).
+    """
+
+    def __init__(
         self,
         overcast: Sequence[float],
         sun_dim: float,
@@ -190,10 +197,12 @@ class Overcast:
 
 
 class Underglow:
-    """Phase 10: a glow from below (GFX-SKY-14: fire and lava lighting the clouds, the haze and the
-    ambient light from the ground): at strength 1 the clouds' edges turn `shade` of the way to its
-    colour, their body `cloud` of the way (dark smoke stays dark), the haze `haze` and the ambient
-    light from the ground `ground` of the way."""
+    """Phase 10: a glow from below (GFX-SKY-14: fire and lava lighting the clouds).
+
+    The haze and the ambient light from the ground: at strength 1 the clouds' edges turn `shade` of
+    the way to its colour, their body `cloud` of the way (dark smoke stays dark), the haze `haze`
+    and the ambient light from the ground `ground` of the way.
+    """
 
     def __init__(self, shade: float, cloud: float, haze: float, ground: float) -> None:
         self.shade = shade

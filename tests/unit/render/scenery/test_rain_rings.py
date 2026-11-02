@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/scenery/rain_rings.py` (GFX-WEATHER-09)."""
 
 from types import SimpleNamespace
@@ -40,7 +41,7 @@ def _ground(label: str, width: float, height: float, scene: Any) -> FakeNode:
 def _rings(kinds: Any = WEATHER_KINDS) -> tuple[RainRings, list[_Material]]:
     made: list[_Material] = []
 
-    def factory(scene: Any, rings: Any) -> _Material:
+    def factory(_scene: Any, rings: Any) -> _Material:
         material = _Material(rings)
         made.append(material)
         return material

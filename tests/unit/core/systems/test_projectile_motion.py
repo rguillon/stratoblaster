@@ -1,6 +1,8 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/systems/projectile_motion.py`."""
 
 import math
+from typing import Any
 
 import pytest
 
@@ -73,12 +75,12 @@ class _Src:
     def emitter(self) -> PlanePoint:
         return PlanePoint(self.x, self.y)
 
-    def place(self, muzzle, on_turret=False):  # type: ignore[no-untyped-def]
+    def place(self, muzzle: Any, _on_turret: bool = False) -> Any:  # type: ignore[no-untyped-def]
         mx, my, mh = muzzle
         return RaisedPoint(self.x + mx, self.y + my, mh)
 
 
-def _sources(parts: dict[str, _Src]):  # type: ignore[no-untyped-def]
+def _sources(parts: dict[str, _Src]) -> Any:  # type: ignore[no-untyped-def]
     return parts.get
 
 
@@ -120,7 +122,7 @@ def _weapon(
 
 
 def _shot(weapon: ProjectileWeaponDefinition, heading: float = 0, speed: float = 10) -> Projectile:
-    return Projectile(True, weapon, 0, 0, heading, speed, 0)
+    return Projectile(alive=True, weapon=weapon, x=0, y=0, heading=heading, speed=speed, age=0)
 
 
 def test_boss_23_a_ring_fires_all_around_and_turns_on_each_volley() -> None:

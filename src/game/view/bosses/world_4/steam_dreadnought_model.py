@@ -1,27 +1,29 @@
-"""FB-STEAM-DREADNOUGHT-01 to FB-STEAM-DREADNOUGHT-06, 4-1: the Steam Dreadnought. Logical pixels,
-nose +Z (down the screen), Y up towards the camera; +X is the screen's left. A flying battleship: a
-long armoured hull under a deck with sponsons for its broadside turrets, a stepped bridge over the
-core, two smokestacks amidships, a laser ram at the bow and a missile rack on the stern.
+# Copyright (c) 2026 Renaud Guillon
+"""FB-STEAM-DREADNOUGHT-01 to FB-STEAM-DREADNOUGHT-06, 4-1: the Steam Dreadnought.
+
+Logical pixels, nose +Z (down the screen), Y up towards the camera; +X is the screen's left. A
+flying battleship: a long armoured hull under a deck with sponsons for its broadside turrets, a
+stepped bridge over the core, two smokestacks amidships, a laser ram at the bow and a missile rack
+on the stern.
+
 FB-STEAM-DREADNOUGHT-02: a living sky-leviathan, its flesh belly banded and ribbed in bone, its back
 a scorched hide, a metal bridge, guns and ram grafted on, steaming blowholes for stacks.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.bosses.world_4.steam_dreadnought import (  # noqa: E402
+from game.config.bosses.world_4.steam_dreadnought import (
     DREAD_BEACON,
     DREAD_BOW_GUNS,
     DREAD_HEIGHTS,
     DREAD_LENS,
     STEAM_DREADNOUGHT,
 )
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.final_boss_greebles import mast  # noqa: E402
-from game.view.bosses.mini_boss_greebles import seam, vent  # noqa: E402
-from game.view.bosses.mini_boss_shapes import QUARTER, WHITE, H, offset  # noqa: E402
-from game.view.bosses.overlord_city import edge_lights, symmetric  # noqa: E402
-from game.view.bosses.world_4.black_sands_kit import (  # noqa: E402
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.final_boss_greebles import mast
+from game.view.bosses.mini_boss_greebles import seam, vent
+from game.view.bosses.mini_boss_shapes import QUARTER, WHITE, H, offset
+from game.view.bosses.overlord_city import edge_lights, symmetric
+from game.view.bosses.world_4.black_sands_kit import (
     FORGE,
     barrel_to,
     blot,
@@ -29,7 +31,7 @@ from game.view.bosses.world_4.black_sands_kit import (  # noqa: E402
     molten_seam,
     soot,
 )
-from game.view.bosses.world_4.living_forge import (  # noqa: E402
+from game.view.bosses.world_4.living_forge import (
     SKIN,
     back_ribs,
     flesh_shell,
@@ -37,24 +39,26 @@ from game.view.bosses.world_4.living_forge import (  # noqa: E402
     magma_vein,
     reactor_sacs,
 )
-from game.view.bosses.world_4.steam_dreadnought_parts import (  # noqa: E402
+from game.view.bosses.world_4.steam_dreadnought_parts import (
     DREAD_RED,
     barbette,
     broadside,
     missile_rack,
     smokestack,
 )
-from game.view.enemies.enemy_shapes import HULL_SECTION, SIDES, side_stripe  # noqa: E402
-from render.geometry.organic import RibSpec  # noqa: E402
-from render.geometry.solids import LoftOptions, Placement  # noqa: E402
+from game.view.enemies.enemy_shapes import HULL_SECTION, SIDES, side_stripe
+from render.geometry.organic import RibSpec
+from render.geometry.solids import LoftOptions, Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type OutlinePoint = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 N = DREAD_RED
 DECK = DREAD_HEIGHTS.deck
@@ -125,7 +129,10 @@ def _deck_flesh(p: Any, s: float) -> None:
 
 
 def _draw_hull(p: Any) -> None:
-    """The hull, its glowing seams low on the sides, the deck with its red-lit rim, the reactors."""
+    """Draw the hull, the deck and the reactors.
+
+    The hull has glowing seams low on its sides, the deck a red-lit rim.
+    """
     neon = p.neon
     flesh_shell(p.flesh, HULL_SECTION, HULL, [SKIN.base, SKIN.dark])
     for side in [0, 4]:
@@ -140,7 +147,7 @@ def _draw_hull(p: Any) -> None:
     back_ribs(p, [-60, -48, 36, 48], RibSpec(30, DECK - 2, 4, 1))
     for s in SIDES:
         _deck_flesh(p, s)
-    every = [i for i in range(len(DECK_OUTLINE))]
+    every = list(range(len(DECK_OUTLINE)))
     edge_lights(neon, DECK_OUTLINE, every, [5.8, 6.8], N)
     reactor_sacs(p, [[0, 3, -82]], 5, FORGE["molten"])
     reactor_sacs(
@@ -155,8 +162,10 @@ def _draw_hull(p: Any) -> None:
 
 
 def _draw_deck(p: Any) -> None:
-    """The deck's dressing: molten seams between its plates, soot behind the stacks, cowls,
-    bolts."""
+    """Draw the deck's dressing.
+
+    Molten seams between its plates, soot behind the stacks, cowls, bolts.
+    """
     hull = p.hull
     neon = p.neon
     w = CITADEL[0]
@@ -202,7 +211,10 @@ def _draw_deck(p: Any) -> None:
 
 
 def _draw_bridge(p: Any) -> None:
-    """The bridge over the core: stepped tiers, red-lit windows, wings, a mast and its beacon."""
+    """Draw the bridge over the core.
+
+    Stepped tiers, red-lit windows, wings, a mast and its beacon.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -230,8 +242,10 @@ def _draw_bridge(p: Any) -> None:
 
 
 def _draw_bow(p: Any) -> None:
-    """The bow: the gun block with its twin guns, and the laser ram at the stem, lit as it
-    charges."""
+    """Draw the bow: the gun block with its twin guns, and the laser ram at the stem.
+
+    The ram is lit as it charges.
+    """
     hull = p.hull
     charge = p.charge
     muzzle = p.muzzle
@@ -250,10 +264,12 @@ def _draw_bow(p: Any) -> None:
 
 
 def build_steam_dreadnought(scene: Any) -> Any:
-    """FB-STEAM-DREADNOUGHT-01, FB-STEAM-DREADNOUGHT-06: the Steam Dreadnought, a flying
-    battleship 5 L long, red neon: a soot-black armoured
-    hull with glowing seams, a stepped bridge over its core, two smokestacks puffing steam, two
-    broadside turrets on sponsons, a laser ram at the bow and a missile rack on the stern."""
+    """FB-STEAM-DREADNOUGHT-01, FB-STEAM-DREADNOUGHT-06: the Steam Dreadnought.
+
+    A flying battleship 5 L long, red neon: a soot-black armoured hull with glowing seams, a stepped
+    bridge over its core, two smokestacks puffing steam, two broadside turrets on sponsons, a laser
+    ram at the bow and a missile rack on the stern.
+    """
 
     def core(p: Any) -> None:
         _draw_hull(p)

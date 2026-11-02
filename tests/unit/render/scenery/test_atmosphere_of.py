@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/render/scenery/atmosphere_of.py` (GFX-SKY-04; the tone, GFX-READ-02)."""
 
 import pytest

@@ -1,26 +1,28 @@
-"""Road pieces of the districts on tiles (phase 15; GFX-ROAD-09, GFX-ROAD-11, GFX-ROAD-12): a
-sidewalk over the whole piece, a kerb and the roadway of each open side, joined in the middle, and
+# Copyright (c) 2026 Renaud Guillon
+"""Road pieces of the districts on tiles (phase 15; GFX-ROAD-09, GFX-ROAD-11, GFX-ROAD-12).
+
+A sidewalk over the whole piece, a kerb and the roadway of each open side, joined in the middle, and
 the lane markings up to the junction. Draped on the ground, so pieces meet with no step. These are
 the layers of the pieces the road atlas has no room for (GFX-ROAD-20).
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from render.geometry.gradient_shapes import ColoredGeometry
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable
 
-from core.scenery.road_tiles import PieceSide, RoadPiece  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.scenery_level import TileRules  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.road_tiles import PieceSide, RoadPiece
+from core.scenery.scenery_level import TileRules
 
 Rgb = tuple[float, float, float]
 Height = Callable[[float, float], float]
 Rect = tuple[float, float, float, float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Layers above the sidewalk, so the kerb, the roadway and the lines each show over the last.
 LAYER = 0.1
@@ -30,16 +32,10 @@ LAYER = 0.1
 ARMS = [(False, True), (True, True), (False, False), (True, False)]
 
 
-def _hypot(a: float, b: float) -> float:
-    """`Math.hypot(a, b)`: JavaScript's rounding, not `math.hypot`."""
-    __pragma__("js", "{}", "return Math.hypot(a, b);")
-    return math.hypot(a, b)  # Only reached outside Transcrypt (CPython).
-
-
 class TileRoadLook:
     """How the road pieces look."""
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         roadway: Rgb,
         sidewalk: Rgb,
@@ -94,18 +90,15 @@ def _roadway_of(side: PieceSide, tile: TileRules) -> list[float]:
 
 
 def _span_of(sides: list[PieceSide | None], tile: TileRules) -> list[float] | None:
-    """The span of the roadways of `sides` across the piece, if any of them is open."""
-    spans: list[list[float]] = []
-    for s in sides:
-        if s:
-            spans.append(_roadway_of(s, tile))
+    """Return the span of the roadways of `sides` across the piece, if any of them is open."""
+    spans: list[list[float]] = [_roadway_of(s, tile) for s in sides if s]
     if len(spans) == 0:
         return None
     return [_min_of([p[0] for p in spans]), _max_of([p[1] for p in spans])]
 
 
 def _arm_rect(to: float, along_x: bool, high: bool, size: float, a: float, b: float) -> Rect:
-    """The rectangle of an arm from its edge to `to`, across the roadway (a, b)."""
+    """Return the rectangle of an arm from its edge to `to`, across the roadway (a, b)."""
     lo = to if high else 0
     hi = size if high else to
     if along_x:
@@ -121,8 +114,11 @@ def _arm_of(
     size: float,
     tile: TileRules,
 ) -> tuple[Rect, Rect]:
-    """The roadway of an open side, from its edge to the far side of the roads `across` it (or
-    right across without one), and the rectangle its lines stop in, at their near side."""
+    """Return the roadway of an open side, from its edge.
+
+    The far side of the roads `across` it (or right across without one), and the rectangle its lines
+    stop in, at their near side.
+    """
     roadway = _roadway_of(side, tile)
     a = roadway[0]
     b = roadway[1]
@@ -143,9 +139,11 @@ def _arm_of(
 
 
 def piece_roadway(piece: RoadPiece, tile: TileRules) -> tuple[list[Rect], list[Arm]]:
-    """The roadway of a piece and the lines of its arms, as rectangles: each open side's roadway
-    runs from its edge to the far side of the roads across it (or right across without one), and
-    its lines stop at their near side."""
+    """Return the roadway of a piece and the lines of its arms, as rectangles.
+
+    Each open side's roadway runs from its edge to the far side of the roads across it (or right
+    across without one), and its lines stop at their near side.
+    """
     size = piece.size * tile.size
     # The roads across each way: those along Z span X, those along X span Z.
     spans_x = _span_of([piece.sides[0], piece.sides[2]], tile)
@@ -173,8 +171,10 @@ def _at_line(arm: Arm, c: float, width: float) -> Rect:
 
 
 def arm_lines(arm: Arm, width: float) -> tuple[list[Rect], list[Rect]]:
-    """The line rectangles of an arm: the centre line, and lane lines on wide roads. Returns
-    (centre, lanes)."""
+    """Return the line rectangles of an arm: the centre line, and lane lines on wide roads.
+
+    The result is (centre, lanes).
+    """
     x0, x1, z0, z1 = arm.line
     if arm.along_x:
         a = z0
@@ -192,10 +192,12 @@ def arm_lines(arm: Arm, width: float) -> tuple[list[Rect], list[Rect]]:
 
 
 def cuts(a: float, b: float, cell: float) -> list[float]:
-    """The cuts of [a, b] (world units): its ends, and every multiple of `cell` between them. All
-    the layers of the roads are cut on the same world lattice, so their vertices line up and,
-    draped on uneven ground, one layer never bulges through the one above it (z-fighting on the
-    wide roads of World 4, reviewer 2026-10-28)."""
+    """Return the cuts of [a, b] (world units): its ends, and every multiple of `cell` between them.
+
+    All the layers of the roads are cut on the same world lattice, so their vertices line up and,
+    draped on uneven ground, one layer never bulges through the one above it (z-fighting on the wide
+    roads of World 4, reviewer 2026-10-28).
+    """
     out = [a]
     c = (math.floor(a / cell) + 1) * cell
     while c < b - 1e-6:
@@ -205,7 +207,7 @@ def cuts(a: float, b: float, cell: float) -> list[float]:
     return out
 
 
-def _add_rect(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+def _add_rect(
     geo: ColoredGeometry,
     rect: Rect,
     ox: float,
@@ -214,8 +216,10 @@ def _add_rect(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments
     color: Rgb,
     cell: float,
 ) -> None:
-    """Appends `rect` (piece frame) to `geo`, cut on the world lattice of `cell`, draped on
-    `height(x, z)`."""
+    """Append `rect` (piece frame) to `geo`, cut on the world lattice of `cell`.
+
+    Draped on `height(x, z)`.
+    """
     x0, x1, z0, z1 = rect
     if x1 - x0 <= 0 or z1 - z0 <= 0:
         return
@@ -238,7 +242,7 @@ def _add_rect(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments
 
 
 def _layer_height(ground: Height, lift: float, layer: float) -> Height:
-    """The height of a layer above the ground under it."""
+    """Return the height of a layer above the ground under it."""
 
     def height(x: float, z: float) -> float:
         return ground(x, z) + lift + layer * LAYER
@@ -253,8 +257,11 @@ def add_piece(
     look: TileRoadLook,
     ground: Height,
 ) -> None:
-    """Appends the geometry of `piece` to `geo`, at `ground(x, z)` of the ground under it (world
-    coordinates; flat ground at 0 for the `props/` page)."""
+    """Append the geometry of `piece` to `geo`.
+
+    At `ground(x, z)` of the ground under it (world coordinates; flat ground at 0 for the `props/`
+    page).
+    """
     size = piece.size * tile.size
     ox = piece.x * tile.size
     oz = piece.z * tile.size
@@ -285,8 +292,11 @@ def build_tile_grid(
     z_max: float,
     color: Rgb,
 ) -> ColoredGeometry:
-    """DEV-OPT-06 (`tiles=1`): thin lines along the tile edges over the districts whose pieces are
-    in [z_min, z_max), from one end of their pieces to the other."""
+    """DEV-OPT-06 (`tiles=1`).
+
+    Thin lines along the tile edges over the districts whose pieces are in [z_min, z_max), from one
+    end of their pieces to the other.
+    """
     geo = ColoredGeometry()
     in_chunk: list[RoadPiece] = []
     for p in pieces:
@@ -310,26 +320,9 @@ def build_tile_grid(
 
 
 def _above_ground(ground: Height) -> Height:
-    """The ground plus one world unit, for the grid lines."""
+    """Return the ground plus one world unit, for the grid lines."""
 
     def height(x: float, z: float) -> float:
         return ground(x, z) + 1
 
     return height
-
-
-def build_tile_road_geometry(
-    pieces: list[RoadPiece],
-    tile: TileRules,
-    look: TileRoadLook,
-    ground: Height,
-    z_min: float,
-    z_max: float,
-) -> ColoredGeometry:
-    """The pieces of `pieces` whose middle is in [z_min, z_max), on `ground`."""
-    geo = ColoredGeometry()
-    for piece in pieces:
-        mid = (piece.z + piece.size / 2) * tile.size
-        if mid >= z_min and mid < z_max:
-            add_piece(geo, piece, tile, look, ground)
-    return geo

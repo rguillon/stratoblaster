@@ -1,4 +1,7 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/props/tile_models.py`."""
+
+from typing import Any
 
 import pytest
 from helpers.geometry_checks import check_prop, footprint
@@ -9,17 +12,17 @@ from game.view.props.tile_models import BUILDERS, TILE_PROP_MODELS, build_tile_m
 MODEL_IDS = [m.id for m in TILE_MODELS]
 
 
-def test_gfx_prop_02_every_model_of_the_grid_has_a_factory():
+def test_gfx_prop_02_every_model_of_the_grid_has_a_factory() -> None:
     assert sorted(TILE_PROP_MODELS) == sorted(MODEL_IDS)
 
 
-def test_gfx_bldg_09_every_archetype_of_the_grid_has_a_builder():
+def test_gfx_bldg_09_every_archetype_of_the_grid_has_a_builder() -> None:
     archetypes = {m.archetype for m in TILE_MODELS}
     assert archetypes <= set(BUILDERS)
 
 
 @pytest.mark.parametrize("model", TILE_MODELS, ids=MODEL_IDS)
-def test_gfx_bldg_03_each_model_fills_its_tiles_less_the_margin(model):
+def test_gfx_bldg_03_each_model_fills_its_tiles_less_the_margin(model: Any) -> None:
     prop = TILE_PROP_MODELS[model.id]()
     check_prop(prop)
     width, depth = footprint(prop.structure)
@@ -27,7 +30,7 @@ def test_gfx_bldg_03_each_model_fills_its_tiles_less_the_margin(model):
     assert depth == pytest.approx(model.tiles[1] * TILE.size - 2 * BUILDING_MARGIN)
 
 
-def test_gfx_bldg_09_a_model_is_built_the_same_way_each_time():
+def test_gfx_bldg_09_a_model_is_built_the_same_way_each_time() -> None:
     model = TILE_MODELS[0]
     a = build_tile_model(model)
     b = build_tile_model(model)

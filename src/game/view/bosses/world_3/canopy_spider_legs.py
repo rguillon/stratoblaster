@@ -1,10 +1,11 @@
-"""FB-CANOPY-SPIDER-03, 3-2: the Canopy Spider's legs: an upper leg on each hip and a lower leg on
-each knee (moving limbs, D-061), stepping in turn, and the gun pods at their feet (its parts).
-Logical pixels, nose +Z, Y up (towards the camera)."""
+# Copyright (c) 2026 Renaud Guillon
+"""FB-CANOPY-SPIDER-03, 3-2: the Canopy Spider's legs.
+
+An upper leg on each hip and a lower leg on each knee (moving limbs, D-061), stepping in turn, and
+the gun pods at their feet (its parts). Logical pixels, nose +Z, Y up (towards the camera).
+"""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.boss_look import BOSS_LOOK
 from game.config.bosses.world_3.canopy_spider import (
@@ -25,15 +26,17 @@ from game.view.bosses.world_3.jungle_flesh import F, gland, sign_of, table
 from game.view.bosses.world_3.toucan_jungle import moss, sagging, segment, vine
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_mesh import EnemyParts
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The Spider's red neon (its eyes, the lines along its legs; FB-CANOPY-SPIDER-06).
 SPIDER_RED = BOSS_LOOK.neon["canopy-spider"]
@@ -41,7 +44,7 @@ QUARTER = math.pi / 2
 
 
 def leg_points(leg: str) -> list[Vec3]:
-    """The model-space points of `leg` at rest: its hip, knee and foot, at their heights."""
+    """Return the model-space points of `leg` at rest: its hip, knee and foot, at their heights."""
     s = side_of(leg)
     rest = LEG_REST[end_of(leg)]
     hip = [s * rest[0][0], rest[0][1]]
@@ -55,7 +58,7 @@ def leg_points(leg: str) -> list[Vec3]:
 
 
 def knee_joint(p: EnemyParts, knee: Vec3) -> None:
-    """A knee: a faceted ball of armour, a red light on top."""
+    """Add a knee: a faceted ball of armour, a red light on top."""
     p.hull.lathe(
         [[0, -3.6], [3.4, -2], [3.8, 0.6], [2.6, 3], [0, 3.8]],
         7,
@@ -100,8 +103,10 @@ def upper_leg(leg: str) -> Any:
 
 
 def lower_leg(leg: str) -> Any:
-    """`leg`'s lower leg, on its knee: a tapering shin dropping to its foot, a vine around it
-    (FB-CANOPY-SPIDER-05)."""
+    """Return `leg`'s lower leg, on its knee (FB-CANOPY-SPIDER-05).
+
+    A tapering shin dropping to its foot, a vine around it.
+    """
 
     def draw(p: EnemyParts) -> None:
         hull = p.hull
@@ -137,8 +142,10 @@ def lower_leg(leg: str) -> Any:
 
 
 def leg_limbs() -> dict[str, Any]:
-    """The limbs of the four legs (FB-CANOPY-SPIDER-03): an upper leg on each hip and a lower leg
-    on each knee."""
+    """Return the limbs of the four legs (FB-CANOPY-SPIDER-03).
+
+    An upper leg on each hip and a lower leg on each knee.
+    """
     limbs: dict[str, Any] = {}
     for leg in LEGS:
         limbs["hip-" + leg] = {"draw": upper_leg(leg)}
@@ -151,8 +158,11 @@ FOOT = table([[4, 0], [6.4, 1.6], [6, 4.4], [3.6, 6.6], [0, 7.2]])
 
 
 def leg_gun_pod(p: EnemyParts, at: Vec3) -> None:
-    """A leg's gun pod at its foot `at` (FB-CANOPY-SPIDER-04): an armoured foot gripping the canopy
-    with three claws, a red ring around it, and a gun pointing forward that fires aimed spreads."""
+    """Add a leg's gun pod at its foot `at` (FB-CANOPY-SPIDER-04).
+
+    An armoured foot gripping the canopy with three claws, a red ring around it, and a gun pointing
+    forward that fires aimed spreads.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge

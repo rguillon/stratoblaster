@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/math/noise.py`."""
 
 import pytest
@@ -75,17 +76,17 @@ def test_fbm_stays_within_the_noise_range() -> None:
 
 def test_ridged_of_a_flat_zero_noise_is_one() -> None:
     options = OctaveOptions(octaves=3, lacunarity=2, gain=0.5)
-    assert ridged(lambda x, y: 0.0, 1.0, 1.0, options) == pytest.approx(1.0)
+    assert ridged(lambda _x, _y: 0.0, 1.0, 1.0, options) == pytest.approx(1.0)
 
 
 def test_ridged_of_a_flat_noise_at_one_is_zero() -> None:
     options = OctaveOptions(octaves=3, lacunarity=2, gain=0.5)
-    assert ridged(lambda x, y: 1.0, 1.0, 1.0, options) == pytest.approx(0.0)
+    assert ridged(lambda _x, _y: 1.0, 1.0, 1.0, options) == pytest.approx(0.0)
 
 
 def test_ridged_without_octaves_is_zero() -> None:
     options = OctaveOptions(octaves=0, lacunarity=2, gain=0.5)
-    assert ridged(lambda x, y: 0.0, 1.0, 1.0, options) == 0.0
+    assert ridged(lambda _x, _y: 0.0, 1.0, 1.0, options) == 0.0
 
 
 def test_ridged_stays_within_zero_and_one() -> None:

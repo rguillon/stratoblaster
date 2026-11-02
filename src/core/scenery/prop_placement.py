@@ -1,4 +1,5 @@
-"""Places props on a level (scenery only, GFX-PROP-01)
+# Copyright (c) 2026 Renaud Guillon
+"""Places props on a level (scenery only, GFX-PROP-01).
 
 Buildings stand only along the roads (GFX-BLDG-01): each slot of the road network gets a building
 with the section's building density, set back from the road edge and facing it, if the ground under
@@ -23,41 +24,20 @@ start is placed, so the chunks before it never see them (PERF-15).
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-from core.scenery.ground_boxes import BuildingRecord, GroundBox  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.height_field import HeightField  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.road_network import RoadNetwork  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.road_types import RoadSlot, RoadSnapshot  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.scenery_level import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-    BlockFill,
-    PropGroupRule,
-    PropKindRule,
-    PropRules,
-    TerrainSection,
-    Woods,
-)
-from core.scenery.street_links import Block  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-__pragma__("noskip")
-
-from config.scenery_stage import SCENERY_STAGE_CONFIG  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.math.noise import create_noise2d, hash_2d  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.away_placement import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from config.scenery_stage import SCENERY_STAGE_CONFIG
+from core.math.noise import create_noise2d, hash_2d
+from core.scenery.away_placement import (
     AWAY_MARGIN,
     Building,
     ZSpan,
     place_hamlets,
     place_loners,
 )
-from core.scenery.block_towers import tower_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.district_packing import DistrictSite, RoadTilesCache, pack_districts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.draws import allowed, between, weighted  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.float_placement import fixed_pieces, floating_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.ground_boxes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.block_towers import tower_in
+from core.scenery.district_packing import DistrictSite, RoadTilesCache, pack_districts
+from core.scenery.draws import allowed, between, weighted, weighted_pick
+from core.scenery.float_placement import fixed_pieces, floating_in
+from core.scenery.ground_boxes import (
     BuildingIndex,
     GroundArea,
     PlacerSnapshot,
@@ -65,9 +45,30 @@ from core.scenery.ground_boxes import (  # noqa: E402 (after the Transcrypt skip
     inside,
     overlap,
 )
-from core.scenery.ground_fit import SampledGround, lowest_under, standing_height  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.ordering import stable_sort_by  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.scenery.street_grid import block_parts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.scenery.ground_fit import SampledGround, lowest_under, standing_height
+from core.scenery.ordering import stable_sort_by
+from core.scenery.street_grid import block_parts
+
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
+
+from core.scenery.ground_boxes import BuildingRecord, GroundBox
+from core.scenery.height_field import HeightField
+from core.scenery.road_network import RoadNetwork
+from core.scenery.road_types import RoadSlot, RoadSnapshot
+from core.scenery.scenery_level import (
+    BlockFill,
+    PropGroupRule,
+    PropKindRule,
+    PropRules,
+    TerrainSection,
+    Woods,
+)
+from core.scenery.street_links import Block
+
+# __pragma__ ("noskip")
+
 
 # Draws of a slot (building, kind, scale) and of a cell (trees): each draw has its own stream.
 DRAW_BUILDING = 0
@@ -106,7 +107,7 @@ RUNOUT_GATE = 2 * CHUNK_SIZE
 
 
 def chunk_of(z: float) -> int:
-    """The index of the chunk that contains Z `z`."""
+    """Return the index of the chunk that contains Z `z`."""
     return math.floor(z / CHUNK_SIZE)
 
 
@@ -122,7 +123,7 @@ def _largest_footprint(kinds: Sequence[PropKindRule]) -> float:
     largest = 0.0
     for k in range(len(kinds)):
         f = kinds[k].footprint
-        if f > largest:  # noqa: PLR1730 (Transcrypt's `max` is slower)
+        if f > largest:
             largest = f
     return largest
 
@@ -169,10 +170,12 @@ class _AwaySite:
         return True
 
 
-def _kept(in_woods: bool, woods: Woods | None, draw: float) -> bool:  # noqa: FBT001 (a flag of the prop's placement, positional)
-    """Whether a tree tried in a wood (`in_woods`) or out of it grows: in a wood, without `woods`;
-    with them (D-214, GFX-PROP-08), some of a wood's trees (`keep`), a few of the others
-    (`scatter`), by `draw` (the tree's own, apart from its edge draw)."""
+def _kept(in_woods: bool, woods: Woods | None, draw: float) -> bool:
+    """Whether a tree tried in a wood (`in_woods`) or out of it grows.
+
+    In a wood, without `woods`; with them (D-214, GFX-PROP-08), some of a wood's trees (`keep`), a
+    few of the others (`scatter`), by `draw` (the tree's own, apart from its edge draw).
+    """
     if woods is None:
         return in_woods
     return draw < (woods.keep if in_woods else woods.scatter)
@@ -190,9 +193,11 @@ class PropPlacer:
         sea_level: float | None = None,
         made: PlacerSnapshot | None = None,
     ) -> None:
-        """`sea_level`: the level's sea level, if it has a sea: floating props float on it (phase
-        8).
-        `made`: the buildings placed before (e.g. in a worker, PERF-14): taken as they are."""
+        """`sea_level`: the level's sea level, if it has a sea.
+
+        Floating props float on it (phase 8). `made`: the buildings placed before (e.g. in a worker,
+        PERF-14): taken as they are.
+        """
         self.field = field
         self.rules = rules
         self.seed = seed
@@ -230,17 +235,21 @@ class PropPlacer:
         return self.roads.runout_laid
 
     def lay_runout(self, made: RoadSnapshot | None = None) -> RoadSnapshot:
-        """Lays the runout's streets (or takes those `made` before, e.g. in a worker), and returns
-        what they added. Once only (see `RoadNetwork.add_runout`): the first call's result is kept
-        as `runout_added`."""
+        """Lays the runout's streets (or takes those `made` before, e.g. in a worker).
+
+        And returns what they added. Once only (see `RoadNetwork.add_runout`): the first call's
+        result is kept as `runout_added`.
+        """
         added = self.roads.add_runout(made)
         if self.runout_added is None and self.roads.runout_laid:
             self.runout_added = added
         return added
 
     def _gate_chunk(self) -> int | None:
-        """The chunk that needs the runout's streets laid before it is placed, if the level has a
-        runout."""
+        """Return the chunk that needs the runout's streets laid before it is placed.
+
+        If the level has a runout.
+        """
         start = self.roads.runout_from
         if start is None:
             return None
@@ -263,9 +272,11 @@ class PropPlacer:
         return self._placed_to > self._last
 
     def ensure_placed_chunks(self, z: float) -> list[ChunkBuildings]:
-        """Places the chunks not placed yet up to the one that contains `z` (idempotent), and
-        returns them, in order, with their buildings. The runout's streets are laid before the chunk
-        that needs them (see `RUNOUT_GATE`)."""
+        """Places the chunks not placed yet up to the one that contains `z` (idempotent).
+
+        And returns them, in order, with their buildings. The runout's streets are laid before the
+        chunk that needs them (see `RUNOUT_GATE`).
+        """
         target = min(max(chunk_of(z), self._first), self._last)
         made: list[ChunkBuildings] = []
         while self._placed_to <= target:
@@ -276,16 +287,20 @@ class PropPlacer:
         return made
 
     def ensure_placed(self, z: float) -> list[BuildingRecord]:
-        """Places the chunks not placed yet up to the one that contains `z` here (idempotent), and
-        returns the buildings placed now."""
+        """Places the chunks not placed yet up to the one that contains `z` here (idempotent).
+
+        And returns the buildings placed now.
+        """
         made: list[BuildingRecord] = []
         for chunk in self.ensure_placed_chunks(z):
             made.extend(chunk.buildings)
         return made
 
     def want_placed(self, z: float) -> None:
-        """Asks for the chunks up to the one that contains `z`: from the worker that places them,
-        if there is one (see `ask`), else places them here now."""
+        """Asks for the chunks up to the one that contains `z`.
+
+        From the worker that places them, if there is one (see `ask`), else places them here now.
+        """
         if self.ask is None:
             self.ensure_placed(z)
             return
@@ -295,8 +310,10 @@ class PropPlacer:
             self.ask(z)
 
     def receive(self, chunks: Sequence[ChunkBuildings]) -> None:
-        """Takes the chunks placed elsewhere (the worker's), in order. A chunk placed here already
-        is skipped: both place the same buildings."""
+        """Take the chunks placed elsewhere (the worker's), in order.
+
+        A chunk placed here already is skipped: both place the same buildings.
+        """
         for chunk in chunks:
             if chunk.k == self._placed_to:
                 for building in chunk.buildings:
@@ -304,20 +321,25 @@ class PropPlacer:
                 self._placed_to = chunk.k + 1
 
     def _span_of(self, k: int) -> ZSpan:
-        """The Z span of chunk `k`: the first and the last reach past the level at both ends."""
+        """Return the Z span of chunk `k`.
+
+        The first and the last reach past the level at both ends.
+        """
         from_ = -INFINITY if k == self._first else k * CHUNK_SIZE
         to = INFINITY if k == self._last else (k + 1) * CHUNK_SIZE
         return ZSpan(from_, to)
 
     def _place_chunk(self, k: int) -> list[BuildingRecord]:
-        """The buildings of chunk `k`, placed now."""
+        """Return the buildings of chunk `k`, placed now."""
         before = len(self._buildings)
         self._place_buildings(self._span_of(k))
         return self._buildings[before:]
 
     def _place_buildings(self, span: ZSpan) -> None:
-        """The buildings of the blocks, the road slots and the spots away from the roads in
-        `span`."""
+        """Place the buildings of the blocks.
+
+        The road slots and the spots away from the roads in `span`.
+        """
 
         def within(z: float) -> bool:
             return z >= span.from_ and z < span.to
@@ -329,8 +351,8 @@ class PropPlacer:
                 self.rules,
                 self.roads,
                 self.seed,
-                lambda x, z, section: self.group_at(x, z, section),  # noqa: PLW0108 (Transcrypt: keep the lambda, it binds self)
-                lambda building: self.occupy(building),  # noqa: PLW0108 (Transcrypt: keep the lambda, it binds self)
+                lambda x, z, section: self.group_at(x, z, section),
+                lambda building: self.occupy(building),
             )
             road = self._road_tiles.of(self.roads.roads, tiles)
             pack_districts(site, within, tiles, road)
@@ -354,14 +376,17 @@ class PropPlacer:
             place_loners(_AwaySite(self), loners, span)
 
     def group_at(self, x: float, z: float, section: TerrainSection) -> PropGroupRule | None:
-        """The building group of the area around (`x`, `z`), among those `section` allows."""
+        """Return the building group of the area around (`x`, `z`), among those `section` allows."""
         f = self.rules.zone_frequency
         zone = (self._zones(x * f, z * f) + 1) / 2
         groups = allowed(self.rules.groups, section.groups)
         return weighted(groups, min(0.999999, max(0, zone)))
 
     def place(self, area: GroundArea) -> list[PropPlacement]:
-        """Buildings and trees that lie in `area` (the buildings around it are placed first)."""
+        """Return the buildings and trees that lie in `area`.
+
+        The buildings around it are placed first.
+        """
         self._ensure_around(area)
         placements = self._buildings_in(area)
         placements.extend(self._trees_in(area))
@@ -375,12 +400,15 @@ class PropPlacer:
             self.lay_runout()
 
     def place_without_trees(self, area: GroundArea) -> list[PropPlacement]:
-        """The buildings and floating props that lie in `area` (see `place`)."""
+        """Return the buildings and floating props that lie in `area` (see `place`)."""
         self._ensure_around(area)
         return self._buildings_in(area)
 
     def _buildings_in(self, area: GroundArea) -> list[PropPlacement]:
-        """The buildings and floating props in `area`, the buildings around it already placed."""
+        """Return the buildings and floating props in `area`.
+
+        The buildings around it are already placed.
+        """
         placements = [
             b.placement for b in self._buildings if inside(area, b.placement.x, b.placement.z)
         ]
@@ -390,15 +418,19 @@ class PropPlacer:
         return placements
 
     def trees_in(self, area: GroundArea) -> list[PropPlacement]:
-        """The trees of the cells whose corner lies in `area` (see `place`): areas side by side,
-        cut on the cells' edges or not, get each tree once (D-212, GFX-PROP-14, PERF-23: a chunk's
-        trees come a row of cells at a time)."""
+        """Return the trees of the cells whose corner lies in `area` (see `place`).
+
+        Areas side by side, cut on the cells' edges or not, get each tree once (D-212, GFX-PROP-14,
+        PERF-23: a chunk's trees come a row of cells at a time).
+        """
         self._ensure_around(area)
         return self._trees_in(area)
 
     def _trees_in(self, area: GroundArea) -> list[PropPlacement]:
-        """The trees of the cells whose corner lies in `area`, the buildings around it already
-        placed."""
+        """Return the trees of the cells whose corner lies in `area`.
+
+        The buildings around it already placed.
+        """
         placements: list[PropPlacement] = []
         cell = self.rules.cell_size
         i0 = math.ceil(area.x_min / cell)
@@ -414,8 +446,10 @@ class PropPlacer:
         return hash_2d(i, j, self.seed * 31 + draw)
 
     def free(self, area: GroundBox, gap: float | None = None) -> bool:
-        """Whether the ground box of `area` keeps `gap` clear of the placed buildings (default: the
-        road setback)."""
+        """Whether the ground box of `area` keeps `gap` clear of the placed buildings.
+
+        The default `gap` is the road setback.
+        """
         g = gap if gap is not None else self.roads.setback
         for b in self._fixed:
             if overlap(b, area, g):
@@ -423,7 +457,10 @@ class PropPlacer:
         return self._occupied.clear(area, g)
 
     def _restore(self, made: PlacerSnapshot) -> None:
-        """The buildings placed before, occupying the ground in the order they were placed."""
+        """Restore the buildings placed before.
+
+        They occupy the ground in the order they were placed.
+        """
         self._fixed.extend(made.buildings[0 : made.fixed])
         for building in made.buildings:
             self.occupy(building)
@@ -431,19 +468,21 @@ class PropPlacer:
         self._asked_to = made.placed_to
 
     def snapshot(self) -> PlacerSnapshot:
-        """What this placer placed so far (PERF-14)."""
+        """Return what this placer placed so far (PERF-14)."""
         return PlacerSnapshot(list(self._buildings), len(self._fixed), self._placed_to)
 
     def occupy(self, building: BuildingRecord) -> None:
-        """Records `building` as placed: it is kept for `snapshot` and takes its ground box."""
+        """Record `building` as placed: it is kept for `snapshot` and takes its ground box."""
         self._buildings.append(building)
         self._occupied.add(building)
 
     def _fill_block(self, block: Block, index: int) -> None:
-        """Fills a block of a section with `blocks` (phase 4 review): a podium over the whole block,
-        if the section has podiums, and buildings on its roof (or on the ground), one per part of
-        the block (parts of about 30, up to 4 × 4), a large kind of the section's groups that fits
-        each part."""
+        """Fill a block of a section with `blocks` (phase 4 review).
+
+        A podium over the whole block, if the section has podiums, and buildings on its roof (or on
+        the ground), one per part of the block (parts of about 30, up to 4 x 4), a large kind of the
+        section's groups that fits each part.
+        """
         section = self.field.section_at((block.z_min + block.z_max) / 2).section
         fill = section.blocks
         if fill is None:
@@ -519,8 +558,11 @@ class PropPlacer:
         return ground + height
 
     def _building_by(self, slot: RoadSlot) -> BuildingRecord | None:
-        """The first of the kinds `slot` tries that fits there, free of the others (reviewer,
-        2026-10-28: the smaller ones are only fitted when the ones before do not fit)."""
+        """Return the first of the kinds `slot` tries that fits there.
+
+        Free of the others (reviewer, 2026-10-28: the smaller ones are only fitted when the ones
+        before do not fit).
+        """
         for kind in self._candidates(slot):
             building = self._fit(slot, kind)
             if building is not None and self.free(building):
@@ -528,11 +570,12 @@ class PropPlacer:
         return None
 
     def _candidates(self, slot: RoadSlot) -> list[PropKindRule]:
-        """The kinds a slot tries in turn: none when the density draw says no building; else the
-        kind
-        drawn in the area's group, then the smaller kinds of that group from the largest down (at
-        most
-        `FALLBACKS`), so gaps too small for the first choice still get a building."""
+        """Return the kinds a slot tries in turn: none when the density draw says no building.
+
+        Else the kind drawn in the area's group, then the smaller kinds of that group from the
+        largest down (at most `FALLBACKS`), so gaps too small for the first choice still get a
+        building.
+        """
 
         def r(draw: int) -> float:
             return self._random(slot.road.index, slot.index, draw)
@@ -578,9 +621,11 @@ class PropPlacer:
         return Building(PropPlacement(kind.id, x, y, z, rotation, scale), half, half)
 
     def _tree_count(self, i: int, j: int, density: float) -> int:
-        """The trees tried in cell (`i`, `j`) of a section of tree `density`: any number up to
-        `trees_per_cell` times the density; with `forests` (D-212), about `trees_per_cell` (give or
-        take `WOODS_SPREAD`), so the cells do not show in a wood."""
+        """Return the trees tried in cell (`i`, `j`) of a section of tree `density`.
+
+        Any number up to `trees_per_cell` times the density; with `forests` (D-212), about
+        `trees_per_cell` (give or take `WOODS_SPREAD`), so the cells do not show in a wood.
+        """
         draw = self._random(i, j, DRAW_TREES)
         most = self.rules.trees_per_cell
         if density <= 0:
@@ -590,9 +635,12 @@ class PropPlacer:
         return math.floor(most * (1 + (draw - 0.5) * 2 * WOODS_SPREAD))
 
     def _woods_cover(self, j: int, density: float, woods: Woods | None) -> float:
-        """How much of the ground of row `j` of cells the woods cover (D-212): the section's tree
-        `density` times its grass share (`Surface.lush`, blended between sections as the ground's
-        cover is), so the woods grow on the grass; or times its `woods` cover (D-214)."""
+        """How much of the ground of row `j` of cells the woods cover (D-212).
+
+        The section's tree `density` times its grass share (`Surface.lush`, blended between sections
+        as the ground's cover is), so the woods grow on the grass; or times its `woods` cover
+        (D-214).
+        """
         if self.rules.forests is None:
             return density
         if woods is not None:
@@ -601,16 +649,18 @@ class PropPlacer:
         return density * (lush if lush is not None else 0)
 
     def _in_woods(self, x: float, z: float, draw: float, cover: float) -> bool:
-        """Whether a tree at (`x`, `z`) grows (D-212, GFX-PROP-07): in a wood, or at its edge by
-        `draw`. `cover` (see `_woods_cover`) sets how much of the ground the woods cover: all the
-        noise over `threshold` at 1, less below (the threshold raised towards 1). Every tree grows
-        without `forests`."""
+        """Whether a tree at (`x`, `z`) grows (D-212, GFX-PROP-07).
+
+        In a wood, or at its edge by `draw`. `cover` (see `_woods_cover`) sets how much of the
+        ground the woods cover: all the noise over `threshold` at 1, less below (the threshold
+        raised towards 1). Every tree grows without `forests`.
+        """
         forests = self.rules.forests
         if forests is None:
             return True
         f = forests.frequency
         wood = (self._woods(x * f, z * f) + 1) / 2
-        full = 1 if cover > 1 else cover
+        full = min(cover, 1)
         threshold = forests.threshold + (1 - full) * (1 - forests.threshold)
         return wood >= threshold + draw * forests.edge
 
@@ -646,9 +696,7 @@ class PropPlacer:
             grows = cover > 0 and self._in_woods(x, z, hash_2d(i, j, at + 5), cover)
             if not _kept(grows, woods, hash_2d(i, j, at + 6)):
                 continue
-            kind = weighted(trees, hash_2d(i, j, at + 2))
-            if kind is None:
-                continue
+            kind = weighted_pick(trees, hash_2d(i, j, at + 2))
             ground = kind.footprint
             if not clear and not self.roads.clear_of(x, z, self.rules.tree_clearance + ground):
                 continue

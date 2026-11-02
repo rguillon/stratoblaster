@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """e2e: World 4, its ash and embers and its final bosses (specs/worlds/world-4/)."""
 
 import re
@@ -38,8 +39,10 @@ def test_wld_4_01_the_world_4_row_shows_4_1_to_4_5_all_unlocked_the_last_row(pag
 def test_ui_level_08_a_level_can_be_confirmed_from_the_menu_and_plays(
     page: Page, index: int, level_id: str
 ) -> None:
-    """Also WLD-4-02 (five-minute levels) and each level's identity and duration (LVL-4-1-01,
-    LVL-4-2-01, LVL-4-3-01, LVL-4-4-01, LVL-4-5-01)."""
+    """Also WLD-4-02 (five-minute levels) and each level's identity and duration.
+
+    Levels' identity and duration: LVL-4-1-01, LVL-4-2-01, LVL-4-3-01, LVL-4-4-01, LVL-4-5-01.
+    """
     open_game(page)
     send_action(page, "confirm")
     send_action(page, "confirm")
@@ -62,8 +65,10 @@ def test_ui_level_08_a_level_can_be_confirmed_from_the_menu_and_plays(
 
 
 def test_lvl_4_2_03_4_2_falls_ash_at_midday_weather_0_shows_none(page: Page) -> None:
-    """Also WLD-4-15 (the ash), WLD-4-09 (no lava), DEV-OPT-04 (`weather=0`) and DEV-API-05 (the
-    sky's state)."""
+    """Also WLD-4-15 (the ash), WLD-4-09 (no lava), DEV-OPT-04 (`weather=0`).
+
+    DEV-API-05 (the sky's state).
+    """
     open_debug(page, "?level=4-2&t=60")
     wait_for_level_time(page, 60.1)
     # Falling ash 0.5: 750 of the 1 500 flakes.
@@ -88,8 +93,10 @@ def test_lvl_4_4_03_4_4_a_night_over_the_lit_towers_with_ash_and_embers(page: Pa
 
 
 def test_dev_opt_03_boss_final_starts_4_5_at_the_caldera_throne_in_the_eruption(page: Page) -> None:
-    """Also FB-CALDERA-THRONE-07 (the Throne comes in), LVL-4-5-03 (the embers at their strongest)
-    and WLD-4-09 (no lava)."""
+    """Also FB-CALDERA-THRONE-07 (the Throne comes in).
+
+    LVL-4-5-03 (the embers at their strongest) and WLD-4-09 (no lava).
+    """
     open_debug(page, "?level=4-5&boss=final")
     step_until(page, lambda: boss_name(page), lambda n: n == "Caldera Throne")
     sky = game_state(page)["game"]["sky"]
@@ -110,8 +117,10 @@ def test_fb_steam_dreadnought_19_k_destroys_the_steam_dreadnought_and_the_level_
 
 
 def test_ui_level_07_after_4_5_the_level_select_highlights_4_5(page: Page) -> None:
-    """Also FB-CALDERA-THRONE-18 (its death ends 4-5), WLD-4-01 and LVL-4-5-07 (4-5, the last level,
-    stays highlighted)."""
+    """Also FB-CALDERA-THRONE-18 (its death ends 4-5), WLD-4-01.
+
+    LVL-4-5-07 (4-5, the last level, stays highlighted).
+    """
     open_debug(page, "?level=4-5&boss=final")
     destroy_boss(page, "Caldera Throne")
     send_action(page, "confirm")

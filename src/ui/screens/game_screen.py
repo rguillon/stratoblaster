@@ -1,20 +1,22 @@
-"""Game screen overlay: the level played (UI-HUD-06),
-the touch fire and pause buttons, the drag area over the playfield, the pause menu while paused
-(UI-PAUSE-07) and the "Level complete" panel at the end (UI-OVER-01)."""
+# Copyright (c) 2026 Renaud Guillon
+"""Game screen overlay: the level played (UI-HUD-06), the touch fire and pause buttons.
 
-from org.transcrypt.stubs.browser import __pragma__
+The drag area over the playfield, the pause menu while paused (UI-PAUSE-07) and the "Level complete"
+panel at the end (UI-OVER-01).
+"""
 
-__pragma__("skip")
-from collections.abc import Callable  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from ui.screens.elements import element, tap_listener
+from ui.screens.pause_panel import pause_panel
 
-from ui.menu_view import GameScreenView, LevelChoices, LevelCompleteView  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from ui.screens.screen_handlers import ScreenHandlers  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from collections.abc import Callable
+from typing import Any
 
-__pragma__("noskip")
+from ui.menu_view import GameScreenView, LevelChoices, LevelCompleteView
+from ui.screens.screen_handlers import ScreenHandlers
 
-from ui.screens.elements import element, tap_listener  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from ui.screens.pause_panel import pause_panel  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
 
 def _choice_row(doc: Any, choices: LevelChoices, handlers: ScreenHandlers) -> Any:
@@ -31,8 +33,10 @@ def _choice_row(doc: Any, choices: LevelChoices, handlers: ScreenHandlers) -> An
 
 
 def _level_complete(doc: Any, complete: LevelCompleteView, handlers: ScreenHandlers) -> Any:
-    """The "Level complete" (or "Game over") panel (UI-OVER-01); tapping it goes on, like Confirm
-    (UI-OVER-03). After the mini boss, a game over offers its two choices instead (UI-OVER-06).
+    """Return the "Level complete" (or "Game over") panel (UI-OVER-01).
+
+    Tapping it goes on, like Confirm (UI-OVER-03). After the mini boss, a game over offers its two
+    choices instead (UI-OVER-06).
     """
     over = " game-over" if complete.over else ""
     choices = complete.choices
@@ -61,7 +65,7 @@ def _stop_propagation(event: Any) -> None:
 
 
 def _press(on_fire: Callable[[bool], None] | None, held: bool) -> Callable[[Any], None]:
-    """A pointer listener of the fire button: stops the event, then reports `held`."""
+    """Return a pointer listener of the fire button: stops the event, then reports `held`."""
 
     def handler(event: Any) -> None:
         event.stopPropagation()
@@ -72,7 +76,7 @@ def _press(on_fire: Callable[[bool], None] | None, held: bool) -> Callable[[Any]
 
 
 def _fire_button(doc: Any, label: str, handlers: ScreenHandlers) -> Any:
-    """The touch fire button: shoots while pressed (GAME-CTRL-05, UI-HUD-10)."""
+    """Return the touch fire button: shoots while pressed (GAME-CTRL-05, UI-HUD-10)."""
     button = element(doc, "div", "game-fire", label)
     button.setAttribute("role", "button")
     button.addEventListener("pointerdown", _press(handlers.on_fire, True))
@@ -82,8 +86,9 @@ def _fire_button(doc: Any, label: str, handlers: ScreenHandlers) -> Any:
 
 
 def _pause_button(doc: Any, label: str, handlers: ScreenHandlers) -> Any:
-    """The on-screen pause button (UI-PAUSE-02), top right of the playfield. Its press does not
-    start a drag.
+    """Return the on-screen pause button (UI-PAUSE-02), top right of the playfield.
+
+    Its press does not start a drag.
     """
     button = element(doc, "div", "game-pause", label)
     button.setAttribute("role", "button")
@@ -102,8 +107,9 @@ def _run_pause(on_pause: Callable[[], None] | None) -> Callable[[Any], None]:
 
 
 def _drag_area(root: Any, handlers: ScreenHandlers) -> None:
-    """Drag anywhere to fly (GAME-CTRL-04): pointer moves while a finger or button is down
-    are passed on as screen pixel offsets.
+    """Drag anywhere to fly (GAME-CTRL-04).
+
+    Pointer moves while a finger or button is down are passed on as screen pixel offsets.
     """
     # The last pointer position, `[x, y]`, or None while nothing is down.
     last: list[Any] = [None]
@@ -128,8 +134,10 @@ def _drag_area(root: Any, handlers: ScreenHandlers) -> None:
 
 
 def render_game_screen(doc: Any, view: GameScreenView, handlers: ScreenHandlers) -> Any:
-    """The overlay of the game screen; the fire and pause buttons show only while the level is
-    played (UI-PAUSE-02). The HUD is drawn by `GameHud`, which updates every frame.
+    """Return the overlay of the game screen; the fire.
+
+    Pause buttons show only while the level is played (UI-PAUSE-02). The HUD is drawn by `GameHud`,
+    which updates every frame.
     """
     root = element(doc, "div", "menu-screen game-screen")
     # No Back button over the playfield (UI-HUD-09): the level is left from the pause menu.

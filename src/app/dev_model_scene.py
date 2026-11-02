@@ -1,11 +1,11 @@
-"""The scene of the enemies and bosses viewers (DEV-MENU-13, DEV-MENU-14, D-199): no level's
-ground (no terrain, roads, props, sea nor clouds, and no wait for the ground worker), only the
-level's light and sky reflections, the game's playfield camera and the playfield layer the models
-are drawn on. The models are lit and framed as in the level (DEV-MENU-08), over a plain dark
+# Copyright (c) 2026 Renaud Guillon
+"""The scene of the enemies and bosses viewers (DEV-MENU-13, DEV-MENU-14, D-199).
+
+No level's ground (no terrain, roads, props, sea nor clouds, and no wait for the ground worker),
+only the level's light and sky reflections, the game's playfield camera and the playfield layer the
+models are drawn on. The models are lit and framed as in the level (DEV-MENU-08), over a plain dark
 backdrop.
 """
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from app.level_scene import LevelSceneOptions, ground_glow_look, playfield_layer, scenery_look
 from render.babylon import new_scene, vector3
@@ -18,16 +18,19 @@ from render.scenery.playfield_framing import frame_playfield
 from render.scenery.scenery_lighting import light_scenery
 from render.scenery.stage_parts import stage_camera
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class DevModelStage:
-    """The playfield camera of a level, without its ground: `camera`, `framing`, `update` and
-    `playfield_point` as a `SceneryStage`'s."""
+    """The playfield camera of a level, without its ground.
+
+    `camera`, `framing`, `update` and `playfield_point` as a `SceneryStage`'s.
+    """
 
     def __init__(self, scene: Any, game: Any, level: Any, look: Any, config: Any) -> None:
         self.scene = scene
@@ -44,7 +47,7 @@ class DevModelStage:
         return vector3(x - self._screen.width / 2, self._camera_look.flightAltitude, distance + y)
 
     def update(self, distance: float, _dt: float) -> None:
-        """Puts the camera where the level's is at `distance` along it."""
+        """Put the camera where the level's is at `distance` along it."""
         camera = self.camera.position
         camera.set(
             0,
@@ -57,8 +60,11 @@ class DevModelStage:
 
 
 class DevModelScene:
-    """What the viewer draws the models in: `scene`, `stage` (a `DevModelStage`) and `playfield`
-    (the playfield layer, as a `LevelScene`'s); `update` moves them along the level."""
+    """What the viewer draws the models in.
+
+    `scene`, `stage` (a `DevModelStage`) and `playfield` (the playfield layer, as a
+    `LevelScene`'s); `update` moves them along the level.
+    """
 
     def __init__(self, scene: Any, stage: DevModelStage, playfield: Any) -> None:
         self.scene = scene
@@ -66,12 +72,16 @@ class DevModelScene:
         self.playfield = playfield
 
     def update(self, distance: float, dt: float) -> None:
+        """Advances the stage by `dt` and moves the playfield to `distance` along it."""
         self.stage.update(distance, dt)
         self.playfield.root.position = self.stage.playfield_point(0, 0, distance)
 
 
 def build_model_scene(engine: Any, game: Any, level: Any, options: LevelSceneOptions) -> Any:
-    """The models' scene for `level` (its light and sky), built at once: see the module doc."""
+    """Return the models' scene for `level` (its light and sky), built at once.
+
+    See the module doc.
+    """
     look = scenery_look(game, level)
     scene = new_scene(engine)
     if options.environment:

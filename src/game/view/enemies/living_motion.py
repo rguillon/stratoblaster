@@ -1,4 +1,5 @@
-"""The living motion of the enemy models (ENM-42), visual only (ENM-45)"""
+# Copyright (c) 2026 Renaud Guillon
+"""The living motion of the enemy models (ENM-42), visual only (ENM-45)."""
 
 import math
 
@@ -9,8 +10,10 @@ from game.config.enemy_look import ENEMY_LOOK
 
 
 class Breath:
-    """A breath: its phase and period. It only sets the phase of the veins' pulse: the body never
-    swells (ENM-43)."""
+    """A breath: its phase and period.
+
+    It only sets the phase of the veins' pulse: the body never swells (ENM-43).
+    """
 
     def __init__(self, phase: float, period: float) -> None:
         self.phase = phase
@@ -23,7 +26,7 @@ _LIVING_MOTION = [True]
 
 
 def new_breath() -> Breath:
-    """A new breath, its period and phase spread from one creature to the next (ENM-44)."""
+    """Return a new breath, its period and phase spread from one creature to the next (ENM-44)."""
     breathing = ENEMY_LOOK.living.breathing
     period = breathing.period
     spread = breathing.spread
@@ -34,17 +37,20 @@ def new_breath() -> Breath:
 
 
 def set_living_motion(on: bool) -> None:
-    """Turns the living motion on or off (a debug toggle): off, bodies hold still at rest."""
+    """Turn the living motion on or off (a debug toggle): off, bodies hold still at rest."""
     _LIVING_MOTION[0] = on
 
 
 def is_living_motion() -> bool:
+    """Whether the enemies' living motion is switched on."""
     return _LIVING_MOTION[0]
 
 
 def glow_level(breath: Breath, time: float) -> float:
-    """The veins' brightness at `time` (ENM-42; the eyes and glands lit as veins, GFX-ART-14),
-    from `low` to 1."""
+    """Return the veins' brightness at `time`, from `low` to 1.
+
+    The eyes and glands are lit as veins (ENM-42; GFX-ART-14).
+    """
     glow = ENEMY_LOOK.living.glow
     period = glow.period
     low = glow.low
@@ -54,7 +60,7 @@ def glow_level(breath: Breath, time: float) -> float:
 
 
 def flutter_angle(side: float, span: float, time: float, phase: float = 0) -> float:
-    """A wing's roll at `time` (ENM-42): `side` up then down, slower for big wings."""
+    """Return a wing's roll at `time` (ENM-42): `side` up then down, slower for big wings."""
     flutter = ENEMY_LOOK.living.flutter
     f = flutter.bigHz if span > flutter.bigSpan else flutter.hz
     roll: float = -side * flutter.angle * math.sin(2 * math.pi * f * time + phase)

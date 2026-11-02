@@ -1,17 +1,17 @@
-"""Shapes of the enemy models
+# Copyright (c) 2026 Renaud Guillon
+"""Shapes of the enemy models.
 
-The outlines are `(x, z)` pairs and the sections `(u, v)` pairs; a loft section is a list of
-those pairs (`SolidBuilder.loft`).
+The outlines are `(x, z)` pairs and the sections `(u, v)` pairs; a loft section is a list of those
+pairs (`SolidBuilder.loft`).
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
+from typing import Any
 
 # A point in model space: x, y, z.
 type Vec3 = list[float]
@@ -19,12 +19,14 @@ type Vec3 = list[float]
 type OutlinePoint = list[float]
 # A point of a loft section: u (across), v (up).
 type SectionPoint = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 def radial(angle: float, r: float, y: float) -> list[float]:
-    """A point `r` from the model's centre in the direction `angle` (radians from +Z towards
-    +X)."""
+    """Return a point `r` from the model's centre in the direction `angle`.
+
+    The angle is in radians from +Z towards +X.
+    """
     return [math.sin(angle) * r, y, math.cos(angle) * r]
 
 
@@ -34,12 +36,12 @@ def around(count: int) -> list[float]:
 
 
 def shift_x(outline: Sequence[OutlinePoint], dx: float) -> list[OutlinePoint]:
-    """The outline moved by `dx` across."""
+    """Return the outline moved by `dx` across."""
     return [[p[0] + dx, p[1]] for p in outline]
 
 
 def flip_x(outline: Sequence[OutlinePoint]) -> list[OutlinePoint]:
-    """The outline mirrored left to right (for the other wing)."""
+    """Return the outline mirrored left to right (for the other wing)."""
     return [[-p[0], p[1]] for p in outline]
 
 
@@ -109,8 +111,10 @@ CANOPY_SECTION = [  # type: list[SectionPoint]
 def angry_eyes(
     center: Sequence[float], gap: float, size: Sequence[float], slant: float
 ) -> list[list[OutlinePoint]]:
-    """Two eye slits on either side of `center`, `gap` apart, each `length` long and `width`
-    deep, their outer ends swept back by `slant` radians: a frown seen from above."""
+    """Two eye slits on either side of `center`, `gap` apart, each `length` long and `width` deep.
+
+    Their outer ends are swept back by `slant` radians: a frown seen from above.
+    """
     cx = center[0]
     cz = center[1]
     length = size[0]
@@ -129,8 +133,10 @@ def angry_eyes(
 def decal(
     builder: object, outline: Sequence[OutlinePoint], y: float, color: Sequence[float]
 ) -> None:
-    """A flat convex outline at height `y`, facing up: a light painted on a hull (2 triangles a
-    quad)."""
+    """Add a flat convex outline at height `y`, facing up: a light painted on a hull.
+
+    It is made of 2 triangles a quad.
+    """
     n = len(outline)
     area = 0.0
     for i in range(n):
@@ -140,10 +146,8 @@ def decal(
         z2 = outline[(i + 1) % n][1]
         area += x1 * z2 - x2 * z1
     # Facing up (+Y) takes clockwise corners in (x, z).
-    corners: list[OutlinePoint] = []
     if area > 0:
-        for i in range(n - 1, -1, -1):
-            corners.append(outline[i])
+        corners: list[OutlinePoint] = [outline[i] for i in range(n - 1, -1, -1)]
     else:
         corners = list(outline)
     builder.face([[p[0], y, p[1]] for p in corners], color)  # type: ignore[attr-defined]  # the attribute is not declared on the class
@@ -152,8 +156,11 @@ def decal(
 def side_stripe(
     section: Sequence[SectionPoint], side: int, span: Sequence[float], lift: float = 1.04
 ) -> list[SectionPoint]:
-    """A two-point section on side `side` of `section`, from `t0` to `t1` of its length, lifted
-    `lift` times off the axis: lofted with `open`, a stripe painted along that side of a hull."""
+    """Return a two-point section on side `side` of `section`, from `t0` to `t1` of its length.
+
+    It is lifted `lift` times off the axis: lofted with `open`, a stripe painted along that side of
+    a hull.
+    """
     n = len(section)
     ua, va = section[side] if 0 <= side < n else [0, 0]
     ub, vb = section[(side + 1) % n] if 0 <= (side + 1) % n < n else [0, 0]

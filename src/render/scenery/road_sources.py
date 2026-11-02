@@ -1,7 +1,10 @@
-"""Where the street surfaces of a level's terrain chunks come from (phase 15, PERF-17): the ground
-worker (`WorkerRoadSource`, asynchronous: the chunks arrive as the worker makes them) or the main
-thread (`LocalRoadSource`, at once). Both are asked with `request(spans, look, grid)`, where a span
-is `[index, z_min, z_max]`, and given up with `take(index)`, which is None until the chunk is ready.
+# Copyright (c) 2026 Renaud Guillon
+"""Where the street surfaces of a level's terrain chunks come from (phase 15, PERF-17).
+
+The ground worker (`WorkerRoadSource`, asynchronous: the chunks arrive as the worker makes them) or
+the main thread (`LocalRoadSource`, at once). Both are asked with `request(spans, look, grid)`,
+where a span is `[index, z_min, z_max]`, and given up with `take(index)`, which is None until the
+chunk is ready.
 
 The road atlas's latest pixels are kept by the source and given with every chunk taken, with
 their version (`atlas_version`, which grows each time they change), so a road field uploads each
@@ -14,15 +17,13 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from render.scenery.road_chunks import TileRoadChunks
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
+from typing import Any
 
-__pragma__("noskip")
-
-
-# The chunks by index: plain JavaScript objects, read and written raw (a Transcrypt dict is not).
+# __pragma__ ("noskip")
 
 
 def _new_object() -> Any:
@@ -62,6 +63,7 @@ class LocalRoadSource:
         self._atlas_version = 0
 
     def request(self, spans: Sequence[Sequence[Any]], look: Any, grid: bool) -> None:
+        """Request."""
         if self._chunks is None or look is not self._look:
             self._chunks = TileRoadChunks(self._roads, self._tiles, look, self._ground)
             self._look = look
@@ -83,6 +85,7 @@ class LocalRoadSource:
         return _has(self._ready, index)
 
     def take(self, index: int) -> Any:
+        """Take."""
         if not _has(self._ready, index):
             return None
         chunk = _get(self._ready, index)
@@ -94,8 +97,10 @@ class LocalRoadSource:
 
 class WorkerRoadSource:
     """The street surfaces made by the ground worker: asked for once per chunk, kept until taken.
+
     `ask(spans, look, grid, done)` sends the request; `done(reply)` takes its reply, whose `chunks`
-    are the chunks asked for and whose `atlas` (when it changed) is the atlas's pixels."""
+    are the chunks asked for and whose `atlas` (when it changed) is the atlas's pixels.
+    """
 
     def __init__(self, ask: Callable[[list[Any], Any, bool, Callable[[Any], None]], None]) -> None:
         self._ask = ask
@@ -105,6 +110,7 @@ class WorkerRoadSource:
         self._atlas_version = 0
 
     def request(self, spans: Sequence[Sequence[Any]], look: Any, grid: bool) -> None:
+        """Request."""
         fresh: list[Any] = []
         for span in spans:
             index = span[0]
@@ -128,6 +134,7 @@ class WorkerRoadSource:
         return _has(self._ready, index)
 
     def take(self, index: int) -> Any:
+        """Take."""
         if not _has(self._ready, index):
             return None
         chunk = _get(self._ready, index)

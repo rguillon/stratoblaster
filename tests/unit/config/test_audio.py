@@ -1,3 +1,4 @@
+# Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/config/audio.py`."""
 
 from config.audio import AUDIO_CONFIG

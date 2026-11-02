@@ -1,4 +1,5 @@
-"""The wave scripts of World 1 (WLD-1-17, WLD-1-18, WLD-1-19)
+# Copyright (c) 2026 Renaud Guillon
+"""The wave scripts of World 1 (WLD-1-17, WLD-1-18, WLD-1-19).
 
 Each beat is written in seconds from the start of the level for readability, and turned into a
 scrolled distance at the level's ground speed: waves are triggered by distance (GAME-LEVEL-01). A
@@ -8,15 +9,15 @@ in groups of five; every other kind one by one.
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from game.config.record import concat, record
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # Enemy density (WLD-1-20; phase 6 review: +50 %): each beat brings this many times its groups,
 # rounded. A beat of one group gets its extra groups `DENSITY_GAP` seconds apart and, from the
@@ -32,7 +33,7 @@ BEAT_LENGTH = 6
 
 
 def denser(beat: list[Any], density: float) -> list[Any]:
-    """A beat with `density` times its groups (see `WAVE_DENSITY`)."""
+    """Return a beat with `density` times its groups (see `WAVE_DENSITY`)."""
     seconds = beat[0]
     kind = beat[1]
     count = beat[2]
@@ -52,8 +53,9 @@ def denser(beat: list[Any], density: float) -> list[Any]:
 
 
 def wave_script(speed: float, beats: list[Any], density: float = WAVE_DENSITY) -> Any:
-    """The beats as a wave script, at `speed` world units per second and `density` (x1: as
-    written).
+    """Return the beats as a wave script.
+
+    At `speed` world units per second and `density` (x1: as written).
     """
     waves = []
     for beat in beats:
@@ -72,8 +74,10 @@ def wave_script(speed: float, beats: list[Any], density: float = WAVE_DENSITY) -
 
 
 def quiet_before(script: list[Any], bosses: list[float], quiet: float) -> Any:
-    """`script` without the waves that would start in the `quiet` world units before each of the
-    distances `bosses` (GAME-LEVEL-05: the stretch before a boss is left free).
+    """Return `script` without the waves in the `quiet` world units before each of `bosses`.
+
+    Those are the waves that would start in that stretch (GAME-LEVEL-05: the stretch before a boss
+    is left free).
     """
     kept = []
     for wave in script:
@@ -87,12 +91,13 @@ def quiet_before(script: list[Any], bosses: list[float], quiet: float) -> Any:
 
 
 def fill(beats: list[Any], filler: Any) -> list[Any]:
-    """`beats` with filler groups in their lulls (WLD-1-21, phase 6 review): after each beat, a
-    group of the filler's kinds in turn every `maxGap` seconds, as long as the next beat is more
+    """`beats` with filler groups in their lulls (WLD-1-21, phase 6 review): after each beat.
+
+    A group of the filler's kinds in turn every `maxGap` seconds, as long as the next beat is more
     than one and a half gaps away.
     """
     # A stable insertion sort by seconds: Transcrypt's sort is not stable and takes no comparator.
-    ordered = [beat for beat in beats]
+    ordered = list(beats)
     index = 1
     while index < len(ordered):
         item = ordered[index]
@@ -296,15 +301,13 @@ WAVES_1_5 = [
 # LVL-1-2-10, LVL-1-3-10, LVL-1-4-10, LVL-1-5-10. 1-1 gets only Hornets and Gnats, which do not
 # shoot, so it stays easy (WLD-1-25); later levels fill up sooner and tighter (D-051), so each is
 # harder than the one before (WLD-1-22) and its second half than its first (WLD-1-24).
-WORLD_1_FILLERS = record(
-    {
-        "1-1": {"kinds": ["hornet", "hornet", "gnat", "hornet"], "maxGap": [4.5, 3]},
-        "1-2": {"kinds": ["hornet", "gnat", "weaver", "scout"], "maxGap": [3.5, 2.4]},
-        "1-3": {"kinds": ["hornet", "gnat", "weaver", "scout"], "maxGap": [3.3, 2.2]},
-        "1-4": {"kinds": ["gnat", "weaver", "hornet", "scout", "splitter"], "maxGap": [3.2, 2]},
-        "1-5": {
-            "kinds": ["gnat", "weaver", "hornet", "scout", "splitter", "spinner"],
-            "maxGap": [3, 1.6],
-        },
-    }
-)
+WORLD_1_FILLERS = record({
+    "1-1": {"kinds": ["hornet", "hornet", "gnat", "hornet"], "maxGap": [4.5, 3]},
+    "1-2": {"kinds": ["hornet", "gnat", "weaver", "scout"], "maxGap": [3.5, 2.4]},
+    "1-3": {"kinds": ["hornet", "gnat", "weaver", "scout"], "maxGap": [3.3, 2.2]},
+    "1-4": {"kinds": ["gnat", "weaver", "hornet", "scout", "splitter"], "maxGap": [3.2, 2]},
+    "1-5": {
+        "kinds": ["gnat", "weaver", "hornet", "scout", "splitter", "spinner"],
+        "maxGap": [3, 1.6],
+    },
+})

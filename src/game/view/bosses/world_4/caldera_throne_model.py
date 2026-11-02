@@ -1,27 +1,27 @@
-"""FB-CALDERA-THRONE-01 to FB-CALDERA-THRONE-06, 4-5: the Caldera Throne, World 4's last boss. Model
-space: logical pixels, nose +Z (down the screen), Y up towards the camera; +X is the screen's left.
-A war fortress: an armoured hull carrying a stepped keep over the core, a prow gun deck, side
+# Copyright (c) 2026 Renaud Guillon
+"""FB-CALDERA-THRONE-01 to FB-CALDERA-THRONE-06, 4-5: the Caldera Throne, World 4's last boss.
+
+Model space: logical pixels, nose +Z (down the screen), Y up towards the camera; +X is the screen's
+left. A war fortress: an armoured hull carrying a stepped keep over the core, a prow gun deck, side
 bastions out to the magma cannons, missile batteries and smokestacks aft. FB-CALDERA-THRONE-02: a
 living tyrant of the caldera, its vast flesh back ribbed in bone and veined with magma, a keep of
 flesh and armour rising over its heart, crowned in metal and gold.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.bosses.world_4.caldera_throne import (  # noqa: E402
+from game.config.bosses.world_4.caldera_throne import (
     CALDERA_GUNS,
     CALDERA_HATCHES,
     CALDERA_LENS,
     CALDERA_THRONE,
 )
-from game.view.bosses.boss_limbs import boss_point  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.final_boss_greebles import grille, hazard, plate, rect  # noqa: E402
-from game.view.bosses.final_boss_mechanism import glow_line  # noqa: E402
-from game.view.bosses.mini_boss_shapes import QUARTER, WHITE, H  # noqa: E402
-from game.view.bosses.overlord_city import edge_lights, symmetric  # noqa: E402
-from game.view.bosses.world_4.caldera_throne_keep import draw_keep  # noqa: E402
-from game.view.bosses.world_4.caldera_throne_parts import (  # noqa: E402
+from game.view.bosses.boss_limbs import boss_point
+from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.final_boss_greebles import grille, hazard, plate, rect
+from game.view.bosses.final_boss_mechanism import glow_line
+from game.view.bosses.mini_boss_shapes import QUARTER, WHITE, H
+from game.view.bosses.overlord_city import edge_lights, symmetric
+from game.view.bosses.world_4.caldera_throne_keep import draw_keep
+from game.view.bosses.world_4.caldera_throne_parts import (
     BASTION_TOP,
     CRIMSON,
     DECK_TOP,
@@ -32,24 +32,26 @@ from game.view.bosses.world_4.caldera_throne_parts import (  # noqa: E402
     missile_battery,
     shield_generator,
 )
-from game.view.bosses.world_4.living_forge import (  # noqa: E402
+from game.view.bosses.world_4.living_forge import (
     SKIN,
     back_ribs,
     glands,
     magma_vein,
     reactor_sacs,
 )
-from game.view.enemies.enemy_shapes import SIDES, decal, flip_x  # noqa: E402
-from render.geometry.organic import RibSpec  # noqa: E402
-from render.geometry.solids import Placement  # noqa: E402
+from game.view.enemies.enemy_shapes import SIDES, decal, flip_x
+from render.geometry.organic import RibSpec
+from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type OutlinePoint = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 # The hull (right half, front to tail), closed across the prow.
 HULL = symmetric(
@@ -123,17 +125,17 @@ def _flipped(outline: Any) -> Any:
 
 
 def _along_z(x: float, y: float, z: float) -> Any:
-    """A placement at `[x, y, z]`, lying along Z (`{ at, pitch: QUARTER }`)."""
+    """Return a placement at `[x, y, z]`, lying along Z (`{ at, pitch: QUARTER }`)."""
     return Placement([x, y, z], 0, QUARTER)
 
 
 def _all_edges(outline: list[Any]) -> list[int]:
-    """The indices of every edge of an outline."""
-    return [i for i in range(len(outline))]
+    """Return the indices of every edge of an outline."""
+    return list(range(len(outline)))
 
 
 def _draw_hull(p: Any) -> None:
-    """The hull with its crimson rim, the engine block, the bastions out to the turntables."""
+    """Draw the hull with its crimson rim, the engine block, the bastions out to the turntables."""
     hull = p.hull
     neon = p.neon
     p.flesh.bevel_slab(HULL, [-10, -2, DECK_TOP], [3, 3], SKIN.base, None, SKIN.dark)
@@ -168,7 +170,7 @@ def _draw_hull(p: Any) -> None:
 
 
 def _draw_deck(p: Any) -> None:
-    """The deck's dressing: molten seams, armour plates, vents and hazard bands."""
+    """Draw the deck's dressing: molten seams, armour plates, vents and hazard bands."""
     hull = p.hull
     neon = p.neon
     for s in SIDES:
@@ -199,7 +201,7 @@ def _draw_deck(p: Any) -> None:
 
 
 def _draw_prow(p: Any) -> None:
-    """The prow's gun deck: twin cannons and a laser lens, charging before they fire."""
+    """Draw the prow's gun deck: twin cannons and a laser lens, charging before they fire."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -227,7 +229,7 @@ def _draw_prow(p: Any) -> None:
 
 
 def _draw_hatches(p: Any) -> None:
-    """The missile hatches in their block behind the keep, lit as missiles load."""
+    """Draw the missile hatches in their block behind the keep, lit as missiles load."""
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -246,10 +248,13 @@ def _draw_hatches(p: Any) -> None:
 
 
 def build_caldera_throne(scene: Any) -> Any:
-    """FB-CALDERA-THRONE-01, FB-CALDERA-THRONE-06: the Caldera Throne, the enemy's war fortress
-    rising from the magma lake (6.5 L), crimson and gold neon over its whole hull: a stepped keep
-    and throne tower over its core, a prow carrying twin cannons and a laser, magma cannons on its
-    bastions, missile batteries and smokestacks aft, heat shield generators ahead of the keep."""
+    """Build the Caldera Throne (FB-CALDERA-THRONE-01, FB-CALDERA-THRONE-06).
+
+    The enemy's war fortress rising from the magma lake (6.5 L), crimson and gold neon over its
+    whole hull: a stepped keep and throne tower over its core, a prow carrying twin cannons and a
+    laser, magma cannons on its bastions, missile batteries and smokestacks aft, heat shield
+    generators ahead of the keep.
+    """
 
     def core(p: Any) -> None:
         _draw_hull(p)

@@ -1,12 +1,14 @@
-"""Engine-wide tunables (ENG-17)
+# Copyright (c) 2026 Renaud Guillon
+"""Engine-wide tunables (ENG-17).
 
 Game-specific values go in `src/game/config/`.
 """
 
 
 class E2eConfig:
-    """e2e builds only (ENG-52, ENG-58, DEV-API-10): pixels drawn per screen pixel, across, and
-    whether to antialias.
+    """e2e builds only (ENG-52, ENG-58, DEV-API-10): pixels drawn per screen pixel, across.
+
+    And whether to antialias.
 
     The e2e tests check the game's state, not its pixels, and software WebGL (CI) pays per pixel:
     a quarter of the pixels, without multisampling, makes their frames several times cheaper.
@@ -18,8 +20,7 @@ class E2eConfig:
 
 
 class PerfOverlay:
-    """Debug perf overlay (DEV-PERF-03, ENG-111): refreshed every `refresh` s, toggled with
-    `key`."""
+    """Debug perf overlay (DEV-PERF-03, ENG-111): refreshed every `refresh` s, toggled by `key`."""
 
     def __init__(self, refresh: float, key: str) -> None:
         self.refresh = refresh

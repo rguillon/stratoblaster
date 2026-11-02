@@ -1,17 +1,18 @@
-"""The mixer of one playing track (AUD-ENGINE-06): an input per instrument into the track's
-fader, with sends to its tempo-synced echo (a dotted eighth by default) and to the shared music
-reverb, so a track fades in and out with its echoes and reverb.
-Web Audio nodes are untyped attribute access on the context the game gives in.
-"""
+# Copyright (c) 2026 Renaud Guillon
+"""The mixer of one playing track (AUD-ENGINE-06): an input per instrument into the track's fader.
 
-from org.transcrypt.stubs.browser import __pragma__
+With sends to its tempo-synced echo (a dotted eighth by default) and to the shared music reverb, so
+a track fades in and out with its echoes and reverb. Web Audio nodes are untyped attribute access on
+the context the game gives in.
+"""
 
 from audio.audio_types import Instrument, MusicEffects, beat_seconds
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 SILENT = 0.0001
@@ -63,7 +64,7 @@ class TrackMixer:
                 param.setValueAtTime(level, now)
 
     def fade_in(self, now: float, seconds: float) -> None:
-        """Starts silent, then fades in over `seconds` (at once when 0)."""
+        """Start silent, then fade in over `seconds` (at once when 0)."""
         if seconds <= 0:
             self.fade_to(1, now, 0)
             return
@@ -107,7 +108,10 @@ class TrackMixer:
         send.connect(to)
 
     def _echo_input(self) -> Any:
-        """The echo: a delay of `echo_beats` at the track's tempo, fed back, into the fader."""
+        """Return the echo, into the fader.
+
+        A delay of `echo_beats` at the track's tempo, fed back.
+        """
         if self._echo is not None:
             return self._echo
         context = self._bus.context

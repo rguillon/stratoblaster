@@ -1,22 +1,20 @@
+# Copyright (c) 2026 Renaud Guillon
 """Stable sorts for the scenery, as JavaScript's `Array.prototype.sort` with a comparator gives.
 
 Transcrypt's `sort` takes a key without keeping the order of equal keys, and it cannot take a
 comparator, so the scenery sorts with this merge sort (ENG-159).
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from collections.abc import Callable, Sequence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from typing import TypeVar  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from collections.abc import Callable, Sequence
 
-T = TypeVar("T")
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
-def stable_sort_by(items: Sequence[T], key: Callable[[T], float]) -> list[T]:  # noqa: UP047 (Transcrypt has no PEP 695)
-    """A new list of `items` in increasing `key`, equal keys in their original order."""
+def stable_sort_by[T](items: Sequence[T], key: Callable[[T], float]) -> list[T]:
+    """Return a new list of `items` in increasing `key`, equal keys in their original order."""
     if len(items) <= 1:
         return list(items)
     middle = len(items) // 2

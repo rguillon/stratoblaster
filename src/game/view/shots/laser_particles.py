@@ -1,20 +1,20 @@
-"""Particles flowing up along a beam (GFX-SHOT-03)
+# Copyright (c) 2026 Renaud Guillon
+"""Particles flowing up along a beam (GFX-SHOT-03).
 
 Each particle runs from the start of the beam to its end, then starts again from the start, so the
 flow follows the beam as it gets shorter or longer. They are the game's own seeded particles drawn
 as meshes, not a Babylon particle system (ENG-103).
 """
 
-from org.transcrypt.stubs.browser import __pragma__
+from core.math.rng import random_in
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.math.rng import Random
 
-__pragma__("noskip")
-
-from core.math.rng import random_in  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
 
 class Particle:
@@ -54,7 +54,7 @@ class LaserParticles:
         ]
 
     def step(self, segments: list[Any], dt: float) -> list[ParticleSpot]:
-        """Moves the particles along `segments` (bottom first) and returns where to draw them."""
+        """Move the particles along `segments` (bottom first) and return where to draw them."""
         if len(segments) == 0:
             return []
         first = segments[0]
@@ -66,11 +66,11 @@ class LaserParticles:
         for p in self._particles:
             p.distance = (p.distance + p.speed * dt) % length
             y = first.y0 + p.distance
-            segment = last
-            for s in segments:
-                if y <= s.y1:
-                    segment = s
-                    break
+            # The first segment that reaches `y`: the last one, if none before it does.
+            k = 0
+            while k < len(segments) - 1 and y > segments[k].y1:
+                k += 1
+            segment = segments[k]
             x = segment.x + (p.lateral * segment.width * self._options.spread) / 2
             spots.append(ParticleSpot(x, y, p.radius))
         return spots

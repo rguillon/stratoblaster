@@ -1,19 +1,21 @@
-"""Short glowing discs where shots hit (GFX-FX-03)"""
+# Copyright (c) 2026 Renaud Guillon
+"""Short glowing discs where shots hit (GFX-FX-03)."""
 
 import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.shot_geometry import build_glow_disc
+from game.view.shots.shot_meshes import additive_template
+from render.node_pool import NodePool
 
-from core.systems.shot_world import ShotImpact  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from typing import Any
 
-__pragma__("noskip")
+from core.systems.shot_world import ShotImpact
 
-from game.view.shot_geometry import build_glow_disc  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.shots.shot_meshes import additive_template  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from render.node_pool import NodePool  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("noskip")
 
 
 class Flash:
@@ -27,7 +29,7 @@ class Flash:
 
 
 def flash_look(colors: list[list[float]], segments: int) -> Any:
-    """A `{ colors, segments }` look as the flashes take it (a JavaScript object)."""
+    """Return a `{ colors, segments }` look as the flashes take it (a JavaScript object)."""
     __pragma__("js", "{}", "return {colors: colors, segments: segments};")
     return None
 
@@ -58,7 +60,7 @@ class ImpactFlashes:
         self._pool: NodePool = NodePool(lambda i: template.clone(name + "-" + str(i)))
 
     def sync(self, impacts: list[ShotImpact], dt: float) -> None:
-        """Starts a flash per impact, ages the others by `dt`, and draws them."""
+        """Start a flash per impact, age the others by `dt`, and draw them."""
         for flash in self.flashes:
             flash.age += dt
         i = len(self.flashes) - 1
@@ -70,12 +72,11 @@ class ImpactFlashes:
             self.flashes.append(Flash(impact.x, impact.y, self.radius_of(impact), 0))
         for i, mesh in enumerate(self._pool.show(len(self.flashes))):
             flash = self.flashes[i]
-            if not flash:
-                continue
             # A new flash shows at a small size on its first frame.
             size = flash.radius * max(0.3, flash_scale(flash.age, self.duration))
             mesh.position.set(flash.x, flash.y, -1)
             mesh.scaling.set(size, size, 1)
 
     def dispose(self) -> None:
+        """Disposes the pool of flashes."""
         self._pool.dispose()

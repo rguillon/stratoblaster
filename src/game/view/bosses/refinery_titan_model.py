@@ -1,17 +1,17 @@
-"""FB-REFINERY-TITAN-01 to FB-REFINERY-TITAN-04: the Refinery Titan, World 1's 1-4 final boss
-Model space: logical pixels, nose +Z (down the screen), Y up
-towards the camera. A bloated industrial beetle: a huge shelled body plumbed with grafted pipes,
-limbs cradling two glowing fuel bladders, smoking chimneys of flesh on its back, a fleshy apron in
-front carrying the two rotary turrets.
+# Copyright (c) 2026 Renaud Guillon
+"""FB-REFINERY-TITAN-01 to FB-REFINERY-TITAN-04: the Refinery Titan, World 1's 1-4 final boss.
+
+Model space: logical pixels, nose +Z (down the screen), Y up towards the camera. A bloated
+industrial beetle: a huge shelled body plumbed with grafted pipes, limbs cradling two glowing fuel
+bladders, smoking chimneys of flesh on its back, a fleshy apron in front carrying the two rotary
+turrets.
 """
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
-from game.config.bosses.final_bosses import REFINERY_TITAN  # noqa: E402
-from game.view.bosses.boss_model import build_boss_model  # noqa: E402
-from game.view.bosses.refinery_titan_parts import (  # noqa: E402
+from game.config.bosses.final_bosses import REFINERY_TITAN
+from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.refinery_titan_parts import (
     TITAN_DECK,
     TITAN_NEON,
     draw_missile_battery,
@@ -19,7 +19,7 @@ from game.view.bosses.refinery_titan_parts import (  # noqa: E402
     draw_tank,
     draw_turret,
 )
-from game.view.bosses.world_1_organic_kit import (  # noqa: E402
+from game.view.bosses.world_1_organic_kit import (
     F,
     M,
     barbs,
@@ -33,21 +33,23 @@ from game.view.bosses.world_1_organic_kit import (  # noqa: E402
     tentacle,
     vein_line,
 )
-from game.view.enemies.enemy_shapes import SIDES  # noqa: E402
-from game.view.enemies.organic_parts import eyes, reactor_sac  # noqa: E402
-from render.geometry.organic import (  # noqa: E402
+from game.view.enemies.enemy_shapes import SIDES
+from game.view.enemies.organic_parts import eyes, reactor_sac
+from render.geometry.organic import (
     SegmentedBody,
     organ,
     segmented_body,
 )
-from render.geometry.solids import Placement  # noqa: E402
+from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
 type Vec3 = list[Any]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 WHITE = [1, 1, 1]
 QUARTER = math.pi / 2
@@ -74,8 +76,10 @@ COLUMN = [
 
 
 def _draw_structure(p: Any) -> None:
-    """The body (FB-REFINERY-TITAN-02): a huge shelled abdomen, ribs, a spine vein, armour plates
-    grafted on."""
+    """Draw the body (FB-REFINERY-TITAN-02): a huge shelled abdomen, ribs, a spine vein.
+
+    Armour plates grafted on.
+    """
     hide(
         p,
         {
@@ -102,8 +106,11 @@ def _draw_structure(p: Any) -> None:
 
 
 def _draw_cradles(p: Any) -> None:
-    """The limbs holding the fuel bladders (FB-REFINERY-TITAN-02): a jointed bone-and-sinew limb
-    out to each, its claw curled round the bladder's outer side, lit along its top."""
+    """Draw the limbs holding the fuel bladders (FB-REFINERY-TITAN-02).
+
+    A jointed bone-and-sinew limb out to each, its claw curled round the bladder's outer side, lit
+    along its top.
+    """
     for s in SIDES:
         for z in [-30, -6]:
             elbow = [s * 86, 14, z]
@@ -114,7 +121,10 @@ def _draw_cradles(p: Any) -> None:
 
 
 def _draw_pipes(parts: Any) -> None:
-    """The fuel lines: grafted pipes across into the bladders, along the back, with couplings."""
+    """Draw the fuel lines: grafted pipes, with couplings.
+
+    The pipes run across into the bladders and along the back.
+    """
     hull = parts.hull
     # Rolled a quarter turn, a cylinder runs along +X from where it stands.
     for z in [-10, -26]:
@@ -135,9 +145,11 @@ def _draw_columns(p: Any) -> None:
 
 
 def _draw_bridge(p: Any) -> None:
-    """The head over the core (FB-REFINERY-TITAN-02): a plated skull with clustered eyes, two
-    smoking spiracles, the twin cannon grafted under its brow (the core's weapon,
-    FB-REFINERY-TITAN-03), mandibles at its front."""
+    """Draw the head over the core (FB-REFINERY-TITAN-02): a plated skull with clustered eyes.
+
+    Two smoking spiracles, the twin cannon grafted under its brow (the core's weapon,
+    FB-REFINERY-TITAN-03), mandibles at its front.
+    """
     organ(p.flesh, 17, 8, F.slate, Placement([0, 12, 2], math.pi / 8), 0.38)
     graft(p, polygon(6, 11, [1, 1.3]), [23, 24.5], [0, 0, 0])
     eyes(p, [0, 22, 15], {"count": 4, "size": 1.2, "spacing": 3.4}, TITAN_NEON)
@@ -155,7 +167,10 @@ def _draw_bridge(p: Any) -> None:
 
 
 def _draw_core(p: Any) -> None:
-    """The core: body, cradles, pipes, head, chimneys, and four reactors at the tail in sacs."""
+    """Draw the core: body, cradles, pipes, head and chimneys.
+
+    Four reactors sit at the tail in sacs.
+    """
     _draw_structure(p)
     _draw_cradles(p)
     _draw_pipes(p)
@@ -173,10 +188,12 @@ def _draw_core(p: Any) -> None:
 
 
 def build_refinery_titan(scene: Any) -> Any:
-    """FB-REFINERY-TITAN-01, FB-REFINERY-TITAN-04: the Refinery Titan, a bloated industrial beetle
-    (5.5 L) with orange veins: two big fuel bladders glowing in its limbs, two rotary turrets on
-    its front apron, a missile brood on its back, and its plated head with a twin cannon over the
-    core."""
+    """Build the Refinery Titan (FB-REFINERY-TITAN-01, FB-REFINERY-TITAN-04).
+
+    A bloated industrial beetle (5.5 L) with orange veins: two big fuel bladders glowing in its
+    limbs, two rotary turrets on its front apron, a missile brood on its back, and its plated head
+    with a twin cannon over the core.
+    """
     return build_boss_model(
         REFINERY_TITAN,
         scene,

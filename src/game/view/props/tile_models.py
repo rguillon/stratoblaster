@@ -1,16 +1,11 @@
-"""The models made for the grid of tiles (Phase 15, GFX-BLDG-03, GFX-BLDG-09): one per entry of
-`TILE_MODELS`, each built to fill its tiles less the margin."""
+# Copyright (c) 2026 Renaud Guillon
+"""The models made for the grid of tiles (Phase 15, GFX-BLDG-03, GFX-BLDG-09).
 
-from org.transcrypt.stubs.browser import __pragma__
+One per entry of `TILE_MODELS`, each built to fill its tiles less the margin.
+"""
 
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-
-__pragma__("noskip")
-
-from game.config.tile_buildings import BUILDING_MARGIN, TILE, TILE_MODELS  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.props.tile_city import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.config.tile_buildings import BUILDING_MARGIN, TILE, TILE_MODELS
+from game.view.props.tile_city import (
     build_car_park,
     build_midrise,
     build_office,
@@ -20,7 +15,7 @@ from game.view.props.tile_city import (  # noqa: E402 (after the Transcrypt skip
     build_tower,
     build_yard,
 )
-from game.view.props.tile_homes import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.tile_homes import (
     build_adobe,
     build_barn,
     build_cottage,
@@ -33,10 +28,10 @@ from game.view.props.tile_homes import (  # noqa: E402 (after the Transcrypt ski
     build_villa,
     build_workshop,
 )
-from game.view.props.tile_homesteads import build_homestead  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.props.tile_kit import geometry_of, tile_kit  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.props.tile_residences import build_residence  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from game.view.props.tile_works import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.props.tile_homesteads import build_homestead
+from game.view.props.tile_kit import geometry_of, tile_kit
+from game.view.props.tile_residences import build_residence
+from game.view.props.tile_works import (
     build_containers,
     build_cooling_tower,
     build_depot,
@@ -57,11 +52,18 @@ from game.view.props.tile_works import (  # noqa: E402 (after the Transcrypt ski
     build_warehouse,
     build_water_tower,
 )
-from render.scenery.scenery_look import PropGeometry  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from render.scenery.scenery_look import PropGeometry
+
+# isort: split
+# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
+# __pragma__ ("skip")
+from typing import Any
+
+# __pragma__ ("noskip")
 
 
 def make_builders() -> dict[str, Any]:
-    """What each archetype of a model is built with."""
+    """Return what each archetype of a model is built with."""
     return {
         "house": build_house,
         "villa": build_villa,
@@ -110,7 +112,7 @@ BUILDERS = make_builders()
 
 
 def build_tile_model(model: Any) -> PropGeometry:
-    """The geometry of `model`, filling its tiles less BUILDING_MARGIN each side."""
+    """Return the geometry of `model`, filling its tiles less BUILDING_MARGIN each side."""
     w = model.tiles[0]
     d = model.tiles[1]
     k = tile_kit(
@@ -124,7 +126,7 @@ def build_tile_model(model: Any) -> PropGeometry:
 
 
 def tile_model_factory(model: Any) -> Any:
-    """A model factory that builds `model` (a factory function: closures in loops break)."""
+    """Return a model factory that builds `model` (a factory function: closures in loops break)."""
 
     def make() -> PropGeometry:
         return build_tile_model(model)
@@ -133,7 +135,7 @@ def tile_model_factory(model: Any) -> Any:
 
 
 def make_tile_prop_models() -> dict[str, Any]:
-    """The models made for the grid, keyed by id."""
+    """Return the models made for the grid, keyed by id."""
     result: dict[str, Any] = {}
     for m in TILE_MODELS:
         result[m.id] = tile_model_factory(m)

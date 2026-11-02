@@ -1,6 +1,5 @@
-"""The Hydra (`specs/enemies/hydra.md`)"""
-
-from org.transcrypt.stubs.browser import __pragma__
+# Copyright (c) 2026 Renaud Guillon
+"""The Hydra (`specs/enemies/hydra.md`)."""
 
 from core.entities.jointed_enemy import JointedEnemy
 from core.systems.enemy_motion import approach
@@ -9,20 +8,24 @@ from game.config.enemies_elite import ELITE_CONFIG
 from game.sim.enemies.enemy_helpers import DOWN, Cadence, on_playfield
 from game.sim.joints import jointed_design
 
-__pragma__("skip")
-from core.entities.enemy import EnemyContext  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# isort: split
+# __pragma__ ("skip")
+from core.entities.enemy import EnemyContext
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 CFG = ELITE_CONFIG.hydra
 
 
 class Hydra(JointedEnemy):
-    """ENM-HYDRA-07: a broad hull with three long necks swaying out of step (ENM-HYDRA-08; moving
-    parts, ENM-27). It comes down to the upper third, stays 7 s, then leaves downward. Its heads
-    fire in turn, one every 0.5 s, each a bullet aimed at the player from its eye (ENM-HYDRA-09);
-    with every head gone it no longer fires, but its hull can still be destroyed (ENM-HYDRA-10).
-    Its necks and heads come from its config, as the engine's specs (ENM-HYDRA-12).
+    """ENM-HYDRA-07: a broad hull with three long necks swaying out of step.
+
+    Its necks are moving parts (ENM-HYDRA-08, ENM-27). It comes down to the upper third, stays 7 s,
+    then leaves downward. Its heads fire in turn, one every 0.5 s, each a bullet aimed at the player
+    from its eye (ENM-HYDRA-09); with every head gone it no longer fires, but its hull can still be
+    destroyed (ENM-HYDRA-10). Its necks and heads come from its config, as the engine's specs
+    (ENM-HYDRA-12).
     """
 
     def __init__(self, x: float, y: float, stop_y: float) -> None:
@@ -36,6 +39,7 @@ class Hydra(JointedEnemy):
         self.heading = DOWN
 
     def act(self, ctx: EnemyContext, dt: float) -> None:
+        """Advance the enemy by `dt` seconds."""
         if self.state == "enter":
             self.y = approach(self.y, self.stop_y, CFG.entrySpeed * dt)
             if self.y == self.stop_y:
@@ -56,7 +60,7 @@ class Hydra(JointedEnemy):
         self.charge = self._heads.progress
 
     def _fire_next_head(self, ctx: EnemyContext) -> None:
-        """The next living head in turn fires a bullet at the player from its eye."""
+        """Fire a bullet at the player from the eye of the next living head in turn."""
         heads = CFG.heads
         for k in range(len(heads)):
             index = (self._next + k) % len(heads)

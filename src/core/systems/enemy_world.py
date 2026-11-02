@@ -1,36 +1,37 @@
-"""The enemies and their shots (`specs/enemies/common.md`)
+# Copyright (c) 2026 Renaud Guillon
+"""The enemies and their shots (`specs/enemies/common.md`).
 
 Updates every enemy, removes the destroyed ones (scoring them, ENM-14, and letting them spawn
 parts) and the ones that left, and moves their shots. Its `targets` are what the player's shots
 can hit. Pure and deterministic.
 """
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from core.entities.enemy import EnemyBulletSpec, EnemyBurstSpec
 from core.entities.muzzle import PlanePoint, seen_on_playfield
 from core.entities.shot_target import is_alive
 from core.systems.enemy_shots import EnemyShots, EnemyShotsOptions
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from core.entities.enemy import (  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from core.entities.enemy import (
     DropSource,
     Enemy,
     EnemyLaserSpec,
     EnemyMissileSpec,
     LaserOwner,
 )
-from core.entities.muzzle import PlayfieldEye, RaisedPoint  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.entities.shot_target import ShotTarget  # noqa: E402 (after the Transcrypt skip block, ENG-153)
-from core.math.rng import Random  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from core.entities.muzzle import PlayfieldEye, RaisedPoint
+from core.entities.shot_target import ShotTarget
+from core.math.rng import Random
 
-__pragma__("noskip")
+# __pragma__ ("noskip")
 
 
 class EnemyBlast:
-    """Something that blew up during the last step, for the explosions (GFX-FX-05). `kind` is
-    "enemy" or "missile"; `radius` is the size of what blew up (its hit radius).
+    """Something that blew up during the last step, for the explosions (GFX-FX-05).
+
+    `kind` is "enemy" or "missile"; `radius` is the size of what blew up (its hit radius).
     """
 
     def __init__(self, kind: str, x: float, y: float, radius: float) -> None:
@@ -48,7 +49,7 @@ class EnemyWorldOptions(EnemyShotsOptions):
     this are removed, whatever they do (a safety net).
     """
 
-    def __init__(  # noqa: PLR0917 (positional: Transcrypt has no keyword arguments)
+    def __init__(
         self,
         width: float,
         height: float,
@@ -61,8 +62,9 @@ class EnemyWorldOptions(EnemyShotsOptions):
 
 
 class EnemyDifficulty:
-    """How hard the enemies are, as factors on each kind's own values (1 = as tuned): their
-    bullets' speed and how fast their attacks come (ENM-22).
+    """How hard the enemies are, as factors on each kind's own values (1 = as tuned).
+
+    Their bullets' speed and how fast their attacks come (ENM-22).
     """
 
     def __init__(self, bullet_speed: float, fire_rate: float) -> None:
@@ -131,9 +133,10 @@ class _WorldContext:
 
 
 class EnemyWorld:
-    """The enemies and their shots (ENM-04). `enemies` are updated every step; `targets` are rebuilt
-    every step (the living enemies' shot targets and the living missiles, ENM-18): the player's
-    shots aim at these.
+    """The enemies and their shots (ENM-04).
+
+    `enemies` are updated every step; `targets` are rebuilt every step (the living enemies' shot
+    targets and the living missiles, ENM-18): the player's shots aim at these.
     """
 
     def __init__(
@@ -170,7 +173,7 @@ class EnemyWorld:
         self._context = _WorldContext(self, options, self.shots, random, difficulty)
 
     def add(self, *enemies: Enemy) -> None:
-        """Adds enemies, updated from the next step."""
+        """Add enemies, updated from the next step."""
         for enemy in enemies:
             enemy.id = self._next_id
             self._next_id += 1
@@ -179,17 +182,8 @@ class EnemyWorld:
             self.spawned_health += enemy.max_health
         self._rebuild_targets()
 
-    @property
-    def on_screen(self) -> int:
-        """Number of enemies whose centre is over the playfield."""
-        count = 0
-        for enemy in self.enemies:
-            if self._within(enemy, 0):
-                count += 1
-        return count
-
     def clear(self) -> None:
-        """Removes every enemy and shot."""
+        """Remove every enemy and shot."""
         self.enemies.clear()
         self.shots.clear()
         self.blasts = []
@@ -221,8 +215,9 @@ class EnemyWorld:
         self.add(*spawned)
 
     def _collect_destroyed(self) -> None:
-        """Scores the enemies the player's shots destroyed and lets them spawn their parts. An enemy
-        counts, and drops its bonus, however it lost its health (GAME-BONUS-06).
+        """Scores the enemies the player's shots destroyed and lets them spawn their parts.
+
+        An enemy counts, and drops its bonus, however it lost its health (GAME-BONUS-06).
         """
         for enemy in self.enemies:
             if enemy.gone or is_alive(enemy):
@@ -247,8 +242,9 @@ class EnemyWorld:
         )
 
     def _check_gone(self, enemy: Enemy) -> None:
-        """Marks an enemy gone once it has been on the playfield and then left it, or is too old
-        (ENM-10); one that does not expire (a boss) only goes once destroyed.
+        """Mark an enemy gone once it has been on the playfield and then left it.
+
+        Or is too old (ENM-10); one that does not expire (a boss) only goes once destroyed.
         """
         if not enemy.expires:
             return

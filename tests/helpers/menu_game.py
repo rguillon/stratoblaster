@@ -1,5 +1,9 @@
-"""A small game definition for the menu tests (ENG-145): the texts the menus read, two ships and a
-level catalog of three levels (the second and third locked)."""
+# Copyright (c) 2026 Renaud Guillon
+"""A small game definition for the menu tests (ENG-145).
+
+The texts the menus read, two ships and a level catalog of three levels (the second and third
+locked).
+"""
 
 from types import SimpleNamespace
 
@@ -53,9 +57,9 @@ def make_game() -> SimpleNamespace:
     levels = LevelCatalog(
         2,
         [
-            LevelEntry("1-1", "1-1", 1, 1, True),
-            LevelEntry("1-2", "1-2", 1, 2, False),
-            LevelEntry("1-3", "1-3", 1, 3, False),
+            LevelEntry("1-1", "1-1", 1, 1, unlocked=True),
+            LevelEntry("1-2", "1-2", 1, 2, unlocked=False),
+            LevelEntry("1-3", "1-3", 1, 3, unlocked=False),
         ],
     )
     return SimpleNamespace(

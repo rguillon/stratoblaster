@@ -1,11 +1,12 @@
-"""FB-VERDANT-CROWN-01 to FB-VERDANT-CROWN-06, 3-5: the Verdant Crown, World 3's last boss. Model
-space: logical pixels, nose +Z (down the screen), Y up towards the camera; +X is the screen's left.
-A city-ship: an overgrown deck carrying a glass garden dome over the core, a gun deck on its bow,
-outriggers out to the thorn cannons."""
+# Copyright (c) 2026 Renaud Guillon
+"""FB-VERDANT-CROWN-01 to FB-VERDANT-CROWN-06, 3-5: the Verdant Crown, World 3's last boss.
+
+Model space: logical pixels, nose +Z (down the screen), Y up towards the camera; +X is the screen's
+left. A city-ship: an overgrown deck carrying a glass garden dome over the core, a gun deck on its
+bow, outriggers out to the thorn cannons.
+"""
 
 import math
-
-from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.world_3.verdant_crown import (
     VERDANT_CROWN,
@@ -41,15 +42,17 @@ from game.view.enemies.enemy_shapes import SIDES, decal, flip_x
 from game.view.enemies.organic_parts import reactor_sac
 from render.geometry.solids import Placement
 
+# isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-__pragma__("skip")
-from typing import Any  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+# __pragma__ ("skip")
+from typing import Any
 
-from game.view.enemies.enemy_mesh import EnemyParts  # noqa: E402 (after the Transcrypt skip block, ENG-153)
+from game.view.enemies.enemy_mesh import EnemyParts
 
 type Rgb = list[float]
 type Vec3 = list[float]
-__pragma__("noskip")
+# __pragma__ ("noskip")
+
 
 H = ENEMY_LOOK.hull
 WHITE = [1, 1, 1]
@@ -69,16 +72,14 @@ DECK = symmetric(
     92,
 )
 # The right outrigger (mirrored on the left), out to the thorn cannon's turntable.
-OUTRIGGER = table(
-    [
-        [56, 30],
-        [94, 20],
-        [102, 12],
-        [102, -2],
-        [94, -10],
-        [56, -18],
-    ]
-)
+OUTRIGGER = table([
+    [56, 30],
+    [94, 20],
+    [102, 12],
+    [102, -2],
+    [94, -10],
+    [56, -18],
+])
 # The engine block across the stern.
 ENGINES = rect(64, 12, [0, -88])
 # The gun deck on the bow, and its top.
@@ -90,7 +91,7 @@ LENS = table([[0, 0], [3.4, 1], [2.2, 3], [0, 3.6]])
 
 
 def draw_hull(p: EnemyParts) -> None:
-    """The deck with its lit rim, the engine block, the outriggers wrapped in vines."""
+    """Draw the deck with its lit rim, the engine block, the outriggers wrapped in vines."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -105,7 +106,7 @@ def draw_hull(p: EnemyParts) -> None:
     edge_lights(
         neon,
         DECK,
-        [i for i in range(len(DECK))],
+        list(range(len(DECK))),
         [-2.6, -1.4],
         EMERALD,
     )
@@ -123,8 +124,10 @@ def draw_hull(p: EnemyParts) -> None:
 
 
 def draw_bow(p: EnemyParts) -> None:
-    """The gun deck on the bow (FB-VERDANT-CROWN-04): twin cannons and a laser lens, charging
-    before they fire."""
+    """Draw the gun deck on the bow (FB-VERDANT-CROWN-04): twin cannons and a laser lens.
+
+    They charge before they fire.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -165,8 +168,10 @@ def draw_bow(p: EnemyParts) -> None:
 
 
 def draw_hatches(p: EnemyParts) -> None:
-    """The missile hatches in their block behind the dome, lit as missiles load
-    (FB-VERDANT-CROWN-04)."""
+    """Draw the missile hatches in their block behind the dome (FB-VERDANT-CROWN-04).
+
+    They are lit as missiles load.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -190,7 +195,7 @@ def draw_hatches(p: EnemyParts) -> None:
 
 
 def verdant_crown_core(p: EnemyParts) -> None:
-    """The core of the Verdant Crown: its deck, garden, city, bow and hatches, and its roots."""
+    """Add the core of the Verdant Crown: its deck, garden, city, bow and hatches, and its roots."""
     draw_hull(p)
     draw_garden(p)
     draw_city(p)
@@ -202,10 +207,12 @@ def verdant_crown_core(p: EnemyParts) -> None:
 
 
 def build_verdant_crown(scene: Any) -> Any:
-    """FB-VERDANT-CROWN-01, FB-VERDANT-CROWN-06: the Verdant Crown, a city-ship (6 L) under emerald
-    and magenta neon: an overgrown city round a glass garden dome over its core, two thorn cannons
-    on its outriggers, two seed batteries aft, two root generators ahead, and a bow carrying twin
-    cannons and a laser."""
+    """FB-VERDANT-CROWN-01, FB-VERDANT-CROWN-06: the Verdant Crown, a city-ship (6 L).
+
+    Under emerald and magenta neon: an overgrown city round a glass garden dome over its core, two
+    thorn cannons on its outriggers, two seed batteries aft, two root generators ahead, and a bow
+    carrying twin cannons and a laser.
+    """
     parts: dict[str, Any] = {
         "thorn-left": thorn_mount,
         "thorn-right": thorn_mount,
