@@ -120,7 +120,8 @@ WORLD_1_ROADS = record({
     "crossWidth": 4,
     "dual": {"width": 12, "mainRoads": 1, "avenues": 0.25},
     "junction": {"width": 14, "length": 28},
-    "offscreenX": 420,
+    # D-249: the 16:9 camera sees about +/-500 of ground across (+/-560 at the sea bed).
+    "offscreenX": 1000,
     "turnRate": 0.05,
     "minHeight": 3,
     "maxSlope": 0.5,

@@ -285,8 +285,9 @@ roads and paths keep their own shape and look, with no sidewalks and no tiles.
 
 ### GFX-ROAD-19 — Street grids only where they show · SHOULD
 
-A district's streets end beyond ±`offscreenX`: 420 in Worlds 1 and 2, 240 in Worlds 3 and 4, where
-the ground drawn twice as big shows about ±195 of it. A street grid the level starts in begins 400
+A district's streets end beyond ±`offscreenX`: 1 000 in Worlds 1 and 2, 640 in Worlds 3 and 4,
+where the ground drawn twice as big shows about ±500 of it on the 16:9 screen (±560 at a sea bed;
+420 and 240 for ±195 on the old 3:4 screen, D-249). A street grid the level starts in begins 400
 before Z = 0, its first row out of view; the winding roads still begin 3 000 before.
 
 **Acceptance criteria**
@@ -359,7 +360,7 @@ be in, and is the same as comparing the exact distance to the nearest road edge.
 | `dual` | width 12, 1 main road, avenues 0.25 of the grid lines | same place |
 | `crossSpacing` / `crossBend` | 260–560 / 40 | same place |
 | `junction` | width 14, length 28 | same place |
-| `offscreenX` | 420 (Worlds 1–2), 240 (Worlds 3–4) | `src/game/config/world_3/props.py` `WORLD_3_ROADS` |
+| `offscreenX` | 1 000 (Worlds 1–2), 640 (Worlds 3–4); 420 and 240 before D-249 | `src/game/config/world_1/props.py` `WORLD_1_ROADS`, `src/game/config/world_3/props.py` `WORLD_3_ROADS` |
 | `turnRate` / `step` / `minRun` | 0.05 / 8 / 6 | `WORLD_1_ROADS` |
 | `minHeight` / `maxSlope` | 3 / 0.5 | same place |
 | `noCrossings.gap` | 30 | same place |

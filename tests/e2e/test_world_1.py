@@ -118,7 +118,7 @@ def test_game_screen_05_the_heavy_ship_flies_over_1_1_shoots_and_stays_on_screen
     page.keyboard.up("ArrowLeft")
     assert second["player"]["x"] == first["player"]["x"]
     assert second["player"]["x"] > 0
-    assert second["player"]["x"] < 240 - 100
+    assert second["player"]["x"] < 640 - 100
 
 
 def test_dev_opt_10_without_debug_options_f_and_the_arrows_do_not_change_the_time(

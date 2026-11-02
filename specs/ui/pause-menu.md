@@ -155,7 +155,7 @@ changes no screen (only the audio goes quiet, [audio/engine.md](../audio/engine.
 |------|-------|-------|
 | Pause keys / buttons | `Escape`, `KeyP`; gamepad 9, 8; the `❚❚` button | `src/config/menu_input.py` `MENU_INPUT_CONFIG` |
 | `pause_dim` | 50 % black over the playfield | `index.html` `.pause-dim` |
-| `pause_button_size` | 56 × 56 px, 14 px from the top, 18 px from the right | `index.html` `.game-pause` |
+| `pause_button_size` | 72 × 72 px (56 before D-249: 44 CSS px in an 800 px wide window at the 16:9 stage's scale of 0.625), 14 px from the top, 18 px from the right | `index.html` `.game-pause` |
 | Pause panel | at least 280 px wide, entries 56 px tall, 24 px text | `index.html` `.pause-panel`, `.pause-entry` |
 | Texts | "Paused", "Resume", "Settings", "Main menu", "Esc / P to resume", "Leave the level?", "No", "Yes" | `src/game/config/menu_texts.py` `MENU_TEXTS` |
 

@@ -200,7 +200,7 @@ and fading over `flash.life`.
 | Debris | 4–36 pieces, 80–240 px/s, 2.6–5 px, life 0.3–0.4 s; an ember every 0.025 s, a wisp every 0.09 s | `ENEMY_LOOK["blasts"]["debris"]` |
 | Embers | 5–40, 60–220 px/s, 1–2 px, life 0.12–0.25 s | `ENEMY_LOOK["blasts"]["embers"]` |
 | `cap` | 1200 particles per layer | `ENEMY_LOOK["blasts"]` |
-| Bomb wave | radius 820 px, cyan rim, 48 sides | `src/game/config/bomb_look.py` `BOMB_LOOK["wave"]` |
+| Bomb wave | radius 1 000 px (820 on the 3:4 screen, D-249), cyan rim, 48 sides | `src/game/config/bomb_look.py` `BOMB_LOOK["wave"]` |
 | Bomb flash | radius 320 px, 0.3 s, heart [0.4, 0.34, 0.22] | `BOMB_LOOK["flash"]` |
 | Bomb duration | 1 s | `src/game/config/bombs.py` |
 | Bonus `size` | 11 px | `src/game/config/bonus_look.py` `BONUS_LOOK` |

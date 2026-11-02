@@ -99,6 +99,7 @@ WORLD_3_PROPS = record({
 
 # Roads of World 3: as in World 1 (WLD-3-13; no crossings, phase 6 review), but the street grids
 # stop closer to the screen edges (GFX-ROAD-19; reviewer, 2026-10-28): the ground is drawn twice as
-# big, so only about +/-195 of it shows, and the streets and buildings generated out to +/-420 were
-# never seen. The roads still start and end off screen (GFX-ROAD-04).
-WORLD_3_ROADS = merge(WORLD_1_ROADS, {"offscreenX": 240})
+# big, so only about +/-500 of it shows on the 16:9 screen (+/-560 at the sea bed, D-249), and the
+# streets and buildings generated out to +/-1000 would never be seen. The roads still start and end
+# off screen (GFX-ROAD-04).
+WORLD_3_ROADS = merge(WORLD_1_ROADS, {"offscreenX": 640})

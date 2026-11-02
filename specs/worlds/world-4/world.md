@@ -390,7 +390,7 @@ faster, in phrygian.
 | boulevard_3_share | 0.12 (3 lanes each way, 18 wide) | WLD-4-12; D-136; today 0.2 (`WORLD_4_ROADS.boulevards`, `src/game/config/world_4/props.py`) |
 | boulevard_4_share | 0.08 (4 lanes each way, 24 wide) | WLD-4-12; D-136; today none |
 | street_blocks | World 3's (WLD-3-13) | WLD-4-13 |
-| streets_offscreen_x | 240 | WLD-4-13; World 3's roads |
+| streets_offscreen_x | 640 (240 before D-249) | WLD-4-13; World 3's roads |
 | daylight_brightness | 1.3 | WLD-4-14; `DAYLIGHT`, `src/game/config/world_4/looks.py` |
 | daylight_ground_lights | 1.5 | WLD-4-14; same |
 | background tone | 0.55 | WLD-4-11; `READABILITY.tones.world4`, `src/game/config/readability.py` (D-162) |

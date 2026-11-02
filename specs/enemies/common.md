@@ -596,7 +596,7 @@ only by its colour (there are only two enemy colours).
 | `HITBOX` | 0.85 | hit radius = `HITBOX` × size × L / 2 (`radius()` in `enemies.py`) |
 | `ENEMY_SPAWN_MARGIN` | 60 px | `enemies.py`: how far outside the edge a group appears |
 | `ENTRY_INSET` | 0.08 | `src/game/sim/enemies/enemy_helpers.py`: entries kept off the corners |
-| `top_range` | the ship's reach at the bottom of its flight area (107–373 px when measured, D-048) | set by `LevelRun` |
+| `top_range` | the ship's reach at the bottom of its flight area (about 238–1 042 px on the 16:9 screen, D-249; 107–373 px when measured on the 3:4 one, D-048) | set by `LevelRun` |
 | `cull_margin` | 80 px | `src/config/game_play.py` `GAME_PLAY_CONFIG` |
 | `max_enemy_age` | 40 s | `GAME_PLAY_CONFIG` |
 | `bullet_radius` | 4 px | `bullet()` in `enemies.py` |

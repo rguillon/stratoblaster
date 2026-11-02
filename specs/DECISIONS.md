@@ -474,3 +474,69 @@
   and `TitleView` each take one more optional, positional piece (ENG-151). The menu sounds
   ignore the new feedback (no cue for `fullscreen`).
 - **Status:** Proposed
+
+### D-249 — A 16:9 screen: 1280 × 720 logical pixels
+- **Date:** 2026-11-02
+- **Requirements:** GAME-SCREEN-01, GAME-SCREEN-02, GAME-SCREEN-04, GAME-SCREEN-05,
+  GAME-SCREEN-06, GFX-CAM-01, GFX-CAM-03, GFX-CAM-05, UI-LOOK-01, UI-LOOK-02, UI-LOOK-13,
+  GFX-ROAD-19, WLD-1-20, WLD-3-13, WLD-4-13, GFX-FX-10, ENM-09, GAME-BONUS-07.
+- **Context:** owner: "change the game aspect ratio. I want to take a full standard 1920×1080
+  screen. That means generating new levels and adapting the enemy waves. We will deal with the
+  mobile UI later."
+- **Decision:** the logical screen is **1280 × 720** (16:9), chosen with the owner over
+  1138 × 640 (today's height, only widened; not an exact 16:9, a 1 px letterbox line at
+  1920 × 1080) and 1920 × 1080 (native; every px tunable of the game and the specs would have
+  to be rescaled ×1.69). 1280 × 720 is an exact 16:9 with integer sides, ×1.5 at 1920 × 1080
+  and ×1 at 1280 × 720, and keeps the logical pixel: every speed, size, margin and HUD value is
+  unchanged. The playfield is 80 px taller (the ship's flight area goes up to y = 520) and
+  800 px wider. The screen size is one record (`GAME_CONFIG.screen`); the camera framing, the
+  trapezoid seen of the playfield, the ship's reach, the ground window the terrain is generated
+  over, the stage fit and the overlay scale all derive from it, so nothing else of the engine
+  changes. What the content needed:
+  - *Levels (the ground):* the camera now sees about ±500 ground units across at the sea level
+    (±560 at a sea bed), not ±195, so the terrain, roads, districts, props, cars and clouds are
+    generated over that window as before (GFX-CAM-05). The one content extent keyed to the old
+    width, `offscreenX` (where roads and street grids start and end, and how far from the middle
+    lone buildings and hamlets stand), goes from 420 to 1 000 in Worlds 1–2 and from 240 to 640 in
+    Worlds 3–4, keeping their ratio to the ground in view. The shores, canyons, dunes and set
+    pieces are noise or meanders in ground units and need no change: the coast of 1-1 and 1-2
+    (land from x ≈ −40) still gives about 45 % of sea across the view.
+  - *Waves:* the scripts are written in fractions of the ship's reach (ENM-09, WLD-1-19), so the
+    entries, spreads and paths already spread over the wider playfield; the reach is about 2.8
+    times as wide (804 px instead of 282), so `WAVE_DENSITY` goes from 1.5 to 2 (every world uses
+    it through `wave_script`), which brings 5 to 25 % more enemies depending on the beats'
+    rounding. The counts recorded in the level files were re-measured from the configs (same
+    method: fillers and density in, Carrier launches and Splitter pods out). The difficulty orders
+    of WLD-1-22 and WLD-1-24 still hold (278 / 342 / 374 / 414 / 448 enemies, each second half
+    heavier).
+  - *Bomb ring:* its radius goes from 820 to 1 000 px, past the far corner of the new playfield
+    (about 900 from where the ship starts).
+  - *UI:* the overlay is 1280 × 720; the ship cards, the settings sliders and the dev entries keep
+    to a 560 px column in the middle (`--menu-column`) instead of stretching across; the HUD bar
+    spans the width as before. The logo keeps its size (sized for 480 px, it is small on 1280;
+    to revisit with the mobile layout).
+- **Alternatives considered:** keeping 480 × 640 logical and letting the canvas show more of
+  the world on the sides (the overlay and the gameplay would stay 3:4: not what was asked);
+  scaling the ship's and the enemies' horizontal speeds with the width (not in the model: X and
+  Y share one speed).
+- **Consequences / open points for the owner to tune after a playtest:**
+  - the player ship crosses its reach in about 3.6 s instead of 1.3 s (`base_speed` 225 px/s is
+    unchanged); the Strafer's pass across the screen takes about 9 s instead of 4 (9 fans instead
+    of 4); the Gnat S-path, in fractions of the reach, swings 400 px wide instead of 140, so the
+    Gnats stay on screen longer. These are GAME-SHIP-02, ENM-STRAFER and ENM-GNAT tunables.
+  - the terrain, props and streets cover about 2.6 times as much ground across: more triangles
+    and more instances per chunk (PERF budgets to watch, e2e perf test unchanged).
+  - on a portrait phone (390 × 844) the stage is 390 × 219 CSS px (scale 0.3): the e2e checks
+    of UI-INPUT-11 (touch targets), UI-PAUSE-02 (the pause button on the phone) and UI-SET-03
+    (the sliders on the phone) are marked expected-to-fail (strict) until the mobile layout;
+    UI-LOOK-09's manual check at 390 × 844 does not hold either. The owner deferred the mobile
+    UI. In an 800 × 600 window the stage's scale is 0.625 (it was 0.94 at 3:4), so the pause
+    button grows from 56 to 72 px to stay at 44 CSS px there (UI-PAUSE-02).
+  - the readability probe (DEV-API-09) is run on 4-1 at 60 s instead of 90 s: the probe takes the
+    first player shot in view, and with the waves' new timing the shot at 90 s (and at 120 s)
+    flies over a lit tile of the garden town, where it reads at 1.3 to 1.9 against a floor of 2
+    (4.8 at 60 s). The weak reading is the tile's, not the screen's: GFX-READ-14's player shot
+    opacity (0.7) is the knob if it shows in play.
+  - the view's horizontal field of view is about 66° (vertical 40°, unchanged): the sides of the
+    screen show more perspective than before; `fovDeg` is the knob if it reads as distortion.
+- **Status:** Proposed
