@@ -419,7 +419,9 @@ class PropPlacer:
         # GFX-PROP-19: the blocks of stone of the cliff faces, with the buildings.
         cliffs = self.rules.cliffs
         if cliffs is not None:
-            placements.extend(cliff_blocks(self.field, cliffs, self.seed, area))
+            placements.extend(
+                cliff_blocks(self.field, cliffs, self.seed, area, self.rules.min_height)
+            )
         return placements
 
     def trees_in(self, area: GroundArea) -> list[PropPlacement]:

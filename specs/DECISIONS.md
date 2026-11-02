@@ -343,3 +343,34 @@
   too gentle for blocks. The owner checks the look in the game; the slope threshold, spacing, sizes
   and colours are tunables (`game/config/cliffs.py`, `crag_props.py`).
 - **Status:** Proposed
+
+### D-244 — Cliff blocks as rough chunks of stone, wider than tall
+- **Date:** 2026-11-02
+- **Requirements:** GFX-PROP-19, WLD-1-31.
+- **Context:** owner feedback on D-243: "the rocks are just flat cubes, it's terrible, make better
+  looking rocks". The three block models were two boxes each. Also, World 1's sun stands ahead
+  (azimuth 25° to 45°) while the hills' faces look 125°: a block's downhill side is 100° off the
+  sun and gets only the ambient light, so a tall block is a dark pillar with a lit cap; and the
+  blocks stood on the steep shelves under the sea too, a field of stones in the surf of 1-2.
+- **Decision:**
+  - A game-agnostic chunk generator, `render/geometry/rocks.py` (`rough_chunk`), beside the rough
+    lathes of the tree crowns and reusing their `Roughness`: a prism of a few sides whose corners
+    are pushed in and out and turned at random, a bulging waist, a smaller, tilted, faceted top,
+    every half facet its own shade and darker towards its base. No bottom (it stands in the
+    ground). Seeded, like the branches and crowns.
+  - The three models (`crag_props.py`) are made of chunks: one big chunk with a stone at its
+    foot, two stacked (the darker stone), two side by side. Round boulders (a rough lathe of a
+    boulder profile) were tried first and read as grey bushes.
+  - The blocks are wider than tall (7 to 10 wide, 5 to 8 high, sunk 1.5), so the lit tops carry
+    the look as courses of stone and the dark sides are the joints; the stone is toned down
+    (0.58 grey, 0.7 red) so the lit tops no longer blow out to white under the 1.7 sun.
+  - `cliff_blocks` takes the props' `min_height`: no block below it (the sea's shelves).
+- **Alternatives considered:** a convex hull of random points (the usual low-poly rock; a 3D hull
+  in Transcrypt's Python is a lot of code for a look the pushed prism gives); lifting the ambient
+  light or turning the faces to the sun (both change the whole world's look, and the faces must
+  look towards the camera to be seen as walls at all).
+- **Consequences:** about 60 triangles a block instead of 24 (the polygon count of 1-3 is
+  unchanged within noise, 373 k). The decision's tunables: `PUSH`, `SHADE`, `SHADOW`, the sides
+  and the colours in `crag_props.py`; `TURN`, `WAIST`, `TOP`, `TILT` in `rocks.py`; the sizes in
+  `game/config/cliffs.py`.
+- **Status:** Proposed

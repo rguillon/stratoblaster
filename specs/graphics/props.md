@@ -207,22 +207,34 @@ a chunk that is gone. So woods never blink out or come into sight bare.
 A level's props may have `cliffs`: blocks of stone standing on the steep ground, so a cliff face is
 a stair of chunky blocks and not a smooth slope under a texture. In each cell of a grid of
 `spacing`, where the ground drawn (read as the terrain mesh draws it, GFX-PROP-13) is steeper than
-`minSlope` (height per unit of distance), one block of one of the `kinds` stands, sunk `embed`
-into the ground, its front turned downhill, about a spacing wide and of a `height` and `depth`
-drawn from their ranges. Hashes of the cell decide each block, so areas side by side get each
-block once. The blocks come with the buildings of a chunk, cast and receive shadows, and are drawn
-with thin instances like every prop (GFX-PROP-05). World 1 uses them on its hills' faces and on the
+`minSlope` (height per unit of distance) and above the props' `minHeight` (none on the shelves
+under the sea), one block of one of the `kinds` stands, sunk `embed` into the ground, its front
+turned downhill, a spacing to half as much again wide and of a `height` and `depth` drawn from
+their ranges. Hashes of the cell decide each block, so areas side by side get each block once. The
+blocks come with the buildings of a chunk, cast and receive shadows, and are drawn with thin
+instances like every prop (GFX-PROP-05).
+
+A block is a rough chunk of stone (`render/geometry/rocks.py`), not a box: a prism whose corners
+are pushed in and out and turned at random, its sides leaning in and bulging at a waist, its top
+smaller, tilted and faceted, every half facet its own shade and darker towards its base. Seeded,
+so a kind is the same chunk on every instance. Blocks are wider than tall: the sun lights their
+tops and the joints between them stay dark, so a face reads as courses of fractured stone from
+the playfield camera, whichever way it looks. World 1 uses them on its hills' faces and on the
 walls of its mesas, buttes and canyon ([../worlds/world-1/world.md](../worlds/world-1/world.md),
 WLD-1-31).
 
 **Acceptance criteria**
 - Given flat ground, then no block stands; given a steep face, then blocks stand on it, sunk into
   the ground, of the listed kinds and sizes, facing downhill, the same for the same seed and once
-  across neighbouring areas (unit tests).
+  across neighbouring areas; given ground under the props' `minHeight`, then none stands there
+  (unit tests).
+- Given a chunk, then it is well formed, its facets face outwards and its top up, its corners are
+  pushed off a regular polygon, its facets are shaded and darker at the base, and two seeds give
+  two chunks (unit tests).
 - Given a level with cliff rules, then its block kinds are among its prop kinds (unit test).
-- Manual: from the playfield camera, a face reads as a wall of stone blocks, grass to its lip.
+- Manual: from the playfield camera, a face reads as courses of fractured stone, grass to its lip.
 
-*Sources: D-243.*
+*Sources: D-243, D-244.*
 
 ### Engine tools no level uses now
 

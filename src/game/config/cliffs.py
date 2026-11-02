@@ -1,11 +1,11 @@
 # Copyright (c) 2026 Renaud Guillon
 """The blocks of stone of the cliff faces (GFX-PROP-19, WLD-1-31).
 
-Three shapes of block each, in grey crag for the green land and in red mesa rock for the desert
-(`src/game/view/props/crag_props.py` draws them). The rules say where they stand: on ground steeper
-than `minSlope` (height per unit; the hills' faces, the walls of the mesas, buttes and canyon), one
-in each cell of `spacing`, `height` and `depth` drawn from their ranges, sunk `embed` into the
-ground.
+Three shapes of block each, rough chunks of stone, in grey crag for the green land and in red mesa
+rock for the desert (`src/game/view/props/crag_props.py` draws them). The rules say where they
+stand: on ground steeper than `minSlope` (height per unit; the hills' faces, the walls of the
+mesas, buttes and canyon) and above the sea, one in each cell of `spacing`, wider than tall
+(`height` and `depth` drawn from their ranges), sunk `embed` into the ground.
 """
 
 from game.config.record import record
@@ -27,9 +27,9 @@ def cliffs(kinds: list[str]) -> Any:
         "kinds": kinds,
         "minSlope": 0.55,
         "spacing": 7,
-        "height": [7, 12],
-        "depth": [5, 9],
-        "embed": 2.5,
+        "height": [5, 8],
+        "depth": [6, 10],
+        "embed": 1.5,
     })
 
 
