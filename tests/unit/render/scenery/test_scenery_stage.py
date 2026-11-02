@@ -308,9 +308,10 @@ class _Scene:
 class _Camera:
     """The stage's camera: where it is, where it looks, and its axes."""
 
-    def __init__(self, half_fov: float, clips: tuple[float, float]) -> None:
+    def __init__(self, half_fov: float, clips: tuple[float, float], viewport: object) -> None:
         self.half_fov = half_fov
         self.clips = clips
+        self.viewport = viewport
         self.position = FakeVector()
         self.targets: list[FakeVector] = []
 
@@ -552,7 +553,7 @@ def world(monkeypatch: pytest.MonkeyPatch) -> _World:
     for name, fake in {
         "level_ground": w.level_ground,
         "GroundRoot": _GroundRoot,
-        "stage_camera": lambda _scene, half_fov, clips: _Camera(half_fov, clips),
+        "stage_camera": lambda _scene, fov, clips, viewport: _Camera(fov, clips, viewport),
         "SkyLayers": _Sky,
         "RoadLayers": _Roads,
         "PropField": _Props,
@@ -620,6 +621,7 @@ def test_gfx_cam_05_a_stage_is_built_over_its_level_s_ground_seen_by_its_camera(
     assert ground.placer.ensured == [window.z_far + ahead]
     # D-216: the camera's clipping planes.
     assert (s.camera.half_fov, s.camera.clips) == (framing.half_fov, (200, 4000))
+    assert s.camera.viewport is None  # D-252: the whole canvas unless a window is given
     sky = s._sky
     assert sky.setup == (level.scroll_speed, None, level.seed)
     assert s.sun is sky.sun

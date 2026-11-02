@@ -285,7 +285,7 @@ def build_level_scene(engine: Any, game: Any, options: LevelSceneOptions) -> Lev
     # The kit factory is one of two (with and without the environment): typed as Any.
     kit: Any = create_scenery_kit if options.environment else create_plain_scenery_kit
     stage_options = SceneryStageOptions(
-        game.screen,
+        game.playfield,
         game.view.scenery.camera,
         level,
         look,
@@ -293,6 +293,8 @@ def build_level_scene(engine: Any, game: Any, options: LevelSceneOptions) -> Lev
         kit,
         options.stage,
         options.atmosphere,
+        # D-252: the camera draws only into the playfield window.
+        game.playfield.viewport,
     )
     stage = SceneryStage(scene, stage_options)
     if ground_glow is not None:

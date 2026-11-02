@@ -203,7 +203,7 @@ the ground that gets ahead of the level during the fights.
 | streets | rows 45–90, columns 50–110, links 0.6 | `STREETS` |
 | max_gap | 2.8 s → 1.6 s | `src/game/config/world_2/waves.py` `WORLD_2_FILLERS["2-5"]` |
 | bullet_speed_factor / fire_rate_factor | 1.15 / 1.15 | `src/game/config/world_2/difficulty.py` |
-| written | 68 beats; 130 waves and 566 groups after fill and density; 814 enemies, 37 400 HP (halves 14 900 / 22 500), Carrier launches not counted; 162.8 enemies and 7 480 HP a minute without them | measured from the configs; D-067, density 2 (D-249) |
+| written | 68 beats; 130 waves and 475 groups after fill and density; 687 enemies, 32 000 HP (halves 13 000 / 19 000), Carrier launches not counted; 233.4 enemies and 7 360 HP a minute with them | measured from the configs; D-067 |
 | buildings | 33 934 (halves 16 196 / 17 738) | each level's seed, measured for this file |
 | mini boss / final boss | `ice-queen` / `boreal-citadel` | `src/game/config/world_2/bosses.py` |
 | runout | 80 s | same |

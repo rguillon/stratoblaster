@@ -475,11 +475,11 @@ bosses share one boss track (`boss-1`), faster and tenser, in the same instrumen
 | time_of_day 1-1 / 1-2 / 1-3 / 1-4 / 1-5 | midday / early afternoon / late afternoon / sunset / dusk | WLD-1-16 |
 | bullet_speed_factor 1-1 / 1-2 / 1-3 / 1-4 / 1-5 | 0.8 / 0.85 / 0.9 / 1.0 / 1.1 | WLD-1-23; `src/game/config/world_1/difficulty.py` `WORLD_1_DIFFICULTY` |
 | fire_rate_factor 1-1 / 1-2 / 1-3 / 1-4 / 1-5 | 0.8 / 0.85 / 0.9 / 1.0 / 1.1 | WLD-1-23; same |
-| wave_density | 2 (1.5 before D-249) | WLD-1-20; `src/game/config/world_1/waves.py` `WAVE_DENSITY` |
+| wave_density | 1.5 (2 on the whole 16:9 screen between D-249 and D-252) | WLD-1-20; `src/game/config/world_1/waves.py` `WAVE_DENSITY` |
 | density_gap / density_spread | 1.5 s / 0.3 (from a side: −0.15) | WLD-1-20; `DENSITY_GAP`, `DENSITY_SPREAD` |
 | fill_positions | 0.3, 0.7, 0.5, 0.2, 0.8 | WLD-1-21; `FILL_POSITIONS` |
 | max_gap 1-1 … 1-5 | 4.5 → 3 / 3.5 → 2.4 / 3.3 → 2.2 / 3.2 → 2 / 3 → 1.6 s | WLD-1-21; `WORLD_1_FILLERS` |
-| enemies written 1-1 … 1-5 | 278 / 342 / 374 / 414 / 448 (265 / 321 / 339 / 372 / 401 before D-249) | WLD-1-22; from the scripts, density and fillers in, Carrier launches and Splitter pods out |
+| enemies written 1-1 … 1-5 | 265 / 321 / 339 / 372 / 401 | WLD-1-22; from the scripts, density and fillers in, Carrier launches and Splitter pods out |
 | enemy HP written 1-1 … 1-5 | 4 290 / 6 100 / 8 140 / 11 250 / 15 400 (halves 1 890 / 2 400 · 2 680 / 3 420 · 3 760 / 4 380 · 4 750 / 6 500 · 6 140 / 9 260) | WLD-1-22, WLD-1-24; same count |
 | measured with Carrier launches | 1-3: 104.8 enemies and 2 235 HP a minute; 1-5: 130.3 and 4 150 | D-067 (play-through without shooting, seed 606) |
 | peak_on_screen (last measured) | 16 / 20 / 24 / 30 / 32 | D-051, before the boss phase; the old tunables (6 … 15) and enemy counts (~60 … ~140) are superseded by the reviewer's denser waves (D-044, D-051) |

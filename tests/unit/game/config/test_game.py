@@ -15,3 +15,11 @@ def test_game_screen_01_the_playfield_is_a_16_9_landscape_screen() -> None:
     assert GAME_CONFIG.screen.width == 1280
     assert GAME_CONFIG.screen.height == 720
     assert GAME_CONFIG.screen.width / GAME_CONFIG.screen.height == 16 / 9
+
+
+def test_game_screen_01_the_playfield_window_is_3_4_in_the_middle_of_the_screen() -> None:
+    """D-252."""
+    window = GAME_CONFIG.playfield
+    assert (window.width, window.height) == (540, 720)
+    assert window.width / window.height == 3 / 4
+    assert window.left * 2 + window.width == GAME_CONFIG.screen.width

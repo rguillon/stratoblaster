@@ -4,7 +4,7 @@
 `main.py` passes `GAME` to `app/`; the engine discovers all content through it.
 """
 
-from core.content.game_definition import GameDefinition
+from core.content.game_definition import GameDefinition, LogicalScreen
 from game.config.bombs import BOMB_RULES
 from game.config.bonuses import BONUS_RULES
 from game.config.boss_fights import BOSS_FIGHT_RULES
@@ -62,6 +62,15 @@ class GameBindings:
         self.outline = outline
 
 
+# The playfield window (D-252): its viewport as shares of the screen.
+_PLAYFIELD = GAME_CONFIG.playfield
+_SCREEN = GAME_CONFIG.screen
+PLAYFIELD = LogicalScreen(
+    _PLAYFIELD.width,
+    _PLAYFIELD.height,
+    (_PLAYFIELD.left / _SCREEN.width, 0, _PLAYFIELD.width / _SCREEN.width, 1),
+)
+
 # The single entry point of this game's content (ENG-144).
 GAME = GameDefinition(
     GAME_CONFIG.id,
@@ -92,4 +101,5 @@ GAME = GameDefinition(
         GAME_AUDIO,
         READABILITY.outline,
     ),
+    PLAYFIELD,
 )

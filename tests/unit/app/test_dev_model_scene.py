@@ -108,7 +108,7 @@ def make_look() -> SimpleNamespace:
 
 def make_game(look: Any) -> SimpleNamespace:
     scenery = SimpleNamespace(camera=CAMERA_LOOK, looks={"1-1": look})
-    return SimpleNamespace(screen=SCREEN, view=SimpleNamespace(scenery=scenery))
+    return SimpleNamespace(playfield=SCREEN, view=SimpleNamespace(scenery=scenery))
 
 
 LEVEL = SimpleNamespace(id="1-1", scroll_speed=30)

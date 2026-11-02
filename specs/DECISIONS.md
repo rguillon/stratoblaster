@@ -590,3 +590,37 @@
   the e2e checks of UI-PAUSE-02 are gone, the pointer test pauses with Escape. The test of
   the dev model scene's glow kernel is aligned with D-250 here (it still expected 32).
 - **Status:** Proposed
+
+### D-252 — The level drawn and played in a 540 × 720 window between the HUD's columns
+- **Date:** 2026-11-02
+- **Requirements:** GAME-SCREEN-01, GAME-SCREEN-04, GAME-SCREEN-05, GAME-SCREEN-06, GFX-CAM-01,
+  GFX-CAM-02, GFX-CAM-03, GFX-CAM-05, UI-HUD-01, UI-HUD-03, UI-HUD-07, GFX-ROAD-19, WLD-1-20,
+  WLD-3-13, WLD-4-13, GFX-FX-10, ENM-09, GAME-BONUS-07, ENG-144.
+- **Context:** owner: "make the UI more vertical, and restrict the player's movement to the new
+  window size. Dont draw the background outside the playing area."
+- **Decision:** the game definition gets a `playfield` (ENG-144, one more optional positional
+  piece, ENG-151): a logical screen of its own with a `viewport` of the canvas. This game's is
+  540 × 720 (3:4) at x = 370 of the 1280 × 720 screen, the width left by two 370 px HUD columns.
+  The scenery camera draws only into that viewport (Babylon `Viewport`, set on the stage camera
+  from the stage options), so its aspect ratio is the window's and nothing of the level is drawn
+  under the columns, which are opaque. Every gameplay use of the screen (the ship's bounds and
+  start, the enemies' spawn area, the shots' and bonuses' area, what is on screen, the enemy
+  shots' eye point, the audio pan, the dev viewers' framing) reads `game.playfield` instead; the
+  stage fit and the overlay keep `game.screen`. The ship's bounds are the width seen of the
+  window less the side margin: the `panel` margin of D-251 is gone with the columns outside the
+  window. The column readouts are one under the other (the ship, its lives, its bombs each on a
+  line), the health bar and the score a size up.
+- **What it undoes of D-249:** the playfield is a 3:4 window again (×1.125 the old 480 × 640), so
+  the content extents that followed the wide view go back: `WAVE_DENSITY` 2 → 1.5 (the level
+  files' counts re-measured, the original figures), `offscreenX` 1 000 → 420 in Worlds 1–2 and
+  640 → 300 in Worlds 3–4 (the window shows ±210 ground units at the sea level, ±235 at a sea bed:
+  240 would end streets in view), the bomb ring 1 000 → 820 px (the window's far corner is about
+  690 from the ship's start). The ship's reach at y = 20 is about x 120 … 420.
+- **Alternatives considered:** keeping the 3D view across the whole screen behind glass columns
+  (the owner: nothing drawn outside the playing area, and the narrower view also costs about
+  2.4 times fewer ground pixels and chunks across); changing the logical screen to 540 × 720 and
+  putting the columns outside the stage (the stage is the 16:9 screen, UI-LOOK-02).
+- **Consequences:** the ship crosses its reach in about 1.3 s again; the enemies' timing of
+  D-249's open points is back to the 480 × 640 game's. The e2e checks on the HUD and the
+  readability probe run on the window (the probe projects through the camera's viewport).
+- **Status:** Proposed

@@ -224,7 +224,7 @@ the ground that gets ahead of the level during the fights.
 | shore | coast road x −40 ± 90 every 1 800; bays x −90 ± 170 every 1 500; coast farms x −230 ± 110 every 1 700 (beach 240, sea bed −55) | `GREEN_COAST`, `GREEN_COAST_LEVEL` |
 | max_gap | 3.5 s → 2.4 s | `src/game/config/world_1/waves.py` `WORLD_1_FILLERS["1-2"]` |
 | bullet_speed_factor / fire_rate_factor | 0.85 / 0.85 | `src/game/config/world_1/difficulty.py` |
-| written | 28 beats; 73 waves and 206 groups after fill and density; 342 enemies, 6 740 HP (halves 2 880 / 3 860) | measured from the configs (density 2, D-249) |
+| written | 28 beats; 73 waves and 185 groups after fill and density; 321 enemies, 6 100 HP (halves 2 680 / 3 420) | measured from the configs |
 | buildings | 1 466 (halves 681 / 785) | each level's seed, measured for this file |
 | mini boss / final boss | `breakwater` / `gull-mothership` | `src/game/config/world_1/bosses.py` |
 | runout | 80 s | same |

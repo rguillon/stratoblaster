@@ -3,8 +3,9 @@
 > **Area:** Gameplay · **Prefix:** `GAME-SCREEN` · **Related:** [level-flow.md](level-flow.md), [player-ship.md](player-ship.md), [../graphics/camera.md](../graphics/camera.md), [../ui/look-and-layout.md](../ui/look-and-layout.md), [../ui/hud.md](../ui/hud.md), [../enemies/common.md](../enemies/common.md)
 
 The game is a vertical shoot 'em up played on a fixed, landscape logical screen of 1280 × 720
-pixels (16:9: a full HD screen at ×1.5), scaled to fit the window. The playfield is that screen: a
-flat plane at flight altitude over which the level's ground scrolls down. This file fixes the
+pixels (16:9: a full HD screen at ×1.5), scaled to fit the window. The playfield is a 540 × 720
+window in the middle of that screen, between the HUD's side columns: a flat plane at flight
+altitude over which the level's ground scrolls down, drawn nowhere else. This file fixes the
 logical resolution, how it is fitted to the window, the coordinate conventions, what part of the
 playfield the screen shows, where the ship may fly and what is removed off screen. The camera
 itself (tilt, field of view) is in [graphics/camera.md](../graphics/camera.md); the HUD and menu
@@ -15,16 +16,22 @@ layout in [ui/](../ui/).
 ### GAME-SCREEN-01 — Logical resolution · MUST
 
 The game is laid out on a logical screen of **1280 × 720** pixels (landscape, 16:9, a full HD
-screen at ×1.5; it was 480 × 640, portrait, until D-249). The playfield is the whole logical
-screen. Every gameplay position, size, distance and speed is in logical pixels (`px`): X to the
-right, Y up, the origin at the bottom-left corner of the playfield. Angles are in degrees from
-forward (+Y), positive to the right. The logical resolution is game data.
+screen at ×1.5; it was 480 × 640, portrait, until D-249). The playfield is a **540 × 720** window
+(3:4) in the middle of the screen, from x = 370 to 910 of it (D-252): the level is drawn and
+played there and nowhere else; the HUD's side columns fill the rest
+([ui/hud.md](../ui/hud.md)). Every gameplay position, size, distance and speed is in logical
+pixels (`px`) of the playfield: X to the right, Y up, the origin at the bottom-left corner of the
+playfield window. Angles are in degrees from forward (+Y), positive to the right. The logical
+resolution and the window are game data.
 
 **Acceptance criteria**
-- Given the game definition, then its screen is 1280 × 720 (unit test).
-- Given the ship at x = 640, then it is in the middle of the playfield across.
+- Given the game definition, then its screen is 1280 × 720 and its playfield window 540 × 720,
+  in the middle (unit test).
+- Given the ship at x = 270, then it is in the middle of the playfield across.
+- Given a level, then nothing of it is drawn outside the playfield window (the camera draws only
+  into the window's viewport, unit test).
 
-*Sources: GD-02, D-015, D-249.*
+*Sources: GD-02, D-015, D-249, D-252.*
 
 ### GAME-SCREEN-02 — Fitted to the window · MUST
 
@@ -62,20 +69,20 @@ The playfield is seen through the tilted scenery camera ([graphics/camera.md](..
 the bottom and top edges of the screen pass through the bottom and top edges of the playfield, and
 the screen shows less of the playfield's width at the bottom than at the top (`seen_half_width`).
 A point of the playfield is **on screen** when 0 ≤ y ≤ 720 and its distance across from the middle
-(x = 640) is at most the half width seen at its height. Gameplay rules that say "on screen" use
+(x = 270) is at most the half width seen at its height. Gameplay rules that say "on screen" use
 this test (which targets the player can hit, what a bomb reaches).
 
 **Acceptance criteria**
-- Given a point at the bottom edge 400 px from the middle, then it is not on screen; the same point
+- Given a point at the bottom edge 170 px from the middle, then it is not on screen; the same point
   at the top edge is (unit test on the framing).
 
 *Sources: D-042, D-048.*
 
 ### GAME-SCREEN-05 — Where the ship may fly · MUST
 
-The player ship flies only inside what the screen shows, within these margins (`ship_margin`):
-at least 18 px inside the width seen at its height and inside the HUD's side columns (`panel`,
-200 px each side, [ui/hud.md](../ui/hud.md)), no lower than y = 20 (half its length: its model
+The player ship flies only inside what the playfield window shows, within these margins
+(`ship_margin`): at least 18 px inside the width seen at its height (the HUD's side columns are
+outside the window, [ui/hud.md](../ui/hud.md)), no lower than y = 20 (half its length: its model
 stays on screen; it was y = 78 while the HUD had a bar along the bottom, D-155 to D-251), and no
 higher than 200 px below the top edge (y = 520). Pushed against an edge, the ship stops there: its
 speed towards that edge drops to 0, and it can slide along it.
@@ -83,8 +90,6 @@ speed towards that edge drops to 0, and it can slide along it.
 **Acceptance criteria**
 - Given the ship pushed against any edge, then it stays on screen and inside the margins (unit
   test).
-- Given the ship at a height where the screen shows more than the space between the columns,
-  then its half width is the space between the columns less the side margin (unit test).
 - Given the ship flying diagonally into a side edge, then it keeps its vertical speed (unit test).
 
 *Sources: P06-R02, D-155.*
@@ -92,7 +97,7 @@ speed towards that edge drops to 0, and it can slide along it.
 ### GAME-SCREEN-06 — The ship's reach · MUST
 
 The ship's reach is the X range the ship can get to at the bottom of its flight area: the middle
-± the flight area's half width at y = 20 (about x 260 to 1 020). Enemies that come in from the top
+± the flight area's half width at y = 20 (about x 120 to 420). Enemies that come in from the top
 keep to it ([enemies/common.md](../enemies/common.md)), and bonuses drop inside it
 ([bonuses.md](bonuses.md)), so the player can always fly under them.
 
@@ -120,9 +125,10 @@ Nothing scores or drops anything by being removed this way.
 | Name | Value | Notes |
 |------|-------|-------|
 | logical screen | 1280 × 720 px | `src/game/config/game.py` `GAME_CONFIG["screen"]` (GAME-SCREEN-01, D-249) |
-| seen_half_width | ±390.6 px at y = 0, ±419.6 at y = 78, ±583.6 at y = 520, ±657.9 at y = 720 | From the camera (tilt 35°, field of view 40°, `src/game/config/scenery_look.py`) and the 16:9 aspect, `src/render/scenery/playfield_framing.py` `visible_half_width` |
-| ship_margin | side 18 px, bottom 20 px, top 200 px, panel 200 px | `src/config/game_play.py` `GAME_PLAY_CONFIG.ship_margin` (GAME-SCREEN-05, D-251) |
-| ship reach | x ≈ 260 … 1 020 px | Computed from `ship_margin` and `seen_half_width` at y = 20 (±398.1), GAME-SCREEN-06 |
+| playfield window | 540 × 720 px, left 370 (viewport 0.289, 0, 0.422, 1 of the canvas) | `GAME_CONFIG["playfield"]`, `src/game/index.py` `PLAYFIELD`, `GameDefinition.playfield` (D-252) |
+| seen_half_width | ±164.8 px at y = 0, ±167.9 at y = 20, ±177.0 at y = 78, ±246.2 at y = 520, ±277.5 at y = 720 | From the camera (tilt 35°, field of view 40°, `src/game/config/scenery_look.py`) and the window's 3:4 aspect, `src/render/scenery/playfield_framing.py` `visible_half_width` |
+| ship_margin | side 18 px, bottom 20 px, top 200 px | `src/config/game_play.py` `GAME_PLAY_CONFIG.ship_margin` (GAME-SCREEN-05, D-251) |
+| ship reach | x ≈ 120 … 420 px | Computed from `ship_margin` and `seen_half_width` at y = 20, GAME-SCREEN-06 |
 | cull_margin | 80 px | `src/config/game_play.py` `GAME_PLAY_CONFIG.cull_margin` (GAME-SCREEN-07) |
 
 ## Notes
@@ -135,3 +141,6 @@ Nothing scores or drops anything by being removed this way.
   is unchanged; the playfield is 80 px taller and 800 px wider, the ship's reach about 2.8 times
   as wide (804 px instead of 282). On a portrait phone the stage is fitted by width (390 × 219
   at 390 × 844): the mobile layout is still to come.
+- D-252 (owner, 2026-11-02): the level is drawn and played in a 540 × 720 window in the middle
+  of the 16:9 screen, the HUD's columns on both sides; the gameplay is back to the 3:4 playfield
+  (×1.125 the old 480 × 640), the wave density and the ground extents of D-249 with it.

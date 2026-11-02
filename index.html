@@ -25,8 +25,9 @@
         --letterbox: #000407;
         /* D-249: width of the menus' column in the middle of the 16:9 screen (UI-LOOK-02). */
         --menu-column: 560px;
-        /* D-251: width of the HUD's side columns (UI-HUD-01); the ship keeps out of them. */
-        --hud-side: 200px;
+        /* D-251, D-252: width of the HUD's side columns (UI-HUD-01); the level is drawn only
+           between them, in the 540 px playfield window. */
+        --hud-side: 370px;
         --glow: rgba(0, 232, 255, 0.55);
         --neon-line: linear-gradient(90deg, #0a5cff, #00b4ff 40%, #00e8ff 65%, #3dff9a 90%, #b4ff4a);
         --chrome: linear-gradient(
@@ -480,10 +481,12 @@
       /* The level played: at the bottom of the HUD's left column (UI-HUD-06, D-251). */
       .game-level {
         position: absolute;
-        left: 12px;
-        bottom: 10px;
+        /* Over the opaque column (D-252). */
+        z-index: 2;
+        left: 20px;
+        bottom: 12px;
         font-family: var(--font-tech);
-        font-size: 10px;
+        font-size: 13px;
         letter-spacing: 0.15em;
         text-transform: uppercase;
         color: var(--paper);
@@ -522,10 +525,12 @@
         display: flex;
         flex-direction: column;
         align-items: stretch;
-        gap: 14px;
-        padding: 0 12px 12px;
+        gap: 18px;
+        padding: 0 20px 12px;
         text-align: left;
-        background: var(--glass);
+        font-size: 16px;
+        /* Opaque (D-252): nothing of the level shows outside the playfield window. */
+        background: var(--black);
         border-right: 1px solid rgba(0, 232, 255, 0.45);
       }
       .hud-panel-right {
@@ -537,7 +542,7 @@
       /* Level progress: a thin line along the top of the left column (UI-HUD-02). */
       .hud-progress {
         height: 3px;
-        margin: 0 -12px 8px;
+        margin: 0 -20px 8px;
         background: rgba(0, 0, 0, 0.5);
       }
       .hud-progress-fill {
@@ -548,11 +553,11 @@
       .hud-health {
         min-width: 0;
       }
+      /* D-252: the ship, its lives and its bombs one under the other. */
       .hud-name {
         display: flex;
-        flex-wrap: wrap;
-        gap: 4px 10px;
-        align-items: baseline;
+        flex-direction: column;
+        gap: 6px;
         white-space: nowrap;
       }
       /* The ship, its lives and its bombs (UI-HUD-03). */
@@ -576,8 +581,8 @@
       /* Health (UI-HUD-04). */
       .hud-bar {
         flex: 1;
-        max-width: 110px;
-        height: 7px;
+        max-width: 160px;
+        height: 9px;
         border: 1px solid var(--accent);
         background: rgba(0, 0, 0, 0.5);
       }
@@ -599,15 +604,15 @@
         white-space: nowrap;
       }
       .hud-score-value {
-        font-size: 18px;
+        font-size: 26px;
         font-weight: 700;
-        line-height: 20px;
+        line-height: 28px;
         color: var(--paper);
         text-shadow: 0 0 6px var(--neon);
       }
       .hud-high-score {
-        font-size: 10px;
-        line-height: 12px;
+        font-size: 13px;
+        line-height: 16px;
         color: var(--accent);
       }
       .hud-weapon {
@@ -620,7 +625,7 @@
         display: none;
         position: absolute;
         z-index: 5;
-        right: 54px;
+        right: 139px;
         bottom: 160px;
         width: 92px;
         height: 92px;
@@ -652,8 +657,8 @@
          of each part's share (UI-HUD-15); red for the danger (UI-HUD-17). */
       .boss-bar {
         position: absolute;
-        top: 270px;
-        left: 14px;
+        top: 330px;
+        left: 20px;
         height: 300px;
         display: flex;
         gap: 4px;
@@ -709,7 +714,7 @@
       .game-fire {
         display: none;
         position: absolute;
-        right: 54px;
+        right: 139px;
         bottom: 40px;
         width: 92px;
         height: 92px;

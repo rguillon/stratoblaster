@@ -484,6 +484,12 @@ def new_directional_light(label: str, direction: Vector3, scene: Scene) -> Direc
     return cast("DirectionalLight", None)
 
 
+def new_viewport(x: float, y: float, width: float, height: float) -> Any:
+    """Return a `new BABYLON.Viewport(x, y, width, height)`: shares of the canvas (D-252)."""
+    __pragma__("js", "{}", "return new BABYLON.Viewport(x, y, width, height);")
+    return None
+
+
 def new_free_camera(label: str, position: Vector3, scene: Scene) -> FreeCamera:
     """Return a `new BABYLON.FreeCamera` at `position`."""
     __pragma__("js", "{}", "return new BABYLON.FreeCamera(label, position, scene);")

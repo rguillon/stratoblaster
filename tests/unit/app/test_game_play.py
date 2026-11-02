@@ -352,7 +352,7 @@ def make_game(*, bombs: bool = True, model: bool = True, weapons: Any = None) ->
         bombs=FakeRenderer if bombs else None,
     )
     return SimpleNamespace(
-        screen=SimpleNamespace(width=480, height=720),
+        playfield=SimpleNamespace(width=480, height=720, viewport=None),
         player_ships=PlayerShipRoster(BASE_SPEED, [PlayerShipDefinition("alpha", "Alpha", 2, 5)]),
         player_weapons=["guns", "laser"] if weapons is None else weapons,
         enemy_kinds=[gnat_kind(areas)],
@@ -498,8 +498,7 @@ def test_game_screen_05_the_ship_flies_inside_what_the_camera_shows(env: Env) ->
     margin = CFG.ship_margin
     assert (bounds.min_y, bounds.max_y) == (margin.bottom, 720 - margin.top)
     assert bounds.center_x == 240
-    # D-251: inside the width seen and inside the HUD's side columns.
-    assert bounds.half_width_at(100) == min(HALF_WIDTH, 240 - margin.panel) - margin.side
+    assert bounds.half_width_at(100) == HALF_WIDTH - margin.side
 
 
 def test_dev_opt_02_the_level_starts_at_the_time_asked(env: Env) -> None:

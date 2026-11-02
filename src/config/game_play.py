@@ -10,16 +10,15 @@ from config.scenery_stage import SCENERY_STAGE_CONFIG, SceneryStageConfig
 class ShipMargin:
     """How close to the edges of what the camera shows the ship may fly (GAME-SCREEN-05).
 
-    `panel` is the width of the HUD's side columns (UI-HUD-01, D-251): the ship keeps `side`
-    inside them as inside the width seen. Its bottom margin only keeps its model on screen: the
-    HUD no longer has a bar along the bottom (it had one 48 px high from 2026-10-28 to D-251).
+    The camera shows only the playfield window (D-252), so the width seen bounds the ship on the
+    sides; the HUD's columns are outside the window (UI-HUD-01). Its bottom margin only keeps
+    its model on screen: the HUD has no bar along the bottom since D-251.
     """
 
-    def __init__(self, side: float, bottom: float, top: float, panel: float) -> None:
+    def __init__(self, side: float, bottom: float, top: float) -> None:
         self.side = side
         self.bottom = bottom
         self.top = top
-        self.panel = panel
 
 
 class ShipRoll:
@@ -181,7 +180,7 @@ GAME_PLAY_CONFIG = GamePlayConfig(
     64,
     SCENERY_STAGE_CONFIG,
     90,
-    ShipMargin(18, 20, 200, 200),
+    ShipMargin(18, 20, 200),
     ShipRoll(35, 8),
     ShipDamage(10, 6, 16, 2),
     3,

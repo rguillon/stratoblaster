@@ -7,6 +7,7 @@ The order of the opaque meshes, the stage camera, the sea plane and the terrain-
 from render.babylon import (
     create_ground,
     new_free_camera,
+    new_viewport,
     render_painter_sort_compare,
     vector3_zero,
 )
@@ -58,17 +59,26 @@ def terrain_last(terrain: Any) -> Callable[[Any, Any], float]:
     return compare
 
 
-def stage_camera(scene: Any, half_fov: float, clips: tuple[float, float]) -> Any:
+def stage_camera(
+    scene: Any,
+    half_fov: float,
+    clips: tuple[float, float],
+    viewport: tuple[float, float, float, float] | None = None,
+) -> Any:
     """Return the camera (GFX-CAM-02), made the active one.
 
     It sees `half_fov` up and down, from `clips[0]` to `clips[1]` (D-216, GFX-CAM-06: the near plane
-    far out, so the depth buffer keeps its precision at the ground).
+    far out, so the depth buffer keeps its precision at the ground). With a `viewport` (x, y,
+    width, height as shares of the canvas, D-252) it draws only there, the rest of the canvas
+    left to the clear colour; its aspect ratio follows the viewport.
     """
     near_clip, far_clip = clips
     camera = new_free_camera("scenery-camera", vector3_zero(), scene)
     camera.fov = half_fov * 2
     camera.minZ = near_clip
     camera.maxZ = far_clip
+    if viewport is not None:
+        camera.viewport = new_viewport(viewport[0], viewport[1], viewport[2], viewport[3])
     scene.activeCamera = camera
     return camera
 

@@ -214,7 +214,7 @@ def game() -> SimpleNamespace:
     boss = FakeEnemy("warden", expires=False, speed=0.0)
     return SimpleNamespace(
         view=view,
-        screen=SimpleNamespace(width=480, height=720),
+        playfield=SimpleNamespace(width=480, height=720),
         enemy_kinds=[SimpleNamespace(id="gnat", spawn=spawned("gnat"))],
         boss_kinds=[SimpleNamespace(id="warden", spawn=lambda _area: boss)],
     )

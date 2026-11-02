@@ -165,7 +165,8 @@ def make_level() -> SimpleNamespace:
 
 def make_game(look: Any) -> SimpleNamespace:
     return SimpleNamespace(
-        screen="screen", view=SimpleNamespace(scenery=FakeScenery({"1-1": look}))
+        playfield=SimpleNamespace(viewport="viewport"),
+        view=SimpleNamespace(scenery=FakeScenery({"1-1": look})),
     )
 
 
@@ -333,7 +334,7 @@ def test_dev_menu_08_a_plain_level_scene_has_its_stage_track_and_playfield(
     assert scene.stage is stage
     assert stage.scene is scene.scene
     stage_options = stage.options
-    assert stage_options.screen == "screen"
+    assert stage_options.screen is game.playfield
     assert stage_options.camera == "camera-look"
     assert stage_options.level is options.level
     assert stage_options.look is look
@@ -341,6 +342,7 @@ def test_dev_menu_08_a_plain_level_scene_has_its_stage_track_and_playfield(
     assert stage_options.kit is level_scene.create_plain_scenery_kit
     assert stage_options.config == "stage-config"
     assert stage_options.atmosphere == "atmosphere"
+    assert stage_options.viewport == "viewport"  # D-252
     assert scene.look is look
     # 15 s of scrolling at 20 units a second.
     assert (scene.track.speed, scene.track.length_) == (20, 300)
