@@ -196,7 +196,7 @@ for the ground that gets ahead of the level during the fights.
 | streets | rows 45–90, columns 50–110, links 0.6 (the company town: `suburb_streets`, 2-2) | `STREETS` |
 | max_gap | 3 s → 2 s | `src/game/config/world_2/waves.py` `WORLD_2_FILLERS["2-3"]` |
 | bullet_speed_factor / fire_rate_factor | 1 / 1 | `src/game/config/world_2/difficulty.py` |
-| written | 50 beats; 97 waves and 303 groups after fill and density; 427 enemies, 16 530 HP (halves 6 620 / 9 910), Carrier launches not counted; 121.4 enemies and 3 666 HP a minute with them | measured from the configs; D-067 |
+| written | 50 beats; 97 waves and 352 groups after fill and density; 488 enemies, 18 900 HP (halves 7 460 / 11 440), Carrier launches not counted; 97.6 enemies and 3 780 HP a minute without them | measured from the configs; D-067, density 2 (D-249) |
 | buildings | 24 278 (halves 10 287 / 13 991) | each level's seed, measured for this file |
 | mini boss / final boss | `snow-owl` / `aurora-station` | `src/game/config/world_2/bosses.py` |
 | runout | 80 s | same |

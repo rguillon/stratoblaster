@@ -19,11 +19,12 @@ from typing import Any
 # __pragma__ ("noskip")
 
 
-# Enemy density (WLD-1-20; phase 6 review: +50 %; D-249 raised it to 2 on the wide screen, D-252
-# put it back with the 3:4 playfield window): each beat brings this many times its groups,
-# rounded. A beat of one group gets its extra groups `DENSITY_GAP` seconds apart and, from the
-# top, `DENSITY_SPREAD` across the screen, so they do not come in on top of each other.
-WAVE_DENSITY = 1.5
+# Enemy density (WLD-1-20; phase 6 review: +50 %; D-249 raised it from 1.5 to 2 on the wide
+# screen, D-252 put it back in the 540 px playfield window, D-253 raised it again in the 1000 px
+# one): each beat brings this many times its groups, rounded. A beat of one group gets its extra
+# groups `DENSITY_GAP` seconds apart and, from the top, `DENSITY_SPREAD` across the screen, so
+# they do not come in on top of each other.
+WAVE_DENSITY = 2
 DENSITY_GAP = 1.5
 DENSITY_SPREAD = 0.3
 

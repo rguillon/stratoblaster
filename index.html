@@ -25,9 +25,9 @@
         --letterbox: #000407;
         /* D-249: width of the menus' column in the middle of the 16:9 screen (UI-LOOK-02). */
         --menu-column: 560px;
-        /* D-251, D-252: width of the HUD's side columns (UI-HUD-01); the level is drawn only
-           between them, in the 540 px playfield window. */
-        --hud-side: 370px;
+        /* D-251, D-252, D-253: width of the HUD's side columns (UI-HUD-01); the level is drawn
+           only between them, in the 1000 px wide playfield window. */
+        --hud-side: 140px;
         --glow: rgba(0, 232, 255, 0.55);
         --neon-line: linear-gradient(90deg, #0a5cff, #00b4ff 40%, #00e8ff 65%, #3dff9a 90%, #b4ff4a);
         --chrome: linear-gradient(
@@ -483,7 +483,7 @@
         position: absolute;
         /* Over the opaque column (D-252). */
         z-index: 2;
-        left: 20px;
+        left: 12px;
         bottom: 12px;
         font-family: var(--font-tech);
         font-size: 13px;
@@ -498,9 +498,9 @@
       .game-screen::after {
         content: none;
       }
-      /* In-game HUD (D-251, owner: the UI on the left, the screen symmetrical): two glass columns
-         `--hud-side` wide down the sides of the playfield (the ship stays out of them:
-         `ship_margin.panel` in src/config/game_play.py). The left one holds, top to bottom, the
+      /* In-game HUD (D-251, owner: the UI on the left, the screen symmetrical): two opaque columns
+         `--hud-side` wide down the sides of the playfield window (the ship flies only in the
+         window, D-252). The left one holds, top to bottom, the
          level's progress, the ship, its lives, bombs and health, the score and the weapon, with
          the boss gauge under them and the level played at its foot; the right one is empty but for
          the touch buttons (UI-HUD-01, laid out without overlap, UI-HUD-08). Never takes clicks
@@ -526,7 +526,7 @@
         flex-direction: column;
         align-items: stretch;
         gap: 18px;
-        padding: 0 20px 12px;
+        padding: 0 12px 12px;
         text-align: left;
         font-size: 16px;
         /* Opaque (D-252): nothing of the level shows outside the playfield window. */
@@ -542,7 +542,7 @@
       /* Level progress: a thin line along the top of the left column (UI-HUD-02). */
       .hud-progress {
         height: 3px;
-        margin: 0 -20px 8px;
+        margin: 0 -12px 8px;
         background: rgba(0, 0, 0, 0.5);
       }
       .hud-progress-fill {
@@ -572,16 +572,17 @@
       .hud-bombs {
         color: #ff8a1e;
       }
+      /* D-253: the health text under its bar, the column being 140 px. */
       .hud-meter {
         display: flex;
-        gap: 6px;
-        align-items: center;
+        flex-direction: column;
+        gap: 4px;
+        align-items: stretch;
         margin-top: 4px;
       }
       /* Health (UI-HUD-04). */
       .hud-bar {
-        flex: 1;
-        max-width: 160px;
+        max-width: 116px;
         height: 9px;
         border: 1px solid var(--accent);
         background: rgba(0, 0, 0, 0.5);
@@ -604,9 +605,9 @@
         white-space: nowrap;
       }
       .hud-score-value {
-        font-size: 26px;
+        font-size: 22px;
         font-weight: 700;
-        line-height: 28px;
+        line-height: 24px;
         color: var(--paper);
         text-shadow: 0 0 6px var(--neon);
       }
@@ -617,7 +618,8 @@
       }
       .hud-weapon {
         color: var(--neon);
-        white-space: nowrap;
+        /* D-253: `Bullet · Lv 1/5` wraps onto two lines in the 140 px column. */
+        white-space: normal;
       }
       /* Touch bomb button (UI-HUD-10), above the fire button in the right column, only on touch
          screens. */
@@ -625,7 +627,7 @@
         display: none;
         position: absolute;
         z-index: 5;
-        right: 139px;
+        right: 24px;
         bottom: 160px;
         width: 92px;
         height: 92px;
@@ -658,7 +660,7 @@
       .boss-bar {
         position: absolute;
         top: 330px;
-        left: 20px;
+        left: 12px;
         height: 300px;
         display: flex;
         gap: 4px;
@@ -714,7 +716,7 @@
       .game-fire {
         display: none;
         position: absolute;
-        right: 139px;
+        right: 24px;
         bottom: 40px;
         width: 92px;
         height: 92px;

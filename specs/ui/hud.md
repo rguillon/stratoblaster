@@ -15,7 +15,7 @@ health. How the score, lives, bombs, health and weapons work is in
 
 The HUD is two columns, `hud_side_width` wide, down the left and right sides of the screen, the
 whole height, opaque blue-black with a thin cyan line along their inner edge; the playfield window
-is the 540 px between them and nothing of the level is drawn under them (D-252,
+is the 1000 px between them and nothing of the level is drawn under them (D-252, D-253,
 [gameplay/screen.md](../gameplay/screen.md)). The left one holds, top to bottom, one under the
 other:
 - the level's progress line (UI-HUD-02);
@@ -33,7 +33,7 @@ pause button (D-251; the keyboard and the gamepad pause, [pause-menu.md](pause-m
 **Acceptance criteria**
 - Given a level, then the left column shows, in this order, the progress, the ship, lives, bombs, health, score, high score and weapon, and the right column is empty (unit test on the HUD's elements).
 
-*Sources: D-155, D-041, P11-R02, D-251, D-252.*
+*Sources: D-155, D-041, P11-R02, D-251, D-252, D-253.*
 
 ### UI-HUD-02 — The level's progress · MUST
 
@@ -58,8 +58,8 @@ The top of the left column shows the ship's name (cyan, uppercase), under it its
 ### UI-HUD-04 — Health · MUST
 
 Under the name, a health bar (at most `hud_health_bar_width` wide) is filled with the share of
-health left, in deep blue to cyan; under `low_health` of the ship's full health it turns red. Next
-to it, a text gives the health, rounded up, over the full health: `HP 73 / 100`.
+health left, in deep blue to cyan; under `low_health` of the ship's full health it turns red. Under
+it, a text gives the health, rounded up, over the full health: `HP 73 / 100`.
 
 **Acceptance criteria**
 - Given the balanced ship at 72.4 health, then the text is `HP 73 / 100` and the bar is 72.4 % full.
@@ -212,17 +212,17 @@ with a red glow; the notches are white. Red marks the danger ([look-and-layout.m
 
 | Name | Value | Notes |
 |------|-------|-------|
-| `hud_side_width` | 370 px (the whole height; 200 px between D-251 and D-252) | `index.html` `--hud-side`, `.hud-panel`; the playfield window's `left`, `src/game/config/game.py` (D-252) |
+| `hud_side_width` | 140 px (the whole height; 200 px between D-251 and D-252, 370 px until D-253) | `index.html` `--hud-side`, `.hud-panel`; the playfield window's `left`, `src/game/config/game.py` (D-252) |
 | Ship bottom margin | 20 px (half the ship's length; 78 px while the bar was at the bottom) | `src/config/game_play.py` `GAME_PLAY_CONFIG.ship_margin.bottom` |
 | `low_health` | 30 % | `src/ui/game_hud.py` `LOW_HEALTH` |
-| `hud_health_bar_width` | 160 px × 9 px | `index.html` `.hud-bar` |
+| `hud_health_bar_width` | 116 px × 9 px (160 until D-253) | `index.html` `.hud-bar` |
 | `score_digits` | 7 | `src/game/config/menu_texts.py` `SCORE_DIGITS` |
 | HUD texts | `HP`, `♥ N`, `● N`, `<weapon> · Lv L/N`, `HI …`, `Bomb N`, `Mini boss`, `Boss`, `Level …` | `src/game/config/menu_texts.py` `MENU_TEXTS` (`hud*`, `gameLevel`) |
-| Boss gauge place | 330 px from the top, 20 px from the left, in the left column | `index.html` `.boss-bar` |
+| Boss gauge place | 330 px from the top, 12 px from the left, in the left column | `index.html` `.boss-bar` |
 | `boss_gauge_height` × `boss_gauge_width` | 300 × 8 px | `index.html` `.boss-bar`, `.boss-track` |
 | `boss_gauge_fill` | 1 s | `src/game/config/boss_fights.py` `BOSS_FIGHT_RULES["barFillSeconds"]` |
 | Boss gauge fill colours | `#7a0016 → #ff2244 → #ff5a3c` | `index.html` `.boss-fill` |
-| Touch fire / bomb buttons | 92 px round, in the middle of the right column: right 139 px, bottom 40 / 160 px | `index.html` `.game-fire`, `.hud-bomb-button` |
+| Touch fire / bomb buttons | 92 px round, in the middle of the right column: right 24 px, bottom 40 / 160 px | `index.html` `.game-fire`, `.hud-bomb-button` |
 
 ## Notes
 
@@ -232,4 +232,5 @@ with a red glow; the notches are white. Red marks the danger ([look-and-layout.m
   moved to a column on the left with a matching empty column on the right, the pause button
   removed and the ship free to reach the bottom edge (D-251, 2026-11-02), then the columns
   widened to 370 px and made opaque, the level drawn only in the 540 × 720 playfield window
-  between them (D-252, the same day).
+  between them (D-252, the same day), then narrowed to 140 px, the window 1000 × 720: the
+  owner found the columns far too wide (D-253, the same day).

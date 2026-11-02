@@ -624,3 +624,41 @@
   D-249's open points is back to the 480 × 640 game's. The e2e checks on the HUD and the
   readability probe run on the window (the probe projects through the camera's viewport).
 - **Status:** Proposed
+
+### D-253 — A 1000 × 720 playfield window, the HUD columns 140 px
+- **Date:** 2026-11-02
+- **Requirements:** GAME-SCREEN-01, GAME-SCREEN-04, GAME-SCREEN-06, GFX-CAM-01, GFX-CAM-03,
+  GFX-CAM-05, UI-HUD-01, UI-HUD-04, UI-HUD-10, GFX-ROAD-19, WLD-1-20, WLD-3-13, WLD-4-13,
+  GFX-FX-10, ENM-09, GAME-BONUS-07.
+- **Context:** owner, on D-252's layout: "the lateral bars are far too big, make the playing area
+  at least square", then, on a 720 × 720 window with 280 px columns: "reduce the lateral bar
+  more, about half their current size."
+- **Decision:** the playfield window is **1000 × 720** (25:18), from x = 140 to 1 140 of the
+  1280 × 720 screen, the HUD columns 140 px each (`--hud-side`, `GAME_CONFIG.playfield`). Nothing
+  else of the engine changes: the camera's viewport, the ship's bounds and reach, the spawn area,
+  the ground window and the audio pan all derive from the window record (D-252). What follows
+  from the width:
+  - the camera sees ±305 px of the playfield across the bottom edge and ±514 across the top
+    (±165 and ±278 in the 540 px window); the ship's reach at y = 20 is about x 207 … 793,
+    586 px wide (300 before, 804 on the whole 16:9 screen);
+  - the ground in view is about ±390 units at the sea level and ±435 at a sea bed (±210 / ±235),
+    so `offscreenX` goes to 780 in Worlds 1–2 and 560 in Worlds 3–4 (their ratio to the ground
+    in view kept: 2 × and about 1.3 ×);
+  - the bomb ring's radius goes from 820 to 900 px: the window's far corner is about 860 from
+    the ship's start (750 before);
+  - `WAVE_DENSITY` goes back to 2, as on the whole screen (D-249): the reach is nearly twice as
+    wide as the 540 px window's, and the waves, written in fractions of it, would come in thin
+    at 1.5. The level files' counts are D-249's again (measured from the configs).
+  - the column contents fit 140 px: 12 px of padding, the health text under its bar (116 px
+    wide, 160 before), the score at 22 px, the weapon line allowed to wrap; the touch fire and
+    bomb buttons stay centred in the right column.
+- **Alternatives considered:** a square window (720 × 720, 280 px columns: the owner's first
+  ask, found still too wide once seen); a 4:3 window (960 × 720, 160 px columns: not what was
+  asked); a 16:9 window with the HUD over the level (D-252 settled that the level is drawn only
+  in the window).
+- **Consequences / open points for the owner:** the reach is nearly twice D-252's, so the ship
+  crosses it in about 2.6 s instead of 1.3 (`base_speed` unchanged) and the Strafer's and Gnat's
+  paths, in fractions of the reach, are about twice as wide (D-249's open points, to a lesser
+  degree). The view draws about 1.85 times the ground pixels of the 540 px window (0.78 of the
+  whole screen's).
+- **Status:** Proposed

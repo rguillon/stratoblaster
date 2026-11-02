@@ -3,7 +3,7 @@
 > **Area:** Gameplay · **Prefix:** `GAME-SCREEN` · **Related:** [level-flow.md](level-flow.md), [player-ship.md](player-ship.md), [../graphics/camera.md](../graphics/camera.md), [../ui/look-and-layout.md](../ui/look-and-layout.md), [../ui/hud.md](../ui/hud.md), [../enemies/common.md](../enemies/common.md)
 
 The game is a vertical shoot 'em up played on a fixed, landscape logical screen of 1280 × 720
-pixels (16:9: a full HD screen at ×1.5), scaled to fit the window. The playfield is a 540 × 720
+pixels (16:9: a full HD screen at ×1.5), scaled to fit the window. The playfield is a 1000 × 720
 window in the middle of that screen, between the HUD's side columns: a flat plane at flight
 altitude over which the level's ground scrolls down, drawn nowhere else. This file fixes the
 logical resolution, how it is fitted to the window, the coordinate conventions, what part of the
@@ -16,22 +16,22 @@ layout in [ui/](../ui/).
 ### GAME-SCREEN-01 — Logical resolution · MUST
 
 The game is laid out on a logical screen of **1280 × 720** pixels (landscape, 16:9, a full HD
-screen at ×1.5; it was 480 × 640, portrait, until D-249). The playfield is a **540 × 720** window
-(3:4) in the middle of the screen, from x = 370 to 910 of it (D-252): the level is drawn and
-played there and nowhere else; the HUD's side columns fill the rest
+screen at ×1.5; it was 480 × 640, portrait, until D-249). The playfield is a **1000 × 720** window
+(25:18) in the middle of the screen, from x = 140 to 1 140 of it (D-252, D-253; 540 × 720 between
+the two): the level is drawn and played there and nowhere else; the HUD's side columns fill the rest
 ([ui/hud.md](../ui/hud.md)). Every gameplay position, size, distance and speed is in logical
 pixels (`px`) of the playfield: X to the right, Y up, the origin at the bottom-left corner of the
 playfield window. Angles are in degrees from forward (+Y), positive to the right. The logical
 resolution and the window are game data.
 
 **Acceptance criteria**
-- Given the game definition, then its screen is 1280 × 720 and its playfield window 540 × 720,
+- Given the game definition, then its screen is 1280 × 720 and its playfield window 1000 × 720,
   in the middle (unit test).
-- Given the ship at x = 270, then it is in the middle of the playfield across.
+- Given the ship at x = 500, then it is in the middle of the playfield across.
 - Given a level, then nothing of it is drawn outside the playfield window (the camera draws only
   into the window's viewport, unit test).
 
-*Sources: GD-02, D-015, D-249, D-252.*
+*Sources: GD-02, D-015, D-249, D-252, D-253.*
 
 ### GAME-SCREEN-02 — Fitted to the window · MUST
 
@@ -69,11 +69,11 @@ The playfield is seen through the tilted scenery camera ([graphics/camera.md](..
 the bottom and top edges of the screen pass through the bottom and top edges of the playfield, and
 the screen shows less of the playfield's width at the bottom than at the top (`seen_half_width`).
 A point of the playfield is **on screen** when 0 ≤ y ≤ 720 and its distance across from the middle
-(x = 270) is at most the half width seen at its height. Gameplay rules that say "on screen" use
+(x = 500) is at most the half width seen at its height. Gameplay rules that say "on screen" use
 this test (which targets the player can hit, what a bomb reaches).
 
 **Acceptance criteria**
-- Given a point at the bottom edge 170 px from the middle, then it is not on screen; the same point
+- Given a point at the bottom edge 320 px from the middle, then it is not on screen; the same point
   at the top edge is (unit test on the framing).
 
 *Sources: D-042, D-048.*
@@ -97,7 +97,7 @@ speed towards that edge drops to 0, and it can slide along it.
 ### GAME-SCREEN-06 — The ship's reach · MUST
 
 The ship's reach is the X range the ship can get to at the bottom of its flight area: the middle
-± the flight area's half width at y = 20 (about x 120 to 420). Enemies that come in from the top
+± the flight area's half width at y = 20 (about x 207 to 793). Enemies that come in from the top
 keep to it ([enemies/common.md](../enemies/common.md)), and bonuses drop inside it
 ([bonuses.md](bonuses.md)), so the player can always fly under them.
 
@@ -125,10 +125,10 @@ Nothing scores or drops anything by being removed this way.
 | Name | Value | Notes |
 |------|-------|-------|
 | logical screen | 1280 × 720 px | `src/game/config/game.py` `GAME_CONFIG["screen"]` (GAME-SCREEN-01, D-249) |
-| playfield window | 540 × 720 px, left 370 (viewport 0.289, 0, 0.422, 1 of the canvas) | `GAME_CONFIG["playfield"]`, `src/game/index.py` `PLAYFIELD`, `GameDefinition.playfield` (D-252) |
-| seen_half_width | ±164.8 px at y = 0, ±167.9 at y = 20, ±177.0 at y = 78, ±246.2 at y = 520, ±277.5 at y = 720 | From the camera (tilt 35°, field of view 40°, `src/game/config/scenery_look.py`) and the window's 3:4 aspect, `src/render/scenery/playfield_framing.py` `visible_half_width` |
+| playfield window | 1000 × 720 px, left 140 (viewport 0.109, 0, 0.781, 1 of the canvas) | `GAME_CONFIG["playfield"]`, `src/game/index.py` `PLAYFIELD`, `GameDefinition.playfield` (D-252, D-253) |
+| seen_half_width | ±305.2 px at y = 0, ±311.0 at y = 20, ±327.8 at y = 78, ±456.0 at y = 520, ±514.0 at y = 720 | From the camera (tilt 35°, field of view 40°, `src/game/config/scenery_look.py`) and the window's 25:18 aspect, `src/render/scenery/playfield_framing.py` `visible_half_width` |
 | ship_margin | side 18 px, bottom 20 px, top 200 px | `src/config/game_play.py` `GAME_PLAY_CONFIG.ship_margin` (GAME-SCREEN-05, D-251) |
-| ship reach | x ≈ 120 … 420 px | Computed from `ship_margin` and `seen_half_width` at y = 20, GAME-SCREEN-06 |
+| ship reach | x ≈ 207 … 793 px | Computed from `ship_margin` and `seen_half_width` at y = 20, GAME-SCREEN-06 |
 | cull_margin | 80 px | `src/config/game_play.py` `GAME_PLAY_CONFIG.cull_margin` (GAME-SCREEN-07) |
 
 ## Notes
@@ -144,3 +144,6 @@ Nothing scores or drops anything by being removed this way.
 - D-252 (owner, 2026-11-02): the level is drawn and played in a 540 × 720 window in the middle
   of the 16:9 screen, the HUD's columns on both sides; the gameplay is back to the 3:4 playfield
   (×1.125 the old 480 × 640), the wave density and the ground extents of D-249 with it.
+- D-253 (owner, 2026-11-02): the columns were far too wide; the window is 1000 × 720, the
+  columns 140 px. The ship's reach is 586 px wide (300 in the 540 px window), the ground in view
+  ±390 units at the sea level; the wave density is 2 again, as on the whole screen (D-249).
