@@ -167,7 +167,7 @@ The engine's tools make an American desert, not sand dunes: dried red land (a `s
 red-orange dirt with dark pebbles over dried brown earth), cracked dry lakes (low flats under
 `lowHeight`, drawn with a pale cracked hardpan), mesas and buttes (smooth relief squashed under a low
 `max_height`, so it has flat tops, a flat floor and steep walls between, drawn as strongly layered red
-rock from a slope of 0.2, D-240), canyons (channels) and no snow (the `high` layer out of reach). Which
+rock from a slope of 0.06, D-240, D-245), canyons (channels) and no snow (the `high` layer out of reach). Which
 levels use them is in the World 1 files.
 
 **Acceptance criteria**
@@ -291,7 +291,7 @@ WLD-1-31).
 | `cell` | 8 | terrain grid, same place |
 | `textureSize` / `tileSize` | 256 px / 150 units | `src/game/config/scenery_look.py` `BASE_SCENERY_LOOK.terrain` |
 | `lowHeight` / `highHeight` / `heightBlend` | 7 / 205 / 12 | base look; World 1's dry levels: `highHeight` 1000 (`src/game/config/world_1/looks.py` `DRY_TERRAIN`) |
-| `steepSlope` | 0.22–0.45 | base look; World 1's green levels 0.12–0.3 (`TERRAIN`), its dry levels 0.2–0.42 (`DRY_TERRAIN`), `src/game/config/world_1/looks.py` (D-240) |
+| `steepSlope` | 0.22–0.45 | base look; World 1's green levels 0.045–0.1 (`TERRAIN`), its dry levels 0.06–0.14 (`DRY_TERRAIN`), with a slope jitter of 0.06 instead of 0.2, `src/game/config/world_1/looks.py` (D-240, D-245) |
 | `jitter` | height 30, slope 0.2 | base look |
 | `noiseTileSize` / `tintTileSize` | 300 / 1600 | base look |
 | `specular` | 0 | base look |

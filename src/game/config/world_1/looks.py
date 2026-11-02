@@ -127,8 +127,13 @@ HARDPAN = texture(
 
 # The ground of the whole world: dry earth by default, covered with grass, sand or pavement by
 # section (`surface`), so the land fades from green to sand along the levels; grey crags on the
-# steep ground, from a slope of 0.12 (about 28 degrees; full rock from 46), so the rocky faces of
-# the hills show as rock (WLD-1-31).
+# steep ground, from a slope of 0.045 (about 17 degrees; full rock from 26), with less noise on
+# the slope than the base look (its 0.2 would put rock on the flat and grass on the faces), so
+# the rocky faces of the hills show as rock under their blocks of stone and the fringe of stones
+# along them (WLD-1-31, GFX-PROP-19).
+# The noise on the slope the rock starts at, as a share of `1 - n.y` (the base look's is 0.2).
+SLOPE_JITTER = 0.06
+
 TERRAIN = merge(
     BASE_SCENERY_LOOK.terrain,
     {
@@ -136,7 +141,8 @@ TERRAIN = merge(
         "lush": GRASS,
         "sand": SAND,
         "steep": CRAG,
-        "steepSlope": [0.12, 0.3],
+        "steepSlope": [0.045, 0.1],
+        "jitter": merge(BASE_SCENERY_LOOK.terrain.jitter, {"slope": SLOPE_JITTER}),
         "shore": merge(
             BASE_SCENERY_LOOK.terrain.shore,
             {
@@ -161,9 +167,11 @@ DRY_TERRAIN = merge(
         # No snow on the flat tops of the mesas and buttes (the heights the shader compares are the
         # world's, twice the ground's).
         "highHeight": 1000,
-        # Steep ground is bare rock from a slope of 0.2 (about 37 degrees; full rock from 55): the
-        # faces of the hills (WLD-1-31) and the walls of the mesas, buttes and canyon.
-        "steepSlope": [0.2, 0.42],
+        # Steep ground is bare rock from a slope of 0.06 (about 20 degrees; full rock from 30): the
+        # faces of the hills (WLD-1-31) and the walls of the mesas, buttes and canyon, under their
+        # blocks of stone.
+        "steepSlope": [0.06, 0.14],
+        "jitter": merge(BASE_SCENERY_LOOK.terrain.jitter, {"slope": SLOPE_JITTER}),
         "tints": [
             [1.05, 0.98, 0.9],
             [0.9, 0.84, 0.78],

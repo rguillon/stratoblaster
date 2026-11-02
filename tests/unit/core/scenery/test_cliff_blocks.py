@@ -6,8 +6,8 @@ import math
 from helpers.level_builders import flat, make_level, section
 from helpers.sample_level import sample_level, sample_props
 
-from core.scenery.cliff_blocks import cliff_blocks
-from core.scenery.ground_boxes import GroundArea
+from core.scenery.cliff_blocks import FRINGE, FRINGE_SCALE, cliff_blocks
+from core.scenery.ground_boxes import GroundArea, PropPlacement
 from core.scenery.height_field import HeightField
 from core.scenery.prop_placement import PropPlacer
 from core.scenery.road_network import level_roads
@@ -34,7 +34,7 @@ def test_gfx_prop_19_blocks_stand_only_where_the_ground_is_steep_enough() -> Non
     blocks = cliff_blocks(field, RULES, 3, AREA, SEA)
     assert blocks
     for b in blocks:
-        assert field.slope(b.x, b.z, 3.5) > RULES.min_slope * 0.5
+        assert field.slope(b.x, b.z, 3.5) > RULES.min_slope * FRINGE * 0.7
         assert AREA.x_min <= b.x < AREA.x_max + RULES.spacing
         assert AREA.z_min <= b.z < AREA.z_max + RULES.spacing
     # The gentle backs (most of the ground) have none.
@@ -45,13 +45,37 @@ def test_gfx_prop_19_a_block_is_sunk_into_the_ground_sized_and_of_a_listed_kind(
     field = _field(STEEP)
     for b in cliff_blocks(field, RULES, 3, AREA, SEA):
         assert b.kind in RULES.kinds
-        assert b.y < field.height(b.x, b.z)
-        assert b.y > field.height(b.x, b.z) - RULES.embed - 2.0
         assert b.size is not None
         width, height, depth = b.size
-        assert 1.0 * RULES.spacing <= width <= 1.45 * RULES.spacing
-        assert RULES.height[0] <= height <= RULES.height[1]
-        assert RULES.depth[0] <= depth <= RULES.depth[1]
+        # Sunk `embed`, and further into the slope by its depth.
+        assert b.y < field.height(b.x, b.z) - RULES.embed + 1.0
+        assert b.y > field.height(b.x, b.z) - RULES.embed - 2.0 - depth * 3
+        assert FRINGE_SCALE * RULES.spacing <= width <= 2.0 * RULES.spacing
+        assert FRINGE_SCALE * RULES.height[0] <= height <= RULES.height[1]
+        assert FRINGE_SCALE * RULES.depth[0] <= depth <= RULES.depth[1]
+
+
+def test_gfx_prop_19_a_fringe_of_smaller_stones_runs_along_the_face() -> None:
+    """Below the slope threshold, some cells get a block, scaled down."""
+    field = _field(STEEP)
+    blocks = cliff_blocks(field, RULES, 3, AREA, SEA)
+    fringe = [b for b in blocks if field.slope(b.x, b.z, 3.5) < RULES.min_slope]
+    face = [b for b in blocks if field.slope(b.x, b.z, 3.5) >= RULES.min_slope]
+    assert fringe
+    assert face
+
+    def mean_height(group: list[PropPlacement]) -> float:
+        return sum(b.size[1] for b in group if b.size is not None) / len(group)
+
+    assert mean_height(fringe) < mean_height(face)
+
+
+def test_gfx_prop_19_a_few_blocks_are_big_and_most_are_modest() -> None:
+    sizes = [b.size for b in cliff_blocks(_field(STEEP), RULES, 3, AREA, SEA) if b.size]
+    heights = sorted(s[1] for s in sizes)
+    assert heights[-1] > RULES.height[0] + 0.8 * (RULES.height[1] - RULES.height[0])
+    median = heights[len(heights) // 2]
+    assert median < (RULES.height[0] + RULES.height[1]) / 2
 
 
 def test_gfx_prop_19_no_block_stands_below_the_props_min_height() -> None:

@@ -80,3 +80,5 @@ def test_wld_1_31_steep_ground_turns_to_rock_sooner_than_in_the_base_look() -> N
     for look in LOOKS:
         start, full = look.terrain.steepSlope
         assert 0 < start < full <= 1
+        # D-245: the noise on the slope is smaller than the rock's onset, or the flat gets rock.
+        assert look.terrain.jitter.slope / 2 < start < BASE_SCENERY_LOOK.terrain.jitter.slope

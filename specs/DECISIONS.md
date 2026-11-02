@@ -374,3 +374,32 @@
   and the colours in `crag_props.py`; `TURN`, `WAIST`, `TOP`, `TILT` in `rocks.py`; the sizes in
   `game/config/cliffs.py`.
 - **Status:** Proposed
+
+### D-245 — Bigger cliff blocks, a fringe of stones, rock under them
+- **Date:** 2026-11-02
+- **Requirements:** GFX-PROP-19, WLD-1-31, GFX-TERRAIN-11 (the dry levels' rock onset).
+- **Context:** owner feedback on D-244: a little bigger, a wider range with some big rocks; and
+  the blocks "often just look like a bunch of rock on top of the grass, not part of the ground".
+  Two causes: a block stood level on its centre, so on a steep slope its downhill edge hung over
+  the ground; and the face started at full size on a hard line of slope, with grass under its
+  first blocks (the looks' rock texture began at the same slope, 0.12 of `1 - n.y`, 28°, and was
+  only full rock from 46°).
+- **Decision:**
+  - Sizes 7 to 14 wide, 6 to 14 high, 7 to 15 deep; a block's bulk is the square of a draw
+    (`BULK_POWER`), each size half the bulk and half its own draw: most modest, a few big.
+  - A block is sunk further by `SINK` (0.4) of its depth times the slope, so it sits in the slope.
+  - A fringe (`FRINGE` 0.7 of the threshold, `FRINGE_CHANCE` 0.5, `FRINGE_SCALE` 0.45): smaller
+    stones scattered on the ground just too gentle for the face, growing to full size at the
+    threshold.
+  - The World 1 looks turn the ground to rock below the fringe's slope, full rock about there:
+    green levels 0.045 to 0.1 (17° to 26°), dry levels 0.06 to 0.14 (20° to 30°), so the stones
+    grow out of rock. The base look's slope jitter (0.2 of `1 - n.y`, ±0.1) is bigger than these
+    thresholds and would put rock patches on the flat and grass patches on the faces: World 1's
+    looks use 0.06.
+- **Alternatives considered:** pitching the blocks to the slope (placements have no pitch, and
+  the shadows and the terrain fit would need it too); a decal of rock round each block (the
+  terrain material has no decals).
+- **Consequences:** more and bigger instances on the faces (1-3 at 391 k polygons on a busy
+  screen, under the 60 fps of the perf test); the hills' backs stay grass (their slopes stay
+  under 17°); any other ground over 17° on the green levels is now rock, with a cleaner edge.
+- **Status:** Proposed

@@ -127,7 +127,7 @@ def test_the_cliff_rules_are_built_from_the_config() -> None:
     assert cliffs is not None
     assert cliffs.kinds == ["crag-block-a", "crag-block-b", "crag-block-c"]
     assert (cliffs.min_slope, cliffs.spacing, cliffs.embed) == (0.55, 7, 1.5)
-    assert (cliffs.height, cliffs.depth) == ([5, 8], [6, 10])
+    assert (cliffs.height, cliffs.depth) == ([6, 14], [7, 15])
 
 
 def test_a_section_without_scarps_has_none() -> None:

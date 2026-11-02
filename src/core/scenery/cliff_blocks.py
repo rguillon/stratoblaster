@@ -10,7 +10,7 @@ terrain chunks are built in.
 import math
 
 from config.scenery_stage import SCENERY_STAGE_CONFIG
-from core.math.noise import hash_2d
+from core.math.noise import hash_2d, smoothstep
 from core.scenery.ground_boxes import PropPlacement
 from core.scenery.ground_fit import SampledGround
 
@@ -27,12 +27,29 @@ from core.scenery.scenery_level import CliffRules
 DRAW_CLIFFS = 11
 # A block stands between these shares of its cell from the cell's corner.
 BLOCK_JITTER = [0.2, 0.8]
-# A block's width, as a share of the spacing (the blocks nearly touch, some overlap).
-BLOCK_WIDTH = [1.0, 1.45]
+# A block's width, as a share of the spacing (the blocks touch, many overlap).
+BLOCK_WIDTH = [1.0, 2.0]
+# A block's bulk is the square of its draw, so most blocks are modest and a few are big; each
+# size is half the bulk and half its own draw.
+BULK_POWER = 2
+# Blocks start, at this share of the slope threshold, as a fringe of scattered stones between the
+# grass and the face: only this share of the cells, scaled down by this much, growing to full
+# size at the threshold.
+FRINGE = 0.7
+FRINGE_CHANCE = 0.5
+FRINGE_SCALE = 0.45
+# A block is sunk further by this share of its depth times the slope, so its downhill edge meets
+# the ground instead of hanging over it.
+SINK = 0.4
 
 
 def _lerp(a: float, b: float, t: float) -> float:
     return a + (b - a) * t
+
+
+def _size(bulk: float, i: int, j: int, seed: int) -> float:
+    """Return the draw of one size of a block: half its bulk, half its own."""
+    return (bulk + hash_2d(i, j, seed)) / 2
 
 
 def cliff_blocks(
@@ -41,8 +58,9 @@ def cliff_blocks(
     """Return the blocks of stone of the cells whose corner lies in `area`.
 
     One per cell of `rules.spacing` whose ground is steeper than `rules.min_slope` and above
-    `min_height` (the props' limit, just above the sea: none on the shelves under it): sunk
-    `embed` into the ground drawn (read as the terrain mesh draws it, GFX-PROP-13), turned to
+    `min_height` (the props' limit, just above the sea: none on the shelves under it), and a
+    fringe of smaller ones in some of the cells a little less steep: sunk `embed` into the ground
+    drawn (read as the terrain mesh draws it, GFX-PROP-13) and further into the slope, turned to
     face downhill, of a kind and a size drawn from the cell's hash. Areas side by side get each
     block once.
     """
@@ -72,14 +90,23 @@ def cliff_blocks(
                 continue
             gx = (ground.height(x + half, z) - ground.height(x - half, z)) / spacing
             gz = (ground.height(x, z + half) - ground.height(x, z - half)) / spacing
-            if math.hypot(gx, gz) < rules.min_slope:
+            slope = math.hypot(gx, gz)
+            if slope < rules.min_slope * FRINGE:
                 continue
+            if slope < rules.min_slope and hash_2d(i, j, base + 6) >= FRINGE_CHANCE:
+                continue
+            scale = _lerp(
+                FRINGE_SCALE, 1, smoothstep(rules.min_slope * FRINGE, rules.min_slope, slope)
+            )
             kind = kinds[min(len(kinds) - 1, math.floor(hash_2d(i, j, base + 2) * len(kinds)))]
-            width = spacing * _lerp(BLOCK_WIDTH[0], BLOCK_WIDTH[1], hash_2d(i, j, base + 3))
-            height = _lerp(rules.height[0], rules.height[1], hash_2d(i, j, base + 4))
-            depth = _lerp(rules.depth[0], rules.depth[1], hash_2d(i, j, base + 5))
+            bulk = math.pow(hash_2d(i, j, base + 7), BULK_POWER)
+            width = (
+                scale * spacing * _lerp(BLOCK_WIDTH[0], BLOCK_WIDTH[1], _size(bulk, i, j, base + 3))
+            )
+            height = scale * _lerp(rules.height[0], rules.height[1], _size(bulk, i, j, base + 4))
+            depth = scale * _lerp(rules.depth[0], rules.depth[1], _size(bulk, i, j, base + 5))
             # The model's front (+Z) turned downhill.
             yaw = math.atan2(-gx, -gz)
-            y = top - rules.embed
+            y = top - rules.embed - SINK * depth * slope
             out.append(PropPlacement(kind, x, y, z, yaw, 1, [width, height, depth]))
     return out

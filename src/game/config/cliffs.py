@@ -27,8 +27,8 @@ def cliffs(kinds: list[str]) -> Any:
         "kinds": kinds,
         "minSlope": 0.55,
         "spacing": 7,
-        "height": [5, 8],
-        "depth": [6, 10],
+        "height": [6, 14],
+        "depth": [7, 15],
         "embed": 1.5,
     })
 

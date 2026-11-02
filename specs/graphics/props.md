@@ -208,11 +208,16 @@ A level's props may have `cliffs`: blocks of stone standing on the steep ground,
 a stair of chunky blocks and not a smooth slope under a texture. In each cell of a grid of
 `spacing`, where the ground drawn (read as the terrain mesh draws it, GFX-PROP-13) is steeper than
 `minSlope` (height per unit of distance) and above the props' `minHeight` (none on the shelves
-under the sea), one block of one of the `kinds` stands, sunk `embed` into the ground, its front
-turned downhill, a spacing to half as much again wide and of a `height` and `depth` drawn from
-their ranges. Hashes of the cell decide each block, so areas side by side get each block once. The
-blocks come with the buildings of a chunk, cast and receive shadows, and are drawn with thin
-instances like every prop (GFX-PROP-05).
+under the sea), one block of one of the `kinds` stands, sunk `embed` into the ground and further
+into the slope by a share of its depth times the slope (so its downhill edge meets the ground),
+its front turned downhill, one to two spacings wide and of a `height` and `depth` drawn from their
+ranges; the draw of a block's bulk is squared, so most are modest and a few are big. From 0.7 of
+`minSlope`, half the cells get a block scaled down to 0.45, growing to full size at the threshold:
+a fringe of scattered stones between the grass and the face. Hashes of the cell decide each block,
+so areas side by side get each block once. The blocks come with the buildings of a chunk, cast and
+receive shadows, and are drawn with thin instances like every prop (GFX-PROP-05). A level's look
+should turn its ground to rock from the fringe's slope, so the stones grow out of rock and not
+out of grass.
 
 A block is a rough chunk of stone (`render/geometry/rocks.py`), not a box: a prism whose corners
 are pushed in and out and turned at random, its sides leaning in and bulging at a waist, its top
@@ -226,7 +231,9 @@ WLD-1-31).
 **Acceptance criteria**
 - Given flat ground, then no block stands; given a steep face, then blocks stand on it, sunk into
   the ground, of the listed kinds and sizes, facing downhill, the same for the same seed and once
-  across neighbouring areas; given ground under the props' `minHeight`, then none stands there
+  across neighbouring areas; given ground under the props' `minHeight`, then none stands there;
+  given the ground below the threshold, then a fringe of smaller blocks stands on some of it;
+  given a face, then its biggest blocks reach the top of the size ranges and the median does not
   (unit tests).
 - Given a chunk, then it is well formed, its facets face outwards and its top up, its corners are
   pushed off a regular polygon, its facets are shaded and darker at the base, and two seeds give
@@ -234,7 +241,7 @@ WLD-1-31).
 - Given a level with cliff rules, then its block kinds are among its prop kinds (unit test).
 - Manual: from the playfield camera, a face reads as courses of fractured stone, grass to its lip.
 
-*Sources: D-243, D-244.*
+*Sources: D-243, D-244, D-245.*
 
 ### Engine tools no level uses now
 
