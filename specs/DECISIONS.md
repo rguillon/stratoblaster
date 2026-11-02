@@ -540,3 +540,25 @@
   - the view's horizontal field of view is about 66° (vertical 40°, unchanged): the sides of the
     screen show more perspective than before; `fovDeg` is the knob if it reads as distortion.
 - **Status:** Proposed
+
+### D-250 — The canvas is never drawn above full HD; the ground glow back at half resolution
+- **Date:** 2026-11-02
+- **Requirements:** ENG-110, GFX-TERRAIN-15, PERF-32.
+- **Context:** owner: "i'm down to 30fps in 4k on my Snapdragon X, any way to improve that?"
+  On a 4K panel (device pixel ratio 2, capped at 2) the canvas was 3840 × 2160 pixels with
+  multisampling, nine times the pixels of the 1280 × 720 screen, plus the ground's glow drawn as
+  a second full-size multisampled pass, and the full-screen cloud, weather and aurora layers
+  blended at that size. On an integrated GPU the frame is fill-rate bound.
+- **Decision:** (1) `ENGINE_CONFIG.max_render_scale` (1.5): the hardware scaling level follows the
+  stage fit, so the canvas draws at most 1.5 pixels per logical pixel across (1920 × 1080),
+  whatever the window and the device ratio; the browser upscales the rest (`render_ratio` in
+  `ui/stage_fit.py`, set on every fit, so a resize keeps the cap). (2) The ground's glow image
+  goes back to Babylon's default half resolution, keeping its 4 samples (the samples, not the
+  resolution, hold the thin lights steady) and its blur kernel as the look gives it.
+- **Alternatives considered:** a render scale slider in the settings (UI-SET-02 allows two
+  sliders and nothing else; a later step if the cap is not enough); fewer cloud layers or
+  coarser far terrain (not measured as the bottleneck).
+- **Consequences:** at 1920 × 1080 and below nothing changes (the device ratio is 1 there);
+  the e2e builds draw as before (their 0.5 factor applies on top). Not measured on the
+  owner's machine: to check with the F2 tile on 2-5 and 4-5.
+- **Status:** Proposed
