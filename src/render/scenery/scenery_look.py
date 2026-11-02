@@ -54,6 +54,23 @@ class TextureLook:
         self.stones = stones
 
 
+class LushDetail:
+    """What keeps the grass from being one flat green (GFX-TERRAIN-09).
+
+    `tints`: two tints mixed over the grass in patches by the coarse noise over `tileSize`. `fine`:
+    the grass lightened and darkened by up to this much by the fine noise over `fineTileSize`, a
+    grain finer than the texture's texels.
+    """
+
+    def __init__(
+        self, tints: tuple[Rgb, Rgb], tile_size: float, fine_tile_size: float, fine: float
+    ) -> None:
+        self.tints = tints
+        self.tileSize = tile_size
+        self.fineTileSize = fine_tile_size
+        self.fine = fine
+
+
 class Jitter:
     """Noise added to the height (world units) and the slope before blending."""
 
@@ -92,10 +109,12 @@ class TerrainLook:
         shore: "ShoreLook",
         specular: float,
         casts_shadows: bool | None = None,
+        lush_detail: LushDetail | None = None,
     ) -> None:
         """`castsShadows`: whether the terrain casts the sun's shadows.
 
-        Default: yes (GFX-TERRAIN-13, PERF-28).
+        Default: yes (GFX-TERRAIN-13, PERF-28). `lushDetail`: the grass's patches and grain; none
+        by default (one flat green).
         """
         self.textureSize = texture_size
         self.tileSize = tile_size
@@ -117,6 +136,7 @@ class TerrainLook:
         self.shore = shore
         self.specular = specular
         self.castsShadows = casts_shadows
+        self.lushDetail = lush_detail
 
 
 class ShoreFoam:

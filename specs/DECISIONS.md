@@ -423,3 +423,27 @@
   machine needs it, `GRAIN_BUMP` and `GRAIN_SHADE` can be set to 0 without changing the count:
   the split would need to be made optional.
 - **Status:** Proposed
+
+### D-247 — Grass tinted in patches and grained finer than its texels
+- **Date:** 2026-11-02
+- **Requirements:** GFX-TERRAIN-09.
+- **Context:** owner: "what are the options to make the grass look better? it looks flat and
+  blurry compared to the tree". The grass is a 256-texel tile over 150 units of ground drawn at
+  double scale, a texel for about two screen pixels, bilinear; one flat green with no detail of
+  its own, next to trees that are crisp baked pictures with shadows. Four options were put to the
+  owner (a sharper or detail tile, large-scale patches, a normal map on the grass, grass clumps as
+  props); the owner asked for the first two.
+- **Decision:** `lushDetail` on the terrain look, bound as three uniforms: the lush layer is
+  tinted in patches (two tints mixed by the coarse channel of the noise texture over `tileSize`)
+  and grained (the fine channel over `fineTileSize`, ±`fine`). Two more reads of the noise
+  texture, already bound, where grass shows; no new texture, so no change to the load time. The
+  base look gets a mild setting, World 1's green levels a stronger one (yellower dry patches,
+  deeper green ones, a grain of ±0.28 over 28 units).
+- **Alternatives considered:** a 512 or 1024 texel tile (four to sixteen times the generation
+  time of every ground texture at load, and the grass's own noise is coarse anyway); a detail
+  sample of the grass texture itself at a smaller tile (its mean is not 0.5, so a product would
+  darken it); a normal map and grass clumps, kept for later if the owner still wants more.
+- **Consequences:** the grass's tunables are in the looks (`lushDetail`); the trees' imposters
+  and the roads are untouched. The grain also runs under the fringe of the cliff blocks, which
+  helps the stones sit in the ground.
+- **Status:** Proposed

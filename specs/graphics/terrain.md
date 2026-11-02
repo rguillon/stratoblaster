@@ -140,12 +140,21 @@ in patches rather than as a flat gradient: sand over the ground, grass over the 
 all. Steep slopes stay rock and peaks stay snow under any cover. The covers reach the shader in the
 terrain's vertex colours (red, green and blue channels).
 
+The grass is not one flat green: a look's `lushDetail` tints it in patches, two `tints` mixed by
+the coarse noise over `tileSize`, and grains it, lightened and darkened by up to `fine` by the
+fine noise over `fineTileSize`, a grain finer than the texture's texels (which cover about two
+screen pixels each), so meadows read as sharp as the trees on them. A look without `lushDetail`
+draws its grass flat.
+
 **Acceptance criteria**
 - Given two sections with different covers, then the cover is blended over the transition like the
   height (unit test).
-- Manual: grass, concrete and sand read from the playfield camera and fade into each other.
+- Given a look with `lushDetail`, then its tints and tile sizes are bound for the shader; without,
+  the grass is bound flat (unit tests).
+- Manual: grass, concrete and sand read from the playfield camera and fade into each other; the
+  meadows of 1-3 show patches of drier grass and a fine grain.
 
-*Sources: P04-R01, P06-R05, P06-R06, P08-R07, D-023, D-037.*
+*Sources: P04-R01, P06-R05, P06-R06, P08-R07, D-023, D-037, D-247.*
 
 ### GFX-TERRAIN-10 — Slow changes between sections · MUST
 
@@ -294,6 +303,7 @@ WLD-1-31).
 | `steepSlope` | 0.22–0.45 | base look; World 1's green levels 0.045–0.1 (`TERRAIN`), its dry levels 0.06–0.14 (`DRY_TERRAIN`), with a slope jitter of 0.06 instead of 0.2, `src/game/config/world_1/looks.py` (D-240, D-245) |
 | `jitter` | height 30, slope 0.2 | base look |
 | `noiseTileSize` / `tintTileSize` | 300 / 1600 | base look |
+| `lushDetail` | tints 1.04/1.02/0.94 and 0.92/0.94/0.86 over 500, fine 0.12 over 30 | base look; World 1's green levels: tints 1.16/1.1/0.72 and 0.84/0.95/0.8 over 420, fine 0.28 over 28 (`TERRAIN`, D-247) |
 | `specular` | 0 | base look |
 | hardpan `cracks` | 0.75 | `HARDPAN`, `src/game/config/world_1/looks.py` |
 | mesa rock `strata` / `stones` | 0.5 / 0.7 | `MESA_ROCK`, same place; crag `CRAG` 0.25 / 0.85; base rock 0.3 / 0.7 |

@@ -143,6 +143,14 @@ TERRAIN = merge(
         "steep": CRAG,
         "steepSlope": [0.045, 0.1],
         "jitter": merge(BASE_SCENERY_LOOK.terrain.jitter, {"slope": SLOPE_JITTER}),
+        # Meadows in patches of drier, yellower and deeper green grass, with a fine grain, so the
+        # grass is not one flat, blurred green next to the trees (D-247).
+        "lushDetail": {
+            "tints": [[1.16, 1.1, 0.72], [0.84, 0.95, 0.8]],
+            "tileSize": 420,
+            "fineTileSize": 28,
+            "fine": 0.28,
+        },
         "shore": merge(
             BASE_SCENERY_LOOK.terrain.shore,
             {

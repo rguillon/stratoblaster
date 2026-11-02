@@ -166,6 +166,13 @@ BASE_SCENERY_LOOK = record({
             [0.82, 0.8, 0.78],
         ],
         "tintTileSize": 1600,
+        # The grass tinted in patches and grained finer than its texels (GFX-TERRAIN-09).
+        "lushDetail": {
+            "tints": [[1.04, 1.02, 0.94], [0.92, 0.94, 0.86]],
+            "tileSize": 500,
+            "fineTileSize": 30,
+            "fine": 0.12,
+        },
         # The ground under the water coloured by its depth (GFX-WATER-04).
         "shore": {
             "sand": [0.72, 0.62, 0.45],

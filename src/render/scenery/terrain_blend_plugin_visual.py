@@ -94,6 +94,9 @@ UNIFORMS = [
     ("terrainSurf", 4, "vec4"),
     ("terrainLava", 4, "vec4"),
     ("terrainGroundFrame", 4, "vec4"),
+    ("terrainLushTintA", 3, "vec3"),
+    ("terrainLushTintB", 3, "vec3"),
+    ("terrainLushDetail", 4, "vec4"),
 ]
 
 
@@ -241,7 +244,17 @@ vec3 terrainColor(vec3 p, vec3 n) {
       * vec4(mix(terrainTintA, terrainTintB, tint), 1.0);
   }
   sum += terrainLayer(terrainSandy, p, w, ground * sandy * (1.0 - lush) * (1.0 - paved));
-  sum += terrainLayer(terrainLush, p, w, ground * lush * (1.0 - paved));
+  float lushShare = ground * lush * (1.0 - paved);
+  if (lushShare > TERRAIN_SKIP) {
+    // Grass tinted in patches by the coarse noise, and grained by the fine noise over a small
+    // tile, finer than its texels (GFX-TERRAIN-09).
+    vec3 grass = terrainTriplanar(terrainLush, p, w);
+    float patches = smoothstep(0.3, 0.7, texture2D(terrainNoise, p.xz * terrainLushDetail.x).g);
+    float grain = texture2D(terrainNoise, p.xz * terrainLushDetail.y).r - 0.5;
+    grass *= mix(terrainLushTintA, terrainLushTintB, patches);
+    grass *= 1.0 + grain * 2.0 * terrainLushDetail.z;
+    sum += vec4(grass * lushShare, lushShare);
+  }
   sum += terrainLayer(terrainPaved, p, w, ground * paved);
   sum += terrainLayer(terrainHigh, p, w, high * (1.0 - steep));
   sum += terrainLayer(terrainSteep, p, w, steep);
@@ -353,6 +366,19 @@ class TerrainBlendOwner:
         ground_scale = ground.scale if ground else 1
         ground_offset = ground.offset_z if ground else 0
         ubo.updateFloat4("terrainGroundFrame", ground_scale, ground_offset, 0, 0)
+        detail = look.lushDetail
+        if detail != None:
+            a = detail.tints[0]
+            b = detail.tints[1]
+            ubo.updateFloat3("terrainLushTintA", a[0], a[1], a[2])
+            ubo.updateFloat3("terrainLushTintB", b[0], b[1], b[2])
+            ubo.updateFloat4(
+                "terrainLushDetail", 1 / detail.tileSize, 1 / detail.fineTileSize, detail.fine, 0
+            )
+        else:
+            ubo.updateFloat3("terrainLushTintA", 1, 1, 1)
+            ubo.updateFloat3("terrainLushTintB", 1, 1, 1)
+            ubo.updateFloat4("terrainLushDetail", 1, 1, 0, 0)
         shore = look.shore
         ubo.updateFloat4("terrainSand", shore.sand[0], shore.sand[1], shore.sand[2], shore.beach)
         ubo.updateFloat4(
