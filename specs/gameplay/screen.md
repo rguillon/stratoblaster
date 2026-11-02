@@ -74,14 +74,17 @@ this test (which targets the player can hit, what a bomb reaches).
 ### GAME-SCREEN-05 — Where the ship may fly · MUST
 
 The player ship flies only inside what the screen shows, within these margins (`ship_margin`):
-at least 18 px inside the width seen at its height, no lower than y = 78 (so it stays 30 px above
-the HUD bar, which is 48 px high), and no higher than 200 px below the top edge (y = 520). Pushed
-against an edge, the ship stops there: its speed towards that edge drops to 0, and it can slide
-along it.
+at least 18 px inside the width seen at its height and inside the HUD's side columns (`panel`,
+200 px each side, [ui/hud.md](../ui/hud.md)), no lower than y = 20 (half its length: its model
+stays on screen; it was y = 78 while the HUD had a bar along the bottom, D-155 to D-251), and no
+higher than 200 px below the top edge (y = 520). Pushed against an edge, the ship stops there: its
+speed towards that edge drops to 0, and it can slide along it.
 
 **Acceptance criteria**
 - Given the ship pushed against any edge, then it stays on screen and inside the margins (unit
   test).
+- Given the ship at a height where the screen shows more than the space between the columns,
+  then its half width is the space between the columns less the side margin (unit test).
 - Given the ship flying diagonally into a side edge, then it keeps its vertical speed (unit test).
 
 *Sources: P06-R02, D-155.*
@@ -89,7 +92,7 @@ along it.
 ### GAME-SCREEN-06 — The ship's reach · MUST
 
 The ship's reach is the X range the ship can get to at the bottom of its flight area: the middle
-± the flight area's half width at y = 78 (about x 238 to 1 042). Enemies that come in from the top
+± the flight area's half width at y = 20 (about x 260 to 1 020). Enemies that come in from the top
 keep to it ([enemies/common.md](../enemies/common.md)), and bonuses drop inside it
 ([bonuses.md](bonuses.md)), so the player can always fly under them.
 
@@ -118,8 +121,8 @@ Nothing scores or drops anything by being removed this way.
 |------|-------|-------|
 | logical screen | 1280 × 720 px | `src/game/config/game.py` `GAME_CONFIG["screen"]` (GAME-SCREEN-01, D-249) |
 | seen_half_width | ±390.6 px at y = 0, ±419.6 at y = 78, ±583.6 at y = 520, ±657.9 at y = 720 | From the camera (tilt 35°, field of view 40°, `src/game/config/scenery_look.py`) and the 16:9 aspect, `src/render/scenery/playfield_framing.py` `visible_half_width` |
-| ship_margin | side 18 px, bottom 78 px, top 200 px | `src/config/game_play.py` `GAME_PLAY_CONFIG.ship_margin` (GAME-SCREEN-05) |
-| ship reach | x ≈ 238 … 1 042 px | Computed from `ship_margin` and `seen_half_width` at y = 78 (GAME-SCREEN-06) |
+| ship_margin | side 18 px, bottom 20 px, top 200 px, panel 200 px | `src/config/game_play.py` `GAME_PLAY_CONFIG.ship_margin` (GAME-SCREEN-05, D-251) |
+| ship reach | x ≈ 260 … 1 020 px | Computed from `ship_margin` and `seen_half_width` at y = 20 (±398.1), GAME-SCREEN-06 |
 | cull_margin | 80 px | `src/config/game_play.py` `GAME_PLAY_CONFIG.cull_margin` (GAME-SCREEN-07) |
 
 ## Notes

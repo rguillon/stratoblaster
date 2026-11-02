@@ -562,3 +562,31 @@
   the e2e builds draw as before (their 0.5 factor applies on top). Not measured on the
   owner's machine: to check with the F2 tile on 2-5 and 4-5.
 - **Status:** Proposed
+
+### D-251 — The HUD in side columns, no pause button, the ship down to the bottom edge
+- **Date:** 2026-11-02
+- **Requirements:** UI-HUD-01, UI-HUD-02, UI-HUD-03, UI-HUD-05, UI-HUD-06, UI-HUD-07, UI-HUD-08,
+  UI-HUD-10, UI-HUD-12, UI-PAUSE-01, UI-PAUSE-02 (removed), GAME-SCREEN-05, GAME-SCREEN-06,
+  UI-LOOK-03, UI-LOOK-05, UI-INPUT-11, UI-OVER-01.
+- **Context:** owner: "move the UI to the left side, remove the pause button, reduce the right
+  side the same way as the left to keep the screen symmetrical. And make sure the player ship
+  can now fly up to the bottom of the screen."
+- **Decision:** the HUD is two glass columns 200 px wide (`--hud-side`, the whole height) down
+  the sides of the 16:9 playfield. The left one stacks the readouts (progress line, ship, lives,
+  bombs, health, score, high score, weapon), the boss gauge under them (at 270 px from the top,
+  it was along the left edge from the top) and the level played at its foot. The right one is
+  empty, so the playfield stays in the middle; on touch screens it holds the fire and bomb
+  buttons. The pause button is gone with its view label, handler and texts (the keyboard and the
+  gamepad pause; a touch way to pause comes with the mobile layout). The ship's bounds take the
+  columns: its half width at a height is the smaller of the width seen there and the space
+  between the columns, less the 18 px side margin (`ShipMargin.panel`); its bottom margin goes
+  from 78 (30 px above the old bar) to 20 px, half the balanced ship's length, so it reaches the
+  bottom edge with its model on screen. The reach (GAME-SCREEN-06), now at y = 20, is about
+  x 260 … 1 020 (the width seen at y = 20 is the narrower of the two bounds).
+- **Alternatives considered:** letterboxing the 3D view to the middle 880 px (the owner asked
+  to reduce the sides the same way as the left: glass columns over the view, as the left HUD
+  is); keeping the pause button in the right column (the owner asked for it removed).
+- **Consequences:** `GameScreenView` and `ScreenHandlers` lose their pause pieces (ENG-151);
+  the e2e checks of UI-PAUSE-02 are gone, the pointer test pauses with Escape. The test of
+  the dev model scene's glow kernel is aligned with D-250 here (it still expected 32).
+- **Status:** Proposed

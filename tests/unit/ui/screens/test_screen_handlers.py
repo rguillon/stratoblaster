@@ -8,7 +8,6 @@ def test_ui_input_09_a_menu_screen_needs_only_tap_and_back() -> None:
     handlers = ScreenHandlers(lambda _index: None, lambda: None)
     assert handlers.on_fire is None
     assert handlers.on_drag is None
-    assert handlers.on_pause is None
     assert handlers.on_set is None
 
 

@@ -304,8 +304,11 @@ class GamePlay:
         margin = CFG.ship_margin
         framing = self.view.stage.framing
 
+        # Inside the width seen, and inside the HUD's side columns (D-251).
         def half_width_at(y: float) -> float:
-            return visible_half_width(framing, width / height, y) - margin.side
+            seen = visible_half_width(framing, width / height, y)
+            inside: float = min(seen, width / 2 - margin.panel)
+            return inside - margin.side
 
         return PlayfieldBounds(margin.bottom, height - margin.top, width / 2, half_width_at)
 

@@ -2,33 +2,39 @@
 
 > **Area:** UI · **Prefix:** `UI-HUD` · **Related:** [look-and-layout.md](look-and-layout.md), [pause-menu.md](pause-menu.md), [../gameplay/scoring.md](../gameplay/scoring.md), [../gameplay/lives-and-damage.md](../gameplay/lives-and-damage.md), [../gameplay/bombs.md](../gameplay/bombs.md), [../gameplay/weapons.md](../gameplay/weapons.md), [../gameplay/controls.md](../gameplay/controls.md), [../gameplay/player-ship.md](../gameplay/player-ship.md), [../bosses/common.md](../bosses/common.md)
 
-While a level is played, the HUD shows the player's state in one bar along the bottom of the
+While a level is played, the HUD shows the player's state in a column down the left side of the
 playfield: the level's progress, the ship, its lives, bombs and health, the score and high score,
-the weapon and the level played. During a boss fight, a slim gauge up the left edge shows the
-boss's health. How the score, lives, bombs, health and weapons work is in
+the weapon and the level played; an empty column of the same width down the right side keeps the
+playfield in the middle. During a boss fight, a slim gauge in the left column shows the boss's
+health. How the score, lives, bombs, health and weapons work is in
 [gameplay/](../gameplay/scoring.md); this file is only what the HUD shows and where.
 
 ## Requirements
 
-### UI-HUD-01 — One bar at the bottom · MUST
+### UI-HUD-01 — Two side columns, the readouts down the left one · MUST
 
-The HUD is one bar, `hud_bar_height` high, along the bottom of the playfield, on blue-black glass
-with a thin cyan line along its top. It holds, left to right:
-- **left:** the ship's name, its lives and its bombs, and under them its health bar (UI-HUD-03, UI-HUD-04);
-- **middle:** the score and, under it, the high score (UI-HUD-05);
-- **right:** the weapon and its level, and under it the level played (UI-HUD-06).
+The HUD is two columns, `hud_side_width` wide, down the left and right sides of the playfield, the
+whole height, on blue-black glass with a thin cyan line along their inner edge. The left one holds,
+top to bottom:
+- the level's progress line (UI-HUD-02);
+- the ship's name, its lives and its bombs, and under them its health bar (UI-HUD-03, UI-HUD-04);
+- the score and, under it, the high score (UI-HUD-05);
+- the weapon and its level (UI-HUD-06);
+- the boss gauge while a boss is fought (UI-HUD-12);
+- at its foot, the level played (UI-HUD-06).
 
-Nothing else of the HUD is over the playfield, except the boss gauge (UI-HUD-12), the pause button
-([pause-menu.md](pause-menu.md)) and, on touch screens, the fire and bomb buttons (UI-HUD-10).
+The right column is empty (it keeps the playfield in the middle) but for the touch fire and bomb
+buttons on touch screens (UI-HUD-10). Nothing else of the HUD is over the playfield: there is no
+pause button (D-251; the keyboard and the gamepad pause, [pause-menu.md](pause-menu.md)).
 
 **Acceptance criteria**
-- Given a level, then the bar is along the bottom of the playfield and shows the ship, lives, bombs, health, score, high score, weapon and level.
+- Given a level, then the left column shows, in this order, the progress, the ship, lives, bombs, health, score, high score and weapon, and the right column is empty (unit test on the HUD's elements).
 
-*Sources: D-155, D-041, P11-R02.*
+*Sources: D-155, D-041, P11-R02, D-251.*
 
 ### UI-HUD-02 — The level's progress · MUST
 
-A thin line along the top edge of the bar fills from left to right with the share of the level
+A thin line along the top of the left column fills from left to right with the share of the level
 flown, in the blue-to-green neon line.
 
 **Acceptance criteria**
@@ -38,7 +44,7 @@ flown, in the blue-to-green neon line.
 
 ### UI-HUD-03 — The ship, its lives and its bombs · MUST
 
-The left of the bar shows the ship's name (cyan, uppercase), then its lives as `♥ N` (green), then
+The top of the left column shows the ship's name (cyan, uppercase), then its lives as `♥ N` (green), then
 its bombs as a count, `● N` (orange), however many there are.
 
 **Acceptance criteria**
@@ -60,7 +66,7 @@ to it, a text gives the health, rounded up, over the full health: `HP 73 / 100`.
 
 ### UI-HUD-05 — Score and high score · MUST
 
-The middle of the bar shows the attempt's score, zero-padded to `score_digits` digits, in large
+Under the health, the left column shows the attempt's score, zero-padded to `score_digits` digits, in large
 text, and under it, smaller, `HI` and the larger of the saved high score and the current score,
 padded the same way. Both change on the frame the points are scored.
 
@@ -72,28 +78,31 @@ padded the same way. Both change on the frame the points are scored.
 
 ### UI-HUD-06 — The weapon and the level played · MUST
 
-The right of the bar shows the weapon in use and its level, `<weapon> · Lv <level>/<levels>`
-(e.g. `Bullet · Lv 1/5`), in cyan, and under it, small, the level played (`Level 1-2`).
+Under the score, the left column shows the weapon in use and its level,
+`<weapon> · Lv <level>/<levels>` (e.g. `Bullet · Lv 1/5`), in cyan, and at the foot of the column,
+small, the level played (`Level 1-2`).
 
 **Acceptance criteria**
 - Given the laser at level 3 in level 2-4, then the HUD shows `Laser · Lv 3/5` and `Level 2-4`.
 
 *Sources: D-041, D-155.*
 
-### UI-HUD-07 — The bar never hides the ship · MUST
+### UI-HUD-07 — The columns never hide the ship · MUST
 
-The ship never flies lower than 30 px above the bar: its bottom margin keeps it there
-([gameplay/player-ship.md](../gameplay/player-ship.md)).
+The ship never flies under the side columns: its side margin keeps it `ship_margin.side` inside
+them, as inside the width the camera shows ([gameplay/screen.md](../gameplay/screen.md)
+GAME-SCREEN-05). With no bar along the bottom, it may fly down to the bottom edge of the screen,
+its model kept on screen by a bottom margin of half its length.
 
 **Acceptance criteria**
-- Given the ship pushed against the bottom of the playfield, then its model is fully above the bar.
+- Given the ship pushed against a side of the playfield, then its model is fully outside the columns; pushed against the bottom, then its model is fully on screen (unit test on the bounds).
 
-*Sources: D-155.*
+*Sources: D-155, D-251.*
 
 ### UI-HUD-08 — Readable, nothing overlapping · MUST
 
 At 800 × 600 and 390 × 844 the HUD texts are fully visible and no HUD element overlaps another: the
-score lines, the health, the weapon, the boss gauge and the pause button are apart.
+score lines, the health, the weapon and the boss gauge are apart.
 
 **Acceptance criteria**
 - Given the HUD at 800 × 600 and 390 × 844, then the score lines are fully visible and overlap no other HUD element (e2e).
@@ -110,15 +119,15 @@ does not count the enemies destroyed (the "Level complete" panel does).
 
 *Sources: D-041, D-155, P06-R02.*
 
-### UI-HUD-10 — Touch buttons above the bar · MUST
+### UI-HUD-10 — Touch buttons in the right column · MUST
 
-On touch screens only (coarse pointer), the fire button sits at the bottom right just above the
-bar, and the bomb button above it, the same size. The bomb button shows the bombs left
+On touch screens only (coarse pointer), the fire button sits at the foot of the right column, and
+the bomb button above it, the same size. The bomb button shows the bombs left
 (`Bomb N`) and is dimmed when none is left. What they do is in
 [gameplay/controls.md](../gameplay/controls.md).
 
 **Acceptance criteria**
-- Given a touch screen, then the fire and bomb buttons show above the bar and cover none of it; given a mouse, then they are hidden.
+- Given a touch screen, then the fire and bomb buttons show in the right column and cover none of the left one; given a mouse, then they are hidden.
 
 *Sources: D-155, P11-R06.*
 
@@ -135,13 +144,12 @@ touches the page only when a value it shows has changed. Its texts come from the
 
 ### UI-HUD-12 — The boss gauge's place · MUST
 
-While a boss fight lasts, the boss's health is shown as a slim vertical gauge up the left edge of
-the playfield, from the top: `boss_gauge_height` tall, `boss_gauge_width` wide, with no panel. It
-never hides the boss, which fights in the upper part of the screen, nor the HUD bar, the pause
-button (top right) or the touch buttons (bottom right).
+While a boss fight lasts, the boss's health is shown as a slim vertical gauge in the HUD's left
+column, under the readouts: `boss_gauge_height` tall, `boss_gauge_width` wide. It never hides the
+boss, which fights over the playfield, nor the readouts above it.
 
 **Acceptance criteria**
-- Given a boss fight, then the gauge is along the left edge, from the top, and overlaps neither the HUD bar nor the pause button.
+- Given a boss fight, then the gauge is in the left column and overlaps none of the readouts (e2e).
 - Manual check: the gauge is readable over every level's ground.
 
 *Sources: P07-R02, D-105, D-155.*
@@ -201,20 +209,22 @@ with a red glow; the notches are white. Red marks the danger ([look-and-layout.m
 
 | Name | Value | Notes |
 |------|-------|-------|
-| `hud_bar_height` | 48 px | `index.html` `.hud-panel` |
-| Ship bottom margin | 78 px (30 px above the bar) | `src/config/game_play.py` `GAME_PLAY_CONFIG.ship_margin.bottom` |
+| `hud_side_width` | 200 px (the whole height) | `index.html` `--hud-side`, `.hud-panel`; `src/config/game_play.py` `GAME_PLAY_CONFIG.ship_margin.panel` (D-251) |
+| Ship bottom margin | 20 px (half the ship's length; 78 px while the bar was at the bottom) | `src/config/game_play.py` `GAME_PLAY_CONFIG.ship_margin.bottom` |
 | `low_health` | 30 % | `src/ui/game_hud.py` `LOW_HEALTH` |
 | `hud_health_bar_width` | 110 px × 7 px | `index.html` `.hud-bar` |
 | `score_digits` | 7 | `src/game/config/menu_texts.py` `SCORE_DIGITS` |
 | HUD texts | `HP`, `♥ N`, `● N`, `<weapon> · Lv L/N`, `HI …`, `Bomb N`, `Mini boss`, `Boss`, `Level …` | `src/game/config/menu_texts.py` `MENU_TEXTS` (`hud*`, `gameLevel`) |
-| Boss gauge place | 14 px from the top and left | `index.html` `.boss-bar` |
+| Boss gauge place | 270 px from the top, 14 px from the left, in the left column | `index.html` `.boss-bar` |
 | `boss_gauge_height` × `boss_gauge_width` | 300 × 8 px | `index.html` `.boss-bar`, `.boss-track` |
 | `boss_gauge_fill` | 1 s | `src/game/config/boss_fights.py` `BOSS_FIGHT_RULES["barFillSeconds"]` |
 | Boss gauge fill colours | `#7a0016 → #ff2244 → #ff5a3c` | `index.html` `.boss-fill` |
-| Touch fire / bomb buttons | 92 px round, right 22 px, bottom 74 / 180 px | `index.html` `.game-fire`, `.hud-bomb-button` |
+| Touch fire / bomb buttons | 92 px round, in the right column: right 54 px, bottom 40 / 160 px | `index.html` `.game-fire`, `.hud-bomb-button` |
 
 ## Notes
 
 - The HUD was a set of panels at the top of the playfield (phase 6), with the score at the top
   centre (P11-R02) and the boss bar first across the top, then on the left under the health panel
-  (D-105). The reviewer had it all put in one bar at the bottom (D-155).
+  (D-105). The reviewer had it all put in one bar at the bottom (D-155). The owner then had it
+  moved to a column on the left with a matching empty column on the right, the pause button
+  removed and the ship free to reach the bottom edge (D-251, 2026-11-02).

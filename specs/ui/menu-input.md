@@ -155,7 +155,7 @@ plays that part.
 
 ### UI-INPUT-11 — Large touch targets · MUST
 
-Every tappable target (menu entries, level cells, sliders, the Back and pause buttons, the panels'
+Every tappable target (menu entries, level cells, sliders, the Back button, the panels'
 choices) is at least 44 × 44 CSS px, also on a 390 px wide phone, where the logical screen is
 scaled down to about 0.81.
 

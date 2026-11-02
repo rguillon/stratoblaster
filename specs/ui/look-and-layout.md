@@ -41,7 +41,7 @@ resizes.
 
 The overlay uses a neon blue/green scheme (reviewer, 2026-10-30):
 - **neon**, electric cyan `#00e8ff`: the selected entries, the headings' glow, the loading bar, the scores;
-- **accent**, neon green `#3dff9a`: panel borders, labels, the sliders, the Back and pause buttons;
+- **accent**, neon green `#3dff9a`: panel borders, labels, the sliders, the Back button;
 - **deep**, deep blue `#0a5cff`: glows and the start of the bars;
 - blue-black glass panels (`rgba(2, 14, 22, 0.8)`) on a blue-black background (`#010a10`), near-white text (`#ecfdff`);
 - a blue-to-green **neon line** gradient (deep blue → cyan → green → lime) for the lines and bar fills.
@@ -68,7 +68,7 @@ Red (`#ff2244`) is used only for danger: low health, the "Game over" panel, lock
 
 The UI palette changes no gameplay colour (enemies, enemy shots, player shots, pickups) and none of
 the levels' 3D look ([graphics/readability.md](../graphics/readability.md)). Over the playfield, the
-UI draws no neon frame or line; the HUD's cyan is only in its bar at the bottom, outside the part of
+UI draws no neon frame or line; the HUD's cyan is only in its side columns, outside the part of
 the playfield the ship flies in ([hud.md](hud.md)).
 
 **Acceptance criteria**

@@ -13,26 +13,24 @@ gamepad in use is lost. What the music and sounds do while paused is in
 
 During a level, the game is paused by:
 - the keyboard: `Escape` and `KeyP`, by key position (QWERTY and AZERTY);
-- a gamepad (standard mapping): Start (button 9) and Select / View (button 8);
-- the on-screen pause button `❚❚` (UI-PAUSE-02).
+- a gamepad (standard mapping): Start (button 9) and Select / View (button 8).
+
+There is no on-screen pause button (removed by D-251; touch players will get one with the mobile
+layout).
 
 **Acceptance criteria**
-- Given a level, when `Escape`, `KeyP`, gamepad Start or Select, or the pause button is pressed, then the game is paused and the pause menu shows (unit test on the controls, e2e by key, gamepad and tap).
+- Given a level, when `Escape`, `KeyP`, gamepad Start or Select is pressed, then the game is paused and the pause menu shows (unit test on the controls, e2e by key and gamepad).
 
-*Sources: P12-R01, D-095, D-096.*
+*Sources: P12-R01, D-095, D-096, D-251.*
 
-### UI-PAUSE-02 — The pause button · MUST
+### UI-PAUSE-02 — The pause button · *Removed*
 
-The pause button `❚❚` is in the top right corner of the playfield, `pause_button_size` square: a
-glass panel with a green border and chamfered corners. It is at least 44 × 44 CSS px on every
-screen, and never covers the score, the health, the weapon or the boss gauge. Pressing it does not
-start a drag of the ship. It shows while the level is played, not on the pause menu or the end
-panels.
+*Removed (2026-11-02, D-251): the owner had the on-screen pause button taken off the playfield
+with the HUD moved to the side columns. It was a `❚❚` glass panel in the top right corner, at
+least 44 × 44 CSS px, pausing without starting a drag. The keyboard and the gamepad pause
+(UI-PAUSE-01).*
 
-**Acceptance criteria**
-- Given the pause button on a 390 × 844 and an 800 × 600 screen, then it is fully visible, at least 44 × 44 CSS px, and overlaps no other HUD element (e2e).
-
-*Sources: P12-R01, D-096, D-155.*
+*Sources: P12-R01, D-096, D-155, D-251.*
 
 ### UI-PAUSE-03 — Nothing moves while paused · MUST
 
@@ -153,9 +151,8 @@ changes no screen (only the audio goes quiet, [audio/engine.md](../audio/engine.
 
 | Name | Value | Notes |
 |------|-------|-------|
-| Pause keys / buttons | `Escape`, `KeyP`; gamepad 9, 8; the `❚❚` button | `src/config/menu_input.py` `MENU_INPUT_CONFIG` |
+| Pause keys / buttons | `Escape`, `KeyP`; gamepad 9, 8 | `src/config/menu_input.py` `MENU_INPUT_CONFIG` |
 | `pause_dim` | 50 % black over the playfield | `index.html` `.pause-dim` |
-| `pause_button_size` | 72 × 72 px (56 before D-249: 44 CSS px in an 800 px wide window at the 16:9 stage's scale of 0.625), 14 px from the top, 18 px from the right | `index.html` `.game-pause` |
 | Pause panel | at least 280 px wide, entries 56 px tall, 24 px text | `index.html` `.pause-panel`, `.pause-entry` |
 | Texts | "Paused", "Resume", "Settings", "Main menu", "Esc / P to resume", "Leave the level?", "No", "Yes" | `src/game/config/menu_texts.py` `MENU_TEXTS` |
 
