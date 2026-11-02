@@ -17,27 +17,27 @@ Every event below plays its own generated sound, distinct from the others:
 | Group | Event (cue) | Sound |
 |-------|-------------|-------|
 | Player weapons | a volley of the guns (`fire:bullet`) | `gun-shot`, a minigun burst |
-| | the laser starts (`beam-start:laser`) | `laser-start`, a rising zap |
-| | the laser fires (`beam:laser`) | `laser-hum`, a looping hum |
-| | a volley of missiles (`fire:missile`) | `missile-launch`, a whoosh |
-| | weapon switched (`weapon-switch`) | `weapon-switch`, a two-note chime |
-| | weapon level up (`weapon-up`) | `weapon-level-up`, a four-note rising chime |
-| Enemy weapons | enemy bullet fired (`enemy-bullet`) | `enemy-shot`, a falling blip |
-| | enemy missile launched (`enemy-missile`) | `enemy-missile`, a band-passed hiss |
-| | laser warning line (`laser-warning`) | `laser-warning`, two short beeps |
-| | enemy laser fires (`laser-fire`) | `enemy-laser`, a falling growl |
-| Hits | player shot hits (`hit`) | `hit`, a short crack |
-| | player shot hits a shielded part (`hit-blocked`) | `hit-shield`, a metallic ping |
-| | the player ship is hit (`player-hit`) | `player-hit`, a falling buzz |
+| | the laser starts (`beam-start:laser`) | `laser-start`, a relay click, a swelling air sweep and a low surge |
+| | the laser fires (`beam:laser`) | `laser-hum`, a looping electric hum (two low partials beating) under a hiss of air |
+| | a volley of missiles (`fire:missile`) | `missile-launch`, an ignition pop, the exhaust whoosh and a rumble |
+| | weapon switched (`weapon-switch`) | `weapon-switch`, a weapon racked: two clacks and a thud |
+| | weapon level up (`weapon-up`) | `weapon-level-up`, a part locking in, a whoosh and two bells rising |
+| Enemy weapons | enemy bullet fired (`enemy-bullet`) | `enemy-shot`, a dull crack with a low body |
+| | enemy missile launched (`enemy-missile`) | `enemy-missile`, a rocket's whoosh and rumble |
+| | laser warning line (`laser-warning`) | `laser-warning`, two relay clicks over a rising air sweep |
+| | enemy laser fires (`laser-fire`) | `enemy-laser`, a blast of air falling in pitch, a sub thump and a held rumble |
+| Hits | player shot hits (`hit`) | `hit`, a crack, a short metallic clank and a thud |
+| | player shot hits a shielded part (`hit-blocked`) | `hit-shield`, a click and two inharmonic metallic rings |
+| | the player ship is hit (`player-hit`) | `player-hit`, a crack, a body of noise closing down, a sub thump and a rattle of metal |
 | Destruction | small enemy blows up (`blast-small`) | `explosion-small` |
 | | large enemy blows up (`blast-large`) | `explosion-large` |
-| | boss part destroyed (`part-destroyed`) | `boss-part-destroyed`, a large explosion and a falling tone |
-| | boss destroyed (`boss-destroyed`) | `boss-destroyed`, a chain of three explosions |
-| Player | life lost (`life-lost`) | `life-lost`, a falling tone over a large explosion |
-| | extra life (`extra-life`) | `extra-life`, a bright four-note chime |
-| | bomb (`bomb`) | `bomb`, a huge explosion and a falling sweep |
-| | bonuses picked up (`bonus:weapon`, `bonus:life`, `bonus:bomb`) | `weapon-bonus`, `life-bonus`, `bomb-bonus` |
-| Menus | move, confirm, back, pause, resume, slider step | `menu-move`, `menu-confirm`, `menu-back`, `pause`, `resume`, `slider-step` |
+| | boss part destroyed (`part-destroyed`) | `boss-part-destroyed`, a large explosion, then metal tearing away and ringing |
+| | boss destroyed (`boss-destroyed`) | `boss-destroyed`, a chain of three explosions over the hull's groan and a deep rumble |
+| Player | life lost (`life-lost`) | `life-lost`, the engine winding down (a falling air sweep and a falling low tone) over a large explosion |
+| | extra life (`extra-life`) | `extra-life`, four bells rising |
+| | bomb (`bomb`) | `bomb`, a huge explosion, the pressure wave washing over and a sub-bass drop |
+| | bonuses picked up (`bonus:weapon`, `bonus:life`, `bonus:bomb`) | `weapon-bonus` (a whoosh up into two bells), `life-bonus` (three bells rising), `bomb-bonus` (a thud and two low bells) |
+| Menus | move, confirm, back, pause, resume, slider step | `menu-move` (a click), `menu-confirm` and `menu-back` (a click and a bell tap, high and low), `pause` and `resume` (a switch thrown, its tone falling then rising), `slider-step` (a tick) |
 
 A blast is large when the enemy's hit radius is at least `large_blast_radius` (18 px); an enemy
 missile shot down blows up small. A slider step plays at the new sound volume.
@@ -140,13 +140,33 @@ bright hiss.
 
 *Sources: P12-R09, D-100, D-107.*
 
+### AUD-SFX-08 — Realistic, not chip sounds · MUST
+
+The sounds are made to sound like real things, not like a chip of the nineties: cracks, thumps,
+whooshes and rumbles of filtered noise and sines, metallic rings of noise through very narrow
+band-pass filters, struck bells (a sine fundamental under a quieter, shorter inharmonic partial)
+for the rewards, and clicks of filtered noise for the menus. No sound uses a bare square or
+sawtooth wave, nor a pitch sweep of one (a "pew"); a triangle wave is only used low-passed, for the
+minigun's thump. The recipes are in `sound_recipes.py` (`click`, `thump`, `whoosh`, `rumble`,
+`ring`, `bell`, `minigun`, `explosion`).
+
+**Acceptance criteria**
+- Given the sound designs, then no layer is a square or a sawtooth wave, and every triangle layer
+  is low-passed (unit test on the data).
+- Given each sound, then the reviewer finds it sounds like a real thing rather than a chip (manual
+  check, in the Dev menu's sounds viewer).
+
+*Sources: D-239.*
+
 ## Tunable values
 
 | Name | Value | Notes |
 |------|-------|-------|
 | sound designs | per cue: layers, gain, priority, positional, loop, hold | `src/game/view/audio/sound_designs.py` `SOUND_DESIGNS` |
 | priorities | 0 (enemy shots) … 7 (top) | `sound_designs.py` `PRIORITY` |
-| gains | `gun-shot` 0.14, `laser-hum` 0.1, `hit` 0.3, `explosion-small` 0.32, `explosion-large` 0.42, `bomb` 0.5, `boss-destroyed` 0.55 | `SOUND_DESIGNS` |
+| gains | `gun-shot` 0.14, `laser-hum` 0.1, `hit` 0.3, `explosion-small` 0.32, `explosion-large` 0.42, `bomb` 0.5, `boss-destroyed` 0.5, `player-hit` 0.36 | `SOUND_DESIGNS` |
+| bell partial | 2.76 × the fundamental | `sound_recipes.py` `BELL_PARTIAL` |
+| ring Q | 30 | `sound_recipes.py` `ring` |
 | minigun_rounds / minigun_gap | 6 / 21 ms | `src/game/view/audio/sound_recipes.py` `MINIGUN` |
 | explosion sizes | small 0.3 s, large 0.6 s (0.9 s tail), huge 1.1 s (2 s tail); 3 / 5 / 8 debris | `sound_designs.py` `BLAST_SMALL`, `BLAST_LARGE`, `BLAST_HUGE` |
 | large_blast_radius | 18 px | `src/game/view/audio/game_audio.py` `LARGE_BLAST_RADIUS` |
@@ -157,3 +177,6 @@ bright hiss.
 - The enemy explosions were first long low-pass hisses, then short muffled booms (D-107), then the
   layered recipe of AUD-SFX-04 for every blast (D-108, which replaced the booms).
 - Measured offline (D-108): a busy wave peaks at −5.8 dBFS at the default volume.
+- The sounds were first chip-like (square and sawtooth sweeps, chimes), then made realistic
+  (D-239): each sound's peak and loudness were measured offline against the old one and kept
+  within the same range, the narrow-band clicks and rings boosted to match the beeps they replace.

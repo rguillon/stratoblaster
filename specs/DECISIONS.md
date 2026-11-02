@@ -184,3 +184,37 @@
   were amended (agent, per D-234's rule that a decision is written into the requirement it
   concerns); the owner may veto.
 - **Status:** Proposed
+
+### D-239 — Realistic sound effects: filtered noise, sines, bells and clicks, no chip sweeps
+- **Date:** 2026-11-02
+- **Requirements:** AUD-SFX-08 (new); AUD-SFX-01 (the sounds' descriptions), AUD-SFX-02 (the
+  minigun's thump), the tunables table.
+- **Context:** owner request: "make the sounds more realistic, no more 90s videogame pew". The
+  sounds were square and sawtooth tones with pitch sweeps (the enemy shot, the lasers, the hits,
+  the falling tones of the deaths) and chip chimes (the rewards, the menus); only the explosions
+  (D-108) and the minigun were layered noise.
+- **Decision:**
+  - Six small recipes in `sound_recipes.py`, all filtered noise or sines: `click` (noise through a
+    band-pass, a few ms), `thump` (a sine falling by half), `whoosh` (noise through a band-pass
+    sweeping between two cut-offs), `rumble` (low-passed noise), `ring` (noise through a band-pass
+    of Q 30, which rings like struck metal) and `bell` (a sine fundamental under a quieter, shorter
+    partial at 2.76 ×, as a struck bell's). `chime` is gone.
+  - Every design is rebuilt from them (see AUD-SFX-01's table): the lasers are air sweeps, hums and
+    surges; the missiles ignition, exhaust and rumble; the enemy shot a dull crack; the hits cracks,
+    clanks and thuds, the shield two inharmonic rings; the deaths and the bomb keep their
+    explosions under air sweeps, falling sines and rumbles instead of falling square or sawtooth
+    tones; the rewards are bells; the menus clicks, with a bell tap for confirm and back and a
+    falling or rising low tone for pause and resume. The minigun's thump is a low-passed triangle
+    instead of a square. No square or sawtooth layer remains (a unit test checks it).
+  - The levels were checked offline (a NumPy render of every layer: oscillators, noise, biquads,
+    envelopes, glides): each sound's peak and RMS were brought back within the old one's range,
+    which meant boosting the narrow-band clicks and rings (a band-pass of Q 4 to 30 passes little
+    of the noise) and lowering the bells and the player-hit; the missile's hiss and the hum's air
+    were cut so no sound is a long bright hiss (AUD-SFX-07).
+- **Alternatives considered:** a wave-shaper for distortion and grit (the engine has no such node;
+  not needed); recorded samples (AUD-ENGINE-01: generated only); keeping the chimes for the menus
+  (the owner asked for no chip sounds at all).
+- **Consequences:** the sound names and cues are unchanged, so the e2e tests and the test API are
+  untouched. The tests of the recipes and designs follow the new data. The reviewer checks the
+  sounds by ear in the Dev menu's sounds viewer (DEV-MENU-19).
+- **Status:** Proposed
