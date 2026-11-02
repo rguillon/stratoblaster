@@ -116,6 +116,8 @@ class DevViewerConfig:
     (times the view without zoom). `model_seed`: the random numbers the enemies and bosses are
     spawned with (their look only). `turn_per_pixel`: radians a model turns per pixel dragged.
     `break_key`: the key code that breaks the boss's next part in the bosses viewer.
+    `hold_delay`, `hold_interval`: a sound button held plays its sound again after `hold_delay`
+    seconds, then every `hold_interval` seconds (DEV-MENU-19).
     """
 
     def __init__(
@@ -131,6 +133,8 @@ class DevViewerConfig:
         props: DevPropStageConfig,
         zoom_range: list[float],
         break_key: str = "KeyK",
+        hold_delay: float = 0.4,
+        hold_interval: float = 0.25,
     ) -> None:
         self.close_up_fill = close_up_fill
         self.wheel_step = wheel_step
@@ -145,6 +149,8 @@ class DevViewerConfig:
         # The key that breaks the boss's next part in the bosses viewer (DEV-MENU-14; as K in a
         # level, DEV-OPT-09).
         self.break_key = break_key
+        self.hold_delay = hold_delay
+        self.hold_interval = hold_interval
 
 
 # The viewers of the dev menu, in order (their ids, DEV-MENU-03).
@@ -183,7 +189,7 @@ DEV_VIEWER_CONFIG = DevViewerConfig(
         "1 square = 1 block",
         "Wheel: zoom · ◀ ▶ or menu: next · Drag: turn · Enter: close-up / game size"
         " · K: break a part · Esc: back",
-        "Arrows or tap: play a sound · Enter: play it again · Esc: back",
+        "Arrows or tap: play a sound · Hold a button: repeat it · Enter: play it again · Esc: back",
         "◀ ▶ or tap: play a track · ▲ ▼: group · Enter: play it again · Esc: back",
         "Playing: ",
     ),

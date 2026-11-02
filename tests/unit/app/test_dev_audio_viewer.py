@@ -9,6 +9,7 @@ from typing import Any
 
 from app.dev_audio_viewer import DevAudioViewer
 from app.dev_catalog import DevItem
+from config.dev_viewer import DEV_VIEWER_CONFIG as CFG
 
 
 class FakeAudio:
@@ -81,4 +82,47 @@ def test_dev_menu_19_a_viewer_with_no_item_plays_nothing() -> None:
     viewer = DevAudioViewer(audio, "sounds", [])  # type: ignore[arg-type]
     viewer.show(0, True)
     viewer.show(0, False)
+    assert audio.cues == []
+
+
+def test_dev_menu_19_a_sound_button_held_repeats_its_sound_until_let_go() -> None:
+    audio = FakeAudio()
+    viewer = DevAudioViewer(audio, "sounds", items("hit", "bomb"))  # type: ignore[arg-type]
+    viewer.show(1, True)
+    viewer.frame(1.0)
+    assert audio.cues == []
+    viewer.hold(True)
+    viewer.frame(CFG.hold_delay - 0.01)
+    assert audio.cues == []
+    viewer.frame(0.02)
+    assert audio.cues == ["bomb"]
+    viewer.frame(CFG.hold_interval / 2)
+    assert audio.cues == ["bomb"]
+    viewer.frame(CFG.hold_interval / 2)
+    assert audio.cues == ["bomb", "bomb"]
+    viewer.hold(False)
+    viewer.frame(1.0)
+    assert audio.cues == ["bomb", "bomb"]
+    # Let go by disposing it.
+    viewer.hold(True)
+    viewer.dispose()
+    viewer.frame(1.0)
+    assert audio.cues == ["bomb", "bomb"]
+
+
+def test_dev_menu_20_a_music_button_held_plays_its_track_once() -> None:
+    audio = FakeAudio()
+    viewer = DevAudioViewer(audio, "music", items("menu", "level:1-1"))  # type: ignore[arg-type]
+    viewer.show(0, True)
+    viewer.show(1, True)
+    viewer.hold(True)
+    viewer.frame(5.0)
+    assert len(audio.requests) == 1
+
+
+def test_dev_menu_19_holding_with_no_item_plays_nothing() -> None:
+    audio = FakeAudio()
+    viewer = DevAudioViewer(audio, "sounds", [])  # type: ignore[arg-type]
+    viewer.hold(True)
+    viewer.frame(5.0)
     assert audio.cues == []

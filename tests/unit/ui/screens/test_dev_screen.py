@@ -206,6 +206,28 @@ def test_dev_menu_19_an_audio_viewer_is_a_grid_of_tappable_buttons_with_a_status
     assert [i.textContent for i in items] == ["level-1-1", "level-1-2"]
     assert items[0].classList.contains("selected")
     assert menu.querySelector(".dev-menu-group").textContent == "Levels (2)"
+    assert items[1].dataset.index == "1"
+    # A button plays as soon as it is pressed, not on the release.
+    items[1].fire("pointerdown")
     items[1].fire("click")
     root.querySelector(".menu-back").fire("click")
     assert (taps, backs) == ([1], [True])
+    root.fire("pointerup")
+
+
+def test_dev_menu_19_a_button_pressed_is_held_until_the_pointer_lets_go() -> None:
+    taps: list[int] = []
+    holds: list[bool] = []
+    entries = [DevChoice("hit", 0, selected=True), DevChoice("bomb", 1, selected=False)]
+    view = DevAudioView("Sounds", "Hold", "Back", 0, entries)
+    handlers = ScreenHandlers(taps.append, lambda: None, on_hold=holds.append)
+    root = render_dev_audio_screen(FakeDocument(), view, handlers)
+    items = root.querySelectorAll(".dev-menu-item")
+    items[1].fire("pointerdown")
+    assert (taps, holds) == ([1], [True])
+    root.fire("pointerup")
+    items[0].fire("pointerdown")
+    root.fire("pointercancel")
+    items[0].fire("pointerdown")
+    root.fire("pointerleave")
+    assert holds == [True, False, True, False, True, False]

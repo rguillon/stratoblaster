@@ -21,12 +21,20 @@ class FakePlayer:
         self.viewer = viewer
         self.items = items
         self.shown: list[tuple[int, bool]] = []
+        self.holds: list[bool] = []
+        self.frames: list[float] = []
         self.disposed = False
         self.status = "Playing: hit"
         FakePlayer.made.append(self)
 
     def show(self, index: int, toggle: bool) -> None:
         self.shown.append((index, toggle))
+
+    def hold(self, held: bool) -> None:
+        self.holds.append(held)
+
+    def frame(self, dt: float) -> None:
+        self.frames.append(dt)
 
     def dispose(self) -> None:
         self.disposed = True
@@ -306,9 +314,14 @@ def test_dev_menu_19_an_audio_viewer_writes_its_status_each_frame() -> None:
     line.className = "dev-status"
     root.append(line)
     s = session(root)
+    s.hold(True)
     s.sync(state("sounds"))
     s.frame(0.1)
     assert line.textContent == "Playing: hit"
+    assert FakePlayer.made[0].frames == [0.1]
+    s.hold(True)
+    s.hold(False)
+    assert FakePlayer.made[0].holds == [True, False]
     s.wheel(10)
     s.turn(1, 1)
     assert not s.key("KeyK", True)

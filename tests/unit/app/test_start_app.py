@@ -476,8 +476,10 @@ def test_ui_flow_01_the_menu_is_wired_to_its_overlay_input_audio_and_scenes(
     )
     assert isinstance(handle, MenuHandle)
     assert (handle.menu, handle.overlay) == (menu_parts.menu, "overlay")
-    doc, root, on_command, overlay_options, touch, on_wheel, on_turn = menu_parts.overlay_args
-    assert (doc, root, on_wheel, on_turn) == ("doc", "overlay-root", None, None)
+    doc, root, on_command, overlay_options, touch, on_wheel, on_turn, on_hold = (
+        menu_parts.overlay_args
+    )
+    assert (doc, root, on_wheel, on_turn, on_hold) == ("doc", "overlay-root", None, None, None)
     assert overlay_options.transition_seconds == MENU_CONFIG.transition_seconds
     touch.fire(True)
     controls.set_touch_fire.assert_called_once_with(True)
@@ -499,11 +501,11 @@ def test_ui_flow_01_the_menu_is_wired_to_its_overlay_input_audio_and_scenes(
 def test_d199_the_dev_menu_gets_its_labels_groups_wheel_and_drag(menu_parts: MenuParts) -> None:
     """Also D-202 (the groups)."""
     input_handle = start_app.InputHandle("menu-input", lambda: None)
-    dev = [{"ships": ["Alpha"]}, "on-wheel", "on-turn", {"ships": [""]}]
+    dev = [{"ships": ["Alpha"]}, "on-wheel", "on-turn", {"ships": [""]}, "on-hold"]
     start_app.create_menu(
         "game", _menu_options(), input_handle, MagicMock(), MagicMock(), None, dev
     )
-    assert menu_parts.overlay_args[5:] == ("on-wheel", "on-turn")
+    assert menu_parts.overlay_args[5:] == ("on-wheel", "on-turn", "on-hold")
     deps = menu_parts.controller_args[1]
     assert (deps.dev_labels, deps.dev_groups) == ({"ships": ["Alpha"]}, {"ships": [""]})
 
@@ -782,7 +784,7 @@ def test_d199_the_dev_viewers_follow_the_menus_and_are_released_with_the_app(
     app, parts, _ = start(monkeypatch, True, False, None, lambda: 0.0)
     dev = parts.dev
     assert dev is not None
-    assert parts.dev_menu == ["labels", dev.wheel, dev.turn, "groups"]
+    assert parts.dev_menu == ["labels", dev.wheel, dev.turn, "groups", dev.hold]
     state = SimpleNamespace(screen="dev-viewer", highlighted_ship_id=None)
     parts.on_change(state)
     dev.sync.assert_called_once_with(state)

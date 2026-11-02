@@ -194,6 +194,25 @@ def test_d199_the_dev_screens_render_and_the_wheel_reaches_its_handler() -> None
     assert overlay.view.kind == "dev-audio"
 
 
+def test_dev_menu_19_a_held_audio_button_reaches_the_hold_handler() -> None:
+    doc = FakeDocument()
+    root = doc.createElement("div")
+    commands: list = []
+    holds: list[bool] = []
+    overlay = MenuOverlay(
+        doc, root, commands.append, MenuOverlayOptions(0.25), None, None, None, holds.append
+    )
+    entries = [DevChoice("hit", 0, selected=False), DevChoice("bomb", 1, selected=False)]
+    overlay.show(DevAudioView("Sounds", "hint", "Back", 0, entries))
+    screen = root.querySelector(".dev-audio-screen")
+    buttons = screen.querySelectorAll(".dev-menu-item")
+    buttons[1].fire("pointerdown")
+    screen.fire("pointerup")
+    buttons[0].fire("pointerdown")
+    assert [getattr(c, "select", c) for c in commands] == [1, "confirm"]
+    assert holds == [True, False, True]
+
+
 def test_game_ctrl_04_without_touch_handlers_the_fire_button_and_drags_do_nothing() -> None:
     """Also GAME-CTRL-05: the fire button is there, nothing listens to it."""
     overlay, _, root, commands = make_overlay()

@@ -110,10 +110,12 @@ class MenuOverlay:
         touch: GameTouchHandlers | None = None,
         on_wheel: Callable[[float], None] | None = None,
         on_turn: Callable[[float, float], None] | None = None,
+        on_hold: Callable[[bool], None] | None = None,
     ) -> None:
         """`on_wheel(delta_y)`: the mouse wheel turned over a dev viewer; `on_turn(dx, dy)`.
 
-        A drag over it, in screen pixels (D-199).
+        A drag over it, in screen pixels (D-199). `on_hold(held)`: a dev audio viewer's button is
+        held or let go (DEV-MENU-19).
         """
         self._doc = doc
         self._root = root
@@ -122,6 +124,7 @@ class MenuOverlay:
         self._touch = touch
         self._on_wheel = on_wheel
         self._on_turn = on_turn
+        self._on_hold = on_hold
         self._current: Any = None
         self._view: MenuView | None = None
 
@@ -164,7 +167,15 @@ class MenuOverlay:
             self._on_command(MenuSet(index, value))
 
         return ScreenHandlers(
-            on_tap, on_back, on_fire, on_drag, on_pause, on_set, self._on_wheel, self._on_turn
+            on_tap,
+            on_back,
+            on_fire,
+            on_drag,
+            on_pause,
+            on_set,
+            self._on_wheel,
+            self._on_turn,
+            self._on_hold,
         )
 
     def show(self, view: MenuView) -> None:

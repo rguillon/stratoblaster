@@ -159,6 +159,11 @@
     new command); opening the viewer plays nothing. The flow answers `played` (a new
     `MenuFeedback`) instead of `moved` / `adjusted` on an audio viewer, so no menu sound covers the
     sound picked.
+  - A sound button plays on the pointer's press, not on the release (`pointerdown`, not `click`),
+    and held it repeats: the screen reports the hold (`on_hold`) and `DevAudioViewer` plays the
+    item again from the game's frames (`hold_delay`, then every `hold_interval`), not from a DOM
+    timer, so the e2e tests step it (ENG-58). The release is heard on the screen's root, as the
+    button pressed is made anew when the item changes. The music viewer's buttons do not repeat.
   - `GameAudio` gets `play_cue` (a cue's sound alone, unpanned; a looping one kept until the next
     cue or `stop_cue`) and `play_music` (a track from its start, a jingle over the music), and
     leaves the music alone on the music viewer's screen (`menu_changed`); the dev menu's screen

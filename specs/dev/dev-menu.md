@@ -293,18 +293,22 @@ The sounds viewer lists every sound effect of the game, one button per cue (`fir
 of three a row that fills the screen and scrolls, under the heading `Sounds`. It draws no scene:
 the menu backdrop shows behind it, and the menu theme goes on. The sound picked plays as in game,
 unpanned, at the settings' volume: the arrows pick the sound before or after (round the list) and
-play it, a tap on a button picks and plays it, Confirm (or a tap on the button picked) plays it
-again. Opening the viewer plays nothing. The item picked gives no menu sound (its feedback is
+play it, a press on a button picks and plays it at once (on the press, not the release), Confirm
+(or a press on the button picked) plays it again, and a button held plays its sound again after
+`hold_delay`, then every `hold_interval`, until the pointer is let go or leaves the screen.
+Opening the viewer plays nothing. The item picked gives no menu sound (its feedback is
 `played`, not `moved`), so nothing covers the sound. A looping sound (the laser hum) plays until
 another sound is picked or the viewer is left. The status line under the heading says
 `Playing: <name>` with the name of the sound played. The hint reads `Arrows or tap: play a sound ·
-Enter: play it again · Esc: back`.
+Hold a button: repeat it · Enter: play it again · Esc: back`.
 
 **Acceptance criteria**
 - Given the sounds viewer, then it has one button per sound cue, the first `fire:bullet`.
 - Given ▶ pressed on `fire:bullet`, then `missile-launch` is the last sound played and the status
   says `Playing: missile-launch`; no `menu-move` plays.
 - Given a tap on a button, then its sound plays; given Enter, then it plays again.
+- Given a button held for a second, then its sound plays at least twice more; let go, it plays
+  no more.
 
 *Sources: D-238.*
 
@@ -348,6 +352,7 @@ All in `src/config/dev_viewer.py` `DEV_VIEWER_CONFIG` unless said otherwise.
 | `scrub_ease` | 10 per s | How fast the levels viewer catches up with the wheel |
 | `model_seed` | 7 | Random numbers the enemies and bosses are spawned with |
 | `break_key` | `KeyK` | Bosses viewer |
+| `hold_delay`, `hold_interval` | 0.4 s, 0.25 s | Sounds viewer: a button held repeats its sound after `hold_delay`, then every `hold_interval` |
 | `max_enemy_age` | 40 s | `src/config/game_play.py` `GAME_PLAY_CONFIG.max_enemy_age`; with `cull_margin` 80 px for leaving the playfield |
 | player position | bottom middle, y = 90 px | `GAME_PLAY_CONFIG.ship_start_y` |
 | `block` | 10 ground units | The game's tile (`propTiles.tile.size`); 10 when the game names none (`src/app/dev_prop_stage.py` `DEFAULT_BLOCK`) |

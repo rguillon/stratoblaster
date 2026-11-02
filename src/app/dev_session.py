@@ -4,7 +4,8 @@
 The viewer the menu flow shows on its `dev-viewer` screen, built when it opens and dropped when it
 closes; the mouse wheel over it (DEV-MENU-11, D-208: it zooms, or scrubs the levels viewer's time);
 K in the bosses viewer (breaks the boss's next part, DEV-MENU-14). The sounds and music viewers
-(DEV-MENU-19, DEV-MENU-20) have no scene: a `DevAudioViewer` plays the item picked.
+(DEV-MENU-19, DEV-MENU-20) have no scene: a `DevAudioViewer` plays the item picked, and repeats a
+sound while its button is held (`hold`).
 """
 
 from app.dev_audio_viewer import DevAudioViewer
@@ -123,6 +124,11 @@ class DevSession:
             viewer.break_part()
         return True
 
+    def hold(self, held: bool) -> None:
+        """Hold a button of the audio viewer (True) or let it go (False): a held sound repeats."""
+        if self.player is not None:
+            self.player.hold(held)
+
     def turn(self, dx: float, dy: float) -> None:
         """Turn the viewer's model as it is dragged by (`dx`, `dy`) screen pixels (DEV-MENU-10)."""
         if self.viewer is not None:
@@ -136,6 +142,7 @@ class DevSession:
             viewer.frame(dt)
             self._write_status(viewer.status)
         elif player is not None:
+            player.frame(dt)
             self._write_status(player.status)
 
     def _write_status(self, status: str) -> None:

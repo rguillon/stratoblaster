@@ -4,7 +4,9 @@
 A viewer of the dev menu with no scene: a button per sound or per track, and the one picked plays
 as in game, through the game's audio. Opening the viewer plays nothing: a sound or a track plays
 when the menu moves to another item, or when the item shown is confirmed again (the flow flips
-its toggle). The status line names what plays; the music viewer adds the track's time.
+its toggle). A sound button held plays its sound again after `hold_delay`, then every
+`hold_interval`, until it is let go (`hold`, `frame`). The status line names what plays; the music
+viewer adds the track's time.
 """
 
 from app.dev_catalog import music_request
@@ -36,6 +38,9 @@ class DevAudioViewer:
         self._toggle: bool | None = None
         # The name of the last sound played, if any (the sounds viewer's status).
         self._played: str | None = None
+        # Whether a button is held, and for how long.
+        self._held = False
+        self._held_for = 0.0
 
     @property
     def status(self) -> str:
@@ -58,6 +63,20 @@ class DevAudioViewer:
         if changed:
             self._play(self._items[index])
 
+    def hold(self, held: bool) -> None:
+        """Hold the button pressed (True) or let it go (False): a held sound repeats."""
+        self._held = held
+        self._held_for = 0.0
+
+    def frame(self, dt: float) -> None:
+        """Move on by `dt` seconds: a sound button held repeats its sound (DEV-MENU-19)."""
+        if not self._held or self.viewer == DEV_MUSIC_VIEWER or len(self._items) == 0:
+            return
+        self._held_for += dt
+        if self._held_for >= CFG.hold_delay:
+            self._held_for -= CFG.hold_interval
+            self._play(self._items[self._index])
+
     def _play(self, item: DevItem) -> None:
         if self.viewer == DEV_MUSIC_VIEWER:
             self._audio.play_music(music_request(item.id))
@@ -66,4 +85,5 @@ class DevAudioViewer:
 
     def dispose(self) -> None:
         """Stop the looping sound played, if any; the menus' music takes over on its own."""
+        self._held = False
         self._audio.stop_cue()

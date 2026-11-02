@@ -326,8 +326,9 @@ def create_menu(
     """Return the menu controller and its overlay (UI-FLOW-01).
 
     The overlay's commands go to the controller, and the controller's changes and feedback to the
-    scenes and the audio. `dev`: the dev viewers' item labels, wheel, drag and item groups (D-199,
-    D-202), as (labels, on_wheel, on_turn, groups); None: no dev menu.
+    scenes and the audio. `dev`: the dev viewers' item labels, wheel, drag, item groups and hold
+    (D-199, D-202, DEV-MENU-19), as (labels, on_wheel, on_turn, groups, on_hold); None: no dev
+    menu.
     """
 
     def on_command(command: Any) -> None:
@@ -341,6 +342,7 @@ def create_menu(
         TouchHandlers(controls),
         dev[1] if dev is not None else None,
         dev[2] if dev is not None else None,
+        dev[4] if dev is not None else None,
     )
 
     def on_feedback(command: MenuCommand, feedback: Any) -> None:
@@ -577,7 +579,7 @@ def start_app(engine: Any, game: Any, options: AppOptions) -> RunningApp:
             dev[0].sync(state)
         audio.menu_changed(state)
 
-    dev_menu = [dev[1], dev[0].wheel, dev[0].turn, dev[2]] if dev is not None else None
+    dev_menu = [dev[1], dev[0].wheel, dev[0].turn, dev[2], dev[0].hold] if dev is not None else None
     menu_handle = create_menu(game, options, input_handle, controls, audio, on_change, dev_menu)
     menu = menu_handle.menu
     overlay = menu_handle.overlay

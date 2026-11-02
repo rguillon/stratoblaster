@@ -6,7 +6,16 @@ grid of buttons, one per sound or track, and the one picked plays (read through 
 audio state, DEV-API-02).
 """
 
-from e2e.menu_helpers import LOAD_TIMEOUT, expect_state, game_state, poll, send_action, wait_idle
+from e2e.menu_helpers import (
+    LOAD_TIMEOUT,
+    advance,
+    box_of,
+    expect_state,
+    game_state,
+    poll,
+    send_action,
+    wait_idle,
+)
 from playwright.sync_api import Page, expect
 
 
@@ -52,6 +61,20 @@ def test_dev_menu_19_the_sounds_viewer_has_a_button_per_sound_and_plays_the_one_
     assert game_state(page)["sounds"][-2:] == ["gun-shot", "gun-shot"]
     # The menu music goes on under the sounds.
     assert game_state(page)["music"] == "menu"
+    # A button held repeats its sound until it is let go.
+    box = box_of(buttons.nth(2))
+    page.mouse.move(box["x"] + box["width"] / 2, box["y"] + box["height"] / 2)
+    page.mouse.down()
+    expect_state(page, {"screen": "dev-viewer", "selection": 2})
+    heard = game_state(page)["sounds"]
+    assert heard[-1] == "laser-start"
+    advance(page, 1.0)
+    repeats = game_state(page)["sounds"].count("laser-start") - heard.count("laser-start")
+    assert repeats >= 2
+    page.mouse.up()
+    before = game_state(page)["sounds"].count("laser-start")
+    advance(page, 1.0)
+    assert game_state(page)["sounds"].count("laser-start") == before
     page.keyboard.press("Escape")
     expect_state(page, {"screen": "dev", "selectedId": "sounds"})
 
