@@ -14,23 +14,23 @@ palette, the fonts, the selection marks and the logo. The 3D look of the levels 
 ### UI-LOOK-01 — An overlay laid out at the logical resolution · MUST
 
 The menus, the HUD, the pause menu and the end-of-level panels are an HTML/CSS overlay (`ui/`) over
-the canvas. It is laid out at the logical resolution, 480 × 640 logical px (CSS px before scaling),
-so every size in the UI specs is in logical px.
+the canvas. It is laid out at the logical resolution, 1138 × 640 logical px (CSS px before scaling; 480 ×
+640 until D-249), so every size in the UI specs is in logical px.
 
 **Acceptance criteria**
-- The overlay element is 480 × 640 px before its scale (unit test of the stage fit).
+- The overlay element is 1138 × 640 px before its scale (unit test of the stage fit).
 
 *Sources: P01-R13, GD-02, D-008, D-041.*
 
 ### UI-LOOK-02 — Fitted to the window, never cropped or stretched · MUST
 
-The canvas and the overlay share one box, the largest box with the 3:4 logical aspect ratio that
+The canvas and the overlay share one box, the largest box with the 16:9 logical aspect ratio that
 fits the window, centred, with dark bars (letterbox) on the rest. The overlay is scaled to that box
 with a CSS transform, so the 3D models and their HTML captions line up. The box follows window
 resizes.
 
 **Acceptance criteria**
-- At window sizes 800 × 600, 1920 × 1080 and 390 × 844 (portrait phone), the menu is fully visible, not cropped, not stretched (3:4 within 0.5 %), and fills the window's width or height.
+- At window sizes 800 × 600, 1920 × 1080 and 390 × 844 (portrait phone), the menu is fully visible, not cropped, not stretched (16:9 within 0.5 %), and fills the window's width or height.
 - Given the window goes from 800 × 600 to 390 × 844, then the menu follows within 5 s (e2e).
 
 *Sources: P01-R13, GD-02, GD-03, ENG-110, D-008.*
@@ -160,8 +160,8 @@ that pulses between cyan and green (`title_glow_period`). There is no sun or oth
 
 ### UI-LOOK-13 — The logo fits the screen · MUST
 
-The logo is sized (`title_logo_size`) so the 13-letter name fits the 480 px screen with a condensed
-font. Where the system has no condensed font, its font size goes down 1 px at a time, after each
+The logo is sized (`title_logo_size`) so the 13-letter name fits the screen with a condensed
+font (sized for the 480 px wide screen; it keeps that size on the 1138 px one, D-249). Where the system has no condensed font, its font size goes down 1 px at a time, after each
 screen is shown, until it fits its parent's width. Its letters are never clipped.
 
 **Acceptance criteria**
@@ -184,7 +184,7 @@ Under the system's "reduce motion" setting, the logo's glow and the hints' pulse
 
 | Name | Value | Notes |
 |------|-------|-------|
-| Logical resolution | 480 × 640 | `src/game/config/game.py` `GAME_CONFIG.screen` (GD-02) |
+| Logical resolution | 1138 × 640 (16:9) | `src/game/config/game.py` `GAME_CONFIG.screen` (GD-02) |
 | `--neon` | `#00e8ff` | `index.html` `:root` |
 | `--accent` | `#3dff9a` | `index.html` `:root` |
 | `--deep` | `#0a5cff` | `index.html` `:root` |
@@ -211,3 +211,6 @@ Under the system's "reduce motion" setting, the logo's glow and the hints' pulse
 - From the cyberpunk and darksynth looks, these stay: the chamfered glass panels, the monospace
   readouts, the segmented loading bar, the hazard-striped locked cells, the chrome logo, the neon
   frame and bottom line, the pulsing hints and the light selected block with black text.
+- The menus were laid out for the portrait screen. On the 16:9 screen (D-249) they keep their
+  column layout, centred, with the logo at its portrait size; a landscape re-layout of the menus
+  and the mobile UI are left for later.

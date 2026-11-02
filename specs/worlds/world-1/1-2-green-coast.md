@@ -221,10 +221,10 @@ the ground that gets ahead of the level during the fights.
 | ambient | sky (0.66, 0.74, 0.86), ground (0.34, 0.36, 0.28), intensity 0.62 | same |
 | clouds | low 0.3, high 0.18, white | same |
 | fog | 1 000 → 2 600 | the base look's |
-| shore | coast road x −40 ± 90 every 1 800; bays x −90 ± 170 every 1 500; coast farms x −230 ± 110 every 1 700 (beach 240, sea bed −55) | `GREEN_COAST`, `GREEN_COAST_LEVEL` |
+| shore | coast road x −95 ± 160 every 1 800; bays x −215 ± 305 every 1 500; coast farms x −545 ± 200 every 1 700 (beach 240, sea bed −55; x −40 ± 90, −90 ± 170 and −230 ± 110 on the 3:4 screen, D-249) | `GREEN_COAST`, `GREEN_COAST_LEVEL` |
 | max_gap | 3.5 s → 2.4 s | `src/game/config/world_1/waves.py` `WORLD_1_FILLERS["1-2"]` |
 | bullet_speed_factor / fire_rate_factor | 0.85 / 0.85 | `src/game/config/world_1/difficulty.py` |
-| written | 28 beats; 73 waves and 185 groups after fill and density; 321 enemies, 6 100 HP (halves 2 680 / 3 420) | measured from the configs |
+| written | 28 beats; 73 waves and 206 groups after fill and density; 342 enemies, 6 740 HP (halves 2 880 / 3 860) | measured from the configs at density 2 (D-250; 321 enemies, 6 100 HP at 1.5) |
 | buildings | 1 466 (halves 681 / 785) | each level's seed, measured for this file |
 | mini boss / final boss | `breakwater` / `gull-mothership` | `src/game/config/world_1/bosses.py` |
 | runout | 80 s | same |

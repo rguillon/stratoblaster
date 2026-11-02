@@ -192,11 +192,11 @@ shortest of World 2: its final fight stops the ground.
 | look | `midday`, clouds 0.2 / 0.15, no storm, no weather | `src/game/config/world_2/looks.py` `LEVEL_2_2_LOOK` |
 | fog / glow | 1 100 → 2 800 / 0.4 | World 2's looks |
 | mesas | base 30, amplitude 150, 1/560, 5 octaves, cut at 100 | `MINING_MESAS` |
-| canyon | channel x 0 ± 140 every 1 900 units, half width 40, walls 110, floor 10 | same |
+| canyon | channel x 0 ± 250 every 1 900 units (± 140 on the 3:4 screen, D-249), half width 40, walls 110, floor 10 | same |
 | suburb_streets | rows 60–110, columns 70–130, links 0.55 | `SUBURB_STREETS` (also 2-3's company town and 2-4's suburbs) |
 | max_gap | 3.2 s → 2.1 s | `src/game/config/world_2/waves.py` `WORLD_2_FILLERS["2-2"]` |
 | bullet_speed_factor / fire_rate_factor | 0.95 / 0.95 | `src/game/config/world_2/difficulty.py` |
-| written | 63 beats; 119 waves and 414 groups after fill and density; 602 enemies, 16 920 HP (halves 6 520 / 10 400); 120.4 enemies and 3 384 HP a minute | measured from the configs; D-067 |
+| written | 63 beats; 119 waves and 490 groups after fill and density; 698 enemies, 20 080 HP (halves 7 880 / 12 200); 139.6 enemies and 4 016 HP a minute | measured from the configs at density 2 (D-250; 602 enemies, 16 920 HP at 1.5); D-067 |
 | buildings | 12 834 (halves 5 005 / 7 829) | each level's seed, measured for this file |
 | mini boss / final boss | `fjord-lynx` / `harbour-kraken` | `src/game/config/world_2/bosses.py` |
 | runout | 50 s | same |

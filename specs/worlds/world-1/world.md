@@ -316,15 +316,16 @@ other kind is one enemy. The scripts are data, the same at every play.
 
 #### WLD-1-20 — Denser waves · MUST
 
-Every beat brings `wave_density` times its groups, rounded half up. When a beat of one group gets
+Every beat brings `wave_density` times its groups, rounded half up: 2 on the 16:9 screen (D-250;
+1.5 on the 3:4 one, whose field was two and a half times narrower). When a beat of one group gets
 more, its extra groups come `density_gap` apart and, from the top, `density_spread` across the
 screen (from a side, a little lower each), so they do not come in on top of each other. The beats
 stay written as before (×1).
 
 **Acceptance criteria**
-- Given a beat of 3 groups, then the script has 5 (rounded half up); given a beat of one group, then it gets 2 groups 1.5 s apart and a spread (unit test).
+- Given a beat of 3 groups, then the script has 6; given a beat of one group, then it gets 2 groups 1.5 s apart and a spread (unit test). At a density of 1.5, 3 groups made 5 (rounded half up).
 
-*Sources: D-044.*
+*Sources: D-044, D-250.*
 
 #### WLD-1-21 — Filler groups in the lulls · MUST
 
@@ -469,20 +470,20 @@ bosses share one boss track (`boss-1`), faster and tenser, in the same instrumen
 | level_duration | 240 s ± 10 s (every level is exactly 240 s) | WLD-1-03; sections' `seconds` in `src/game/config/world_1/scenery_*.py` |
 | ground_speed 1-1 / 1-2 / 1-3 / 1-4 / 1-5 | 70 / 65 / 60 / 60 / 60 units/s | WLD-1-04; `LEVEL_1_x.scrollSpeed` |
 | section_transition | 420 units | sections blend over this length; `transition` |
-| sea_share 1-1 / 1-2 / 1-3 / 1-4 / 1-5 | ≥ 80 % / ≤ 50 % / 0 / 0 / 0 | WLD-1-06; measured 90 % / 18 % (ground under the sea level, x −240…240, each level's seed); 1-1 has 210 s of water sections, 1-2 110 s of shore sections |
+| sea_share 1-1 / 1-2 / 1-3 / 1-4 / 1-5 | ≥ 80 % / ≤ 50 % / 0 / 0 / 0 | WLD-1-06; measured 90 % / 18 % (ground under the sea level, x −240…240 on the 3:4 screen, each level's seed; not re-measured since D-249); 1-1 has 210 s of water sections, 1-2 110 s of shore sections |
 | cover_share (lush / sandy) | 0.71 / 0.03 · 0.92 / 0.08 · 0.79 / 0 · 0.07 / 0.69 · 0.08 / 0.84 | WLD-1-07; share of section time, 1-1 … 1-5 |
 | sun_elevation 1-1 / 1-2 / 1-3 / 1-4 / 1-5 | 72° / 55° / 35° / 14° / 8° | WLD-1-16; `src/game/config/world_1/looks.py` |
 | time_of_day 1-1 / 1-2 / 1-3 / 1-4 / 1-5 | midday / early afternoon / late afternoon / sunset / dusk | WLD-1-16 |
 | bullet_speed_factor 1-1 / 1-2 / 1-3 / 1-4 / 1-5 | 0.8 / 0.85 / 0.9 / 1.0 / 1.1 | WLD-1-23; `src/game/config/world_1/difficulty.py` `WORLD_1_DIFFICULTY` |
 | fire_rate_factor 1-1 / 1-2 / 1-3 / 1-4 / 1-5 | 0.8 / 0.85 / 0.9 / 1.0 / 1.1 | WLD-1-23; same |
-| wave_density | 1.5 | WLD-1-20; `src/game/config/world_1/waves.py` `WAVE_DENSITY` |
+| wave_density | 2 (1.5 on the 3:4 screen, D-250) | WLD-1-20; `src/game/config/world_1/waves.py` `WAVE_DENSITY` |
 | density_gap / density_spread | 1.5 s / 0.3 (from a side: −0.15) | WLD-1-20; `DENSITY_GAP`, `DENSITY_SPREAD` |
 | fill_positions | 0.3, 0.7, 0.5, 0.2, 0.8 | WLD-1-21; `FILL_POSITIONS` |
 | max_gap 1-1 … 1-5 | 4.5 → 3 / 3.5 → 2.4 / 3.3 → 2.2 / 3.2 → 2 / 3 → 1.6 s | WLD-1-21; `WORLD_1_FILLERS` |
-| enemies written 1-1 … 1-5 | 265 / 321 / 339 / 372 / 401 | WLD-1-22; from the scripts, density and fillers in, Carrier launches and Splitter pods out |
-| enemy HP written 1-1 … 1-5 | 4 290 / 6 100 / 8 140 / 11 250 / 15 400 (halves 1 890 / 2 400 · 2 680 / 3 420 · 3 760 / 4 380 · 4 750 / 6 500 · 6 140 / 9 260) | WLD-1-22, WLD-1-24; same count |
-| measured with Carrier launches | 1-3: 104.8 enemies and 2 235 HP a minute; 1-5: 130.3 and 4 150 | D-067 (play-through without shooting, seed 606) |
-| peak_on_screen (last measured) | 16 / 20 / 24 / 30 / 32 | D-051, before the boss phase; the old tunables (6 … 15) and enemy counts (~60 … ~140) are superseded by the reviewer's denser waves (D-044, D-051) |
+| enemies written 1-1 … 1-5 | 278 / 342 / 374 / 414 / 448 (265 / 321 / 339 / 372 / 401 at density 1.5, D-250) | WLD-1-22; from the scripts, density and fillers in, Carrier launches and Splitter pods out |
+| enemy HP written 1-1 … 1-5 | 4 660 / 6 740 / 9 140 / 12 660 / 17 420 (halves 2 020 / 2 640 · 2 880 / 3 860 · 4 160 / 4 980 · 5 340 / 7 320 · 6 940 / 10 480); at density 1.5: 4 290 / 6 100 / 8 140 / 11 250 / 15 400 | WLD-1-22, WLD-1-24; same count |
+| measured with Carrier launches | 1-3: 104.8 enemies and 2 235 HP a minute; 1-5: 130.3 and 4 150 | D-067 (play-through without shooting, seed 606, at density 1.5 on the 3:4 screen; not re-measured since D-250) |
+| peak_on_screen (last measured) | 16 / 20 / 24 / 30 / 32 | D-051, at density 1.5 on the 3:4 screen (not re-measured since D-250), before the boss phase; the old tunables (6 … 15) and enemy counts (~60 … ~140) are superseded by the reviewer's denser waves (D-044, D-051) |
 | boss full health, mini 1-1 … 1-5 | 3 200 / 3 900 / 4 090 / 4 760 / 5 150 (core and original parts: 2 200 / 2 600 / 3 090 / 3 660 / 3 910) | WLD-1-27; `src/game/config/bosses/mini_bosses.py` |
 | boss full health, final 1-1 … 1-5 | 10 420 / 9 740 / 15 000 / 19 210 / 22 760 (core and original parts: 5 770 / 5 960 / 8 100 / 12 690 / 15 780) | WLD-1-27; `src/game/config/bosses/final_bosses.py` |
 | mini_fight_time 1-1 → 1-5 | 25–35 s → 40–50 s | WLD-1-29; measured 30 / 33 / 38 / 43 / 44 s (D-055, before the hidden weapons) |

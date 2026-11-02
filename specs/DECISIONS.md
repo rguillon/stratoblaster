@@ -474,3 +474,62 @@
   and `TitleView` each take one more optional, positional piece (ENG-151). The menu sounds
   ignore the new feedback (no cue for `fullscreen`).
 - **Status:** Proposed
+
+### D-249 — A 16:9 logical screen of 1138 × 640
+- **Date:** 2026-11-02
+- **Requirements:** GAME-SCREEN-01, GAME-SCREEN-02, GAME-SCREEN-04, GAME-SCREEN-06, GFX-CAM-01,
+  GFX-CAM-03, GFX-CAM-05, UI-LOOK-01, UI-LOOK-02, UI-LOOK-13, ENM-09 (`top_range`), GFX-FX (bomb
+  wave), GFX-WEATHER-02, GFX-ROAD-01, GFX-ROAD-04, GFX-ROAD-19.
+- **Context:** owner: "I want the screen ratio to use a full standard 1920*1080 screen. That means
+  regenerating the levels and adapting the enemies waves. We will deal with mobile UI later." The
+  game was laid out on a portrait 480 × 640 screen (3:4), letterboxed on a 1920 × 1080 monitor to a
+  810 px wide column.
+- **Decision:** the logical screen is **1138 × 640**, landscape. The height is kept, so every
+  vertical size, speed, margin and the camera's framing (tilt, field of view, height) keep their
+  values; the width is the one that gives 16:9 at that height (640 × 16 / 9 = 1137.8). On a
+  1920 × 1080 window the stage fills it (the bars are under a pixel). Everything that derives from
+  the screen follows on its own: the camera's eye, the trapezoid seen (695 px across the bottom,
+  1170 across the top), the ship's reach (x 211–927, 716 px wide, 281 before), the ground window
+  (±462 of ground at the sea level, ±195 before), the clouds, the spawn area, the culling, the HUD
+  overlay and the audio pan. Three things did not derive from it and were widened by the same
+  growth: the weather's box of air (±1 000 across, with the particle caps raised 2.4 times to keep
+  the weather as dense), the roads' `spread` (475) and `offscreenX` (1 000 in Worlds 1–2, 560 in
+  Worlds 3–4), and the bomb wave's radius (1 340). The stage fit no longer rounds the stage box to
+  whole pixels: with a non-integer scale the overlay was a fraction taller than the box and its
+  bottom edge was clipped.
+- **Alternatives considered:** 1920 × 1080 as the logical screen (every size, speed, font and
+  margin of the game would have had to be re-tuned 1.69 times bigger); 1152 × 648 or 1280 × 720
+  (exact 16:9, but a taller screen changes every vertical tunable's share of the screen and the
+  ship's flight area); keeping 3:4 with wider bars (what the owner asked to end).
+- **Consequences:** the camera sees 2.4 times as much ground across: the polygons drawn roughly
+  double (1-2 at about 860 k, 1-4's town at 1.1 M in the e2e build, against about 500 k before on
+  the busiest 3:4 screen), to be checked against PERF-32 on the reference machine. The ship's top
+  speed (225 px/s) now crosses the reach in 3.2 s instead of 1.25 s; the owner may want to raise
+  `base_speed`. The menus keep their centred column layout (UI-LOOK note); the mobile UI is for
+  later, as asked. Engine unit tests keep their own screens (ENG-145).
+- **Status:** Proposed
+
+### D-250 — Levels and waves adapted to the wide field
+- **Date:** 2026-11-02
+- **Requirements:** WLD-1-20 (`wave_density`), LVL-1-1-04/05, LVL-1-2-04/05, LVL-1-4 (canyon),
+  LVL-2-2 (canyon), WLD-3 / WLD-4 (the river), the `written` rows of the level files.
+- **Context:** D-249: the levels' sculpted features (shores, canyons, the river) sat at X positions
+  and meander amplitudes laid out for a view ±195 of ground wide, and the waves' groups, spread
+  over a reach two and a half times as wide, would have left the field looking empty.
+- **Decision:** the scenery paths are laid out again for the ±462 view: X positions 2.4 times
+  further out (the shores at x −95, −215 and −545; the river at x −95) and meander amplitudes 1.8
+  times bigger (160 / 305 / 200 for the shores, 250 for the canyons, 215 for the river), so each
+  feature keeps about the same share of the view without turning its meanders too steep. The waves
+  stay as written (positions and spreads are shares of the reach, so they already spread over the
+  whole field); their density goes from 1.5 to 2, so a beat of 3 groups brings 6 and the written
+  enemies grow by 5 to 25 % a level (1-1: 265 → 278; 4-5: 800 → 1 008). The `written` rows of
+  Worlds 1 and 2 are re-measured from the configs; the figures that came from play-throughs with
+  Carrier launches (D-067), the peak on screen and the sea share are marked as not re-measured.
+- **Alternatives considered:** scaling the amplitudes by the full 2.4 (meanders turning up to 60°
+  across the scroll); a density of 2.5 (the count of a 3:4 screen per unit of width, but the ship's
+  shots still cover one column and the player cannot reach the far side in time); leaving the
+  density at 1.5 (a sparse field).
+- **Consequences:** WLD-1-22's order (each level harder than the one before) holds, as every level
+  grows by the same factor. The balance of the wide field (density, the ship's speed, more side
+  entries) needs the owner's play-test; the numbers are one constant each.
+- **Status:** Proposed

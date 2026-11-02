@@ -202,7 +202,7 @@ end: the ground gets ahead of the level during the fights, the most in the Avala
 | streets | rows 45–90, columns 50–110, links 0.6 (the suburbs: `suburb_streets`, 2-2) | `STREETS` |
 | max_gap | 2.9 s → 1.8 s | `src/game/config/world_2/waves.py` `WORLD_2_FILLERS["2-4"]` |
 | bullet_speed_factor / fire_rate_factor | 1.1 / 1.1 | `src/game/config/world_2/difficulty.py` |
-| written | 71 beats; 136 waves and 468 groups after fill and density; 640 enemies, 27 880 HP (halves 10 980 / 16 900), Carrier launches not counted; 172 enemies and 6 016 HP a minute with them | measured from the configs; D-067 |
+| written | 71 beats; 136 waves and 552 groups after fill and density; 744 enemies, 32 380 HP (halves 12 600 / 19 780), Carrier launches not counted; 148.8 enemies and 6 476 HP a minute without them | measured from the configs at density 2 (D-250; 640 enemies, 27 880 HP at 1.5, when a play-through with the Carrier launches gave 172 enemies and 6 016 HP a minute, D-067; not re-measured) |
 | buildings | 33 137 (halves 13 499 / 19 638) | each level's seed, measured for this file |
 | mini boss / final boss | `avalanche` / `glacier-colossus` | `src/game/config/world_2/bosses.py` |
 | runout | 120 s | same |

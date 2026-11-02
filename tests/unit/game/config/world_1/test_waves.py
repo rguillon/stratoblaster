@@ -8,6 +8,7 @@ from helpers.config_checks import assert_beats_well_formed, enemy_kind_ids
 
 from game.config.record import record
 from game.config.world_1.waves import (
+    WAVE_DENSITY,
     WAVES_1_1,
     WAVES_1_2,
     WAVES_1_3,
@@ -42,6 +43,13 @@ def test_wld_1_21_each_filler_names_known_kinds_and_its_gap_shrinks() -> None:
 def test_wld_1_20_denser_multiplies_the_groups_of_a_beat_and_rounds_half_up() -> None:
     assert denser([4, "scout", 2, 2, "top", 0.3], 1.5)[2] == 3
     assert denser([4, "scout", 1, 0, "top", 0.3], 1.5) == [4, "scout", 2, 1.5, "top", 0.3, 0.3]
+
+
+def test_wld_1_20_the_density_doubles_the_groups_on_the_16_9_screen() -> None:
+    """D-250: x2 (was x1.5) so the field, two and a half times as wide, does not look empty."""
+    assert WAVE_DENSITY == 2
+    assert denser([4, "scout", 3, 1.2, "top", 0.25, 0.25], WAVE_DENSITY)[2] == 6
+    assert denser([4, "scout", 1, 0, "top", 0.3], WAVE_DENSITY)[2] == 2
 
 
 def test_wld_1_20_a_single_group_beat_gets_a_wider_spread_when_made_denser() -> None:

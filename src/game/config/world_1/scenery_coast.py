@@ -60,7 +60,9 @@ def smooth(base: float, amplitude: float, wavelength: float, octaves: float = 4)
 def shore(x: float, amplitude: float, wavelength: float) -> Any:
     """Return the coast where the land starts, along a winding line.
 
-    The sea is on the left (`landSide` 1).
+    The sea is on the left (`landSide` 1). `x` and `amplitude` are laid out for the 16:9
+    view, about +/-462 of ground at the sea level (D-249): the coasts were at x -40 / -90 /
+    -230, +/-90 / 170 / 110, when the view showed +/-195.
     """
     return record({
         "path": {"x": x, "amplitude": amplitude, "wavelength": wavelength},
@@ -92,7 +94,7 @@ GREEN_COAST = record({
     "seconds": 30,
     "relief": smooth(16, 10, 480),
     "scarps": scarps(28, 340),
-    "shore": shore(-40, 90, 1800),
+    "shore": shore(-95, 160, 1800),
     "buildingDensity": 0.5,
     "treeDensity": 1,
     "surface": {"lush": 0.8, "sandy": 0.2},
@@ -155,7 +157,7 @@ GREEN_COAST_LEVEL = [
             "name": "bays",
             "seconds": 40,
             "relief": smooth(22, 14, 460),
-            "shore": shore(-90, 170, 1500),
+            "shore": shore(-215, 305, 1500),
             "buildingDensity": 0.55,
             "treeDensity": 1,
             "groups": [G.coastHomes, G.villages],
@@ -166,7 +168,7 @@ GREEN_COAST_LEVEL = [
         30,
         {
             "relief": smooth(24, 14, 460),
-            "shore": shore(-230, 110, 1700),
+            "shore": shore(-545, 200, 1700),
             "surface": {"lush": 0.9, "sandy": 0.1},
             "groups": [G.coastHomes, G.farms],
         },

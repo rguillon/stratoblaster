@@ -34,8 +34,10 @@ def fit_stage(view_width: float, view_height: float, logical: LogicalScreen) -> 
             0, window.Math.min(view_width / logical.width, view_height / logical.height)
         )
     )
-    width = float(window.Math.floor(logical.width * scale))
-    height = float(window.Math.floor(logical.height * scale))
+    # Exactly the overlay's scaled size, not rounded to whole pixels: the overlay is scaled by
+    # `scale`, and a stage a fraction smaller would clip its bottom edge (D-249).
+    width = logical.width * scale
+    height = logical.height * scale
     return StageFit(
         float(window.Math.floor((view_width - width) / 2)),
         float(window.Math.floor((view_height - height) / 2)),

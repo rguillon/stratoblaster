@@ -27,7 +27,9 @@ G = WORLD_3_GROUPS
 
 # The river of World 4's suburbs and villages, between grassy banks. World 3 has no water (WLD-3-10
 # is open), and World 4 strips it again (WLD-4-09).
-RIVER_PATH = record({"x": -40, "amplitude": 120, "wavelength": 2400})
+# Laid out for the 16:9 view, about +/-462 of ground (D-249: x -40, +/-120 when it was
+# +/-195).
+RIVER_PATH = record({"x": -95, "amplitude": 215, "wavelength": 2400})
 
 
 def river(half_width: float) -> Any:

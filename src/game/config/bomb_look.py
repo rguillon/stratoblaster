@@ -13,8 +13,9 @@ BOMB_LOOK = record({
     # In front of the ships and the explosions (towards the camera, -Z).
     "depth": -5,
     "wave": {
-        # Radius it reaches as the bomb ends: past the corners of the 480 x 640 playfield.
-        "radius": 820,
+        # Radius it reaches as the bomb ends: past the corners of the 1138 x 640 playfield (653
+        # from its centre), as 820 was past those of the 480 x 640 one (400).
+        "radius": 1340,
         # Rings from the centre out: black (nothing, added on) inside, a bright rim.
         "colors": [
             [0, 0, 0],

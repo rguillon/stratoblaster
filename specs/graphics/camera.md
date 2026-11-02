@@ -13,7 +13,7 @@ ships map to the screen and what they may reach is in [../gameplay/screen.md](..
 ### GFX-CAM-01 — World units and axes · MUST
 
 One world unit is one logical pixel. X runs across the level (0 under the middle of the playfield),
-Z runs along it (the level scrolls towards +Z) and Y is up. The playfield is the 480 × 640 logical
+Z runs along it (the level scrolls towards +Z) and Y is up. The playfield is the 1138 × 640 logical
 screen laid flat on a plane at the flight altitude (`flightAltitude`, 320), its bottom edge at the
 Z the level has reached. Every scenery height (ground, sea, clouds, props) is an absolute Y.
 
@@ -39,12 +39,14 @@ view is `fovDeg` (40°). It never turns and never moves across X: it only follow
 
 The camera stands above the playfield's centre line, behind its bottom edge, at the height where the
 bottom and top edges of the screen pass through the bottom and top edges of the playfield (about
-552 above the flight plane and 148 behind its bottom edge for 480 × 640). The framing refuses a tilt
+552 above the flight plane and 148 behind its bottom edge for 1138 × 640: the screen's height sets
+them, not its width). The framing refuses a tilt
 and field of view that would show the horizon. Seen through the tilted camera the playfield is a
-trapezoid: about 293 of its 480 logical pixels across the bottom edge and about 493 across the top.
+trapezoid: about 695 of its 1138 logical pixels across the bottom edge and about 1170 across the
+top (293 of 480 and 493 on the 3:4 screen, D-249).
 
 **Acceptance criteria**
-- Given the 480 × 640 playfield, then the bottom and top screen rays meet the flight plane at the
+- Given the 1138 × 640 playfield, then the bottom and top screen rays meet the flight plane at the
   playfield's bottom and top edges (unit test).
 - Given a tilt plus half field of view of 90° or more, then framing fails.
 
@@ -73,7 +75,8 @@ level's lowest ground: the water level when the level has water, its lowest reli
 terrain is generated over that window plus `margin` (80) on every side, so the camera never sees the
 edge of the generated ground. The camera never sees the sky above the horizon: the sky only lights
 the scene and gives the reflections ([sky-and-light.md](sky-and-light.md)). With the ground drawn
-twice as big, about ±195 units of ground show across at the sea level.
+twice as big, about ±462 units of ground show across at the sea level (±195 on the 3:4 screen,
+D-249).
 
 **Acceptance criteria**
 - Given a level, then the terrain chunks cover the ground window plus the margin on both sides and

@@ -13,9 +13,9 @@ def test_gd02_the_stage_is_the_largest_fit_of_the_logical_aspect_ratio() -> None
     fit = fit_stage(1000, 1000, LOGICAL)
     assert fit.scale == 1000 / 640
     assert fit.width == 1000
-    assert fit.height == 562
+    assert fit.height == 562.5
     assert fit.left == 0
-    assert fit.top == 219
+    assert fit.top == 218
 
 
 def test_gd02_a_wide_window_fits_by_height_and_is_centred_across() -> None:

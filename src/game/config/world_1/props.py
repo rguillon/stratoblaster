@@ -112,7 +112,9 @@ WORLD_1_PROPS = record({
 # crosses another (phase 6 review).
 WORLD_1_ROADS = record({
     "mainRoads": 2,
-    "spread": 200,
+    # Within this of the middle: the 16:9 view shows about +/-462 of ground at the sea
+    # level (GFX-CAM-05; D-249: 200 when it showed +/-195).
+    "spread": 475,
     "meander": {"amplitude": [80, 180], "wavelength": [1300, 2600]},
     "crossSpacing": [260, 560],
     "crossBend": 40,
@@ -120,7 +122,9 @@ WORLD_1_ROADS = record({
     "crossWidth": 4,
     "dual": {"width": 12, "mainRoads": 1, "avenues": 0.25},
     "junction": {"width": 14, "length": 28},
-    "offscreenX": 420,
+    # Past the widest ground the 16:9 camera sees over World 1's sea bed, about +/-536
+    # (GFX-ROAD-04; D-249: 420 when it saw +/-226).
+    "offscreenX": 1000,
     "turnRate": 0.05,
     "minHeight": 3,
     "maxSlope": 0.5,

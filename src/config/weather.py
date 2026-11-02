@@ -156,13 +156,16 @@ class LightningRules:
         self.max_per_second = max_per_second
 
 
-_VOLUME = WeatherVolume(420, 1100, 0, 300)
+# Wide enough for the ground the 16:9 camera sees (about +/-924 world units at the sea
+# level, GFX-CAM-05); the particle caps below are those of the 3:4 screen (+/-420) times
+# the volume's growth, so the weather is as dense (D-249).
+_VOLUME = WeatherVolume(1000, 1100, 0, 300)
 
 # The weather kinds of the engine (GFX-WEATHER-01).
 WEATHER_KINDS = {
     # GFX-WEATHER-07: soft white flakes falling slowly and swaying (`snow_flakes_max`).
     "snow": WeatherKind(
-        1500,
+        3600,
         0.55,
         [26, 48],
         [6, 120],
@@ -175,7 +178,7 @@ WEATHER_KINDS = {
     ),
     # GFX-WEATHER-08: thin, light streaks falling fast at a slight slant (`rain_streaks_max`).
     "rain": WeatherKind(
-        2000,
+        4800,
         0.6,
         [380, 520],
         [30, 70],
@@ -194,7 +197,7 @@ WEATHER_KINDS = {
     ),
     # GFX-WEATHER-13: grey flakes falling slowly and drifting, a dull snow (`ash_flakes_max`).
     "ash": WeatherKind(
-        1500,
+        3600,
         0.5,
         [12, 26],
         [4, 36],
@@ -213,7 +216,7 @@ WEATHER_KINDS = {
     ),
     # GFX-WEATHER-14: small glowing orange sparks rising from the ground (`embers_max`).
     "embers": WeatherKind(
-        800,
+        1900,
         0.92,
         [-58, -28],
         [6, 26],
@@ -222,7 +225,7 @@ WEATHER_KINDS = {
         [4, 0.6],
         (1, 0.42, 0.06),
         0.9,
-        WeatherVolume(420, 1100, 0, 280),
+        WeatherVolume(1000, 1100, 0, 280),
         None,
         None,
         None,

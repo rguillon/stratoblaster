@@ -23,7 +23,7 @@ def test_ui_look_02_the_menu_is_fully_visible_not_cropped_not_stretched(
         assert box["y"] >= 0
         assert box["x"] + box["width"] <= width + 1
         assert box["y"] + box["height"] <= height + 1
-        assert box["width"] / box["height"] == pytest.approx(480 / 640, abs=0.005)
+        assert box["width"] / box["height"] == pytest.approx(1138 / 640, abs=0.005)
         assert max(box["width"] / width, box["height"] / height) > 0.99
     expect(page.locator(".title-version")).to_be_in_viewport(ratio=1)
 

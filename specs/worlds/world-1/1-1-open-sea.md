@@ -220,10 +220,10 @@ Petrel's chase.
 | clouds | low 0.35, high 0.2, white | same |
 | fog | 1 000 → 2 600 | the base look's |
 | sea | level 0; colour (0.02, 0.2, 0.32); shallows (0.1, 0.62, 0.6) | `LEVEL_1_1.sea`, `TERRAIN.shore` |
-| shore | x −40 ± 90, every 1 800 units; beach 240; sea bed −55 | `GREEN_COAST` |
+| shore | x −95 ± 160, every 1 800 units (x −40 ± 90 on the 3:4 screen, D-249); beach 240; sea bed −55 | `GREEN_COAST` |
 | max_gap | 4.5 s → 3 s | `src/game/config/world_1/waves.py` `WORLD_1_FILLERS["1-1"]` |
 | bullet_speed_factor / fire_rate_factor | 0.8 / 0.8 | `src/game/config/world_1/difficulty.py` |
-| written | 22 beats; 59 waves and 145 groups after fill and density; 265 enemies, 4 290 HP (halves 1 890 / 2 400) | measured from the configs |
+| written | 22 beats; 59 waves and 158 groups after fill and density; 278 enemies, 4 660 HP (halves 2 020 / 2 640) | measured from the configs at density 2 (D-250; 265 enemies, 4 290 HP at 1.5) |
 | mini boss / final boss | `reef-warden` / `storm-petrel` | `src/game/config/world_1/bosses.py` `WORLD_1_BOSSES` |
 | runout | 150 s | same |
 

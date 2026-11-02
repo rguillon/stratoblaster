@@ -101,4 +101,6 @@ WORLD_3_PROPS = record({
 # stop closer to the screen edges (GFX-ROAD-19; reviewer, 2026-10-28): the ground is drawn twice as
 # big, so only about +/-195 of it shows, and the streets and buildings generated out to +/-420 were
 # never seen. The roads still start and end off screen (GFX-ROAD-04).
-WORLD_3_ROADS = merge(WORLD_1_ROADS, {"offscreenX": 240})
+# Past the +/-462 of ground the 16:9 camera sees over the cities (GFX-ROAD-19; D-249: 240
+# when it saw +/-195).
+WORLD_3_ROADS = merge(WORLD_1_ROADS, {"offscreenX": 560})

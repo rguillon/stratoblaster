@@ -30,7 +30,7 @@ change to how levels use weather.
 
 ### GFX-WEATHER-02 — Particles in a box of air that scrolls with the ground · MUST
 
-A weather's particles fill a box of air round the view (`volume`: about ±420 across, 1100 along,
+A weather's particles fill a box of air round the view (`volume`: about ±1 000 across, 1100 along,
 from the ground to 300 high) that follows the view along Z, while each particle keeps its world Z, so
 the particles scroll with the ground, at different depths between the clouds and the ground. They
 fall, sway and are blown along X by a wind growing with the strength, all on the GPU, and fade into
@@ -95,14 +95,14 @@ final boss). A blend between two kinds keeps the kind of the side that has some.
 ### GFX-WEATHER-07 — Snow · MUST
 
 Snowflakes are soft white discs (opacity 0.5) falling slowly (26–48 units/s) and swaying, drifting a
-little sideways; at strength 1 (a blizzard) they are dense (1 500) and streak sideways in a strong
+little sideways; at strength 1 (a blizzard) they are dense (3 600) and streak sideways in a strong
 wind, and the fog ends at 55 % of its clear distance. No level has snow now.
 
 *Sources: P08-R05, D-065.*
 
 ### GFX-WEATHER-08 — Rain · MUST
 
-Rain is thin, light streaks (2 000 at strength 1, 0.35–0.55 wide and 16 times as long, opacity 0.32)
+Rain is thin, light streaks (4 800 at strength 1, 0.35–0.55 wide and 16 times as long, opacity 0.32)
 falling fast (380–520 units/s) at a slight slant (a wind of 30–70), each stretched along its fall at
 every strength. The haze comes closer and greyer with the strength (fog end at 60 % at 1, the haze
 45 % of the way to grey).
@@ -162,7 +162,7 @@ lowest cloud layer, added on top while the strike's flashes last.
 
 ### GFX-WEATHER-13 — Falling ash · MUST
 
-Falling ash is grey flakes (1 500 at strength 1, opacity 0.42) falling slowly (12–26 units/s) and
+Falling ash is grey flakes (3 600 at strength 1, opacity 0.42) falling slowly (12–26 units/s) and
 drifting, like a dull snow; with the strength the haze comes closer (fog end at 50 % at 1) and turns
 brown-grey (60 % of the way).
 
@@ -170,7 +170,7 @@ brown-grey (60 % of the way).
 
 ### GFX-WEATHER-14 — Rising embers · MUST
 
-Embers are small glowing orange sparks (800 at strength 1, 0.45–0.85 across) rising from the ground
+Embers are small glowing orange sparks (1 900 at strength 1, 0.45–0.85 across) rising from the ground
 and drifting up past the camera (a negative fall of 28–58 units/s), added onto what is behind them,
 flickering as they cool (by up to 65 %, 4.5 times a second) and fading out over the top 45 % of their
 box of air. They are never mistaken for enemy bullets: smaller than any bullet (bullets are 4 in
@@ -196,12 +196,12 @@ and a look change blends the second weather from or to none.
 
 | Name | Value | Notes |
 |------|-------|-------|
-| snow | 1 500; fog 0.55; fall 26–48; wind 6→120; size 1.4–2.6; streak 4; sway 6 @ 0.35 Hz; opacity 0.5 | `src/config/weather.py` `WEATHER_KINDS["snow"]` |
-| rain | 2 000; fog 0.6; fall 380–520; wind 30–70; size 0.35–0.55; streak 16; opacity 0.32; haze 0.45 to grey | `WEATHER_KINDS["rain"]` |
+| snow | 3 600; fog 0.55; fall 26–48; wind 6→120; size 1.4–2.6; streak 4; sway 6 @ 0.35 Hz; opacity 0.5 | `src/config/weather.py` `WEATHER_KINDS["snow"]` |
+| rain | 4 800; fog 0.6; fall 380–520; wind 30–70; size 0.35–0.55; streak 16; opacity 0.32; haze 0.45 to grey | `WEATHER_KINDS["rain"]` |
 | rain rings | cell 9, 1 per cell, radius 2.2, 0.8 s, alpha 0.32 | `WEATHER_KINDS["rain"].rings` |
-| ash | 1 500; fog 0.5; fall 12–26; wind 4–36; size 1–1.9; opacity 0.42; haze 0.6 to brown-grey | `WEATHER_KINDS["ash"]` |
-| embers | 800; fog 0.92; fall −58 to −28; wind 6–26; size 0.45–0.85; opacity 0.9; added; flicker 0.65 @ 4.5 Hz; fade over top 45 % | `WEATHER_KINDS["embers"]` |
-| box of air | ±420 across, 1100 along, 0–300 high (embers 0–280) | `_VOLUME` |
+| ash | 3 600; fog 0.5; fall 12–26; wind 4–36; size 1–1.9; opacity 0.42; haze 0.6 to brown-grey | `WEATHER_KINDS["ash"]` |
+| embers | 1 900; fog 0.92; fall −58 to −28; wind 6–26; size 0.45–0.85; opacity 0.9; added; flicker 0.65 @ 4.5 Hz; fade over top 45 % | `WEATHER_KINDS["embers"]` |
+| box of air | ±1 000 across (±420 on the 3:4 screen, D-249), 1100 along, 0–300 high (embers 0–280) | `_VOLUME` |
 | lightning | gap 4–10 s; flash 0.15 s, rise 0.03 s; double 0.35, 0.25 s apart; ×1.8 at most; haze ≤ 0.85; bolt 0.6; ≤ 3 per second | `src/config/weather.py` `LIGHTNING` |
 
 ## Notes

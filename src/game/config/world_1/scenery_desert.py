@@ -149,7 +149,8 @@ DRY_LANDS = [
         {
             "relief": smooth(95, 22, 380, 5),
             "channel": {
-                "path": {"x": 0, "amplitude": 140, "wavelength": 1900},
+                # Winds over the 16:9 view (D-249: +/-140 when it was +/-195 wide).
+                "path": {"x": 0, "amplitude": 250, "wavelength": 1900},
                 "halfWidth": 40,
                 "wall": 110,
                 "floor": 10,
