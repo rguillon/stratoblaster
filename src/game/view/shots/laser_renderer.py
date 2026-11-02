@@ -60,8 +60,6 @@ def place_contacts(contacts: NodePool, beam: list[BeamSegment], wobble: float) -
     hits = [s for s in beam if s.hit]
     for i, mesh in enumerate(contacts.show(len(hits))):
         s = hits[i]
-        if not s:
-            continue
         r = LOOK.contact.radius * wobble * (0.5 + s.width / 16)
         mesh.position.set(s.x, s.y1, -0.5)
         mesh.scaling.set(r, r, 1)

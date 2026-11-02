@@ -8,6 +8,7 @@ design.md, Part A.
 import pytest
 
 from game.config.bosses.weapon_kinds import (
+    BEAM,
     KINDS,
     WEAPON_SHAPE,
     weapon_guns,
@@ -93,3 +94,14 @@ def test_a_hangar_fires_nothing_but_launches_gnats() -> None:
     assert launch["kind"] == "gnats"
     assert launch["count"] == 2
     assert launch["first"] == 3
+
+
+def test_the_beam_fires_its_wide_laser_every_few_seconds() -> None:
+    """D-229: the beam's giant laser, BEAM wide, for BEAM.firing seconds."""
+    [shot] = weapon_volleys("beam", "beam-left", "red", 4)
+    assert shot["from"] == "beam-left"
+    assert shot.shape.kind == "laser"
+    assert shot.shape.laser.width == BEAM.width
+    assert shot.shape.laser.firingSeconds == BEAM.firing
+    assert shot.every == BEAM.every
+    assert shot.first == 4

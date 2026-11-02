@@ -13,10 +13,8 @@ from render.babylon import child_meshes, dispose_node, new_transform_node, node_
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 # __pragma__ ("skip")
-from collections.abc import Callable
 from typing import Any
 
-EnemyModelFactory = Callable[[Any], Any]
 # __pragma__ ("noskip")
 
 
@@ -56,23 +54,18 @@ class EnemyLayer:
         # The kinds with a model built.
         self._built: list[str] = []
 
-    @property
-    def model_count(self) -> int:
-        """Number of models built so far (shown or kept for reuse)."""
-        return self._created
-
-    @property
-    def count(self) -> int:
-        """Number of enemies drawn."""
-        return len(self._slot_values)
-
     def sync(self, enemies: list[Any], dt_seconds: float) -> None:
         """Show `enemies` (and hide the models of the others)."""
-        enemies_now = list(self._slot_enemies)
-        slots_now = list(self._slot_values)
-        for i in range(len(enemies_now)):
-            if not _contains(enemies, enemies_now[i]):
-                self._release(enemies_now[i], slots_now[i])
+        drawn_enemies: list[Any] = []
+        drawn_slots: list[_Slot] = []
+        for i in range(len(self._slot_enemies)):
+            if _contains(enemies, self._slot_enemies[i]):
+                drawn_enemies.append(self._slot_enemies[i])
+                drawn_slots.append(self._slot_values[i])
+            else:
+                self._release(self._slot_values[i])
+        self._slot_enemies = drawn_enemies
+        self._slot_values = drawn_slots
         for enemy in enemies:
             slot = self._find_slot(enemy)
             if slot is None:
@@ -112,13 +105,6 @@ class EnemyLayer:
         self._keep(key, slot)
         return child_meshes(slot.pivot, False)
 
-    def clear(self) -> None:
-        """Hides every model."""
-        enemies_now = list(self._slot_enemies)
-        slots_now = list(self._slot_values)
-        for i in range(len(enemies_now)):
-            self._release(enemies_now[i], slots_now[i])
-
     def _find_slot(self, enemy: Any) -> Any:
         for i in range(len(self._slot_enemies)):
             if self._slot_enemies[i] is enemy:
@@ -133,13 +119,9 @@ class EnemyLayer:
         self._slot_values.append(slot)
         return slot
 
-    def _release(self, enemy: Any, slot: _Slot) -> None:
+    def _release(self, slot: _Slot) -> None:
+        """Hide the model of `slot` and keep it for reuse (its enemy is dropped by the caller)."""
         set_enabled(slot.pivot, False)
-        for i in range(len(self._slot_enemies)):
-            if self._slot_enemies[i] is enemy:
-                self._slot_enemies.pop(i)
-                self._slot_values.pop(i)
-                break
         self._keep(slot.key, slot)
 
     def _keep(self, key: str, slot: _Slot) -> None:

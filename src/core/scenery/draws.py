@@ -24,7 +24,12 @@ class Identified(Protocol):
 
 
 def weighted[WeightedT: Weighted](items: Sequence[WeightedT], r: float) -> WeightedT | None:
-    """Return the item at `r` (0..1) of `items`.
+    """Return the item at `r` (0..1) of `items` (see `weighted_pick`); None when there is none."""
+    return weighted_pick(items, r) if len(items) > 0 else None
+
+
+def weighted_pick[WeightedT: Weighted](items: Sequence[WeightedT], r: float) -> WeightedT:
+    """Return the item at `r` (0..1) of `items`, which has at least one.
 
     Each takes a share of the draw as big as its weight.
     """
@@ -36,7 +41,7 @@ def weighted[WeightedT: Weighted](items: Sequence[WeightedT], r: float) -> Weigh
         left -= item.weight
         if left < 0:
             return item
-    return items[len(items) - 1] if len(items) > 0 else None
+    return items[len(items) - 1]
 
 
 def allowed[IdentifiedT: Identified](

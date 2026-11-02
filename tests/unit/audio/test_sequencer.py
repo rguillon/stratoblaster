@@ -68,3 +68,15 @@ def test_aud_engine_05_an_empty_track_hands_out_nothing() -> None:
     seq = Sequencer(Track("silence", 120, 4, [], loop=True))
     assert seq.advance(10) == []
     assert seq.position == 10
+
+
+def test_aud_engine_10_seeking_past_the_last_note_hands_out_nothing_more() -> None:
+    seq = Sequencer(make_track(loop=False))
+    seq.seek(1.8)  # after the note on beat 3 (1.5 s), before the end (2 s)
+    assert seq.position == pytest.approx(1.8)
+    assert seq.advance(10) == []
+    assert seq.done is True
+    looping = Sequencer(make_track(loop=True))
+    looping.seek(1.8)
+    # A looping track goes on with the first note of its next loop.
+    assert [s.at for s in looping.advance(2.6)] == pytest.approx([2.0, 2.5])

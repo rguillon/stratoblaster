@@ -2,8 +2,9 @@
 """Unit tests of `src/game/config/enemy_look.py`."""
 
 import pytest
+from helpers.color_families import in_family
 
-from core.math.color import in_family, snap_to_hues
+from core.math.color import snap_to_hues
 from game.config.enemies_veteran import VETERAN_NEON
 from game.config.enemy_look import ENEMY_LOOK, glow, laser_palette, times, whiter
 from game.config.readability import READABILITY

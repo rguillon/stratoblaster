@@ -1,7 +1,8 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/config/bonus_look.py`."""
 
-from core.math.color import in_family
+from helpers.color_families import in_family
+
 from game.config.bonus_look import BONUS_LOOK
 from game.config.readability import READABILITY
 

@@ -131,3 +131,125 @@ def assert_beats_well_formed(beats: Any, kinds: set[str]) -> None:
 def enemy_kind_ids() -> set[str]:
     """Return the ids of every enemy kind of the game (the sim's list of kinds, ENM-01)."""
     return {kind.id for kind in ENEMY_KINDS}
+
+
+# The checks above as lists of what is wrong (empty when well formed): a test asserts once,
+# `assert boss_design_problems(design) == []`, and a failure lists every problem.
+
+
+def boss_design_problems(design: Any) -> list[str]:
+    """Return what makes a boss design ill formed (see `assert_boss_design`); empty if none."""
+    stats = design.stats
+    problems: list[str] = []
+    if not design.id:
+        problems.append("no id")
+    if design.id != stats["model"]:
+        problems.append(f"id {design.id!r} is not its model {stats['model']!r}")
+    if not stats["name"]:
+        problems.append("no name")
+    if not stats["health"] > 0:
+        problems.append(f"health {stats['health']} is not positive")
+    if not stats["radius"] > stats["coreRadius"] > 0:
+        problems.append(f"radius {stats['radius']} not above core radius {stats['coreRadius']} > 0")
+    ids = [part["id"] for part in stats["parts"]]
+    if len(ids) != len(set(ids)):
+        problems.append(f"duplicate part ids {ids}")
+    return problems + _boss_volley_problems(design)
+
+
+def _boss_volley_problems(design: Any) -> list[str]:
+    """Return what is wrong with a boss's stages, guns and volleys; empty if none."""
+    problems: list[str] = []
+    if len(design.stages) != len(original_parts(design)) + 1:
+        problems.append(
+            f"{len(design.stages)} stages for {len(original_parts(design))} original parts"
+        )
+    known = piece_ids(design)
+    problems.extend(
+        f"gun on unknown piece {piece!r}" for piece in design.guns if piece not in known
+    )
+    for number, stage in enumerate(design.stages):
+        if not stage:
+            problems.append(f"stage {number} fires nothing")
+        for shot in stage:
+            if shot["from"] not in known:
+                problems.append(f"stage {number}: volley from unknown piece {shot['from']!r}")
+            if not shot["every"] > 0:
+                problems.append(f"stage {number}: volley every {shot['every']}")
+            if shot["shape"]["kind"] not in SHOT_KINDS:
+                problems.append(f"stage {number}: unknown volley kind {shot['shape']['kind']!r}")
+    return problems
+
+
+def world_bosses_problems(table: Any, bosses: set[str]) -> list[str]:
+    """Return what is wrong with a world's boss table (see `assert_world_bosses`); empty if none."""
+    problems: list[str] = []
+    if len(table) != LEVELS_PER_WORLD:
+        problems.append(f"{len(table)} levels, not {LEVELS_PER_WORLD}")
+    for level_id, entry in table.items():
+        if entry["mini"] not in bosses:
+            problems.append(f"{level_id}: unknown mini boss {entry['mini']!r}")
+        if entry["final"] not in bosses:
+            problems.append(f"{level_id}: unknown final boss {entry['final']!r}")
+        if entry["mini"] == entry["final"]:
+            problems.append(f"{level_id}: the mini boss is the final boss")
+        if not entry["runout"] >= 0:
+            problems.append(f"{level_id}: negative run-out {entry['runout']}")
+    return problems
+
+
+def level_difficulty_problems(table: Any) -> list[str]:
+    """Return what is wrong with the enemy factors per level (see `assert_level_difficulty`)."""
+    problems: list[str] = []
+    previous = None
+    for level_id in sorted(table.keys()):
+        factors = table[level_id]
+        for key in ("bulletSpeed", "fireRate"):
+            if not 0 < factors[key] <= 2:
+                problems.append(f"{level_id}: {key} {factors[key]} outside (0, 2]")
+            if previous is not None and factors[key] < previous[key]:
+                problems.append(f"{level_id}: {key} goes down from the level before")
+        previous = factors
+    return problems
+
+
+def scenery_level_problems(level: Any, level_number: str) -> list[str]:
+    """Return what is wrong with a level's scenery (see `assert_scenery_level`); empty if none."""
+    problems: list[str] = []
+    if level.id != "world-" + level_number:
+        problems.append(f"id {level.id!r} is not 'world-{level_number}'")
+    if not level.scrollSpeed > 0:
+        problems.append(f"scroll speed {level.scrollSpeed} is not positive")
+    if not level.sections:
+        problems.append("no terrain section")
+    for number, section in enumerate(level.sections):
+        if not section["name"]:
+            problems.append(f"section {number} has no name")
+        if not section["seconds"] > 0:
+            problems.append(f"section {number} lasts {section['seconds']} s")
+    return problems
+
+
+def beats_problems(beats: Any, kinds: set[str]) -> list[str]:
+    """Return what is wrong with a wave script's beats (see `assert_beats_well_formed`)."""
+    problems: list[str] = []
+    times = [beat[0] for beat in beats]
+    if times != sorted(times):
+        problems.append("beats out of time order")
+    for beat in beats:
+        if len(beat) not in (6, 7):
+            problems.append(f"{beat}: {len(beat)} fields")
+            continue
+        if not beat[0] >= 0:
+            problems.append(f"{beat}: negative time")
+        if beat[1] not in kinds:
+            problems.append(f"{beat}: unknown enemy kind")
+        if not isinstance(beat[2], int) or beat[2] < 1:
+            problems.append(f"{beat}: groups must be a whole number, at least 1")
+        if not beat[3] >= 0:
+            problems.append(f"{beat}: negative time between groups")
+        if beat[4] not in SIDES:
+            problems.append(f"{beat}: unknown side")
+        if not 0 <= beat[5] <= 1:
+            problems.append(f"{beat}: position outside [0, 1]")
+    return problems

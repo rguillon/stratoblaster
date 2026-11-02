@@ -176,3 +176,12 @@ def test_build_reveal_reads_the_weapon_mount() -> None:
     assert view.sink == pytest.approx(10 * LOOK.sink)
     plain = build_reveal(SimpleNamespace(weapons=None), spec, root, [])
     assert plain.hinge[1] > 0
+
+
+def test_d228_a_weapon_on_a_rig_rises_into_place_with_no_swing() -> None:
+    root = _node()
+    spec = SimpleNamespace(id="tail", x=0, y=30, radius=6, reveal=1)
+    design = SimpleNamespace(weapons=record({"tail": {"kind": "beam", "rig": True}}))
+    view = build_reveal(design, spec, root, [])
+    assert view.hinge == [[0, 0, -30], 0]
+    assert view.sink == pytest.approx(3)

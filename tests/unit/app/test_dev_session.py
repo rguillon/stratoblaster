@@ -182,3 +182,53 @@ def test_the_keys_are_no_longer_heard_once_disposed() -> None:
     s.dispose()
     assert target.listeners == {"keydown": [], "keyup": []}
     session().listen(None)
+
+
+def test_dev_menu_14_k_is_used_on_its_release_without_breaking_another_part() -> None:
+    s = session()
+    s.sync(state("bosses"))
+    assert s.key("KeyK", False) is True
+    assert not hasattr(FakeViewer.made[0], "broken")
+    assert s.key("KeyK", True) is True
+    assert FakeViewer.made[0].broken == 1
+
+
+class StatusLine:
+    """The overlay's status line: each text written into it."""
+
+    def __init__(self) -> None:
+        self._text = ""
+        self.writes: list[str] = []
+
+    @property
+    def textContent(self) -> str:
+        return self._text
+
+    @textContent.setter
+    def textContent(self, value: str) -> None:
+        self._text = value
+        self.writes.append(value)
+
+
+def overlay(line: StatusLine | None) -> SimpleNamespace:
+    """Return the overlay root, whose `.dev-status` line is `line` (None: it has none)."""
+    return SimpleNamespace(
+        querySelector=lambda selector: line if selector == ".dev-status" else None
+    )
+
+
+def test_d199_the_status_line_is_written_only_when_it_changes() -> None:
+    """Also DEV-MENU-05: without a status line in the overlay, nothing is written."""
+    line = StatusLine()
+    s = session(overlay(line))
+    s.sync(state("levels"))
+    s.frame(0.1)
+    s.frame(0.1)
+    assert line.writes == ["1:00 / 4:00"]
+    FakeViewer.made[0].status = "2:00 / 4:00"
+    s.frame(0.1)
+    assert line.writes == ["1:00 / 4:00", "2:00 / 4:00"]
+    lineless = session(overlay(None))
+    lineless.sync(state("levels"))
+    lineless.frame(0.1)
+    assert FakeViewer.made[1].frames == [0.1]

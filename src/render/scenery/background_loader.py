@@ -21,14 +21,6 @@ from typing import Any
 # __pragma__ ("noskip")
 
 
-class WorkerPort:
-    """The worker's side the loader talks to.
-
-    A `Worker`, or a fake in tests: `post_message(job)`, `onmessage`, `onerror` and `terminate()`
-    (optional).
-    """
-
-
 def _new_map() -> Any:
     """Return an empty JavaScript `Map`."""
     __pragma__("js", "{}", "return new Map();")
@@ -130,7 +122,9 @@ class _Waiting:
 class BackgroundLoader:
     """Generates levels' grounds and scenery textures in a worker (PERF-14).
 
-    What it posts is copied to plain data first (ENG-164).
+    `port` is the worker's side it talks to, a `Worker` or a fake: `postMessage(message)`,
+    `onmessage`, `onerror` and `terminate()` (optional). What it posts is copied to plain data first
+    (ENG-164).
     """
 
     def __init__(self, port: Any) -> None:

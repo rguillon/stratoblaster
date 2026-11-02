@@ -43,13 +43,12 @@ def _side_of(node: Node, link: Link) -> int:
     return 2 if other.z < self_node.z else 3
 
 
-def _is_crossing(node: Node, around: Sequence[Link] | None, extra: Link | None = None) -> bool:
+def _is_crossing(node: Node, around: Sequence[Link], extra: Link | None = None) -> bool:
     """Whether built streets (and `extra`, if given) leave `node` on all four sides."""
     sides = 0
-    if around is not None:
-        for link in around:
-            if link.built or link is extra:
-                sides = sides | (1 << _side_of(node, link))
+    for link in around:
+        if link.built or link is extra:
+            sides = sides | (1 << _side_of(node, link))
     return sides == ALL_SIDES
 
 

@@ -10,9 +10,6 @@ from core.entities.weapon import (
     BeamWeaponDefinition,
     ProjectileWeaponDefinition,
     ShotStream,
-    find_weapon,
-    validate_weapons,
-    weapon_level_count,
 )
 from core.systems.shot_world import ShotWorld, ShotWorldOptions
 
@@ -101,83 +98,6 @@ def test_a_beam_weapon_keeps_its_levels() -> None:
     weapon = beam()
     assert weapon.kind == "beam"
     assert (weapon.levels[0].damage_per_second, weapon.levels[0].width) == (10, 2)
-
-
-def test_a_valid_set_of_weapons_passes() -> None:
-    validate_weapons([bullet(), beam()])
-    validate_weapons([])
-
-
-def test_weapon_ids_must_be_unique() -> None:
-    with pytest.raises(ValueError, match='Duplicate weapon id "gun"'):
-        validate_weapons([bullet(), bullet()])
-
-
-def test_a_weapon_needs_a_level() -> None:
-    with pytest.raises(ValueError, match="has no level"):
-        validate_weapons([bullet(levels=[])])
-    with pytest.raises(ValueError, match="has no level"):
-        validate_weapons([beam(levels=[])])
-
-
-@pytest.mark.parametrize("field", ["shots_per_second", "launch_speed", "radius", "damage"])
-@pytest.mark.parametrize("value", [0, -1, float("nan")])
-def test_positive_projectile_fields_must_be_positive(field: str, value: float) -> None:
-    with pytest.raises(ValueError, match=field + " must be positive"):
-        validate_weapons([bullet(**{field: value})])
-
-
-@pytest.mark.parametrize(
-    "field", ["acceleration", "homing_turn_rate_deg", "homing_range", "blast_radius"]
-)
-def test_other_projectile_fields_cannot_be_negative(field: str) -> None:
-    with pytest.raises(ValueError, match=field + " must be >= 0"):
-        validate_weapons([bullet(**{field: -1})])
-
-
-def test_launch_back_cannot_be_negative() -> None:
-    with pytest.raises(ValueError, match="launch_back must be >= 0"):
-        validate_weapons([bullet(launch_back=-1)])
-
-
-def test_an_accelerating_shot_cannot_be_capped_below_its_launch_speed() -> None:
-    with pytest.raises(ValueError, match="max_speed must be >= launch_speed"):
-        validate_weapons([bullet(acceleration=10, max_speed=300)])
-
-
-def test_a_shot_that_does_not_accelerate_ignores_its_cap() -> None:
-    validate_weapons([bullet(acceleration=0, max_speed=300)])
-
-
-def test_every_level_of_a_projectile_weapon_needs_a_stream() -> None:
-    with pytest.raises(ValueError, match="every level needs at least one stream"):
-        validate_weapons([bullet(levels=[[ShotStream(0, 0)], []])])
-
-
-@pytest.mark.parametrize(("damage", "width"), [(0, 2), (10, 0), (-1, 2)])
-def test_beam_damage_and_width_must_be_positive(damage: float, width: float) -> None:
-    with pytest.raises(ValueError, match="damage and width must be positive"):
-        validate_weapons([beam(levels=[BeamLevel(damage, width)])])
-
-
-def test_weapon_level_count_is_the_number_of_levels() -> None:
-    assert (
-        weapon_level_count(
-            bullet(levels=[[ShotStream(0, 0)], [ShotStream(-5, 0), ShotStream(5, 0)]])
-        )
-        == 2
-    )
-    assert weapon_level_count(beam()) == 1
-
-
-def test_find_weapon_returns_the_weapon_with_the_id() -> None:
-    laser = beam()
-    assert find_weapon([bullet(), laser], "laser") is laser
-
-
-def test_find_weapon_raises_for_an_unknown_id() -> None:
-    with pytest.raises(ValueError, match='Unknown weapon "nope"'):
-        find_weapon([bullet()], "nope")
 
 
 def test_game_wpn_02_selecting_a_weapon_clamps_its_level_to_the_levels_it_has() -> None:

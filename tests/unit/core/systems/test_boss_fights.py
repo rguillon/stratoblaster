@@ -416,3 +416,21 @@ def test_game_level_10_a_final_boss_ends_the_level_when_it_is_destroyed() -> Non
     _step(run)
     assert run.phase == "complete"
     assert run.checkpoint is None
+
+
+def test_boss_07_a_level_boss_brings_in_the_kind_with_its_id_among_several() -> None:
+    hulk = _Boss([10])
+    other = _Kind("ghost", _Boss([5]))
+    kind = _Kind("hulk", hulk)
+    added: list[_Boss] = []
+    hooks = BossFightHooks(lambda: "AREA", added.append)  # type: ignore[arg-type]
+    fights = BossFights(
+        [LevelBoss("hulk", "mini", 0)],
+        [other, kind],  # type: ignore[list-item]
+        BossFightRules(0, 2),
+        hooks,
+    )
+    fights.step(0.1, ScrollTrack(10, 1000))
+    assert added == [hulk]
+    assert kind.areas == ["AREA"]
+    assert other.areas == []

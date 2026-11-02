@@ -12,9 +12,11 @@ from app.game_play_hud import (
     boss_bar_frame,
     create_hud,
     create_level_overlays,
+    create_stats,
     hud_frame,
 )
 from ui.game_hud import GameHud
+from ui.stats_tile import StatsTile
 
 
 def texts() -> SimpleNamespace:
@@ -177,3 +179,13 @@ def test_d212_its_key_flips_the_choice_even_without_a_tile() -> None:
         assert STATS_SHOWN.toggle(debug=True) is False
     finally:
         STATS_SHOWN.chosen = None
+
+
+def test_dev_perf_05_the_debug_tile_is_made_only_with_a_parent() -> None:
+    """Its key may ask for it where the page has no place for it (D-212)."""
+    doc = FakeDocument()
+    parent = doc.createElement("div")
+    assert create_stats(LevelOverlaysOptions(doc, True, None, None)) is None
+    tile = create_stats(LevelOverlaysOptions(doc, False, parent, None))
+    assert isinstance(tile, StatsTile)
+    assert tile.root.parentElement is parent

@@ -231,3 +231,18 @@ def test_count_sums_every_layer() -> None:
     blasts.add("rings", {"x": 0, "y": 0, "size": 1, "life": 1})
     blasts.add("embers", {"x": 0, "y": 0, "size": 1, "life": 1})
     assert blasts.count() == 2
+
+
+def test_hot_debris_waits_for_its_ember_and_wisp_timers() -> None:
+    blasts = BlastParticles(create_rng(5))
+    blasts.add(
+        "debris",
+        {"x": 0, "y": 0, "size": 1, "life": 1, "ember": 0.5, "wisp": 0.25, "small": 1},
+    )
+    blasts.burn(0.1)
+    # Neither timer has run out: nothing is dropped yet, and both count down.
+    assert blasts.layers["embers"] == []
+    assert blasts.layers["smoke"] == []
+    debris = blasts.layers["debris"][0]
+    assert debris.ember == pytest.approx(0.4)
+    assert debris.wisp == pytest.approx(0.15)

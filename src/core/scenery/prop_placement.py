@@ -35,7 +35,7 @@ from core.scenery.away_placement import (
 )
 from core.scenery.block_towers import tower_in
 from core.scenery.district_packing import DistrictSite, RoadTilesCache, pack_districts
-from core.scenery.draws import allowed, between, weighted
+from core.scenery.draws import allowed, between, weighted, weighted_pick
 from core.scenery.float_placement import fixed_pieces, floating_in
 from core.scenery.ground_boxes import (
     BuildingIndex,
@@ -696,9 +696,7 @@ class PropPlacer:
             grows = cover > 0 and self._in_woods(x, z, hash_2d(i, j, at + 5), cover)
             if not _kept(grows, woods, hash_2d(i, j, at + 6)):
                 continue
-            kind = weighted(trees, hash_2d(i, j, at + 2))
-            if kind is None:
-                continue
+            kind = weighted_pick(trees, hash_2d(i, j, at + 2))
             ground = kind.footprint
             if not clear and not self.roads.clear_of(x, z, self.rules.tree_clearance + ground):
                 continue

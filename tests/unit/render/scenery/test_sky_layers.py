@@ -192,6 +192,15 @@ def test_the_lightning_flashes_inside_the_lowest_cloud_layer() -> None:
     assert placement == (_window(100), 100)
 
 
+def test_the_storm_s_lightning_is_there_once_attached() -> None:
+    """GFX-WEATHER-11."""
+    sky, _ = _sky()
+    assert sky.lightning is None
+    sky.attach(_Kit(), _placement())
+    assert sky.lightning is sky._lightning
+    assert isinstance(sky.lightning, _Layer)
+
+
 def test_a_sky_without_clouds_has_its_aurora_and_lightning_at_the_ground() -> None:
     sky, _ = _sky(clouds=[])
     sky.attach(_Kit(), _placement(flight=200))

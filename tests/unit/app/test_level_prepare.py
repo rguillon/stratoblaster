@@ -2,6 +2,7 @@
 """Unit tests of `src/app/level_prepare.py`."""
 # (PERF-11, PERF-12, PERF-18): the level choices made ahead of play.
 
+import itertools
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
@@ -162,3 +163,109 @@ def test_perf_18_without_a_worker_or_after_the_wait_the_scene_makes_its_textures
     fake = game(level("1-1"))
     assert textures_ready(fake, "1-1", None, 0) is True
     assert textures_ready(fake, "1-1", MagicMock(), level_prepare.TEXTURE_WAIT_FRAMES + 1) is True
+
+
+def test_perf_12_a_level_without_a_look_prefetches_only_its_ground(ground: MagicMock) -> None:
+    fake = game(level("1-1"))
+    fake.view.scenery.looks = {}
+    loader = MagicMock()
+    prefetch_level(fake, "1-1", loader)
+    ground.assert_called_once()
+    loader.prefetch_textures.assert_not_called()
+
+
+def test_perf_18_a_level_without_a_look_makes_no_texture() -> None:
+    fake = game(level("1-1"))
+    fake.view.scenery.looks = {}
+    loader = MagicMock()
+    assert textures_ready(fake, "1-1", loader, 0) is True
+    loader.prefetch_textures.assert_not_called()
+
+
+class FakeRoads:
+    """The street surfaces the worker makes: the requests, and the chunks made."""
+
+    def __init__(self, made: set[int]) -> None:
+        self.made = made
+        self.requests: list[tuple[list[list[float]], object, bool]] = []
+
+    def request(self, spans: list[list[float]], tiles: object, grid: bool) -> None:
+        self.requests.append((spans, tiles, grid))
+
+    def ready(self, index: int) -> bool:
+        return index in self.made
+
+
+class Grounds:
+    """The level grounds asked for, whose street surfaces `source` makes (None: no streets)."""
+
+    def __init__(self) -> None:
+        self.source: FakeRoads | None = None
+        self.asked: list[tuple[object, int]] = []
+
+    def __call__(self, scenery: object, seed: int) -> SimpleNamespace:
+        self.asked.append((scenery, seed))
+        return SimpleNamespace(roads_source=self.source)
+
+
+@pytest.fixture
+def grounds(monkeypatch: pytest.MonkeyPatch) -> Grounds:
+    made = Grounds()
+    monkeypatch.setattr(
+        level_prepare,
+        "with_runout",
+        lambda scenery, _runout: SimpleNamespace(id=scenery.id, seed=scenery.seed),
+    )
+    monkeypatch.setattr(level_prepare, "level_ground", made)
+    return made
+
+
+def tiled_game() -> SimpleNamespace:
+    fake = game(level("1-1"))
+    fake.view.scenery.looks["scenery-1-1"].roads.tiles = "tiles"
+    return fake
+
+
+def test_perf_17_the_streets_of_the_first_screens_are_waited_for(grounds: Grounds) -> None:
+    length = level_prepare.SCENERY_STAGE_CONFIG.chunk_length
+    source = FakeRoads(set())
+    grounds.source = source
+    fake = tiled_game()
+    assert level_prepare.roads_ready(fake, "1-1", True, 0) is False
+    ((spans, tiles, grid),) = source.requests
+    assert (tiles, grid) == ("tiles", True)
+    assert grounds.asked[0][1] == 7
+    # From the chunk before the start, one after the other, past the first screens.
+    assert spans[0] == [-1, -length, 0]
+    for previous, span in itertools.pairwise(spans):
+        assert span == [previous[0] + 1, previous[2], previous[2] + length]
+    assert spans[-1][1] > level_prepare.FIRST_Z
+    source.made = {int(span[0]) for span in spans}
+    assert level_prepare.roads_ready(fake, "1-1", False, 1) is True
+
+
+def test_perf_18_the_scene_makes_the_streets_itself_without_a_worker_or_after_the_wait(
+    grounds: Grounds,
+) -> None:
+    fake = tiled_game()
+    assert level_prepare.roads_ready(fake, "1-1", False, 0) is True
+    source = FakeRoads(set())
+    grounds.source = source
+    late = level_prepare.ROAD_WAIT_FRAMES + 1
+    assert level_prepare.roads_ready(fake, "1-1", False, late) is True
+    assert level_prepare.roads_ready(fake, "9-9", False, 0) is True
+    assert source.requests == []
+    assert len(grounds.asked) == 1
+
+
+def test_perf_17_a_level_without_street_tiles_or_a_look_waits_for_no_street(
+    grounds: Grounds,
+) -> None:
+    source = FakeRoads(set())
+    grounds.source = source
+    fake = game(level("1-1"))
+    assert level_prepare.roads_ready(fake, "1-1", False, 0) is True
+    fake.view.scenery.looks = {}
+    assert level_prepare.roads_ready(fake, "1-1", False, 0) is True
+    assert source.requests == []
+    assert len(grounds.asked) == 2

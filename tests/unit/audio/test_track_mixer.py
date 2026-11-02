@@ -112,3 +112,23 @@ def test_aud_engine_06_disconnect_cuts_the_track_off_the_bus() -> None:
     mixer.output.disconnect.assert_called_once()
     mixer._reverb.disconnect.assert_called_once()
     mixer._echo.disconnect.assert_called_once()
+
+
+def test_aud_engine_06_a_reverb_send_goes_to_the_track_s_reverb_fader() -> None:
+    effects = MusicEffects(0.75, 0.3, 2.0)
+    mixer, _, _, _ = make_mixer(reverb=True, effects=effects)
+    node = mixer.input("pad", instrument(reverb=0.4))
+    sends = [c.args[0] for c in node.connect.call_args_list if c.args[0] is not mixer.output]
+    assert len(sends) == 1
+    assert sends[0].gain.value == pytest.approx(0.4)
+    sends[0].connect.assert_called_once_with(mixer._reverb)
+
+
+def test_aud_engine_06_the_instruments_of_a_track_share_its_one_echo() -> None:
+    effects = MusicEffects(0.75, 0.3, 2.0)
+    mixer, context, _, _ = make_mixer(reverb=False, effects=effects)
+    mixer.input("lead", instrument(echo=0.5))
+    echo = mixer._echo
+    mixer.input("bass", instrument(echo=0.2))
+    assert mixer._echo is echo
+    assert context.createDelay.call_count == 1

@@ -15,6 +15,7 @@ from audio import music_player, sfx_player
 from audio.audio_bindings import AudioBindings, AudioMix, MusicRequest
 from audio.audio_types import INFINITY, Envelope, SoundDesign, ToneLayer, Track
 from audio.level_cues import SoundCue
+from config.audio import AUDIO_CONFIG
 from core.systems.level_run_types import LevelResult
 
 
@@ -344,3 +345,112 @@ def test_aud_engine_09_a_sound_that_plays_only_in_a_level_is_not_played_after_it
         SimpleNamespace(fights=SimpleNamespace(bar=None, defeated=[], final_defeated=False))
     )
     assert "hit" not in audio.state.sounds
+
+
+def test_aud_music_08_the_level_s_track_fades_on_its_end_panel() -> None:
+    """While it plays, the game screen keeps the level's track."""
+    audio, _, _ = make()
+    audio.level_started("1-1")
+    audio.menu_changed(menu_state("game"))
+    assert audio.state.music == "level-1-1"
+    result = LevelResult("1-1", 9, 9, "complete", 10, new_high_score=False, checkpoint=None)
+    audio.menu_changed(menu_state("game", level_result=result))
+    assert audio.state.music is None
+
+
+@pytest.mark.usefixtures("voices")
+def test_aud_music_09_after_the_final_boss_its_track_goes_on_until_the_level_ends() -> None:
+    """Also BOSS-05."""
+    audio, _, _ = make()
+    audio.unlock()
+    audio.level_started("1-2")
+    audio._cues = SimpleNamespace(observe=lambda _run: [], beam=None)  # type: ignore[assignment]
+    fighting = SimpleNamespace(
+        fights=SimpleNamespace(bar=object(), defeated=[], final_defeated=False)
+    )
+    audio.level_step(fighting)
+    final = SimpleNamespace(rank="final")
+    beaten = SimpleNamespace(
+        fights=SimpleNamespace(bar=None, defeated=[final], final_defeated=True)
+    )
+    audio.level_step(beaten)
+    assert audio.state.music == "boss-1-2"
+
+
+@pytest.mark.usefixtures("voices")
+def test_aud_music_11_a_level_step_heard_on_the_menus_keeps_the_menu_music() -> None:
+    """Once the menus show, the level's and boss tracks do not come back."""
+    audio, _, _ = make()
+    audio.unlock()
+    audio.level_started("1-2")
+    audio.menu_changed(menu_state("level-select"))
+    audio._cues = SimpleNamespace(observe=lambda _run: [], beam=None)  # type: ignore[assignment]
+    boss_run = SimpleNamespace(
+        fights=SimpleNamespace(bar=object(), defeated=[], final_defeated=False)
+    )
+    audio.level_step(boss_run)
+    assert audio.state.music == "menu"
+
+
+@pytest.mark.usefixtures("voices")
+def test_aud_engine_09_a_cue_without_a_sound_plays_nothing() -> None:
+    audio, _, _ = make()
+    audio.unlock()
+    audio.level_started("1-1")
+    audio._cues = SimpleNamespace(  # type: ignore[assignment]
+        observe=lambda _run: [SoundCue("unknown-cue", 10.0)], beam=None
+    )
+    audio.level_step(
+        SimpleNamespace(fights=SimpleNamespace(bar=None, defeated=[], final_defeated=False))
+    )
+    assert audio.state.sounds == []
+
+
+def test_aud_engine_04_without_bindings_no_sound_or_jingle_plays() -> None:
+    audio, _, _ = make(with_bindings=False)
+    audio.unlock()
+    audio.menu_feedback("down", "moved", Volumes(5, 5))
+    audio.level_started("1-1")
+    audio.level_ended(LevelResult("1-1", 1, 9, "over", 10, new_high_score=False, checkpoint=None))
+    assert audio.state.sounds == []
+    assert audio.state.music is None
+
+
+def test_aud_music_10_a_jingle_the_game_has_no_track_for_is_not_played(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    audio, music, _ = make()
+    jingles: list[Track] = []
+    monkeypatch.setattr(audio.music, "jingle", jingles.append)
+    audio.level_ended(LevelResult("1-1", 1, 9, "over", 10, new_high_score=False, checkpoint=None))
+    assert [request.jingle for request in music.requests] == ["over"]
+    assert [track.id for track in jingles] == ["jingle-over"]
+
+    def no_jingles(request: MusicRequest) -> Track | None:
+        music.requests.append(request)
+        return None
+
+    audio._bindings.music = no_jingles  # type: ignore[union-attr]
+    audio.level_ended(LevelResult("1-1", 1, 9, "over", 10, new_high_score=False, checkpoint=None))
+    # The jingle was asked for again, but there is none to play.
+    assert [request.jingle for request in music.requests] == ["over", "over"]
+    assert len(jingles) == 1
+
+
+def test_dev_api_02_only_the_last_sounds_played_are_reported(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The oldest is dropped past `recent_sounds`; a sound the voices refused is not reported."""
+    audio, _, _ = make()
+    monkeypatch.setattr(audio._sfx, "play", lambda _sound, _pan=0: True)
+    count = int(AUDIO_CONFIG.recent_sounds)
+    for _ in range(count):
+        audio.menu_feedback("x", "moved", Volumes(5, 5))
+    audio.menu_feedback("x", "paused", Volumes(5, 5))
+    sounds = audio.state.sounds
+    assert len(sounds) == count
+    assert sounds[-1] == "pause"
+    assert sounds.count("menu-move") == count - 1
+    monkeypatch.setattr(audio._sfx, "play", lambda _sound, _pan=0: False)
+    audio.menu_feedback("x", "resumed", Volumes(5, 5))
+    assert audio.state.sounds == sounds

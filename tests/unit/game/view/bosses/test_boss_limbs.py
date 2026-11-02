@@ -242,3 +242,11 @@ def test_a_limb_without_a_boss_is_synced_but_not_shown() -> None:
     limbs.show(None, "lit", 0.1)
     group.model.sync.assert_called_once_with("lit", 0.1)
     group.show.assert_not_called()
+
+
+def test_keys_and_entries_read_an_object_literal_in_order() -> None:
+    """`Object.keys` / `Object.entries` (JavaScript only): CPython runs their Python twins."""
+    joints = {"hip": 1, "knee": 2}
+    assert boss_limbs._keys(joints) == ["hip", "knee"]
+    assert boss_limbs._entries(joints) == [["hip", 1], ["knee", 2]]
+    assert boss_limbs._keys({}) == []

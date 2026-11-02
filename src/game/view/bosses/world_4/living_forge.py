@@ -9,7 +9,7 @@ from game.config.enemy_look import ENEMY_LOOK
 from game.config.record import record
 from game.view.bosses.world_4.black_sands_kit import FORGE
 from game.view.enemies.organic_parts import reactor_sac
-from render.geometry.organic import curve, organ, ribs, tendril, vein
+from render.geometry.organic import curve, organ, ribs, vein
 from render.geometry.solids import LoftOptions, Placement
 
 # isort: split
@@ -28,18 +28,6 @@ FL = ENEMY_LOOK.flesh
 SKIN = record({"base": FL.slate, "panel": FL.sinew, "dark": FL.membrane, "bone": FL.bone})
 # The molten glow of their veins and glands.
 MAGMA = FORGE.molten
-
-
-def sinew(
-    b: Any, ends: list[Vec3], radii: list[float], color: Rgb = SKIN.panel, bow: float = 1.5
-) -> None:
-    """Add a muscle or sinew from `a` to `b`, bowed up by `bow`.
-
-    It is `r` thick at `a`, thinning to `rb`.
-    """
-    a = ends[0]
-    c = ends[1]
-    tendril(b, curve(a, c, [0, bow, 0], 3), [radii[0], radii[1]], 5, color)
 
 
 def back_ribs(p: Any, zs: list[float], arch: Any, color: Rgb = SKIN.bone) -> None:

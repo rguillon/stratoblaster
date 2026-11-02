@@ -6,7 +6,6 @@ import pytest
 from core.math.pixel_contrast import (
     PixelBox,
     Pixels,
-    ReadabilityReport,
     box_contrast,
     brightest_but,
     luminance_at,
@@ -96,12 +95,3 @@ def test_brightest_but_picks_the_quantile() -> None:
 
 def test_brightest_but_of_an_empty_image_is_zero() -> None:
     assert brightest_but(Pixels(0, 0, []), 0.5) == 0.0
-
-
-def test_readability_report_keeps_its_fields() -> None:
-    report = ReadabilityReport(1.0, None, 2.5, None, 0.3)
-    assert report.player == 1.0
-    assert report.enemy is None
-    assert report.enemy_bullet == 2.5
-    assert report.player_shot is None
-    assert report.background_luminance == 0.3

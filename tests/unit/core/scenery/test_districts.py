@@ -70,3 +70,11 @@ def test_a_district_without_parts_left_in_a_range_is_dropped() -> None:
     districts = find_districts(_placed(), SPAN)
     assert districts_from(districts, 9000.0) == []
     assert all(isinstance(d, District) for d in districts)
+
+
+def test_split_districts_between_two_districts_cuts_neither() -> None:
+    districts = find_districts(_placed(), SPAN)
+    before, after = split_districts(districts, 2500.0)
+    assert before == [districts[0]]
+    assert after == [districts[1]]
+    assert after[0].continues is None

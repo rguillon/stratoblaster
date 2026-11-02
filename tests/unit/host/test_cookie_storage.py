@@ -1,6 +1,7 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/host/cookie_storage.py`."""
 
+from typing import Any
 from urllib.parse import quote, unquote
 
 import pytest
@@ -68,3 +69,17 @@ def test_eng_07_an_unreadable_value_reads_as_none(monkeypatch: pytest.MonkeyPatc
 
     monkeypatch.setattr(cookie_storage, "decode_uri_component", broken)
     assert CookieStorage(FakeDocument("ship=%E0%A4%A"), 1).get("ship") is None
+
+
+# The JavaScript-only codec as the module defines it, taken before the fixture above replaces it.
+ENCODE = cookie_storage.encode_uri_component
+DECODE = cookie_storage.decode_uri_component
+
+
+@pytest.mark.parametrize("codec", [ENCODE, DECODE])
+def test_eng_07_the_uri_codec_is_javascript_only(codec: Any) -> None:
+    """`encodeURIComponent` / `decodeURIComponent` run in the browser only.
+
+    CPython runs the placeholder return after the `__pragma__("js")` body: an empty string.
+    """
+    assert codec("a b=c") == ""

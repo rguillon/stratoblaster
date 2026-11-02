@@ -78,11 +78,11 @@ def test_gfx_terrain_01_sections_are_placed_end_to_end_and_found_by_z() -> None:
     level = make_level([section("a", 10, flat(10)), section("b", 20, flat(50))])
     field = HeightField(level)
     assert field.length_ == pytest.approx(3000.0)
-    assert field.section_index_at(-50) == 0
-    assert field.section_index_at(999.9) == 0
-    assert field.section_index_at(1000) == 1
-    assert field.section_index_at(99999) == 1
+    assert field.section_at(-50).section.name == "a"
+    assert field.section_at(999.9).section.name == "a"
+    assert field.section_at(1000).section.name == "b"
     assert field.section_at(1500).section.name == "b"
+    assert field.section_at(99999).section.name == "b"
 
 
 def test_gfx_terrain_01_before_the_level_and_after_it_the_ends_continue() -> None:

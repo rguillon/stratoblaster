@@ -430,10 +430,9 @@ class GameSession:
                 load.play.warm_shots(True)
 
         def start() -> None:
-            if load.play is not None:
-                load.play.warm_shots(False)
-            if load.play and load.state:
-                self._started(load.play, load.state, level_id)
+            # `build` made the play, and only a confirmed load (with its state) gets this far.
+            load.play.warm_shots(False)
+            self._started(load.play, load.state, level_id)
 
         def textures() -> bool:
             # The textures the worker makes, before the scene (which would make them here).

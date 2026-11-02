@@ -243,9 +243,8 @@ def paint_centre_lines(
         if z_high < z_min or z_low >= z_max:
             continue
         along = 0.0
-        for i, a in enumerate(road.points):
-            if i + 1 >= len(road.points):
-                break
+        for i in range(len(road.points) - 1):
+            a = road.points[i]
             b = road.points[i + 1]
             if a.z >= z_min and a.z < z_max:
                 _paint_segment(paint, road, a, b, lines, along)

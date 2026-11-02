@@ -97,11 +97,6 @@ class RoadField:
                 return i
         return -1
 
-    def mesh(self, index: int) -> Any:
-        """Return the mesh of chunk `index`, if it has one."""
-        i = self._position(index)
-        return self._meshes[i] if i >= 0 else None
-
     def set_chunk(self, index: int, geometry: ColoredGeometry) -> None:
         """Make (or replace) the mesh of chunk `index` from `geometry`."""
         self.remove_chunk(index)
@@ -133,11 +128,6 @@ class RoadField:
             dispose_node(self._meshes[i])
             self._indices.pop(i)
             self._meshes.pop(i)
-
-    def clear(self) -> None:
-        """Clear."""
-        for index in list(self._indices):
-            self.remove_chunk(index)
 
 
 class SplitRoads:
@@ -222,10 +212,6 @@ class RoadLayers:
     def count(self) -> int:
         """Number of chunks with road ribbons."""
         return max(self._roads.count, self._paths.count)
-
-    def streets_of(self, index: int) -> Any:
-        """Return the opaque middles of the streets of a chunk, if drawn apart."""
-        return self._streets.mesh(index)
 
     def set_chunk(
         self,
@@ -312,16 +298,3 @@ class RoadLayers:
         self._paths.remove_chunk(index)
         self._roads.remove_chunk(index)
         self._streets.remove_chunk(index)
-
-    def clear(self) -> None:
-        """Remove every chunk; the next atlas is uploaded whatever its version.
-
-        Its source may be another one, whose versions count from 1 again.
-        """
-        self._atlas_version = 0
-        if self._grid is not None:
-            self._grid.clear()
-        self._surfaces.clear()
-        self._paths.clear()
-        self._roads.clear()
-        self._streets.clear()

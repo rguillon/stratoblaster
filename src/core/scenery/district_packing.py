@@ -81,11 +81,13 @@ class _Tries:
         self.kinds = kinds
         self._orders = orders
 
-    def get(self, kind: PropKindRule) -> list[PropKindRule] | None:
-        for i, k in enumerate(self.kinds):
-            if k is kind:
+    def get(self, kind: PropKindRule) -> list[PropKindRule]:
+        """Return the order of `kind`, one of `kinds` (the last when it is none of the others)."""
+        last = len(self.kinds) - 1
+        for i in range(last):
+            if self.kinds[i] is kind:
                 return self._orders[i]
-        return None
+        return self._orders[last]
 
 
 def _tries_of(group: PropGroupRule, lots: Sequence[PropKindRule]) -> _Tries:
@@ -154,11 +156,9 @@ def _kinds_at_for(
         if group is None:
             return lots
         order = order_for(group)
+        # The kinds drawn from are the order's own, so the kind drawn has its order.
         pick = weighted(order.kinds, random(n * 3 + 3))
-        if pick is None and len(order.kinds) > 0:
-            pick = order.kinds[0]
-        found = order.get(pick) if pick is not None else None
-        return found if found is not None else lots
+        return order.get(pick) if pick is not None else lots
 
     return kinds_at
 

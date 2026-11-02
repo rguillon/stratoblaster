@@ -42,7 +42,6 @@ class _Schedule:
 def _babylon(monkeypatch: pytest.MonkeyPatch) -> None:
     patch_babylon(monkeypatch, lightning_layer)
     monkeypatch.setattr(lightning_layer, "new_standard_material", _material)
-    monkeypatch.setattr(lightning_layer, "is_enabled", lambda node: node.enabled)
     monkeypatch.setattr(lightning_layer, "dispose_node", lambda node: node.dispose())
     monkeypatch.setattr(lightning_layer, "new_mesh", _new_mesh)
     monkeypatch.setattr(
@@ -68,6 +67,11 @@ def _layer(schedule: Any = None) -> LightningLayer:
     if schedule is not None:
         layer.schedule = schedule
     return layer
+
+
+def _bolt_shown(layer: LightningLayer) -> bool:
+    """Whether a bolt was drawn on the last frame."""
+    return layer._bolt is not None and layer._bolt.enabled
 
 
 def _storm(lightning: float) -> Any:
@@ -100,7 +104,7 @@ def test_a_new_layer_has_a_schedule_of_its_seed_and_shows_no_bolt() -> None:
     layer = _layer()
     assert isinstance(layer.schedule, LightningSchedule)
     assert layer.flash == 0
-    assert layer.bolt_shown is False
+    assert _bolt_shown(layer) is False
 
 
 def test_hypot_is_the_length_of_a_segment() -> None:
@@ -162,20 +166,20 @@ def test_a_ribbon_of_a_zero_length_segment_is_still_a_finite_shape() -> None:
 def test_a_flash_with_no_lightning_in_the_storm_is_no_flash() -> None:
     layer = _layer(_Schedule(0.9, Strike([0.0], _bolt())))
     assert layer.update(_storm(0), 1.0, 0) == 0
-    assert layer.bolt_shown is False
+    assert _bolt_shown(layer) is False
 
 
 def test_between_flashes_there_is_no_flash_and_no_bolt() -> None:
     layer = _layer(_Schedule(0.0, Strike([0.0], _bolt())))
     assert layer.update(_storm(1), 1.0, 0) == 0
-    assert layer.bolt_shown is False
+    assert _bolt_shown(layer) is False
 
 
 def test_a_flash_draws_the_bolt_near_the_camera_in_the_clouds() -> None:
     layer = _layer(_Schedule(0.8, Strike([0.0], _bolt(x=0.5, z=0.25, seed=9))))
     flash = layer.update(_storm(1), 1.0, 40.0)
     assert flash == pytest.approx(0.8)
-    assert layer.bolt_shown is True
+    assert _bolt_shown(layer) is True
     mesh = layer._bolt
     assert mesh.position.x == pytest.approx(0)
     assert mesh.position.y == 100.0
@@ -215,7 +219,7 @@ def test_a_new_strike_replaces_and_disposes_the_old_bolt() -> None:
     layer.update(_storm(1), 6.0, 0)
     assert old.disposed is True
     assert layer._bolt is not old
-    assert layer.bolt_shown is True
+    assert _bolt_shown(layer) is True
 
 
 def test_a_strike_without_a_bolt_draws_none_and_hides_the_last_one() -> None:
@@ -225,7 +229,7 @@ def test_a_strike_without_a_bolt_draws_none_and_hides_the_last_one() -> None:
     schedule.strike = Strike([5.0], None)
     layer.update(_storm(1), 6.0, 0)
     assert layer._bolt.enabled is False
-    assert layer.bolt_shown is False
+    assert _bolt_shown(layer) is False
 
 
 def test_the_bolt_is_hidden_once_the_flash_is_over() -> None:
@@ -235,5 +239,5 @@ def test_the_bolt_is_hidden_once_the_flash_is_over() -> None:
     schedule.flash = 0
     schedule.strike = None
     layer.update(_storm(1), 2.0, 0)
-    assert layer.bolt_shown is False
+    assert _bolt_shown(layer) is False
     assert layer.flash == 0

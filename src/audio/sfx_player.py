@@ -16,14 +16,6 @@ from typing import Any
 # __pragma__ ("noskip")
 
 
-class SfxBus:
-    """Where the sound effects go, once the audio context exists."""
-
-    def __init__(self, context: Any, sfx: Any) -> None:
-        self.context = context
-        self.sfx = sfx
-
-
 class SfxSettings:
     """Mixing settings of an `SfxPlayer` (`config/audio.py`)."""
 
@@ -135,11 +127,16 @@ class SfxPlayer:
                 return i
         return -1
 
-    def _find_playing(self, voice_id: int) -> _Playing | None:
-        for playing in self._playing:
-            if playing.id == voice_id:
-                return playing
-        return None
+    def _find_playing(self, voice_id: int) -> _Playing:
+        """Return the sound of `voice_id`.
+
+        There is one: each voice of the pool, and each looping sound, is playing (only
+        `_stop_voice` and `_forget_ended` forget a sound, and they keep both in step).
+        """
+        index = 0
+        while self._playing[index].id != voice_id:
+            index += 1
+        return self._playing[index]
 
     def _start(self, sound: SoundDesign, pan: float) -> tuple[Voice | None, Any | None]:
         bus = self._bus()
@@ -200,5 +197,5 @@ class SfxPlayer:
         self._loop_ids = [self._loop_ids[i] for i in keep]
         self._pool.release(voice_id)
         bus = self._bus()
-        if playing is not None and playing.voice is not None and bus is not None:
+        if playing.voice is not None and bus is not None:
             playing.voice.stop(bus.context.currentTime, self._settings.stop_fade_seconds)

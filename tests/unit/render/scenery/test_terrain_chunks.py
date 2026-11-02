@@ -10,6 +10,18 @@ from helpers.render_fakes import FakeNode, FakeScene, patch_babylon
 from render.scenery import terrain_chunks, terrain_geometry
 from render.scenery.terrain_chunks import TerrainChunkOptions, TerrainChunks
 
+# The JavaScript `Map` helpers as the module defines them, taken before the fixture below replaces
+# them, with the placeholder CPython returns after their `__pragma__("js")` body.
+JS_HELPERS: list[tuple[Any, tuple[Any, ...], Any]] = [
+    (terrain_chunks._empty_map, (), None),
+    (terrain_chunks._map_size, ({},), 0),
+    (terrain_chunks._map_keys, ({},), []),
+    (terrain_chunks._map_get, ({}, 1), None),
+    (terrain_chunks._map_has, ({}, 1), False),
+    (terrain_chunks._map_set, ({}, 1, "mesh"), None),
+    (terrain_chunks._map_delete, ({}, 1), None),
+]
+
 
 class Slope:
     def height(self, _x: float, z: float) -> float:
@@ -124,9 +136,12 @@ def test_filling_a_chunk_updates_its_three_vertex_buffers(rec: _Recorder) -> Non
     assert kinds == ["PositionKind", "NormalKind", "ColorKind"]
 
 
-def test_a_rebuild_refills_every_live_chunk_with_the_new_source(rec: _Recorder) -> None:
-    chunks = _chunks()
-    chunks.cover(0, 25)
-    rec.updates.clear()
-    chunks.rebuild(Slope())
-    assert len(rec.updates) == 3 * chunks.count
+@pytest.mark.parametrize(("helper", "args", "placeholder"), JS_HELPERS)
+def test_the_map_helpers_are_javascript_only(
+    helper: Any, args: tuple[Any, ...], placeholder: Any
+) -> None:
+    """The live chunks' `Map` exists in the browser only (ENG-19's reuse runs on it there).
+
+    CPython runs the placeholder return after each `__pragma__("js")` body.
+    """
+    assert helper(*args) == placeholder

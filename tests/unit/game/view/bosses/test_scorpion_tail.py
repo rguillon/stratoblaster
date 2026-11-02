@@ -10,18 +10,29 @@ import math
 from types import SimpleNamespace
 
 import pytest
+from helpers.bosses_top_fakes import FakeNode, patch_models
 
 from game.config.boss_look import BOSS_LOOK
+from game.view.bosses import scorpion_tail
+from game.view.bosses.scorpion_look import YELLOW
 from game.view.bosses.scorpion_tail import (
     STRETCH,
     TAIL,
+    build_tail_rig,
     segment_count,
     tail_pose,
-    tail_tip,
     tail_triangles,
     unfolding,
 )
 from render.geometry.islands import loose_triangles
+
+
+def tail_tip(unfold: float) -> list[float]:
+    """Where the tail of `tail_pose(unfold)` ends, `(z, y)`: the far end of its last segment."""
+    z, y, angle, stretch = tail_pose(unfold)[-1]
+    a, b = TAIL[-2], TAIL[-1]
+    length = math.hypot(b[0] - a[0], b[1] - a[1]) * stretch
+    return [z + math.cos(angle) * length, y + math.sin(angle) * length]
 
 
 def test_at_rest_the_tail_follows_its_arched_spine() -> None:
@@ -66,3 +77,37 @@ def test_it_unfolds_from_the_armour_burst_to_the_weapons_swinging_up() -> None:
     assert unfolding(boss(0, 1, look.swing[1])) == 1
     assert 0 < unfolding(boss(0, 1, (look.burst + look.swing[1]) / 2)) < 1
     assert unfolding(boss(1, 0, 0)) == 1
+
+
+def test_d228_the_tail_rig_is_a_model_a_segment_each_on_its_node_under_the_boss(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    builder = patch_models(monkeypatch, scorpion_tail)
+    root = FakeNode("scorpion", "scene")
+    rig = build_tail_rig(root, YELLOW, None)
+    assert len(rig.nodes) == len(rig.models) == segment_count()
+    for i in range(segment_count()):
+        assert rig.nodes[i].name == "scorpion-tail-" + str(i)
+        assert rig.nodes[i].parent is root
+        assert rig.models[i].root.parent is rig.nodes[i]
+        assert builder.faces("scorpion-tail-" + str(i), "flesh") > 0
+
+
+def test_mb_scorpion_11_the_rig_poses_its_segments_as_the_tail_unfolds(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    patch_models(monkeypatch, scorpion_tail)
+    rig = build_tail_rig(FakeNode("scorpion", "scene"), YELLOW, None)
+    rig.show(None, {"charge": 0}, 0.1)
+    rest = tail_pose(0)
+    for i, node in enumerate(rig.nodes):
+        assert node.position.xyz() == pytest.approx([0, rest[i][1], rest[i][0]])
+        assert node.rotation.x == pytest.approx(-rest[i][2])
+        assert node.scaling.xyz() == pytest.approx([1, 1, 1])
+    turned = SimpleNamespace(form=1, transforming_into=0, transform=0)
+    rig.show(turned, {"charge": 0}, 0.1)
+    out = tail_pose(1)
+    for i, node in enumerate(rig.nodes):
+        assert node.position.xyz() == pytest.approx([0, out[i][1], out[i][0]])
+        assert node.scaling.z == pytest.approx(STRETCH)
+    assert all(len(m.synced) == 2 for m in rig.models)

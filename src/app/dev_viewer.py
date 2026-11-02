@@ -477,14 +477,10 @@ class DevViewer:
         A ship or an enemy around its nose and nose up or down (on top of the bank and heading the
         game gives them).
         """
-        pivot: Any = None
-        if self._ship is not None:
-            pivot = self._ship.pivot
-        elif self._layer is not None and self._enemy is not None:
-            pivot = self._layer.pivot_of(self._enemy)
-        if pivot is not None:
-            pivot.rotation.y = self._turn[0]
-            pivot.rotation.x = self._turn[1]
+        # `_show_item` made a ship, or a layer and an enemy that `_sync` has just drawn.
+        pivot = self._ship.pivot if self._ship is not None else self._layer.pivot_of(self._enemy)
+        pivot.rotation.y = self._turn[0]
+        pivot.rotation.x = self._turn[1]
 
     def _distance(self) -> float:
         """How far the camera is from the middle of the view's subject."""

@@ -139,3 +139,23 @@ def test_a_cross_road_gets_no_centre_line() -> None:
     paint = _painter()
     paint_centre_lines(paint, [_road("cross", 1, 2, [(0, 0), (0, 20)])], 0, 100)
     assert paint.geo.indices == []
+
+
+def test_a_quad_of_no_length_is_still_a_finite_strip() -> None:
+    paint = _painter()
+    stripe = _stripes(_road("street", 1, 4, [(0, 0), (10, 0)]), LOOK)[0]
+    _quad(paint, stripe, (3, 3), (3, 3), 0, 0)
+    geo = paint.geo
+    assert len(geo.positions) == 4 * 3
+    assert all(abs(v) < 1e6 for v in geo.positions)
+
+
+def test_a_road_reaching_into_the_range_is_painted_from_its_first_segment_starting_there() -> None:
+    paint = _painter()
+    road = _road("street", 1, 8, [(0, 0), (0, 20), (0, 40)])
+    paint_centre_lines(paint, [road], 20, 100)
+    # Only the second segment, 20 to 40, starts in the range: one solid quad along it.
+    zs = [paint.geo.positions[i + 2] for i in range(0, len(paint.geo.positions), 3)]
+    assert len(paint.geo.indices) // 6 == 1
+    assert min(zs) == pytest.approx(20)
+    assert max(zs) == pytest.approx(40)

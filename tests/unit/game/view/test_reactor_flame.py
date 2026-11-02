@@ -2,7 +2,9 @@
 """Unit tests of `src/game/view/reactor_flame.py` (GFX-SHIP-06, GFX-ART-11)."""
 
 import math
+from types import SimpleNamespace
 from typing import Any
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -86,3 +88,102 @@ def test_the_flicker_maps_to_a_visibility_that_only_dims() -> None:
     assert _dimmed(1, 0.5) == pytest.approx(1)
     assert _dimmed(-1, 0.5) == pytest.approx(0.5)
     assert _dimmed(0, 0.5) == pytest.approx(0.75)
+
+
+@pytest.fixture
+def flame_scene(monkeypatch: Any) -> SimpleNamespace:
+    """Babylon stand-ins for a flame: the cylinders, puffs and pivots made, and its animation."""
+    made = SimpleNamespace(cylinders=[], puffs=[], pivots=[], animations=[])
+
+    def pivot(label: str, _scene: Any) -> Any:
+        made.pivots.append(MagicMock(name=label))
+        return made.pivots[-1]
+
+    def cylinder(name: str, options: Any, _scene: Any) -> Any:
+        made.cylinders.append(
+            SimpleNamespace(name=name, options=options, mesh=MagicMock(name=name))
+        )
+        return made.cylinders[-1].mesh
+
+    def polyhedron(name: str, options: Any, _scene: Any) -> Any:
+        made.puffs.append(SimpleNamespace(name=name, options=options, mesh=MagicMock(name=name)))
+        return made.puffs[-1].mesh
+
+    monkeypatch.setattr(reactor_flame, "new_transform_node", pivot)
+    monkeypatch.setattr(reactor_flame, "create_cylinder", cylinder)
+    monkeypatch.setattr(reactor_flame, "create_polyhedron", polyhedron)
+    # `{height, diameterTop, ...}` and `{type, size}` are JavaScript objects: plain ones here.
+    monkeypatch.setattr(reactor_flame, "_cylinder_options", lambda h, _d, _t: SimpleNamespace(h=h))
+    monkeypatch.setattr(reactor_flame, "_polyhedron_options", lambda kind, size: (kind, size))
+    monkeypatch.setattr(
+        reactor_flame, "babylon_class", lambda name: SimpleNamespace(NO_CAP="no-cap-" + name)
+    )
+    monkeypatch.setattr(
+        reactor_flame,
+        "add_model_animation",
+        lambda node, anim: made.animations.append((node, anim)),
+    )
+    return made
+
+
+LIGHT_SIZE = {
+    "nozzleZ": -2.0,
+    "length": 6.0,
+    "diameter": 1.5,
+    "puffDiameter": 0.8,
+    "sides": 6,
+    "light": {"puffs": 2},
+}
+ENEMY_MATERIALS = {"exhaust": "enemy-exhaust", "flame": "enemy-flame", "plasma": "enemy-plasma"}
+
+
+def test_enm_40_an_enemy_flame_is_light_uncapped_cones_and_few_tetrahedra(
+    flame_scene: SimpleNamespace,
+) -> None:
+    parent = MagicMock(name="parent")
+    reactor_flame.build_reactor_flame("gnat-reactor", LIGHT_SIZE, parent, ENEMY_MATERIALS)
+    outer, inner = flame_scene.cylinders
+    assert (outer.name, inner.name) == ("gnat-reactor-exhaust", "gnat-reactor-flame")
+    # No caps on the cones of a light flame.
+    assert outer.options.cap == "no-cap-Mesh"
+    assert inner.options.cap == "no-cap-Mesh"
+    # Its own materials, not the player's blue.
+    assert outer.mesh.material == "enemy-exhaust"
+    assert inner.mesh.material == "enemy-flame"
+    # As many puffs as the light flame asks for, each a tetrahedron.
+    assert [p.name for p in flame_scene.puffs] == ["gnat-reactor-puff-0", "gnat-reactor-puff-1"]
+    assert all(p.options == (reactor_flame.TETRAHEDRON, 0.4) for p in flame_scene.puffs)
+    assert all(p.mesh.material == "enemy-plasma" for p in flame_scene.puffs)
+    assert all(p.mesh.parent is parent for p in flame_scene.puffs)
+
+
+def test_gfx_ship_06_the_cones_point_back_from_the_nozzle(flame_scene: SimpleNamespace) -> None:
+    parent = MagicMock(name="parent")
+    reactor_flame.build_reactor_flame("gnat-reactor", LIGHT_SIZE, parent, ENEMY_MATERIALS)
+    outer_pivot = flame_scene.pivots[0]
+    outer = flame_scene.cylinders[0].mesh
+    assert outer_pivot.parent is parent
+    assert outer.parent is outer_pivot
+    assert outer.rotation.x == pytest.approx(-math.pi / 2)
+    assert outer.position.z == pytest.approx(-LIGHT_SIZE["length"] / 2)
+    assert all(p.position.z == LIGHT_SIZE["nozzleZ"] for p in flame_scene.pivots)
+    assert outer.isPickable is False
+
+
+def test_gfx_art_11_the_flame_lives_on_the_frames_time(flame_scene: SimpleNamespace) -> None:
+    parent = MagicMock(name="parent")
+    reactor_flame.build_reactor_flame("gnat-reactor", LIGHT_SIZE, parent, ENEMY_MATERIALS)
+    node, on_frame = flame_scene.animations[0]
+    assert node is parent
+    puff = flame_scene.puffs[0].mesh
+    # Built at time 0: the first puff sits at the nozzle.
+    assert puff.position.z == pytest.approx(LIGHT_SIZE["nozzleZ"] - 0.01)
+    on_frame(0.25)
+    progress = reactor_flame.puff_progress(0.25, 0, 2, reactor_flame.FLAME.puffSpeed)
+    expected = LIGHT_SIZE["nozzleZ"] - 0.01 - progress * LIGHT_SIZE["length"]
+    assert puff.position.z == pytest.approx(expected)
+    assert puff.visibility == pytest.approx(reactor_flame.puff_opacity(progress))
+    # The clock adds up the frames' times.
+    on_frame(0.25)
+    progress = reactor_flame.puff_progress(0.5, 0, 2, reactor_flame.FLAME.puffSpeed)
+    assert puff.visibility == pytest.approx(reactor_flame.puff_opacity(progress))

@@ -72,12 +72,13 @@ def _other_than(except_road: Road) -> Callable[[Road], bool]:
 
 
 def _heading(points: Sequence[Point], i: int) -> float:
-    """Heading of the segment ending at `points[i]`, in radians from +Z, positive towards +X."""
-    a = points[max(0, i - 1)] if len(points) > 0 else None
-    b = points[i] if 0 <= i < len(points) else None
-    if a is not None and b is not None:
-        return math.atan2(b.x - a.x, b.z - a.z)
-    return 0
+    """Heading of the segment ending at `points[i]`, in radians from +Z, positive towards +X.
+
+    `i` is one of the points; the first has no segment ending at it, so its heading is 0.
+    """
+    a = points[max(0, i - 1)]
+    b = points[i]
+    return math.atan2(b.x - a.x, b.z - a.z)
 
 
 class Follow:

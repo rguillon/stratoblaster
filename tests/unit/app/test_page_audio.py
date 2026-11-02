@@ -135,3 +135,17 @@ def test_aud_engine_05_the_frame_wrapper_runs_the_frame_then_schedules_the_music
     wrapped = app_audio.with_audio(inner)
     wrapped.simulate(0.25)
     simulate.assert_called_once_with(0.25)
+
+
+def test_aud_engine_07_the_audio_clock_counts_the_game_s_frames() -> None:
+    """The sound effect limits count in game time: a frame of a negative `dt` does not count."""
+    game = MagicMock()
+    game.screen.width = 320
+    app_audio = create_app_audio(game, page())
+    clock = app_audio.audio._options.clock
+    assert clock() == 0.0
+    wrapped = app_audio.with_audio(Ticker(MagicMock(), MagicMock()))
+    wrapped.simulate(0.25)
+    wrapped.simulate(-1.0)
+    wrapped.simulate(0.5)
+    assert clock() == 0.75

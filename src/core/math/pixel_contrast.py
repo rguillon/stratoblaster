@@ -96,25 +96,3 @@ def brightest_but(image: Pixels, share: float) -> float:
     ]
     values.sort()
     return values[math.floor((1 - share) * (n - 1))]
-
-
-class ReadabilityReport:
-    """How readable the frame is.
-
-    The contrast of each kind of object with what is behind it (None when none is on screen), and
-    the luminance of the background's brightest pixels.
-    """
-
-    def __init__(
-        self,
-        player: float | None,
-        enemy: float | None,
-        enemy_bullet: float | None,
-        player_shot: float | None,
-        background_luminance: float,
-    ) -> None:
-        self.player = player
-        self.enemy = enemy
-        self.enemy_bullet = enemy_bullet
-        self.player_shot = player_shot
-        self.background_luminance = background_luminance

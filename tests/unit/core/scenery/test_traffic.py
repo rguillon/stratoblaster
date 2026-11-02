@@ -56,6 +56,14 @@ def test_cars_need_a_kind_and_skip_paths_and_single_point_roads() -> None:
     assert Traffic([lone], ground, rules(), 1).count == 0
 
 
+def test_a_road_of_one_point_repeated_has_no_cars() -> None:
+    # No length to drive along: no car is placed on it (and none is ever drawn at NaN).
+    still = Road(1, "main", 6, 1, [RoadPoint(0, 40, 6), RoadPoint(0, 40, 6)])
+    traffic = Traffic([still], ground, rules(), 1)
+    assert traffic.count == 0
+    assert traffic.at(1.0, FAR) == []
+
+
 def test_add_takes_the_cars_of_later_roads() -> None:
     traffic = Traffic([straight(0)], ground, rules(), 1)
     before = traffic.count

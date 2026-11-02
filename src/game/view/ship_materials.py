@@ -111,13 +111,17 @@ def _create_ship_materials(scene: Scene) -> ShipMaterials:
     )
 
 
+def _cached_materials(scene: Scene) -> ShipMaterials | None:
+    """`SHIP_MATERIALS_CACHE.get(scene) || null`: the scene's materials, once made."""
+    __pragma__("js", "{}", "return SHIP_MATERIALS_CACHE.get(scene) || null;")
+    return None
+
+
 def get_ship_materials(scene: Scene) -> ShipMaterials:
     """Return the scene's ship materials, creating them on first use."""
-    found: Any = None
-    __pragma__("js", "{}", "found = SHIP_MATERIALS_CACHE.get(scene);")
+    found = _cached_materials(scene)
     if found:
-        cached: ShipMaterials = found
-        return cached
+        return found
     created = _create_ship_materials(scene)
     __pragma__("js", "{}", "SHIP_MATERIALS_CACHE.set(scene, created);")
     return created

@@ -494,10 +494,7 @@ class MenuFlow:
         choice.
         """
         screen = self._screen
-        if screen == "title":
-            targets: list[MenuScreen] = ["ship-select", "settings", "dev"]
-            target: MenuScreen = targets[self._title_index]
-            return "screen" if self.go_to(target) else "none"
+        result = self._result
         if screen == "dev":
             return "screen" if self.go_to("dev-viewer") else "none"
         if screen == "ship-select":
@@ -505,20 +502,20 @@ class MenuFlow:
             return "screen" if self.go_to("level-select") else "none"
         if screen == "level-select":
             return self._confirm_level()
-        if screen == "game":
-            return self._leave_completed_level()
-        return "none"
+        if screen == "game" and result is not None:
+            return self._leave_completed_level(result)
+        # The title screen: `_action` sends the other screens' commands elsewhere.
+        targets: list[MenuScreen] = ["ship-select", "settings", "dev"]
+        target: MenuScreen = targets[self._title_index]
+        return "screen" if self.go_to(target) else "none"
 
-    def _leave_completed_level(self) -> str:
-        """Leave the "Level complete" or "Game over" overlay for the level select screen.
+    def _leave_completed_level(self, result: LevelResult) -> str:
+        """Leave the "Level complete" or "Game over" overlay (`result`) for the level select screen.
 
         From "Level complete", on the next level (UI-OVER-03, UI-LEVEL-07; after a world's last
         level the next world's first: WLD-1-02, WLD-2-02); from "Game over", on the level played
         (UI-FLOW-07), unless Continue is chosen (UI-OVER-07).
         """
-        result = self._result
-        if result is None:
-            return "none"
         checkpoint = result.checkpoint
         if checkpoint is not None and self._choice == 0:
             return self._continue(checkpoint)
@@ -527,8 +524,8 @@ class MenuFlow:
         after = _at(levels, played + 1)
         won = result.outcome == "complete"
         nxt = played + 1 if won and after is not None and after.unlocked else played
-        if not self.go_to("level-select"):
-            return "none"
+        # The game screen may always go back to the level select screen (UI-FLOW-07).
+        self.go_to("level-select")
         self._level_index = max(0, nxt)
         return "screen"
 

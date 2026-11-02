@@ -41,7 +41,11 @@ class Lake:
 
 
 class LakeField:
-    """The frozen lakes of `lakes`, each square's lake worked out once when first needed."""
+    """The frozen lakes of `lakes`, each square's lake worked out once when first needed.
+
+    Each square of `spacing` may hold one lake, round, at its level within `radius`, its shore
+    rising back to the ground over `edge`.
+    """
 
     def __init__(self, lakes: Lakes, seed: int) -> None:
         self._lakes = lakes
@@ -94,15 +98,6 @@ def _square_lake(lakes: Lakes, seed: int, i: int, j: int) -> Lake | None:
     cx = (i + 0.5) * spacing + (r(LAKE_X) * 2 - 1) * room
     cz = (j + 0.5) * spacing + (r(LAKE_Z) * 2 - 1) * room
     return Lake(cx, cz, radius)
-
-
-def with_lakes(lakes: Lakes, seed: int, x: float, z: float, h: float) -> float:
-    """`h` with the frozen lakes of `lakes` flattened into it at (`x`, `z`).
-
-    Each square of `spacing` may hold one lake, round, at its level within `radius`, its shore
-    rising back to the ground over `edge`.
-    """
-    return LakeField(lakes, seed).apply(x, z, h)
 
 
 def crevasse_depth(crevasses: Crevasses, noise: Noise2D, x: float, z: float) -> float:

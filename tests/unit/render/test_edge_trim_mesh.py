@@ -162,3 +162,31 @@ def test_a_trim_group_is_trimmed_along_its_own_outline() -> None:
     assert sorted(t.parent.name for t in trims) == ["hull", "part-mesh"]
     assert big.children
     assert small.children
+
+
+def test_gfx_trim_09_clearing_a_model_leaves_its_meshes_without_a_trim_untouched() -> None:
+    scene = FakeScene()
+    root = _root(scene)
+    trimmed = _box_mesh(scene, root, "trimmed", [1, 1, 1])
+    plain = _box_mesh(scene, root, "plain", [1, 1, 1])
+    plain.metadata = {"kind": "hull"}
+    set_trim(trimmed, CYAN)
+    clear_trim(root)
+    assert trim_of(trimmed) is None
+    assert plain.metadata == {"kind": "hull"}
+
+
+def test_gfx_trim_08_a_mesh_under_a_plain_node_belongs_to_the_model_s_own_group() -> None:
+    # The hull hangs from a plain node: it is in the model's group, so the part on it hides its
+    # inner edges; a part in a trim group of its own would keep them.
+    scene = FakeScene()
+    root = _root(scene)
+    frame = scene.add_node("frame")
+    frame.parent = root
+    big = _box_mesh(scene, frame, "hull", [4, 1, 4])
+    small = _box_mesh(scene, frame, "part-mesh", [1, 1, 1])
+    small.matrix = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 1, 0, 1]
+    request_trim(root, CYAN)
+    trims = add_edge_trim(root, TrimOptions(0.1, 0))
+    assert [t.parent for t in trims] == [big]
+    assert small.children == []

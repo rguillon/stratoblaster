@@ -67,12 +67,6 @@ def test_enm_04_enemies_added_get_ids_and_count_towards_the_spawned_totals() -> 
     assert world.spawned_health == 15
 
 
-def test_on_screen_counts_enemies_whose_centre_is_on_the_playfield() -> None:
-    world = _world()
-    world.add(Walker(50, 50), Walker(-5, 50), Walker(50, 105), Walker(100, 0))
-    assert world.on_screen == 2
-
-
 def test_enm_04_each_enemy_is_updated_every_step_and_ages() -> None:
     world = _world()
     enemy = Walker(50, 50)

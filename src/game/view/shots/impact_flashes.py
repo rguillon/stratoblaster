@@ -72,8 +72,6 @@ class ImpactFlashes:
             self.flashes.append(Flash(impact.x, impact.y, self.radius_of(impact), 0))
         for i, mesh in enumerate(self._pool.show(len(self.flashes))):
             flash = self.flashes[i]
-            if not flash:
-                continue
             # A new flash shows at a small size on its first frame.
             size = flash.radius * max(0.3, flash_scale(flash.age, self.duration))
             mesh.position.set(flash.x, flash.y, -1)

@@ -3,6 +3,7 @@
 
 from helpers.dom import FakeDocument, FakeEvent
 
+from ui.screens import elements
 from ui.screens.elements import (
     SVG,
     back_button,
@@ -11,6 +12,11 @@ from ui.screens.elements import (
     padlock,
     tap_listener,
 )
+
+# Taken when this module is imported, before the autouse fixture of `tests/unit/ui/conftest.py`
+# swaps them for their Python twins in every UI test.
+ARRAY_FROM = elements.array_from
+REPLACE_CHILDREN = elements.replace_children
 
 
 def test_ui_look_01_an_element_has_its_tag_class_and_text() -> None:
@@ -75,3 +81,17 @@ def test_ui_level_04_the_padlock_is_an_svg_icon_with_an_accessible_name() -> Non
     assert lock.getAttribute("aria-label") == "locked"
     assert lock.getAttribute("class") == "padlock"
     assert [child.tagName for child in lock.children] == ["path", "rect"]
+
+
+def test_the_javascript_only_dom_helpers_run_their_placeholders_in_cpython() -> None:
+    """`Array.from(source)` and `el.replaceChildren(...nodes)` are JavaScript only.
+
+    CPython runs only their placeholders: no copy, and the element is left as it was.
+    """
+    doc = FakeDocument()
+    el = element(doc, "div", "x")
+    child = element(doc, "span", "y")
+    el.append(child)
+    assert ARRAY_FROM([child]) == []
+    REPLACE_CHILDREN(el, [element(doc, "b", "z")])
+    assert el.children == [child]

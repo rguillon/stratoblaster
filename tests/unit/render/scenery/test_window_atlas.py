@@ -16,6 +16,9 @@ from render.scenery.window_atlas import (
     window_atlas_pixels,
 )
 
+# The JavaScript-only helper, before the fixture below fakes it.
+ORIGINAL_UINT8_ARRAY = window_atlas._uint8_array
+
 # A small atlas: 2 styles of 2 columns, 4 rows of 8-pixel cells (D-215: no doors).
 LOOK = record({
     "size": 32,
@@ -57,7 +60,8 @@ def test_d210_the_atlas_has_cells_in_one_band_of_columns_per_style() -> None:
 def test_d210_a_lit_window_shows_its_light_opaque() -> None:
     pixels = window_atlas_pixels(LOOK)
     assert len(pixels) == 32 * 32 * 4
-    # The first style is always lit, its window from (2, 2) to (6, 6) in each cell.
+    # Two windows of the first style lit with seed 3 (its chance is `lit * activity`, the floor's
+    # activity 0.2 to 1.8, so even `lit` 1 leaves some dark), from (2, 2) to (6, 6) in their cells.
     assert _pixel(pixels, 3, 3) == [255, 128, 64, 255]
     assert _pixel(pixels, 8 + 5, 16 + 2) == [255, 128, 64, 255]
 
@@ -116,3 +120,22 @@ def test_d215_a_door_stands_on_the_bottom_of_its_cell() -> None:
 def _pixel_of(pixels: Any, look: Any, x: int, y: int) -> list[int]:
     i = (y * look.size + x) * 4
     return list(pixels[i : i + 4])
+
+
+def test_d210_halos_meet_but_windows_win() -> None:
+    # Windows filling their cells, all lit (even on the quietest floor): each halo reaches into
+    # the neighbouring cells' windows.
+    look = record({
+        **dict(LOOK.items()),
+        "size": 16,
+        "styles": [{"window": [0, 0, 8, 8], "lit": 10}],
+    })
+    pixels = window_atlas_pixels(look)
+    # Every pixel is a lit window: no halo is painted over a window painted before it.
+    for i in range(16 * 16):
+        assert list(pixels[i * 4 : i * 4 + 4]) == [255, 128, 64, 255]
+
+
+def test_the_uint8_array_is_javascript_only() -> None:
+    """`new Uint8Array(length)` in the browser: CPython runs only its placeholder (faked above)."""
+    assert ORIGINAL_UINT8_ARRAY(16) is None

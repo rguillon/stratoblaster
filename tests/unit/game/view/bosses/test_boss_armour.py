@@ -10,10 +10,12 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
+from helpers.bosses_top_fakes import FakeNode, patch_models
 from helpers.view_probes import probe_builder
 
 from game.config.boss_look import BOSS_LOOK
 from game.config.bosses.hidden_weapons import armour_region
+from game.config.bosses.moving_regions import moving_region, slide
 from game.config.record import record
 from game.sim.boss_kinds import BOSS_DESIGNS
 from game.view.bosses import boss_armour
@@ -22,6 +24,8 @@ from game.view.bosses.boss_armour import (
     ArmourChunk,
     ArmourView,
     FrameView,
+    MovingView,
+    build_armour,
     chunk_layers,
     chunk_pose,
     cut_armour,
@@ -244,3 +248,96 @@ def test_supports_stand_in_a_region_even_in_part_and_root_on_what_lasts() -> Non
     assert supports_in(region, [inside, edge, away]) == [inside, edge]
     deck = _tris(([10, 2, 10], [-20, 0, 0]))
     assert rooted([inside, away], deck) == [[-20, 0, 5, 4, pytest.approx(2)], away]
+
+
+def _winged_plane(p: Any) -> None:
+    """`_plane` with a flapping wing and a rotor: nodes the core adds, not faces to cut."""
+    _plane(p)
+    p.flap([20, 0, 0], 1, 30, lambda wing: wing.hull.box([30, 1, 10], GREY, Placement([35, 0, 0])))
+    p.rotor([0, 4, -10], 5)
+
+
+def test_the_core_keeps_its_wings_rotors_reactors_and_muzzles_through_the_cut() -> None:
+    cut = cut_armour(_winged_plane, [WING])
+    kept = collect_parts(cut.core_drawing())
+    assert len(kept["wings"]) == 1
+    assert kept["wings"][0].span == 30
+    assert len(kept["wings"][0].parts.hull.geometry.positions) > 0
+    assert [r.radius for r in kept["rotors"]] == [5]
+    assert [r.radius for r in kept["reactors"]] == [3]
+    assert [m[1] for m in kept["muzzles"]] == ["gun"]
+
+
+# A hatch sliding 10 px up the screen as the boss transforms (D-230), leaving a shell frame.
+HATCH = moving_region(
+    "hatch",
+    1,
+    [[-8, 8], [8, 8], [8, 18], [-8, 18]],
+    slide([[0, 0, 0], [0, 10, 0]]),
+    "shell",
+    None,
+    False,
+)[0]
+
+
+@pytest.fixture
+def moving(monkeypatch: pytest.MonkeyPatch) -> SimpleNamespace:
+    """Return the armour of a plane with a moving hatch, on fake nodes, given no carrier."""
+    builder = patch_models(monkeypatch, boss_armour)
+    trims: list[tuple[str, str]] = []
+    monkeypatch.setattr(boss_armour, "set_trim_group", lambda n: trims.append(("group", n.name)))
+    monkeypatch.setattr(boss_armour, "clear_trim", lambda n: trims.append(("clear", n.name)))
+    root = FakeNode("plane", "scene")
+    flashes: list[_Flash] = []
+
+    def flash_of(_model: Any) -> _Flash:
+        flashes.append(_Flash())
+        return flashes[-1]
+
+    design = SimpleNamespace(id="plane", armour=[HATCH])
+    views = build_armour(design, cut_armour(_plane, [HATCH]), root, GREY, None, flash_of)
+    return SimpleNamespace(view=views[0], root=root, builder=builder, flash=flashes[0], trims=trims)
+
+
+def test_d230_a_moving_piece_hangs_on_its_mover_with_a_carrier_and_a_hidden_frame(
+    moving: Any,
+) -> None:
+    view = moving.view
+    assert isinstance(view, MovingView)
+    assert view.whole.root.parent is view.mover
+    assert view.mover.name == "plane-armour-hatch-mover"
+    assert view.mover.parent is moving.root
+    # No carrier was given: the piece gets its own.
+    assert view.carrier.name == "plane-armour-hatch-carrier"
+    assert view.carrier.parent is moving.root
+    assert view.frame.root.parent is moving.root
+    assert view.frame.root.enabled is False
+    # The floor is trimmed along its own outline, the ribs are not (GFX-TRIM-09).
+    assert ("group", "plane-armour-hatch-frame-floor") in moving.trims
+    assert ("clear", "plane-armour-hatch-frame-ribs") in moving.trims
+    assert moving.builder.faces("plane-armour-hatch") > 0
+
+
+def test_d230_a_moving_piece_strains_then_moves_into_its_new_pose(moving: Any) -> None:
+    view = moving.view
+    view.show(None, {}, 0.1)
+    # At rest: the piece as drawn, the weapons riding it drawn where they end up (10 px back).
+    assert view.mover.position.xyz() == pytest.approx([0, 0, 0])
+    assert view.carrier.position.xyz() == pytest.approx([0, 0, 10])
+    assert view.frame.root.enabled is False
+    assert moving.flash.since == [1000]
+    # It strains as armour does: it shudders and strobes before the burst.
+    t = LOOK.burst / 2
+    view.show(_boss(0, 1, t), {}, 0.1)
+    jolt = math.sin(t * 90) * LOOK.shudder * 0.5
+    assert view.whole.root.position.xyz() == pytest.approx([jolt, 0, -jolt * 0.6])
+    assert moving.flash.since[-1] == (0 if math.floor(t * LOOK.strobeHz * 4) % 2 == 0 else 1000)
+    assert view.frame.root.enabled is False
+    # Once moved: at its end pose (10 px up the screen is model -Z), its frame bared.
+    view.show(_boss(1, 0, 0), {}, 0.1)
+    assert view.mover.position.xyz() == pytest.approx([0, 0, -10])
+    assert view.carrier.position.xyz() == pytest.approx([0, 0, 0])
+    assert view.whole.root.position.xyz() == [0, 0, 0]
+    assert moving.flash.since[-1] == 7.0
+    assert view.frame.root.enabled is True
+    assert all(len(m.synced) == 1 for m in view.frame.models)

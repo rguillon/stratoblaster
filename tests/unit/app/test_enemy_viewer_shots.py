@@ -86,3 +86,21 @@ def test_gfx_fx_05_each_frame_draws_the_player_shots_the_enemy_shots_and_the_bla
     assert len(enemy_frame.missiles) == 1
     assert enemy_frame.lasers == ["laser"]
     blasts.sync.assert_called_once_with(["blast"], 0.5)
+
+
+def test_perf_20_warming_shows_or_hides_the_enemy_bullets() -> None:
+    game, enemy_renderer, _ = make_game()
+    shots = EnemyViewerShots(game, make_playfield())
+    shots.warm(True)
+    shots.warm(False)
+    assert [c.args for c in enemy_renderer.warm.call_args_list] == [(True,), (False,)]
+
+
+def test_gfx_fx_05_disposing_releases_every_shot_renderer() -> None:
+    game, enemy_renderer, blasts = make_game()
+    shots = EnemyViewerShots(game, make_playfield())
+    player_renderer = shots._player["guns"]
+    shots.dispose()
+    player_renderer.dispose.assert_called_once_with()
+    enemy_renderer.dispose.assert_called_once_with()
+    blasts.dispose.assert_called_once_with()

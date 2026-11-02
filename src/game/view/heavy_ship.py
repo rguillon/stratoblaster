@@ -20,7 +20,6 @@ from game.view.ship_parts import (
     nav_light,
     panel,
     plate,
-    tag_part,
 )
 
 # create_disc: render/babylon.py.
@@ -110,7 +109,7 @@ def _for_side(sign: float, outline: list[list[float]]) -> list[list[float]]:
 def _build_wing(root: Any, scene: Any) -> None:
     """Build the flying wing: its planform, accent bands, elevons and bay doors."""
     mats = get_ship_materials(scene)
-    wing = tag_part(new_transform_node("heavy-wing", scene), "wing")
+    wing = new_transform_node("heavy-wing", scene)
     wing.parent = root
     panel("heavy-wing-panel", HEAVY_PLANFORM, WING_THICKNESS, mats.hull, wing)
     top = WING_THICKNESS / 2
@@ -148,19 +147,16 @@ def _build_cockpit(root: Any, scene: Any) -> None:
     frame.parent = root
 
     # Dark visor set into the front of the cockpit hump.
-    visor = tag_part(
-        create_faceted_lathe_along_z(
-            "heavy-visor",
-            [
-                [1.29, 0],
-                [1.22, 0.15],
-                [1.08, 0.21],
-                [0.92, 0],
-            ],
-            BODY_SECTION,
-            scene,
-        ),
-        "canopy",
+    visor = create_faceted_lathe_along_z(
+        "heavy-visor",
+        [
+            [1.29, 0],
+            [1.22, 0.15],
+            [1.08, 0.21],
+            [0.92, 0],
+        ],
+        BODY_SECTION,
+        scene,
     )
     visor.scaling.y = 0.32
     visor.position.y = 0.15
@@ -186,7 +182,7 @@ def _build_centre_body(root: Any, scene: Any) -> None:
     )
     body.scaling.set(1.7, 0.42, 1)
     body.material = mats.hull
-    body.parent = tag_part(new_transform_node("heavy-body-root", scene), "body")
+    body.parent = new_transform_node("heavy-body-root", scene)
     body.parent.parent = root
 
 

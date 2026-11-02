@@ -101,3 +101,26 @@ def test_gfx_shot_01_dispose_releases_the_pools_and_templates(renderer: Any) -> 
     renderer.handle["dispose"]()
     assert renderer.bullets.disposed
     assert renderer.sparks.disposed
+
+
+def test_the_renderer_object_is_made_in_javascript_only() -> None:
+    """`{sync, dispose}` is a JavaScript object literal; CPython runs only the placeholder: None."""
+    assert bullet_renderer._shot_renderer(lambda _frame: None, lambda: None) is None
+
+
+def test_gfx_shot_01_a_missing_bullet_leaves_its_pooled_streak_as_it_was(renderer: Any) -> None:
+    shot = SimpleNamespace(x=2.0, y=3.0, heading=0.0, age=1.0, speed=100.0)
+    renderer.handle["sync"](frame([None, shot]))
+    hole, drawn = renderer.bullets.meshes
+    hole.position.set.assert_not_called()
+    hole.scaling.set.assert_not_called()
+    drawn.position.set.assert_called_once_with(2.0, 3.0, LOOK.depth)
+
+
+def test_gfx_fx_02_a_missing_spark_leaves_its_pooled_streak_as_it_was(renderer: Any) -> None:
+    spark = SimpleNamespace(x=1.0, y=2.0, heading=0.0, length_=4.0, brightness=1.0)
+    renderer.source.step.return_value = [None, spark]
+    renderer.handle["sync"](frame())
+    hole, drawn = renderer.sparks.meshes
+    hole.position.set.assert_not_called()
+    drawn.position.set.assert_called_once_with(1.0, 2.0, -1)

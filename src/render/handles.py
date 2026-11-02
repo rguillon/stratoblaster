@@ -112,6 +112,9 @@ class Vector3(Protocol):
     def normalize(self) -> Vector3:
         """Normalize the vector in place and return it."""
 
+    def copyFrom(self, source: Vector3) -> Vector3:
+        """Copy the components of `source` into this vector and return it."""
+
 
 class Vector4(Protocol):
     """A Babylon `Vector4`: four components."""

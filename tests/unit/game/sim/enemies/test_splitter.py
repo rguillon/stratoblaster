@@ -9,7 +9,7 @@ from helpers.fakes import FakeContext
 
 from core.systems.enemy_motion import Path
 from game.sim.enemies.hornet import Hornet
-from game.sim.enemies.splitter import Splitter
+from game.sim.enemies.splitter import CFG, Splitter
 
 
 def _path() -> Path:
@@ -35,3 +35,14 @@ def test_enm_splitter_07_a_destroyed_splitter_releases_three_pods_round_its_core
     assert all(isinstance(pod, Hornet) for pod in ctx.spawned)
     headings = sorted(pod.heading % (2 * math.pi) for pod in ctx.spawned)
     assert headings[1] - headings[0] == pytest.approx(2 * math.pi / 3, rel=1e-6)
+
+
+def test_enm_splitter_05_a_splitter_is_gone_at_the_end_of_its_path() -> None:
+    ctx = FakeContext()
+    path = _path()
+    splitter = Splitter(path)
+    run(splitter, ctx, path.length / CFG.speed - 0.1)
+    assert splitter.gone is False
+    run(splitter, ctx, 0.2)
+    assert splitter.gone is True
+    assert splitter.y == pytest.approx(100)

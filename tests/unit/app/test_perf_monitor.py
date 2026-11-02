@@ -164,3 +164,16 @@ def test_eng_106_a_reset_of_the_frame_counts_keeps_the_draw_calls() -> None:
     monitor.record_draw_calls(120)
     monitor.reset()
     assert monitor.numbers.draw_calls == 120
+
+
+def test_eng111_without_a_keyboard_the_overlay_still_shows_and_is_disposed() -> None:
+    doc = FakeDocument()
+    parent = doc.createElement("div")
+    perf = PerfMonitor(50, Clock())
+    handle = perf_overlay(PerfOverlayOptions(doc, parent, None), perf)
+    assert len(parent.children) == 1
+    simulate = MagicMock()
+    handle.wrap(perf_monitor.Ticker(simulate, MagicMock())).simulate(0.5)
+    simulate.assert_called_once_with(0.5)
+    handle.dispose()
+    assert parent.children == []

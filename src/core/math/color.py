@@ -86,13 +86,6 @@ def _span(family: ColorFamily) -> float:
     return (family["to"] - family["from"] + 360) % 360
 
 
-def in_family(color: Rgb, family: ColorFamily) -> bool:
-    """Whether `color` is in `family` (the reserved colour families, GFX-READ-04)."""
-    hue, saturation = hue_saturation(color)
-    offset = (hue - family["from"] + 360) % 360
-    return saturation >= family["minSaturation"] and offset <= _span(family)
-
-
 def _with_hue(color: Rgb, hue: float) -> Rgb:
     """`color` with its hue set to `hue`, keeping its HSV value and saturation."""
     high = _high_of(color[0], color[1], color[2])

@@ -1,6 +1,7 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/bosses/boss_damage.py`."""
 
+from types import SimpleNamespace
 from typing import Any
 from unittest.mock import MagicMock
 
@@ -8,7 +9,7 @@ import pytest
 
 from game.config.boss_look import BOSS_LOOK
 from game.view.bosses import boss_damage
-from game.view.bosses.boss_damage import Smoke, build_smoke
+from game.view.bosses.boss_damage import Smoke, build_smoke, effect_materials
 
 
 class _Puff:
@@ -77,3 +78,36 @@ def test_boss_17_build_smoke_puts_its_puffs_on_a_node_under_the_parent(monkeypat
     assert node.parent is parent
     assert len(meshes) == look.puffs
     assert all(m.parent is node for m in meshes)
+
+
+def test_boss_17_the_flash_and_smoke_materials_are_made_once_a_scene(monkeypatch: Any) -> None:
+    """BOSS-17: the hit flash is unlit white, the smoke unlit, see-through and two-sided."""
+    stored: dict[int, Any] = {}
+    made: list[str] = []
+
+    def new_material(label: str, _scene: Any) -> Any:
+        made.append(label)
+        return SimpleNamespace(name=label)
+
+    monkeypatch.setattr(boss_damage, "weak_map_get", lambda _map, key: stored.get(id(key)))
+    monkeypatch.setattr(
+        boss_damage, "weak_map_set", lambda _map, key, value: stored.__setitem__(id(key), value)
+    )
+    monkeypatch.setattr(boss_damage, "new_standard_material", new_material)
+    monkeypatch.setattr(boss_damage, "color3", lambda r, g, b: (r, g, b))
+    scene = object()
+    mats = effect_materials(scene)
+    flash = mats["flash"]
+    smoke = mats["smoke"]
+    assert (flash.name, smoke.name) == ("boss-flash", "boss-smoke")
+    assert flash.emissiveColor == tuple(BOSS_LOOK.flash.color)
+    assert flash.disableLighting is True
+    assert smoke.emissiveColor == tuple(BOSS_LOOK.smoke.color)
+    assert smoke.disableLighting is True
+    assert smoke.alpha == BOSS_LOOK.smoke.alpha
+    assert smoke.backFaceCulling is False
+    # The same scene gets the same materials; another scene its own.
+    assert effect_materials(scene) is mats
+    assert made == ["boss-flash", "boss-smoke"]
+    assert effect_materials(object()) is not mats
+    assert len(made) == 4

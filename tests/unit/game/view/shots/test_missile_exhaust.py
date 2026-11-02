@@ -88,3 +88,8 @@ def test_gfx_shot_07_dispose_releases_both_pools(exhaust: Any) -> None:
     exhaust.handle["dispose"]()
     assert exhaust.flares.disposed
     assert exhaust.trails.disposed
+
+
+def test_the_exhaust_object_is_made_in_javascript_only() -> None:
+    """`{sync, dispose}` is a JavaScript object literal; CPython runs only the placeholder: None."""
+    assert missile_exhaust._exhaust(lambda _frame: None, lambda: None) is None

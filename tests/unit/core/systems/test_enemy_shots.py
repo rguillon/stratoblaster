@@ -148,3 +148,13 @@ def test_enm_19_a_laser_warns_then_fires_along_its_locked_heading() -> None:
     owner.heading = 2.0
     shots.step(0.1, 0, 0)
     assert laser.heading == pytest.approx(1.0)
+
+
+def test_game_bomb_05_a_missile_removed_by_a_bomb_moves_no_more() -> None:
+    shots = _shots()
+    shots.fire_missile(0, 0, 0, _missile())
+    missile = shots.missiles[0]
+    shots.clear()
+    shots.step(1, 0, 100)
+    assert missile.alive is False
+    assert (missile.x, missile.y, missile.homing) == (0, 0, 1)

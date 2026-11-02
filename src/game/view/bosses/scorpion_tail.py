@@ -90,14 +90,6 @@ def tail_pose(unfold: float) -> list[list[float]]:
     return result
 
 
-def tail_tip(unfold: float) -> list[float]:
-    """Where the tail ends, `(z, y)`, `unfold` of the way out."""
-    pose = tail_pose(unfold)
-    last = pose[len(pose) - 1]
-    length = _length(len(pose) - 1) * last[3]
-    return [last[0] + math.cos(last[2]) * length, last[1] + math.sin(last[2]) * length]
-
-
 def _width(i: int) -> float:
     return TAIL_WIDTH[i] if i < len(TAIL_WIDTH) else 4
 

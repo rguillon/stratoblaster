@@ -120,7 +120,9 @@ class MusicPlayer:
                 continue
             now = bus.context.currentTime
             at = now - slot.anchor
-            self._set_paused_at(slot, at)
+            # Each slot once: a pause pauses once, and `resume` empties these lists.
+            self._paused_slots.append(slot)
+            self._paused_at.append(at)
             slot.sequencer.seek(at)
             for voice in slot.voices:
                 voice.stop(now, self._timings.pause_fade_seconds)
@@ -178,14 +180,6 @@ class MusicPlayer:
                 return i
         return -1
 
-    def _set_paused_at(self, slot: Slot, at: float) -> None:
-        index = self._paused_index(slot)
-        if index >= 0:
-            self._paused_at[index] = at
-        else:
-            self._paused_slots.append(slot)
-            self._paused_at.append(at)
-
     def _fade_out(self, slot: Slot, fade: float) -> None:
         slot.target = 0
         slot.fade = fade
@@ -203,12 +197,10 @@ class MusicPlayer:
         # A track fading out goes on playing until it is silent; one never started stays so.
         if slot.until is not None and slot.mixer is None:
             return
-        if slot.mixer is None or slot.anchor is None:
-            self._start(slot, bus, now)
         mixer = slot.mixer
         anchor = slot.anchor
         if mixer is None or anchor is None:
-            return
+            mixer, anchor = self._start(slot, bus, now)
         slot.voices = [voice for voice in slot.voices if voice.end > now]
         lookahead = now + self._timings.lookahead_seconds - anchor
         for scheduled in slot.sequencer.advance(lookahead):
@@ -232,11 +224,13 @@ class MusicPlayer:
             return None
         return self._instruments.get(name)
 
-    def _start(self, slot: Slot, bus: MusicBus, now: float) -> None:
+    def _start(self, slot: Slot, bus: MusicBus, now: float) -> tuple[TrackMixer, float]:
+        """Start the slot's track on the bus now; return its mixer and its anchor."""
         mixer = TrackMixer(bus, self._effects, slot.track.bpm)
         mixer.fade_in(now, slot.fade)
         slot.mixer = mixer
         slot.anchor = now
+        return mixer, now
 
     def _over(self, slot: Slot, now: float) -> bool:
         """Return a slot is over once faded out, or once a jingle has played all its notes."""

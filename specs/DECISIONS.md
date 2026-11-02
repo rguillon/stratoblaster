@@ -85,3 +85,59 @@
 - **Consequences:** the ENG-14, ENG-15, ENG-151, ENG-153, ENG-157 and ENG-161 texts still mention
   `# noqa` comments; updating them is left to the owner (requirement sections).
 - **Status:** Proposed
+
+### D-236 — 100 % unit coverage: unreachable code is removed, never excluded
+- **Date:** 2026-11-02
+- **Requirements:** ENG-43 (changed), ENG-29, ENG-45, ENG-75, ENG-76, ENG-145, ENG-146 (texts updated).
+- **Context:** the owner raised `fail_under` from 70 to 100 % and dropped the per-package gates and
+  the HTML report. The unit tests were then completed (89.8 % → 99.87 %); the last 63 lines and
+  branches could not be reached by any honest test: defensive guards that earlier code makes
+  impossible, a cache read only JavaScript performs, a mypy-only `raise`.
+- **Decision:** reach 100 % by tests, and remove or restructure the code no input can reach (owner's
+  choice, over `# pragma: no cover` or tests that feed private functions impossible inputs):
+  - Dead guards are deleted after checking they are dead in the browser too (`undefined`, NaN, an
+    empty list being truthy). One was not: `traffic.py` stops NaN on a zero-length road, so that
+    check moved to where cars are added (a road with no length gets none), with its test.
+  - Guards that only narrowed a type for mypy are replaced by code whose types carry the invariant
+    (`cast` does not exist at run time under Transcrypt): kinds looked up in a dict by id
+    (`boss_fights.py`, `level_run.py`, validated by their constructors), `draws.weighted_pick` for
+    lists that are never empty, `music_player._start` returning what it made,
+    `menu_flow._leave_completed_level` taking its result.
+  - A value only JavaScript sets is read through a small `__pragma__("js")` helper the tests can
+    patch (`ship_materials._cached_materials`, ENG-158).
+  - Functions no code calls are deleted with their tests.
+- **Alternatives considered:** `# pragma: no cover` with a reason on each line (weakens the gate,
+  CLAUDE.md); covering guards by calling private functions with inputs the callers never produce
+  (tests of impossible states); a threshold under 100 %.
+- **Consequences:** every line and branch of `src/` is run by a unit test, so any new unreachable
+  code fails `make tests`. CPython-only gaps (a JavaScript-only helper whose Python body is a
+  placeholder) are covered by tests that call the placeholder and say so.
+- **Status:** Proposed
+
+### D-237 — `src/` holds only code the game runs; what only tests call lives in `tests/`
+- **Date:** 2026-11-02
+- **Requirements:** GAME-SHIP-08, GAME-WPN-19, BOSS-38, GFX-ROAD-21 (discrepancies noted), BOSS-21,
+  ENG-145, ENG-49.
+- **Context:** with coverage at 100 % (D-236), a scan of `src/` (no import, call, attribute read or
+  JavaScript string names it) found about 60 functions, classes and methods that only tests used:
+  engine checks nothing ran (`validate_weapons`, `validate_player_ship_roster`, ...), measuring
+  tools (`in_family`, `pattern_signature`), a fake (`MemoryStorage`), accessors for tests
+  (`EnemyLayer.count`, `SceneryStage.has_sea`, ...), the first props viewer's `SceneryStage`
+  methods (D-199), unused Babylon wrappers and typing Protocols, and `config/shot_viewer.py`.
+- **Decision:** the owner asked to take them out of `src/`:
+  - Code whose only subject was itself is deleted with its tests.
+  - Tools tests use to check other code or the game's data move into test code:
+    `tests/helpers/color_families.py` (`in_family`), `tests/helpers/memory_storage.py`
+    (`MemoryStorage`), and the test files that use them (`_check_roster`, `_check_weapons` in
+    `test_player_build.py`, `_pattern_signature` in `test_boss_parts_and_stages.py`).
+  - Accessors are deleted; tests read the state directly.
+  - `ship_parts.tag_part` went too: its tag was read only by a test-only reader.
+  - Every requirement ID keeps a test named after it (ENG-42).
+- **Alternatives considered:** wiring the unused engine checks into the game (a change of
+  behaviour, not a clean-up); keeping test-only code in `src/` (it counts as product code and must
+  stay covered).
+- **Consequences:** the engine refuses no bad roster or weapon data at run time (it never did; the
+  game's data is checked by unit tests). BOSS-38's health rule is applied by hand in the configs. A
+  stage cannot be re-seeded. The scan cannot tell methods apart when other classes share their name
+  (`count`, `clear`, ...): those were checked by hand where flagged.
+- **Status:** Proposed

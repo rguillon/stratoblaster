@@ -10,7 +10,12 @@ from core.math.rng import create_rng
 from core.scenery.districts import ZRange, find_districts
 from core.scenery.lanes import main_road_width
 from core.scenery.scenery_level import StreetGrid, layout_sections
-from core.scenery.street_grid import _merge_columns, _spaced, block_parts, street_runs
+from core.scenery.street_grid import (
+    _merge_columns,
+    _spaced,
+    block_parts,
+    street_runs,
+)
 from core.scenery.street_links import Block
 
 SPAN = ZRange(-3000.0, 6000.0)

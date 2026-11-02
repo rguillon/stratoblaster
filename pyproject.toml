@@ -88,7 +88,6 @@ ignore = [  "COM812",   # cause incompatibility with the formatter
 "src/input/keyboard_menu_input.py" = ["N802"]
 # Config record keys stay camelCase: the browser reads them as object fields (ENG-15).
 "src/game/sim/enemies/hornet.py" = ["N802"]
-"src/game/view/ship_materials.py" = ["N803"]
 # Arguments read by the JavaScript of `__pragma__("js", ...)` bodies, where ruff cannot see them.
 "src/main.py" = ["ARG001"]
 "src/app/debug_options.py" = ["ARG001"]
@@ -99,6 +98,7 @@ ignore = [  "COM812",   # cause incompatibility with the formatter
 "src/game/view/audio/game_audio.py" = ["ARG001"]
 "src/game/view/reactor_flame.py" = ["ARG001"]
 "src/game/view/readability_view.py" = ["ARG001"]
+"src/game/view/ship_materials.py" = ["ARG001", "N803"]  # N803: config record keys (ENG-15)
 "src/game/view/ship_parts.py" = ["ARG001"]
 "src/game/view/shot_geometry.py" = ["ARG001"]
 "src/game/view/shots/bullet_renderer.py" = ["ARG001"]
@@ -127,7 +127,7 @@ ignore = [  "COM812",   # cause incompatibility with the formatter
 # A node stopped earlier throws when stopped again: ignored, as Transcrypt has no `contextlib`.
 "src/audio/synth.py" = ["S110"]
 # `__pragma__` is Transcrypt's compiler marker, not a dunder of ours.
-"typings/*" = ["N807"]
+"tests/helpers/typings/*" = ["N807"]
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
 "random".msg = "ENG-18: core/ uses the seeded RNG (core/math/rng.py), never the random module."
@@ -150,12 +150,12 @@ preview = true
 [tool.deptry.per_rule_ignores]
 DEP001 = ["org"]
 
-# ENG-14: mypy --strict over src/ (`make check`); the browser globals' stubs are in typings/.
+# ENG-14: mypy --strict over src/ (`make check`); the browser globals' stubs are in tests/helpers/typings/.
 [tool.mypy]
 strict = true
 python_version = "3.12"
 files = ["src"]
-mypy_path = ["src", "typings"]
+mypy_path = ["src", "tests/helpers/typings"]
 
 [tool.pytest.ini_options]
 # Unit tests run in CPython on the modules of src/ (ENG-40). The Transcrypt stubs (`org`) are added
@@ -169,8 +169,8 @@ addopts = "-q --import-mode=importlib"
 
 [tool.coverage.run]
 # Every module of src/ is measured, including those no test imports (they show at 0 %): `source`
-# makes coverage read the files it did not run. ENG-45: the entry point and the GPU-only
-# configuration of render/ are left out.
+# makes coverage read the files it did not run. ENG-45: only the entry points and the generated
+# build info are left out.
 source = ["src"]
 branch = true
 omit = [
@@ -181,7 +181,7 @@ omit = [
 
 [tool.coverage.report]
 skip_empty = false
-fail_under = 90
+fail_under = 100
 show_missing = true
 skip_covered = true
 

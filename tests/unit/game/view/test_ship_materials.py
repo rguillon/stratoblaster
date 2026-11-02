@@ -19,3 +19,13 @@ def materials(monkeypatch: Any) -> Any:
 def test_the_ship_materials_are_one_set_of_metal_light_and_glow(materials: Any) -> None:
     names = [name for name in vars(materials) if not name.startswith("_")]
     assert names
+
+
+def test_gfx_ship_04_a_scene_keeps_its_ship_materials(monkeypatch: Any) -> None:
+    stub_babylon(monkeypatch, ship_materials)
+    scene = MagicMock(name="scene")
+    # Under CPython the cache is empty (`_cached_materials` is JavaScript): they are made.
+    made = ship_materials.get_ship_materials(scene)
+    assert isinstance(made, ship_materials.ShipMaterials)
+    monkeypatch.setattr(ship_materials, "_cached_materials", lambda _scene: made)
+    assert ship_materials.get_ship_materials(scene) is made

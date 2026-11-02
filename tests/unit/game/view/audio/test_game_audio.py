@@ -12,6 +12,9 @@ from game.view.audio import game_audio
 from game.view.audio.jingles import JINGLES
 from game.view.audio.music_styles import WORLD_STYLES
 
+# The level id reader as the module defines it (the fixture below replaces it in every test).
+_WORLD_OF = game_audio.world_of
+
 
 @pytest.fixture(autouse=True)
 def fresh_cache(monkeypatch: Any) -> None:
@@ -80,3 +83,8 @@ def test_aud_engine_02_the_buses_are_mixed_at_their_set_levels() -> None:
     assert game_audio.MIX.music == 0.8
     assert game_audio.MIX.sfx == 1
     assert game_audio.EFFECTS.echo_beats == 0.75
+
+
+def test_aud_music_02_the_world_of_a_level_id_is_read_in_javascript_only() -> None:
+    """`parseInt` runs in the browser; CPython runs only the placeholder: 0, no world."""
+    assert _WORLD_OF("2-3") == 0

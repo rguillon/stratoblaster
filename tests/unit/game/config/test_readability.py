@@ -5,8 +5,9 @@ import importlib
 from typing import Any
 
 import pytest
+from helpers.color_families import in_family
 
-from core.math.color import in_family, relative_luminance
+from core.math.color import relative_luminance
 from game.config.readability import READABILITY
 
 YELLOW = (1, 1, 0)

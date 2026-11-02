@@ -25,13 +25,14 @@ from typing import Any
 
 
 def _height_at(tri: Any, x: float, z: float) -> Any:
-    """Return the height of a triangle's plane at (x, z) if (x, z) is over it, else None."""
+    """Return the height of a triangle's plane at (x, z) if (x, z) is over it, else None.
+
+    The triangle faces up (`surface_below`), so it covers some of the XZ plane.
+    """
     a = tri[0].position
     b = tri[1].position
     c = tri[2].position
     det = (b[2] - c[2]) * (a[0] - c[0]) + (c[0] - b[0]) * (a[2] - c[2])
-    if abs(det) < 1e-9:
-        return None
     l0 = ((b[2] - c[2]) * (x - c[0]) + (c[0] - b[0]) * (z - c[2])) / det
     l1 = ((c[2] - a[2]) * (x - c[0]) + (a[0] - c[0]) * (z - c[2])) / det
     l2 = 1 - l0 - l1

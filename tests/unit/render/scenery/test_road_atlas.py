@@ -10,6 +10,9 @@ from helpers.render_fakes import FakeTypedArray, patch_babylon
 from render.scenery import road_atlas
 from render.scenery.road_atlas import ATLAS_PX, ATLAS_SIZE, PAD, SLOT, SLOT_TILES, SLOTS, RoadAtlas
 
+# The JavaScript-only helper, before the fixture below fakes it.
+ORIGINAL_UINT8_ARRAY = road_atlas._uint8_array
+
 
 @pytest.fixture(autouse=True)
 def painter(monkeypatch: pytest.MonkeyPatch) -> list[tuple[Any, int]]:
@@ -121,3 +124,8 @@ def test_a_transparent_pixel_takes_the_sidewalk_colour(
     atlas.rect_of(_piece(1))
     origin = (PAD * ATLAS_SIZE + PAD) * 4
     assert list(atlas.data[origin : origin + 4]) == [0, 255, 0, 255]
+
+
+def test_the_uint8_array_is_javascript_only() -> None:
+    """`new Uint8Array(length)` in the browser: CPython runs only its placeholder (faked above)."""
+    assert ORIGINAL_UINT8_ARRAY(16) is None

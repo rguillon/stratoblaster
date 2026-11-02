@@ -11,7 +11,18 @@ from typing import Any, ClassVar
 import pytest
 
 from render.scenery import road_sources
-from render.scenery.road_sources import LocalRoadSource, WorkerRoadSource
+from render.scenery.road_sources import (
+    LocalRoadSource,
+    WorkerRoadSource,
+    _delete,
+    _get,
+    _has,
+    _new_object,
+    _set,
+)
+
+# The JavaScript-only helpers as the module defines them (the fixture replaces them in it).
+JS_HELPERS = (_new_object, _has, _get, _set, _delete)
 
 
 class FakeRoadChunks:
@@ -140,3 +151,43 @@ def test_d217_a_new_atlas_from_the_worker_replaces_the_old_one() -> None:
     assert first.atlas == ["a", "b"]
     assert first.atlas_version == 2
     assert source.take(5) is None
+
+
+def test_the_plain_object_helpers_are_javascript_only() -> None:
+    """JavaScript-only: under CPython each runs its placeholder, which keeps and finds nothing."""
+    new_object, has, get, set_, delete = JS_HELPERS
+    cache = new_object()
+    assert cache is None
+    assert set_({}, 1, "chunk") is None
+    assert has({1: "chunk"}, 1) is False
+    assert get({1: "chunk"}, 1) is None
+    assert delete({1: "chunk"}, 1) is None
+
+
+def test_perf_17_a_local_chunk_is_made_once_until_it_is_taken() -> None:
+    look = "streets"
+    source = _local(look, set())
+    source.request([_span(0)], look, grid=False)
+    assert source.ready(0)
+    assert not source.ready(1)
+    made = source._ready[0]
+    # Asked again before it is taken: the chunk made is kept, not made again.
+    source.request([_span(0)], look, grid=False)
+    assert source.take(0) is made
+    assert not source.ready(0)
+
+
+def test_perf_17_the_worker_is_asked_once_per_chunk_and_not_at_all_for_nothing_new() -> None:
+    asked: list[Any] = []
+    source = WorkerRoadSource(lambda spans, _look, _grid, done: asked.append((spans, done)))
+    source.request([_span(0)], "streets", grid=False)
+    # Chunk 0 is on its way: only chunk 1 is asked for.
+    source.request([_span(0), _span(1)], "streets", grid=True)
+    assert [[s[0] for s in spans] for spans, _done in asked] == [[0], [1]]
+    _, done = asked[0]
+    done(SimpleNamespace(chunks=[SimpleNamespace(index=0, atlas=None)], atlas=None))
+    assert source.ready(0)
+    assert not source.ready(1)
+    # Back and not taken yet: still not asked again.
+    source.request([_span(0)], "streets", grid=False)
+    assert len(asked) == 2

@@ -51,3 +51,24 @@ def test_a_hangar_s_launches_join_the_boss_s_own() -> None:
     result = with_weapons(design, [bay], [])
     assert [launch["from"] for launch in result.launches] == ["gun", "bay"]
     assert result.guns["bay"] == {}
+
+
+def test_boss_38_a_hidden_weapon_keeps_the_hinge_it_is_given() -> None:
+    """D-221: a weapon unfolds about its `mount`; left out, the view picks its inner side."""
+    mounted = hidden_weapon("gun", "gatling", [10, 0], 8, 300, 1, "red", 2, mount=[-4, 2, 1.5])
+    assert mounted.look.mount == [-4, 2, 1.5]
+    assert mounted.part.reveal == 1
+    plain = hidden_weapon("gun", "gatling", [10, 0], 8, 300, 1, "red", 2)
+    assert "mount" not in plain.look
+
+
+def test_boss_35_more_volleys_join_every_stage_with_the_weapons_own() -> None:
+    design = record({
+        "stats": {"parts": [{"id": "hull", "x": 0, "y": 0, "radius": 5, "health": 100}]},
+        "guns": {},
+        "stages": [[], [{"from": "core", "every": 3}]],
+    })
+    extra = {"from": "core", "every": 9}
+    result = with_weapons(design, [], [], [extra])
+    assert [len(stage) for stage in result.stages] == [1, 2]
+    assert all(stage[-1]["every"] == 9 for stage in result.stages)

@@ -161,7 +161,10 @@ class BossFights:
         self.defeated: list[LevelBoss] = []
         self.just_defeated: LevelBoss | None = None
         self._bosses = _sorted_by_at(bosses)
-        self._kinds = kinds
+        # By id: `validate_level_bosses` checked each boss's kind is one of them.
+        self._kinds: dict[str, BossKindDefinition] = {}
+        for kind in kinds:
+            self._kinds[kind.id] = kind
         self._rules = rules
         self._hooks = hooks
         self._next = 0
@@ -263,15 +266,8 @@ class BossFights:
         )
 
     def _start(self, level: LevelBoss, track: ScrollTrack) -> None:
-        kind = None
-        for candidate in self._kinds:
-            if candidate.id == level.kind:
-                kind = candidate
-                break
         self._next += 1
-        if kind is None:
-            return
-        boss = kind.spawn(self._hooks.area())
+        boss = self._kinds[level.kind].spawn(self._hooks.area())
         self._hooks.add(boss)
         self._fight = _Fight(boss, level)
         track.held = True

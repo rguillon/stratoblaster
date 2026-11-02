@@ -17,14 +17,6 @@ from typing import Any
 
 # Builds a model in the scene and returns its root node.
 ModelFactory = Callable[[Any], Any]
-# Builds a model in the scene from a value (e.g. a size) and returns its root node.
-ModelFactoryOf = Callable[[Any, Any], Any]
-# Fills `scene` with the game's menu backdrop.
-MenuBackdropFactory = Callable[[Any], Any]
-# Builds the renderer of one weapon's shots in `scene`.
-ShotRendererFactory = Callable[[Any], Any]
-# Builds one enemy model in `scene`.
-EnemyModelFactory = Callable[[Any], Any]
 # __pragma__ ("noskip")
 
 
@@ -92,14 +84,6 @@ class BonusRenderer:
     """
 
 
-class EnemyModel:
-    """The model of one enemy: a `root` node and a `sync` method.
-
-    `root` is built facing +Z with +Y up, centred on the origin, in logical pixels; `sync(enemy,
-    dt_seconds)` shows the enemy's state and steps the model's animations.
-    """
-
-
 class EnemyShotFrame:
     """What the enemy shot renderer draws on one frame.
 
@@ -119,18 +103,6 @@ class EnemyShotFrame:
         self.dt_seconds = dt_seconds
 
 
-class EnemyShotRenderer:
-    """Draws the enemies' shots, frame after frame: `sync(frame)`, `dispose()`."""
-
-
-class BlastRenderer:
-    """Draws explosions where enemies and missiles were destroyed.
-
-    Methods: `sync(blasts, dt_seconds)` (`blasts` are the new ones since the previous frame),
-    `dispose()`.
-    """
-
-
 class GlowLook:
     """Glow of the self-lit parts: `intensity` and the blur kernel size."""
 
@@ -142,11 +114,13 @@ class GlowLook:
 class EnemyBindings:
     """Presentation of the enemies (`GameDefinition.enemyKinds`).
 
-    `models`: one model per `EnemyStats.model` key. `shots(scene, style)`: the enemy shot renderer,
-    in the level's style if any. `blasts(scene)`: the explosion renderer. `glow`: a `GlowLook`.
-    `set_idle_motion(on)` (optional): turns the idle animation on or off. `child_models`: the models
-    of the enemies other enemies send out (e.g. a carrier's drones), built with every level's own
-    models (PERF-21).
+    `models`: one model per `EnemyStats.model` key, a `root` node (facing +Z with +Y up, centred on
+    the origin, in logical pixels) and `sync(enemy, dt_seconds)`. `shots(scene, style)`: the enemy
+    shot renderer (`sync(frame)`, `dispose()`), in the level's style if any. `blasts(scene)`: the
+    explosion renderer (`sync(blasts, dt_seconds)` with the blasts new since the previous frame,
+    `dispose()`). `glow`: a `GlowLook`. `set_idle_motion(on)` (optional): turns the idle animation
+    on or off. `child_models`: the models of the enemies other enemies send out (e.g. a carrier's
+    drones), built with every level's own models (PERF-21).
     """
 
     def __init__(
@@ -227,9 +201,10 @@ class GameView:
 
     The fields, in order: `player_ship_models` (one model per player ship id), `player_ship_scale`
     (logical pixels per model unit), `player_shot_renderers` (one per player weapon id),
-    `menu_backdrop` (a `MenuBackdropFactory`), `scenery` (`SceneryBindings`), `enemies`
-    (`EnemyBindings`), `bonuses` (`scene -> BonusRenderer`). Optional, None when left out: `bombs`
-    (`scene -> BombRenderer`), `audio` (`AudioBindings`), `outline` (`OutlineLook`).
+    `menu_backdrop` (`scene -> None`: fills it with the menu backdrop), `scenery`
+    (`SceneryBindings`), `enemies` (`EnemyBindings`), `bonuses` (`scene -> BonusRenderer`).
+    Optional, None when left out: `bombs` (`scene -> BombRenderer`), `audio` (`AudioBindings`),
+    `outline` (`OutlineLook`).
     """
 
     def __init__(

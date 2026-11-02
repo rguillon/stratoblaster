@@ -140,28 +140,18 @@ def _grid_blocks(
                 cell = _corners(grid, c, r)
                 # The first row of a later section was laid on the merged columns (or, going on
                 # from another district, with it): it is a full street.
-                if cell is None:
-                    continue
                 block = _cell_block(cell, has, r == 0 and layout.laid_before, inset)
                 if block is not None:
                     blocks.append(block)
     return blocks
 
 
-def _corners(
-    grid: Sequence[Sequence[Node]], c: int, r: int
-) -> tuple[Node, Node, Node, Node] | None:
-    """Return the corners of cell (`c`, `r`) of `grid`, or None when one is off the grid.
+def _corners(grid: Sequence[Sequence[Node]], c: int, r: int) -> tuple[Node, Node, Node, Node]:
+    """Return the corners of cell (`c`, `r`) of `grid` (rows of equal length).
 
     Bottom left, bottom right, top left, top right.
     """
-    found: list[Node] = []
-    for rr, cc in [(r, c), (r, c + 1), (r + 1, c), (r + 1, c + 1)]:
-        if 0 <= rr < len(grid) and 0 <= cc < len(grid[rr]):
-            found.append(grid[rr][cc])
-        else:
-            return None
-    return found[0], found[1], found[2], found[3]
+    return grid[r][c], grid[r][c + 1], grid[r + 1][c], grid[r + 1][c + 1]
 
 
 def _cell_block(

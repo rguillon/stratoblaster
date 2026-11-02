@@ -113,3 +113,14 @@ def test_d212_a_face_turned_to_the_bake_light_is_baked_brighter() -> None:
 
 def test_d211_a_frame_high_enough_needs_no_lift() -> None:
     assert quad_lift(record({**LOOK, "centre": 10}), TILT) == 0
+
+
+def test_d212_a_face_with_no_area_is_baked_unshaded() -> None:
+    # Its three corners in a line: no normal to shade it by, so it keeps its own colour.
+    line = ColoredGeometry()
+    line.positions = [0, 0, 0, 1, 0, 0, 2, 0, 0]
+    line.indices = [0, 1, 2]
+    line.colors = [0.5, 0.5, 0.5, 1] * 3
+    baked = ColoredGeometry()
+    add_baked(baked, line, 0, [0, 0, 0], LOOK)
+    assert baked.colors[0:4] == pytest.approx([0.5, 0.5, 0.5, 1])

@@ -13,8 +13,8 @@ from game.view.enemies import veteran_small_models as module
 @pytest.fixture
 def probe(monkeypatch: Any) -> Any:
     def run(builder: Any) -> Any:
-        # The wings are copied with `Object.assign` in the game; under CPython that copy is a
-        # plain dict merge (the Transcrypt stub returns None here).
+        # `_with_wing` copies a wing with `Object.assign` in the browser, and as a record of the
+        # same fields under CPython; a plain dict merge stands in for it here.
         monkeypatch.setattr(
             vetelite_organic,
             "_with_wing",

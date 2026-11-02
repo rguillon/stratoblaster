@@ -4,7 +4,7 @@
 import pytest
 
 from core.math.noise import create_noise2d
-from core.scenery.ice_sculpt import LakeField, crevasse_depth, with_lakes
+from core.scenery.ice_sculpt import LakeField, crevasse_depth
 from core.scenery.scenery_level import Crevasses, Lakes
 
 LAKES = Lakes(spacing=100, chance=1, radius=(20, 20), level=-5, edge=10)
@@ -23,10 +23,6 @@ def test_a_lake_rises_back_to_the_ground_over_its_edge() -> None:
     field = LakeField(LAKES, 7)
     heights = [field.apply(x, z, 10) for x in range(100) for z in range(100)]
     assert any(-5 < h < 10 for h in heights)
-
-
-def test_with_lakes_is_a_lake_field_once() -> None:
-    assert with_lakes(LAKES, 7, 50, 50, 10) == LakeField(LAKES, 7).apply(50, 50, 10)
 
 
 def test_lakes_are_kept_within_their_square_and_cached() -> None:

@@ -39,7 +39,7 @@ from core.systems.wave_runner import WaveRunner, validate_wave_script
 from collections.abc import Callable
 from typing import TYPE_CHECKING
 
-from core.entities.enemy import DropSource
+from core.entities.enemy import DropSource, EnemyKindDefinition
 from core.entities.shot_target import ShotTarget
 from core.math.rng import Random
 
@@ -123,6 +123,10 @@ class LevelRun:
         max_enemy_age = options.max_enemy_age
         kind_ids: list[str] = [kind.id for kind in kinds]
         validate_wave_script(level.waves, kind_ids)
+        # By id: `validate_wave_script` checked each wave's kind is one of them.
+        self._kinds: dict[str, EnemyKindDefinition] = {}
+        for kind in kinds:
+            self._kinds[kind.id] = kind
         self.track = ScrollTrack(level.scenery.scroll_speed, level_length(level.scenery))
         random = create_rng(options.seed)
         area = ShotWorldOptions(screen.width, screen.height, cull_margin)
@@ -460,13 +464,7 @@ class LevelRun:
         return flying
 
     def _spawn(self, kind_id: str, entry: EnemyEntry, random: Random) -> None:
-        kind = None
-        for candidate in self._options.kinds:
-            if candidate.id == kind_id:
-                kind = candidate
-                break
-        if kind is None:
-            return
+        kind = self._kinds[kind_id]
         screen = self._options.screen
         # From the top, only where the ship can reach at the bottom of the screen (ENM-09).
         area = EnemySpawnArea(screen.width, screen.height, random, entry, self._reach)

@@ -79,3 +79,47 @@ def test_gfx_bldg_10_a_crown_sits_on_the_roof_at_the_given_point() -> None:
     check_colored(geometry_of(k).structure)
     _, high = bounds(geometry_of(k).structure)
     assert high[1] >= 12.0
+
+
+def _fixed(value: float) -> Any:
+    """Return a random generator stand-in that always draws `value`."""
+    return lambda: value
+
+
+def _half_width_at(geo: Any, y: float) -> float:
+    """Return the largest |x| of the vertices of `geo` at height `y`."""
+    xs = geo.positions[0::3]
+    ys = geo.positions[1::3]
+    return max(abs(x) for x, vy in zip(xs, ys, strict=True) if vy == pytest.approx(y))
+
+
+def test_gfx_bldg_10_a_stepped_tower_steps_back_at_each_of_its_tiers() -> None:
+    k, kit = kit_for()
+    # Draws of 0.9: three tiers, each `shrink` times narrower than the one under it.
+    kit.random = _fixed(0.9)
+    stepped_tower(kit, LOT)
+    structure = geometry_of(k).structure
+    base = 3 + 3 * 0.9
+    tier = 12 + 18 * 0.9
+    width = 16 * (0.55 + 0.35 * 0.9)
+    shrink = 0.6 + 0.2 * 0.9
+    # The top of the third tier, under its crown.
+    top = base + 3 * tier
+    assert height(structure) > top
+    assert _half_width_at(structure, base + tier) == pytest.approx(width / 2)
+    assert _half_width_at(structure, top) == pytest.approx(width * shrink * shrink / 2)
+
+
+@pytest.mark.parametrize(("draw", "lit"), [(0.1, True), (0.9, False)])
+def test_gfx_bldg_10_a_slab_has_a_neon_sign_now_and_then(draw: float, lit: bool) -> None:
+    k, kit = kit_for()
+    kit.random = _fixed(draw)
+    slab(kit, LOT)
+    lights = geometry_of(k).lights
+    assert (len(lights.positions) > 0) is lit
+    if lit:
+        check_colored(lights)
+        # In front of the slab, from 3 up.
+        low, _ = bounds(lights)
+        assert low[2] < -LOT[3] / 2
+        assert low[1] == pytest.approx(3)

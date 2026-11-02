@@ -174,9 +174,8 @@ class WeatherLayer:
             set_enabled(layer.mesh, shown)
         self._drawn = 0
         for weather in weathers:
-            kind = self._kinds.get(weather.kind)
-            if not kind:
-                continue
+            # `weathers` kept only the kinds drawn.
+            kind = self._kinds[weather.kind]
             count = weather_particles(weather)
             layer = self._layer(weather.kind, kind)
             _draw_first(layer.mesh, count)

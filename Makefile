@@ -19,13 +19,11 @@ check: src/build_info.py
 	@uv run deptry src
 
 
-# Unit tests (pytest, CPython over src/) with the coverage gates: src/ at 70 %, core/ and
-# game/sim/ at 90 %. HTML report in coverage/html/.
+# Unit tests (pytest, CPython over src/) with the coverage gate: 100 % of src/, lines and branches
+# (ENG-43). XML report in coverage/coverage.xml.
 UNIT_WORKERS ?= auto
 tests: src/build_info.py
-	uv run pytest -v -n $(UNIT_WORKERS) --cov --cov-config=pyproject.toml --cov-report=term --cov-report=xml:coverage/coverage.xml --cov-report=html:coverage/html
-	uv run coverage report --include='src/core/*' --fail-under=90
-	uv run coverage report --include='src/game/sim/*' --fail-under=90
+	uv run pytest -v -n $(UNIT_WORKERS) --cov --cov-config=pyproject.toml --cov-report=term --cov-report=xml:coverage/coverage.xml
 
 # The production game in dist/: Babylon.js fetched if missing or wrong (ENG-02, D-173), Transcrypt
 # then esbuild (ENG-23). Fails if a compiler pragma or the e2e test API leaks into the bundle.

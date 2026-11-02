@@ -165,12 +165,6 @@ def prop_bounds(factory: PropModelFactory) -> list[float]:
     return [low[0], low[1], low[2], high[0], high[1], high[2]]
 
 
-def prop_extent(factory: PropModelFactory) -> float:
-    """Return the largest side of the prop `factory` makes (its structure), in ground units."""
-    b = prop_bounds(factory)
-    return max(b[3] - b[0], b[4] - b[1], b[5] - b[2])
-
-
 def _normals_of(geo: ColoredGeometry) -> list[float]:
     """Return the normals of each geometry, worked out once."""
     normals = _slot_get(geo, _NORMALS_SLOT)
@@ -474,11 +468,6 @@ class PropField:
         if self._imposters is not None:
             self._imposters.bake_once()
 
-    def structure_of(self, kind: str) -> Any:
-        """Return the structure mesh of a kind of prop."""
-        m = self._meshes.get(kind)
-        return m.structure if m else None
-
     def set_chunk(self, index: int, placements: list[PropPlacement]) -> None:
         """Set the placements of chunk `index`, grouped by kind."""
         kinds: dict[str, KindProps] = {}
@@ -535,12 +524,6 @@ class PropField:
         self._chunk_kinds.pop(at)
         self._dirty = True
 
-    def clear(self) -> None:
-        """Clear."""
-        self._chunk_indices = []
-        self._chunk_kinds = []
-        self._dirty = True
-
     def set_window(self, z_min: float, z_max: float, step: float) -> None:
         """Draws only the props whose Z is in [z_min, z_max] (phase 4 review, PERF-25).
 
@@ -594,8 +577,6 @@ class PropField:
             self._drawn[kind] = placements
             matrices = _matrices_of(drawn) if drawn else float32_array(0)
             for mesh in self._mesh_list(meshes):
-                if not mesh:
-                    continue
                 set_enabled(mesh, len(matrices) > 0)
                 if len(matrices) == 0:
                     continue

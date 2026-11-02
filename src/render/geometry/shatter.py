@@ -10,8 +10,6 @@ centroid, so big faces are first cut down (`subdivide`) to follow an outline clo
 
 import math
 
-from render.geometry.gradient_shapes import ColoredGeometry
-
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 # __pragma__ ("skip")
@@ -60,13 +58,6 @@ def append_triangles(geo: Any, tris: list[list[Vertex]], shift: list[float] | No
             geo.positions.extend([p[0] + d[0], p[1] + d[1], p[2] + d[2]])
             geo.colors.extend(v.color)
         geo.indices.extend([base, base + 1, base + 2])
-
-
-def geometry_of(tris: list[list[Vertex]], shift: list[float] | None = None) -> ColoredGeometry:
-    """Return a geometry of `tris` (no shared vertices), each moved by `shift` if given."""
-    geo = ColoredGeometry()
-    append_triangles(geo, tris, shift)
-    return geo
 
 
 def _mid(a: Vertex, b: Vertex) -> Vertex:

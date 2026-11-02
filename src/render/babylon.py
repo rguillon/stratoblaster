@@ -15,7 +15,7 @@ arguments are dropped (ENG-151, ENG-158). - Optional options are passed as `None
 the JavaScript object.
 """
 
-from org.transcrypt.stubs.browser import __pragma__, window
+from org.transcrypt.stubs.browser import __pragma__
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -80,11 +80,6 @@ def babylon_constant(key: str) -> int:
     return cast("int", None)
 
 
-def get_engine_global() -> Any:
-    """Return the `BABYLON` global itself (for the few values not reachable through the helpers)."""
-    return window.BABYLON
-
-
 # -- Math ----------------------------------------------------------------------------------------
 
 
@@ -143,11 +138,6 @@ def node_name(node: Named) -> str:
     """`node.name` (a Python attribute of this name would be renamed by Transcrypt)."""
     __pragma__("js", "{}", "return node.name;")
     return ""
-
-
-def set_node_name(node: Named, label: str) -> None:
-    """Set the name of `node` to `label`."""
-    __pragma__("js", "{}", "node.name = label;")
 
 
 def new_transform_node(label: str, scene: Scene) -> TransformNode:
@@ -391,18 +381,6 @@ def create_torus(
     return cast("Mesh", None)
 
 
-def create_plane(label: str, size: float, scene: Scene) -> Mesh:
-    """Return a square plane mesh (`BABYLON.CreatePlane`)."""
-    __pragma__("js", "{}", "return BABYLON.CreatePlane(label, {size: size}, scene);")
-    return cast("Mesh", None)
-
-
-def create_line_system(label: str, lines: list[list[Vector3]], scene: Scene) -> Mesh:
-    """Return a line system: `lines` is a list of polylines of Vector3 handles."""
-    __pragma__("js", "{}", "return BABYLON.CreateLineSystem(label, {lines: lines}, scene);")
-    return cast("Mesh", None)
-
-
 def create_colored_line_system(
     label: str, lines: list[list[Vector3]], colors: list[list[Color4]], scene: Scene
 ) -> Mesh:
@@ -412,12 +390,6 @@ def create_colored_line_system(
         "{}",
         "return BABYLON.CreateLineSystem(label, {lines: lines, colors: colors}, scene);",
     )
-    return cast("Mesh", None)
-
-
-def create_lines(label: str, points: list[Vector3], scene: Scene) -> Mesh:
-    """`CreateLines(label, {points}, scene)`: one polyline of Vector3 handles."""
-    __pragma__("js", "{}", "return BABYLON.CreateLines(label, {points: points}, scene);")
     return cast("Mesh", None)
 
 
@@ -478,17 +450,6 @@ def new_standard_material(label: str, scene: Scene) -> StandardMaterial:
     """Return a `new BABYLON.StandardMaterial(label, scene)`."""
     __pragma__("js", "{}", "return new BABYLON.StandardMaterial(label, scene);")
     return cast("StandardMaterial", None)
-
-
-def new_shader_material(
-    label: str, scene: Scene, shaders: JsObject, options: JsObject
-) -> ShaderMaterial:
-    """Return `new ShaderMaterial(label, scene, shaders, options)`.
-
-    `shaders` and `options` are JS. objects built with `js_object` (a dict is not one).
-    """
-    __pragma__("js", "{}", "return new BABYLON.ShaderMaterial(label, scene, shaders, options);")
-    return cast("ShaderMaterial", None)
 
 
 def new_pbr_material(label: str, scene: Scene) -> PBRMaterial:
@@ -617,11 +578,6 @@ def set_cube_sphere_lighting(texture: Texture, faces: list[Uint8Array], size: in
         " front: faces[4], back: faces[5], format: BABYLON.Constants.TEXTUREFORMAT_RGBA,"
         " type: BABYLON.Constants.TEXTURETYPE_UNSIGNED_BYTE, gammaSpace: texture.gammaSpace});",
     )
-
-
-def dispose_texture(texture: Texture) -> None:
-    """Disposes `texture`."""
-    texture.dispose()
 
 
 # -- Textures, shadows and plugins (scenery) ------------------------------------------------------
@@ -931,12 +887,6 @@ def number_max_value() -> float:
     """`Number.MAX_VALUE`, Babylon's default draw order (`alphaIndex`) of a mesh."""
     __pragma__("js", "{}", "return Number.MAX_VALUE;")
     return 0
-
-
-def new_map() -> dict[object, object]:
-    """Return `new Map()`, for maps keyed by objects that must be iterated in insertion order."""
-    __pragma__("js", "{}", "return new Map();")
-    return cast("dict[object, object]", None)
 
 
 def vector3_right() -> Vector3:

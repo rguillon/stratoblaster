@@ -304,14 +304,12 @@ class _TileLayout:
             self._add(a, b, True, boundary, line.size > 1, chance)
 
     def _lay_columns(self, laid: PartGrid, chance: float) -> None:
+        # The grid has a row of nodes per line, each with a node per column.
         grid = laid.grid
         for c, x in enumerate(laid.xs):
             self._widths["x" + to_fixed3(x)] = self._tile.size
             for r in range(len(laid.lines) - 1):
-                a = grid[r][c] if r < len(grid) and c < len(grid[r]) else None
-                b = grid[r + 1][c] if r + 1 < len(grid) and c < len(grid[r + 1]) else None
-                if a is not None and b is not None:
-                    self._add(a, b, False, False, False, chance)
+                self._add(grid[r][c], grid[r + 1][c], False, False, False, chance)
 
     def _merge_row(self, lower: Sequence[Node], upper: Sequence[Node], chance: float) -> None:
         """Lay the shared row between two parts, once over both parts' columns."""
@@ -387,17 +385,12 @@ def _tile_blocks(
     return blocks
 
 
-def _corners(
-    grid: Sequence[Sequence[Node]], c: int, r: int
-) -> tuple[Node, Node, Node, Node] | None:
-    """Return the corners of cell (`c`, `r`): bottom left, bottom right, top left, top right."""
-    found: list[Node] = []
-    for rr, cc in [(r, c), (r, c + 1), (r + 1, c), (r + 1, c + 1)]:
-        if 0 <= rr < len(grid) and 0 <= cc < len(grid[rr]):
-            found.append(grid[rr][cc])
-        else:
-            return None
-    return found[0], found[1], found[2], found[3]
+def _corners(grid: Sequence[Sequence[Node]], c: int, r: int) -> tuple[Node, Node, Node, Node]:
+    """Return the corners of cell (`c`, `r`) of `grid` (rows of equal length).
+
+    Bottom left, bottom right, top left, top right.
+    """
+    return grid[r][c], grid[r][c + 1], grid[r + 1][c], grid[r + 1][c + 1]
 
 
 def _cell_block(
@@ -408,10 +401,7 @@ def _cell_block(
     width_of: Callable[[str], float],
 ) -> Block | None:
     """Return the block of cell (`c`, `r`), if it has room (see `_tile_blocks`)."""
-    cell = _corners(grid, c, r)
-    if cell is None:
-        return None
-    n00, n10, n01, n11 = cell
+    n00, n10, n01, n11 = _corners(grid, c, r)
 
     def built(a: Node, b: Node) -> bool:
         return (str(pair(a, b)) in has) or (str(pair(b, a)) in has)

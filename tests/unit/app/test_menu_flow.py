@@ -684,3 +684,53 @@ def test_d202_up_and_down_jump_between_the_groups_of_a_grouped_viewer() -> None:
     assert flow.state.selection == 2
     flow.dispatch("right")
     assert flow.state.selection == 0
+
+
+def at_settings() -> MenuFlow:
+    """Return the flow on the settings screen, opened from the title."""
+    flow = at_title()
+    flow.dispatch(MenuSelect(1))
+    flow.dispatch("confirm")
+    settle(flow)
+    assert flow.state.screen == "settings"
+    return flow
+
+
+def test_ui_flow_03_a_screen_change_the_flow_does_not_allow_changes_nothing() -> None:
+    flow = at_title()
+    revision = flow.revision
+    assert flow.go_to("game") is False
+    assert flow.state.screen == "title"
+    assert flow.revision == revision
+
+
+def test_ui_set_03_up_and_down_pick_a_slider_and_left_and_right_change_it() -> None:
+    """At 10, Right leaves it at 10 and changes nothing."""
+    flow = at_settings()
+    assert flow.state.selected_id == "music"
+    assert flow.dispatch("left") == "adjusted"
+    assert flow.state.volumes.music == 9
+    assert flow.dispatch("right") == "adjusted"
+    revision = flow.revision
+    assert flow.dispatch("right") == "none"
+    assert flow.state.volumes.music == 10
+    assert flow.revision == revision
+    assert flow.dispatch("down") == "moved"
+    assert flow.state.selected_id == "sfx"
+    assert flow.dispatch("down") == "none"
+
+
+def test_ui_set_03_tapping_a_slider_selects_it() -> None:
+    flow = at_settings()
+    flow.dispatch("down")
+    assert flow.dispatch(MenuSelect(0)) == "moved"
+    assert flow.state.selected_id == "music"
+    assert flow.dispatch(MenuSelect(0)) == "none"
+
+
+def test_ui_set_01_confirm_on_the_settings_screen_does_nothing() -> None:
+    flow = at_settings()
+    revision = flow.revision
+    assert flow.dispatch("confirm") == "none"
+    assert flow.state.screen == "settings"
+    assert flow.revision == revision

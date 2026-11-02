@@ -1,49 +1,19 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/ship_parts.py`."""
 
-from types import SimpleNamespace
 from typing import Any
 from unittest.mock import MagicMock
 
-import pytest
 from helpers.babylon_stub import stub_babylon
 
 from game.view import ship_parts
-from game.view.ship_parts import mirror_x, part_of, tag_part
-
-
-@pytest.fixture(autouse=True)
-def python_metadata(monkeypatch: Any) -> None:
-    """Keep the part tag as a plain attribute here.
-
-    The game keeps it as a JavaScript `metadata` object.
-    """
-    monkeypatch.setattr(
-        ship_parts,
-        "_set_part_metadata",
-        lambda node, part: setattr(node, "metadata", SimpleNamespace(part=part)),
-    )
-    monkeypatch.setattr(
-        ship_parts,
-        "_part_of_metadata",
-        lambda node: node.metadata.part if getattr(node, "metadata", None) else None,
-    )
+from game.view.ship_parts import mirror_x
 
 
 def test_a_planform_mirrors_across_the_centre_line() -> None:
     outline = [[1.0, 2.0], [3.0, -4.0]]
     assert mirror_x(outline) == [[-1.0, 2.0], [-3.0, -4.0]]
     assert mirror_x(mirror_x(outline)) == outline
-
-
-def test_a_node_remembers_the_ship_part_it_was_tagged_with() -> None:
-    node = MagicMock()
-    assert tag_part(node, "wing") is node
-    assert part_of(node) == "wing"
-
-
-def test_an_untagged_node_has_no_part() -> None:
-    assert part_of(SimpleNamespace()) is None
 
 
 def test_a_panel_is_a_prism_with_its_material_on_its_parent(monkeypatch: Any) -> None:

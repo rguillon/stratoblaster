@@ -76,3 +76,8 @@ def test_gfx_shot_06_dispose_releases_the_missiles_and_their_trails(parts: Any) 
     handle["dispose"]()
     parts.exhaust.dispose.assert_called_once()
     parts.flashes.dispose.assert_called_once()
+
+
+def test_the_renderer_object_is_made_in_javascript_only() -> None:
+    """`{sync, dispose}` is a JavaScript object literal; CPython runs only the placeholder: None."""
+    assert missile_renderer._shot_renderer(lambda _frame: None, lambda: None) is None

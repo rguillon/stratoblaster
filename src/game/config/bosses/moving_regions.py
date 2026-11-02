@@ -154,12 +154,6 @@ def is_moving(region: Any) -> bool:
     return bool(region.motion != None)
 
 
-def end_spot(region: Any, point: list[float]) -> list[float]:
-    """Where `point` on `region`'s piece as drawn is once it has moved."""
-    m = region.motion
-    return move_point(m, motion_value(m, 1), point)
-
-
 def drawn_spot(region: Any, point: list[float]) -> list[float]:
     """Where `point` of `region`'s piece once it has moved is on the piece as drawn."""
     m = region.motion

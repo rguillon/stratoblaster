@@ -158,7 +158,7 @@ def tuft(
     color: Rgb,
     turn: float,
 ) -> None:
-    """Add a tuft of leaves at `at`: a little three-sided pyramid `size` across.
+    """Add a tuft of leaves at `at`: a little three-sided pyramid `size` (above 0) across.
 
     Its tip towards `out` (a unit vector), turned `turn` round it; its faces face outwards.
     """
@@ -173,21 +173,9 @@ def tuft(
         base.append(plus(corner, out, -size * 0.15))
     tip = plus(at, out, size * 0.45)
     for k in range(3):
-        a = base[k]
-        b = base[(k + 1) % 3]
-        # Outward: (b - a) x (tip - a) along `out` (SolidBuilder.face: counter-clockwise from out).
-        n = cross(
-            [b[0] - a[0], b[1] - a[1], b[2] - a[2]], [tip[0] - a[0], tip[1] - a[1], tip[2] - a[2]]
-        )
-        mid = [
-            (a[0] + b[0] + tip[0]) / 3 - at[0],
-            (a[1] + b[1] + tip[1]) / 3 - at[1],
-            (a[2] + b[2] + tip[2]) / 3 - at[2],
-        ]
-        if n[0] * mid[0] + n[1] * mid[1] + n[2] * mid[2] >= 0:
-            s.face([a, b, tip], color)
-        else:
-            s.face([a, tip, b], color)
+        # The base goes counter-clockwise round `out` (`side` x `other` is `out`), so each face
+        # [a, b, tip] has its outward normal (b - a) x (tip - a) (SolidBuilder.face) away from `at`.
+        s.face([base[k], base[(k + 1) % 3], tip], color)
 
 
 def _tuft_color(leaves: Leaves, seed: int, k: int, deep: float, up: float) -> Rgb:

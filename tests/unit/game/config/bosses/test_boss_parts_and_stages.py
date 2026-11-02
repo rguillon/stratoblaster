@@ -5,13 +5,14 @@ The 20 mini and 20 final bosses of the game: their part counts (BOSS-13) and the
 (BOSS-21).
 """
 
+from collections.abc import Callable
 from itertools import combinations
 from typing import Any
 
 import pytest
 from helpers.config_checks import original_parts
 
-from core.systems.boss_pattern import pattern_signature
+from core.systems.boss_pattern import BossVolley, _live
 from game.config.world_1.bosses import WORLD_1_BOSSES
 from game.config.world_2.bosses import WORLD_2_BOSSES
 from game.config.world_3.bosses import WORLD_3_BOSSES
@@ -48,6 +49,30 @@ def test_boss_13_every_final_boss_comes_in_with_4_to_6_parts() -> None:
             assert 4 <= count <= 6, (design.id, count)
 
 
+def _key(value: object) -> str:
+    """Return a text naming `value`: its fields that are set, by name, recursively.
+
+    A launch's function is not part of it, so two volleys firing alike have the same text.
+    """
+    if isinstance(value, list | tuple):
+        return "[" + ",".join(_key(item) for item in value) + "]"
+    if callable(value):
+        return "function"
+    if hasattr(value, "__dict__"):
+        fields = vars(value)
+        names = [name for name in sorted(fields) if fields[name] is not None]
+        return "{" + ",".join(name + ":" + _key(fields[name]) for name in names) + "}"
+    return repr(value)
+
+
+def _pattern_signature(volleys: list[BossVolley], intact: Callable[[str], bool]) -> str:
+    """Return a text naming the volleys that still fire with only the `intact` pieces left.
+
+    Two stages fire the same pattern when these texts are equal (BOSS-21).
+    """
+    return "|".join(sorted(_key(volley) for volley in volleys if _live(volley, intact)))
+
+
 def _stage_signature(design: Any, stage: int, destroyed: frozenset[str]) -> str:
     """Return the pattern of `design`'s stage `stage`: the volleys of that stage that still fire.
 
@@ -55,7 +80,7 @@ def _stage_signature(design: Any, stage: int, destroyed: frozenset[str]) -> str:
     """
     stages = design.stages
     volleys = armed_pattern(design, stages[min(stage, len(stages) - 1)] or [])
-    return pattern_signature(volleys, lambda piece: piece == "core" or piece not in destroyed)
+    return _pattern_signature(volleys, lambda piece: piece == "core" or piece not in destroyed)
 
 
 @pytest.mark.parametrize("design", BOSS_DESIGNS, ids=lambda d: d.id)

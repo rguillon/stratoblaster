@@ -128,3 +128,20 @@ def test_ui_pause_07_a_paused_level_shows_the_pause_panel_only() -> None:
     assert root.querySelector(".pause-panel") is not None
     assert root.querySelector(".game-fire") is None
     assert root.querySelector(".game-pause") is None
+
+
+def test_game_ctrl_04_without_touch_handlers_the_buttons_and_drags_only_stop_their_events() -> None:
+    """Also GAME-CTRL-05 and UI-PAUSE-02: nothing listens to the fire or pause button."""
+    taps: list[int] = []
+    root = render(
+        GameScreenView("Level 2", "FIRE", "II", None, None, 0),
+        ScreenHandlers(taps.append, lambda: None),
+    )
+    press = FakeEvent()
+    root.querySelector(".game-fire").fire("pointerdown", press)
+    root.querySelector(".game-pause").fire("click")
+    root.fire("pointerdown", FakeEvent(x=10, y=10))
+    root.fire("pointermove", FakeEvent(x=13, y=7))
+    root.fire("pointermove", FakeEvent(x=20, y=20))
+    assert press.stopped is True
+    assert taps == []

@@ -117,3 +117,24 @@ def test_gfx_shot_03_the_laser_renderer_draws_a_frame_and_disposes(monkeypatch: 
     handle["dispose"]()
     assert all(t.dispose.called for t in templates)
     assert SHOT_LOOK.laser is LOOK
+
+
+def test_the_renderer_object_is_made_in_javascript_only() -> None:
+    """`{sync, dispose}` is a JavaScript object literal; CPython runs only the placeholder: None."""
+    assert laser_renderer._shot_renderer(lambda _frame: None, lambda: None) is None
+
+
+def test_gfx_shot_03_a_missing_segment_leaves_its_pooled_bar_as_it_was() -> None:
+    pool = Pool()
+    place_bars(pool, [None, seg(0, 10, x=1.0)], 1.0)
+    hole, drawn = pool.meshes
+    hole.position.set.assert_not_called()
+    drawn.position.set.assert_called_once_with(1.0, 0, 0)
+
+
+def test_gfx_shot_03_a_missing_particle_leaves_its_pooled_disc_as_it_was() -> None:
+    pool = Pool()
+    place_sparks(pool, [None, SimpleNamespace(x=1.0, y=2.0, radius=0.5)])
+    hole, drawn = pool.meshes
+    hole.position.set.assert_not_called()
+    drawn.position.set.assert_called_once_with(1.0, 2.0, -0.2)

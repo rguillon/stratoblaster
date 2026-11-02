@@ -156,3 +156,23 @@ def test_d206_the_menu_is_scrolled_to_put_the_item_shown_in_its_middle() -> None
     centre_menu(SimpleNamespace(querySelector=lambda _selector: menu))
     assert menu.scrollTop == 360
     centre_menu(SimpleNamespace(querySelector=lambda _selector: None))
+
+
+def test_d199_without_a_turn_handler_a_drag_on_a_viewer_turns_nothing() -> None:
+    """DEV-MENU-10: the drag is followed, with no one to turn the model."""
+    view = DevViewerView("Ships", "Drag", "Back", 0, "Alpha", "1 / 3", scrub=False)
+    root = render_dev_viewer_screen(
+        FakeDocument(), view, ScreenHandlers(lambda _i: None, lambda: None)
+    )
+    captured: list[int] = []
+    root.setPointerCapture = captured.append
+    root.fire("pointerdown", pointer(10, 20))
+    root.fire("pointermove", pointer(15, 18))
+    assert captured == [1]
+
+
+def test_d206_a_menu_with_no_item_shown_is_left_where_it_is() -> None:
+    menu = Menu(None)
+    menu.scrollTop = 80.0
+    centre_menu(SimpleNamespace(querySelector=lambda _selector: menu))
+    assert menu.scrollTop == 80.0

@@ -82,12 +82,6 @@ def plate(
     )
 
 
-def decals(builder: Any, outlines: list[Any], y: float, color: Rgb) -> None:
-    """Flat decals at height `y`: one outline each, all of `color` (2 triangles a quad)."""
-    for outline in outlines:
-        decal(builder, outline, y, color)
-
-
 def grille(
     builder: Any,
     at: list[Any],
@@ -212,27 +206,3 @@ def dish(parts: Any, at: Vec3, radius: float, tilt_yaw: list[Any]) -> None:
         [x + math.sin(yaw) * radius * 0.25, y + radius * 1.1, z],
         0.25,
     )
-
-
-def greebles(
-    builder: Any,
-    at: Vec3,
-    boxes: list[Any],
-    color: Rgb = SHADE["panel"],
-) -> None:
-    """Small greeble boxes `[dx, dz, w, h, d]` around `at` (its height is their base): pipes.
-
-    Boxes.
-    """
-    x = at[0]
-    y = at[1]
-    z = at[2]
-    for i in range(len(boxes)):
-        b = boxes[i]
-        top = SHADE["light"] if i % 2 == 0 else color
-        builder.box(
-            [b[2], b[3], b[4]],
-            color,
-            Placement([x + b[0], y, z + b[1]]),
-            top,
-        )

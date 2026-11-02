@@ -19,7 +19,6 @@ from game.view.ship_parts import (
     nav_light,
     panel,
     plate,
-    tag_part,
 )
 from render.babylon import new_transform_node, vector3
 from render.geometry.lathe_z import create_faceted_lathe_along_z
@@ -120,7 +119,7 @@ LIGHT_WINGS = _light_wings()
 def _build_body(root: Any, scene: Any) -> None:
     """Build the fuselage, with its accent collar between the cockpit and the wings."""
     mats = get_ship_materials(scene)
-    body_root = tag_part(new_transform_node("light-body-root", scene), "body")
+    body_root = new_transform_node("light-body-root", scene)
     body_root.parent = root
     body = create_faceted_lathe_along_z(
         "light-body",
@@ -199,10 +198,7 @@ def _build_cockpit(root: Any, scene: Any) -> None:
     frame.material = mats.trim
     frame.parent = root
 
-    canopy = tag_part(
-        create_faceted_lathe_along_z("light-canopy", profile(1), PART_FACETS, scene),
-        "canopy",
-    )
+    canopy = create_faceted_lathe_along_z("light-canopy", profile(1), PART_FACETS, scene)
     canopy.scaling.y = 0.9
     canopy.position.y = 0.13
     canopy.material = mats.canopy
@@ -220,7 +216,7 @@ def _build_wing(wing_def: dict[str, Any], root: Any, scene: Any) -> None:
     def for_side(outline: list[list[float]]) -> list[list[float]]:
         return outline if side > 0 else mirror_x(outline)
 
-    wing = tag_part(new_transform_node("light-wing-" + name, scene), "wing")
+    wing = new_transform_node("light-wing-" + name, scene)
     # Tilt around the nose axis: a positive tilt raises the tip of a right wing.
     wing.rotation.z = side * tilt
     wing.parent = root

@@ -66,11 +66,11 @@ class LaserParticles:
         for p in self._particles:
             p.distance = (p.distance + p.speed * dt) % length
             y = first.y0 + p.distance
-            segment = last
-            for s in segments:
-                if y <= s.y1:
-                    segment = s
-                    break
+            # The first segment that reaches `y`: the last one, if none before it does.
+            k = 0
+            while k < len(segments) - 1 and y > segments[k].y1:
+                k += 1
+            segment = segments[k]
             x = segment.x + (p.lateral * segment.width * self._options.spread) / 2
             spots.append(ParticleSpot(x, y, p.radius))
         return spots

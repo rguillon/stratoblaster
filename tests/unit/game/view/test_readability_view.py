@@ -21,6 +21,16 @@ from game.view.readability_view import (
 
 LOOK = READABILITY
 
+# The JavaScript-only helpers as the module defines them (the fixture below replaces them in every
+# test), each with a value to call it on and the placeholder CPython returns.
+_JS_ONLY: dict[str, tuple[Any, Any, Any]] = {
+    "_is_array": (readability_view._is_array, [1, 2, 3], False),
+    "_is_number_triple": (readability_view._is_number_triple, [1, 2, 3], False),
+    "_is_object": (readability_view._is_object, {"a": 1}, False),
+    "_entries": (readability_view._entries, {"a": 1}, []),
+    "_from_entries": (readability_view._from_entries, [["a", 1]], None),
+}
+
 
 def _is_array(value: Any) -> Any:
     return isinstance(value, list)
@@ -129,3 +139,50 @@ def test_gfx_read_14_the_shot_renderers_are_wrapped_one_for_each_weapon() -> Non
     wrapped = toned_shots(renderers)
     assert list(wrapped) == ["bullet"]
     assert callable(wrapped["bullet"])
+
+
+@pytest.mark.parametrize("name", sorted(_JS_ONLY))
+def test_gfx_read_02_the_array_and_object_helpers_are_javascript_only(name: str) -> None:
+    """Their `__pragma__("js")` body runs in the browser; CPython runs only the placeholder."""
+    helper, value, placeholder = _JS_ONLY[name]
+    assert helper(value) == placeholder
+
+
+class _Materials(list):  # type: ignore[type-arg]  # the scene's materials, a JavaScript array
+    """The scene's materials: a list with JavaScript's `slice()`."""
+
+    def slice(self) -> list[Any]:
+        return list(self)
+
+
+class _Material:
+    """A material: its blend mode and opacity (two materials are never equal, as in JavaScript)."""
+
+    def __init__(self, mode: str, alpha: float) -> None:
+        self.alphaMode = mode
+        self.alpha = alpha
+
+
+def test_gfx_read_14_the_new_additive_glows_of_a_shot_renderer_are_toned_down(
+    monkeypatch: Any,
+) -> None:
+    monkeypatch.setattr(readability_view, "babylon_constant", lambda key: key)
+    most = LOOK.playerShotMaxOpacity
+    older = _Material("ALPHA_ADD", 1.0)
+    scene = SimpleNamespace(materials=_Materials([older]))
+    glow = _Material("ALPHA_ADD", 1.0)
+    faint = _Material("ALPHA_ADD", most / 2)
+    solid = _Material("ALPHA_COMBINE", 1.0)
+    renderer = object()
+
+    def create(target: Any) -> Any:
+        target.materials.extend([glow, faint, solid])
+        return renderer
+
+    assert toned_shots({"laser": create})["laser"](scene) is renderer
+    # A glow it added is capped; one already fainter, a blended material and the scene's own
+    # materials are left alone.
+    assert glow.alpha == most
+    assert faint.alpha == most / 2
+    assert solid.alpha == 1.0
+    assert older.alpha == 1.0

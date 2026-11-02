@@ -9,7 +9,7 @@ import math
 
 from game.config.enemy_look import ENEMY_LOOK
 from game.config.record import record
-from render.geometry.organic import carapace, curve, organ, plate, tendril, vein
+from render.geometry.organic import carapace, curve, organ, tendril, vein
 from render.geometry.solids import Placement
 
 # isort: split
@@ -26,7 +26,6 @@ type Vec3 = list[float]
 
 
 F = ENEMY_LOOK.flesh
-M = ENEMY_LOOK.hull
 
 # The World 2 flesh shades: cold teal and slate, bone, and the ice grown through them.
 ICE_FLESH = record({
@@ -43,9 +42,6 @@ ICE_FLESH = record({
     # The seams between shell plates.
     "seam": [0.02, 0.04, 0.05],
 })
-
-# Metal shades for the grafts.
-GRAFT = record({"base": M.base, "panel": M.panel, "dark": M.dark})
 
 
 def shell(b: SolidBuilder, body: SegmentedBody, color: Rgb = ICE_FLESH.teal) -> None:
@@ -113,34 +109,6 @@ def gland(p: EnemyParts, at: Vec3, radius: float, glow: Rgb, rim: Rgb = ICE_FLES
     """Add a gland: a lit bulb of `radius` on `at`, in a ring of flesh."""
     p.flesh.ring(radius * 1.3, radius * 0.6, 6, rim, Placement(at))
     organ(p.vein, radius, 5, glow, Placement(at), 0.6)
-
-
-def armoured_organ(
-    p: EnemyParts,
-    at: Vec3,
-    radius: float,
-    glow: Rgb,
-    color: Rgb = ICE_FLESH.graphite,
-    height: float = 0.5,
-) -> None:
-    """Add a destroyable growth (BOSS-48): a swollen organ of `radius` on `at`.
-
-    A metal armour plate on its top, crystals on its flank and a gland lit `glow`. Its outline stays
-    clear: one bulb.
-    """
-    x = at[0]
-    y = at[1]
-    z = at[2]
-    organ(p.flesh, radius, 6, color, Placement([x, y - radius * 0.2, z]), height)
-    r = radius * 0.55
-    top = y - radius * 0.2 + radius * 2 * height * 0.8
-    hexagon: list[list[float]] = []
-    for k in range(6):
-        a = (2 * math.pi * (k + 0.5)) / 6
-        hexagon.append([math.sin(a) * r, math.cos(a) * r])
-    plate(p.hull, hexagon, [0, radius * 0.18], [GRAFT.base, GRAFT.panel], Placement([x, top, z]))
-    crystals(p.flesh, [x + radius * 0.6, y + radius * 0.4, z - radius * 0.3], radius * 0.5, 2)
-    gland(p, [x - radius * 0.55, y + radius * 0.5, z + radius * 0.35], radius * 0.18, glow)
 
 
 def fringe(

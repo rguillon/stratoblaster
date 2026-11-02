@@ -136,8 +136,6 @@ def sync_flashes(rings: NodePool, flashes: list[Flash], picked: list[Any], dt: f
     flashes.extend(live)
     for i, mesh in enumerate(rings.show(len(flashes))):
         f = flashes[i]
-        if not f:
-            continue
         t = f.age / flash.life
         radius = size * flash.size * math.sqrt(max(t, 0.05))
         mesh.position.set(f.x, f.y, depth - 0.5)
@@ -204,9 +202,7 @@ def create_bonus_renderer(scene: Any) -> BonusRenderer:
 
     def sync(frame: Any) -> None:
         for i, kind in enumerate(KINDS):
-            kind_pools = pools[i]
-            if kind_pools:
-                sync_kind(kind_pools, [b for b in frame.bonuses if b.kind == kind])
+            sync_kind(pools[i], [b for b in frame.bonuses if b.kind == kind])
         sync_flashes(rings, flashes, frame.picked, frame.dt_seconds)
 
     def dispose() -> None:

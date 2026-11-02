@@ -152,6 +152,9 @@ class Traffic:
             if road.kind == "cross" or len(road.points) < 2:
                 continue
             track = _track_of(road)
+            # A road of one point repeated has no length to drive along.
+            if track.length_ <= 0:
+                continue
             cars: list[Car] = []
             for i in range(len(road.points)):
                 car = self._car_at(track, i, self._seed)
@@ -276,16 +279,13 @@ class Traffic:
         s = self._distance(car, time)
         if s is None:
             return None
+        # A segment that ends after `s` (< length): s0 <= s < s1.
         i = _segment_at(track, s)
         points = track.road.points
-        if i + 1 >= len(points):
-            return None
         a = points[i]
         b = points[i + 1]
-        s0 = track.along[i] if i < len(track.along) else 0
-        s1 = track.along[i + 1] if i + 1 < len(track.along) else 0
-        if s1 <= s0:
-            return None
+        s0 = track.along[i]
+        s1 = track.along[i + 1]
         t = (s - s0) / (s1 - s0)
         dx = (b.x - a.x) / (s1 - s0)
         dz = (b.z - a.z) / (s1 - s0)

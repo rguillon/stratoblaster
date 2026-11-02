@@ -10,6 +10,7 @@ from core.scenery.scenery_level import TileRules
 from render.scenery.road_paint import (
     Canvas,
     _close,
+    _crossing,
     _distance_to,
     _road_mask,
     _rounded_road,
@@ -150,3 +151,56 @@ def test_paint_piece_returns_one_colour_per_pixel(kind: str) -> None:
     pixels = paint_piece(piece, TILE, LOOK, 12)
     assert len(pixels) == 144
     assert all(len(p) == 3 for p in pixels)
+
+
+def test_a_through_road_has_no_zebra_crossing() -> None:
+    # The arm runs right across the piece: neither end stops at a junction.
+    assert _crossing((0, 10, 4, 6), True, 10) is None
+    assert _crossing((4, 6, 0, 10), False, 10) is None
+
+
+def test_an_arm_too_short_for_a_zebra_crossing_has_none() -> None:
+    # 1.2 units long: the crossing would be shallower than one unit.
+    assert _crossing((8.8, 10, 4, 6), True, 10) is None
+    assert _crossing((4, 6, 0, 1.2), False, 10) is None
+
+
+def test_an_arm_from_the_edge_has_its_crossing_where_it_meets_the_junction() -> None:
+    cut = _crossing((0, 6, 4, 6), True, 10)
+    assert cut is not None
+    line, zebra = cut
+    # The zebra is 3 deep at the arm's junction end; its lines stop a unit before it.
+    assert zebra == (3, 6, 4, 6)
+    assert line == (0, 2, 4, 6)
+
+
+def test_a_two_lane_straight_has_lane_lines_either_side_of_its_centre_line() -> None:
+    n = 20
+    piece = _piece([PieceSide(2, 0), None, PieceSide(2, 0), None], "straight", size=2)
+    pixels = paint_piece(piece, TILE, LOOK, n)
+    row = [_pixel(pixels, n, i, n // 2) for i in range(n)]
+    assert RED in row
+    lanes = [i for i, p in enumerate(row) if p == BLUE]
+    centre = [i for i, p in enumerate(row) if p == RED]
+    assert any(i < min(centre) for i in lanes)
+    assert any(i > max(centre) for i in lanes)
+
+
+def test_a_two_lane_turn_has_lane_arcs_either_side_of_its_centre_arc() -> None:
+    n = 40
+    piece = _piece([PieceSide(2, 0), PieceSide(2, 0), None, None], "turn", size=2)
+    pixels = paint_piece(piece, TILE, LOOK, n)
+    size = 20.0
+    radii = []
+    for j in range(n):
+        for i in range(n):
+            if pixels[j * n + i] == BLUE:
+                x = (i + 0.5) / n * size
+                z = (j + 0.5) / n * size
+                radii.append(math.hypot(x - size, z - size))
+    # The lane arcs are a lane (16 / 4 = 4) inside and outside the centre arc of radius 10.
+    assert radii
+    assert any(r < 10 for r in radii)
+    assert any(r > 10 for r in radii)
+    half = LOOK.lineWidth / 2
+    assert all(abs(r - 6) <= half + 1e-9 or abs(r - 14) <= half + 1e-9 for r in radii)

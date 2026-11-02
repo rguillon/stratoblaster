@@ -175,3 +175,8 @@ def test_gfx_shot_03_glow_bar_is_coloured_from_the_centre_line_out() -> None:
 def test_gfx_shot_03_glow_bar_needs_two_colours() -> None:
     with pytest.raises(ValueError, match="Need 2 colours"):
         build_glow_bar([WHITE])
+
+
+def test_the_range_error_is_thrown_by_javascript_only() -> None:
+    """`throw new RangeError` runs in the browser; CPython runs only the placeholder: no error."""
+    assert shot_geometry._range_error("Need 2 colours") is None

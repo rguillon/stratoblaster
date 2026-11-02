@@ -67,18 +67,6 @@ def seam(
     )
 
 
-def cable(
-    hull: Any,
-    path: list[Any],
-    y: float,
-    width: float,
-    color: Rgb = H.dark,
-) -> None:
-    """Strip along a path of points at height `y`, `width` wide: a cable run, a pipe."""
-    for i in range(len(path) - 1):
-        seam(hull, path[i], path[i + 1], [y, width, width * 0.8], color)
-
-
 def vent(hull: Any, at: Vec3, size: list[Any], slats: int, yaw: float = 0) -> None:
     """Add a vent at `at` (its top surface), `w` by `d`, turned by `yaw`.
 

@@ -319,5 +319,5 @@ All in `src/config/dev_viewer.py` `DEV_VIEWER_CONFIG` unless said otherwise.
   labels. They went with the pages (D-187) and are not in the Dev menu.
 - The bosses viewer lists the bosses in the game's order, with no world headings, and shows every
   boss with the first level's light, not over its own level (D-222).
-- `SceneryStage` still has `solo_props`, `find_prop` and `shift_ground`, from the first props viewer
-  that stood a prop on a level's ground (D-199, replaced by D-205); nothing calls them.
+- The first props viewer's `SceneryStage` methods (`solo_props`, `find_prop`, `shift_ground`, D-199,
+  replaced by D-205) are gone: nothing called them (D-237).

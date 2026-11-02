@@ -48,7 +48,7 @@ jobs:
           if [ -f .coverage ]; then
             { echo '## Coverage (src/)'; echo '```'; uv run coverage report; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
           fi
-      # ENG-75: the coverage report (HTML) as an artefact.
+      # ENG-75: the coverage report (XML) as an artefact.
       - uses: actions/upload-artifact@v7
         if: always()
         with:

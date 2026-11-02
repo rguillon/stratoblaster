@@ -3,13 +3,13 @@
 # (UI-SHIP-07, GAME-SCORE-05, UI-PAUSE-11, UI-SET-06).
 
 import pytest
+from helpers.memory_storage import MemoryStorage
 from helpers.menu_game import make_game
 
 from app.menu_controller import MenuController, MenuControllerDeps
 from app.saved_choices import saved_choice_keys
 from app.saved_settings import saved_setting_keys
 from core.systems.level_run_types import LevelResult
-from host.key_value_storage import MemoryStorage
 from input.menu_action import MenuSet
 from ui.menu_view import GameScreenView, LoadingView, SettingsView, ShipSelectView, TitleView
 
@@ -253,3 +253,44 @@ def test_d199_the_dev_labels_give_the_flow_its_counts_and_the_views_their_items(
     controller.tick(1.0)
     controller.command("left")
     assert (display.last.item, display.last.position) == ("B", "2 / 2")
+
+
+def test_d202_the_dev_groups_let_up_and_down_jump_between_the_groups() -> None:
+    """A viewer whose items are in no group: Down shows its next item."""
+    labels = {
+        "ships": ["A", "B", "C"],
+        "enemies": ["x", "y"],
+        "bosses": [],
+        "props": [],
+        "levels": [],
+    }
+    groups = {
+        "ships": ["fast", "fast", "heavy"],
+        "enemies": ["", ""],
+        "bosses": [],
+        "props": [],
+        "levels": [],
+    }
+    display = FakeDisplay()
+    deps = MenuControllerDeps(
+        display,
+        FakeInput(),
+        MemoryStorage(),
+        0.25,
+        None,
+        80,
+        "1.0",
+        "abc",
+        None,
+        None,
+        labels,
+        groups,
+    )
+    controller = MenuController(make_game(), deps)
+    finish(controller)
+    go(controller, "down", "down", "confirm", "confirm")
+    controller.command("down")
+    assert display.last.item == "C"
+    go(controller, "back", "down", "confirm")
+    controller.command("down")
+    assert display.last.item == "y"

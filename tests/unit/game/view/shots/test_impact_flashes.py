@@ -84,3 +84,8 @@ def test_gfx_fx_03_dispose_releases_the_pool(flashes: Any) -> None:
     flashes.sync([SimpleNamespace(x=0, y=0, r=1)], 0.0)
     flashes.dispose()
     assert flashes._pool.meshes == []
+
+
+def test_gfx_fx_03_a_flash_look_is_made_in_javascript_only() -> None:
+    """`{colors, segments}` is a JavaScript object literal; CPython runs only the placeholder."""
+    assert impact_flashes.flash_look([[1, 1, 1], [0, 0, 0]], 8) is None

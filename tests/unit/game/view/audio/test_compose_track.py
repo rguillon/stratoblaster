@@ -163,3 +163,8 @@ def test_aud_music_11_menu_track_has_no_boss_stabs() -> None:
 
 def test_shift_bar_is_inside_the_section() -> None:
     assert 0 <= SHIFT_BAR < SECTION_BARS
+
+
+def test_aud_music_01_the_character_codes_are_read_in_javascript_only() -> None:
+    """`charCodeAt` runs in the browser; CPython runs only the placeholder: 0."""
+    assert compose_track_module.char_code_at("A", 0) == 0

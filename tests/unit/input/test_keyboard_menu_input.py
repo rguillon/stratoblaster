@@ -117,3 +117,25 @@ def test_ui_input_06_one_of_two_keys_still_held_keeps_the_direction_repeating() 
     menu.key_up(FakeKeyEvent("ArrowUp"))
     # KeyW is still down: the direction keeps repeating after the 0.35 s delay.
     assert menu.update(1.0) != []
+
+
+def test_ui_input_05_listen_wires_keyup_to_stop_the_repeats() -> None:
+    menu = make_input()
+    target = FakeTarget()
+    menu.listen(target)
+    target.listeners["keydown"][0](FakeKeyEvent("ArrowDown"))
+    assert menu.update(0) == ["down"]
+    target.listeners["keyup"][0](FakeKeyEvent("ArrowDown"))
+    assert menu.update(5.0) == []
+
+
+def test_ui_input_05_a_direction_key_up_after_a_focus_loss_is_harmless() -> None:
+    """Its key-down was forgotten (`release_all`): its key-up releases nothing more."""
+    menu = make_input()
+    menu.key_down(FakeKeyEvent("ArrowUp"))
+    menu.update(0)
+    menu.release_all()
+    menu.key_up(FakeKeyEvent("ArrowUp"))
+    assert menu.update(5.0) == []
+    menu.key_down(FakeKeyEvent("ArrowUp"))
+    assert menu.update(0) == ["up"]

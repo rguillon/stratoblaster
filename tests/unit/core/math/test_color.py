@@ -4,19 +4,17 @@
 from typing import Any
 
 import pytest
+from helpers.color_families import in_family
 
 from core.math.color import (
     capped_saturation,
     contrast_ratio,
     fold_into_family,
     hue_saturation,
-    in_family,
     relative_luminance,
     snap_to_hues,
     srgb_byte_to_linear,
 )
-
-RED_FAMILY = {"from": 330.0, "to": 30.0, "minSaturation": 0.2}
 
 GREEN_FAMILY = {"from": 90.0, "to": 150.0, "minSaturation": 0.2}
 
@@ -76,18 +74,6 @@ def test_hue_saturation_of_a_pale_colour_is_partly_saturated() -> None:
     hue, saturation = hue_saturation((1.0, 0.5, 0.5))
     assert hue == pytest.approx(0.0)
     assert saturation == pytest.approx(0.5)
-
-
-def test_gfx_read_04_in_family_checks_the_hue_range_and_saturation() -> None:
-    assert in_family((1, 0, 0), RED_FAMILY)
-    assert in_family((1, 0, 0.2), RED_FAMILY)
-    assert not in_family((0, 1, 0), RED_FAMILY)
-    assert not in_family((0.5, 0.5, 0.5), RED_FAMILY)
-
-
-def test_gfx_read_04_in_family_needs_the_minimal_saturation() -> None:
-    pale_red = (1.0, 0.95, 0.95)  # Saturation 0.05, below the family's 0.2.
-    assert not in_family(pale_red, RED_FAMILY)
 
 
 def test_gfx_read_06_fold_into_family_moves_the_hue_into_the_family() -> None:

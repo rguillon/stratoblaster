@@ -197,3 +197,21 @@ def test_game_ctrl_02_the_keys_win_over_a_weaker_gamepad() -> None:
     controls = make_controls([pad])
     controls.key("ArrowRight", down=True)
     assert controls.read(DT, MAX_SPEED).move.x == 1
+
+
+def test_game_ctrl_05_fire_stays_held_through_auto_repeat_until_the_key_goes_up() -> None:
+    controls = make_controls()
+    controls.key("Space", down=True)
+    controls.key("Space", down=True)  # browser auto-repeat
+    assert controls.read(DT, MAX_SPEED).fire is True
+    controls.key("Space", down=False)
+    assert controls.read(DT, MAX_SPEED).fire is False
+    # A second key-up (its key-down was never seen) is still a control, and changes nothing.
+    assert controls.key("Space", down=False) is True
+    assert controls.read(DT, MAX_SPEED).fire is False
+
+
+def test_game_ctrl_06_a_switch_key_up_without_its_key_down_is_no_press() -> None:
+    controls = make_controls()
+    assert controls.key("KeyE", down=False) is True
+    assert controls.read(DT, MAX_SPEED).switch_weapon is False

@@ -155,8 +155,8 @@ class ArmourCut:
         frames: list[Any],
         floors: list[float],
         bridges: list[Any],
-        framed: list[bool] | None = None,
-        floating: dict[str, Any] | None = None,
+        framed: list[bool],
+        floating: dict[str, Any],
     ) -> None:
         self.kept = kept
         self.calls = calls
@@ -167,10 +167,10 @@ class ArmourCut:
         # Beams holding patches of each frame to the boss (`_held_frames`).
         self.bridges = bridges
         # Whether each region leaves a frame (a moving one may not, D-230).
-        self.framed = framed if framed is not None else [True for _ in regions]
-        # What of the core is loose at rest (held by a stem or a part standing on it), by layer:
-        # drawn with the core, but nothing is held by it.
-        self.floating = floating if floating is not None else {}
+        self.framed = framed
+        # What of the core is loose at rest (held by a stem or a part standing on it), by layer
+        # (every layer of `LAYERS`): drawn with the core, but nothing is held by it.
+        self.floating = floating
 
     def core_drawing(self) -> Any:
         """Return the drawing of the core without its armour."""
@@ -181,8 +181,7 @@ class ArmourCut:
         def draw(p: Any) -> None:
             for layer in LAYERS:
                 append_triangles(getattr(p, layer).geometry, kept[layer])
-                if layer in floating:
-                    append_triangles(getattr(p, layer).geometry, floating[layer])
+                append_triangles(getattr(p, layer).geometry, floating[layer])
             for call in calls:
                 _play(p, call)
 
@@ -440,8 +439,6 @@ def _free_after(
     for piece in pieces([tris[i] for i in hanging]):
         members = [hanging[k] for k in piece]
         k = _owner(tris, members, carves, regions, form)
-        if k < 0:
-            continue
         for i in members:
             cut[k][tagged[i][0]].append(tris[i])
             moved[i] = True
@@ -481,7 +478,8 @@ def _owner(
     """Return the region a hanging piece (`members` of `tris`) goes with.
 
     The one shed by `form` or before (or moved by `form`: a piece moved before cannot take it now)
-    that it stands in, else the nearest one `form` sheds or moves (the one that held it up).
+    that it stands in, else the nearest one `form` sheds or moves (the one that held it up): `form`
+    is one some region has (`sorted_forms`), and every region has an outline.
     """
     b = bounds_of([tris[i] for i in members])
     x = (b[0] + b[3]) / 2

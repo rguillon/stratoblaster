@@ -206,3 +206,12 @@ def test_dev_opt_02_seeking_clears_the_shots_in_flight() -> None:
     assert run.shots.active_count == 1
     run.seek(0)
     assert run.shots.active_count == 0
+
+
+def test_enm_04_a_wave_brings_in_the_kind_with_its_id_among_several() -> None:
+    other = EnemyKindDefinition(
+        "other", "Other", lambda _area: [Still(10, 10, EnemyStats("other", 4, 1, 1))]
+    )
+    run = _run(level=_level([_wave(0)]), kinds=[other, _kind(y=30)])
+    _step(run)
+    assert [e.model for e in run.enemies.enemies] == ["still"]

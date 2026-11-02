@@ -12,7 +12,15 @@ from core.scenery.road_types import Road, RoadPoint
 from core.scenery.scenery_level import TileRules
 from render.geometry.gradient_shapes import ColoredGeometry
 from render.scenery import road_field
-from render.scenery.road_field import RoadField, RoadLayers, _opaque_of, _split_roads
+from render.scenery.road_field import (
+    RoadField,
+    RoadLayers,
+    _opaque_of,
+    _slot_get,
+    _slot_set,
+    _split_roads,
+)
+from render.scenery.road_geometry import RoadLook
 from render.scenery.tile_road_geometry import TileRoadLook
 
 SLOTS: dict[tuple[int, str], Any] = {}
@@ -67,13 +75,19 @@ def _road(index: int, kind: str, z0: float = 0) -> Road:
     return Road(index, kind, 4, 1, points)
 
 
+def _mesh(field: RoadField, index: int) -> Any:
+    """Return the mesh of chunk `index` of `field`, if it has one."""
+    i = field._position(index)
+    return field._meshes[i] if i >= 0 else None
+
+
 def test_a_chunk_gets_one_mesh_named_for_it_with_its_draw_order_and_material() -> None:
     scene = FakeScene()
     material = FakeMaterial("road")
     field = RoadField(scene, material, "roads", -1)
     field.set_chunk(3, _triangle())
     assert field.count == 1
-    mesh = field.mesh(3)
+    mesh = _mesh(field, 3)
     assert mesh.name == "roads-3"
     assert mesh.alphaIndex == -1
     assert mesh.hasVertexAlpha is True
@@ -84,37 +98,38 @@ def test_a_chunk_gets_one_mesh_named_for_it_with_its_draw_order_and_material() -
 def test_an_opaque_field_is_drawn_without_fading_with_its_vertex_alpha() -> None:
     field = RoadField(FakeScene(), FakeMaterial("m"), "streets", 0, see_through=False)
     field.set_chunk(0, _triangle())
-    assert field.mesh(0).hasVertexAlpha is False
+    assert _mesh(field, 0).hasVertexAlpha is False
 
 
 def test_a_chunk_without_triangles_has_no_mesh() -> None:
     field = RoadField(FakeScene(), FakeMaterial("m"), "roads", -1)
     field.set_chunk(0, ColoredGeometry())
     assert field.count == 0
-    assert field.mesh(0) is None
+    assert _mesh(field, 0) is None
 
 
 def test_setting_a_chunk_again_replaces_its_mesh() -> None:
     field = RoadField(FakeScene(), FakeMaterial("m"), "roads", -1)
     field.set_chunk(0, _triangle())
-    first = field.mesh(0)
+    first = _mesh(field, 0)
     field.set_chunk(0, _triangle())
     assert field.count == 1
     assert first.disposed
-    assert field.mesh(0) is not first
+    assert _mesh(field, 0) is not first
 
 
-def test_removing_a_chunk_disposes_its_mesh_and_clear_removes_them_all() -> None:
+def test_removing_a_chunk_disposes_its_mesh_and_keeps_the_others() -> None:
     field = RoadField(FakeScene(), FakeMaterial("m"), "roads", -1)
     field.set_chunk(0, _triangle())
     field.set_chunk(1, _triangle())
-    kept = field.mesh(1)
+    removed = _mesh(field, 0)
+    kept = _mesh(field, 1)
     field.remove_chunk(0)
-    assert field.mesh(0) is None
+    assert _mesh(field, 0) is None
+    assert removed.disposed
     assert field.count == 1
-    field.clear()
-    assert field.count == 0
-    assert kept.disposed
+    assert _mesh(field, 1) is kept
+    assert not kept.disposed
 
 
 def test_paths_are_split_from_the_other_roads_and_a_list_of_streets_is_known() -> None:
@@ -148,12 +163,12 @@ def test_the_middles_of_all_street_chunks_are_drawn_apart_and_mixed_roads_are_no
     flat = SimpleNamespace(height=lambda _x, _z: 0.0)
     layers = RoadLayers(FakeScene(), FakeMaterial("road"))
     layers.set_chunk(0, [_road(1, "street")], flat, (0, 100), look)
-    assert layers.streets_of(0) is not None
+    assert _mesh(layers._streets, 0) is not None
     layers.set_chunk(1, [_road(2, "street"), _road(3, "main")], flat, (0, 100), look)
-    assert layers.streets_of(1) is None
+    assert _mesh(layers._streets, 1) is None
 
 
-def test_the_count_of_the_layers_is_the_chunks_with_ribbons_and_clear_empties_them() -> None:
+def test_the_count_of_the_layers_is_the_chunks_with_ribbons() -> None:
     look = make_look().roads
     flat = SimpleNamespace(height=lambda _x, _z: 0.0)
     layers = RoadLayers(FakeScene(), FakeMaterial("road"))
@@ -163,8 +178,6 @@ def test_the_count_of_the_layers_is_the_chunks_with_ribbons_and_clear_empties_th
     assert layers.count == 2
     layers.remove_chunk(0)
     assert layers.count == 1
-    layers.clear()
-    assert layers.count == 0
 
 
 def test_the_street_surfaces_of_a_tile_chunk_are_shown_with_the_road_atlas() -> None:
@@ -180,8 +193,8 @@ def test_the_street_surfaces_of_a_tile_chunk_are_shown_with_the_road_atlas() -> 
     layers.set_tile_chunk(4, chunk)
     assert layers._atlas_texture.anisotropicFilteringLevel == 8
     assert layers._surface_material.diffuseTexture is layers._atlas_texture
-    assert layers.streets_of(4) is not None
-    assert layers._grid.mesh(4) is not None
+    assert _mesh(layers._streets, 4) is not None
+    assert _mesh(layers._grid, 4) is not None
 
 
 def _tile_chunk(atlas: Any, version: int) -> Any:
@@ -206,10 +219,6 @@ def test_d217_each_version_of_the_road_atlas_is_uploaded_once(
     layers.set_tile_chunk(3, _tile_chunk([2], 2))
     assert uploads == [[2]]
     assert layers._atlas_texture is texture
-    # Cleared (a new seed: another source, counting from 1 again), the next one is uploaded.
-    layers.clear()
-    layers.set_tile_chunk(0, _tile_chunk([3], 1))
-    assert uploads == [[2], [3]]
 
 
 def test_the_tile_grid_is_drawn_over_the_ground_with_its_own_material_offset() -> None:
@@ -237,6 +246,102 @@ def test_on_a_tile_path_the_streets_are_not_made_in_the_road_chunk() -> None:
     layers = RoadLayers(FakeScene(), FakeMaterial("road"))
     roads = [_road(1, "street"), _road(2, "cross"), _road(3, "main")]
     layers.set_chunk(0, roads, flat, (0, 100), look, TileRules(10, 2))
-    assert layers.streets_of(0) is None
-    assert layers._paths.mesh(0) is not None
-    assert layers._roads.mesh(0) is not None
+    assert _mesh(layers._streets, 0) is None
+    assert _mesh(layers._paths, 0) is not None
+    assert _mesh(layers._roads, 0) is not None
+
+
+def test_the_slots_are_javascript_only_and_hold_nothing_under_cpython() -> None:
+    """JavaScript-only: the browser keeps the value on the list; CPython runs the placeholder."""
+    roads: list[Road] = []
+    assert _slot_set(roads, "render_road_split", "kept") is None
+    assert _slot_get(roads, "render_road_split") is None
+
+
+def test_a_chunk_with_texture_coordinates_passes_them_to_its_mesh(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    applied: list[Any] = []
+    monkeypatch.setattr(road_field, "apply_vertex_data", lambda data, _mesh: applied.append(data))
+    textured = _triangle()
+    textured.uvs = [0.0, 0.0, 1.0, 0.0, 0.0, 1.0]  # type: ignore[attr-defined]
+    field = RoadField(FakeScene(), FakeMaterial("m"), "street-surfaces", 0, False)
+    field.set_chunk(0, textured)
+    field.set_chunk(1, _triangle())
+    assert applied[0].uvs == textured.uvs
+    assert not hasattr(applied[1], "uvs")
+
+
+def _tile_look() -> RoadLook:
+    look = make_look().roads
+    look.tiles = TileRoadLook(
+        (0.5, 0.5, 0.5),
+        (1.0, 1.0, 1.0),
+        (0.0, 0.0, 0.0),
+        0.5,
+        (1.0, 0.0, 0.0),
+        (0.0, 0.0, 1.0),
+        0.3,
+        0.1,
+    )
+    return look
+
+
+def test_on_a_tile_path_the_winding_roads_of_a_list_are_picked_once_and_kept_with_it() -> None:
+    flat = SimpleNamespace(height=lambda _x, _z: 0.0)
+    layers = RoadLayers(FakeScene(), FakeMaterial("road"))
+    roads = [_road(1, "street"), _road(2, "main")]
+    look = _tile_look()
+    layers.set_chunk(0, roads, flat, (0, 100), look, TileRules(10, 2))
+    kept = SLOTS[(id(roads), "render_road_winding")]
+    assert [r.index for r in kept] == [2]
+    layers.set_chunk(1, roads, flat, (0, 100), look, TileRules(10, 2))
+    assert SLOTS[(id(roads), "render_road_winding")] is kept
+    assert _mesh(layers._roads, 1) is not None
+
+
+def test_the_tile_grid_is_made_once() -> None:
+    layers = RoadLayers(FakeScene(), FakeMaterial("road"))
+    layers.show_tile_grid()
+    grid = layers._grid
+    layers.show_tile_grid()
+    assert layers._grid is grid
+
+
+class _UnclonableMaterial(FakeMaterial):
+    """A material whose clone gives nothing (as Babylon may)."""
+
+    def clone(self, _name: str) -> Any:
+        return None
+
+
+def test_the_tile_grid_takes_the_road_material_itself_when_it_cannot_be_cloned() -> None:
+    material = _UnclonableMaterial("road")
+    layers = RoadLayers(FakeScene(), material)
+    layers.show_tile_grid()
+    assert layers._grid._material is material
+    assert material.zOffset == -3
+    assert material.disableDepthWrite is False
+
+
+def test_the_tile_grid_goes_with_its_chunk() -> None:
+    layers = RoadLayers(FakeScene(), FakeMaterial("road"))
+    layers.show_tile_grid()
+    for index in (0, 1):
+        layers.set_tile_chunk(
+            index,
+            SimpleNamespace(
+                atlas=None,
+                atlas_version=0,
+                surfaces=_triangle(),
+                layered=_triangle(),
+                grid=_triangle(),
+            ),
+        )
+    grid = layers._grid
+    assert grid.count == 2
+    layers.remove_chunk(0)
+    assert _mesh(grid, 0) is None
+    assert grid.count == 1
+    assert _mesh(layers._streets, 0) is None
+    assert _mesh(layers._streets, 1) is not None

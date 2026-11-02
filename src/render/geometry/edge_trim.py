@@ -156,6 +156,8 @@ def _outward(a: Vec3, b: Vec3, inner: Vec3) -> Vec3 | None:
     oz = -dx / length
     mx = (a[0] + b[0]) / 2 - inner[0]
     mz = (a[2] + b[2]) / 2 - inner[2]
+    # Never for an up-facing triangle's edge, whose winding already puts `inner` behind (dz, -dx);
+    # the chord of a merged run may run back against its first edge (see `merged_edges`).
     if ox * mx + oz * mz < 0:
         ox = -ox
         oz = -oz
@@ -306,6 +308,8 @@ def merged_edges(edges: list[TrimEdge]) -> list[TrimEdge]:
         a = tips[0]
         b = tips[1]
         out = _outward(a, b, [a[0] - first.out[0], a[1], a[2] - first.out[2]])
+        # A run of overlapping edges (one mesh's solids sharing corners and sides) may double back,
+        # or come round to the end of its first edge: its chord is then short, or of no length.
         if out is None:
             continue
         # Keep the run's side: the chord's square points the way its first edge's did.

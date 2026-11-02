@@ -368,15 +368,3 @@ class EnemyKindDefinition:
         self.id = id_
         self.name = name
         self.spawn = spawn
-
-
-def validate_enemy_kinds(kinds: list[EnemyKindDefinition]) -> None:
-    """Raise a descriptive error if the kinds are empty or have duplicate ids."""
-    if len(kinds) == 0:
-        msg = "A game needs at least one enemy kind"
-        raise ValueError(msg)
-    ids: list[str] = []
-    for kind in kinds:
-        if kind.id in ids:
-            raise ValueError('Duplicate enemy kind id "' + kind.id + '"')
-        ids.append(kind.id)

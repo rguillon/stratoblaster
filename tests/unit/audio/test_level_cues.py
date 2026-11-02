@@ -192,3 +192,18 @@ def test_aud_engine_09_a_level_without_a_hull_or_bombs_counts_zero() -> None:
     run = make_run(hull=None, bombs=None)
     cues.observe(run)
     assert cues.observe(run) == []
+
+
+def test_aud_engine_09_each_laser_is_followed_on_its_own() -> None:
+    cues = LevelCues(40)
+    run = make_run()
+    cues.observe(run)
+    first = SimpleNamespace(phase="warning", x=30.0)
+    second = SimpleNamespace(phase="warning", x=60.0)
+    run.enemies.shots.lasers.extend([first, second])
+    assert names(cues.observe(run)) == ["laser-warning"]
+    second.phase = "firing"
+    fired = cues.observe(run)
+    assert names(fired) == ["laser-fire"]
+    assert fired[0].x == 60.0
+    assert cues.observe(run) == []

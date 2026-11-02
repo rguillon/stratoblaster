@@ -1,6 +1,7 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/audio/sfx_player.py`."""
 
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
@@ -8,7 +9,7 @@ from helpers.audio_fakes import FakeContext, FakeVoice
 
 from audio import sfx_player
 from audio.audio_types import INFINITY, Envelope, SoundDesign, ToneLayer
-from audio.sfx_player import SfxBus, SfxPlayer, SfxSettings, pan_at
+from audio.sfx_player import SfxPlayer, SfxSettings, pan_at
 
 
 def sound(name: str, hold: float = 0.2, *, priority: float = 1, **flags: bool) -> SoundDesign:
@@ -42,7 +43,8 @@ def make_player(
         "stop_fade_seconds": 0.05,
     }
     base.update(settings)
-    bus = SfxBus(context, object()) if context is not None else None
+    # Where the sound effects go: the audio context and its sound effect bus.
+    bus = SimpleNamespace(context=context, sfx=object()) if context is not None else None
     player = SfxPlayer(lambda: bus, lambda: now[0], SfxSettings(**base))
     return player, context, now
 
@@ -173,3 +175,42 @@ def test_aud_engine_07_a_sound_that_is_over_is_forgotten_so_its_name_can_play_ag
     clock[0] = 5.0
     assert player.play(sound("shot")) is True
     assert player.voices == 1
+
+
+@pytest.mark.usefixtures("voices")
+def test_aud_engine_07_each_looping_sound_is_kept_by_its_name() -> None:
+    player, _, _ = make_player(FakeContext())
+    player.play(sound("laser", hold=INFINITY, loop=True))
+    player.play(sound("engine", hold=INFINITY, loop=True))
+    assert player.looping("engine") is True
+    player.stop_loop("engine")
+    assert player.looping("engine") is False
+    assert player.looping("laser") is True
+
+
+def test_aud_engine_07_a_loop_let_go_and_started_again_too_soon_is_neither_played_nor_boosted(
+    voices: list[FakeVoice],
+) -> None:
+    context = FakeContext()
+    player, _, clock = make_player(context)
+    laser = sound("laser", hold=INFINITY, loop=True)
+    player.play(laser)
+    gain = context.of_kind("gain")[0]
+    player.stop_loop("laser")
+    clock[0] = 0.01
+    assert player.play(laser) is False
+    assert gain.gain.value == 1
+    assert len(voices) == 1
+    assert player.voices == 0
+
+
+def test_aud_engine_10_stop_all_without_a_context_forgets_every_sound(
+    voices: list[FakeVoice],
+) -> None:
+    player, _, _ = make_player(None)
+    player.play(sound("shot"))
+    player.play(sound("laser", hold=INFINITY, loop=True))
+    player.stop_all()
+    assert player.voices == 0
+    assert player.looping("laser") is False
+    assert voices == []

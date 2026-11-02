@@ -13,7 +13,7 @@ from helpers.level_builders import (
     tile_rules,
 )
 
-from core.scenery.district_packing import DistrictSite, RoadTilesCache, pack_districts
+from core.scenery.district_packing import DistrictSite, RoadTilesCache, _tries_of, pack_districts
 from core.scenery.districts import ZRange
 from core.scenery.height_field import HeightField
 from core.scenery.road_network import RoadNetwork
@@ -95,3 +95,24 @@ def test_perf_11_the_road_tiles_are_worked_out_once_per_list_of_roads() -> None:
     first = cache.of(roads.roads, TILE)
     assert cache.of(roads.roads, TILE) is first
     assert cache.of(list(roads.roads), TILE) is not first
+
+
+PLAIN = PropKindRule("plain", 1.0, 12.0, (0.5, 1.0))
+
+
+def test_gfx_bldg_05_a_lot_without_tiles_counts_as_no_area_and_is_tried_last() -> None:
+    # Given first, the one-tile `plain` lot would fit everywhere and leave no room for the 3 x 1
+    # lot; sorted by area (none for a lot without tiles), the larger lot is tried first.
+    site, roads, placed = _setup(group_at=lambda _x, _z, _section: None, lots=(PLAIN, LOT))
+    _pack(site, roads)
+    kinds = {b.placement.kind for b in placed}
+    assert "lot" in kinds
+    assert kinds <= {"lot", "plain"}
+    assert all(b.half_x == b.half_z == TILE.size / 2 for b in placed if b.placement.kind == "plain")
+
+
+def test_gfx_bldg_05_a_group_tries_its_drawn_kind_then_the_largest_then_the_lots() -> None:
+    tries = _tries_of(PropGroupRule("g", 1.0, [ONE, TWO, PLAIN]), [LOT])
+    assert tries.kinds == [ONE, TWO]
+    assert tries.get(ONE) == [ONE, TWO, LOT]
+    assert tries.get(TWO) == [TWO, ONE, LOT]

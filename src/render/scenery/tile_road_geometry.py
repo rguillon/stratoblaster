@@ -8,8 +8,6 @@ the layers of the pieces the road atlas has no room for (GFX-ROAD-20).
 
 import math
 
-from org.transcrypt.stubs.browser import __pragma__
-
 from render.geometry.gradient_shapes import ColoredGeometry
 
 # isort: split
@@ -32,12 +30,6 @@ LAYER = 0.1
 # How each side's arm runs, in the order of `PieceSides` (+Z, +X, -Z, -X): whether it runs along
 # X, and from which edge (the high one or the low one).
 ARMS = [(False, True), (True, True), (False, False), (True, False)]
-
-
-def _hypot(a: float, b: float) -> float:
-    """`Math.hypot(a, b)`: JavaScript's rounding, not `math.hypot`."""
-    __pragma__("js", "{}", "return Math.hypot(a, b);")
-    return math.hypot(a, b)  # Only reached outside Transcrypt (CPython).
 
 
 class TileRoadLook:
@@ -334,20 +326,3 @@ def _above_ground(ground: Height) -> Height:
         return ground(x, z) + 1
 
     return height
-
-
-def build_tile_road_geometry(
-    pieces: list[RoadPiece],
-    tile: TileRules,
-    look: TileRoadLook,
-    ground: Height,
-    z_min: float,
-    z_max: float,
-) -> ColoredGeometry:
-    """Return the pieces of `pieces` whose middle is in [z_min, z_max), on `ground`."""
-    geo = ColoredGeometry()
-    for piece in pieces:
-        mid = (piece.z + piece.size / 2) * tile.size
-        if mid >= z_min and mid < z_max:
-            add_piece(geo, piece, tile, look, ground)
-    return geo

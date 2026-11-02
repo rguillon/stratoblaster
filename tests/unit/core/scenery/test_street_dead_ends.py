@@ -3,7 +3,7 @@
 
 from typing import Any
 
-from core.scenery.street_dead_ends import remove_dead_ends
+from core.scenery.street_dead_ends import MAX_PASSES, remove_dead_ends
 from core.scenery.street_links import Link, Nodes, links_by_node
 
 
@@ -77,3 +77,43 @@ def test_gfx_road_16_the_default_removal_leaves_no_dead_end_on_screen() -> None:
 
     remove_dead_ends(links_by_node(links, len(nodes.used)), nodes.used, out, tees=False)
     assert _on_screen_dead_ends(nodes, links, out) == []
+
+
+def test_gfx_road_16_without_keep_cut_a_flipping_street_stops_after_max_passes() -> None:
+    """A street built from one end and cut from the other flips until `MAX_PASSES`.
+
+    It then leaves a dead end on screen, as `remove_dead_ends` says.
+    """
+    nodes, links = _chain([0.0, 10.0, 20.0], [True, False])
+    looks: list[float] = []
+
+    def out(n: Any) -> bool:
+        looks.append(n.x)
+        return n.x == 0.0
+
+    at = links_by_node(links, len(nodes.used))
+    remove_dead_ends(at, nodes.used, out, tees=False, keep_cut=False)
+    # Each pass builds the last link again from x = 10, and x = 20 cuts it back.
+    assert looks.count(20.0) == MAX_PASSES
+    assert [link.built for link in links] == [True, False]
+    assert links[1].cut is True
+    assert _on_screen_dead_ends(nodes, links, lambda n: n.x == 0.0) == [10.0]
+
+
+def test_gfx_road_16_a_street_cut_back_link_after_link_reaches_back_off_the_screen() -> None:
+    """Its far end, numbered after the others, is looked at again in the pass that cuts to it."""
+    nodes = Nodes(lambda _x, _z: True)
+    # Numbered in this order: the middle nodes first, the one off the screen (x = 0) last.
+    middle, near, far, off = [nodes.use(nodes.at(x, 0.0)) for x in (10.0, 20.0, 30.0, 0.0)]
+    links = [
+        Link(a, b, True, False, False, True, built, False)
+        for a, b, built in [(off, middle, True), (middle, near, False), (near, far, False)]
+    ]
+
+    def out(n: Any) -> bool:
+        return n is off
+
+    remove_dead_ends(links_by_node(links, len(nodes.used)), nodes.used, out, tees=False)
+    # It goes on to the last node, which has nothing ahead: cut back from there, link by link.
+    assert [link.built for link in links] == [False, False, False]
+    assert all(link.cut for link in links)

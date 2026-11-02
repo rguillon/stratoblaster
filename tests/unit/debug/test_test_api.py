@@ -17,6 +17,9 @@ from debug.test_api import (
     step_test_frames,
 )
 
+# Taken when this module is imported, before `js_twins` swaps it for a Python twin in every test.
+RESOLVED = test_api._resolved
+
 
 @pytest.fixture(autouse=True)
 def js_twins(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -206,3 +209,13 @@ def test_eng_52_install_puts_the_api_on_the_target() -> None:
 def test_dev_api_09_readability_is_a_promise_of_null_off_a_level() -> None:
     api = install_test_api({}, FakeApp())
     assert api["readability"](0.5) == ("resolved", None)
+
+
+def test_dev_api_09_the_promise_of_a_value_is_javascript_only() -> None:
+    """`Promise.resolve(value)` runs only in the browser: CPython runs its placeholder.
+
+    The value itself comes back.
+    """
+    report = SimpleNamespace(bright=0.5)
+    assert RESOLVED(report) is report
+    assert RESOLVED(None) is None

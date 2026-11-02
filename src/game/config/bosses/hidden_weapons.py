@@ -175,14 +175,3 @@ def with_weapons(design: Any, weapons: list[Any], armour: list[Any], more: Any =
             "launches": launches,
         },
     )
-
-
-def health_of(design: Any, share: float) -> float:
-    """Return a hidden weapon's health: `share` of the boss's sturdiest original part.
-
-    Rounded to 10.
-    """
-    most = 0.0
-    for p in design.stats.parts:
-        most = max(most, p.health)
-    return math.floor((most * share) / 10 + 0.5) * 10

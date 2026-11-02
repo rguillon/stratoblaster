@@ -5,10 +5,12 @@ from typing import Any
 from unittest.mock import MagicMock
 
 import pytest
+from helpers.color_families import in_family
 
-from core.math.color import hue_saturation, in_family
+from core.math.color import hue_saturation
 from game.config.enemy_look import ENEMY_LOOK
 from game.config.readability import READABILITY
+from game.config.record import record
 from game.view.enemies import enemy_materials as em
 
 
@@ -236,3 +238,40 @@ def test_d231_in_body_shades_greys_each_vertex_colour_and_keeps_alpha(monkeypatc
     assert greyed[4:] == [0.05, 0.2, 0.06, 1]
     most = READABILITY.enemyBody.maxSaturation
     assert hue_saturation(greyed[0:3])[1] == pytest.approx(most)
+
+
+def test_with_colors_copies_a_geometry_with_other_colours() -> None:
+    geo = record({"positions": [0, 1, 2], "indices": [0], "colors": [1, 0, 0, 1]})
+    copy = em._with_colors(geo, [0, 1, 0, 1])
+    assert copy.colors == [0, 1, 0, 1]
+    assert copy.positions == [0, 1, 2]
+    assert copy.indices == [0]
+    assert geo.colors == [1, 0, 0, 1]
+
+
+def test_d231_in_body_shades_keeps_the_positions_of_the_geometry_it_copies() -> None:
+    geo = record({"positions": [0, 1, 2], "indices": [0], "colors": [0.2, 0.1, 0.05, 0.5]})
+    shaded = em.in_body_shades(geo)
+    assert shaded.positions == geo.positions
+    assert shaded.colors[3] == 0.5
+    assert shaded.colors[0:3] == pytest.approx(em.body_color([0.2, 0.1, 0.05]))
+
+
+def test_mesh_of_is_a_flat_shaded_vertex_coloured_mesh_in_its_material(monkeypatch: Any) -> None:
+    calls: list[Any] = []
+    mesh = MagicMock(name="mesh")
+    monkeypatch.setattr(
+        em, "new_mesh", lambda name, scene: calls.append(("mesh", name, scene)) or mesh
+    )
+    monkeypatch.setattr(em, "compute_normals", lambda positions, _indices: ("normals", positions))
+    monkeypatch.setattr(em, "vertex_data_of", lambda *args: ("data", *args))
+    monkeypatch.setattr(em, "apply_vertex_data", lambda data, target: calls.append((data, target)))
+    geo = record({"positions": [0, 1, 2], "indices": [0, 1, 2], "colors": [1, 1, 1, 1]})
+    material = object()
+    assert em.mesh_of("enemy-gnat-hull", geo, material, "scene") is mesh
+    assert calls == [
+        ("mesh", "enemy-gnat-hull", "scene"),
+        (("data", [0, 1, 2], [0, 1, 2], ("normals", [0, 1, 2]), [1, 1, 1, 1]), mesh),
+    ]
+    assert mesh.material is material
+    assert mesh.isPickable is False

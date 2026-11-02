@@ -11,10 +11,10 @@ from render.scenery.tile_road_geometry import (
     LAYER,
     Arm,
     TileRoadLook,
+    _add_rect,
     add_piece,
     arm_lines,
     build_tile_grid,
-    build_tile_road_geometry,
     cuts,
     piece_roadway,
 )
@@ -134,13 +134,12 @@ def test_the_sidewalk_is_drawn_first_over_the_whole_piece_in_its_colour() -> Non
     assert all(c == WHITE for c in sidewalk)
 
 
-def test_pieces_belong_to_the_chunk_of_their_middle() -> None:
-    piece = _piece([_side(2), None, _side(2), None], size=2)
-    # Its middle is at z = 10, the edge between the chunks [0, 10) and [10, 20).
-    before = build_tile_road_geometry([piece], TILE, LOOK, lambda _x, _z: 0.0, 0, 10)
-    after = build_tile_road_geometry([piece], TILE, LOOK, lambda _x, _z: 0.0, 10, 20)
-    assert before.indices == []
-    assert after.indices != []
+def test_a_wide_piece_paints_its_centre_line_and_its_lane_lines() -> None:
+    geo = ColoredGeometry()
+    add_piece(geo, _piece([_side(2), None, _side(2), None], size=2), TILE, LOOK, lambda _x, _z: 0.0)
+    colours = set(_colours(geo))
+    assert RED in colours
+    assert BLUE in colours
 
 
 def test_the_roadway_is_cut_on_the_world_lattice_shared_with_the_sidewalk() -> None:
@@ -171,3 +170,11 @@ def test_the_tile_grid_draws_lines_on_the_edges_of_its_tiles_above_the_ground() 
 def test_the_tile_grid_is_empty_for_a_chunk_without_pieces() -> None:
     grid = build_tile_grid([_piece([_side()] * 4)], TILE, lambda _x, _z: 0.0, 50, 60, WHITE)
     assert grid.indices == []
+
+
+@pytest.mark.parametrize("rect", [(2, 2, 0, 5), (0, 5, 3, 3), (4, 1, 0, 5)])
+def test_a_rectangle_with_no_area_adds_nothing(rect: tuple[float, float, float, float]) -> None:
+    geo = ColoredGeometry()
+    _add_rect(geo, rect, 0, 0, lambda _x, _z: 0.0, GREY, 10)
+    assert geo.positions == []
+    assert geo.indices == []

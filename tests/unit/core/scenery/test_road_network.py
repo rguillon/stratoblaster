@@ -21,8 +21,9 @@ from core.scenery.districts import ZRange
 from core.scenery.ground_boxes import GroundArea
 from core.scenery.height_field import HeightField
 from core.scenery.prop_placement import PropPlacer
-from core.scenery.road_network import RoadNetwork, RoadNetworkOptions, level_roads
+from core.scenery.road_network import RoadNetwork, RoadNetworkOptions, _heading, level_roads
 from core.scenery.scenery_level import runout_start, with_runout
+from core.scenery.street_runs import Point
 
 SPAN = ZRange(-3000.0, 6000.0)
 
@@ -217,3 +218,38 @@ def test_perf_14_a_snapshot_makes_the_same_placer_without_placing_again() -> Non
     again = PropPlacer(field, level.props, level.seed, roads, sea_level=0, made=snapshot)
     assert again.placed_to == original.placed_to
     assert keys(again.place(AREA)) == keys(original.place(AREA))
+
+
+def _bare(**rules: Any) -> RoadNetwork:
+    """Return a network with no main road and no district, to try its turns on."""
+    return _network(_level(streets=False, main_roads=0, **rules))
+
+
+def test_gfx_road_04_a_heading_needs_a_segment_to_end_at() -> None:
+    points = [Point(0.0, 0.0), Point(10.0, 10.0)]
+    assert _heading(points, 1) == pytest.approx(math.pi / 4)
+    assert _heading(points, 0) == 0
+
+
+def test_gfx_road_04_a_turn_that_never_reaches_the_screen_edge_is_not_laid() -> None:
+    turning = _bare()
+    points = turning._turn_towards(Point(0.0, 0.0), 0.0, 1)
+    assert points is not None
+    assert points[-1].x >= turning.rules.offscreen_x
+    # Without turning, heading up the level, it never gets off the screen.
+    assert _bare(turn_rate=0.0)._turn_towards(Point(0.0, 0.0), 0.0, 1) is None
+
+
+def test_gfx_road_04_a_run_that_cannot_turn_off_the_screen_anywhere_is_dropped() -> None:
+    """GFX-ROAD-03 too: no ground can hold a road, so every turn tried fails."""
+    net = _bare(min_height=1e9)
+    run = [Point(0.0, 10.0 * k) for k in range(200)]
+    assert net._leave(run) is None
+
+
+def test_gfx_road_04_a_run_too_short_to_turn_off_the_screen_at_its_start_is_dropped() -> None:
+    net = _bare()
+    # Its end is off the screen; its start is on it, with fewer than `min_run` points to turn from.
+    assert net._leave_at_both_ends([Point(0.0, 100.0), Point(400.0, 110.0)]) is None
+    both = [Point(-400.0, 100.0), Point(400.0, 110.0)]
+    assert net._leave_at_both_ends(both) == both

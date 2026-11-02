@@ -334,7 +334,8 @@ def _standing_parts(design: Any, drawing: Any, neon: Rgb, hidden: bool) -> list[
     """Return the parts standing on the boss, each `[spec, parts]`.
 
     Not those on joints, nor orbiting ones; the hidden ones too when `hidden`. Each one's `parts`
-    are its drawing's parts at its spot (`collect_parts`).
+    are its drawing's parts at its spot (`collect_parts`). Every part has a drawing or a weapon
+    look: `build_part`, run first, raises otherwise.
     """
     result: list[Any] = []
     weapons = _field(design, "weapons")
@@ -353,8 +354,6 @@ def _standing_parts(design: Any, drawing: Any, neon: Rgb, hidden: bool) -> list[
         draw = _field(drawing.parts, spec.id)
         if draw == None and weapon != None:
             draw = weapon_drawing(weapon, neon)
-        if draw == None:
-            continue
         at = boss_point(spec.x, spec.y)
         result.append([spec, collect_parts(_part_builder(draw, at))["parts"]])
     return result

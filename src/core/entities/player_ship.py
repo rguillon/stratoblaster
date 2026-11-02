@@ -1,8 +1,6 @@
 # Copyright (c) 2026 Renaud Guillon
 """Static, data-only description of the ships the player can fly."""
 
-import math
-
 
 class PlayerShipDefinition:
     """A ship the player can fly."""
@@ -42,32 +40,3 @@ def find_player_ship(roster: PlayerShipRoster, item_id: str) -> PlayerShipDefini
 def ship_max_speed_px_per_sec(roster: PlayerShipRoster, item_id: str) -> float:
     """Maximal speed of a ship, in logical pixels per second (GAME-SHIP-02)."""
     return roster.base_speed_px_per_sec * find_player_ship(roster, item_id).max_speed_factor
-
-
-def _is_integer(value: float) -> bool:
-    """Number.isInteger: false for fractions, infinities and NaN."""
-    # Transcrypt's float % is not exact (it computes ((a % b) + b) % b), so compare with floor.
-    return value - value == 0 and math.floor(value) == value
-
-
-def validate_player_ship_roster(roster: PlayerShipRoster) -> None:
-    """Validate the roster (GAME-SHIP-08).
-
-    Raise a descriptive error if it is empty, has duplicate ids or invalid stats.
-    """
-    if len(roster.ships) == 0:
-        msg = "A roster needs at least one player ship"
-        raise ValueError(msg)
-    # `not (x > 0)` (rather than `x <= 0`) also rejects NaN.
-    if not (roster.base_speed_px_per_sec > 0):
-        msg = "The base speed must be positive"
-        raise ValueError(msg)
-    ids: list[str] = []
-    for ship in roster.ships:
-        if ship.id in ids:
-            raise ValueError('Duplicate player ship id "' + ship.id + '"')
-        ids.append(ship.id)
-        if not (ship.max_speed_factor > 0):
-            raise ValueError('Ship "' + ship.id + '": speed must be positive')
-        if not _is_integer(ship.max_health) or ship.max_health <= 0:
-            raise ValueError('Ship "' + ship.id + '": health must be a positive integer')

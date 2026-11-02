@@ -8,7 +8,7 @@ from game.config.enemy_look import ENEMY_LOOK
 
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 from game.config.record import record
-from render.geometry.organic import RibSpec, carapace, curve, organ, ribs, tendril, vein
+from render.geometry.organic import RibSpec, curve, organ, ribs, tendril, vein
 from render.geometry.solids import Placement
 
 # isort: split
@@ -61,12 +61,6 @@ def spine(p: EnemyParts, path: list[Vec3], arches: Any, glow: Rgb) -> None:
         RibSpec(arches.halfWidth, arches.y, arches.height, 0.7),
         F.bone,
     )
-
-
-def shell(p: EnemyParts, body: Any, color: Rgb = F.teal, place: Placement | None = None) -> None:
-    """Add a ridged shell (GFX-ART-12) over a back: plates of `color`, darker seams between them."""
-    seam = [color[0] * 0.45, color[1] * 0.45, color[2] * 0.45]
-    carapace(p.flesh, body, [color, seam], place)
 
 
 def gland(p: EnemyParts, at: Vec3, radius: float, glow: Rgb) -> None:

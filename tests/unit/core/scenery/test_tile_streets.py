@@ -9,10 +9,11 @@ import pytest
 from helpers.level_builders import flat, make_level, road_rules, section, street_grid, tile_rules
 
 from core.math.rng import create_rng
-from core.scenery.districts import ZRange, find_districts
+from core.scenery.districts import District, DistrictPart, ZRange, find_districts
 from core.scenery.scenery_level import Boulevard, layout_sections
 from core.scenery.street_links import Node
 from core.scenery.tile_streets import (
+    Line,
     _fitting_tile,
     _int_set,
     _mod,
@@ -21,6 +22,7 @@ from core.scenery.tile_streets import (
     _part_rows,
     _row_size,
     _tile_at,
+    _TileLayout,
     _unique,
     _unique_nodes,
     column_fits,
@@ -166,4 +168,30 @@ def test_gfx_road_08_a_district_one_row_tall_has_no_blocks() -> None:
         section("c", 10, flat()),
     ])
     _, blocks = _runs(thin)
+    assert blocks == []
+
+
+def test_gfx_road_17_a_boulevard_with_no_share_is_never_drawn() -> None:
+    rules = road_rules(boulevards=[Boulevard(4, 96.0, 0.0), Boulevard(3, 72.0, 1.0)])
+    assert {_row_size(rules, t) for t in range(-20, 20)} == {3}
+
+
+def test_gfx_road_09_a_wide_row_needs_its_ground_between_the_columns_too() -> None:
+    def layout(buildable: Any) -> Any:
+        return _TileLayout(road_rules(tiles=TILE), TILE, create_rng(1), buildable)
+
+    row = Line(0, 2)
+    assert layout(lambda _x, _z: True)._fits(row, [12.0, 60.0]) is True
+    # Both columns are on buildable ground, the stretch between them (x = 36) is not.
+    assert layout(lambda x, _z: x != 36.0)._fits(row, [12.0, 60.0]) is False
+
+
+def test_gfx_road_14_two_rows_on_neighbouring_tiles_leave_no_room_for_a_block() -> None:
+    district = District(0.0, 30.0, [DistrictPart(street_grid(0.8), 0.0, 30.0)])
+    runs, blocks = _runs(district)
+    # The rows on tiles 0 and 1 are both built (they bound the district), and touch.
+    assert {round(r.points[0].z, 6) for r in runs if r.points[0].z == r.points[-1].z} == {
+        12.0,
+        36.0,
+    }
     assert blocks == []

@@ -43,18 +43,6 @@ EXHAUST_WIDTH = 1.5  # relative to the nacelle radius
 CORE_RADIUS = 0.8  # relative to the nacelle radius
 
 
-def _set_part_metadata(node: Any, part: str) -> None:
-    """`node.metadata = { part }`: the object Babylon keeps as metadata."""
-    __pragma__("js", "{}", "node.metadata = {part: part};")
-
-
-def _part_of_metadata(node: Any) -> Any:
-    """`node.metadata?.part`, or undefined."""
-    result: Any = None
-    __pragma__("js", "{}", "result = node.metadata ? node.metadata.part : undefined;")
-    return result
-
-
 def _polyhedron_options(kind: int, size: float) -> Any:
     """Options for `CreatePolyhedron`: `{ type, size }`."""
     options: Any = None
@@ -67,17 +55,6 @@ def disc_options(radius: float, tessellation: int) -> Any:
     options: Any = None
     __pragma__("js", "{}", "options = {radius: radius, tessellation: tessellation};")
     return options
-
-
-def tag_part(node: Any, part: str) -> Any:
-    """Tags a node with its ship part and returns it."""
-    _set_part_metadata(node, part)
-    return node
-
-
-def part_of(node: Any) -> Any:
-    """Return the ship part a node was tagged with, if any."""
-    return _part_of_metadata(node)
 
 
 def mirror_x(outline: list[Any]) -> list[Any]:
@@ -119,10 +96,7 @@ def nav_light(name: str, position: Any, parent: Any) -> Any:
     """
     scene = parent.getScene()
     # An octahedron (8 triangles): at this size and glowing, it reads as a round light.
-    mesh = tag_part(
-        create_polyhedron(name, _polyhedron_options(1, NAV_LIGHT_SIZE / 2), scene),
-        "light",
-    )
+    mesh = create_polyhedron(name, _polyhedron_options(1, NAV_LIGHT_SIZE / 2), scene)
     mesh.material = get_ship_materials(scene).navLight
     mesh.position.copyFrom(position)
     mesh.parent = parent
@@ -191,7 +165,7 @@ def build_reactor(name: str, size: dict[str, float], scene: Scene) -> Any:
     mats = get_ship_materials(scene)
     radius = size["radius"]
     length = size["length"]
-    root = tag_part(new_transform_node(name, scene), "reactor")
+    root = new_transform_node(name, scene)
 
     profile = [
         [length / 2, 0],

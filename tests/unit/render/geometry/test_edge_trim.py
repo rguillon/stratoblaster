@@ -157,3 +157,66 @@ def test_a_curved_outline_is_drawn_with_fewer_ribbons_on_its_outside() -> None:
 
 def test_a_square_keeps_its_four_sides() -> None:
     assert len(merged_edges(_edges(_box([2, 1, 2])))) == 4
+
+
+def test_gfx_trim_10_a_flat_triangle_faces_neither_up_nor_down() -> None:
+    # Three points in a row: the triangle has no normal, so it counts as facing sideways.
+    positions = [0, 0, 0, 1, 0, 0, 2, 0, 0]
+    assert up_triangles(positions, [0, 1, 2], 0.2) == []
+    assert len(up_triangles(positions, [0, 1, 2], 0.0)) == 1
+
+
+def test_gfx_trim_02_a_standing_edge_has_no_outline_seen_from_above() -> None:
+    # A wall, counted as facing up (min_up 0): its upright edge is not traced, the other two are.
+    positions = [0, 0, 0, 0, 1, 0, 1, 0, 0]
+    edges = silhouette_edges(positions, [0, 1, 2], None, 0.0)
+    assert len(edges) == 2
+    for edge in edges:
+        assert abs(edge.b[0] - edge.a[0]) + abs(edge.b[2] - edge.a[2]) > 0
+        assert edge.out[1] == 0
+
+
+def test_gfx_trim_02_vertices_at_the_same_place_make_no_edge() -> None:
+    # A sliver facing up whose last vertex is within a thousandth of its first: that side is no
+    # edge, and the two others are one segment met twice, so it has no outline.
+    positions = [0, 0, 0, 1, 0, 0, 0.0001, 0, 0.0001]
+    assert len(up_triangles(positions, [0, 1, 2], 0.2)) == 1
+    assert silhouette_edges(positions, [0, 1, 2], None, 0.2) == []
+
+
+def test_gfx_trim_03_a_run_that_doubles_back_keeps_its_outward_side() -> None:
+    # A unit box in a box twice as long, in one mesh: along each long side, both boxes' edges leave
+    # the corner they share the same way and merge, so the run's chord runs back against its first
+    # edge; its outward side is turned round to stay out.
+    b = SolidBuilder().box([1, 1, 1], WHITE, Placement([0.5, 0, 0.5]))
+    b.box([2, 1, 1], WHITE, Placement([1, 0, 0.5]))
+    edges = _edges(b)
+    merged = merged_edges(edges)
+    assert len(merged) == 3
+    for edge in merged:
+        mid = [(edge.a[i] + edge.b[i]) / 2 for i in range(3)]
+        # Away from the middle of the footprint, (1, 0.5).
+        assert (mid[0] - 1) * edge.out[0] + (mid[2] - 0.5) * edge.out[2] > 0
+    geo = trim_ribbons(edges, TrimOptions(0.1, 0.02))
+    for tri in triangles(geo.positions, geo.indices):
+        assert babylon_normal(tri)[1] > 0
+        assert all(not (0 < p[0] < 2 and 0 < p[2] < 1) for p in tri)
+
+
+def test_gfx_trim_03_a_run_that_comes_back_to_its_end_has_no_length_and_gets_no_ribbon() -> None:
+    # Two unit boxes under one covering both, in one mesh: along each long side, the three edges
+    # meet two by two in line, so the run goes round to the end of its first edge.
+    b = SolidBuilder().box([1, 1, 1], WHITE, Placement([0.5, 0, 0.5]))
+    b.box([1, 1, 1], WHITE, Placement([1.5, 0, 0.5]))
+    b.box([2, 1, 1], WHITE, Placement([1, 0, 0.5]))
+    edges = _edges(b)
+    assert len(edges) == 6
+    assert merged_edges(edges) == []
+    assert trim_ribbons(edges, TrimOptions(1, 0)).indices == []
+
+
+def test_a_flat_matrix_has_no_inverse_and_gives_the_identity() -> None:
+    flat = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 3, 4, 5, 1]
+    result = inverse(flat)
+    assert result == IDENTITY
+    assert result is not IDENTITY

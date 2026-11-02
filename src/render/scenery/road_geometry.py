@@ -97,8 +97,7 @@ def _runs(points: list[RoadPoint], z_min: float, z_max: float) -> list[list[Road
         elif len(run) > 0:
             out.append(run)
             run = []
-    if len(run) > 0:
-        out.append(run)
+    # The last point has no next one, so it closed the run under way.
     return out
 
 
@@ -109,11 +108,9 @@ def _across(run: list[RoadPoint], i: int) -> tuple[float, float]:
     """
     a = run[max(0, i - 1)]
     b = run[min(len(run) - 1, i + 1)]
-    if a is None or b is None:
-        return (1, 0)
     length = _hypot(b.x - a.x, b.z - a.z)
     if length == 0:
-        # Two equal points have no direction: as with a missing neighbour, the road runs along X.
+        # Two equal points have no direction: the road runs along X.
         return (1, 0)
     return ((b.z - a.z) / length, -(b.x - a.x) / length)
 

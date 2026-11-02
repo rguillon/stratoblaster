@@ -1,17 +1,14 @@
 # Copyright (c) 2026 Renaud Guillon
 """FB-OVERLORD-02: the Overlord's city: shared shapes.
 
-Towers standing on its deck with lit windows and rooftop clutter, neon edges. Model space: logical
-pixels, nose +Z (down the screen), Y up towards the camera; +X is the screen's left.
+Rectangles and symmetric outlines for its deck, neon edges. Model space: logical pixels, nose +Z
+(down the screen), Y up towards the camera; +X is the screen's left.
 """
 
 import math
 
 from game.config.boss_look import BOSS_LOOK
-from game.config.enemy_look import ENEMY_LOOK
-from game.view.enemies.enemy_shapes import decal, flip_x
-from game.view.enemies.organic_parts import opt
-from render.geometry.solids import Placement
+from game.view.enemies.enemy_shapes import flip_x
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -23,8 +20,6 @@ type Vec3 = list[Any]
 # __pragma__ ("noskip")
 
 
-H = ENEMY_LOOK.hull
-WHITE = [1, 1, 1]
 # Purple: the boss's neon (BOSS-50, FB-OVERLORD-04).
 OVERLORD_NEON = BOSS_LOOK.neon["overlord"]
 # Heights of the deck's top and of the raised boulevard along its middle.
@@ -117,112 +112,3 @@ def edge_lights(
             ],
             color,
         )
-
-
-# How far the towers' tops are inset (their chamfer).
-TOWER_INSET = 1.2
-WINDOW = {"w": 1.3, "h": 1.1, "rows": 4.2}
-
-
-def _pane(cx: float, dx: float, y: float, base: float, h: float, front: float) -> Vec3:
-    """Return a point of a window's pane, sloping back with the front of its block."""
-    t = (y - base) / h
-    return [cx + dx, y, front - TOWER_INSET * t + 0.12]
-
-
-def _front_windows(neon: Any, at: Vec3, w: float, h: float) -> None:
-    """Lit windows on the front of a block `w` wide standing at (x, base, z + d / 2), `h` high.
-
-    Its front sloping back by the inset as it rises: a grid of panes, a few dark.
-    """
-    x = at[0]
-    base = at[1]
-    front = at[2]
-    cols = max(1, math.floor((w - 2) / 2.2))
-    rows = math.floor((h - 1) / WINDOW["rows"])
-    for r in range(rows):
-        for c in range(cols):
-            if (r * 7 + c * 3 + math.floor(x + 0.5)) % 5 == 0:
-                continue
-            cx = x + (c - (cols - 1) / 2) * 2.2
-            y0 = base + 2 + r * WINDOW["rows"]
-            a = -WINDOW["w"] / 2
-            b = WINDOW["w"] / 2
-            corners = [
-                _pane(cx, a, y0, base, h, front),
-                _pane(cx, b, y0, base, h, front),
-                _pane(cx, b, y0 + WINDOW["h"], base, h, front),
-                _pane(cx, a, y0 + WINDOW["h"], base, h, front),
-            ]
-            neon.face(corners, OVERLORD_NEON)
-
-
-def _draw_roof(parts: Any, roof: str, at: Vec3) -> None:
-    """Draw the clutter on a roof at height `y` around (x, z)."""
-    hull = parts.hull
-    neon = parts.neon
-    charge = parts.charge
-    x = at[0]
-    y = at[1]
-    z = at[2]
-    if roof == "ac":
-        hull.box([2.2, 1.2, 2], H.base, Placement([x - 1.4, y, z - 0.6]), H.panel)
-        hull.box([1.6, 1, 1.6], H.base, Placement([x + 1.5, y, z + 0.4]), H.panel)
-        decal(hull, box2d(1.4, 1.2, [x - 1.4, z - 0.6]), y + 1.25, H.dark)
-    elif roof == "tank":
-        hull.cylinder(1.8, 2.6, 6, H.panel, Placement([x, y, z]), 1.5)
-        neon.ring(1.85, 0.4, 6, OVERLORD_NEON, Placement([x, y + 1.2, z]))
-    else:
-        hull.cylinder(0.7, 10, 4, H.dark, Placement([x, y, z]), 0.25)
-        charge.box([1.1, 1.1, 1.1], WHITE, Placement([x, y + 9.6, z]))
-
-
-def draw_tower(parts: Any, tower: Any) -> None:
-    """Draw a tower.
-
-    A chamfered block, lit windows on its front, a lit roof edge, a tier and its roof. `tower` is a
-    `Tower`: `x`, `z`, `w`, `d`, `h`, and optionally `tier` and `roof`.
-    """
-    hull = parts.hull
-    neon = parts.neon
-    x = tower.x
-    z = tower.z
-    w = tower.w
-    d = tower.d
-    h = tower.h
-    tier = opt(tower, "tier", None)
-    roof = opt(tower, "roof", None)
-    base = OVERLORD_DECK["top"]
-    hull.bevel_slab(
-        box2d(w, d, [x, z]),
-        [base - 1, base, base + h],
-        [0, TOWER_INSET],
-        H.panel,
-        None,
-        H.base,
-    )
-    _front_windows(neon, [x, base, z + d / 2], w, h)
-    top = base + h
-    if tier != None:
-        tw = tier[0]
-        td = tier[1]
-        th = tier[2]
-        hull.bevel_slab(
-            box2d(tw, td, [x, z - 0.5]),
-            [top, top, top + th],
-            [0, 0.8],
-            H.base,
-            None,
-            H.panel,
-        )
-        _front_windows(neon, [x, top, z - 0.5 + td / 2], tw, th)
-        top += th
-    else:
-        decal(
-            neon,
-            box2d(w - 2 * TOWER_INSET - 1, 0.8, [x, z + d / 2 - 2]),
-            top + 0.05,
-            OVERLORD_NEON,
-        )
-    if roof != None:
-        _draw_roof(parts, roof, [x, top, z - 0.5])

@@ -133,12 +133,6 @@ class TerrainChunks:
                 added.append(self.span(index))
         return ChunkChanges(added, removed)
 
-    def rebuild(self, source: Any) -> None:
-        """Rebuilds every chunk from a new height source (e.g. a new seed)."""
-        self.source = source
-        for index in _map_keys(self._live):
-            self._fill(_map_get(self._live, index), index)
-
     def _grid(self, index: int) -> TerrainGrid:
         options = self.options
         return TerrainGrid(

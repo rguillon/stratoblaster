@@ -163,3 +163,44 @@ def test_new_roads_that_do_not_go_on_get_new_traffic() -> None:
     assert len(_Traffic.made) == 2
     assert _Traffic.made[1].seed == 2
     assert _Traffic.made[1].added == []
+
+
+class _Imposters:
+    """The cars' imposters (D-211): their models, the bakes and the cars placed."""
+
+    def __init__(self, models: Any) -> None:
+        self.models = models
+        self.bakes = 0
+        self.placed: list[list[Any]] = []
+
+    def bake_once(self) -> None:
+        self.bakes += 1
+
+    def place(self, cars: list[Any]) -> None:
+        self.placed.append(cars)
+
+
+def test_d211_cars_drawn_as_imposters_are_baked_on_update_and_placed_with_their_lights(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """GFX-CAR-05."""
+    imposters = _Imposters({"car": "car-lights-only"})
+    asked: list[tuple[Any, ...]] = []
+
+    def fake_imposter_kinds(*args: Any) -> _Imposters:
+        asked.append(args)
+        return imposters
+
+    monkeypatch.setattr(traffic_layer, "imposter_kinds", fake_imposter_kinds)
+    layer = TrafficLayer(
+        "scene", {"car": "m", "tree": "t"}, "materials", _rules("car"), "atlas-of", 0.3
+    )
+    assert asked == [("scene", {"car": "m"}, ["car"], "atlas-of", 0.3)]
+    # The field draws the imposters' models (the cars' lights), not the detailed ones.
+    field = _Field.instances[0]
+    assert field.models == {"car": "car-lights-only"}
+    # Nothing is baked when made: the bake's mesh must not hang from the ground.
+    assert imposters.bakes == 0
+    layer.update(1.0, "view", TrafficSource(["road-a"], None, 1))
+    assert imposters.bakes == 1
+    assert imposters.placed == [["car-at-1.0"]]

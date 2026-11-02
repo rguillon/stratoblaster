@@ -142,6 +142,20 @@ def test_aud_engine_10_pause_and_resume_are_idempotent() -> None:
 
 
 @pytest.mark.usefixtures("voices")
+def test_aud_engine_10_a_track_played_while_paused_starts_from_its_beginning() -> None:
+    context = FakeContext()
+    player, _ = make(context)
+    player.play(track("menu"), 0)
+    player.update()
+    context.currentTime = 1.0
+    player.pause()
+    assert player.position == pytest.approx(1.0)
+    player.play(track("level"), 0)
+    # The paused place is the menu's: the new track has not started yet.
+    assert player.position == 0
+
+
+@pytest.mark.usefixtures("voices")
 def test_aud_engine_10_pausing_before_the_context_exists_is_harmless() -> None:
     player, _ = make(None)
     player.play(track("menu"), 0)
@@ -219,3 +233,51 @@ def test_aud_engine_04_update_without_a_context_does_nothing(voices: list[FakeVo
     player, _ = make(None)
     player.update()
     assert voices == []
+
+
+def test_aud_music_10_a_jingle_plays_with_no_track_playing(voices: list[FakeVoice]) -> None:
+    context = FakeContext()
+    player, _ = make(context)
+    player.jingle(track("complete", loop=False))
+    player.update()
+    assert player.track is None
+    assert len(voices) == 2  # its notes at 0 and 0.5 s, within the 1.5 s lookahead
+
+
+def test_aud_engine_10_pausing_keeps_the_place_of_a_jingle_too(voices: list[FakeVoice]) -> None:
+    context = FakeContext()
+    player, _ = make(context)
+    player.play(track("menu"), 0)
+    player.jingle(track("complete", loop=False))
+    player.update()
+    context.currentTime = 1.0
+    player.pause()
+    context.currentTime = 5.0
+    player.resume()
+    del voices[:]
+    player.update()
+    # Both go on from 1 s in: their note at 1.5 s starts half a second after the resume.
+    assert sum(1 for voice in voices if voice.end == pytest.approx(5.5 + 0.5)) == 2
+
+
+def test_aud_music_08_a_track_replaced_before_it_started_never_plays(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    pitches: list[float] = []
+
+    def fake_play_voice(_context: Any, _destination: Any, _layers: Any, options: Any) -> FakeVoice:
+        pitches.append(options.note_hz)
+        return FakeVoice(options.when + options.hold)
+
+    monkeypatch.setattr(music_player, "play_voice", fake_play_voice)
+    context = FakeContext()
+    player, _ = make(context)
+    player.play(track("level-1"), 1.0)
+    higher = Track("boss-1", 120, 4, [Note(0, 1, 72, 1, "lead")], True)
+    player.play(higher, 1.0)
+    player.update()
+    assert pitches == [pytest.approx(music_player.midi_to_hz(72))]
+    context.currentTime = 0.5
+    player.update()
+    # The first track is dropped, and nothing more is due within the lookahead.
+    assert len(pitches) == 1

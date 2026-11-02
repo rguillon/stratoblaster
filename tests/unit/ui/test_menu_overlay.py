@@ -186,3 +186,30 @@ def test_d199_the_dev_screens_render_and_the_wheel_reaches_its_handler() -> None
     screen = root.querySelector(".dev-viewer-screen")
     screen.fire("wheel", SimpleNamespace(deltaY=-100, target=None, preventDefault=lambda: None))
     assert wheels == [-100]
+
+
+def test_game_ctrl_04_without_touch_handlers_the_fire_button_and_drags_do_nothing() -> None:
+    """Also GAME-CTRL-05: the fire button is there, nothing listens to it."""
+    overlay, _, root, commands = make_overlay()
+    overlay.show(GameScreenView("Level 1", "FIRE", "II", None, None, 0))
+    screen = root.children[0]
+    screen.querySelector(".game-fire").fire("pointerdown")
+    screen.fire("pointerdown", FakeEvent(x=10, y=10))
+    screen.fire("pointermove", FakeEvent(x=30, y=0))
+    assert commands == []
+
+
+def test_ui_level_04_shaking_a_screen_with_no_entry_and_no_status_changes_nothing() -> None:
+    overlay, _, root, _ = make_overlay()
+    overlay.show(LoadingView("Loading", 0.1))
+    screen = root.children[0]
+    overlay.shake_selected("Locked")
+    assert screen.querySelector(".shake") is None
+    assert all(node.textContent != "Locked" for node in [screen, *screen.descendants()])
+
+
+def test_ui_look_01_dispose_with_nothing_shown_is_harmless() -> None:
+    overlay, _, root, _ = make_overlay()
+    overlay.dispose()
+    assert root.children == []
+    assert overlay.view is None

@@ -44,3 +44,37 @@ def footprint(geo: Any) -> tuple[float, float]:
 def height(geo: Any) -> float:
     """Return the height of `geo` above the ground (its highest vertex)."""
     return bounds(geo)[1][1]
+
+
+# The checks above as values: a test asserts once, `assert colored_problems(geo) == []`, and reads
+# the vertex count with `vertex_count`.
+
+
+def vertex_count(geo: Any) -> int:
+    """Return the number of vertices of `geo` (three positions each)."""
+    return len(geo.positions) // 3
+
+
+def colored_problems(geo: Any) -> list[str]:
+    """Return what makes `geo` an ill-formed mesh (see `check_colored`); empty if none."""
+    vertices = vertex_count(geo)
+    problems: list[str] = []
+    if len(geo.positions) != 3 * vertices:
+        problems.append(f"{len(geo.positions)} positions is not a multiple of 3")
+    if len(geo.colors) != 4 * vertices:
+        problems.append(f"{len(geo.colors)} colour values for {vertices} vertices")
+    if len(geo.indices) % 3 != 0:
+        problems.append(f"{len(geo.indices)} indices is not a multiple of 3")
+    if any(not 0 <= i < vertices for i in geo.indices):
+        problems.append("an index is out of range")
+    if any(not 0 <= c <= 1 for c in geo.colors):
+        problems.append("a colour value is outside [0, 1]")
+    return problems
+
+
+def prop_problems(prop: Any) -> list[str]:
+    """Return what makes a `PropGeometry` ill formed (see `check_prop`); empty if none."""
+    problems = ["structure: " + p for p in colored_problems(prop.structure)]
+    if prop.lights is not None:
+        problems.extend("lights: " + p for p in colored_problems(prop.lights))
+    return problems

@@ -76,3 +76,24 @@ def test_wld_1_21_fill_adds_filler_groups_into_the_lulls_between_beats() -> None
     assert len(filled) > len(beats)
     assert all(b[0] >= 0 for b in filled)
     assert filled == sorted(filled, key=lambda b: b[0])
+
+
+def test_wld_1_21_fill_puts_the_beats_in_time_order_first() -> None:
+    beats = [[20, "gnat", 1, 0, "top", 0.5], [0, "hornet", 1, 0, "top", 0.5]]
+    filled = fill(beats, record({"kinds": ["scout"], "maxGap": [5, 5]}))
+    assert filled[0][:2] == [0, "hornet"]
+    assert [b[1] for b in filled if b[0] == 20] == ["gnat"]
+    assert filled == sorted(filled, key=lambda b: b[0])
+
+
+def test_wld_1_21_a_single_beat_has_no_lull_to_fill() -> None:
+    beat = [10, "gnat", 1, 0, "top", 0.5]
+    assert fill([beat], record({"kinds": ["scout"], "maxGap": [5, 2]})) == [beat]
+
+
+def test_wld_1_21_a_filler_kind_left_empty_leaves_its_slot_quiet() -> None:
+    beats = [[0, "gnat", 1, 0, "top", 0.5], [20, "gnat", 1, 0, "top", 0.5]]
+    filled = fill(beats, record({"kinds": ["scout", ""], "maxGap": [5, 5]}))
+    fillers = [b for b in filled if b not in beats]
+    # Every 5 s from 5 to 15: scout, nothing, scout.
+    assert [(b[0], b[1]) for b in fillers] == [(5, "scout"), (15, "scout")]

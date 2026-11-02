@@ -88,8 +88,8 @@ def straight_runs(links: Sequence[GridLink], step: float) -> list[list[Point]]:
                 if len(run) > 1:
                     runs.append(_resample(run, step))
                 run = [link.a, link.b]
-        if len(run) > 1:
-            runs.append(_resample(run, step))
+        # A line has at least one link, so its last run has two nodes or more.
+        runs.append(_resample(run, step))
     return runs
 
 

@@ -2,6 +2,8 @@
 """Unit tests of `src/render/game_view.py`: the bindings a game hands to the engine."""
 
 from render.game_view import (
+    BombFrame,
+    BonusFrame,
     EnemyBindings,
     EnemyShotFrame,
     GameView,
@@ -21,6 +23,19 @@ def test_a_shot_frame_keeps_what_it_was_given() -> None:
         ["i"],
         0.5,
     )
+
+
+def test_a_bomb_frame_keeps_the_bomb_going_off_and_the_time_step() -> None:
+    bomb = object()
+    frame = BombFrame(bomb, 0.125)
+    assert frame.bomb is bomb
+    assert frame.dt_seconds == 0.125
+    assert BombFrame(None, 0.5).bomb is None
+
+
+def test_a_bonus_frame_keeps_the_bonuses_falling_and_those_picked() -> None:
+    frame = BonusFrame(["falling"], ["picked"], 0.75)
+    assert (frame.bonuses, frame.picked, frame.dt_seconds) == (["falling"], ["picked"], 0.75)
 
 
 def test_an_enemy_shot_frame_keeps_bullets_missiles_and_lasers() -> None:

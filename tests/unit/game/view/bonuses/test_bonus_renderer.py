@@ -23,6 +23,14 @@ from game.view.bonuses.bonus_renderer import (
 )
 from render import node_pool
 
+# The template maker and the JavaScript-only helpers as the module defines them: the `templates`
+# fixture replaces them in every test.
+_OPAQUE_TEMPLATE = bonus_renderer.opaque_template
+_JS_ONLY = {
+    "_bonus_renderer": bonus_renderer._bonus_renderer,
+    "_badge_colors": bonus_renderer._badge_colors,
+}
+
 # The renderer draws with its templates and Babylon stubbed in every test.
 pytestmark = pytest.mark.usefixtures("templates")
 
@@ -166,3 +174,40 @@ def test_gfx_fx_11_the_renderer_disposes_every_template_it_made(scene: Any, temp
     # Six kind templates (badge and halo of three kinds), the flash ring.
     assert len(templates) == 7
     assert all(t.dispose.called for t in templates)
+
+
+def test_the_renderer_and_badge_objects_are_made_in_javascript_only() -> None:
+    """Both are JavaScript object literals; CPython runs only their placeholders: None.
+
+    The `templates` fixture puts Python stand-ins in their place: the originals are kept here.
+    """
+    assert _JS_ONLY["_bonus_renderer"](lambda _frame: None, lambda: None) is None
+    assert _JS_ONLY["_badge_colors"]([1, 1, 1], [0, 0, 0], [1, 0, 0], 0.2) is None
+
+
+def test_gfx_fx_11_a_badge_template_is_unlit_opaque_double_sided_and_hidden(
+    monkeypatch: Any, scene: Any
+) -> None:
+    mesh = MagicMock(name="mesh")
+    material = MagicMock(name="material")
+    applied: list[Any] = []
+    monkeypatch.setattr(bonus_renderer, "new_mesh", lambda _name, _scene: mesh)
+    monkeypatch.setattr(bonus_renderer, "new_standard_material", lambda _name, _scene: material)
+    monkeypatch.setattr(bonus_renderer, "vertex_data_of", lambda *args: ("data", *args))
+    monkeypatch.setattr(
+        bonus_renderer, "apply_vertex_data", lambda data, target: applied.append((data, target))
+    )
+    monkeypatch.setattr(bonus_renderer, "color3", lambda r, g, b: (r, g, b))
+    monkeypatch.setattr(bonus_renderer, "color3_black", lambda: (0, 0, 0))
+    geo = SimpleNamespace(positions=[0, 0, 0], indices=[0], colors=[1, 0, 0, 1])
+    assert _OPAQUE_TEMPLATE("bonus-badge", geo, scene) is mesh
+    assert applied == [(("data", [0, 0, 0], [0], None, [1, 0, 0, 1]), mesh)]
+    assert mesh.material is material
+    # Unlit, so it glows; both sides show as it spins.
+    assert material.emissiveColor == (1, 1, 1)
+    assert material.diffuseColor == (0, 0, 0)
+    assert material.specularColor == (0, 0, 0)
+    assert material.disableLighting is True
+    assert material.backFaceCulling is False
+    assert mesh.isPickable is False
+    mesh.setEnabled.assert_called_once_with(False)

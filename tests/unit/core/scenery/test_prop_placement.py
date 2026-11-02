@@ -4,11 +4,11 @@
 import math
 from typing import Any
 
-from helpers.sample_level import flat, sample_level, sample_props, sample_roads
+from helpers.sample_level import flat, sample_level, sample_props, sample_roads, stick_kind
 
 from core.scenery.ground_boxes import GroundArea, PropPlacement
 from core.scenery.height_field import HeightField
-from core.scenery.prop_placement import CHUNK_SIZE, PropPlacer, chunk_of
+from core.scenery.prop_placement import CHUNK_SIZE, PropPlacer, _largest_footprint, chunk_of
 from core.scenery.road_network import RoadNetworkOptions, level_roads
 from core.scenery.scenery_level import Forests, StreetGrid, Surface, Woods
 
@@ -350,3 +350,11 @@ def test_d214_without_forests_a_sections_woods_change_nothing() -> None:
     woods = _trees(sample_level(sections=_desert(Woods(0, 0, 0)), props=props))
     assert len(plain) > 0
     assert keys(woods) == keys(plain)
+
+
+def test_d_212_a_cell_reaches_as_far_as_its_largest_tree() -> None:
+    """D-212: the reach of a cell's trees is that of the largest one, wherever it is listed."""
+    trees = [stick_kind(footprint=3.0), stick_kind(footprint=7.0), stick_kind(footprint=7.0)]
+    assert _largest_footprint(trees) == 7.0
+    assert _largest_footprint([stick_kind(footprint=0.0)]) == 0.0
+    assert _largest_footprint([]) == 0.0

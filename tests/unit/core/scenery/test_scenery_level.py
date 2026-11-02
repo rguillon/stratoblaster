@@ -30,7 +30,7 @@ from core.scenery.districts import ZRange, find_districts
 from core.scenery.float_placement import fixed_pieces, floating_props, line_pieces, place_landmark
 from core.scenery.ground_boxes import GroundArea, PropPlacement
 from core.scenery.height_field import HeightField, terrain_ceiling
-from core.scenery.ice_sculpt import LakeField, crevasse_depth, with_lakes
+from core.scenery.ice_sculpt import LakeField, crevasse_depth
 from core.scenery.lanes import main_road_width
 from core.scenery.prop_placement import PropPlacer
 from core.scenery.road_network import RoadNetwork, RoadNetworkOptions, level_roads
@@ -675,7 +675,7 @@ def test_fixed_pieces_are_the_landmarks_then_the_lines() -> None:
 
 def test_no_chance_means_no_lakes() -> None:
     none = Lakes(spacing=100, chance=0, radius=(20, 20), level=-5, edge=10)
-    assert with_lakes(none, 7, 50, 50, 10) == 10
+    assert LakeField(none, 7).apply(50, 50, 10) == 10
 
 
 def test_a_lake_square_too_small_for_its_lake_is_centred() -> None:

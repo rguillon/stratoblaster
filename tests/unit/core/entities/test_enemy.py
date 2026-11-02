@@ -20,7 +20,6 @@ from core.entities.enemy import (
     EnemyMissileSpec,
     EnemySpawnArea,
     EnemyStats,
-    validate_enemy_kinds,
 )
 from core.entities.muzzle import PlanePoint
 from core.entities.weapon import ProjectileWeaponDefinition, ShotStream
@@ -295,24 +294,6 @@ def test_an_enemy_kind_keeps_its_name_and_spawn() -> None:
 
     kind = EnemyKindDefinition("drone", "Drone", spawn)
     assert (kind.id, kind.name, kind.spawn) == ("drone", "Drone", spawn)
-
-
-def test_the_kinds_must_not_be_empty() -> None:
-    with pytest.raises(ValueError, match="at least one enemy kind"):
-        validate_enemy_kinds([])
-
-
-def test_the_kind_ids_must_be_unique() -> None:
-    kinds = [
-        EnemyKindDefinition("drone", "A", lambda _area: []),
-        EnemyKindDefinition("drone", "B", lambda _area: []),
-    ]
-    with pytest.raises(ValueError, match='Duplicate enemy kind id "drone"'):
-        validate_enemy_kinds(kinds)
-
-
-def test_valid_kinds_pass() -> None:
-    validate_enemy_kinds([EnemyKindDefinition("drone", "A", lambda _area: [])])
 
 
 def test_bullet_missile_and_laser_specs_keep_their_fields() -> None:

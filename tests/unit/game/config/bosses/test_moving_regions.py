@@ -10,7 +10,6 @@ import pytest
 from game.config.bosses.hidden_weapons import armour_region
 from game.config.bosses.moving_regions import (
     drawn_spot,
-    end_spot,
     is_moving,
     mirrored_motion,
     motion_value,
@@ -97,7 +96,7 @@ def test_a_single_moving_region_keeps_its_name_and_may_leave_a_frame() -> None:
         moving_region("bow", 2, [[-5, 0], [5, 0], [0, 9]], slide([[0, 0, 0], [0, 5, 0]]), "grid")
 
 
-def test_a_point_on_the_drawn_piece_ends_up_at_its_end_spot_and_back() -> None:
+def test_a_point_moved_to_its_end_spot_is_drawn_back_where_it_was() -> None:
     [piece] = moving_region(
         "arm",
         1,
@@ -107,5 +106,5 @@ def test_a_point_on_the_drawn_piece_ends_up_at_its_end_spot_and_back() -> None:
         None,
         mirror=False,
     )
-    end = end_spot(piece, [6, 2, 1])
+    end = move_point(piece.motion, motion_value(piece.motion, 1), [6, 2, 1])
     assert drawn_spot(piece, end) == _approx([6, 2, 1])

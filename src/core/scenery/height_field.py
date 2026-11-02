@@ -67,8 +67,6 @@ def _or_one(value: float) -> float:
 
 def _surface_share(sections: Sequence[PlacedSection], index: int, key: str) -> float:
     """Return the share of ground cover `key` of the section at `index` (0 when it has none)."""
-    if index >= len(sections):
-        return 0
     surface = sections[index].section.surface
     if surface is None:
         return 0
@@ -232,17 +230,12 @@ class HeightField:
         """
         return _steepness_at(self, x, z, reach)
 
-    def section_index_at(self, z: float) -> int:
-        """Index of the section under `z` (the first or last one outside the level)."""
-        return _section_index(self, z)
-
     def section_at(self, z: float) -> PlacedSection:
-        """Return the section under `z`."""
-        index = _section_index(self, z)
-        if index < 0 or index >= len(self.sections):
-            msg = "A height field needs a section"
-            raise ValueError(msg)
-        return self.sections[index]
+        """Return the section under `z` (the first or last one outside the level).
+
+        `layout_sections` gives a level at least one.
+        """
+        return self.sections[_section_index(self, z)]
 
     def path_x(self, path: Meander, z: float) -> float:
         """X of a meander line at `z`."""
@@ -322,8 +315,6 @@ def _blend_height(field: HeightField, z: float, value: Callable[[int], float]) -
 
 
 def _height_of_section(field: HeightField, index: int, x: float, z: float) -> float:
-    if index >= len(field.sections):
-        return 0
     section = field.sections[index].section
     h = _relief_of(field, index, x, z) + _dune_of(field, section, x, z)
     if section.crevasses is not None:

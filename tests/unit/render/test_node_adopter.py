@@ -99,3 +99,14 @@ def test_meshes_are_adopted_even_when_create_fails() -> None:
     with pytest.raises(RuntimeError, match="boom"):
         adopter.run(create)
     assert scene.transformNodes[0].parent is root
+
+
+def test_new_meshes_are_adopted_without_a_callback_when_none_is_given() -> None:
+    scene = FakeScene()
+    root = FakeNode("root")
+    adopter = NodeAdopter(scene, root, 4)
+    adopter.run(lambda: scene.add_node("mesh", is_mesh=True))
+    (mesh,) = scene.meshes
+    assert mesh.parent is root
+    assert mesh.renderingGroupId == 4
+    assert mesh.alphaIndex == ON_TOP_ALPHA_INDEX - 1

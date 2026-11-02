@@ -72,13 +72,6 @@ class LightningSchedule:
             self._strike()
         return self._strikes
 
-    def flashes_between(self, from_: float, to: float) -> list[float]:
-        """Every flash start in [`from_`, `to`)."""
-        result: list[float] = [
-            t for strike in self.strikes_before(to) for t in strike.flashes if t >= from_ and t < to
-        ]
-        return result
-
     def strike_at(self, time: float) -> Strike | None:
         """Return the strike lit at `time`, if any."""
         strikes = self.strikes_before(time)

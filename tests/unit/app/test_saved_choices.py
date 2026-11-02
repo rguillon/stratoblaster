@@ -2,6 +2,9 @@
 """Unit tests of `src/app/saved_choices.py`."""
 # (UI-TITLE-03, UI-SHIP-07, GAME-SCORE-05).
 
+from helpers.memory_storage import MemoryStorage
+
+from app import saved_choices
 from app.saved_choices import (
     load_saved_choices,
     parse_high_score,
@@ -9,7 +12,10 @@ from app.saved_choices import (
     save_last_ship,
     saved_choice_keys,
 )
-from host.key_value_storage import MemoryStorage
+
+# The JavaScript-only check as the module defines it: the app conftest replaces it with its Python
+# twin for every test, after this module is imported.
+_PLAIN_SCORE = saved_choices._plain_score
 
 
 def test_ui_title_03_the_keys_are_prefixed_with_the_game_id() -> None:
@@ -60,3 +66,8 @@ def test_ui_title_03_nothing_saved_loads_as_no_score_and_no_ship() -> None:
     saved = load_saved_choices(MemoryStorage(), "game")
     assert saved.high_score == 0
     assert saved.last_ship_id is None
+
+
+def test_ui_title_03_the_score_check_is_javascript_only() -> None:
+    """The regular expression runs in the browser; CPython runs only the placeholder: 0."""
+    assert _PLAIN_SCORE("1200") == 0

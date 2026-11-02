@@ -99,8 +99,6 @@ class SparkBursts:
         while i >= 0:
             s: Any = self._sparks[i]
             i -= 1
-            if not s:
-                continue
             s.age += dt
             if s.age >= s.life:
                 self._sparks.pop(i + 1)

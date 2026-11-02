@@ -103,7 +103,9 @@ def probe_builder(monkeypatch: Any, builder: Callable[..., Any]) -> Any:
     if hasattr(module, "build_jointed_model"):
         monkeypatch.setattr(module, "build_jointed_model", jointed)
     builder(MagicMock())
-    assert len(captured) == 1, "the builder must hand exactly one model to the scene"
+    if len(captured) != 1:
+        msg = "the builder must hand exactly one model to the scene"
+        raise ValueError(msg)
     return captured[0]
 
 

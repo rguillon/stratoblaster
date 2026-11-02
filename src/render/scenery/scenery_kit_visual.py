@@ -212,10 +212,8 @@ class VisualSceneryKit:
         if self._lava:
             fog = FogState(atmosphere.sky.haze, atmosphere.fog.start, atmosphere.fog.end)
             self._lava.set(LavaFrame(frame.time, fog))
-        bump = self._sea.bumpTexture if is_instance_of(self._sea, "PBRMaterial") else None
+        bump: Any = self._sea.bumpTexture if is_instance_of(self._sea, "PBRMaterial") else None
         if is_instance_of(bump, "Texture"):
-            if bump is None:
-                raise AssertionError
             bump.uOffset = (frame.time * self._look.sea.drift[0]) / self._look.sea.tileSize
             bump.vOffset = (frame.time * self._look.sea.drift[1]) / self._look.sea.tileSize
 

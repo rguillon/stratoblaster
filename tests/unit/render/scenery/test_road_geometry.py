@@ -78,6 +78,15 @@ def test_across_of_a_zero_length_step_is_still_a_unit_vector() -> None:
     assert nx**2 + nz**2 == pytest.approx(1)
 
 
+def test_a_street_ending_on_a_repeated_point_is_not_pushed_past_that_end() -> None:
+    street = Road(2, "street", 6, 2, [RoadPoint(0, 0, 6), RoadPoint(0, 10, 6), RoadPoint(0, 10, 6)])
+    points = _ribbon_points(street, [])
+    # The last step has no length, so no direction: that end stays put (nothing divides by 0).
+    assert len(points) == 5
+    assert (points[-1].x, points[-1].z) == pytest.approx((0, 10))
+    assert points[0].z == pytest.approx(-3)
+
+
 def test_a_street_reaches_past_its_end_points_by_half_its_width() -> None:
     street = Road(2, "street", 6, 2, [RoadPoint(0, 0, 6), RoadPoint(0, 10, 6)])
     points = _ribbon_points(street, [])

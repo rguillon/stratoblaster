@@ -89,3 +89,16 @@ def test_ui_set_08_the_selected_row_is_highlighted_and_back_is_there() -> None:
     rows = root.querySelector(".settings-list").children
     assert rows[1].classList.contains("selected")
     assert root.querySelector(".menu-back") is not None
+
+
+def test_ui_set_03_without_a_set_handler_a_tap_on_the_bar_sets_nothing() -> None:
+    taps: list[int] = []
+    view = SettingsView("Sound", "Drag or tap", "Back", 0, [SliderView("Music", 3, 10)], False)
+    root = render_settings_screen(FakeDocument(), view, ScreenHandlers(taps.append, lambda: None))
+    bar = root.querySelector(".settings-list").children[0].querySelector(".slider-bar")
+    bar.rect.width = 100
+    press = FakeEvent(x=70)
+    bar.fire("pointerdown", press)
+    bar.fire("click")
+    assert press.stopped is True
+    assert taps == []

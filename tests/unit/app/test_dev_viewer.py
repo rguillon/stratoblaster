@@ -35,27 +35,11 @@ class FakeCamera:
 
 
 class FakeStage:
-    def __init__(self, found: Any = None) -> None:
+    def __init__(self) -> None:
         self.camera = FakeCamera()
         # Looking down at 45°: the middle of the view is 100 ahead of the camera, on the flight
         # plane.
         self.framing = SimpleNamespace(direction=[-1.0, 1.0], back=-50.0, height=100.0)
-        self.field = SimpleNamespace(height=lambda _x, _z: 4.0)
-        self.ground_root = SimpleNamespace(
-            scale=2.0, to_ground=lambda z: z / 2, to_world=lambda z: z * 2
-        )
-        self.found = found
-        self.solo: list[Any] = []
-        self.shifts: list[float] = []
-
-    def find_prop(self, _kind: str, _z_end: float) -> Any:
-        return self.found
-
-    def solo_props(self, placements: list[Any]) -> None:
-        self.solo = placements
-
-    def shift_ground(self, x: float) -> None:
-        self.shifts.append(x)
 
 
 class FakeView:
@@ -155,7 +139,6 @@ class Env:
 
     def __init__(self, monkeypatch: pytest.MonkeyPatch) -> None:
         self.ready = True
-        self.stage_found: Any = None
         self.views: list[FakeView] = []
         self.disposed: list[Any] = []
         FakeShip.made = []
@@ -182,7 +165,7 @@ class Env:
         return view
 
     def _build(self, _engine: Any, _game: Any, options: Any) -> FakeView:
-        view = FakeView(FakeStage(self.stage_found))
+        view = FakeView(FakeStage())
         view.level = options.level
         self.views.append(view)
         return view
@@ -590,3 +573,28 @@ def test_k_does_nothing_to_an_enemy() -> None:
     v.break_part()
     v.frame(0.1)
     assert FakeBlasts.made[0].drawn == []
+
+
+@pytest.mark.usefixtures("env")
+def test_d199_the_enemy_shown_is_of_the_item_s_kind_among_the_game_s() -> None:
+    v = viewer("enemies", [DevItem("wasp", "Wasp", "1-1")])
+    v.game.enemy_kinds.append(SimpleNamespace(id="wasp", spawn=spawned("wasp")))
+    v.game.enemy_kinds.append(SimpleNamespace(id="moth", spawn=spawned("moth")))
+    v.frame(0)
+    assert v._layer.synced[0].id == "wasp"
+
+
+@pytest.mark.usefixtures("env")
+def test_d199_a_game_without_an_explosion_renderer_shows_its_enemies_without_blasts() -> None:
+    v = viewer("bosses", [DevItem("warden", "Warden", "1-1")])
+    boss = _probe_boss()
+    v.game.boss_kinds[0].spawn = lambda _area: boss
+    v.game.view.enemies.blasts = lambda _scene: None
+    v.frame(0)
+    v.break_part()
+    v.frame(0.1)
+    assert boss.parts[0].destroyed
+    assert v._layer.synced == [boss]
+    assert FakeBlasts.made == []
+    v.dispose()
+    assert v.scene is None

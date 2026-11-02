@@ -95,3 +95,8 @@ def test_gfx_fx_10_dispose_releases_both_templates(renderer: Any) -> None:
     handle["dispose"]()
     ring.dispose.assert_called_once()
     glow.dispose.assert_called_once()
+
+
+def test_gfx_fx_10_the_renderer_object_is_made_in_javascript_only() -> None:
+    """`{sync, dispose}` is a JavaScript object literal; CPython runs only the placeholder: None."""
+    assert bomb_renderer._bomb_renderer(lambda _frame: None, lambda: None) is None

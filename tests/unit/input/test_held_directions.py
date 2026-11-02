@@ -64,3 +64,12 @@ def test_game_ctrl_07_clear_releases_every_key() -> None:
     held.clear()
     assert held.direction.x == 0
     assert held.direction.y == 0
+
+
+def test_game_ctrl_03_a_key_up_without_its_key_down_is_still_a_movement_key() -> None:
+    """E.g. a key let go after the window got the focus back (`clear`)."""
+    held = HeldDirections()
+    held.key("ArrowLeft", down=True)
+    held.clear()
+    assert held.key("ArrowLeft", down=False) is True
+    assert held.direction.x == 0

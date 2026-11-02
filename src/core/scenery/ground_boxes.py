@@ -9,20 +9,6 @@ from collections.abc import Sequence
 from typing import Protocol
 
 
-class GroundBoxPlacement(Protocol):
-    """The centre of a box of ground."""
-
-    @property
-    def x(self) -> float:
-        """X of the centre of the box."""
-        ...
-
-    @property
-    def z(self) -> float:
-        """Z of the centre of the box."""
-        ...
-
-
 class BuildingRecord(Protocol):
     """A building placed.
 

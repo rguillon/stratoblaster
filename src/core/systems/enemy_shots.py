@@ -257,7 +257,7 @@ class EnemyShots:
 
     def _move_bullets(self, dt: float) -> None:
         """Move the bullets straight on; those due to burst do, once all have moved."""
-        bursting: list[EnemyBullet] = []
+        bursting: list[tuple[EnemyBullet, EnemyBurstSpec]] = []
         for b in self.bullets:
             if not b.alive:
                 continue
@@ -267,16 +267,13 @@ class EnemyShots:
             if self._is_out(b.x, b.y):
                 b.alive = False
             elif b.burst and b.age >= b.burst.after:
-                bursting.append(b)
-        for b in bursting:
-            self._burst(b)
+                bursting.append((b, b.burst))
+        for b, burst in bursting:
+            self._burst(b, burst)
 
-    def _burst(self, b: EnemyBullet) -> None:
-        """Remove a bursting bullet and fire its ring of bullets from where it was."""
-        burst = b.burst
+    def _burst(self, b: EnemyBullet, burst: EnemyBurstSpec) -> None:
+        """Remove a bursting bullet and fire its ring of bullets (`burst`) from where it was."""
         b.alive = False
-        if not burst:
-            return
         for k in range(burst.count):
             self.fire_bullet(b.x, b.y, b.heading + (2 * math.pi * k) / burst.count, burst.bullet)
 

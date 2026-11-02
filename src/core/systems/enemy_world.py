@@ -182,15 +182,6 @@ class EnemyWorld:
             self.spawned_health += enemy.max_health
         self._rebuild_targets()
 
-    @property
-    def on_screen(self) -> int:
-        """Number of enemies whose centre is over the playfield."""
-        count = 0
-        for enemy in self.enemies:
-            if self._within(enemy, 0):
-                count += 1
-        return count
-
     def clear(self) -> None:
         """Remove every enemy and shot."""
         self.enemies.clear()

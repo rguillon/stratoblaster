@@ -89,3 +89,14 @@ def test_enm_35_every_small_kind_is_a_flesh_body_with_its_own_neon(probe: Any) -
         capture, body = probe(builder)
         assert len(body["parts"].flesh.geometry.positions) > 0, capture.name
         assert capture.neon is not None
+
+
+@pytest.mark.parametrize(("a", "b"), [([0, 0], [10, 0]), ([10, 0], [0, 0])])
+def test_an_edge_light_lies_behind_its_edge_whichever_way_the_edge_runs(a: Any, b: Any) -> None:
+    """The light is moved `inward` towards the trailing side (-Z) of an edge along X."""
+    quad = module.edge_light(a, b, 0.5, 1.0, [4.0, 0.5])
+    xs = sorted(p[0] for p in quad)
+    zs = sorted(p[1] for p in quad)
+    # Centred halfway along the edge, `length` long, from `inward` to `inward` + `width` behind it.
+    assert xs == pytest.approx([3.0, 3.0, 7.0, 7.0])
+    assert zs == pytest.approx([-1.5, -1.5, -1.0, -1.0])

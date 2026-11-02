@@ -17,7 +17,6 @@ from render.babylon import (
     babylon_constant,
     color3,
     dispose_node,
-    is_enabled,
     new_mesh,
     new_standard_material,
     set_enabled,
@@ -147,11 +146,6 @@ class LightningLayer:
     def flash(self) -> float:
         """The flash (0..1) on the last frame, before the storm's lightning strength."""
         return self._flash
-
-    @property
-    def bolt_shown(self) -> bool:
-        """Whether a bolt was drawn on the last frame."""
-        return self._bolt is not None and is_enabled(self._bolt)
 
     def update(self, atmosphere: Atmosphere, time: float, z: float) -> float:
         """Return the flash at `time` for `atmosphere`'s lightning (GFX-WEATHER-11).
