@@ -18,14 +18,6 @@ def probe(monkeypatch: Any) -> Any:
     return run
 
 
-def test_p05_bulwark_has_three_reactors_and_two_guns(probe: Any) -> None:
-    capture, body = probe(module.build_bulwark)
-    assert capture.name == "bulwark"
-    assert len(body["reactors"]) == 3
-    assert len(body["muzzles"]) == 2
-    assert body["wings"] == []
-
-
 def test_enm_splitter_02_splitter_has_one_reactor_and_no_gun(probe: Any) -> None:
     capture, body = probe(module.build_splitter)
     assert capture.name == "splitter"

@@ -6,6 +6,12 @@ import pytest
 from game.config.enemies import ENEMY_CONFIG
 from game.config.enemies_elite import ELITE_CONFIG
 from game.config.enemies_veteran import VETERAN_CONFIG
+from game.config.enemy_broodmother import BROODMOTHER_CONFIG
+from game.config.enemy_harrier import HARRIER_CONFIG
+from game.config.enemy_hatchery import HATCHERY_CONFIG
+from game.config.enemy_prism import PRISM_CONFIG
+from game.config.enemy_sweeper import SWEEPER_CONFIG
+from game.config.enemy_tiers import all_kinds
 from game.config.scoring import SCORING, boss_part_points
 
 
@@ -41,15 +47,21 @@ def test_game_score_04_part_points_are_always_a_multiple_of_round_to() -> None:
 def test_game_score_03_no_kind_scores_less_than_a_kind_with_half_its_health_or_less() -> None:
     """Over every enemy kind, a kind with at least twice another's health never scores less than it.
 
-    The kinds are those of the game's basic, veteran and elite rosters (GAME-SCORE-03).
+    The kinds are the twenty of the four tiers (GAME-SCORE-03).
     """
-    kinds = [
-        *ENEMY_CONFIG.values(),
-        *VETERAN_CONFIG.values(),
-        *ELITE_CONFIG.values(),
+    kinds = {**ENEMY_CONFIG, **VETERAN_CONFIG, **ELITE_CONFIG}
+    for config in [
+        HARRIER_CONFIG,
+        SWEEPER_CONFIG,
+        HATCHERY_CONFIG,
+        PRISM_CONFIG,
+        BROODMOTHER_CONFIG,
+    ]:
+        kinds[config.stats.model] = config
+    stats = [
+        (kinds[kind]["stats"]["health"], kinds[kind]["stats"]["points"]) for kind in all_kinds()
     ]
-    stats = [(kind["stats"]["health"], kind["stats"]["points"]) for kind in kinds]
-    assert len(stats) == 22
+    assert len(stats) == 20
     for health, points in stats:
         for other_health, other_points in stats:
             if health >= 2 * other_health:

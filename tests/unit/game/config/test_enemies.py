@@ -13,15 +13,12 @@ from game.config.enemies import (
 )
 
 FIRST_KINDS = [
-    "gnat",
     "hornet",
     "scout",
     "strafer",
-    "weaver",
     "spinner",
     "lancer",
     "rocketeer",
-    "bulwark",
     "splitter",
     "carrier",
 ]
