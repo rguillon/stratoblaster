@@ -54,6 +54,7 @@ class EnemyCapture:
     name: str
     neon: list[float]
     draw: Callable[[Any], None]
+    bank: Any = None
 
 
 @dataclass
@@ -88,8 +89,15 @@ def probe_builder(monkeypatch: Any, builder: Callable[..., Any]) -> Any:
         captured.append(JointedCapture(name, neon, design, drawing))
         return MagicMock()
 
-    def enemy(name: str, _scene: Any, neon: list[float], draw: Any, _breath: Any = None) -> Any:
-        captured.append(EnemyCapture(name, neon, draw))
+    def enemy(
+        name: str,
+        _scene: Any,
+        neon: list[float],
+        draw: Any,
+        _breath: Any = None,
+        bank: Any = None,
+    ) -> Any:
+        captured.append(EnemyCapture(name, neon, draw, bank))
         return MagicMock()
 
     def boss(design: Any, _scene: Any, neon: list[float], drawing: dict[str, Any]) -> Any:

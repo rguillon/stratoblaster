@@ -5,6 +5,8 @@ The model is a node tree: a root, a body (hull, flesh, lights and wings) and, ou
 reactors, rotors and muzzles (so shots leave from the same points, GFX-ART-18).
 """
 
+import math
+
 from core.entities.enemy import Enemy
 from game.config.enemy_look import ENEMY_LOOK
 from game.view.enemies.enemy_engines import Reactor, add_reactors, add_rotors
@@ -230,8 +232,29 @@ def collect_parts(build: Any) -> dict[str, Any]:
     }
 
 
+def bank_roll(turn: list[Any], enemy: Any, dt: float, bank: Any) -> float:
+    """Return the roll of an enemy's body after `dt` seconds, rolling into its turn.
+
+    `turn` is `[last heading, roll so far]`, updated; `bank` is `gain`, `max` and `follow` (see
+    `build_enemy_model`), or None for an enemy that never rolls.
+    """
+    if bank is None or dt <= 0:
+        return float(turn[1])
+    heading = enemy.heading
+    if turn[0] is not None:
+        diff = heading - turn[0]
+        while diff > math.pi:
+            diff -= 2 * math.pi
+        while diff < -math.pi:
+            diff += 2 * math.pi
+        target = max(-bank["max"], min(bank["max"], -(diff / dt) * bank["gain"]))
+        turn[1] = turn[1] + (target - turn[1]) * min(1, dt * bank["follow"])
+    turn[0] = heading
+    return float(turn[1])
+
+
 def build_enemy_model(
-    name: str, scene: Any, neon_color: Rgb, build: Any, breath: Any = None
+    name: str, scene: Any, neon_color: Rgb, build: Any, breath: Any = None, bank: Any = None
 ) -> BuiltEnemyModel:
     """Build an enemy model from the parts `build` draws (logical pixels, nose +Z, Y up).
 
@@ -239,6 +262,9 @@ def build_enemy_model(
     hull is tinted towards `chargeColor`, the enemy's neon colour. Its body (hull, flesh, lights,
     wings) is on a node of its own, `<name>-body`, its veins pulsing (ENM-42; it never swells,
     ENM-43); its reactors and muzzles are not, so shots leave from the same points (ENM-45).
+
+    With `bank` (`gain`, `max`, `follow`), the body rolls around its nose axis as the enemy turns:
+    `gain` radians per radian/s of turn, at most `max`, following at `follow` per second.
     """
     if breath is None:
         breath = new_breath()
@@ -280,7 +306,11 @@ def build_enemy_model(
     if len(parts.charge.geometry.positions) > 0:
         mesh_of(name + "-charge", parts.charge.geometry, charge_mat, scene).parent = body
 
+    # The last heading and the roll so far, for `bank`.
+    turn: list[Any] = [None, 0.0]
+
     def sync(enemy: Enemy, dt: float) -> None:
+        body.rotation.z = bank_roll(turn, enemy, dt, bank)
         # ENM-42: driven by the frames' sim time, so a paused game holds still.
         if is_living_motion():
             clock[0] += dt

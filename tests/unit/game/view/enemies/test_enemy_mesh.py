@@ -1,6 +1,7 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/enemies/enemy_mesh.py`."""
 
+import math
 from types import SimpleNamespace
 from typing import Any
 
@@ -389,3 +390,43 @@ def test_the_fan_blades_are_matte_not_the_shiny_hull(scene: SimpleNamespace) -> 
     (_name, _rotors, blades, _body) = scene.rotors[0]
     assert blades.name == "gnat-blades"
     assert not blades.name.startswith("hull")
+
+
+def test_enm_weaver_07_bank_rolls_into_a_turn_and_back_to_level_when_straight() -> None:
+    bank = {"gain": 0.5, "max": 0.3, "follow": 10}
+    turn: list[Any] = [None, 0.0]
+    enemy = SimpleNamespace(heading=math.pi)
+    # The first frame only notes the heading; a straight run keeps the body level.
+    assert enemy_mesh.bank_roll(turn, enemy, 0.1, bank) == 0
+    assert enemy_mesh.bank_roll(turn, enemy, 0.1, bank) == 0
+    # Turning one way rolls one way, never past the most; turning the other way, the other way.
+    enemy.heading = math.pi - 0.2
+    right = enemy_mesh.bank_roll(turn, enemy, 0.1, bank)
+    assert 0 < abs(right) <= 0.3
+    for _ in range(20):
+        enemy.heading -= 0.2
+        right = enemy_mesh.bank_roll(turn, enemy, 0.1, bank)
+    assert right == pytest.approx(0.3 * (1 if right > 0 else -1))
+    for _ in range(20):
+        enemy.heading += 0.2
+        left = enemy_mesh.bank_roll(turn, enemy, 0.1, bank)
+    assert left == pytest.approx(-right)
+    # Straight again, it comes back to level.
+    for _ in range(20):
+        left = enemy_mesh.bank_roll(turn, enemy, 0.1, bank)
+    assert left == pytest.approx(0, abs=1e-3)
+
+
+def test_enm_weaver_07_a_heading_wrapping_round_is_not_a_sharp_turn() -> None:
+    bank = {"gain": 0.5, "max": 0.3, "follow": 10}
+    turn: list[Any] = [None, 0.0]
+    enemy = SimpleNamespace(heading=math.pi - 0.01)
+    enemy_mesh.bank_roll(turn, enemy, 0.1, bank)
+    # atan2 flips from just under pi to just over -pi: a turn of 0.02, not of nearly 2 pi.
+    enemy.heading = -math.pi + 0.01
+    # 0.2 rad/s at gain 0.5 is a roll of 0.1; a missed wrap would have rolled the full 0.3.
+    assert abs(enemy_mesh.bank_roll(turn, enemy, 0.1, bank)) == pytest.approx(0.1)
+
+
+def test_an_enemy_without_bank_never_rolls() -> None:
+    assert enemy_mesh.bank_roll([None, 0.0], SimpleNamespace(), 0.1, None) == 0

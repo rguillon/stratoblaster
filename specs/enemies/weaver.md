@@ -13,10 +13,11 @@ bullets aimed at the player, one from each of its twin bodies.
 #### ENM-WEAVER-01 — Two serpents joined by a glowing bar · MUST
 
 The Weaver is about `size` L long: two serpents side by side, each a swollen flesh head with two
-eyes and a wavy sinew tail, joined by a web of membrane flesh under a glowing neon bar (the old
-twin hulls and their neon bar). It has no wings.
+eyes and a wavy sinew tail, joined by a big web of membrane flesh under a glowing neon bar (the old
+twin hulls and their neon bar), the web running most of the Weaver's length. A little membrane wing
+sticks out from the outer side of each serpent.
 
-*Sources: P05-R05, P16-R03.*
+*Sources: P05-R05, P16-R03; redesign (a bigger join, two little wings).*
 
 #### ENM-WEAVER-02 — A gun on each snout, a reactor at each tail · MUST
 
@@ -24,7 +25,7 @@ A metal gun barrel runs along each serpent's snout, a charge light at its tip, a
 at the end of each tail.
 
 **Acceptance criteria**
-- Unit test: the model has two reactors, two guns and no wings.
+- Unit test: the model has two reactors, two guns and two wings.
 
 *Sources: P05-R05, phase 5 review, D-057.*
 
@@ -64,6 +65,18 @@ The Weaver has `hp` health and scores `points`.
 
 *Sources: P05-R05.*
 
+#### ENM-WEAVER-07 — It rolls a little as it turns · MUST
+
+As its heading turns on the sine, the Weaver's body rolls around its nose axis, more the faster it
+turns, by at most `bank.max`, easing in and out at `bank.follow` per second; straight, it is level.
+Only the body rolls: its reactors and guns stay put, so shots leave from the same points.
+
+**Acceptance criteria**
+- Unit test: a turn rolls the body one way and the opposite turn the other way, never past
+  `bank.max`; a straight run keeps it level; a heading wrapping round ±π is not a sharp turn.
+
+*Sources: redesign.*
+
 ## Tunable values
 
 | Name | Value | Notes |
@@ -77,11 +90,13 @@ The Weaver has `hp` health and scores `points`.
 | `bullet` | 200 px/s, radius 4, style `green` | |
 | `muzzles` | (±10, −15.8, 1.9) | the snout guns' tips |
 | `xRange` | 0.3–0.7 | of the ship's reach |
+| `bank` | gain 0.3 rad per rad/s, max 0.4 rad, follow 6 /s | `WEAVER_BANK` in `src/game/view/enemies/small_enemy_models.py` |
 | `neon` | [0.2, 1, 0.3], drawn bright green | `src/game/config/enemy_look.py` |
 
 ## Notes
 
 **Appears in:** every level but 1-1 (1-2 to 4-5).
 
-The P05 Weaver was a twin-hull catamaran with its two hulls joined by a glowing green neon bar. Its
+The P05 Weaver was a twin-hull catamaran with its two hulls joined by a glowing green neon bar; the
+redesign made the join a big web and added two little wings. Its
 sway can take it a little past the ship's reach (D-048).

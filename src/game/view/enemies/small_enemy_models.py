@@ -228,22 +228,26 @@ def build_strafer(scene: Any) -> Any:
     return build_enemy_model("strafer", scene, N.strafer, draw)
 
 
-# ENM-WEAVER-01: the Weaver's web of sinew between its two serpents, under the neon bar.
+# ENM-WEAVER-01: the Weaver's web of flesh joining its two serpents, under the neon bar.
 WEAVER_WEB = [  # type: list[list[float]]
-    [-9, 0.5],
-    [0, 2.5],
-    [9, 0.5],
-    [9, -3],
-    [0, -1.5],
-    [-9, -3],
+    [-10, 6],
+    [0, 9],
+    [10, 6],
+    [10, -9],
+    [0, -11],
+    [-10, -9],
 ]
+# ENM-WEAVER-07: how the Weaver rolls into a turn: radians of roll per radian/s of turn, the most
+# it rolls, and how fast it follows (per second).
+WEAVER_BANK = {"gain": 0.3, "max": 0.4, "follow": 6}
 
 
 def build_weaver(scene: Any) -> Any:
     """ENM-WEAVER-01: a sine flyer, two serpents side by side.
 
-    Each has a swollen head and a wavy tail, joined by a web of flesh under a glowing neon bar, a
-    gun grafted on each snout and a reactor at each tail (ENM-WEAVER-02); green (ENM-WEAVER-03).
+    Each has a swollen head and a wavy tail, joined by a big web of flesh under a glowing neon bar,
+    with a little wing on the outer side of each; a gun grafted on each snout and a reactor at each
+    tail (ENM-WEAVER-02); green (ENM-WEAVER-03). It rolls a little as it turns (ENM-WEAVER-07).
     """
 
     def draw(p: Any) -> None:
@@ -264,10 +268,20 @@ def build_weaver(scene: Any) -> Any:
             reactor([s * 10, 0, -15], 1.5)
             # A gun along each serpent's snout (phase 7 review).
             gun_barrel(p, [s * 10, 1.9, 8], 7)
+        wing_pair(
+            p,
+            {
+                "root": [12, 1],
+                "tips": [[15.5, -5], [14.5, -7], [12.5, -4]],
+                "y": 0.4,
+                "strut": 0.4,
+            },
+            N.weaver,
+        )
         neon.slab(
-            [[pt[0] * 0.88, pt[1] * 0.4 - 0.3] for pt in WEAVER_WEB],
+            [[pt[0] * 0.88, pt[1] * 0.5] for pt in WEAVER_WEB],
             [0.2, 0.7],
             N.weaver,
         )
 
-    return build_enemy_model("weaver", scene, N.weaver, draw)
+    return build_enemy_model("weaver", scene, N.weaver, draw, None, WEAVER_BANK)
