@@ -2,6 +2,7 @@
 """World 2."""
 
 from core.content.game_level import GameLevel
+from game.config.wave_plans import compose_beats
 from game.config.world_2.bosses import WORLD_2_BOSSES
 from game.config.world_2.difficulty import WORLD_2_DIFFICULTY
 from game.config.world_2.scenery import LEVEL_2_1, LEVEL_2_2, LEVEL_2_3, LEVEL_2_4, LEVEL_2_5
@@ -12,7 +13,6 @@ from game.config.world_2.waves import (
     PLAN_2_4,
     PLAN_2_5,
     WORLD_2_FILLERS,
-    compose_beats,
 )
 from game.sim.assemble_level import WorldTables, assemble_level
 

@@ -6,18 +6,7 @@ See `game/config/wave_plans.py`: each level cycles through the phrases of the ki
 filler fills the lulls (D-051).
 """
 
-from game.config.wave_plans import PHRASE_LENGTH, compose_beats, level_plan, world_fillers
-
-__all__ = [
-    "PHRASE_LENGTH",
-    "PLAN_4_1",
-    "PLAN_4_2",
-    "PLAN_4_3",
-    "PLAN_4_4",
-    "PLAN_4_5",
-    "WORLD_4_FILLERS",
-    "compose_beats",
-]
+from game.config.wave_plans import level_plan, world_fillers
 
 PLAN_4_1 = level_plan(4, 1)
 PLAN_4_2 = level_plan(4, 2)

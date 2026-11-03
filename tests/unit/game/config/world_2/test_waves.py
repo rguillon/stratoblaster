@@ -6,6 +6,7 @@ from typing import Any
 import pytest
 from helpers.config_checks import assert_beats_well_formed, enemy_kind_ids
 
+from game.config.wave_plans import compose_beats
 from game.config.world_2.waves import (
     PLAN_2_1,
     PLAN_2_2,
@@ -13,7 +14,6 @@ from game.config.world_2.waves import (
     PLAN_2_4,
     PLAN_2_5,
     WORLD_2_FILLERS,
-    compose_beats,
 )
 
 KINDS = enemy_kind_ids()
