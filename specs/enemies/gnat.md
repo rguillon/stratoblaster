@@ -11,32 +11,32 @@ bullet kills it. Carriers and some bosses launch Gnats too.
 
 ### Look
 
-#### ENM-GNAT-01 — A small insect drone · MUST
+#### ENM-GNAT-01 — A pointed insect drone · MUST
 
-The Gnat is a small, unmanned insect drone about `size` L across: a swollen flesh bulb with a small
-head at the front carrying two eyes, a neon ring around its middle, and a thin bone feeler curling
-up its back. It has no cockpit.
+The Gnat is a small, unmanned insect drone about `size` L long: a pointed flesh body, swollen in
+the middle and tapering to a point at its nose, with a small head at the front carrying two eyes,
+a neon band around its middle, and a thin bone feeler curling up its back. It has no cockpit.
 
 **Acceptance criteria**
 - Given the dev enemies viewer, then the Gnat reads as a drone, not a manned ship (manual check).
+- Given the Gnat's model, then its nose is the front-most point of its body.
 
-*Sources: P05-R01, P16-R03.*
+*Sources: P05-R01, P16-R03; redesign (single fan, pointed front).*
 
-#### ENM-GNAT-02 — Three ducted fans at 120° · MUST
+#### ENM-GNAT-02 — One ducted fan at the centre · MUST
 
-Three fans stand around the bulb at 120° from each other (one ahead of the nose), each on a short
-sinew: a metal duct around a two-bladed rotor that spins. The fans' ducts overlap the body's rim,
-so they read as attached seen from above.
+A single fan stands at the centre of the Gnat's back, on the spine: a metal duct around a
+two-bladed rotor that spins around the vertical axis.
 
 **Acceptance criteria**
-- Unit test: the model has three rotors, all at the same distance from the centre, 120° apart.
+- Unit test: the model has one rotor, centred across the body and above its spine.
 
-*Sources: P05-R01, P16-R03.*
+*Sources: P05-R01, P16-R03; redesign (single fan).*
 
 #### ENM-GNAT-03 — Green, one reactor · MUST
 
 The Gnat's lights (its ring, its eyes) and its reactor flame are bright green (was cyan). It has
-one reactor at the back.
+one reactor at the rear.
 
 *Sources: phase 5 review, D-231.*
 
@@ -78,7 +78,7 @@ The Gnat has `hp` health: a single level 1 bullet destroys it. It scores `points
 | `speed` | 190 px/s | |
 | `path` | (0.75, 1.1) → (0.75, 0.85) → (0.25, 0.65) → (0.75, 0.4) → (0.25, 0.18) → (0.4, −0.15) | fractions of the playfield (x across the ship's reach, y up) |
 | `neon` | [0.1, 0.95, 1], drawn bright green | `src/game/config/enemy_look.py` `ENEMY_LOOK["neon"]["gnat"]` |
-| rotor | 2 blades, 30 rad/s | `ENEMY_LOOK["rotor"]` |
+| rotor | 1 fan, 2 blades, 30 rad/s, centred on the spine | `ENEMY_LOOK["rotor"]`; model `GNAT_BODY` in `small_enemy_models.py` |
 
 ## Notes
 
@@ -88,4 +88,6 @@ files). Launched Gnats are ordinary Gnats on their own path out of the launcher 
 [carrier.md](carrier.md)).
 
 The P05 Gnat was a flat disc with three short fins, then (phase 5 review) a tri-rotor drone with a
-sensor turret under its nose; the turret and its lens were removed as only visible from below.
+sensor turret under its nose; the turret and its lens were removed as only visible from below. The
+redesign replaced the three ducted fans at 120° and the round head with one central fan and a
+pointed front.

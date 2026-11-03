@@ -1,7 +1,6 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/enemies/small_enemy_models.py`."""
 
-import math
 from typing import Any
 
 import pytest
@@ -20,26 +19,32 @@ def probe(monkeypatch: Any) -> Any:
     return run
 
 
-def test_enm_gnat_01_gnat_is_a_drone_with_three_ducted_fans_and_a_reactor(probe: Any) -> None:
-    """Also ENM-GNAT-02 (three fans) and ENM-GNAT-03 (one reactor)."""
+def test_enm_gnat_01_gnat_is_a_pointed_drone_with_one_fan_and_a_reactor(probe: Any) -> None:
+    """Also ENM-GNAT-02 (one fan) and ENM-GNAT-03 (one reactor at the rear)."""
     capture, body = probe(module.build_gnat)
     assert capture.name == "gnat"
     assert capture.neon == ENEMY_LOOK.neon.gnat
-    # Three fans on their ducts, one reactor at the back, and no wing.
-    assert len(body["rotors"]) == 3
+    # One fan on the back, one reactor at the rear, and no wing.
+    assert len(body["rotors"]) == 1
     assert len(body["reactors"]) == 1
+    assert body["reactors"][0].at[2] < 0
     assert body["wings"] == []
     assert len(body["parts"].flesh.geometry.positions) > 0
 
 
-def test_enm_gnat_02_gnat_fans_stand_on_a_ring_120_degrees_apart(probe: Any) -> None:
+def test_enm_gnat_02_gnat_fan_sits_at_the_centre_of_its_back(probe: Any) -> None:
     _capture, body = probe(module.build_gnat)
-    angles = sorted(math.atan2(r.at[0], r.at[2]) % (2 * math.pi) for r in body["rotors"])
-    radii = [math.hypot(r.at[0], r.at[2]) for r in body["rotors"]]
-    # Each fan sits on the duct ring (6 units out), a third of a turn from the next.
-    assert radii == pytest.approx([6, 6, 6])
-    gaps = [angles[1] - angles[0], angles[2] - angles[1]]
-    assert gaps == pytest.approx([2 * math.pi / 3] * 2)
+    (fan,) = body["rotors"]
+    # Centred across the body, above its spine (the fan turns around +Y).
+    assert fan.at[0] == pytest.approx(0)
+    assert fan.at[1] > module.GNAT_BODY.top
+
+
+def test_enm_gnat_01_gnat_nose_is_a_point_ahead_of_the_eyes(probe: Any) -> None:
+    """The body is pointed at its nose (ENM-GNAT-01): its nose is the front-most point."""
+    _capture, body = probe(module.build_gnat)
+    zs = body["parts"].flesh.geometry.positions[2::3]
+    assert max(zs) == pytest.approx(module.GNAT_BODY.nose)
 
 
 def test_enm_hornet_01_hornet_is_a_stinger_with_two_wings_and_a_gun_free_nose(probe: Any) -> None:
