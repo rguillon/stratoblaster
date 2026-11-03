@@ -772,3 +772,19 @@
 - **Consequences:** the game view does not draw the player's ship nor test hits on it; hit circles
   are not drawn in the wireframe.
 - **Status:** Proposed
+
+### D-258 — A harder, immediate rage
+
+- **Date:** 2026-11-03
+- **Requirements:** BOSS-27.
+- **Context:** after a transformation the new weapons often took several seconds to open fire: the
+  stage pause of the part that called for it was still running, and each volley waited its whole
+  (shortened) interval for its first shot. The reviewer asked for a stronger rage that starts at once.
+- **Decision:** the end of a transformation cancels the pause; each angry volley's first shot comes
+  `rageFirst` (0.15 s) + `rageStagger` (0.2 s) × its place after the rage starts (never later than
+  its interval). The rage lasts 8 s (was 6), fires 4.5× as often (was 3×) and a rack launches 3×
+  the missiles (was 2×).
+- **Alternatives considered:** only shortening `first` (the pause would still delay it).
+- **Consequences:** a rage is about twice as dense as D-256's; the lasers stay bounded by their
+  warning and beam. Not yet judged by play.
+- **Status:** Proposed

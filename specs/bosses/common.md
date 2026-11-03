@@ -383,7 +383,10 @@ regular enemies ([enemies common](../enemies/common.md)).
 #### BOSS-27 — Angry when new weapons come out · MUST
 
 A lost part makes the boss pause (BOSS-22) but no longer angry. It is **angry** only after a
-transformation (BOSS-37), when it has revealed hidden weapons: for `boss_rage_seconds` it fires only
+transformation (BOSS-37), when it has revealed hidden weapons: at once (any pause left from the
+part that called for the transformation is cancelled, and each weapon's first volley comes
+`boss_rage_first` after it opens fire, the weapons `boss_rage_stagger` apart) and for
+`boss_rage_seconds` it fires only
 those new weapons, `boss_rage_rate` times as often, instead of its stage's pattern, so its bullet hell
 comes from them, whatever their kind (bullets, rings, missiles, lasers, a hangar's Hornets). A missile
 rack fires `boss_rage_missiles` times as many missiles; a laser cannot fire faster than its warning,
@@ -394,10 +397,10 @@ pattern starts afresh with each transformation.
 
 **Acceptance criteria**
 - Given a part is destroyed (no transformation), then the boss is not angry (unit test).
-- Given a transformation is over, then the boss is angry for 6 s and fires only the weapons that
-  transformation revealed (unit tests).
-- Given an angry boss, then each of those weapons fires 3 times as often, a missile rack twice as
-  many missiles, and a laser at most as often as its warning, beam and gap allow (unit tests, every
+- Given a transformation is over, then the boss is angry for 8 s, with no pause, and fires only the
+  weapons that transformation revealed, the first volleys within 1 s (unit tests).
+- Given an angry boss, then each of those weapons fires 4.5 times as often, a missile rack three times
+  as many missiles, and a laser at most as often as its warning, beam and gap allow (unit tests, every
   boss).
 
 *Sources: D-063, D-221, D-256.*
@@ -867,9 +870,10 @@ same fight drops the same bonuses.
 | `boss_death` | a blast every 0.16 s for 2 s | BOSS-19; `BOSS_TIMING.death` |
 | `stage_change_pause` | 1 s | BOSS-22; `BOSS_TIMING.stagePause` |
 | `boss_stage_strobe` | 6 Hz | BOSS-22; `BOSS_LOOK.stageStrobeHz` |
-| `boss_rage_seconds` | 6 s | BOSS-27; `BOSS_TIMING.rageSeconds` |
-| `boss_rage_rate` | 3 × the weapons' own fire rate | BOSS-27; `BOSS_TIMING.rageRate`, `boss_build.angry_pattern` |
-| `boss_rage_missiles` | 2 × the missiles of a volley | BOSS-27; `BOSS_TIMING.rageMissiles` |
+| `boss_rage_seconds` | 8 s | BOSS-27; `BOSS_TIMING.rageSeconds` |
+| `boss_rage_rate` | 4.5 × the weapons' own fire rate | BOSS-27; `BOSS_TIMING.rageRate`, `boss_build.angry_pattern` |
+| `boss_rage_missiles` | 3 × the missiles of a volley | BOSS-27; `BOSS_TIMING.rageMissiles` |
+| `boss_rage_first`, `boss_rage_stagger` | 0.15 s, 0.2 s per weapon | BOSS-27; `BOSS_TIMING.rageFirst`, `rageStagger` |
 | `boss_rage_laser_gap` | 0.6 s between a beam's end and the next warning | BOSS-27; `BOSS_TIMING.rageLaserGap` |
 | `boss_rage_flicker` | 14 Hz, down to 0.35 | BOSS-27; `BOSS_LOOK.rageFlicker` |
 | `boss_turret_turn` | 150°/s | BOSS-29; `BOSS_TIMING.turretTurnDeg` |

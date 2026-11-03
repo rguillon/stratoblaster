@@ -118,9 +118,13 @@ BOSS_TIMING = record({
     "laserTurnDeg": 20,
     # Seconds a boss is angry after each transformation (BOSS-27): only its newly revealed
     # weapons fire, `rageRate` times as often (a missile rack `rageMissiles` times as many).
-    "rageSeconds": 6,
-    "rageRate": 3,
-    "rageMissiles": 2,
+    "rageSeconds": 8,
+    "rageRate": 4.5,
+    "rageMissiles": 3,
+    # Its first volley comes this long after it opens fire, each weapon `rageStagger` later than
+    # the one before.
+    "rageFirst": 0.15,
+    "rageStagger": 0.2,
     # A laser fired this often keeps this many seconds between its beam's end and the next warning.
     "rageLaserGap": 0.6,
     # Seconds a transformation lasts (its armour bursts off and its hidden weapons unfold,

@@ -217,3 +217,13 @@ def test_boss_27_an_angry_missile_rack_fires_more_missiles() -> None:
         )
     assert counts
     assert set(counts) == {BOSS_TIMING.rageMissiles}
+
+
+def test_boss_27_an_angry_boss_opens_fire_at_once_its_weapons_one_after_the_other() -> None:
+    for design in BOSS_DESIGNS:
+        for form in (1, 2):
+            angry = angry_pattern(design, form)
+            for k, v in enumerate(angry):
+                expected = min(v.every, BOSS_TIMING.rageFirst + k * BOSS_TIMING.rageStagger)
+                assert v.first == pytest.approx(expected)
+                assert v.first <= v.every

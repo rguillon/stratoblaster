@@ -132,7 +132,7 @@ def test_boss_27_the_angry_pattern_runs_after_a_transformation(
     _break(boss, ctx, "a")
     boss.update(ctx, 1.0)  # The transformation ends: it is angry.
     assert boss.rage == pytest.approx(2.0)
-    boss.update(ctx, 1.5)  # The pause of the lost part runs out.
+    # No pause is left from the lost part: it fires at once.
     boss.update(ctx, 0.5)
     assert rages == [0.5]
     assert boss.rage == pytest.approx(1.5)

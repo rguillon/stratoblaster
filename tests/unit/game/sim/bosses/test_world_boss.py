@@ -65,7 +65,7 @@ def test_boss_27_an_angry_boss_fires_only_its_newest_weapons_and_lights_up_full(
     boss.update_rage(ctx, 0.1)
     assert boss.charge == 1
     assert ctx.bullets == []
-    # Its hidden gun fires every 0.5 s, three times as often when angry: every 0.17 s.
+    # Its hidden gun fires every 0.5 s, 4.5 times as often when angry: every 0.11 s.
     boss.update_rage(ctx, 0.1)
     assert len(ctx.bullets) == 1
 

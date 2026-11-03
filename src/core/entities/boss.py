@@ -429,6 +429,8 @@ class Boss(Enemy):
         self.form += 1
         self.transform = 0
         self.state = "fighting"
+        # No pause left from the part that called for it: the new weapons open fire at once.
+        self.pause = 0
         self.rage = self.stats.rage_seconds if self.stats.rage_seconds is not None else 0
         self._rebuild_targets()
 

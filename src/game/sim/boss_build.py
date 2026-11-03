@@ -140,7 +140,7 @@ def launch_volley(launch: ConfigRecord) -> BossVolley:
     )
 
 
-def _angrier(volley: BossVolley) -> BossVolley:
+def _angrier(volley: BossVolley, k: int) -> BossVolley:
     """Return `volley` fired in anger (BOSS-27): `rageRate` times as often, missiles in more.
 
     A laser keeps its warning, its beam and a gap between two (it cannot fire faster than that).
@@ -155,8 +155,17 @@ def _angrier(volley: BossVolley) -> BossVolley:
         shape = BossMissilesShape(
             shape.count * BOSS_TIMING.rageMissiles, shape.spacing_deg, shape.missile
         )
+    # It opens fire at once, its weapons one after the other.
+    first = min(every, BOSS_TIMING.rageFirst + k * BOSS_TIMING.rageStagger)
     return BossVolley(
-        volley.from_, every, shape, volley.muzzles, volley.turret, volley.needs, volley.after, None
+        volley.from_,
+        every,
+        shape,
+        volley.muzzles,
+        volley.turret,
+        volley.needs,
+        volley.after,
+        first,
     )
 
 
@@ -169,10 +178,10 @@ def angry_pattern(design: ConfigRecord, form: int) -> list[BossVolley]:
     revealed = [part.id for part in design.stats.parts if opt(part.reveal) == form]
     stages = design.stages
     volleys = [volley for volley in stages[len(stages) - 1] if volley["from"] in revealed]
-    result = [_angrier(armed_volley(design, volley)) for volley in volleys]
+    armed = [armed_volley(design, volley) for volley in volleys]
     launches = [launch for launch in opt(design.launches) or [] if launch["from"] in revealed]
-    result.extend([_angrier(launch_volley(launch)) for launch in launches])
-    return result
+    armed.extend([launch_volley(launch) for launch in launches])
+    return [_angrier(volley, k) for k, volley in enumerate(armed)]
 
 
 def break_ring_ids(design: ConfigRecord) -> list[str]:
