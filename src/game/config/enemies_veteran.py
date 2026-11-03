@@ -55,18 +55,23 @@ VETERAN_CONFIG = record({
     },
     # ENM-MORTAR-10: health, points and hit circle.
     "mortar": {
-        "stats": {"model": "mortar", "radius": radius(1.2) * 0.8, "health": 140, "points": 400},
+        "stats": {"model": "mortar", "radius": radius(1.2) * 0.8, "health": 120, "points": 350},
         "size": 1.2,
         "speed": 40,
-        "fireInterval": 2.5,
+        "fireInterval": 3.5,
         "firstShot": 1,
-        # A big, slow shell aimed at the player (ENM-MORTAR-08), bursting into a ring of 8
-        # bullets after 1.2 s (ENM-MORTAR-09); drawn as a bigger ball of plasma (GFX-SHOT-14).
-        "shell": merge(
-            bullet("green", 110, 7),
-            {"burst": {"after": 1.2, "count": 8, "bullet": bullet("green", 150)}},
-        ),
-        # The mouth of the short, wide barrel on its raised mount.
+        # A slow, heavy homing missile (ENM-MORTAR-08) that can be shot down; its fuse is out
+        # 2.5 s after launch and it bursts into a ring of 10 bullets (ENM-MORTAR-09).
+        "missile": {
+            "speed": 90,
+            "turnRateDeg": 55,
+            "homingSeconds": 2.2,
+            "radius": 8,
+            "health": 20,
+            "style": "mortar",
+            "burst": {"after": 2.5, "count": 10, "bullet": bullet("green", 130)},
+        },
+        # The mouth of the short, wide launcher tube on its raised mount.
         "muzzles": [[0, -12.5, 7]],
         "xRange": [0.2, 0.8],
     },
@@ -83,12 +88,19 @@ VETERAN_CONFIG = record({
         "jumpDistance": 110,
         "fade": 0.4,
         "hidden": 0.8,
-        "jumps": 3,
-        # How long it stays in view before it fades out again (or leaves).
+        # It cloaks twice (ENM-PHANTOM-09) and fires its spread after the first jump only
+        # (ENM-PHANTOM-10); after the last it dives.
+        "jumps": 2,
+        "spreadJump": 1,
+        # How long it stays in view before it fades out again.
         "hold": 0.6,
         # Shots go through it while it is less visible than this (ENM-PHANTOM-12).
         "solidOpacity": 0.5,
-        "exitSpeed": 170,
+        # The dive (ENM-PHANTOM-11): the pause turning its nose to the player, then the
+        # acceleration and the top speed.
+        "pause": 0.5,
+        "diveAcceleration": 900,
+        "diveMaxSpeed": 560,
         # The spread fired as it reappears: 5 bullets 12 degrees apart, centred on the player.
         "spreadCount": 5,
         "spreadSpacing": 12,

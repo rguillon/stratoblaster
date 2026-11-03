@@ -184,10 +184,13 @@ class EnemyMissileSpec:
         radius: float,
         health: float,
         style: str,
+        burst: EnemyBurstSpec | None = None,
     ) -> None:
         """`turn_rate_deg` is in degrees a second.
 
-        `homing_seconds` is how long it homes on the player before it flies straight on.
+        `homing_seconds` is how long it homes on the player before it flies straight on. `burst`
+        makes a missile that bursts into a ring of bullets once `burst.after` seconds have passed
+        since its launch (ENM-MORTAR-09), unless it was shot down first.
         """
         self.speed = speed
         self.turn_rate_deg = turn_rate_deg
@@ -195,6 +198,7 @@ class EnemyMissileSpec:
         self.radius = radius
         self.health = health
         self.style = style
+        self.burst = burst
 
 
 class EnemyLaserSpec:

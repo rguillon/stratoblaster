@@ -49,9 +49,9 @@ def mortar_sac(p: Any, s: float) -> None:
 
 
 def build_mortar(scene: Any) -> Any:
-    """ENM-MORTAR-02: a squat, armoured beetle with a short, wide barrel.
+    """ENM-MORTAR-02: a squat, armoured beetle with a short, wide launcher tube.
 
-    The barrel is grafted on a raised mount in its middle, with shell sacs on its flanks and
+    The tube is grafted on a raised mount in its middle, with shell sacs on its flanks and
     olive-green neon (ENM-MORTAR-03), and two reactors at its back (ENM-MORTAR-05), within the
     veteran triangle budget (ENM-MORTAR-06). The barrel's mouth glows as the next shell charges
     (ENM-MORTAR-04).
@@ -74,6 +74,9 @@ def build_mortar(scene: Any) -> Any:
         hull.cylinder(2.6, mouth - 4.3, 8, H.dark, Placement([0, mouth_height, 4], 0, QUARTER), 2.4)
         hull.ring(2.9, 1.5, 8, H.panel, Placement([0, mouth_height, mouth - 3], 0, QUARTER))
         charge.ring(2, 0.3, 8, WHITE, Placement([0, mouth_height, mouth - 0.3], 0, QUARTER))
+        # ENM-MORTAR-01: a missile loaded in the tube, its nose cone and neon band showing.
+        hull.cylinder(1.9, 5, 8, H.panel, Placement([0, mouth_height, mouth - 5], 0, QUARTER), 0.4)
+        neon.ring(2, 0.4, 8, N.mortar, Placement([0, mouth_height, mouth - 5.2], 0, QUARTER))
         muzzle([0, mouth_height, mouth], "gun")
         eyes(p, [0, 1.6, 11.4], {"count": 2, "size": 0.6, "spacing": 3}, N.mortar)
         for s in SIDES:

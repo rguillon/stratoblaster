@@ -5,7 +5,13 @@ from collections.abc import Callable
 
 import pytest
 
-from core.entities.enemy import Enemy, EnemyBulletSpec, EnemyStats
+from core.entities.enemy import (
+    Enemy,
+    EnemyBulletSpec,
+    EnemyBurstSpec,
+    EnemyMissileSpec,
+    EnemyStats,
+)
 from core.math.rng import create_rng
 from core.systems.enemy_world import EnemyBlast, EnemyDifficulty, EnemyWorld, EnemyWorldOptions
 
@@ -188,3 +194,22 @@ def test_clearing_the_world_removes_enemies_shots_and_blasts() -> None:
     assert world.destroyed == []
     assert world.broken_parts == []
     assert world.targets == []
+
+
+def test_enm_22_the_bullets_a_missile_bursts_into_are_as_fast_as_the_level_makes_bullets() -> None:
+    world = _world(EnemyDifficulty(2, 1))
+    burst = EnemyBurstSpec(1, 3, EnemyBulletSpec(10, 2, "round"))
+    spec = EnemyMissileSpec(5, 90, 1, 3, 4, "rocket", burst)
+    world._context.fire_missile(10, 10, 0, spec)  # type: ignore[attr-defined]
+    missile = world.shots.missiles[0]
+    assert missile.burst is not None
+    assert missile.burst.bullet.speed == 20
+    assert (missile.burst.after, missile.burst.count) == (1, 3)
+    assert (missile.speed, missile.health, missile.style) == (5, 4, "rocket")
+
+
+def test_enm_18_a_missile_without_a_burst_is_launched_as_it_is() -> None:
+    world = _world(EnemyDifficulty(2, 1))
+    spec = EnemyMissileSpec(5, 90, 1, 3, 4, "rocket")
+    world._context.fire_missile(10, 10, 0, spec)  # type: ignore[attr-defined]
+    assert world.shots.missiles[0].burst is None
