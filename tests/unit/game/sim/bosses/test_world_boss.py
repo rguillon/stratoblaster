@@ -57,12 +57,24 @@ def test_boss_23_a_destroyed_ring_part_bursts_into_its_ring_of_bullets_once() ->
     assert len(ctx.bullets) == before
 
 
-def test_boss_27_an_angry_boss_fires_its_rage_pattern_and_lights_up_full() -> None:
+def test_boss_27_an_angry_boss_fires_only_its_newest_weapons_and_lights_up_full() -> None:
+    ctx = FakeContext()
+    boss = WorldBoss(_hidden_gun_design(), area(width=480, height=640))
+    boss.state = "fighting"
+    boss.form = 1
+    boss.update_rage(ctx, 0.1)
+    assert boss.charge == 1
+    assert ctx.bullets == []
+    # Its hidden gun fires every 0.5 s, three times as often when angry: every 0.17 s.
+    boss.update_rage(ctx, 0.1)
+    assert len(ctx.bullets) == 1
+
+
+def test_boss_27_a_boss_is_not_angry_before_it_has_transformed() -> None:
     ctx = FakeContext()
     boss = WorldBoss(REEF_WARDEN, area(width=480, height=640))
-    boss.on_stage_change(0, ctx)
-    boss.update_rage(ctx, 0.5)
-    assert boss.charge == 1
+    boss.update_rage(ctx, 1.0)
+    assert ctx.bullets == []
 
 
 def test_boss_21_a_boss_turret_follows_nothing_while_its_source_is_destroyed() -> None:
@@ -87,7 +99,6 @@ def _hidden_gun_design() -> object:
             "stats": merge(stats, {"parts": parts}),
             "guns": guns,
             "stages": stages([shot], [[]]),
-            "rage": None,
         },
     )
 

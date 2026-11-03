@@ -9,7 +9,6 @@ World 2 tuning (WLD-2-25, WLD-2-27).
 """
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.bosses.moving_regions import moving_region, slide
 from game.config.record import concat, merge, record
@@ -36,8 +35,6 @@ OWL_CROWN = [[0, 10, 12.5]]
 # warning line (MB-SNOW-OWL-10). The eye sits in front of the core, so it can always be shot.
 _SNOW_OWL = record({
     "id": "snow-owl",
-    # Angry after each destroyed part (phase 7 review, MB-SNOW-OWL-12).
-    "rage": rage.flower(4.5, "blue", "magenta"),
     # Its core, wing pods, eye and points (MB-SNOW-OWL-14).
     "stats": stats({
         "id": "snow-owl",

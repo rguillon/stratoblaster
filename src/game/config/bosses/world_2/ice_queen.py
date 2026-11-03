@@ -10,7 +10,6 @@ its own, used by no earlier stage, once it stands alone.
 import math
 
 from game.config.bosses.boss_kit import bullet, part, stages, stats, twin, volley
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import record
 
@@ -81,9 +80,6 @@ def ice_queen_parts() -> list[object]:
 # fire spirals and shield the core (MB-ICE-QUEEN-09), which fires aimed bursts from its nose.
 _ICE_QUEEN = record({
     "id": "ice-queen",
-    # Angry after each destroyed part (phase 7 review, MB-ICE-QUEEN-11): a crystal bloom, the
-    # hottest mini yet.
-    "rage": rage.flower(6.5, "purple", "blue"),
     # Its core, shards and points (MB-ICE-QUEEN-13).
     "stats": stats({
         "id": "ice-queen",

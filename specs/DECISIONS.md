@@ -733,3 +733,24 @@
   Gnat swarms and its waves are composed like the others instead of written by hand; contrast of
   tier 3's chartreuse on the grass of 3-4 and 3-5 relies on brightness more than hue.
 - **Status:** Proposed
+
+### D-256 — Bosses are angry only when new weapons come out, and their weapons are the bullet hell
+
+- **Date:** 2026-11-03
+- **Requirements:** BOSS-27 (BOSS-28 removed), BOSS-37; every boss file's angry requirement.
+- **Context:** a boss was angry for 3 s after each lost part, firing a bullet hell of four shapes
+  from its core (`boss_rage.py`, a heat per boss). The reviewer asked for it only when the boss
+  reveals a hidden weapon, the bullet hell coming from the new weapons, whatever their kind.
+- **Decision:** a lost part only pauses the boss. At the end of a transformation it is angry for 6 s
+  (`BOSS_TIMING.rageSeconds`): `boss_build.angry_pattern` takes the volleys and launches of the
+  weapons that transformation revealed, fired `rageRate` (3) times as often, a missile rack with
+  `rageMissiles` (2) times as many missiles, a laser no oftener than warning + beam +
+  `rageLaserGap` (0.6 s). Nothing else fires meanwhile. `boss_rage.py` and every design's `rage`
+  record are removed; no boss needed a new weapon since every boss transforms (BOSS-35).
+- **Alternatives considered:** keeping the core patterns beside the weapons (the hell would not come
+  from the new weapons); a per-boss angry pattern in data (more to author and keep in step with
+  each boss's weapons).
+- **Consequences:** how hot a rage is now depends on the weapon kinds revealed, not a heat number;
+  the BOSS-55 "heat goes up" criterion is gone; a rage whose weapons are all destroyed is silent.
+  The per-boss specs' angry sections and measured fight times need a new look.
+- **Status:** Proposed

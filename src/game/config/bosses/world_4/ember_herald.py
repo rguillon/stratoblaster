@@ -10,7 +10,6 @@ and twin spirals of its own, used by no earlier stage, once it stands alone.
 import math
 
 from game.config.bosses.boss_kit import bullet, part, stages, stats, twin, volley
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import concat, record
 
@@ -70,9 +69,6 @@ def lance_parts() -> Any:
 # It chases the ship down the volcano's slope (ground x1.4).
 _EMBER_HERALD = record({
     "id": "ember-herald",
-    # Angry after each destroyed part (phase 7 review, MB-EMBER-HERALD-10): the hottest mini
-    # boss so far.
-    "rage": rage.spirals(13.5, "magenta", "purple"),
     # Its core and parts, their health, and its points (MB-EMBER-HERALD-07, MB-EMBER-HERALD-13).
     "stats": stats(
         record({

@@ -29,8 +29,6 @@ def test_fb_glacier_colossus_17_boss_stats_are_in_the_range_the_sim_relies_on() 
     assert 0 < stats["coreRadius"] < stats["radius"]
 
 
-def test_fb_glacier_colossus_14_boss_has_an_angry_pattern_and_its_stage_count() -> None:
-    """Its rage, and one stage pattern more than its parts (FB-GLACIER-COLOSSUS-13)."""
-    assert isinstance(GLACIER_COLOSSUS.rage, list)
-    assert GLACIER_COLOSSUS.rage
+def test_fb_glacier_colossus_14_boss_has_its_stage_count() -> None:
+    """One stage pattern more than its parts (FB-GLACIER-COLOSSUS-13)."""
     assert len(GLACIER_COLOSSUS.stages) == len(original_parts(GLACIER_COLOSSUS)) + 1

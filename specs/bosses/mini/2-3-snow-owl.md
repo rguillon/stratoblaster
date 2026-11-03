@@ -149,10 +149,17 @@ The last stage's ring is fired by no earlier stage.
 
 #### MB-SNOW-OWL-12 — Rage · MUST
 
-It is angry as every boss with a `flower` at heat `rage_heat` (a dense, slowly turning blue ring,
-small magenta fans at the player).
+It is angry after its transformation, when the two sweepers and its mortar it revealed fire all out,
+for `boss_rage_seconds`, `boss_rage_rate` times as often, instead of its stage's
+pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it has no
+angry pattern of its own.
 
-*Sources: D-068.*
+**Acceptance criteria**
+- Given its transformation is over, then it is angry and fires only the two sweepers and its mortar it
+  revealed (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
+
+*Sources: D-068, D-256.*
 
 #### MB-SNOW-OWL-13 — Transformation · MUST
 
@@ -190,7 +197,7 @@ hidden weapons do. It dies as every boss.
 | pod_radius / pod_hp | 13 px / 850 | `part("pod-…")` |
 | eye_radius / eye_hp | 11 px / 600 | `part("eye" …)`; laser every 5.5 s, 1.4 s, 12 px wide |
 | bullets | magenta 180, red 190, blue 185, purple 195 px/s | `MAGENTA`, `RED`, `BLUE`, `PURPLE`; times the level's factors |
-| rage_heat | 4.5 (`flower`, blue / magenta) | `rage` |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation | both pods destroyed | `transformParts` |
 | tip_slide | 16 px out | `moving_region("wingtips", 1, …, slide([[0, 0, 0], [16, 0, 0]]))` |
 | region `wingtips` | x 30…56 (mirrored), y −9.2 at x 30 to −5 at x 48…56, back to y 12; the panel −1.2–2.1 px; `wing` | `moving_region("wingtips", 1, …)`; `src/game/view/bosses/world_2/snow_owl_armour.py` |

@@ -22,9 +22,8 @@ from game.config.bosses.boss_kit import (
     twin,
     volley,
 )
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
-from game.config.record import concat, merge, record
+from game.config.record import merge, record
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -81,11 +80,6 @@ SY = CALDERA_PARTS.shield[1]
 # The ground stops over the magma lake (x0).
 _CALDERA_THRONE = record({
     "id": "caldera-throne",
-    # Angry after each destroyed part (phase 7 review, FB-CALDERA-THRONE-13): the hottest bullet
-    # hell of the game.
-    "rage": concat(
-        rage.spirals(14, "magenta", "purple", 0.5), rage.vortex(14, "blue", "magenta", 0.5)
-    ),
     # Its core and parts, their health, and its points (FB-CALDERA-THRONE-08).
     "stats": stats(
         record({

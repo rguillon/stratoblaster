@@ -21,7 +21,6 @@ from game.config.bosses.boss_kit import (
     twin,
     volley,
 )
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.bosses.moving_regions import moving_region, swing
 from game.config.record import concat, merge, record
@@ -139,8 +138,6 @@ def fist(arm: str, health: float) -> Any:
 # be shot.
 _OBSIDIAN_GOLEM = record({
     "id": "obsidian-golem",
-    # Angry after each destroyed part (phase 7 review, D-063, FB-OBSIDIAN-GOLEM-15).
-    "rage": concat(rage.flower(12, "orange", "red", 0.5), rage.vortex(12, "red", "magenta", 0.5)),
     # Its core and parts, their health, and its points (FB-OBSIDIAN-GOLEM-09).
     "stats": stats(
         record({

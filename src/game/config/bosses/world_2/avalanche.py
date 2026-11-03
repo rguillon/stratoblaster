@@ -7,7 +7,6 @@ hopper on its back drops lines of slow big rocks (MB-AVALANCHE-10).
 """
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import merge, record
 
@@ -79,8 +78,6 @@ DRILL_Y = AVALANCHE_ARM.drill[1]
 # down the glacier (ground x1.4).
 _AVALANCHE = record({
     "id": "avalanche",
-    # Angry after each destroyed part (phase 7 review, D-063, MB-AVALANCHE-12).
-    "rage": rage.spirals(5.5, "orange", "red"),
     # Its core, drills, hopper and points (MB-AVALANCHE-14).
     "stats": stats({
         "id": "avalanche",

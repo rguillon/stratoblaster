@@ -166,15 +166,18 @@ into a ring of 8 small `magenta` ones (190 px/s) 1.1 s after it is fired.
 
 #### FB-VERDANT-CROWN-11 — Rage · MUST
 
-After the pause that follows each destroyed part, it fires a flower and two crossing spirals together,
-each at half the rate, at heat 9 (`green` and `magenta`, `magenta` and `purple`): the hottest rage of
-World 3.
+It is angry after each of its transformations, when the weapons that one revealed
+fire all out: the two orbs after the first, the two mortars after the second.
+For `boss_rage_seconds` it fires only those, `boss_rage_rate` times as often, instead of its
+stage's pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it
+has no angry pattern of its own.
 
 **Acceptance criteria**
-- Given a part is destroyed, when its pause is over, then the core fires the flower and the spirals
-  (unit: rage patterns).
+- Given a transformation is over, then it is angry and fires only the weapons it revealed
+  (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-081, D-063.*
+*Sources: D-081, D-063, D-256.*
 
 #### FB-VERDANT-CROWN-12 — First transformation: flank armour, two orbs · MUST
 
@@ -243,7 +246,7 @@ boss's centre, X right, Y up the screen (its bow at -Y).
 | thorn lasers | 1.6 s every 6 s, first 2 / 5 s | on turrets |
 | seed missiles | 2 × 24°, every 5 s, first 3.5 / 6 s | |
 | seed pod | `green` 115 px/s, radius 7, bursts after 1.1 s into 8 `magenta` at 190 px/s | `SEED_POD` |
-| rage | flower + spirals, heat 9, half share each | |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformations | at 2 and 4 parts destroyed | `default_transforms` |
 | flank regions | the flank deck's plan, x 34..61, y -50..24 (mirrored), `wing`; plating 5.7–7.2 px | form 1 |
 | spine region | the aft deck's plan, x ±32 at y 36 to ±24 at y 85, `shell`; plating 5.7–7.2 px | form 2 |

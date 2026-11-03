@@ -158,15 +158,17 @@ destroyed; from the third on, its last pattern):
 
 #### MB-ASH-WRAITH-11 — Rage · MUST
 
-After the pause that follows each destroyed part, the Wraith is angry: it fires a vortex (one
-fast-turning spiral and bursts at the player) at heat 10.5, in `blue` and `purple`: about 104
-bullets a second at 204 px/s.
+It is angry after its transformation, when the two laser lances it revealed fire all out,
+for `boss_rage_seconds`, `boss_rage_rate` times as often, instead of its stage's
+pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it has no
+angry pattern of its own.
 
 **Acceptance criteria**
-- Given a part is destroyed, when its pause is over, then the core fires the vortex for the rage
-  time (unit: `test_boss_rage.py`, `test_ash_wraith.py`).
+- Given its transformation is over, then it is angry and fires only the two laser lances it
+  revealed (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-088, D-063.*
+*Sources: D-088, D-063, D-256.*
 
 #### MB-ASH-WRAITH-12 — Transformation: back plating bursts off · MUST
 
@@ -230,7 +232,7 @@ All in `src/game/config/bosses/world_4/ash_wraith.py` (`ASH_WRAITH`) unless note
 | pod fans | 3 × 14°, every 2.4 s, lean ±8°, first 0.9 / 2.1 s | stage volleys |
 | eye laser | every 6 s, 1.4 s, first 3 s, on its turret | `volley.laser("eye", …)` |
 | bullets | `blue` 205, `purple` 200, `magenta` 210 px/s | radius 4 |
-| rage | vortex, heat 10.5 (`blue`, `purple`) | `rage.vortex` |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation | once, at 2 original parts destroyed | `src/game/sim/boss_build.py` `default_transforms` |
 | back region | the dome's footprint, not mirrored: a lozenge y -25..30, x ±13.5 at y -8..2, ±10.5 at y 14, ±5.5 at y 26, `shell`; dome 2.8–10 px over a 3.3 px deck | `armour_region("back", …)`; `src/game/view/bosses/world_4/ash_wraith_armour.py` |
 | lances | (±12, -7), radius 10, pod 9, 660 HP, first 1.2 / 2.0 s | `hidden_weapon`; volleys in `src/game/config/bosses/weapon_kinds.py` |
@@ -241,6 +243,5 @@ All in `src/game/config/bosses/world_4/ash_wraith.py` (`ASH_WRAITH`) unless note
 ## Notes
 
 - Phase 10 fight time with the D-055 bot: 48.0 s, before the hidden weapons (D-221).
-- The design comment in the config still says "heat 9, as 3-5"; the heat used is 10.5 (D-088).
 - Its full health takes its place in World 4's boss ordering (P10-R12, see
   [World 4](../../worlds/world-4/world.md)).

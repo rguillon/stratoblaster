@@ -25,8 +25,6 @@ def test_mb_magma_salamander_08_boss_stats_are_in_the_range_the_sim_relies_on() 
     assert 0 < stats["coreRadius"] < stats["radius"]
 
 
-def test_mb_magma_salamander_12_boss_has_an_angry_pattern_and_its_stage_count() -> None:
-    """Its rage, and one stage pattern more than its parts (MB-MAGMA-SALAMANDER-11)."""
-    assert isinstance(MAGMA_SALAMANDER.rage, list)
-    assert MAGMA_SALAMANDER.rage
+def test_mb_magma_salamander_12_boss_has_its_stage_count() -> None:
+    """One stage pattern more than its parts (MB-MAGMA-SALAMANDER-11)."""
     assert len(MAGMA_SALAMANDER.stages) == len(original_parts(MAGMA_SALAMANDER)) + 1

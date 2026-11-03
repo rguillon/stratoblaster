@@ -161,10 +161,18 @@ The last stage's spirals are fired by no earlier stage.
 
 #### FB-NARWHAL-12 — Rage · MUST
 
-It is angry as every boss with a `vortex` at heat `rage_heat` (one fast magenta spiral, blue bursts
-at the player).
+It is angry after each of its transformations, when the weapons that one revealed
+fire all out: the two laser lances after the first, the two missile racks after the second.
+For `boss_rage_seconds` it fires only those, `boss_rage_rate` times as often, instead of its
+stage's pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it
+has no angry pattern of its own.
 
-*Sources: D-068.*
+**Acceptance criteria**
+- Given a transformation is over, then it is angry and fires only the weapons it revealed
+  (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
+
+*Sources: D-068, D-256.*
 
 #### FB-NARWHAL-13 — First transformation: laser lances · MUST
 
@@ -212,7 +220,7 @@ do, its hidden weapons as hidden weapons do. It dies as every boss, and its deat
 | pod_radius / pod_hp | 14 px / 900 | `fpart("pod-…")` |
 | pod fan heading | −12° left pod, +12° right pod (see the discrepancy under FB-NARWHAL-10) | `volley.fan("pod-…", 2.2, 3, 15, GREEN, …, ∓12)` |
 | bullets | magenta 185, green 180, blue 190, purple 195 px/s | `MAGENTA`, `GREEN`, `BLUE`, `PURPLE`; times the level's factors |
-| rage_heat | 3 (`vortex`, magenta / blue) | `rage` |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformations | after 2 and 4 of 5 parts | `boss_build.default_transforms` |
 | t1_radius / t1_hp | 10 px / 880 | `hidden_weapon("lance-…")`, pod 21.1 px high |
 | t2_radius / t2_hp | 7 px / 1 100 | `hidden_weapon("rack-…")`, pod 26.1 px high |

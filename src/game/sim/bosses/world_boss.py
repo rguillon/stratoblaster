@@ -9,6 +9,7 @@ from core.systems.enemy_motion import approach
 from game.config.bosses.boss_kit import BOSS_TIMING
 from game.config.bosses.hidden_weapons import region_blasts
 from game.sim.boss_build import (
+    angry_pattern,
     armed_pattern,
     boss_stats,
     break_ring_ids,
@@ -74,8 +75,9 @@ class WorldBoss(Boss):
         self._by_id: dict[str, BossPart] = {}
         for part in self.parts:
             self._by_id[part.spec.id] = part
-        # Its angry pattern, fresh after each destroyed part (phase 7 review).
+        # Its angry pattern, from the weapons its last transformation revealed (BOSS-27).
         self._rage = BossPattern([])
+        self._rage_form = 0
         self._fighting = 0.0
         self._launches: list[Any] = []
         for launch in design.launches or []:
@@ -105,7 +107,7 @@ class WorldBoss(Boss):
         Fire pauses included (phase 7 review, BOSS-29).
         """
         Boss.update(self, ctx, dt)
-        pattern = self._rage if self.rage > 0 and self.pause <= 0 else self._pattern
+        pattern = self._angry() if self.rage > 0 and self.pause <= 0 else self._pattern
         if self.state != "dying":
             pattern.turn_turrets(ctx, dt, self._sources())
 
@@ -136,18 +138,24 @@ class WorldBoss(Boss):
         self._pattern.step(ctx, dt, self._sources())
         self.charge = self._pattern.charge
 
+    def _angry(self) -> BossPattern:
+        """Its angry pattern: its newest weapons, fresh once it has transformed again."""
+        if self._rage_form != self.form:
+            self._rage_form = self.form
+            self._rage = BossPattern(angry_pattern(self.design, self.form))
+        return self._rage
+
     def update_rage(self, ctx: EnemyContext, dt: float) -> None:
-        """Its bullet hell while it is angry (phase 7 review, BOSS-27).
+        """Its bullet hell while it is angry (BOSS-27): its newest weapons firing all out.
 
         Its charge lights full on.
         """
-        self._rage.step(ctx, dt, self._sources())
+        self._angry().step(ctx, dt, self._sources())
         self.charge = 1
 
     def on_stage_change(self, stage: int, ctx: EnemyContext) -> None:
         """Switch to the volleys of a new stage."""
         self._pattern = BossPattern(self._stage(stage))
-        self._rage = BossPattern(self._armed(self.design.rage or []))
         for ring_id in break_ring_ids(self.design):
             part = self._by_id.get(ring_id)
             if part is None or not part.destroyed or ring_id in self._ringed:

@@ -16,7 +16,6 @@ from game.config.bosses.boss_kit import (
     twin,
     volley,
 )
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import merge, record
 
@@ -70,8 +69,6 @@ COLOSSUS_CELLS = cells([-5.5, 5.5], [41, 51], 24)
 # x0.3.
 _GLACIER_COLOSSUS = record({
     "id": "glacier-colossus",
-    # Angry after each destroyed part (phase 7 review, D-063, FB-GLACIER-COLOSSUS-14).
-    "rage": rage.flower(6, "red", "magenta"),
     # Its core, six parts and points (FB-GLACIER-COLOSSUS-17).
     "stats": stats({
         "id": "glacier-colossus",

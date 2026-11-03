@@ -153,14 +153,17 @@ blood sac once alone:
 
 #### MB-MOSQUITO-11 — Rage · MUST
 
-After the pause that follows each destroyed part, it fires a vortex at heat 7.5, in `magenta` and
-`purple`.
+It is angry after its transformation, when the two heavy cannons it revealed fire all out,
+for `boss_rage_seconds`, `boss_rage_rate` times as often, instead of its stage's
+pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it has no
+angry pattern of its own.
 
 **Acceptance criteria**
-- Given a part is destroyed, when its pause is over, then the core fires the vortex (unit: rage
-  patterns).
+- Given its transformation is over, then it is angry and fires only the two heavy cannons it
+  revealed (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-081, D-063.*
+*Sources: D-081, D-063, D-256.*
 
 #### MB-MOSQUITO-12 — Transformation: back plating, two heavy cannons · MUST
 
@@ -211,7 +214,7 @@ centre, X right, Y up the screen (its needle at -Y).
 | buzz | ±7°, 0.2 s period | `BUZZ` |
 | wing fans | 3 × 14°, every 2.2 s, lean ±10° | |
 | proboscis laser | 1.4 s every 5.5 s | on a turret |
-| rage | vortex, heat 7.5 | |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation | once, at 2 parts destroyed | `default_transforms` |
 | back region | the thorax shell's plan: x ±5.5 at y 9, ±9.5 at y 0, ±13 at y -6, ±13.5 at y -12, ±8 at y -16, `shell`, not mirrored; shell 3.0–9.5 px over the thorax (top 3.3) | `armour_region("back", …)`; `mosquito_model.py` `THORAX`, `SHELL` |
 | cannons | (±12, -11), radius 10, pod 8.1, 800 HP, `magenta`, first 1.2 / 2.0 s | |

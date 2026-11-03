@@ -25,8 +25,6 @@ def test_mb_stone_idol_07_boss_stats_are_in_the_range_the_sim_relies_on() -> Non
     assert 0 < stats["coreRadius"] < stats["radius"]
 
 
-def test_mb_stone_idol_10_boss_has_an_angry_pattern_and_its_stage_count() -> None:
-    """Its rage, and one stage pattern more than its parts (MB-STONE-IDOL-09)."""
-    assert isinstance(STONE_IDOL.rage, list)
-    assert STONE_IDOL.rage
+def test_mb_stone_idol_10_boss_has_its_stage_count() -> None:
+    """One stage pattern more than its parts (MB-STONE-IDOL-09)."""
     assert len(STONE_IDOL.stages) == len(original_parts(STONE_IDOL)) + 1

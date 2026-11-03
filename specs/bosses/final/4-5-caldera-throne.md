@@ -204,16 +204,18 @@ white-hot core, the warning line with a white core as all World 4 warning lines 
 
 #### FB-CALDERA-THRONE-13 — Rage · MUST
 
-After the pause that follows each destroyed part, the Throne is angry: it fires two crossing spirals
-and a vortex (a fast-turning spiral and bursts at the player) at once, at heat 14, each at half the
-rate (`magenta` and `purple`, `blue` and `magenta`): about 132 bullets a second in all, at 232 px/s,
-the hottest bullet hell of the game.
+It is angry after each of its transformations, when the weapons that one revealed
+fire all out: the two gun decks after the first, the two lances and a missile rack after the second.
+For `boss_rage_seconds` it fires only those, `boss_rage_rate` times as often, instead of its
+stage's pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it
+has no angry pattern of its own.
 
 **Acceptance criteria**
-- Given a part is destroyed, when its pause is over, then the core fires both angry patterns for the
-  rage time (unit: `test_boss_rage.py`, `test_caldera_throne.py`).
+- Given a transformation is over, then it is angry and fires only the weapons it revealed
+  (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-088, D-063.*
+*Sources: D-088, D-063, D-256.*
 
 #### FB-CALDERA-THRONE-14 — First transformation: flank armour bursts off · MUST
 
@@ -318,7 +320,7 @@ All in `src/game/config/bosses/world_4/caldera_throne.py` (`CALDERA_THRONE`) unl
 | prow laser | every 5 s, 1.5 s (stages 5 and 6) | core stages |
 | magma bomb | 115 px/s, radius 7, bursts after 1.05 s into 9 `blue` at 195 px/s | `MAGMA_BOMB` |
 | bullets | `magenta` 215, `blue` 210, `purple` 205 px/s | radius 4 |
-| rage | spirals + vortex, heat 14, half each | `rage.spirals`, `rage.vortex` |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformations | at 2, then 4 original parts destroyed | `src/game/sim/boss_build.py` `default_transforms` |
 | flank regions | the deck's top face beside the bastion (mirrored): (34, -51), (46, -51), (55, -34), (61, -8), (62.6, 15), (34, 15); `wing`; plate 8–9.5 px | form 1, `caldera_throne_armour.py` |
 | spine | x -34..34, y -62..80, `shell`, not mirrored; the keep's upper tiers, tower and inner stacks | form 2 |

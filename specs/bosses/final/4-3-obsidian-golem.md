@@ -215,16 +215,18 @@ moved into the enemy shots' family, a deep orange (about [1, 0.31, 0.04]) round 
 
 #### FB-OBSIDIAN-GOLEM-15 — Rage · MUST
 
-After the pause that follows each destroyed part, the Golem is angry: it fires a flower (a dense,
-slowly turning ring and small aimed fans) and a vortex (a fast-turning spiral and bursts at the
-player) at once, at heat 12, each at half the rate (`orange` and `red`, `red` and `magenta`): about
-116 bullets a second in all, at 216 px/s.
+It is angry after each of its transformations, when the weapons that one revealed
+fire all out: the two heavy cannons after the first, the sweeper and two mortars after the second.
+For `boss_rage_seconds` it fires only those, `boss_rage_rate` times as often, instead of its
+stage's pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it
+has no angry pattern of its own.
 
 **Acceptance criteria**
-- Given a part is destroyed, when its pause is over, then the core fires both angry patterns for the
-  rage time (unit: `test_boss_rage.py`, `test_obsidian_golem.py`).
+- Given a transformation is over, then it is angry and fires only the weapons it revealed
+  (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-088, D-063.*
+*Sources: D-088, D-063, D-256.*
 
 #### FB-OBSIDIAN-GOLEM-16 — First transformation: the flank slabs lift · MUST
 
@@ -329,7 +331,7 @@ All in `src/game/config/bosses/world_4/obsidian_golem.py` (`OBSIDIAN_GOLEM`) unl
 | emitter laser | every 7 s, 1.6 s, first 4 s, straight down | `volley.laser("emitter", …)` |
 | magma bomb | 120 px/s, radius 8, bursts after 1.1 s into 10 at 170 px/s | `BOMB` |
 | bullets | `red` 215, `orange` 205, `magenta` 210, `purple` 200 px/s | radius 4 |
-| rage | flower + vortex, heat 12, half each | `rage.flower`, `rage.vortex` |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformations | both shoulder cannons; then plate and emitter | `transformParts` |
 | flank slabs (moving) | the torso's top face from the hump's foot out (mirrored): (14, -24), (17, -24), (29, -16), (36, -4), (34.5, 15), (26, 29), (14, 31); above 8.8; swing about the length at (±51, 5, 16), 0 → 70°; plate 16–17.5 px, the pauldron on it | `moving_region("flanks", …)`, `src/game/config/bosses/moving_regions.py`, `obsidian_golem_armour.py` |
 | spine | x -14..14, y -22..16, `shell`, not mirrored; the ridge and the helm, its own dark spine for a frame | `armour_region("spine", …)` |

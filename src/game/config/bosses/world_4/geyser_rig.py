@@ -12,7 +12,6 @@ full health 9 200-10 200).
 """
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import merge, record
 
@@ -107,8 +106,6 @@ def sweep(every: float, first: float) -> Any:
 # core, so it can always be shot.
 _GEYSER_RIG = record({
     "id": "geyser-rig",
-    # Angry after each destroyed part (phase 7 review, D-063, FB-GEYSER-RIG-14): heat 11.
-    "rage": rage.curtain(11, "orange", "red"),
     # Its core and parts, their health, and its points (FB-GEYSER-RIG-09).
     "stats": stats(
         record({

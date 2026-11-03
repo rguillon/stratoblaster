@@ -25,8 +25,6 @@ def test_mb_cinder_crab_08_boss_stats_are_in_the_range_the_sim_relies_on() -> No
     assert 0 < stats["coreRadius"] < stats["radius"]
 
 
-def test_mb_cinder_crab_12_boss_has_an_angry_pattern_and_its_stage_count() -> None:
-    """Its rage, and one stage pattern more than its parts (MB-CINDER-CRAB-11)."""
-    assert isinstance(CINDER_CRAB.rage, list)
-    assert CINDER_CRAB.rage
+def test_mb_cinder_crab_12_boss_has_its_stage_count() -> None:
+    """One stage pattern more than its parts (MB-CINDER-CRAB-11)."""
     assert len(CINDER_CRAB.stages) == len(original_parts(CINDER_CRAB)) + 1

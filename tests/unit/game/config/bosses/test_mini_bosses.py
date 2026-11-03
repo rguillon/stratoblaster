@@ -19,9 +19,7 @@ def test_boss_20_mini_boss_design_is_well_formed(design: Any) -> None:
 
 @pytest.mark.parametrize("design", MINI_BOSSES, ids=lambda d: d.id)
 def test_boss_55_mini_boss_is_weaker_than_the_final_boss_of_its_level(design: Any) -> None:
-    """Also BOSS-28: it has an angry pattern."""
     assert design.stats["health"] < 2500
-    assert design.rage
 
 
 def test_boss_01_mini_bosses_have_distinct_ids() -> None:

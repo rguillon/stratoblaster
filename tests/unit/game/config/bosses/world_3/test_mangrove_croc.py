@@ -25,8 +25,6 @@ def test_mb_mangrove_croc_08_boss_stats_are_in_the_range_the_sim_relies_on() -> 
     assert 0 < stats["coreRadius"] < stats["radius"]
 
 
-def test_mb_mangrove_croc_12_boss_has_an_angry_pattern_and_its_stage_count() -> None:
-    """Its rage, and one stage pattern more than its parts (MB-MANGROVE-CROC-11)."""
-    assert isinstance(MANGROVE_CROC.rage, list)
-    assert MANGROVE_CROC.rage
+def test_mb_mangrove_croc_12_boss_has_its_stage_count() -> None:
+    """One stage pattern more than its parts (MB-MANGROVE-CROC-11)."""
     assert len(MANGROVE_CROC.stages) == len(original_parts(MANGROVE_CROC)) + 1

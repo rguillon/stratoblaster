@@ -4,13 +4,19 @@
 import pytest
 
 from core.entities.boss import BossStats
-from core.systems.boss_pattern import BossAimedShape, BossBurstShape, BossLaserShape
+from core.systems.boss_pattern import (
+    BossAimedShape,
+    BossBurstShape,
+    BossLaserShape,
+    BossMissilesShape,
+)
 from game.config.bosses.boss_kit import BOSS_TIMING, bullet, part, volley
 from game.config.bosses.mini_bosses import REEF_WARDEN
 from game.config.bosses.world_3.stone_idol import STONE_IDOL
 from game.config.bosses.world_4.geyser_rig import GEYSER_RIG
 from game.config.record import merge, record
 from game.sim.boss_build import (
+    angry_pattern,
     armed_pattern,
     armed_volley,
     boss_stats,
@@ -18,6 +24,7 @@ from game.sim.boss_build import (
     bullet_spec,
     launch_volley,
 )
+from game.sim.boss_kinds import BOSS_DESIGNS
 
 
 def test_boss_23_a_bullet_spec_carries_its_speed_radius_and_style() -> None:
@@ -103,7 +110,7 @@ def test_boss_07_boss_stats_takes_the_numbers_and_parts_of_a_design() -> None:
     assert stats.name == REEF_WARDEN.stats["name"]
     assert stats.health == REEF_WARDEN.stats["health"]
     assert len(stats.parts) == len(REEF_WARDEN.stats["parts"])
-    assert stats.rage_seconds == 3
+    assert stats.rage_seconds == BOSS_TIMING.rageSeconds
 
 
 def test_boss_33_a_boss_with_joints_gets_a_swing_spec_for_each_joint() -> None:
@@ -156,3 +163,57 @@ def test_a_design_may_set_its_own_transformation_points() -> None:
 
 def test_a_boss_without_hidden_parts_does_not_transform() -> None:
     assert boss_stats(_with_parts([["a", [0, 0], 5, 10]])).transforms is None
+
+
+def _revealed(design: object, form: int) -> list[str]:
+    return [p["id"] for p in design.stats["parts"] if p.get("reveal") == form]  # type: ignore[attr-defined]
+
+
+def test_boss_27_the_angry_pattern_is_the_newly_revealed_weapons_firing_faster() -> None:
+    for design in BOSS_DESIGNS:
+        forms = {p["reveal"] for p in design.stats["parts"] if p.get("reveal")}
+        assert forms
+        for form in forms:
+            angry = angry_pattern(design, form)
+            assert angry
+            assert {v.from_ for v in angry} <= set(_revealed(design, form))
+
+
+def test_boss_27_an_angry_volley_comes_boss_timing_rage_rate_times_as_often() -> None:
+    gatling = [d for d in BOSS_DESIGNS if any(v["shape"]["kind"] == "burst" for v in d.stages[-1])]
+    design = gatling[0]
+    revealed = {p["id"] for p in design.stats["parts"] if p.get("reveal")}
+    normal = [
+        v for v in design.stages[-1] if v["from"] in revealed and v["shape"]["kind"] == "burst"
+    ]
+    angry = [
+        v for v in angry_pattern(design, 1) + angry_pattern(design, 2) if v.shape.kind == "burst"
+    ]
+    assert angry
+    assert min(v.every for v in angry) == pytest.approx(
+        min(v["every"] for v in normal) / BOSS_TIMING.rageRate
+    )
+
+
+def test_boss_27_an_angry_laser_keeps_its_warning_its_beam_and_a_gap() -> None:
+    for design in BOSS_DESIGNS:
+        for form in (1, 2):
+            for v in angry_pattern(design, form):
+                if isinstance(v.shape, BossLaserShape):
+                    laser = v.shape.laser
+                    least = laser.warning_seconds + laser.firing_seconds + BOSS_TIMING.rageLaserGap
+                    assert v.every >= least - 1e-9
+
+
+def test_boss_27_an_angry_missile_rack_fires_more_missiles() -> None:
+    counts: list[float] = []
+    for design in BOSS_DESIGNS:
+        base = {v["from"]: v for v in design.stages[-1] if v["shape"]["kind"] == "missiles"}
+        angry = angry_pattern(design, 1) + angry_pattern(design, 2)
+        counts.extend(
+            v.shape.count / base[v.from_]["shape"]["count"]
+            for v in angry
+            if isinstance(v.shape, BossMissilesShape)
+        )
+    assert counts
+    assert set(counts) == {BOSS_TIMING.rageMissiles}

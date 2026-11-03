@@ -25,8 +25,6 @@ def test_fb_verdant_crown_08_boss_stats_are_in_the_range_the_sim_relies_on() -> 
     assert 0 < stats["coreRadius"] < stats["radius"]
 
 
-def test_fb_verdant_crown_11_boss_has_an_angry_pattern_and_its_stage_count() -> None:
-    """Its rage, and one stage pattern more than its parts (FB-VERDANT-CROWN-10)."""
-    assert isinstance(VERDANT_CROWN.rage, list)
-    assert VERDANT_CROWN.rage
+def test_fb_verdant_crown_11_boss_has_its_stage_count() -> None:
+    """One stage pattern more than its parts (FB-VERDANT-CROWN-10)."""
     assert len(VERDANT_CROWN.stages) == len(original_parts(VERDANT_CROWN)) + 1

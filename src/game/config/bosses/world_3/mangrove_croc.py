@@ -10,7 +10,6 @@ side pontoons fire fans and shield the core, whose ring dome fires something new
 import math
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import record
 
@@ -86,8 +85,6 @@ CROC_PARTS = record({"jaw": [0, -37], "pontoon": [27, 4]})
 # chase up the delta (ground x1.4).
 _MANGROVE_CROC = record({
     "id": "mangrove-croc",
-    # Angry after each destroyed part (D-063), heat 4.5 (MB-MANGROVE-CROC-12).
-    "rage": rage.vortex(4.5, "green", "orange"),
     # Its core and parts (MB-MANGROVE-CROC-08), and its points (MB-MANGROVE-CROC-15).
     "stats": stats(
         record({

@@ -12,7 +12,6 @@ WLD-3-20.
 """
 
 from game.config.bosses.boss_kit import bullet, part, stages, stats, volley
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
@@ -155,8 +154,6 @@ def leg_guns() -> Any:
 
 _CANOPY_SPIDER = record({
     "id": "canopy-spider",
-    # Angry after each destroyed part (phase 7 review, FB-CANOPY-SPIDER-11).
-    "rage": rage.flower(6, "red", "purple"),
     # Its core, leg gun pods and egg sac (FB-CANOPY-SPIDER-08).
     "stats": stats(
         record({

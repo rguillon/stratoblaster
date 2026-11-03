@@ -177,11 +177,18 @@ homing missiles from the hatches: every kind of attack. One pattern per stage, e
 
 #### FB-BOREAL-CITADEL-14 — Rage · MUST
 
-It is angry as every boss with the hottest rage of World 2: a `curtain` and `spirals` at heat
-`rage_heat`, each at half the rate (green and purple fans over a purple ring, purple and magenta
-spirals).
+It is angry after each of its transformations, when the weapons that one revealed
+fire all out: the hangar and two mortars after the first, the two heavy cannons after the second.
+For `boss_rage_seconds` it fires only those, `boss_rage_rate` times as often, instead of its
+stage's pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it
+has no angry pattern of its own.
 
-*Sources: D-068.*
+**Acceptance criteria**
+- Given a transformation is over, then it is angry and fires only the weapons it revealed
+  (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
+
+*Sources: D-068, D-256.*
 
 #### FB-BOREAL-CITADEL-15 — First transformation: the bow opens · MUST
 
@@ -231,7 +238,7 @@ completes 2-5 and World 2.
 | battery_radius / battery_hp | 14 px / 1 700 | `BOREAL_PARTS.battery` |
 | dome_radius / dome_hp | 13 px / 2 150 | `BOREAL_PARTS.dome` |
 | bullets | green 185, purple 195, magenta 190 px/s | `GREEN`, `PURPLE`, `MAGENTA`; times the level's factors (2-5: 1.15) |
-| rage_heat | 7 (`curtain` green / purple + `spirals` purple / magenta, 0.5 share each) | `rage` |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformations | both domes; both batteries | `transformParts` |
 | door_swing | 0° → 75° about the `up` axis, hinge (±32, −40, 10) | `moving_region("bow-doors", 1, …, swing(…))` |
 | moving region `bow-doors` | the bow's panels: x 0…32 (mirrored), from y −40 to the deck's bow edge and nose (y −83.7 on the centre line), `shell` | `moving_region("bow-doors", 1, …)`; drawn in `src/game/view/bosses/world_2/boreal_citadel_armour.py` |

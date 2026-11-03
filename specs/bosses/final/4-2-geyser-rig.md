@@ -200,15 +200,18 @@ k parts destroyed; from the fifth on, its last pattern):
 
 #### FB-GEYSER-RIG-14 — Rage · MUST
 
-After the pause that follows each destroyed part, the Rig is angry: it fires a curtain (fans
-sweeping across the screen and back over a ring) at heat 11, in `orange` and `red`: about 108
-bullets a second at 208 px/s.
+It is angry after each of its transformations, when the weapons that one revealed
+fire all out: the two missile racks after the first, the two ring emitters after the second.
+For `boss_rage_seconds` it fires only those, `boss_rage_rate` times as often, instead of its
+stage's pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it
+has no angry pattern of its own.
 
 **Acceptance criteria**
-- Given a part is destroyed, when its pause is over, then the core fires the curtain for the rage
-  time (unit: `test_boss_rage.py`, `test_geyser_rig.py`).
+- Given a transformation is over, then it is angry and fires only the weapons it revealed
+  (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-088, D-063.*
+*Sources: D-088, D-063, D-256.*
 
 #### FB-GEYSER-RIG-15 — First transformation: back plating bursts off · MUST
 
@@ -308,7 +311,7 @@ All in `src/game/config/bosses/world_4/geyser_rig.py` (`GEYSER_RIG`) unless note
 | vent spirals | rings of 3, every 0.8 s, turn ±17°, first 0.6 / 1 s | stage volleys |
 | hangar | 2 Hornets every 7 s, first 3.5 s | `launches` |
 | bullets | `red` 210, `orange` 200, `magenta` 205, `purple` 195 px/s | radius 4 |
-| rage | curtain, heat 11 (`orange`, `red`) | `rage.curtain` |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformations | at 2, then 4 original parts destroyed | `src/game/sim/boss_build.py` `default_transforms` |
 | back region | x -27..27, y 26..70, `shell`, not mirrored; plating 7–8.5 px, the cooling tower on it | form 1, `geyser_rig_armour.py` |
 | wing regions | (14, -37), (29, -37), (41, -28), (41, 4), (14, 4) (mirrored), `wing`; plating 7–8.5 px, the pipe racks on it | form 2 |
@@ -322,6 +325,5 @@ All in `src/game/config/bosses/world_4/geyser_rig.py` (`GEYSER_RIG`) unless note
 
 - Phase 10 fight time with the D-055 bot: 100.7 s, before the hidden weapons (D-221). The vents were
   placed at ±35 px for the bot's spread (as D-081).
-- The design comment in the config still says "heat 9, as 3-5"; the heat used is 11 (D-088).
 - Its full health takes its place in World 4's boss ordering (P10-R12, see
   [World 4](../../worlds/world-4/world.md)).

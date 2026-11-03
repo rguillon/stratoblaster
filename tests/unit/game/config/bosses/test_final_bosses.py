@@ -24,19 +24,11 @@ def test_boss_20_final_boss_design_is_well_formed(design: Any) -> None:
 
 
 @pytest.mark.parametrize("design", FINAL_BOSSES, ids=lambda d: d.id)
-def test_boss_55_final_boss_is_tougher_than_a_mini_boss_and_has_an_angry_pattern(
+def test_boss_55_final_boss_is_tougher_than_a_mini_boss(
     design: Any,
 ) -> None:
-    """Also BOSS-28: it has an angry pattern."""
     assert design.stats["health"] >= 2000
-    assert design.rage
 
 
 def test_boss_01_final_bosses_have_distinct_ids() -> None:
     assert len({d.id for d in FINAL_BOSSES}) == len(FINAL_BOSSES)
-
-
-def test_real_bosses_angry_patterns_are_built_from_the_rage_record() -> None:
-    assert OVERLORD.rage
-    assert STORM_PETREL.rage
-    assert all(v["from"] == "core" for v in STORM_PETREL.rage)

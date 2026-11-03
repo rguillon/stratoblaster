@@ -10,7 +10,6 @@ earlier stage. Health (MB-MAGMA-SALAMANDER-08) tuned for WLD-4-22 with the D-055
 """
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import concat, record
 
@@ -100,8 +99,6 @@ FIN_Y = SALAMANDER_PARTS.fin[1]
 # the core fires aimed bursts from its jaws.
 _MAGMA_SALAMANDER = record({
     "id": "magma-salamander",
-    # Angry after each destroyed part (phase 7 review, D-063, MB-MAGMA-SALAMANDER-12).
-    "rage": rage.curtain(11, "orange", "red"),
     # Its core and parts, their health, and its points (MB-MAGMA-SALAMANDER-08,
     # MB-MAGMA-SALAMANDER-16).
     "stats": stats(

@@ -12,7 +12,6 @@ WLD-1-29), their full health going up from 1-1 to 1-5 (BOSS-55, WLD-1-27).
 import math
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import (
     armour_region,
     hidden_weapon,
@@ -48,8 +47,6 @@ CANNON = [
 # (MB-REEF-WARDEN-07).
 _REEF_WARDEN = record({
     "id": "reef-warden",
-    # Angry after each destroyed part (phase 7 review, MB-REEF-WARDEN-09).
-    "rage": rage.spirals(0, "orange", "red"),
     # Its points and its parts' drops (MB-REEF-WARDEN-11).
     "stats": stats({
         "id": "reef-warden",
@@ -91,8 +88,6 @@ _REEF_WARDEN = record({
 # (MB-BREAKWATER-07).
 _BREAKWATER = record({
     "id": "breakwater",
-    # Angry after each destroyed part (phase 7 review, MB-BREAKWATER-09).
-    "rage": rage.curtain(1, "red", "orange"),
     # Its points and its parts' drops (MB-BREAKWATER-11).
     "stats": stats({
         "id": "breakwater",
@@ -137,8 +132,6 @@ _BREAKWATER = record({
 # (MB-DUST-DEVIL-07).
 _DUST_DEVIL = record({
     "id": "dust-devil",
-    # Angry after each destroyed part (phase 7 review, MB-DUST-DEVIL-09).
-    "rage": rage.vortex(2, "green", "purple"),
     # Its points and its parts' drops (MB-DUST-DEVIL-11).
     "stats": stats({
         "id": "dust-devil",
@@ -242,8 +235,6 @@ def scorpion_arm(side: str) -> Any:
 # shots from below reach it); claws spread, the stinger fires a laser (MB-SCORPION-08).
 _SCORPION = record({
     "id": "scorpion",
-    # Angry after each destroyed part (phase 7 review, MB-SCORPION-10).
-    "rage": rage.flower(3, "purple", "blue"),
     # Its points and its parts' drops (MB-SCORPION-13).
     "stats": stats({
         "id": "scorpion",
@@ -294,8 +285,6 @@ _SCORPION = record({
 # (MB-SENTINEL-07).
 _SENTINEL = record({
     "id": "sentinel",
-    # Angry after each destroyed part (phase 7 review, MB-SENTINEL-09).
-    "rage": rage.curtain(4, "blue", "red"),
     # Its points and its parts' drops (MB-SENTINEL-11).
     "stats": stats({
         "id": "sentinel",

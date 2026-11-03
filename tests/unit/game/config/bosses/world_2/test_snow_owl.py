@@ -28,8 +28,6 @@ def test_mb_snow_owl_14_boss_stats_are_in_the_range_the_sim_relies_on() -> None:
     assert 0 < stats["coreRadius"] < stats["radius"]
 
 
-def test_mb_snow_owl_12_boss_has_an_angry_pattern_and_its_stage_count() -> None:
-    """Its rage, and one stage pattern more than its parts (MB-SNOW-OWL-11)."""
-    assert isinstance(SNOW_OWL.rage, list)
-    assert SNOW_OWL.rage
+def test_mb_snow_owl_12_boss_has_its_stage_count() -> None:
+    """One stage pattern more than its parts (MB-SNOW-OWL-11)."""
     assert len(SNOW_OWL.stages) == len(original_parts(SNOW_OWL)) + 1

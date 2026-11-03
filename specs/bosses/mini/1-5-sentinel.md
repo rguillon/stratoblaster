@@ -120,13 +120,17 @@ The hull guns' pairs and the bay's Hornets go on in every stage while they stand
 
 #### MB-SENTINEL-09 — Angry · MUST
 
-Its angry pattern is a **curtain** at heat 4 (blue fans sweeping across and back, a red ring under
-them), the densest of the World 1 mini bosses.
+It is angry after its transformation, when the two missile racks it revealed fire all out,
+for `boss_rage_seconds`, `boss_rage_rate` times as often, instead of its stage's
+pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it has no
+angry pattern of its own.
 
 **Acceptance criteria**
-- Given its design, then its rage is that pattern at that heat, fired from its core.
+- Given its transformation is over, then it is angry and fires only the two missile racks it
+  revealed (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-063.*
+*Sources: D-063, D-256.*
 
 #### MB-SENTINEL-10 — Transformation · MUST
 
@@ -171,7 +175,7 @@ All in `src/game/config/bosses/mini_bosses.py` (`_SENTINEL`, `SENTINEL`) unless 
 | core stage 1 | fan of 5, 14° apart, red, every 2.4 s | |
 | core stage 2 | fan of 7, 12° apart, blue, every 2.2 s | |
 | core stage 3 | ring of 14 turning 7°, red, every 1.3 s; fan of 5 blue every 2.6 s | |
-| angry | curtain, heat 4 (52 bullets a second, 152 px/s), blue and red | |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation | 2 parts destroyed | default threshold |
 | shed region | back: a lozenge x ±14 at the middle, y -24..28, `shell`, not mirrored; plating 4.2–10 px | |
 | racks | (∓12, -7), radius 8, health 620, pod 6.1 px; first 1.2 s / 2.0 s | |

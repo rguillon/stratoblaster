@@ -28,8 +28,6 @@ def test_fb_obsidian_golem_09_boss_stats_are_in_the_range_the_sim_relies_on() ->
     assert 0 < stats["coreRadius"] < stats["radius"]
 
 
-def test_fb_obsidian_golem_15_boss_has_an_angry_pattern_and_its_stage_count() -> None:
-    """Its rage, and one stage pattern more than its parts (FB-OBSIDIAN-GOLEM-13)."""
-    assert isinstance(OBSIDIAN_GOLEM.rage, list)
-    assert OBSIDIAN_GOLEM.rage
+def test_fb_obsidian_golem_15_boss_has_its_stage_count() -> None:
+    """One stage pattern more than its parts (FB-OBSIDIAN-GOLEM-13)."""
     assert len(OBSIDIAN_GOLEM.stages) == len(original_parts(OBSIDIAN_GOLEM)) + 1

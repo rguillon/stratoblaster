@@ -136,10 +136,17 @@ The last stage's ring is fired by no earlier stage.
 
 #### MB-FLOE-BREAKER-11 — Rage · MUST
 
-After the pause that follows each destroyed part it is angry as every boss, with a `curtain` at heat
-`rage_heat` (blue fans sweeping, a magenta ring under them): the mildest rage of World 2.
+It is angry after its transformation, when the two gatlings it revealed fire all out,
+for `boss_rage_seconds`, `boss_rage_rate` times as often, instead of its stage's
+pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it has no
+angry pattern of its own.
 
-*Sources: D-068.*
+**Acceptance criteria**
+- Given its transformation is over, then it is angry and fires only the two gatlings it
+  revealed (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
+
+*Sources: D-068, D-256.*
 
 #### MB-FLOE-BREAKER-12 — Transformation · MUST
 
@@ -173,7 +180,7 @@ boss parts do, its gatlings as hidden weapons do. It dies as every boss.
 | core_radius / core_hp | 18 px / 1 420 | `coreRadius`, `coreHealth` |
 | harpoon_radius / harpoon_hp | 13 px / 650 | `part("harpoon-left" …)` |
 | bullets | red 190, magenta 180, blue 185 px/s, radius 4 | `RED`, `MAGENTA`, `BLUE`; times the level's factors (2-1: 0.9) |
-| rage_heat | 2.5 (`curtain`, blue / magenta) | `rage` |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation | after 1 of 2 parts | `boss_build.default_transforms` |
 | weapon_radius / weapon_hp | 10 px / 520 | `FLOE_BREAKER`, `hidden_weapon("gatling-…")`; pod 12 px high |
 | region `back` | a plate either side of the ram, mirrored: x 13…22 at y −2, 23 at y −12, 17 at y −25, 7…10.5 at y −34, inner edge x 10 at y −20; plating 3–6 px; `shell` | `armour_region("back", 1, …)`; `src/game/view/bosses/world_2/floe_breaker_armour.py` |

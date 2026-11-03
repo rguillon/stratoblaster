@@ -25,8 +25,6 @@ def test_fb_dam_breaker_07_boss_stats_are_in_the_range_the_sim_relies_on() -> No
     assert 0 < stats["coreRadius"] < stats["radius"]
 
 
-def test_fb_dam_breaker_10_boss_has_an_angry_pattern_and_its_stage_count() -> None:
-    """Its rage, and one stage pattern more than its parts (FB-DAM-BREAKER-09)."""
-    assert isinstance(DAM_BREAKER.rage, list)
-    assert DAM_BREAKER.rage
+def test_fb_dam_breaker_10_boss_has_its_stage_count() -> None:
+    """One stage pattern more than its parts (FB-DAM-BREAKER-09)."""
     assert len(DAM_BREAKER.stages) == len(original_parts(DAM_BREAKER)) + 1

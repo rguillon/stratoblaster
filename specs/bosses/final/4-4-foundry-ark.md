@@ -216,16 +216,18 @@ family, an orange (about [1, 0.38, 0.12]) round a white-hot core.
 
 #### FB-FOUNDRY-ARK-15 — Rage · MUST
 
-After the pause that follows each destroyed part, the Ark is angry: it fires a curtain (fans
-sweeping across the screen and back over a ring) and two crossing spirals at once, at heat 13, each
-at half the rate (`orange` and `red`, `red` and `orange`): about 124 bullets a second in all, at
-224 px/s.
+It is angry after each of its transformations, when the weapons that one revealed
+fire all out: the two gun batteries after the first, the two gatlings and a drone hangar after the second.
+For `boss_rage_seconds` it fires only those, `boss_rage_rate` times as often, instead of its
+stage's pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it
+has no angry pattern of its own.
 
 **Acceptance criteria**
-- Given a part is destroyed, when its pause is over, then the core fires both angry patterns for the
-  rage time (unit: `test_boss_rage.py`, `test_foundry_ark.py`).
+- Given a transformation is over, then it is angry and fires only the weapons it revealed
+  (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-088, D-063.*
+*Sources: D-088, D-063, D-256.*
 
 #### FB-FOUNDRY-ARK-16 — First transformation: fore flank armour bursts off · MUST
 
@@ -331,7 +333,7 @@ All in `src/game/config/bosses/world_4/foundry_ark.py` (`FOUNDRY_ARK`) unless no
 | crucible spill | ring of 14 `orange`, 185 px/s | `breakRings`, `SPILL` |
 | slag blob | 115 px/s, radius 7, bursts after 1.1 s into 9 `red` at 195 px/s | `SLAG` |
 | bullets | `red` 215, `orange` 210, `magenta` 205, `purple` 200 px/s | radius 4 |
-| rage | curtain + spirals, heat 13, half each | `rage.curtain`, `rage.spirals` |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformations | at 2, then 4 original parts destroyed | `src/game/sim/boss_build.py` `default_transforms` |
 | fore flanks | the fore deck from x 20 to its edge (mirrored): (20, -78), (44.9, -78), (56, -60), (60, -20), (60.3, -13.5), (20, -13.5); `wing`; plate 4–5.5 px | form 1, `foundry_ark_armour.py` |
 | aft wings | the aft deck from x 30 to its edge (mirrored): (30, -13.5), (60.3, -13.5), (62, 40), (61.2, 45), (30, 45); `wing`; plate 4–5.5 px | form 2 |

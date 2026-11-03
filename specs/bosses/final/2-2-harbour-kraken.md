@@ -159,10 +159,18 @@ side of it. One pattern per stage:
 
 #### FB-HARBOUR-KRAKEN-12 — Rage · MUST
 
-It is angry as every boss with a `vortex` at heat `rage_heat` (one fast orange spiral, magenta
-bursts at the player).
+It is angry after each of its transformations, when the weapons that one revealed
+fire all out: the two gatlings after the first, the two gun batteries after the second.
+For `boss_rage_seconds` it fires only those, `boss_rage_rate` times as often, instead of its
+stage's pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it
+has no angry pattern of its own.
 
-*Sources: D-068.*
+**Acceptance criteria**
+- Given a transformation is over, then it is angry and fires only the weapons it revealed
+  (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
+
+*Sources: D-068, D-256.*
 
 #### FB-HARBOUR-KRAKEN-13 — First transformation: gatlings · MUST
 
@@ -212,7 +220,7 @@ do, its hidden weapons as hidden weapons do. It dies as every boss, and its deat
 | launches | 3 Hornets every 7 s, first at 3 s | `launches` |
 | bullets | red 190, magenta 185, orange 175 px/s | `RED`, `MAGENTA`, `ORANGE`; times the level's factors |
 | laser | 12 px wide, 1 s warning | `boss_kit.laser_of` |
-| rage_heat | 4 (`vortex`, orange / magenta) | `rage` |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformations | after 2 and 4 of 5 parts | `boss_build.default_transforms` |
 | t1_radius / t1_hp | 11 px / 720 | `hidden_weapon("gatling-…")`, pod 12.7 px high |
 | t2_radius / t2_hp | 11 px / 900 | `hidden_weapon("battery-…")`, pod 16.9 px high |

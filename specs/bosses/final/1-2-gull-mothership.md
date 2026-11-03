@@ -125,12 +125,18 @@ in every stage, more often from stage to stage, and:
 
 #### FB-GULL-MOTHERSHIP-09 — Angry · MUST
 
-Its angry pattern is a **vortex** at heat 1.5 (a fast green spiral, orange bursts at the player).
+It is angry after each of its transformations, when the weapons that one revealed
+fire all out: the two lances after the first, the two orbs after the second.
+For `boss_rage_seconds` it fires only those, `boss_rage_rate` times as often, instead of its
+stage's pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it
+has no angry pattern of its own.
 
 **Acceptance criteria**
-- Given its design, then its rage is that pattern at that heat, fired from its core.
+- Given a transformation is over, then it is angry and fires only the weapons it revealed
+  (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-063.*
+*Sources: D-063, D-256.*
 
 #### FB-GULL-MOTHERSHIP-10 — First transformation: lances · MUST
 
@@ -200,7 +206,7 @@ named.
 | core stage 2 | laser every 5.5 s; fan of 5, 14° apart, every 2.6 s | |
 | core stage 3 | laser every 5 s; ring of 8 every 2.2 s | |
 | core stage 4 | laser 1.6 s every 4.5 s; ring of 12 turning 9°, green, every 1.5 s | |
-| angry | vortex, heat 1.5 (32 bullets a second, 132 px/s), green and orange | |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformations | 2 and 3 parts destroyed | default thresholds |
 | flank region (shed) | the rear flank out to the rim: x 18..47 at y 6..30, then along the rim to (34, 48) and (18, 54.4), `wing`, mirrored; the plate 1.9-4 px, the bladders to 12.5 px | first |
 | wing region (shed) | the front flank out to the rim: x 22..47 at y 6..-20, then along the rim to (40, -32) and (33.1, -38), cut across at y -38, `wing`, mirrored; the plate 1.9-4 px | second |
