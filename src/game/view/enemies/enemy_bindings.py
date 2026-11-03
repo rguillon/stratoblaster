@@ -70,9 +70,9 @@ def merged_models() -> dict[str, object]:
 
 
 # The models of the enemies other enemies send out (PERF-21: built with every level's own): the
-# Carriers' and the bosses' Gnats, the bosses' Hornets, the Splitters' pods and the Hives'
-# Splitters.
-CHILD_MODELS = ["gnat", "hornet", "splitter", "splitter-pod", "wasp"]
+# Carriers' and the bosses' Hornets, the Splitters' pods, the Hatcheries' Wasps, the Hives'
+# Splitters and the Broodmothers' Phantoms.
+CHILD_MODELS = ["hornet", "splitter", "splitter-pod", "wasp", "phantom"]
 
 # How this game's enemies look. `set_living_motion` holds the living motion (ENM-42) still, a
 # debug toggle.

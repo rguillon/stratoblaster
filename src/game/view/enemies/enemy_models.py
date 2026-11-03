@@ -23,6 +23,8 @@ from game.view.enemies.small_enemy_models import (
 from game.view.enemies.tier2_harrier_model import build_harrier
 from game.view.enemies.tier2_hatchery_model import build_hatchery
 from game.view.enemies.tier2_sweeper_model import build_sweeper
+from game.view.enemies.tier3_broodmother_model import build_broodmother
+from game.view.enemies.tier3_prism_model import build_prism
 from game.view.enemies.veteran_models import VETERAN_MODELS
 
 ENEMY_MODELS = {
@@ -38,6 +40,8 @@ ENEMY_MODELS = {
     "harrier": build_harrier,
     "sweeper": build_sweeper,
     "hatchery": build_hatchery,
+    "prism": build_prism,
+    "broodmother": build_broodmother,
 }
 # `...VETERAN_MODELS, ...ELITE_MODELS`: the veteran and elite models follow.
 ENEMY_MODELS.update(VETERAN_MODELS)

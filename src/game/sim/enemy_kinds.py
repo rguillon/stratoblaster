@@ -9,11 +9,14 @@ from core.entities.enemy import EnemyKindDefinition
 from core.math.rng import random_in
 from game.config.enemies import ENEMY_CONFIG as C
 from game.config.enemies import ENEMY_SPAWN_MARGIN as MARGIN
+from game.config.enemy_broodmother import BROODMOTHER_CONFIG
 from game.config.enemy_harrier import HARRIER_CONFIG
 from game.config.enemy_hatchery import HATCHERY_CONFIG
+from game.config.enemy_prism import PRISM_CONFIG
 from game.config.enemy_sweeper import SWEEPER_CONFIG
 from game.config.enemy_tiers import all_kinds
 from game.sim.elite_kinds import ELITE_KINDS
+from game.sim.enemies.broodmother import Broodmother
 from game.sim.enemies.carrier import Carrier
 from game.sim.enemies.enemy_helpers import (
     clamp_entry,
@@ -25,6 +28,7 @@ from game.sim.enemies.harrier import Harrier
 from game.sim.enemies.hatchery import Hatchery
 from game.sim.enemies.hornet import Hornet, hornet_options
 from game.sim.enemies.lancer import Lancer
+from game.sim.enemies.prism import Prism
 from game.sim.enemies.rocketeer import Rocketeer
 from game.sim.enemies.scout import Scout
 from game.sim.enemies.spinner import Spinner
@@ -141,6 +145,15 @@ def _spawn_hatchery(area: EnemySpawnArea) -> list[Enemy]:
     return [Hatchery(_entry_x(area, HATCHERY_CONFIG.xRange), _top(area))]
 
 
+def _spawn_prism(area: EnemySpawnArea) -> list[Enemy]:
+    x = _entry_x(area, PRISM_CONFIG.xRange)
+    return [Prism(x, _top(area), PRISM_CONFIG.stopFraction * area.height)]
+
+
+def _spawn_broodmother(area: EnemySpawnArea) -> list[Enemy]:
+    return [Broodmother(_entry_x(area, BROODMOTHER_CONFIG.xRange), _top(area))]
+
+
 def _first_kinds() -> list[EnemyKindDefinition]:
     """Return the basic kinds still kept as they were (ENM-01)."""
     return [
@@ -155,6 +168,8 @@ def _first_kinds() -> list[EnemyKindDefinition]:
         EnemyKindDefinition("harrier", "Harrier", _spawn_harrier),
         EnemyKindDefinition("sweeper", "Sweeper", _spawn_sweeper),
         EnemyKindDefinition("hatchery", "Hatchery", _spawn_hatchery),
+        EnemyKindDefinition("prism", "Prism", _spawn_prism),
+        EnemyKindDefinition("broodmother", "Broodmother", _spawn_broodmother),
     ]
 
 
