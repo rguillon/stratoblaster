@@ -9,6 +9,9 @@ from core.entities.enemy import EnemyKindDefinition
 from core.math.rng import random_in
 from game.config.enemies import ENEMY_CONFIG as C
 from game.config.enemies import ENEMY_SPAWN_MARGIN as MARGIN
+from game.config.enemy_harrier import HARRIER_CONFIG
+from game.config.enemy_hatchery import HATCHERY_CONFIG
+from game.config.enemy_sweeper import SWEEPER_CONFIG
 from game.config.enemy_tiers import all_kinds
 from game.sim.elite_kinds import ELITE_KINDS
 from game.sim.enemies.carrier import Carrier
@@ -18,6 +21,8 @@ from game.sim.enemies.enemy_helpers import (
     pick_x,
     top_x,
 )
+from game.sim.enemies.harrier import Harrier
+from game.sim.enemies.hatchery import Hatchery
 from game.sim.enemies.hornet import Hornet, hornet_options
 from game.sim.enemies.lancer import Lancer
 from game.sim.enemies.rocketeer import Rocketeer
@@ -25,6 +30,7 @@ from game.sim.enemies.scout import Scout
 from game.sim.enemies.spinner import Spinner
 from game.sim.enemies.splitter import Splitter
 from game.sim.enemies.strafer import Strafer
+from game.sim.enemies.sweeper import Sweeper
 from game.sim.veteran_kinds import VETERAN_KINDS
 
 # isort: split
@@ -121,6 +127,20 @@ def _spawn_carrier(area: EnemySpawnArea) -> list[Enemy]:
     return [Carrier(_entry_x(area, C.carrier.xRange), _top(area))]
 
 
+def _spawn_harrier(area: EnemySpawnArea) -> list[Enemy]:
+    x = _entry_x(area, HARRIER_CONFIG.xRange)
+    return [Harrier(x, _top(area), HARRIER_CONFIG.stopFraction * area.height)]
+
+
+def _spawn_sweeper(area: EnemySpawnArea) -> list[Enemy]:
+    x = _entry_x(area, SWEEPER_CONFIG.xRange)
+    return [Sweeper(x, _top(area), SWEEPER_CONFIG.stopFraction * area.height)]
+
+
+def _spawn_hatchery(area: EnemySpawnArea) -> list[Enemy]:
+    return [Hatchery(_entry_x(area, HATCHERY_CONFIG.xRange), _top(area))]
+
+
 def _first_kinds() -> list[EnemyKindDefinition]:
     """Return the basic kinds still kept as they were (ENM-01)."""
     return [
@@ -132,6 +152,9 @@ def _first_kinds() -> list[EnemyKindDefinition]:
         EnemyKindDefinition("rocketeer", "Rocketeer", _spawn_rocketeer),
         EnemyKindDefinition("splitter", "Splitter", _spawn_splitter),
         EnemyKindDefinition("carrier", "Carrier", _spawn_carrier),
+        EnemyKindDefinition("harrier", "Harrier", _spawn_harrier),
+        EnemyKindDefinition("sweeper", "Sweeper", _spawn_sweeper),
+        EnemyKindDefinition("hatchery", "Hatchery", _spawn_hatchery),
     ]
 
 
