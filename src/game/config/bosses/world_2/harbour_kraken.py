@@ -156,7 +156,7 @@ _HARBOUR_KRAKEN = record({
     "stopFraction": 0.75,
     "sway": {"amplitude": 35, "period": 10},
     "bob": {"amplitude": 6, "period": 5},
-    "launches": [{"from": "container-bay", "kind": "gnats", "count": 3, "every": 7, "first": 3}],
+    "launches": [{"from": "container-bay", "kind": "hornets", "count": 3, "every": 7, "first": 3}],
     "guns": {
         "core": {"gun": BOW_GUNS, "laser": [BOW_LASER]},
         "crane-fore-left": {"gun": sided(GRAB_FORE, 1)},

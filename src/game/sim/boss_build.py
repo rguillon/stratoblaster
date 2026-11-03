@@ -125,12 +125,9 @@ def armed_pattern(design: ConfigRecord, volleys: list[ConfigRecord]) -> list[Bos
     return result
 
 
-def launch_volley(launch: ConfigRecord, side: int) -> BossVolley:
-    """Return the volley of a part's launch (BOSS-25: hangars, drone bays).
-
-    `side` is which side of the boss the part is on (-1 left, 1 right), for the Gnats' way out.
-    """
-    fire = launch_fire(launch.kind, launch.count, side)
+def launch_volley(launch: ConfigRecord) -> BossVolley:
+    """Return the volley of a part's launch (BOSS-25: hangars, drone bays)."""
+    fire = launch_fire(launch.count)
     return BossVolley(
         launch["from"],
         launch.every,

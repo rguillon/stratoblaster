@@ -5,14 +5,11 @@ They are in specs/enemies/*.md, with more armour and limbs than the basic kinds 
 GFX-ART-16).
 """
 
-from game.view.enemies.veteran_heavy_models import build_minelayer, build_mortar
-from game.view.enemies.veteran_mantis_model import build_mantis
+from game.view.enemies.veteran_heavy_models import build_mortar
 from game.view.enemies.veteran_small_models import build_phantom, build_wasp
 
 VETERAN_MODELS = {
     "wasp": build_wasp,
     "mortar": build_mortar,
-    "mantis": build_mantis,
     "phantom": build_phantom,
-    "minelayer": build_minelayer,
 }

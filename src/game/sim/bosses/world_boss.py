@@ -88,9 +88,7 @@ class WorldBoss(Boss):
         self._fighting = 0.0
         self._launches: list[Any] = []
         for launch in design.launches or []:
-            piece = self._by_id.get(launch["from"])
-            x: float = piece.spec.x if piece is not None else 1
-            self._launches.append(launch_volley(launch, _sign(x) or 1))
+            self._launches.append(launch_volley(launch))
         self._ringed: list[str] = []
         self._pattern = BossPattern(self._stage(0))
 

@@ -9,6 +9,7 @@ import math
 
 from core.entities.enemy import Enemy
 from game.config.enemy_look import ENEMY_LOOK
+from game.config.enemy_tiers import tier_look
 from game.view.enemies.enemy_engines import Reactor, add_reactors, add_rotors
 from game.view.enemies.enemy_materials import (
     body_color,
@@ -110,13 +111,14 @@ class Wing:
 
 
 class SurfaceMaterials:
-    """The materials of a model's surfaces."""
+    """The materials of a model's surfaces, and the hues its lights are drawn in (a tier's)."""
 
-    def __init__(self, hull: Any, flesh: Any, neon: Any, vein: Any) -> None:
+    def __init__(self, hull: Any, flesh: Any, neon: Any, vein: Any, hues: Any = None) -> None:
         self.hull = hull
         self.flesh = flesh
         self.neon = neon
         self.vein = vein
+        self.hues = hues
 
 
 class BuiltEnemyModel:
@@ -150,7 +152,9 @@ def add_surfaces(
     for geo, mat in [(parts.neon.geometry, mats.neon), (parts.vein.geometry, mats.vein)]:
         if len(geo.positions) == 0:
             continue
-        mesh_of(name + "-" + node_name(mat), in_enemy_family(geo), mat, scene).parent = root
+        mesh_of(
+            name + "-" + node_name(mat), in_enemy_family(geo, mats.hues), mat, scene
+        ).parent = root
 
 
 def flutter_animation(node: Any, side: float, span: float, clock: list[float]) -> Any:
@@ -268,8 +272,11 @@ def build_enemy_model(
     """
     if breath is None:
         breath = new_breath()
+    # ENM-48: an enemy of a tier is lit in its tier's hue, on a hull tinted in its tier's colour.
+    theme = tier_look(name)
+    hues = [theme.hue] if theme is not None else None
     # GFX-ART-05: every enemy's lights in the enemies' colour family.
-    charge_color = enemy_color(neon_color)
+    charge_color = enemy_color(neon_color, hues)
     collected = collect_parts(build)
     parts = collected["parts"]
     reactors = collected["reactors"]
@@ -279,18 +286,19 @@ def build_enemy_model(
     vein = unlit(name + "-vein", scene)
     # D-231: the body tinted and lit by the neon in the body shades (a green enemy's metal faintly
     # green, a yellow one's neutral: dark metal lit yellow turns khaki).
-    body_tint = body_color(charge_color)
+    body_tint = theme.hull if theme is not None else body_color(charge_color)
     mats = SurfaceMaterials(
         tinted_hull(scene, body_tint, False),
         tinted_hull(scene, body_tint, True),
         enemy_materials(scene).neon,
         vein,
+        hues,
     )
     root = new_transform_node(name, scene)
     body = new_transform_node(name + "-body", scene)
     body.parent = root
     clock = [0.0]
-    add_reactors(name, reactors, parts, root, neon_color)
+    add_reactors(name, reactors, parts, root, neon_color, hues)
     # The blades are matte (no highlight on the fan), not the shiny metal of the hull.
     dark = ENEMY_LOOK.hull.dark
     blades = matte_of(name + "-blades", color3(dark[0], dark[1], dark[2]), scene)

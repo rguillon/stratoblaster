@@ -6,13 +6,9 @@ import math
 from game.config.enemies import ENEMY_CONFIG
 from game.config.enemy_look import ENEMY_LOOK
 from game.view.enemies.enemy_mesh import build_enemy_model
-from game.view.enemies.enemy_shapes import SIDES, around, radial
+from game.view.enemies.enemy_shapes import around, radial
 from render.geometry.organic import (
-    SegmentedBody,
-    carapace,
-    curve,
     organ,
-    tendril,
 )
 from render.geometry.organic import (
     vein as vein_tube,
@@ -31,75 +27,6 @@ F = ENEMY_LOOK.flesh
 N = ENEMY_LOOK.neon
 WHITE = [1, 1, 1]  # type: list[float]
 QUARTER = math.pi / 2
-
-# ENM-BULWARK-02: the Bulwark's armour band along the front of its shell, and the visor.
-BULWARK_ARMOUR = [
-    [0, 13],
-    [12.5, 10.3],
-    [23, 1],
-    [19.5, -1],
-    [10.5, 6.5],
-    [0, 9],
-    [-10.5, 6.5],
-    [-19.5, -1],
-    [-23, 1],
-    [-12.5, 10.3],
-]
-BULWARK_VISOR = [  # type: list[list[float]]
-    [-7, 0.2],
-    [0, 3.3],
-    [7, 0.2],
-    [7, -0.6],
-    [0, 2.5],
-    [-7, -0.6],
-]
-
-
-def build_bulwark(scene: Any) -> Any:
-    """ENM-BULWARK-01: a heavy armoured beetle with a wide ridged carapace.
-
-    It has a metal armour band across its front with a neon visor slit (ENM-BULWARK-02; green,
-    ENM-BULWARK-04), mandibles, short legs, a twin cannon grafted on its head and three reactors
-    (ENM-BULWARK-03).
-    """
-
-    def draw(p: Any) -> None:
-        flesh = p.flesh
-        hull = p.hull
-        neon = p.neon
-        charge = p.charge
-        reactor = p.reactor
-        muzzle = p.muzzle
-        veins = p.vein
-        shell = SegmentedBody(-17, 15, 2, 27, -3, 5.4)
-        carapace(flesh, shell, [F.teal, F.sinew])
-        hull.bevel_slab(BULWARK_ARMOUR, [2.5, 2.5, 3.9], [0, 1.1], H.panel, None, H.base)
-        neon.slab(BULWARK_VISOR, [5.1, 5.8], N.bulwark, None)
-        vein_tube(veins, [[0, 5.6, -2], [0, 5, -12], [0, 3.6, -16]], 1.2, N.bulwark)
-        for s in SIDES:
-            tendril(
-                flesh,
-                curve([s * 6, 0, 13], [s * 2, 0.5, 18], [s * 4, 0, 1], 2),
-                [1.6, 0],
-                3,
-                F.bone,
-            )
-            for z in [4, -8]:
-                tendril(
-                    flesh,
-                    [[s * 22, -0.5, z], [s * 26.5, -1.5, z - 3]],
-                    [1.3, 0.6],
-                    3,
-                    F.sinew,
-                )
-            reactor([s * 12, -0.5, -20.5], 1.3)
-            # The twin cannon on its head, over the armour (phase 7 review).
-            hull.cylinder(0.9, 11, 5, H.dark, Placement([s * 3, 4.2, 2], 0, QUARTER), 0.75)
-            charge.cylinder(0.95, 1, 5, WHITE, Placement([s * 3, 4.2, 13], 0, QUARTER))
-            muzzle([s * 3, 4.2, 14], "gun")
-        reactor([0, 0, -17], 2.2)
-
-    return build_enemy_model("bulwark", scene, N.bulwark, draw)
 
 
 def splitter_pod_outline(offset: float, inner: float, outer: float) -> list[list[float]]:

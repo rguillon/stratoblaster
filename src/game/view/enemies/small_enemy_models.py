@@ -45,43 +45,6 @@ F = ENEMY_LOOK.flesh
 N = ENEMY_LOOK.neon
 QUARTER = math.pi / 2
 
-# ENM-GNAT-01: the Gnat's flat arrow, in the XZ plane (nose +Z), and how thick it is.
-GNAT_NOSE = 10.6
-GNAT_ARROW = [
-    [0, GNAT_NOSE],
-    [6.5, -1],
-    [6.5, -5.5],
-    [-6.5, -5.5],
-    [-6.5, -1],
-]  # type: list[list[float]]
-GNAT_THICKNESS = [-0.3, 0.3]
-# ENM-GNAT-02: the fan's centre on the arrow, and the duct around it (a lathe profile, around Y).
-GNAT_FAN = [0, 0.4, 1.0]
-GNAT_DUCT = [[4.3, -0.4], [4.9, 0], [4.3, 0.4], [4.3, -0.4]]  # type: list[list[float]]
-
-
-def build_gnat(scene: Any) -> Any:
-    """ENM-GNAT-01: a small drone shaped as a flat arrow, pointing forward.
-
-    One fan with a metal duct and a neon rim sits at the centre of the arrow (ENM-GNAT-02), two eyes
-    near its point, and one reactor at the back (ENM-GNAT-03). Green.
-    """
-
-    def draw(p: Any) -> None:
-        flesh = p.flesh
-        hull = p.hull
-        neon = p.neon
-        reactor = p.reactor
-        rotor = p.rotor
-        flesh.slab(GNAT_ARROW, GNAT_THICKNESS, F.graphite)
-        eye_pair(p, [0, 0.5, 7.0], 0.5, 0.45, N.gnat)
-        hull.lathe(GNAT_DUCT, 8, H.panel, Placement(GNAT_FAN), False)
-        neon.ring(5.1, 0.4, 8, N.gnat, Placement(GNAT_FAN))
-        rotor(GNAT_FAN, 4.0)
-        reactor([0, 0, -5.5], 1.1)
-
-    return build_enemy_model("gnat", scene, N.gnat, draw)
-
 
 def build_hornet(scene: Any) -> Any:
     """ENM-HORNET-01: a stinger diver, a wasp of three swollen segments.
@@ -226,62 +189,3 @@ def build_strafer(scene: Any) -> Any:
             gun_barrel(p, [s * 4.6, 1.5, 1.5], 3.6, s * QUARTER)
 
     return build_enemy_model("strafer", scene, N.strafer, draw)
-
-
-# ENM-WEAVER-01: the Weaver's web of flesh joining its two serpents, under the neon bar.
-WEAVER_WEB = [  # type: list[list[float]]
-    [-10, 6],
-    [0, 9],
-    [10, 6],
-    [10, -9],
-    [0, -11],
-    [-10, -9],
-]
-# ENM-WEAVER-07: how the Weaver rolls into a turn: radians of roll per radian/s of turn, the most
-# it rolls, and how fast it follows (per second).
-WEAVER_BANK = {"gain": 0.3, "max": 0.4, "follow": 6}
-
-
-def build_weaver(scene: Any) -> Any:
-    """ENM-WEAVER-01: a sine flyer, two serpents side by side.
-
-    Each has a swollen head and a wavy tail, joined by a big web of flesh under a glowing neon bar,
-    with a little wing on the outer side of each; a gun grafted on each snout and a reactor at each
-    tail (ENM-WEAVER-02); green (ENM-WEAVER-03). It rolls a little as it turns (ENM-WEAVER-07).
-    """
-
-    def draw(p: Any) -> None:
-        flesh = p.flesh
-        neon = p.neon
-        reactor = p.reactor
-        flesh.bevel_slab(WEAVER_WEB, [-1, -0.4, 0.2], [0.3, 0.6], F.membrane)
-        for s in SIDES:
-            at: list[float] = [s * 10, 0, 0]
-            head = SegmentedBody(-6, 15.5, 2, 2.6, -1.5, 2.6)
-            segmented_body(flesh, head, F.teal, Placement(at), LOBE_SECTION)
-            tail = [
-                [s * 10 + s * math.sin(i * 1.8) * 1.4, 0.4, z]
-                for i, z in enumerate([-6, -9, -12, -15])
-            ]
-            tendril(flesh, tail, [2, 1.2], 4, F.sinew)
-            eye_pair(p, [s * 10, 2, 11], 0.9, 0.4, N.weaver)
-            reactor([s * 10, 0, -15], 1.5)
-            # A gun along each serpent's snout (phase 7 review).
-            gun_barrel(p, [s * 10, 1.9, 8], 7)
-        wing_pair(
-            p,
-            {
-                "root": [12, 1],
-                "tips": [[15.5, -5], [14.5, -7], [12.5, -4]],
-                "y": 0.4,
-                "strut": 0.4,
-            },
-            N.weaver,
-        )
-        neon.slab(
-            [[pt[0] * 0.88, pt[1] * 0.5] for pt in WEAVER_WEB],
-            [0.2, 0.7],
-            N.weaver,
-        )
-
-    return build_enemy_model("weaver", scene, N.weaver, draw, None, WEAVER_BANK)

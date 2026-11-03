@@ -53,7 +53,7 @@ def aim_from(frm: Any, to: Any) -> float:
 def around(count: int, r: float, height: float) -> list[list[float]]:
     """`count` points `r` from the centre, evenly all around, the first one ahead of the nose.
 
-    Where the Orbiter's and the Hive's rings leave from (ENM-ORBITER-09, ENM-HIVE-10).
+    Where the Hive's rings leave from (ENM-HIVE-10).
     """
     return [
         [r * math.sin((2 * math.pi * k) / count), -r * math.cos((2 * math.pi * k) / count), height]
@@ -161,33 +161,6 @@ JUGGERNAUT_PLATES = [
     record({"id": "plate-left" if s < 0 else "plate-right", "x": s * 10, "y": -17}) for s in [-1, 1]
 ]
 
-# ENM-ORBITER-08, ENM-ORBITER-11: the Orbiter's drones, evenly around its core.
-ORBITER_DRONE = record({"orbit": 15.5, "radius": 5.5, "health": 40, "muzzleOut": 4.5, "height": 2})
-
-
-def orbiter_drones() -> list[Any]:
-    """Return the Orbiter's three drones, evenly around its core."""
-    drones: list[Any] = []
-    for i in range(3):
-        a = (2 * math.pi * i) / 3
-        sx = math.sin(a)
-        sy = math.cos(a)
-        out = ORBITER_DRONE.orbit + ORBITER_DRONE.muzzleOut
-        drones.append(
-            record({
-                "id": "drone-" + str(i),
-                "centre": [ORBITER_DRONE.orbit * sx, ORBITER_DRONE.orbit * sy],
-                # It faces out from the core.
-                "aim": a - math.pi,
-                "muzzle": [out * sx, out * sy, ORBITER_DRONE.height],
-                # The drones fire in turn, not all at once.
-                "firstShot": 1 + (2 * i) / 3,
-            })
-        )
-    return drones
-
-
-ORBITER_DRONES = orbiter_drones()
 
 ELITE_CONFIG = record({
     # ENM-HYDRA-11: health, points and hit circle.
@@ -230,44 +203,6 @@ ELITE_CONFIG = record({
             ],
         },
         "xRange": [0.3, 0.7],
-    },
-    # ENM-ORBITER-12: health, points and hit circle.
-    "orbiter": {
-        "stats": {"model": "orbiter", "radius": 12, "health": 160, "points": 650},
-        "size": 1.1,
-        # Radius of its spherical core.
-        "coreRadius": 12,
-        "entrySpeed": 120,
-        # It stops at a random height between these (the upper half).
-        "stopRange": [0.6, 0.78],
-        "stay": 8,
-        "exitSpeed": 140,
-        # How fast the drones orbit, degrees per second, clockwise on screen.
-        "spin": 100,
-        "ringInterval": 3,
-        "firstRing": 0.8,
-        "ringCount": 12,
-        "ringBullet": bullet("orange", 150),
-        # Its equator: each bullet of a ring leaves from the point facing its way.
-        "ringMuzzles": around(12, 12.5, 0),
-        "droneFireInterval": 2,
-        "droneBullet": bullet("orange", 200),
-        "drones": ORBITER_DRONES,
-        "design": {
-            "parts": [
-                {
-                    "id": d["id"],
-                    "x": d["centre"][0],
-                    "y": d["centre"][1],
-                    "radius": ORBITER_DRONE.radius,
-                    "health": ORBITER_DRONE.health,
-                    "orbits": True,
-                    "aim": d["aim"],
-                }
-                for d in ORBITER_DRONES
-            ],
-        },
-        "xRange": [0.25, 0.75],
     },
     # ENM-SCISSOR-14: health, points and hit circle.
     "scissor": {

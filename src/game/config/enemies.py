@@ -49,23 +49,6 @@ LANCER_NOSE = 0.62 * ENEMY_UNIT
 ROCKETEER_POD = 0.48 * ENEMY_UNIT
 
 ENEMY_CONFIG = record({
-    # ENM-GNAT-04 (a group of five on one S path), ENM-GNAT-06 (health and points).
-    "gnat": {
-        "stats": {"model": "gnat", "radius": radius(0.5), "health": 10, "points": 50},
-        "size": 0.5,
-        "groupSize": 5,
-        "groupDelay": 0.3,
-        "speed": 190,
-        # S-shaped path, as fractions of the playfield (x across, y up); mirrored at random.
-        "path": [
-            [0.75, 1.1],
-            [0.75, 0.85],
-            [0.25, 0.65],
-            [0.75, 0.4],
-            [0.25, 0.18],
-            [0.4, -0.15],
-        ],
-    },
     # ENM-HORNET-04 (entry and braking), ENM-HORNET-09 (health and points).
     "hornet": {
         "stats": {"model": "hornet", "radius": radius(0.7), "health": 20, "points": 100},
@@ -116,23 +99,6 @@ ENEMY_CONFIG = record({
             [9, -1.5, 1.5],
             [-9, -1.5, 1.5],
         ],
-    },
-    # ENM-WEAVER-06: health and points.
-    "weaver": {
-        "stats": {"model": "weaver", "radius": radius(0.9), "health": 30, "points": 120},
-        "size": 0.9,
-        "speed": 85,
-        "amplitude": 90,
-        # Distance travelled down for one full left-right sway.
-        "wavelength": 280,
-        "fireInterval": 2,
-        # A gun on the nose of each hull: a bullet from each (ENM-WEAVER-02).
-        "muzzles": [
-            [-10, -15.8, 1.9],
-            [10, -15.8, 1.9],
-        ],
-        "bullet": bullet("green", 200),
-        "xRange": [0.3, 0.7],
     },
     # ENM-SPINNER-07: health and points.
     "spinner": {
@@ -205,33 +171,6 @@ ENEMY_CONFIG = record({
             "style": "rocketeer",
         },
         "xRange": [0.2, 0.8],
-    },
-    # ENM-BULWARK-08: health and points.
-    "bulwark": {
-        "stats": {
-            "model": "bulwark",
-            "radius": radius(1.6) * 0.8,
-            "health": 200,
-            "points": 500,
-        },
-        "size": 1.6,
-        "entrySpeed": 70,
-        "stopFraction": 0.74,
-        "drift": 70,
-        # Seconds for one left-right drift.
-        "driftPeriod": 4,
-        "stay": 8,
-        "exitSpeed": 90,
-        "fireInterval": 2,
-        "spreadCount": 5,
-        "spreadSpacing": 10,
-        "bullet": bullet("blue", 190),
-        # The twin cannon on the front of its tower (ENM-BULWARK-03).
-        "muzzles": [
-            [-3, -14, 4.2],
-            [3, -14, 4.2],
-        ],
-        "xRange": [0.3, 0.7],
     },
     # ENM-SPLITTER-09: health and points.
     "splitter": {

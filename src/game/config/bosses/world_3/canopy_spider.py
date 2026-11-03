@@ -180,7 +180,7 @@ _CANOPY_SPIDER = record({
     "sway": {"amplitude": 30, "period": 11},
     "bob": {"amplitude": 6, "period": 5},
     # The egg sac launches Gnats, the legs fire aimed shots (FB-CANOPY-SPIDER-09).
-    "launches": [{"from": "egg-sac", "kind": "gnats", "count": 3, "every": 7, "first": 3}],
+    "launches": [{"from": "egg-sac", "kind": "hornets", "count": 3, "every": 7, "first": 3}],
     "guns": merge({"core": {"ring": SPIDER_CROWN}}, leg_guns()),
     # The legs' volleys, then the core's pattern per stage (FB-CANOPY-SPIDER-10).
     "stages": stages(

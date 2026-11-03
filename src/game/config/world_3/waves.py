@@ -1,167 +1,30 @@
 # Copyright (c) 2026 Renaud Guillon
-"""The wave scripts of World 3 (WLD-3-16, WLD-3-17).
+"""The wave scripts of World 3 (WLD-3-17, WLD-3-19), composed from its tier's kinds (ENM-49).
 
-Composed as World 2's (`compose_beats`, D-067): a beat every `gap` seconds shrinking over the level,
-each the next phrase of the level's cycle, its groups growing over the level; the World 1 filler
-(D-051) fills the lulls. A phrase is `[kind, groups, seconds between groups, side, position (0..1),
-spread]`. A veteran kind comes in at each level, from the Wasp in 3-1 to the Phantom in 3-5
-(WLD-3-15, D-090).
+See `game/config/wave_plans.py`: each level cycles through the phrases of the kinds World 3 uses
+(its tier's five), a beat every `gap` seconds shrinking over the level, its groups growing; the
+filler fills the lulls (D-051).
 """
 
-from game.config.record import record
+from game.config.wave_plans import PHRASE_LENGTH, compose_beats, level_plan, world_fillers
 
-# 3-1 (LVL-3-1-04): Gnats, Hornets, Scouts, Strafers, Weavers and Splitters skimming the canal
-# works.
-PLAN_3_1 = record({
-    "from": 4,
-    "to": 292,
-    "gap": [4.9, 3.5],
-    "growth": 0.7,
-    "phrases": [
-        ["scout", 4, 1, "top", 0.2, 0.25],
-        ["splitter", 2, 2, "top", 0.3, 0.4],
-        ["weaver", 4, 1.1, "top", 0.3, 0.2],
-        ["strafer", 3, 1.4, "left", 0.8],
-        ["hornet", 5, 0.7, "top", 0.15, 0.23],
-        ["gnat", 3, 1.6, "top", 0.3, 0.4],
-        ["splitter", 2, 2, "top", 0.7, -0.4],
-        ["scout", 4, 1, "top", 0.6, -0.2],
-        ["strafer", 3, 1.4, "right", 0.78],
-        ["weaver", 4, 1.1, "top", 0.6, -0.2],
-        # The first veteran kind (ENM-WASP-12).
-        ["wasp", 2, 1.6, "top", 0.4, 0.3],
-    ],
-})
+__all__ = [
+    "PHRASE_LENGTH",
+    "PLAN_3_1",
+    "PLAN_3_2",
+    "PLAN_3_3",
+    "PLAN_3_4",
+    "PLAN_3_5",
+    "WORLD_3_FILLERS",
+    "compose_beats",
+]
 
-# 3-2 (LVL-3-2-04): every kind, Hornet swarms diving over the docks and Lancers along the canal.
-PLAN_3_2 = record({
-    "from": 4,
-    "to": 292,
-    "gap": [5, 3.6],
-    "growth": 0.7,
-    "phrases": [
-        ["hornet", 6, 0.6, "top", 0.1, 0.25],
-        ["lancer", 2, 2, "top", 0.4, 0.2],
-        ["scout", 4, 1, "top", 0.15, 0.23],
-        ["hornet", 6, 0.6, "top", 0.9, -0.25],
-        ["spinner", 2, 2.5, "top", 0.3, 0.4],
-        ["lancer", 3, 1.6, "top", 0.5, -0.2],
-        ["carrier", 1, 0, "top", 0.5],
-        ["weaver", 4, 1.1, "top", 0.3, 0.2],
-        ["rocketeer", 1, 0, "top", 0.4],
-        ["hornet", 6, 0.6, "top", 0.2, 0.3],
-        ["splitter", 2, 2, "top", 0.7, -0.4],
-        ["bulwark", 1, 0, "top", 0.5],
-        ["strafer", 3, 1.4, "left", 0.8],
-        ["gnat", 3, 1.6, "top", 0.3, 0.4],
-        # The veteran kinds, the Mortar new (ENM-MORTAR-11).
-        ["wasp", 2, 1.6, "top", 0.6, -0.3],
-        ["mortar", 1, 0, "top", 0.35],
-    ],
-})
+PLAN_3_1 = level_plan(3, 1)
+PLAN_3_2 = level_plan(3, 2)
+PLAN_3_3 = level_plan(3, 3)
+PLAN_3_4 = level_plan(3, 4)
+PLAN_3_5 = level_plan(3, 5)
 
-# 3-3 (LVL-3-3-04): every kind, Spinner and Rocketeer groups over the workers' quarter.
-PLAN_3_3 = record({
-    "from": 4,
-    "to": 292,
-    "gap": [4.6, 3.1],
-    "growth": 0.6,
-    "phrases": [
-        ["spinner", 3, 2, "top", 0.25, 0.5],
-        ["rocketeer", 2, 2.2, "top", 0.3, 0.4],
-        ["scout", 4, 1, "top", 0.15, 0.23],
-        ["spinner", 2, 2.2, "top", 0.7, -0.4],
-        ["lancer", 2, 2, "top", 0.25, 0.5],
-        ["rocketeer", 2, 2, "top", 0.7, -0.4],
-        ["weaver", 4, 1.1, "top", 0.3, 0.2],
-        ["bulwark", 1, 0, "top", 0.4],
-        ["splitter", 2, 2, "top", 0.3, 0.4],
-        ["carrier", 1, 0, "top", 0.6],
-        ["strafer", 3, 1.4, "right", 0.8],
-        ["hornet", 5, 0.6, "top", 0.1, 0.2],
-        ["gnat", 3, 1.6, "top", 0.3, 0.4],
-        # The veteran kinds, the Minelayer new (ENM-MINELAYER-11).
-        ["wasp", 2, 1.6, "top", 0.3, 0.3],
-        ["mortar", 1, 0, "top", 0.65],
-        ["minelayer", 1, 0, "right", 0.72],
-    ],
-})
-
-# 3-4 (LVL-3-4-04): every kind, Carriers over the suburbs.
-PLAN_3_4 = record({
-    "from": 4,
-    "to": 292,
-    "gap": [3.6, 2.6],
-    "growth": 0.6,
-    "phrases": [
-        ["carrier", 1, 0, "top", 0.35],
-        ["scout", 4, 1, "top", 0.15, 0.23],
-        ["rocketeer", 2, 2, "top", 0.3, 0.4],
-        ["rocketeer", 2, 2, "top", 0.65, -0.3],
-        ["lancer", 3, 1.6, "top", 0.2, 0.3],
-        ["spinner", 2, 2.2, "top", 0.7, -0.4],
-        ["bulwark", 1, 0, "top", 0.5],
-        ["weaver", 4, 1, "top", 0.2, 0.2],
-        ["carrier", 1, 0, "top", 0.5],
-        ["splitter", 3, 1.5, "top", 0.2, 0.3],
-        ["strafer", 3, 1.4, "left", 0.8],
-        ["hornet", 6, 0.6, "top", 0.1, 0.2],
-        ["gnat", 3, 1.5, "top", 0.2, 0.3],
-        # The veteran kinds, the Mantis new (ENM-MANTIS-14).
-        ["wasp", 2, 1.6, "top", 0.7, -0.3],
-        ["mortar", 1, 0, "top", 0.4],
-        ["minelayer", 1, 0, "left", 0.74],
-        ["mantis", 1, 0, "top", 0.5],
-    ],
-})
-
-# 3-5 (LVL-3-5-04): every kind, the heaviest mixes: Bulwarks escorting Carriers.
-PLAN_3_5 = record({
-    "from": 4,
-    "to": 292,
-    "gap": [3.6, 2.8],
-    "growth": 0.6,
-    "phrases": [
-        ["bulwark", 1, 0, "top", 0.3],
-        ["carrier", 1, 0, "top", 0.5],
-        ["bulwark", 1, 0, "top", 0.7],
-        ["scout", 5, 0.9, "top", 0.15, 0.23],
-        ["rocketeer", 3, 1.8, "top", 0.3, 0.4],
-        ["lancer", 3, 1.5, "top", 0.2, 0.3],
-        ["spinner", 3, 2, "top", 0.7, -0.4],
-        ["bulwark", 2, 2.5, "top", 0.3, 0.4],
-        ["carrier", 1, 0, "top", 0.4],
-        ["weaver", 5, 0.9, "top", 0.2, 0.2],
-        ["splitter", 3, 1.4, "top", 0.2, 0.3],
-        ["strafer", 3, 1.4, "right", 0.8],
-        ["hornet", 6, 0.55, "top", 0.1, 0.2],
-        ["gnat", 3, 1.4, "top", 0.2, 0.3],
-        # The five veteran kinds, the Phantom new (ENM-PHANTOM-14).
-        ["wasp", 2, 1.6, "top", 0.3, 0.3],
-        ["mortar", 1, 0, "top", 0.6],
-        ["minelayer", 1, 0, "right", 0.74],
-        ["mantis", 1, 0, "top", 0.4],
-        ["phantom", 1, 0, "top", 0.6],
-    ],
-})
-
-# The filler of each level (D-051), from the light kinds the level may use (WLD-3-16).
-WORLD_3_FILLERS = record({
-    "3-1": {"kinds": ["hornet", "scout", "gnat", "weaver", "splitter"], "maxGap": [3, 2]},
-    "3-2": {
-        "kinds": ["hornet", "gnat", "weaver", "hornet", "scout", "splitter", "spinner"],
-        "maxGap": [2.9, 1.9],
-    },
-    "3-3": {
-        "kinds": ["gnat", "weaver", "hornet", "scout", "splitter", "spinner"],
-        "maxGap": [2.8, 1.8],
-    },
-    "3-4": {
-        "kinds": ["gnat", "weaver", "hornet", "scout", "splitter", "spinner"],
-        "maxGap": [2.7, 1.7],
-    },
-    "3-5": {
-        "kinds": ["gnat", "weaver", "hornet", "scout", "splitter", "spinner"],
-        "maxGap": [2.6, 1.5],
-    },
-})
+# The filler of each level (LVL-3-1-09 … LVL-3-5-09), from the level's divers and shooters; each
+# level is fuller per minute than the one before (WLD-3-20).
+WORLD_3_FILLERS = world_fillers(3)

@@ -122,8 +122,8 @@ _GULL_MOTHERSHIP = record({
     "sway": {"amplitude": 40, "period": 9},
     "bob": {"amplitude": 8, "period": 4.5},
     "launches": [
-        {"from": "hangar-left", "kind": "gnats", "count": 3, "every": 7, "first": 2.5},
-        {"from": "hangar-right", "kind": "gnats", "count": 3, "every": 7, "first": 6},
+        {"from": "hangar-left", "kind": "hornets", "count": 3, "every": 7, "first": 2.5},
+        {"from": "hangar-right", "kind": "hornets", "count": 3, "every": 7, "first": 6},
     ],
     # Its guns' muzzles (FB-GULL-MOTHERSHIP-03).
     "guns": {

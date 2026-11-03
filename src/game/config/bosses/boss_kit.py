@@ -12,7 +12,7 @@ to `amplitude`, less when its parts would leave the ship's reach, BOSS-10, and b
 `stages[k]` once `k` parts are destroyed, BOSS-20), `rage` (its angry pattern, optional, see
 `boss_rage.py`: a bullet hell it fires for `BOSS_TIMING.rageSeconds` after the pause that follows
 each destroyed part), `launches` (optional: enemies some parts launch in every stage while they
-stand, a hangar's Gnats, a bay's Hornets: `count` of `kind` every `every` seconds),
+stand, a hangar's and a bay's Hornets: `count` of `kind` every `every` seconds),
 `breakRings` (optional: a ring of bullets some parts burst into when destroyed, the Refinery
 Titan's tanks) and `guns` (the muzzles of the guns of its core and parts, by piece: a part id or
 `core`; where their shots leave from, phase 7 review; its model draws its barrels' tips there).

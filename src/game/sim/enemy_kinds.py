@@ -9,8 +9,8 @@ from core.entities.enemy import EnemyKindDefinition
 from core.math.rng import random_in
 from game.config.enemies import ENEMY_CONFIG as C
 from game.config.enemies import ENEMY_SPAWN_MARGIN as MARGIN
+from game.config.enemy_tiers import all_kinds
 from game.sim.elite_kinds import ELITE_KINDS
-from game.sim.enemies.bulwark import Bulwark
 from game.sim.enemies.carrier import Carrier
 from game.sim.enemies.enemy_helpers import (
     clamp_entry,
@@ -19,7 +19,6 @@ from game.sim.enemies.enemy_helpers import (
     playfield_path,
     top_x,
 )
-from game.sim.enemies.gnat import Gnat
 from game.sim.enemies.hornet import Hornet, hornet_options
 from game.sim.enemies.lancer import Lancer
 from game.sim.enemies.rocketeer import Rocketeer
@@ -27,7 +26,6 @@ from game.sim.enemies.scout import Scout
 from game.sim.enemies.spinner import Spinner
 from game.sim.enemies.splitter import Splitter
 from game.sim.enemies.strafer import Strafer
-from game.sim.enemies.weaver import Weaver
 from game.sim.veteran_kinds import VETERAN_KINDS
 
 # isort: split
@@ -86,11 +84,6 @@ def side_pass(area: EnemySpawnArea, height_fraction: float) -> tuple[bool, float
     return (_coin(area), height_fraction * area.height)
 
 
-def _spawn_gnat(area: EnemySpawnArea) -> list[Enemy]:
-    path = playfield_path(C.gnat.path, area, _mirror_for(area, C.gnat.path[0][0]))
-    return [Gnat(path, i * C.gnat.groupDelay) for i in range(C.gnat.groupSize)]
-
-
 def _spawn_hornet(area: EnemySpawnArea) -> list[Enemy]:
     x = _entry_x(area, C.hornet.xRange)
     return [Hornet(x, _top(area), hornet_options(C.hornet, C.hornet.stopFraction * area.height))]
@@ -104,10 +97,6 @@ def _spawn_strafer(area: EnemySpawnArea) -> list[Enemy]:
     left, y = side_pass(area, C.strafer.heightFraction)
     x = -MARGIN if left else area.width + MARGIN
     return [Strafer(x, y, "left" if left else "right")]
-
-
-def _spawn_weaver(area: EnemySpawnArea) -> list[Enemy]:
-    return [Weaver(_entry_x(area, C.weaver.xRange), _top(area))]
 
 
 def _spawn_spinner(area: EnemySpawnArea) -> list[Enemy]:
@@ -124,11 +113,6 @@ def _spawn_rocketeer(area: EnemySpawnArea) -> list[Enemy]:
     return [Rocketeer(_entry_x(area, C.rocketeer.xRange), _top(area))]
 
 
-def _spawn_bulwark(area: EnemySpawnArea) -> list[Enemy]:
-    x = _entry_x(area, C.bulwark.xRange)
-    return [Bulwark(x, _top(area), C.bulwark.stopFraction * area.height)]
-
-
 def _spawn_splitter(area: EnemySpawnArea) -> list[Enemy]:
     mirror = _mirror_for(area, C.splitter.path[0][0])
     return [Splitter(playfield_path(C.splitter.path, area, mirror))]
@@ -139,17 +123,14 @@ def _spawn_carrier(area: EnemySpawnArea) -> list[Enemy]:
 
 
 def _first_kinds() -> list[EnemyKindDefinition]:
-    """Return the 11 basic enemy kinds, in the order of the spec (ENM-01)."""
+    """Return the basic kinds still kept as they were (ENM-01)."""
     return [
-        EnemyKindDefinition("gnat", "Gnat", _spawn_gnat),
         EnemyKindDefinition("hornet", "Hornet", _spawn_hornet),
         EnemyKindDefinition("scout", "Scout", _spawn_scout),
         EnemyKindDefinition("strafer", "Strafer", _spawn_strafer),
-        EnemyKindDefinition("weaver", "Weaver", _spawn_weaver),
         EnemyKindDefinition("spinner", "Spinner", _spawn_spinner),
         EnemyKindDefinition("lancer", "Lancer", _spawn_lancer),
         EnemyKindDefinition("rocketeer", "Rocketeer", _spawn_rocketeer),
-        EnemyKindDefinition("bulwark", "Bulwark", _spawn_bulwark),
         EnemyKindDefinition("splitter", "Splitter", _spawn_splitter),
         EnemyKindDefinition("carrier", "Carrier", _spawn_carrier),
     ]
@@ -159,12 +140,12 @@ FIRST_KINDS = _first_kinds()
 
 
 def _all_kinds() -> list[EnemyKindDefinition]:
-    """Every enemy kind of the game: the eleven basic ones, then the veteran and elite kinds."""
-    kinds: list[EnemyKindDefinition] = []
-    kinds.extend(FIRST_KINDS)
-    kinds.extend(VETERAN_KINDS)
-    kinds.extend(ELITE_KINDS)
-    return kinds
+    """Every enemy kind of the game, tier 1 first, each tier in the order of its roles (ENM-01)."""
+    by_id: dict[str, EnemyKindDefinition] = {}
+    for group in [FIRST_KINDS, VETERAN_KINDS, ELITE_KINDS]:
+        for kind in group:
+            by_id[kind.id] = kind
+    return [by_id[kind_id] for kind_id in all_kinds() if kind_id in by_id]
 
 
 ENEMY_KINDS = _all_kinds()

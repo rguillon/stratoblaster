@@ -6,9 +6,7 @@ boss launch is its boss file's (`specs/bosses/`).
 """
 
 from core.entities.enemy import Enemy
-from core.systems.enemy_motion import Path
 from game.config.enemies import ENEMY_CONFIG
-from game.sim.enemies.gnat import Gnat
 from game.sim.enemies.hornet import Hornet, hornet_options
 
 # isort: split
@@ -17,20 +15,6 @@ from game.sim.enemies.hornet import Hornet, hornet_options
 from collections.abc import Callable
 
 # __pragma__ ("noskip")
-
-
-GNATS = ENEMY_CONFIG.gnat
-CARRIER = ENEMY_CONFIG.carrier
-
-
-def _gnats(count: int, side: int) -> Callable[[float, float], list[Enemy]]:
-    """Gnats leaving a hangar: out to its side (the side of the boss it is on), then down."""
-
-    def launch(x: float, y: float) -> list[Enemy]:
-        path = Path([[x + side * point[0], y + point[1]] for point in CARRIER.launchPath])
-        return [Gnat(path, i * GNATS.groupDelay) for i in range(count)]
-
-    return launch
 
 
 def _hornets(count: int) -> Callable[[float, float], list[Enemy]]:
@@ -49,12 +33,6 @@ def _hornets(count: int) -> Callable[[float, float], list[Enemy]]:
     return launch
 
 
-def launch_fire(kind: str, count: int, side: int) -> Callable[[float, float], list[Enemy]]:
-    """Return what a part's launch of `count` enemies of `kind` sends out from (x, y).
-
-    `kind` is 'gnats' or 'hornets'. `side` is which side of the boss the part is on (-1 left, 1
-    right), for the Gnats' way out.
-    """
-    if kind == "gnats":
-        return _gnats(count, side or 1)
+def launch_fire(count: int) -> Callable[[float, float], list[Enemy]]:
+    """Return what a part's launch of `count` Hornets sends out from (x, y)."""
     return _hornets(count)
