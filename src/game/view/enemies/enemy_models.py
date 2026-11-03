@@ -23,6 +23,8 @@ from game.view.enemies.small_enemy_models import (
     build_strafer,
     build_weaver,
 )
+from game.view.enemies.tier3_broodmother_model import build_broodmother
+from game.view.enemies.tier3_prism_model import build_prism
 from game.view.enemies.veteran_models import VETERAN_MODELS
 
 ENEMY_MODELS = {
@@ -38,6 +40,8 @@ ENEMY_MODELS = {
     "splitter": build_splitter,
     "splitter-pod": build_splitter_pod,
     "carrier": build_carrier,
+    "prism": build_prism,
+    "broodmother": build_broodmother,
 }
 # `...VETERAN_MODELS, ...ELITE_MODELS`: the veteran and elite models follow.
 ENEMY_MODELS.update(VETERAN_MODELS)

@@ -9,7 +9,10 @@ from core.entities.enemy import EnemyKindDefinition
 from core.math.rng import random_in
 from game.config.enemies import ENEMY_CONFIG as C
 from game.config.enemies import ENEMY_SPAWN_MARGIN as MARGIN
+from game.config.enemy_broodmother import BROODMOTHER_CONFIG
+from game.config.enemy_prism import PRISM_CONFIG
 from game.sim.elite_kinds import ELITE_KINDS
+from game.sim.enemies.broodmother import Broodmother
 from game.sim.enemies.bulwark import Bulwark
 from game.sim.enemies.carrier import Carrier
 from game.sim.enemies.enemy_helpers import (
@@ -22,6 +25,7 @@ from game.sim.enemies.enemy_helpers import (
 from game.sim.enemies.gnat import Gnat
 from game.sim.enemies.hornet import Hornet, hornet_options
 from game.sim.enemies.lancer import Lancer
+from game.sim.enemies.prism import Prism
 from game.sim.enemies.rocketeer import Rocketeer
 from game.sim.enemies.scout import Scout
 from game.sim.enemies.spinner import Spinner
@@ -138,6 +142,15 @@ def _spawn_carrier(area: EnemySpawnArea) -> list[Enemy]:
     return [Carrier(_entry_x(area, C.carrier.xRange), _top(area))]
 
 
+def _spawn_prism(area: EnemySpawnArea) -> list[Enemy]:
+    x = _entry_x(area, PRISM_CONFIG.xRange)
+    return [Prism(x, _top(area), PRISM_CONFIG.stopFraction * area.height)]
+
+
+def _spawn_broodmother(area: EnemySpawnArea) -> list[Enemy]:
+    return [Broodmother(_entry_x(area, BROODMOTHER_CONFIG.xRange), _top(area))]
+
+
 def _first_kinds() -> list[EnemyKindDefinition]:
     """Return the 11 basic enemy kinds, in the order of the spec (ENM-01)."""
     return [
@@ -152,6 +165,8 @@ def _first_kinds() -> list[EnemyKindDefinition]:
         EnemyKindDefinition("bulwark", "Bulwark", _spawn_bulwark),
         EnemyKindDefinition("splitter", "Splitter", _spawn_splitter),
         EnemyKindDefinition("carrier", "Carrier", _spawn_carrier),
+        EnemyKindDefinition("prism", "Prism", _spawn_prism),
+        EnemyKindDefinition("broodmother", "Broodmother", _spawn_broodmother),
     ]
 
 
