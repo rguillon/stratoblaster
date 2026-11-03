@@ -19,12 +19,11 @@ def probe(monkeypatch: Any) -> Any:
     return run
 
 
-def test_enm_gnat_01_gnat_is_a_pointed_drone_with_one_fan_and_a_reactor(probe: Any) -> None:
-    """Also ENM-GNAT-02 (one fan) and ENM-GNAT-03 (one reactor at the rear)."""
+def test_enm_gnat_01_gnat_is_a_fan_drone_with_a_reactor_at_the_rear(probe: Any) -> None:
+    """Also ENM-GNAT-03 (one reactor at the rear)."""
     capture, body = probe(module.build_gnat)
     assert capture.name == "gnat"
     assert capture.neon == ENEMY_LOOK.neon.gnat
-    # One fan on the back, one reactor at the rear, and no wing.
     assert len(body["rotors"]) == 1
     assert len(body["reactors"]) == 1
     assert body["reactors"][0].at[2] < 0
@@ -32,19 +31,18 @@ def test_enm_gnat_01_gnat_is_a_pointed_drone_with_one_fan_and_a_reactor(probe: A
     assert len(body["parts"].flesh.geometry.positions) > 0
 
 
-def test_enm_gnat_02_gnat_fan_sits_at_the_centre_of_its_back(probe: Any) -> None:
+def test_enm_gnat_02_gnat_fan_is_centred_and_lies_flat(probe: Any) -> None:
     _capture, body = probe(module.build_gnat)
     (fan,) = body["rotors"]
-    # Centred across the body, above its spine (the fan turns around +Y).
-    assert fan.at[0] == pytest.approx(0)
-    assert fan.at[1] > module.GNAT_BODY.top
+    # Centred on the body, in its plane (the fan turns around +Y, so it reads as a disc from above).
+    assert fan.at == pytest.approx([0, 0, 0])
 
 
 def test_enm_gnat_01_gnat_nose_is_a_point_ahead_of_the_eyes(probe: Any) -> None:
-    """The body is pointed at its nose (ENM-GNAT-01): its nose is the front-most point."""
+    """The nose cone is the front-most point of the body (ENM-GNAT-01)."""
     _capture, body = probe(module.build_gnat)
     zs = body["parts"].flesh.geometry.positions[2::3]
-    assert max(zs) == pytest.approx(module.GNAT_BODY.nose)
+    assert max(zs) == pytest.approx(module.GNAT_NOSE)
 
 
 def test_enm_hornet_01_hornet_is_a_stinger_with_two_wings_and_a_gun_free_nose(probe: Any) -> None:

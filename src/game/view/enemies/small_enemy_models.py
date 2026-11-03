@@ -45,17 +45,19 @@ F = ENEMY_LOOK.flesh
 N = ENEMY_LOOK.neon
 QUARTER = math.pi / 2
 
-# ENM-GNAT-02: the duct around the Gnat's single fan (a metal graft, lathe profile).
+# ENM-GNAT-02: the duct around the Gnat's fan, which is its body (a lathe profile, around Y).
 GNAT_DUCT = [[3.9, -0.5], [4.5, 0], [3.9, 0.5], [3.9, -0.5]]  # type: list[list[float]]
-# ENM-GNAT-01: the Gnat's body, a long bulb pointed at both ends (the nose is the point).
-GNAT_BODY = SegmentedBody(-6.0, 10.5, 2, 3.0, -1.4, 2.2, closed=[True, True])
+# ENM-GNAT-01: the pointed nose cone, standing on the duct's front edge and tipped at GNAT_NOSE.
+GNAT_NOSE_BASE = 4.0
+GNAT_NOSE = 10.6
 
 
 def build_gnat(scene: Any) -> Any:
-    """ENM-GNAT-01: a small insect drone, a pointed flesh body with a head and two eyes.
+    """ENM-GNAT-01: a small drone that is mainly a ducted fan, with a pointed nose.
 
-    One ducted fan at the centre of its back (ENM-GNAT-02), a neon band around its middle, and a
-    feeler on its back; green with one reactor at the rear (ENM-GNAT-03).
+    The fan is centred and lies flat, its duct the drone's body with a neon rim (ENM-GNAT-02). A
+    cone points forward from the duct's front, with two eyes on it, and one reactor sits at the
+    rear (ENM-GNAT-03). Green.
     """
 
     def draw(p: Any) -> None:
@@ -64,16 +66,19 @@ def build_gnat(scene: Any) -> Any:
         neon = p.neon
         reactor = p.reactor
         rotor = p.rotor
-        segmented_body(flesh, GNAT_BODY, F.graphite)
-        eye_pair(p, [0, 0.6, 6.4], 0.6, 0.45, N.gnat)
-        neon.ring(2.0, 0.5, 6, N.gnat, Placement([0, 0.4, 2.2], 0, QUARTER))
-        # The fan stands on the spine, its duct on the body, its blades turning around +Y.
-        hull.lathe(GNAT_DUCT, 6, H.panel, Placement([0, 2.6, 1.0]), False)
-        rotor([0, 2.6, 1.0], 3.3)
-        tendril(
-            flesh, curve([-0.8, 1, -1.6], [-1.6, 2.6, -3], [0, 0.4, 0], 2), [0.25, 0], 3, F.bone
+        hull.lathe(GNAT_DUCT, 8, H.panel, None, False)
+        neon.ring(4.7, 0.5, 8, N.gnat)
+        rotor([0, 0, 0], 3.6)
+        flesh.cylinder(
+            2.4,
+            GNAT_NOSE - GNAT_NOSE_BASE,
+            6,
+            F.graphite,
+            Placement([0, 0, GNAT_NOSE_BASE], 0, QUARTER),
+            0,
         )
-        reactor([0, 0.2, -6.0], 0.9)
+        eye_pair(p, [0, 0.4, 6.6], 0.5, 0.45, N.gnat)
+        reactor([0, 0, -4.4], 1.1)
 
     return build_enemy_model("gnat", scene, N.gnat, draw)
 
