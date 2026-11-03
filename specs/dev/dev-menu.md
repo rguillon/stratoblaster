@@ -350,7 +350,8 @@ or boss is shown (the picked one is filled):
 - **Game view**: on the game's playfield as in a level, at game size (Enter's close-up and the drag
   do not apply; the wheel still zooms): the enemy (or boss) comes in where its kind brings it in
   and moves where its moves take it, in a world as a level's with the player at the bottom middle
-  (nothing hits the player, whose ship is not drawn). What it fires (bullets, missiles, lasers),
+  (nothing hits the player, whose ship is not drawn), whose shots leave from where the camera sees
+  each barrel, raised or not, as in a level (GFX-SHOT-09). What it fires (bullets, missiles, lasers),
   sends out (an enemy's carried or launched enemies) and what blows up are drawn. Once no enemy of
   the world is left, a new one of the kind comes in. K (bosses) breaks the boss's next part.
 

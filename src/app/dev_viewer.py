@@ -29,6 +29,7 @@ from core.systems.enemy_world import EnemyBlast, EnemyWorld, EnemyWorldOptions
 from render.babylon import dispose_node, get_hierarchy_bounding_vectors
 from render.enemy_layer import EnemyLayer
 from render.game_view import EnemyShotFrame
+from render.scenery.playfield_framing import playfield_eye
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -388,6 +389,8 @@ class DevViewer:
             screen.height,
             GAME_PLAY_CONFIG.cull_margin,
             GAME_PLAY_CONFIG.max_enemy_age,
+            # Shots leave from where the camera sees the barrels, as in a level (GFX-SHOT-09).
+            playfield_eye(screen, self._view.stage.framing),
         )
         world = EnemyWorld(options, create_rng(int(CFG.model_seed)))
         world.player_x = screen.width / 2

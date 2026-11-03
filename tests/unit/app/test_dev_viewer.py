@@ -678,3 +678,13 @@ def test_dev_menu_21_the_ships_have_no_views() -> None:
     v.show(0, toggle=True, mode=2)
     v.frame(0)
     assert v._world is None
+
+
+@pytest.mark.usefixtures("env")
+def test_dev_menu_21_the_game_view_shots_leave_from_where_the_camera_sees_the_barrels() -> None:
+    v = _game_view()
+    v.show(0, toggle=False, mode=2)
+    v.frame(0)
+    eye = v._world.options.eye
+    framing = v._view.stage.framing
+    assert (eye.x, eye.y, eye.height) == (240, framing.back, framing.height)
