@@ -140,6 +140,9 @@ AVALANCHE = with_weapons(
         hidden_weapon("cannon-right", "cannon", [29, 21], 11, 720, 1, "purple", 2.0, 12.2),
     ],
     [
-        armour_region("flanks", 1, [[10, -12], [44, -12], [44, 38], [10, 38]], "wing", [4.2, 1000]),
+        # MB-AVALANCHE-07: the flanks of its shell either side of the dorsal ridge (its nose at
+        # -Y), from the shell's nose to its tail, out over the deck's edge and the fender; the
+        # cannons lie under them.
+        armour_region("flanks", 1, [[6, -6], [32, -6], [32, 36], [6, 36]], "wing", None),
     ],
 )

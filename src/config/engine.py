@@ -35,6 +35,7 @@ class EngineConfig:
         simulation_hz: float,
         max_steps_per_frame: float,
         max_device_pixel_ratio: float,
+        max_render_scale: float,
         e2e: E2eConfig,
         long_frame_ms: float,
         perf_overlay: PerfOverlay,
@@ -45,6 +46,10 @@ class EngineConfig:
         self.max_steps_per_frame = max_steps_per_frame
         # Device pixel ratio cap (ENG-110).
         self.max_device_pixel_ratio = max_device_pixel_ratio
+        # D-250, ENG-110: the most pixels drawn per logical pixel, across (the canvas never
+        # renders bigger than the logical screen times this, whatever the window and the
+        # device pixel ratio: a 4K panel is not drawn at 4K).
+        self.max_render_scale = max_render_scale
         self.e2e = e2e
         # PERF-01 `long_frame_ms`: a frame whose work takes longer counts as a long frame.
         self.long_frame_ms = long_frame_ms
@@ -55,6 +60,7 @@ ENGINE_CONFIG = EngineConfig(
     60,
     5,
     2,
+    1.5,
     E2eConfig(0.5, False),
     50,
     PerfOverlay(0.25, "F3"),

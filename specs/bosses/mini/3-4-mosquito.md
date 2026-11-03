@@ -31,7 +31,7 @@ to about 52 px either side. It is a 3 L boss (radius 1.5 L).
 
 #### MB-MOSQUITO-02 — Cyber-Organic body · MUST
 
-It is a living insect: a dark flesh thorax, a swollen, blood-filled abdomen ringed by grafted metal
+It is a living insect: a dark flesh thorax under its shell (MB-MOSQUITO-12), a swollen, blood-filled abdomen ringed by grafted metal
 bands with a vein pulsing down its back, a blood sac swelling out of the abdomen's flesh on its back,
 feathery antennae of sinew tipped with a lit gland, and six thin legs of sinew with a metal knee
 joint grafted where they bend. Its head is a rounded capsule with big compound eyes (low neon domes)
@@ -164,21 +164,25 @@ After the pause that follows each destroyed part, it fires a vortex at heat 7.5,
 
 #### MB-MOSQUITO-12 — Transformation: back plating, two heavy cannons · MUST
 
-At 2 of its 3 original parts destroyed, the Mosquito transforms once. Its back plating (one region
-across the centre line, 30 px either side, from 29.4 px ahead of the centre to 19 px behind it, from
-the playfield up) bursts off over a dark metal `shell` frame, and two heavy cannons come out at 12 px
-either side, 11 px ahead of the centre (radius 10 px, pods 8.1 px high, 800 HP each, 30 % drop
-chance). They shield the core and fire `magenta` aimed spreads of big shells, 1.2 s and 2.0 s into a
-stage. The Mosquito fires no less after its transformation than before, and stays one object in every
-state.
+At 2 of its 3 original parts destroyed, the Mosquito transforms once. Its back plating, the thorax's
+shell, bursts off ([common](../common.md), BOSS-42): a ridged carapace drawn as a piece of its own
+over the flattened thorax, from just under the thorax's top (3.3 px) up to its back (9.5 px), from
+9 px behind the centre to 16 px ahead, flaring to 13.5 px either side over the hips; the front of
+the back's vein, the seam along its ridge and the thorax's moss are on it. Its region (`back`, one
+across the centre line) is the shell's own plan; it bursts into plates cracked from that outline and
+leaves a dark metal `shell` frame on the thorax. Two heavy cannons come out at 12 px either side,
+11 px ahead of the centre (radius 10 px, pods 8.1 px high, 800 HP each, 30 % drop chance), from
+under the shell's flanks. They shield the core and fire `magenta` aimed spreads of big shells, 1.2 s
+and 2.0 s into a stage. The Mosquito fires no less after its transformation than before, and stays
+one object in every state.
 
 **Acceptance criteria**
 - Given 2 original parts are destroyed, then the back region bursts off and both cannons come out and
   fire (unit: `test_boss_kinds.py`).
-- Given each state, then nothing of it hangs in the air (unit:
-  `test_d227_the_boss_holds_together_in_every_state`).
+- Given its model, then it draws the back region's armour, and the boss holds together with and
+  without it (unit: `test_boss_52_the_boss_holds_together_in_every_state`).
 
-*Sources: D-221, D-224, D-229, D-227.*
+*Sources: D-221, D-224, D-229, D-227, D-254.*
 
 #### MB-MOSQUITO-13 — Points and drops · MUST
 
@@ -209,7 +213,7 @@ centre, X right, Y up the screen (its needle at -Y).
 | proboscis laser | 1.4 s every 5.5 s | on a turret |
 | rage | vortex, heat 7.5 | |
 | transformation | once, at 2 parts destroyed | `default_transforms` |
-| back region | x ±30, y -29.4..19, from 0 px, `shell` | |
+| back region | the thorax shell's plan: x ±5.5 at y 9, ±9.5 at y 0, ±13 at y -6, ±13.5 at y -12, ±8 at y -16, `shell`, not mirrored; shell 3.0–9.5 px over the thorax (top 3.3) | `armour_region("back", …)`; `mosquito_model.py` `THORAX`, `SHELL` |
 | cannons | (±12, -11), radius 10, pod 8.1, 800 HP, `magenta`, first 1.2 / 2.0 s | |
 | points | 7 500 (750 a part) | |
 | neon | [1, 0.3, 0.7] | `BOSS_LOOK.neon["mosquito"]` |

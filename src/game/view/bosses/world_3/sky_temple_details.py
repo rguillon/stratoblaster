@@ -10,7 +10,7 @@ from game.view.bosses.mini_boss_greebles import lamps
 from game.view.bosses.mini_boss_shapes import QUARTER, H
 from game.view.bosses.world_3.jungle_flesh import table
 from game.view.bosses.world_3.sky_temple_flesh import temple_reactors
-from game.view.bosses.world_3.sky_temple_parts import SUMMIT, TEMPLE_CYAN, TEMPLE_GOLD, TIERS
+from game.view.bosses.world_3.sky_temple_parts import TEMPLE_CYAN, TEMPLE_GOLD, TIERS
 from game.view.bosses.world_3.stone_idol_stone import STONE, leaf, moss, vine
 from game.view.enemies.enemy_shapes import SIDES
 from render.geometry.solids import Placement
@@ -59,27 +59,26 @@ def temple_machinery(p: EnemyParts) -> None:
 
 
 # Moss patches on the tiers' steps (x, z, which tier's top, size).
+# Those on the corner wedges and the back terrace ride them (`sky_temple_armour`).
 MOSS = table([
     [-48, 64, 1, 5],
     [62, 30, 1, 4],
     [-64, -20, 1, 4.5],
     [30, -62, 1, 5],
-    [-49, -30, 2, 3.5],
-    [48, 30, 2, 3],
     [-24, 40, 3, 3.2],
-    [20, -30, 4, 3],
 ])
-# Vines draped over a tier's edge: from its top, down its side (x, z on the edge, tier).
+# Vines draped over a tier's edge: from its top, down its side (x, z on the edge, tier), clear of
+# the wedges' corners.
 DRAPED = table([
     [-30, 1, 0],
-    [20, 1, 1],
+    [10, 1, 1],
     [-12, -1, 2],
-    [30, 1, 3],
+    [12, 1, 3],
     [-50, -1, 0],
 ])
-# Roots hanging under the rock's rim, and shrubs grown on the second tier.
+# Roots hanging under the rock's rim, and shrubs grown on the second tier, clear of the wedges.
 ROOTS = table([[40, 70], [-66, 30], [70, -50], [-20, -72]])
-SHRUBS = table([[-38, 50], [-30, 52]])
+SHRUBS = table([[-32, 45], [-29, 52]])
 
 
 def drape_point(along: float, side: float, half: float, inset: float, y: float) -> Vec3:
@@ -133,4 +132,3 @@ def temple_jungle(p: EnemyParts) -> None:
         z = sh[1]
         hull.cylinder(3.2, 4.5, 5, STONE.leaf, Placement([x, 2 * TIERS.height, z]), 0.8)
         leaf(hull, [x + 2, 2 * TIERS.height + 1, z - 2], 3.4, x)
-    leaf(hull, [10, SUMMIT, -30], 3, 1)

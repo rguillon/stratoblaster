@@ -193,8 +193,7 @@ class WorldBoss(Boss):
     def on_transform(self, form: int, ctx: EnemyContext) -> None:
         """Burst the armour regions it sheds at transformation `form`.
 
-        The weapons beneath come out (BOSS-37). The shedding's design:
-        docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md.
+        The weapons beneath come out (BOSS-37).
         """
         for region in self.design.armour or []:
             if region.form == form:

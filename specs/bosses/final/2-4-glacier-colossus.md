@@ -82,17 +82,31 @@ the shared living motion of [common.md](../common.md) and its transformations.
 
 #### FB-GLACIER-COLOSSUS-07 — What its transformations shed · MUST
 
-- First transformation: the armour of both stern flanks (region `flanks`: from 16 to 74 px out
-  either side, from 39.5 px to 79 px behind the centre) bursts off, baring dark metal ribs and spars
-  (`wing`), and its two ring emitters rise from it.
-- Second transformation: the armour of both flanks amidships (region `wings`: from 8 to 74 px out
-  either side, from 2 px ahead of the centre to 39.5 px behind it) bursts off the same way, and its
-  two sweepers rise from it.
+Its plating is armour drawn as pieces of its own ([common](../common.md), BOSS-42):
 
-The keel stays under each cut, the cutters' pylons hold them to the body, and a part still standing
-over a shed region gets a pylon: the boss stays one object.
+- First transformation: the plating of both stern flanks (region `flanks`: a plate on the stern
+  deck either side of the upper deck, from the upper deck's edge out to the rim, from 34 px to 77 px
+  behind the centre) bursts off, baring dark metal ribs and spars (`wing`) on the deck, and its two
+  ring emitters rise from it. Each plate is a slab of teal flesh on the deck (9.7 to 12.2 px)
+  carrying the aft heat vent, the glacier ice grown on the stern, a snow cap and the aft veins out
+  to the rim.
+- Second transformation: the shell (region `wings`: the shell's plan along the upper deck, from
+  6 px ahead of the centre to 58 px behind it, 56 px across at the widest) bursts off, baring dark
+  metal ribs and spars (`wing`) on the upper deck, and its two sweepers rise from under its flanks.
+  The piece is the ridged teal shell (15.8 to 24 px) with the row of ice spines down its ridge and
+  the crystals over it; the heat stack, the brain hump and the missile pod stand on the upper deck
+  through it.
 
-*Sources: D-221, D-224, D-227, D-229.*
+The decks stay under both, and the cutters' pylons reach under their mounts: the boss stays one
+object (BOSS-52).
+
+**Acceptance criteria**
+- Given its design, then its first transformation sheds the flanks and both ring emitters lie in
+  them, its second the wings and both sweepers lie in it (unit test).
+- Given its model, then it draws both regions' armour, and it holds together at rest and after each
+  transformation (unit tests).
+
+*Sources: D-221, D-224, D-227, D-229, D-254.*
 
 ### Behaviour
 
@@ -210,7 +224,7 @@ do, its hidden weapons as hidden weapons do. It dies as every boss, and its deat
 | transformations | after 2 and 4 of 6 parts | `boss_build.default_transforms` |
 | t1_radius / t1_hp | 12 px / 1 520 | `hidden_weapon("orb-…")`, pod 23.8 px high |
 | t2_radius / t2_hp | 9 px / 1 900 | `hidden_weapon("sweeper-…")`, pod 23.1 px high |
-| region `flanks` | x 16…74 (mirrored), y 39.5…79, from 1.3 px up, `wing` | `armour_region("flanks", 1, …)` |
-| region `wings` | x 8…74 (mirrored), y −2…39.5, from 2.9 px up, `wing` | `armour_region("wings", 2, …)` |
+| region `flanks` | the stern deck's plan either side of the upper deck: (31, 34), (58, 34), (44, 66), (21, 77), (10, 77), (10, 61), (24, 57) (mirrored), `wing`; plate 9.7–12.2 px | `armour_region("flanks", 1, …)`; `glacier_colossus_armour.flank_armour` |
+| region `wings` | the shell's plan, y −6…58, x ±28 at y 26, `wing`; shell 15.8–24 px | `armour_region("wings", 2, …)`; `glacier_colossus_armour.wings_armour` |
 | full_hp / full_hp_with_weapons | 13 000 / 19 840 | core + parts |
 | points | 14 000 (1 400 a part) | `points` |

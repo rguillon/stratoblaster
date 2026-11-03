@@ -136,7 +136,10 @@ class SceneryStage:
             math.ceil((self._ground.half_width + config.margin) / config.cell) * config.cell
         )
         self.camera = stage_camera(
-            scene, self.framing.half_fov, (config.near_clip, config.far_clip)
+            scene,
+            self.framing.half_fov,
+            (config.near_clip, config.far_clip),
+            options.viewport,
         )
         # GFX-SKY-04, GFX-SKY-05: the time of day, clouds and weather along the level.
         self._sky = SkyLayers(scene, look, (level.scroll_speed, options.atmosphere, level.seed))

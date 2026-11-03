@@ -1,8 +1,8 @@
 # Copyright (c) 2026 Renaud Guillon
 """How a moving region's piece is posed in a boss model (BOSS-45, D-230).
 
-See `game/config/bosses/moving_regions.py`. Its node's place and turn, its triangles moved, and
-where it is as the boss transforms.
+See `game/config/bosses/moving_regions.py`. Its node's place and turn, and where it is as the boss
+transforms.
 
 Model space of a boss: logical pixels, +Y up (towards the camera), its nose at +Z; a point `(x, y,
 z)` of the config (X right, Y up the screen, Z height) is model `(-x, z, -y)`
@@ -16,12 +16,10 @@ import math
 from game.config.boss_look import BOSS_LOOK
 from game.config.bosses.moving_regions import (
     inverse_value,
-    is_moving,
     motion_value,
     move_point,
 )
 from game.view.bosses.boss_reveal import HIDDEN, SHOWN, ease, reveal_phase, share
-from render.geometry.shatter import Vertex
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -43,15 +41,6 @@ def to_config(p: Vec3) -> Vec3:
 def to_model(p: Vec3) -> Vec3:
     """Return a config point in model space."""
     return [-p[0], p[2], -p[1]]
-
-
-def moved_triangles(tris: list[Any], motion: Any, value: Any) -> list[Any]:
-    """`tris` (model space) moved by `value` of `motion` from the pose as drawn."""
-    result: list[Any] = [
-        [Vertex(to_model(move_point(motion, value, to_config(v.position))), v.color) for v in tri]
-        for tri in tris
-    ]
-    return result
 
 
 def node_pose(motion: Any, value: Any) -> list[Vec3]:
@@ -96,14 +85,3 @@ def progress(region: Any, boss: Any) -> float:
     if phase == SHOWN:
         return 1
     return ease(share(boss.transform, BOSS_LOOK.reveal.move))
-
-
-def posed(tris: list[Any], region: Any, form: int) -> list[Any]:
-    """`tris` of `region`'s piece as the boss is after transformation `form`.
-
-    At rest before its own, moved after it; unmoved for a region that does not move.
-    """
-    if not is_moving(region):
-        return tris
-    k = 1 if form >= region.form else 0
-    return moved_triangles(tris, region.motion, motion_value(region.motion, k))

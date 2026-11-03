@@ -3,32 +3,41 @@
 
 Model space: logical pixels, nose +Z (down the screen), Y up towards the camera. A polar city on
 a flying hull: a snowed deck with towers and heated domes, an avenue down its middle carrying
-the keep, outriggers out to the aurora cannons.
+the keep, outriggers out to the aurora cannons. Its bow doors and wing panels are armour drawn apart
+(`boreal_citadel_armour`, D-254): the core's deck is drawn without them.
 """
 
 import math
 
-from game.config.bosses.world_2.boreal_citadel import (
-    BOREAL_CITADEL,
-    BOREAL_GUNS,
-    BOREAL_HATCHES,
-    BOREAL_LENS,
-    BOREAL_SPIRE,
-)
+from game.config.bosses.world_2.boreal_citadel import BOREAL_CITADEL, BOREAL_SPIRE
 from game.config.enemy_look import ENEMY_LOOK
 from game.config.record import record
 from game.view.bosses.boss_limbs import boss_point
 from game.view.bosses.boss_model import build_boss_model
-from game.view.bosses.overlord_city import edge_lights, symmetric
+from game.view.bosses.overlord_city import edge_lights
+from game.view.bosses.world_2.boreal_citadel_armour import (
+    DECK,
+    DECK_BOTTOM,
+    DECK_SLOPE,
+    DECK_WAIST,
+    HOLD,
+    citadel_armour,
+    draw_core_panels,
+)
 from game.view.bosses.world_2.boreal_citadel_city import (
     AURORA,
     CITADEL_DECK,
+    CORE,
     VIOLET,
     draw_city,
     icicles,
     rect,
 )
-from game.view.bosses.world_2.boreal_citadel_details import draw_details
+from game.view.bosses.world_2.boreal_citadel_details import (
+    draw_details,
+    draw_gun_deck,
+    draw_hatches,
+)
 from game.view.bosses.world_2.boreal_citadel_parts import (
     OUTRIGGER_TOP,
     draw_battery,
@@ -36,12 +45,8 @@ from game.view.bosses.world_2.boreal_citadel_parts import (
     draw_cannon_mount,
     draw_dome,
 )
-from game.view.bosses.world_2.w2_organic import (
-    ICE_FLESH,
-    glow_vein,
-    sinew,
-)
-from game.view.enemies.enemy_shapes import SIDES, decal, flip_x
+from game.view.bosses.world_2.w2_organic import ICE_FLESH, sinew
+from game.view.enemies.enemy_shapes import SIDES, flip_x
 from game.view.enemies.organic_parts import reactor_sac
 from render.geometry.organic import RibSpec, ribs
 from render.geometry.solids import Placement
@@ -62,19 +67,7 @@ H = ENEMY_LOOK.hull
 WHITE = [1.0, 1.0, 1.0]
 QUARTER = math.pi / 2
 
-# The deck (right half, front to tail), the avenue on it, and the right outrigger.
-DECK = symmetric(
-    [
-        [20.0, 84.0],
-        [44.0, 66.0],
-        [60.0, 36.0],
-        [62.0, -20.0],
-        [54.0, -56.0],
-        [36.0, -78.0],
-        [18.0, -84.0],
-    ],
-    86,
-)
+# The avenue on the deck (`DECK`), and the right outrigger.
 AVENUE = rect(32.0, 94.0, [0.0, -17.0])
 OUTRIGGER = [
     [56.0, 26.0],
@@ -125,15 +118,6 @@ SPIRE_TIP = [
     [1.4, 0.0],
     [0.0, 2.0],
 ]
-# The gun deck on the keep's front, and the laser lens between its cannons.
-GUN_DECK = rect(22.0, 16.0, [0.0, 34.0])
-GUN_DECK_TOP = 21.0
-LENS = [
-    [0.0, 0.0],
-    [3.2, 1.0],
-    [2.0, 3.0],
-    [0.0, 3.6],
-]
 
 
 def draw_hull(p: EnemyParts) -> None:
@@ -144,8 +128,17 @@ def draw_hull(p: EnemyParts) -> None:
     top = CITADEL_DECK.top
     avenue = CITADEL_DECK.avenue
     # FB-BOREAL-CITADEL-02: the back of a colossal beast, rimed flesh, its spine (the avenue) a
-    # ridge of bone.
-    flesh.bevel_slab(DECK, [-8.0, -2.0, top], [3.0, 3.0], ICE_FLESH.teal, None, ICE_FLESH.rime)
+    # ridge of bone. Its flesh up to the hold, the panels no armour holds over it (FB-BOREAL-
+    # CITADEL-08: the bow doors and wing panels are its armour, `citadel_armour`).
+    flesh.bevel_slab(
+        DECK,
+        [DECK_BOTTOM, DECK_WAIST, HOLD],
+        [3.0, (HOLD - DECK_WAIST) * DECK_SLOPE],
+        ICE_FLESH.teal,
+        None,
+        ICE_FLESH.graphite,
+    )
+    draw_core_panels(p, SIDES)
     edge_lights(
         neon,
         DECK,
@@ -169,6 +162,13 @@ def draw_hull(p: EnemyParts) -> None:
     )
     edge_lights(neon, AVENUE, [1, 3], [top + 0.4, top + 1.4], VIOLET)
     hull.bevel_slab(ENGINES, [-7.0, -1.0, 5.0], [1.0, 1.5], H.dark, None, H.base)
+    draw_outriggers(p)
+
+
+def draw_outriggers(p: EnemyParts) -> None:
+    """Draw the outriggers with their sinews, lit edges and icicles, and the bow's icicles."""
+    flesh = p.flesh
+    neon = p.neon
     for s in SIDES:
         wing = OUTRIGGER if s > 0 else flip_x(OUTRIGGER)
         flesh.bevel_slab(
@@ -187,7 +187,6 @@ def draw_hull(p: EnemyParts) -> None:
             ICE_FLESH.bone,
             [0.0, 1.0, 6.0],
         )
-        glow_vein(p, [s * 18.0, top + 1.0, 40.0], [s * 56.0, top, 0.0], 1.4, AURORA)
         edge_lights(neon, wing, [0, 1, 2], [-1.5, -0.5], AURORA)
         icicles(flesh, [wing[0], wing[1]], -1, 5)
         for edge in BOW_EDGES:
@@ -233,85 +232,29 @@ def draw_keep(p: EnemyParts) -> None:
     muzzle(boss_point(BOREAL_SPIRE[0], BOREAL_SPIRE[1], BOREAL_SPIRE[2]), "ring")
 
 
-def draw_gun_deck(p: EnemyParts) -> None:
-    """Draw the gun deck on the keep's front (FB-BOREAL-CITADEL-04).
-
-    Twin cannons and a laser lens, charging to fire.
-    """
-    hull = p.hull
-    neon = p.neon
-    charge = p.charge
-    muzzle = p.muzzle
-    base = CITADEL_DECK.top
-    hull.bevel_slab(GUN_DECK, [base, base, GUN_DECK_TOP], [0.0, 1.5], H.base, None, H.panel)
-    decal(neon, rect(16.0, 1.2, [0.0, 39.0]), GUN_DECK_TOP + 0.05, VIOLET)
-    front = 42.0
-    for m in BOREAL_GUNS:
-        tip = boss_point(m[0], m[1], m[2])
-        hull.cylinder(
-            1.7,
-            tip[2] - 2.0 - (front - 6.0),
-            6,
-            H.dark,
-            Placement([tip[0], tip[1], front - 6.0], 0.0, QUARTER),
-            1.4,
-        )
-        charge.cylinder(
-            1.6,
-            2.0,
-            6,
-            WHITE,
-            Placement([tip[0], tip[1], tip[2] - 2.0], 0.0, QUARTER),
-            1.1,
-        )
-        muzzle(tip)
-    lens = boss_point(BOREAL_LENS[0], BOREAL_LENS[1], BOREAL_LENS[2])
-    lens_at = lens[2] - LENS[3][1]
-    hull.cylinder(
-        4.0,
-        lens_at - (front - 4.0),
-        8,
-        H.dark,
-        Placement([0.0, lens[1], front - 4.0], 0.0, QUARTER),
-    )
-    charge.lathe(LENS, 6, WHITE, Placement([0.0, lens[1], lens_at], 0.0, QUARTER))
-    muzzle(lens, "laser")
-
-
-def draw_hatches(p: EnemyParts) -> None:
-    """Draw the missile hatches on the avenue behind the keep (FB-BOREAL-CITADEL-04).
-
-    They are lit as missiles load.
-    """
-    hull = p.hull
-    charge = p.charge
-    muzzle = p.muzzle
-    for m in BOREAL_HATCHES:
-        at = boss_point(m[0], m[1], m[2])
-        x = at[0]
-        y = at[1]
-        z = at[2]
-        decal(hull, rect(6.4, 5.4, [x, z]), y - 0.06, H.dark)
-        decal(charge, rect(4.6, 3.6, [x, z]), y, WHITE)
-        muzzle([x, y, z], "missile")
-
-
 def draw_core(parts: EnemyParts) -> None:
     """Draw the core: hull, city, keep, gun deck and hatches, four reactors in the engine block."""
     draw_hull(parts)
-    draw_city(parts)
+    draw_city(parts, CORE)
     draw_keep(parts)
     draw_gun_deck(parts)
     draw_hatches(parts)
-    draw_details(parts)
+    draw_details(parts, CORE)
     for s in SIDES:
         reactor_sac(parts, [s * 12.0, -1.0, -92.0], 5.5, AURORA, ICE_FLESH.graphite, 8)
         reactor_sac(parts, [s * 26.0, -1.0, -92.0], 4.2, AURORA, ICE_FLESH.slate, 6)
 
 
-def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
+def boss_drawing(core: Any, parts: Any, turrets: Any, armour: Any) -> Any:
     """Return what `build_boss_model` draws a boss from."""
-    return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
+    return record({
+        "core": core,
+        "parts": parts,
+        "turrets": turrets,
+        "limbs": None,
+        "ring": None,
+        "armour": armour,
+    })
 
 
 def build_boreal_citadel(scene: Any) -> BuiltEnemyModel:
@@ -324,6 +267,7 @@ def build_boreal_citadel(scene: Any) -> BuiltEnemyModel:
     FB-BOREAL-CITADEL-02, FB-BOREAL-CITADEL-03: now a colossal living beast carrying its city on
     its back: rimed flesh, a spine of bone, spires of crystal and flesh where the towers were, its
     heart (the keep) banded in metal, membrane fins out to its cannons, glowing blisters for domes.
+    FB-BOREAL-CITADEL-08: its bow doors and wing panels, with what stands on them, are its armour.
     """
     model: BuiltEnemyModel = build_boss_model(
         BOREAL_CITADEL,
@@ -340,8 +284,7 @@ def build_boreal_citadel(scene: Any) -> BuiltEnemyModel:
                 "dome-right": draw_dome,
             },
             {"cannon-left": draw_cannon, "cannon-right": draw_cannon},
-            None,
-            None,
+            citadel_armour(),
         ),
     )
     return model

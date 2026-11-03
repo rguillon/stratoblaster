@@ -25,10 +25,9 @@ from game.view.bosses.boss_model import (
     build_boss_model,
     build_part,
     build_turret,
-    part_supports,
     strobe,
 )
-from render.geometry.shatter import triangles
+from render.geometry.mesh_triangles import triangles
 from render.geometry.solids import Placement, SolidBuilder
 
 
@@ -110,13 +109,13 @@ def test_flash_group_lights_its_body_hulls_white_for_a_moment_after_a_hit(monkey
     assert body.useVertexColors is True
 
 
-# BOSS-52 (D-227): every boss model is one object, at rest and after each of its transformations: no
-# piece of it hangs in the air (its parts and weapons, its frames, its rig, its stems and pylons,
-# the pieces its armour cut leaves).
+# BOSS-52 (D-254): every boss model is one object, at rest and after each of its transformations: no
+# piece of it hangs in the air (its parts and weapons, its armour and frames, its rig). The game
+# draws no stem or pylon of its own: the drawings hold together as drawn.
 
 
 @pytest.mark.parametrize("design", BOSS_DESIGNS, ids=[d.id for d in BOSS_DESIGNS])
-def test_d227_the_boss_holds_together_in_every_state(design: Any) -> None:
+def test_boss_52_the_boss_holds_together_in_every_state(design: Any) -> None:
     mp = pytest.MonkeyPatch()
     try:
         states = boss_states(design.id, design, mp)
@@ -130,7 +129,8 @@ def test_d227_the_boss_holds_together_in_every_state(design: Any) -> None:
 # a light hanging over it; standing parts (one with a turret), a part on a joint with its limb, an
 # orbiting one, hidden weapons (a gatling with its turret, a lance with its barrel, an orb riding a
 # moving hatch, a cannon on a rig), a ring, a rig, an armour region that bursts off and two that
-# move (D-230). Model space is mirrored: a config point (x, y) is model (-x, -y) in XZ.
+# move (BOSS-45), each drawn as a plate over the deck. Model space is mirrored: a config point
+# (x, y) is model (-x, -y) in XZ.
 
 GREY = [0.5, 0.5, 0.5]
 NEON = [1.0, 0.0, 1.0]
@@ -168,6 +168,19 @@ def _limb(p: Any) -> None:
 
 def _ring(p: Any) -> None:
     p.hull.box([6, 2, 6], GREY, Placement([0, -6, 35]))
+
+
+def _wings_armour(p: Any) -> None:
+    """Draw the wings' armour: a plate over the deck (config x 25..38 is model x -38..-25)."""
+    p.hull.box([13, 2, 20], GREY, Placement([-31.5, 1, 0]))
+
+
+def _hatch_armour(p: Any) -> None:
+    p.hull.box([16, 2, 10], GREY, Placement([0, 1, -13]))
+
+
+def _flap_armour(p: Any) -> None:
+    p.hull.box([8, 2, 10], GREY, Placement([16, 1, 13]))
 
 
 class _RigView:
@@ -259,6 +272,11 @@ def _probe_drawing(rig: _Rig) -> dict[str, Any]:
         "limbs": {"shoulder": {"draw": _limb, "part": "arm"}},
         "ring": _ring,
         "rig": {"build": rig.build, "triangles": rig.triangles},
+        "armour": {
+            "wings": {"whole": _wings_armour},
+            "hatch": {"whole": _hatch_armour},
+            "flap": {"whole": _flap_armour},
+        },
     }
 
 
@@ -340,7 +358,7 @@ def _live_parts(**states: Any) -> list[Any]:
     return [states.get(i, _part_state()) for i in ids]
 
 
-def test_boss_47_the_model_builds_its_core_parts_turrets_limbs_ring_armour_and_stems(
+def test_boss_47_the_model_builds_its_core_parts_turrets_limbs_ring_and_armour(
     probe: Any,
 ) -> None:
     models = probe.builder.models
@@ -353,10 +371,10 @@ def test_boss_47_the_model_builds_its_core_parts_turrets_limbs_ring_armour_and_s
         "probe-shoulder-limb",
         "probe-lance-slide-0",
         "probe-armour-wings",
+        "probe-armour-wings-chunk-0",
         "probe-armour-wings-frame-floor",
         "probe-armour-hatch-frame-ribs",
         "probe-armour-flap",
-        "probe-stems",
     ]:
         assert name in models, name
     for spec in probe.design.stats.parts:
@@ -365,9 +383,10 @@ def test_boss_47_the_model_builds_its_core_parts_turrets_limbs_ring_armour_and_s
     assert "probe-armour-flap-frame-floor" not in models
     assert "probe-rider-turret" not in models
     assert "probe-lance-turret" not in models
-    # The core is drawn with its armour cut out, and keeps its muzzle.
+    # The core is drawn as it is, with its muzzle; the armour is drawn over it.
     assert probe.builder.drawn["probe-core"]["muzzles"] == [[[0, 4, 20], "gun"]]
-    assert probe.builder.faces("probe-armour-wings") > 0
+    assert probe.builder.faces("probe-core") == 12
+    assert probe.builder.faces("probe-armour-wings") == 12
     # Each part is trimmed along its own outline (BOSS-48).
     assert [n.name for n in probe.trimmed][:2] == ["probe-plain", "probe-bare"]
 
@@ -453,7 +472,7 @@ def test_a_stand_in_is_shown_at_rest_with_its_own_charge(probe: Any) -> None:
     assert probe.rig.view.shown == [None]
 
 
-def test_a_boss_without_armour_ring_rig_or_loose_pieces_is_its_core_and_parts(
+def test_a_boss_without_armour_ring_or_rig_is_its_core_and_parts(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     scene = _probe_scene(monkeypatch)
@@ -492,18 +511,7 @@ def test_a_part_with_no_drawing_and_no_weapon_look_is_an_error(
         build_part(design, design.stats.parts[0], record({"parts": {}}), frame, look)
 
 
-def test_d227_a_pylon_stands_under_each_part_on_the_boss(monkeypatch: pytest.MonkeyPatch) -> None:
-    """D-227: a pylon under each part standing on the boss (and none at the centre: no ring)."""
-    _probe_scene(monkeypatch)
-    design = record({"id": "odd", "stats": {"parts": [part("plain", [-30, -15], 5, 100)]}})
-    supports = part_supports(design, record({"parts": {"plain": _pod}}), NEON)
-    # Under the part's spot (model space), up into its lower half, as wide as the part.
-    assert supports == [[30, 15, pytest.approx(1.6), 5]]
-
-
-def test_the_body_is_drawn_by_the_drawing_core_unless_another_drawing_is_given(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
+def test_the_body_is_drawn_by_the_drawing_core(monkeypatch: pytest.MonkeyPatch) -> None:
     scene = _probe_scene(monkeypatch)
     design = record({"id": "odd", "guns": {}})
     root = FakeNode("odd", "scene")

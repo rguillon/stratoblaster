@@ -135,10 +135,12 @@ _AURORA_STATION = record({
     ),
 })
 
-# Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
-# baring a dark metal frame, and a pair of laser lances unfold (FB-AURORA-STATION-14); at
-# transformation 2 its spine plating bursts off, baring a dark metal frame, and a pair of missile
-# racks unfold (FB-AURORA-STATION-15). The regions it sheds: FB-AURORA-STATION-07.
+# Its hidden weapons (boss transformations, D-224): at transformation 1 its fins burst off, baring
+# a dark metal frame, and a pair of laser lances unfold (FB-AURORA-STATION-14); at transformation 2
+# its bell's cap bursts off, baring a dark metal frame, and a pair of missile racks unfold
+# (FB-AURORA-STATION-15). The regions it sheds: FB-AURORA-STATION-07 (D-254): the fins' own plan,
+# and the bell's octagon (its flat faces to the front), the model drawing each as a piece of its own
+# (`aurora_station_armour`).
 AURORA_STATION = with_weapons(
     _AURORA_STATION,
     [
@@ -148,11 +150,23 @@ AURORA_STATION = with_weapons(
         hidden_weapon("rack-right", "rack", [7, -21], 5, 1250, 2, "purple", 2.0, 9.6),
     ],
     [
+        armour_region("flanks", 1, [[20, 24], [76, 26], [84, 32], [84, 46], [20, 48]], "wing"),
         armour_region(
-            "flanks", 1, [[28, 2], [86.5, 2], [86.5, 58], [28, 58]], "wing", [-2.3, 1000]
-        ),
-        armour_region(
-            "spine", 2, [[-20, -46], [20, -46], [20, 4], [-20, 4]], "shell", [4.0, 1000], False
+            "bell",
+            2,
+            [
+                [23.1, 9.6],
+                [9.6, 23.1],
+                [-9.6, 23.1],
+                [-23.1, 9.6],
+                [-23.1, -9.6],
+                [-9.6, -23.1],
+                [9.6, -23.1],
+                [23.1, -9.6],
+            ],
+            "shell",
+            None,
+            False,
         ),
     ],
 )

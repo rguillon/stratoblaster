@@ -18,6 +18,7 @@ from core.entities.boss import Boss
 from game.config.bosses.hidden_weapons import FRAMES
 from game.config.bosses.moving_regions import (
     drawn_spot,
+    inside_outline,
     is_moving,
     motion_value,
     move_point,
@@ -27,7 +28,6 @@ from game.config.bosses.weapon_kinds import KINDS
 from game.sim.boss_build import default_transforms
 from game.sim.boss_kinds import BOSS_DESIGNS, BOSS_KINDS
 from game.sim.bosses.world_boss import WorldBoss
-from render.geometry.shatter import inside
 
 
 def test_boss_01_every_boss_design_of_the_game_is_a_kind_once() -> None:
@@ -188,7 +188,10 @@ def test_every_hidden_weapon_unfolds_from_a_region_its_transformation_sheds(desi
         # centre weapon may sit on the seam between two mirrored pieces.
         regions = [r for r in design.armour if r.form == p["reveal"]]
         assert any(
-            inside(o, p["x"] + dx, p["y"]) for r in regions for o in r.outlines for dx in [0, 0.5]
+            inside_outline(o, p["x"] + dx, p["y"])
+            for r in regions
+            for o in r.outlines
+            for dx in [0, 0.5]
         ), p["id"]
 
 
@@ -214,7 +217,7 @@ def test_no_part_the_player_can_hit_stands_on_a_piece_as_it_moves(design: Any) -
             retire = p.get("retire")
             if (retire is not None and retire <= form) or p["id"] in gone:
                 continue
-            assert not inside(outline, p["x"], p["y"]), f"{p['id']} on {region.id}"
+            assert not inside_outline(outline, p["x"], p["y"]), f"{p['id']} on {region.id}"
 
 
 @pytest.mark.parametrize("design", BOSS_DESIGNS, ids=IDS)
@@ -228,7 +231,7 @@ def test_a_weapon_riding_a_moving_piece_ends_up_on_it(design: Any) -> None:
         # Its whole pod, not only its centre.
         r = p["radius"] * 0.6
         for dx, dy in [(0, 0), (r, 0), (-r, 0), (0, r), (0, -r)]:
-            assert inside(region.outlines[0], spot[0] + dx, spot[1] + dy), p["id"]
+            assert inside_outline(region.outlines[0], spot[0] + dx, spot[1] + dy), p["id"]
 
 
 # Boss weapon variety (BOSS-41; D-229; docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-

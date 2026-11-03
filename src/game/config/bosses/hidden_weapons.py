@@ -91,12 +91,12 @@ def armour_region(
     heights: Any = None,
     mirror: bool = True,
 ) -> Any:
-    """Return an armour region a boss sheds at transformation `form` (BOSS-42).
+    """Return an armour region a boss sheds at transformation `form` (BOSS-42, D-254).
 
-    Design: docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md. It is the part of its
-    body inside `outline` (px from its centre, X right, Y up; with its mirror image across the
-    centre line when `mirror`), between `heights` [low, high] above the playfield (all of them when
-    left out). It bursts off in chunks and leaves a dark metal `frame` (`wing`, `shell` or `ring`).
+    Its armour lies in `outline` (px from its centre, X right, Y up; with its mirror image across
+    the centre line when `mirror`), between `heights` [low, high] above the playfield (all of them
+    when left out): the boss's model draws it as a piece of its own (`drawing.armour`). It bursts
+    off in pieces and leaves a dark metal `frame` (`wing`, `shell` or `ring`).
     """
     if frame not in FRAMES:
         raise ValueError('Unknown armour frame "' + frame + '"')

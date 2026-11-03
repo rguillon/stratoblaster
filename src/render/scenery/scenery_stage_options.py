@@ -59,9 +59,10 @@ class SceneryStageConfig:
 class SceneryStageOptions:
     """What a `SceneryStage` is built from.
 
-    The `screen`, the `camera` look, the `level`, its `look`, the `prop_models` (by kind), the
-    scenery `kit` factory, the stage `config` and the debug `atmosphere` choices (DEV-OPT-04,
-    DEV-OPT-05, optional).
+    The `screen` (the playfield window, D-252), the `camera` look, the `level`, its `look`, the
+    `prop_models` (by kind), the scenery `kit` factory, the stage `config`, the debug
+    `atmosphere` choices (DEV-OPT-04, DEV-OPT-05, optional) and the `viewport` of the canvas the
+    camera draws into (x, y, width, height as shares of it; the whole canvas when None).
     """
 
     def __init__(
@@ -74,6 +75,7 @@ class SceneryStageOptions:
         kit: SceneryKitFactory,
         config: SceneryStageConfig,
         atmosphere: AtmosphereOptions | None = None,
+        viewport: tuple[float, float, float, float] | None = None,
     ) -> None:
         self.screen = screen
         self.camera = camera
@@ -83,3 +85,4 @@ class SceneryStageOptions:
         self.kit = kit
         self.config = config
         self.atmosphere = atmosphere
+        self.viewport = viewport

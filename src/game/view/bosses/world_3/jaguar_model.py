@@ -2,16 +2,21 @@
 """MB-JAGUAR-01 to MB-JAGUAR-05, 3-5: the Jaguar, the mini boss of the canopy city.
 
 Model space: logical pixels, nose +Z (down the screen), Y up towards the camera; +X is the
-screen's left.
+screen's left. The spotted pelt over each wing is the armour it sheds (MB-JAGUAR-11, D-254):
+`jaguar_pelt.draw_pelt`.
 """
 
 import math
 
-from game.config.bosses.world_3.jaguar import JAGUAR, JAGUAR_EYE, JAGUAR_FANGS, JAGUAR_PARTS
+from game.config.bosses.world_3.jaguar import (
+    JAGUAR,
+    JAGUAR_EYE,
+    JAGUAR_FANGS,
+    JAGUAR_PARTS,
+)
 from game.config.enemy_look import ENEMY_LOOK
 from game.view.bosses.boss_limbs import boss_point
 from game.view.bosses.boss_model import build_boss_model
-from game.view.bosses.mini_boss_greebles import vent
 from game.view.bosses.overlord_city import (
     edge_lights,
     symmetric,
@@ -21,11 +26,11 @@ from game.view.bosses.world_3.jaguar_parts import (
     COAT,
     claw_mount,
     claw_turret,
-    rosette,
     tail_mount,
     tail_turret,
 )
-from game.view.bosses.world_3.jungle_flesh import F, sinew, spine, table, vein_to
+from game.view.bosses.world_3.jaguar_pelt import WING_Y, draw_fins, draw_pelt
+from game.view.bosses.world_3.jungle_flesh import F, sinew, spine, table
 from game.view.enemies.enemy_shapes import (
     SIDES,
     angry_eyes,
@@ -72,8 +77,6 @@ WING = symmetric(
     ],
     60,
 )
-# Heights of the wing: belly, edge, top.
-WING_Y = [-3, 0, 3]
 # Its leading edges, lit amber (edges of WING, from point i to the next).
 LEADING = [3, 4, 5, 19, 20, 21]
 # The fuselage along the centre line, tail to nose (loft stations), the cockpit painted dark.
@@ -86,16 +89,6 @@ FUSELAGE = table([
     [46, 6, 1, 7],
     [56, 3, 1, 4.5],
     [61, 0, 2.5, 2.5],
-])
-# The rosettes on the wings (right half, mirrored): where and how big.
-SPOTS = table([
-    [24, 4, 3.2],
-    [35, -9, 3],
-    [48, -18, 2.3],
-    [26, -20, 3.2],
-    [19, -33, 2.5],
-    [39, -27, 2],
-    [16, 18, 2.4],
 ])
 # The tail curling from the fuselage's end out to the cannon's pod (points along it).
 TAIL = table([
@@ -118,7 +111,7 @@ def segment(p: EnemyParts, ends: list[Vec3], radius: float, end: float) -> None:
 
 
 def draw_sinews(p: EnemyParts) -> None:
-    """MB-JAGUAR-02: its bone spine, the sinews and veins under its pelt."""
+    """MB-JAGUAR-02: its bone spine and the sinews under its pelt (the veins run on the pelt)."""
     path: list[Vec3] = [[0, st[3] + 0.3, st[0]] for st in FUSELAGE[1:5]]
     spine(
         p,
@@ -134,20 +127,13 @@ def draw_sinews(p: EnemyParts) -> None:
             1.4,
             F.sinew,
         )
-        vein_to(
-            p,
-            [[s * 10, 3.4, 4], [s * 36, 3.4, -30]],
-            [0, 0, 6],
-            AMBER,
-        )
 
 
 def draw_body(p: EnemyParts) -> None:
     """Draw the wings and the fuselage.
 
-    The cockpit dark, rosettes on the wings, lit leading edges.
+    The cockpit dark, lit leading edges; the pelt over the wings is drawn apart (`draw_pelt`).
     """
-    hull = p.hull
     flesh = p.flesh
     neon = p.neon
     # MB-JAGUAR-02, MB-JAGUAR-03: a living big cat: a spotted pelt stretched over its delta like a
@@ -170,13 +156,7 @@ def draw_body(p: EnemyParts) -> None:
             None,
             LoftOptions(True),
         )
-    for s in SIDES:
-        for spot in SPOTS:
-            rosette(hull, [s * spot[0], spot[1]], spot[2], WING_Y[2] + 0.05)
-        vent(hull, [s * 14, WING_Y[2] - 0.1, -22], [4, 9], 3, s * 0.2)
-        # Canted fins, like a stealth fighter's, near the tail.
-        hull.box([1, 8, 12], H.panel, Placement([s * 13, 4, -34], 0, 0, s * 0.5), COAT)
-        neon.box([0.5, 0.5, 10], AMBER, Placement([s * 16.5, 10.6, -34], 0, 0, s * 0.5))
+    draw_fins(p)
     for i in range(len(TAIL) - 1):
         segment(p, [TAIL[i], TAIL[i + 1]], 2.8 - i * 0.3, 2.5 - i * 0.3)
 
@@ -237,7 +217,7 @@ def draw_head(p: EnemyParts) -> None:
 
 
 def jaguar_core(p: EnemyParts) -> None:
-    """Add the core of the Jaguar: its body, head and the reactors at its tail."""
+    """Add the core of the Jaguar: its body, head and the reactors at its tail (no pelt)."""
     draw_body(p)
     draw_head(p)
     for s in SIDES:
@@ -249,6 +229,7 @@ def build_jaguar(scene: Any) -> Any:
 
     It has spotted armour and amber neon: a cat's head with ears and fang guns, claw guns reaching
     forward from its wing roots, and a tail curling out to a cannon held high over its left wing.
+    The pelt over its wings is the armour it sheds (MB-JAGUAR-11).
     """
     parts: dict[str, Any] = {
         "claw-left": claw_mount,
@@ -264,5 +245,10 @@ def build_jaguar(scene: Any) -> Any:
         JAGUAR,
         scene,
         AMBER,
-        {"core": jaguar_core, "parts": parts, "turrets": turrets},
+        {
+            "core": jaguar_core,
+            "parts": parts,
+            "turrets": turrets,
+            "armour": {"wings": {"whole": draw_pelt}},
+        },
     )

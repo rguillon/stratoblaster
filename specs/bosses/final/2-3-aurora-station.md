@@ -82,15 +82,27 @@ emitters' dishes and the cryo cannons' barrels turn on their turrets as they aim
 
 #### FB-AURORA-STATION-07 — What its transformations shed · MUST
 
-- First transformation: the armour of both rear flanks (region `flanks`: from 28 to 86.5 px out
-  either side, from 2 px to 58 px behind the centre, over the fins) bursts off, baring dark metal
-  ribs and spars (`wing`), and its two lances rise from it. A patch of frame held only through what
-  went gets a dark metal beam out to the nearest point of the boss, so nothing hangs in the air.
-- Second transformation: the plating of its spine down the middle (region `spine`: 20 px either
-  side of the centre line, from 46 px ahead of the centre to 4 px behind it) bursts off, baring a
-  dark metal lattice (`shell`), and its two missile racks rise from it.
+Its plating is armour drawn as pieces of its own ([common](../common.md), BOSS-42):
 
-*Sources: D-221, D-224, D-227, D-229.*
+- First transformation: both fins (region `flanks`: each fin's own plan, from 20 to 84 px out
+  either side, from 24 px to 48 px behind the centre) burst off, baring dark metal ribs and spars
+  (`wing`) in their shape, and its two lances rise from them. Each piece is the frilled fin of
+  membrane (from −0.6 to 1 px) on its bone rays with its green edge light; the fins' icicles hang
+  from the core, under the frame once the fin is gone, and the metal bracket at each root stays.
+- Second transformation: the bell's cap (region `bell`: the bell's octagon, 25 px round, its flat
+  faces to the front) bursts off, baring a dark metal lattice (`shell`) over the bell's drum, and
+  its two missile racks rise from it at the bell's front. The piece is the top of the drum from 3 px
+  up to 7 px, rimed, the six green veins from the collar's foot to its rim and the crystals on it;
+  the drum, the collar (standing from the drum through the cap), the crown's stalk and the hub guns
+  stay with the core.
+
+**Acceptance criteria**
+- Given its design, then its first transformation sheds the flanks and both lances lie in them, its
+  second the bell and both racks lie in it (unit test).
+- Given its model, then it draws both regions' armour, and it holds together at rest and after each
+  transformation (unit tests).
+
+*Sources: D-221, D-224, D-227, D-229, D-254.*
 
 ### Behaviour
 
@@ -166,7 +178,7 @@ its rear flanks (FB-AURORA-STATION-07) and reveals a pair of laser lances, `lanc
 #### FB-AURORA-STATION-15 — Second transformation: missile racks · MUST
 
 It transforms a second time when 4 of its 5 original parts are destroyed. The transformation sheds
-its spine plating (FB-AURORA-STATION-07) and reveals a pair of missile racks, `rack-left` and
+its bell's cap (FB-AURORA-STATION-07) and reveals a pair of missile racks, `rack-left` and
 `rack-right`, at ±7 px across and 21 px ahead of the centre, `t2_radius` round with `t2_hp` each (as
 much as a dish emitter). They shield the core and fire the rack's homing missiles
 ([common.md](../common.md)).
@@ -203,8 +215,8 @@ do, its hidden weapons as hidden weapons do. It dies as every boss, and its deat
 | transformations | after 2 and 4 of 5 parts | `boss_build.default_transforms` |
 | t1_radius / t1_hp | 11 px / 1 000 | `hidden_weapon("lance-…")`, pod 6 px high |
 | t2_radius / t2_hp | 5 px / 1 250 | `hidden_weapon("rack-…")`, pod 9.6 px high |
-| region `flanks` | x 28…86.5 (mirrored), y 2…58, from −2.3 px up, `wing` | `armour_region("flanks", 1, …)` |
-| region `spine` | x −20…20, y −46…4, from 4 px up, `shell` | `armour_region("spine", 2, …)` |
+| region `flanks` | each fin's plan: (20, 24), (76, 26), (84, 32), (84, 46), (20, 48) (mirrored), `wing`; fin −0.6–1 px | `armour_region("flanks", 1, …)`; `aurora_station_armour.flank_armour` |
+| region `bell` | the bell's octagon, 25 px round, flats to the front, `shell`; cap 3–7 px | `armour_region("bell", 2, …)`; `aurora_station_armour.bell_armour` |
 | full_hp / full_hp_with_weapons | 8 600 / 13 100 | core + parts |
 | points | 13 000 (1 300 a part) | `points` |
 

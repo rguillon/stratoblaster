@@ -1,10 +1,9 @@
 # Copyright (c) 2026 Renaud Guillon
-"""FB-AURORA-STATION-01 to FB-AURORA-STATION-06, 2-3: the Aurora Station.
+"""FB-AURORA-STATION-01 to FB-AURORA-STATION-07, 2-3: the Aurora Station.
 
-Logical pixels, nose +Z, Y up (towards the camera).
+Logical pixels, nose +Z, Y up (towards the camera). The cap of its bell and its fins are armour
+drawn apart (`aurora_station_armour`, D-254): the core keeps the bell's drum and the collar on it.
 """
-
-import math
 
 from game.config.bosses.world_2.aurora_station import (
     AURORA_COLLAR,
@@ -22,6 +21,13 @@ from game.view.bosses.mini_boss_shapes import (
     H,
     socket,
 )
+from game.view.bosses.world_2.aurora_station_armour import (
+    COLLAR_RADIUS,
+    DRUM_TOP,
+    EIGHTH,
+    bell_armour,
+    flank_armour,
+)
 from game.view.bosses.world_2.aurora_station_parts import (
     AURORA_GREEN,
     AURORA_VIOLET,
@@ -34,12 +40,7 @@ from game.view.bosses.world_2.aurora_station_parts import (
     iced,
     icicles,
 )
-from game.view.bosses.world_2.w2_organic import (
-    ICE_FLESH,
-    crystals,
-    glow_vein,
-    sinew,
-)
+from game.view.bosses.world_2.w2_organic import ICE_FLESH, sinew
 from game.view.enemies.enemy_shapes import POD_SECTION, SIDES
 from game.view.enemies.organic_parts import reactor_sac
 from render.geometry.organic import curve, organ, tendril
@@ -48,40 +49,30 @@ from render.geometry.solids import LoftOptions, Placement
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 # __pragma__ ("skip")
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts
 
-if TYPE_CHECKING:
-    from render.geometry.outline import OutlinePoint
 # __pragma__ ("noskip")
 
 
-# The hub: a wide octagonal drum (a lathe profile).
+# The hub: a wide octagonal drum (a lathe profile) up to `DRUM_TOP`; its cap is its armour
+# (`aurora_station_armour.bell_armour`).
 HUB = [  # type: list[list[float]]
     [0.0, -6.0],
     [20.0, -6.0],
     [25.0, -2.0],
-    [25.0, 3.0],
-    [21.0, 7.0],
-    [0.0, 7.0],
+    [25.0, DRUM_TOP],
+    [0.0, DRUM_TOP],
 ]
-# An eighth of a turn: the octagons' flat faces to the front.
-EIGHTH = math.pi / 8
+# The top of the collar grafted round the crown, standing from the drum through the cap.
+COLLAR_TOP = 13.0
 # A habitat module behind the hub (loft stations; one either side of the centre line).
 HABITAT = [  # type: list[list[float]]
     [-56.0, 4.0, -2.0, 6.0],
     [-50.0, 7.0, -3.0, 9.0],
     [-26.0, 7.0, -3.0, 9.0],
     [-20.0, 5.0, -1.0, 7.0],
-]
-# A radiator wing behind the truss (the right one; mirrored for the left).
-RADIATOR = [  # type: list[list[float]]
-    [20.0, -24.0],
-    [76.0, -26.0],
-    [84.0, -32.0],
-    [84.0, -46.0],
-    [20.0, -48.0],
 ]
 # Where the radiators' icicles hang (one radiator; mirrored for the other).
 RADIATOR_ICICLES = [  # type: list[list[float]]
@@ -103,20 +94,17 @@ def draw_hub(p: EnemyParts) -> None:
     charge = p.charge
     muzzle = p.muzzle
     # FB-AURORA-STATION-02: the bell of a great ice jellyfish, a metal collar grafted round its
-    # crown.
+    # crown (its cap, with the rime and the veins on it, is its armour, FB-AURORA-STATION-07).
     flesh.lathe(HUB, 8, ICE_FLESH.graphite, Placement(None, EIGHTH))
-    flesh.cylinder(20.5, 0.3, 8, ICE_FLESH.rime, Placement([0.0, 7.0, 0.0], EIGHTH))
     neon.ring(25.1, 1.0, 8, AURORA_GREEN, Placement([0.0, -0.5, 0.0], EIGHTH))
-    hull.cylinder(11.0, 6.0, 8, H.panel, Placement([0.0, 7.0, 0.0], EIGHTH), 10.0)
-    for a in [0, 1, 2, 3, 4, 5]:
-        yaw = a * math.pi / 3 + 0.3
-        glow_vein(
-            p,
-            [math.sin(yaw) * 11.0, 7.4, math.cos(yaw) * 11.0],
-            [math.sin(yaw) * 23.0, 3.0, math.cos(yaw) * 23.0],
-            1.0,
-            AURORA_GREEN,
-        )
+    hull.cylinder(
+        COLLAR_RADIUS,
+        COLLAR_TOP - DRUM_TOP,
+        8,
+        H.panel,
+        Placement([0.0, DRUM_TOP, 0.0], EIGHTH),
+        10.0,
+    )
     neon.ring(10.9, 0.8, 8, AURORA_VIOLET, Placement([0.0, 9.5, 0.0], EIGHTH))
     for m in AURORA_COLLAR:
         collar = boss_point(m[0], m[1], m[2])
@@ -130,7 +118,6 @@ def draw_hub(p: EnemyParts) -> None:
         muzzle(collar, "ring")
         hull.cylinder(1.8, 5.0, 6, H.dark, Placement(collar))
     for s in SIDES:
-        crystals(flesh, [s * 16.0, 6.5, -8.0], 3.5)
         socket(hull, [s * 36.0, 1.0, 40.0], 7.5, 0.8)
 
 
@@ -198,33 +185,14 @@ def draw_habitats(p: EnemyParts) -> None:
 
 
 def draw_radiators(p: EnemyParts) -> None:
-    """Draw the radiator wings behind the truss: iced panels, dark ribs, a green edge light."""
-    hull = p.hull
-    flesh = p.flesh
-    neon = p.neon
+    """Draw what holds the fins behind the truss, and the icicles under them.
+
+    The fins themselves are the flanks' armour (`aurora_station_armour.flank_armour`): a metal
+    bracket at each root, and the icicles, which stay under the frame once a fin is shed.
+    """
     for s in SIDES:
-        # FB-AURORA-STATION-02: frilled membrane fins on bone rays, where the radiators were.
-        outline: list[OutlinePoint] = [[s * p0[0], p0[1]] for p0 in RADIATOR]
-        flesh.bevel_slab(
-            outline,
-            [-0.6, 0.0, 1.0],
-            [0.4, 0.6],
-            ICE_FLESH.membrane,
-            None,
-            ICE_FLESH.teal,
-        )
-        for x in [30.0, 42.0, 54.0, 66.0, 78.0]:
-            sinew(
-                flesh,
-                [s * (x - 4.0), 1.0, -25.0],
-                [s * x, 1.0, -46.5],
-                0.6,
-                ICE_FLESH.bone,
-                [0.0, 0.4, 0.0],
-            )
-        seam(neon, [s * 84.2, -32.0], [s * 84.2, -46.0], [0.2, 0.5, 0.6], AURORA_GREEN)
-        seam(hull, [s * 18.0, -30.0], [s * 21.0, -30.0], [0.0, 3.0, 3.0], H.panel)
-        icicles(flesh, RADIATOR_ICICLES, s)
+        seam(p.hull, [s * 18.0, -30.0], [s * 21.0, -30.0], [0.0, 3.0, 3.0], H.panel)
+        icicles(p.flesh, RADIATOR_ICICLES, s)
 
 
 def draw_guns(p: EnemyParts) -> None:
@@ -255,9 +223,16 @@ def draw_core(p: EnemyParts) -> None:
     draw_guns(p)
 
 
-def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
+def boss_drawing(core: Any, parts: Any, turrets: Any, ring: Any, armour: Any) -> Any:
     """Return what `build_boss_model` draws a boss from."""
-    return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
+    return record({
+        "core": core,
+        "parts": parts,
+        "turrets": turrets,
+        "limbs": None,
+        "ring": ring,
+        "armour": armour,
+    })
 
 
 def build_aurora_station(scene: Any) -> BuiltEnemyModel:
@@ -269,7 +244,7 @@ def build_aurora_station(scene: Any) -> BuiltEnemyModel:
 
     FB-AURORA-STATION-02: now a living ice jellyfish, a bell of cold flesh under a frilled crown, a
     bone spine out to its cryo bladders, egg sacs and membrane fins behind, metal grafts on its
-    guns.
+    guns. FB-AURORA-STATION-07: the bell's cap and the fins are armour of their own.
     """
     model: BuiltEnemyModel = build_boss_model(
         AURORA_STATION,
@@ -290,8 +265,8 @@ def build_aurora_station(scene: Any) -> BuiltEnemyModel:
                 "emitter-left": emitter_turret,
                 "emitter-right": emitter_turret,
             },
-            None,
             dish,
+            {"flanks": {"whole": flank_armour}, "bell": {"whole": bell_armour}},
         ),
     )
     return model

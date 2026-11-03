@@ -298,7 +298,7 @@ class DevViewer:
         direction = stage.framing.direction
         altitude = self.game.view.scenery.camera.flightAltitude
         t = (altitude - camera.y) / direction[0] if direction[0] != 0 else 0
-        return [self.game.screen.width / 2, camera.z + t * direction[1]]
+        return [self.game.playfield.width / 2, camera.z + t * direction[1]]
 
     def _drop_item(self) -> None:
         self._at = 0.0
@@ -336,7 +336,7 @@ class DevViewer:
         else:
             self._item = item
             self._middle_point = middle
-            self._context = DevEnemyContext(self.game.screen, create_rng(int(CFG.model_seed)))
+            self._context = DevEnemyContext(self.game.playfield, create_rng(int(CFG.model_seed)))
             self._enemy = self._spawn(item)
             models = self.game.view.enemies.models
             self._layer = view.playfield.run(lambda: EnemyLayer(view.scene, models, []))
@@ -350,7 +350,7 @@ class DevViewer:
 
         Where its kind brings it in It then lives its own life (see `_live`).
         """
-        screen = self.game.screen
+        screen = self.game.playfield
         area = EnemySpawnArea(screen.width, screen.height, create_rng(int(CFG.model_seed)))
         enemy: Any = None
         if self.viewer == "bosses":
@@ -434,9 +434,10 @@ class DevViewer:
             return True
         if not enemy.expires:
             return False
-        if _within(enemy, self.game.screen, enemy.radius):
+        if _within(enemy, self.game.playfield, enemy.radius):
             self._entered = True
-        left = self._entered and not _within(enemy, self.game.screen, GAME_PLAY_CONFIG.cull_margin)
+        playfield = self.game.playfield
+        left = self._entered and not _within(enemy, playfield, GAME_PLAY_CONFIG.cull_margin)
         return left or enemy.age > GAME_PLAY_CONFIG.max_enemy_age
 
     def _sync(self, dt: float) -> None:

@@ -145,9 +145,21 @@ DAM_BREAKER = with_weapons(
         hidden_weapon("rack-right", "rack", [34, -55], 12, 1900, 2, "green", 2.0, 9.4),
     ],
     [
-        armour_region("flanks", 1, [[30, 7], [66, 7], [66, 74], [30, 74]], "wing", [-0.2, 1000]),
+        # FB-DAM-BREAKER-11: the plating over each flank's deck, from the sluice mounts back to
+        # the stern, out to the deck's edge (mirrored); a battery lies under each.
         armour_region(
-            "wings", 2, [[14, -76], [60.4, -76], [60.4, -21], [14, -21]], "wing", [-2.6, 1000]
+            "flanks",
+            1,
+            [[30, 7], [56, 7], [56, 52], [50.5, 65], [35.5, 70], [30, 70]],
+            "wing",
+        ),
+        # FB-DAM-BREAKER-12: the plating over each side of the bow's deck, beside the armour plate
+        # and the hangar, out to the deck's edge (mirrored); a rack lies under each.
+        armour_region(
+            "wings",
+            2,
+            [[14, -71], [21.5, -70], [39, -62], [52.3, -47], [56, -30], [56, -21], [14, -21]],
+            "wing",
         ),
     ],
 )

@@ -162,8 +162,29 @@ CINDER_CRAB = with_weapons(
         hidden_weapon("gatling-right", "gatling", [28, 21], 8, 400, 1, "red", 2.0, 11.7),
     ],
     [
+        # MB-CINDER-CRAB-13: the flank plating, a wedge of shell either side of the carapace from
+        # the edge of its flat top (0.6 of its half width) out to its chine, station by station
+        # (its nose at -Y; see `cinder_crab_model.CARAPACE`); the gatlings lie under it.
         armour_region(
-            "flanks", 1, [[12, -9], [56.4, -9], [56.4, 34.5], [12, 34.5]], "wing", [2.9, 1000]
+            "flanks",
+            1,
+            [
+                [7.2, -24],
+                [15.6, -20],
+                [24, -14],
+                [28.8, -2],
+                [27, 12],
+                [19.2, 25],
+                [8.4, 32],
+                [14, 32],
+                [32, 25],
+                [45, 12],
+                [48, -2],
+                [40, -14],
+                [26, -20],
+                [12, -24],
+            ],
+            "wing",
         ),
     ],
 )

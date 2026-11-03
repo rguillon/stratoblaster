@@ -146,11 +146,13 @@ _STEAM_DREADNOUGHT = record({
     ),
 })
 
-# Its transformations (D-230): once both its turrets are gone its front side decks fan out forward
-# on hinges at their bows (FB-STEAM-DREADNOUGHT-15), a gun battery riding each
-# (FB-STEAM-DREADNOUGHT-16), dark metal showing in the wedges they open; once both its stacks are
-# gone its stern and spine plating burst off (FB-STEAM-DREADNOUGHT-17) for two mortars and a ring
-# emitter (FB-STEAM-DREADNOUGHT-18).
+# Its transformations (D-230, D-254): once both its turrets are gone its front side decks (the
+# sponson decks, drawn as pieces of their own by the model) fan out forward on hinges at their bows
+# (FB-STEAM-DREADNOUGHT-15), a gun battery riding each (FB-STEAM-DREADNOUGHT-16), dark metal
+# showing in the wedges they open; once both its stacks are gone its stern flank decks and the
+# stern half of its citadel burst off (FB-STEAM-DREADNOUGHT-17) for two mortars and a ring emitter
+# (FB-STEAM-DREADNOUGHT-18). The outlines are the pieces' own shapes (Y up the screen: the deck's
+# bow edges at -Y).
 STEAM_DREADNOUGHT = with_weapons(
     merge(
         _STEAM_DREADNOUGHT,
@@ -167,17 +169,30 @@ STEAM_DREADNOUGHT = with_weapons(
         moving_region(
             "decks",
             1,
-            [[20, -54], [74, -54], [74, 2], [20, 2]],
+            [
+                [20, -54],
+                [24, -54],
+                [36, -40],
+                [66, -32],
+                [70, -20],
+                [66, -8],
+                [40, -2],
+                [40, 2],
+                [20, 2],
+            ],
             swing([20, -54, 0], "up", [0, -25]),
             "wing",
             [-8, 1000],
         ),
         [
             armour_region(
-                "flanks", 2, [[18, 17], [72, 17], [72, 77], [18, 77]], "wing", [2.1, 1000]
+                "flanks",
+                2,
+                [[18, 17], [39.5, 17], [39, 30], [32, 60], [20, 76], [18, 76]],
+                "wing",
             ),
             armour_region(
-                "spine", 2, [[-18, 1], [18, 1], [18, 57], [-18, 57]], "shell", [6.4, 1000], False
+                "spine", 2, [[-18, 13], [18, 13], [18, 46], [-18, 46]], "shell", None, False
             ),
         ],
     ),

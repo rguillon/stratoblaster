@@ -138,8 +138,26 @@ MOSQUITO = with_weapons(
         hidden_weapon("cannon-right", "cannon", [12, -11], 10, 800, 1, "magenta", 2.0, 8.1),
     ],
     [
+        # MB-MOSQUITO-12 (D-254): the thorax's shell, its own plan over the flattened thorax (its
+        # nose at -Y), flaring over the hips; the cannons lie under its flanks.
         armour_region(
-            "back", 1, [[-30, -29.4], [30, -29.4], [30, 19], [-30, 19]], "shell", [0.0, 1000], False
+            "back",
+            1,
+            [
+                [-5.5, 9],
+                [5.5, 9],
+                [9.5, 0],
+                [13, -6],
+                [13.5, -12],
+                [8, -16],
+                [-8, -16],
+                [-13.5, -12],
+                [-13, -6],
+                [-9.5, 0],
+            ],
+            "shell",
+            None,
+            False,
         ),
     ],
 )

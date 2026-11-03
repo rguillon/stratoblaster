@@ -92,7 +92,7 @@ outside it ([screen.md](screen.md) GAME-SCREEN-06). It falls straight down the s
 A bonus not picked up goes past the bottom edge and is removed (GAME-SCREEN-07).
 
 **Acceptance criteria**
-- Given a bonus dropped at x = 450, then it falls at the right end of the ship's reach (unit test).
+- Given a bonus dropped at x = 900, then it falls at the right end of the ship's reach (unit test).
 - Given 2 s, then a bonus has fallen 90 px (unit test).
 
 *Sources: D-049, P07-R07.*

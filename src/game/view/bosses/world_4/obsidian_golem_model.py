@@ -5,9 +5,10 @@ Logical pixels, nose +Z, Y up (towards the camera). A massive flying fortress sh
 giant: a broad armoured torso of black obsidian plates split by glowing magma seams, a small helmed
 head low on its chest, a furnace stack on its back, heavy pauldrons, two arms bending at the
 shoulder and elbow down to huge fists (limbs on joints), the shoulder cannons behind the pauldrons,
-the armour plate and the chest emitter on its front. FB-OBSIDIAN-GOLEM-02: a living hunched giant,
-its flesh torso and hump ribbed in bone and veined with magma, obsidian growths for pauldrons,
-knuckles and chest plate, a metal helm and guns grafted on.
+the armour plate and the chest emitter on its front. The pauldrons ride the flank slabs and the
+helm ends the spine ridge: its armour (D-254, `obsidian_golem_armour`). FB-OBSIDIAN-GOLEM-02: a
+living hunched giant, its flesh torso and hump ribbed in bone and veined with magma, obsidian
+growths for pauldrons, knuckles and chest plate, a metal helm and guns grafted on.
 """
 
 import math
@@ -20,25 +21,25 @@ from game.config.bosses.world_4.obsidian_golem import (
 from game.view.bosses.boss_limbs import boss_point
 from game.view.bosses.boss_model import build_boss_model
 from game.view.bosses.final_boss_shapes import mirrored
-from game.view.bosses.mini_boss_greebles import vent
 from game.view.bosses.mini_boss_shapes import SHADE, WHITE, H, offset, socket
 from game.view.bosses.world_4.living_forge import (
     SKIN,
     back_ribs,
     flesh_shell,
-    glands,
-    magma_vein,
     reactor_sacs,
 )
 from game.view.bosses.world_4.magma_salamander_parts import barrel
+from game.view.bosses.world_4.obsidian_golem_armour import (
+    OBSIDIAN_GOLEM_ARMOUR,
+    PAULDRON_AT,
+    TORSO_TOP,
+)
 from game.view.bosses.world_4.obsidian_golem_parts import (
     GOLEM_NEON,
     MAGMA,
-    OBSIDIAN,
     arm_limbs,
     cannon_mount,
     cannon_turret,
-    crack,
     emitter,
     fist,
     plate,
@@ -74,106 +75,41 @@ HUMP = [
     [8.0, 28.0, 16.0, 26.0],
     [22.0, 18.0, 16.0, 21.0],
 ]
-# The magma seams across its back, as paths of points (x, z) on the hump's top.
-SEAMS = [
-    [
-        [-16.0, 12.0],
-        [-6.0, 4.0],
-        [4.0, 8.0],
-        [16.0, 0.0],
-    ],
-    [
-        [-18.0, -10.0],
-        [-8.0, -6.0],
-        [2.0, -14.0],
-        [14.0, -10.0],
-    ],
-    [
-        [0.0, -14.0],
-        [-2.0, -26.0],
-    ],
-]
-# The head: a small helm low on its chest, from its nape to its brow.
-HELM = [
-    [8.0, 9.0, 16.0, 28.0],
-    [16.0, 10.0, 16.0, 29.0],
-    [22.0, 8.0, 17.0, 26.0],
-]
+# The shoulder drums under the pauldrons: their radius, within the pauldrons' domes.
+SHOULDER = 12.5
 
 
 def _draw_torso(p: Any) -> None:
-    """Draw the torso: a slab of dark metal, the obsidian hump on it.
+    """Draw the torso: a slab of dark metal, the flesh hump on it, ribs over its back.
 
-    Magma seams run across its back.
+    The flank slabs with the pauldrons, the magma veins and glands, and the obsidian ridge with its
+    magma seams along the hump's crest are its armour (`obsidian_golem_armour`).
     """
     hull = p.hull
     neon = p.neon
-    p.flesh.bevel_slab(TORSO, [-4, 2, 16], [4, 3], SKIN.base, None, SKIN.panel)
+    p.flesh.bevel_slab(TORSO, [-4, 2, TORSO_TOP], [4, 3], SKIN.base, None, SKIN.panel)
     flesh_shell(p.flesh, HULL_SECTION, HUMP, [SKIN.dark, SKIN.base])
     back_ribs(p, [-22, -10], RibSpec(26, 12, 15, 1.2))
     for s in SIDES:
-        magma_vein(
-            p,
-            [
-                [s * 30, 16.2, 16],
-                [s * 34, 16.2, -2],
-                [s * 28, 16.2, -24],
-            ],
-            1.4,
-        )
-        glands(p, [[s * 32, 15.8, -30]], 2.4, GOLEM_NEON)
-    for path in SEAMS:
-        crack(neon, path, 28.2)
-    for s in SIDES:
         neon.box([0.7, 0.6, 50], GOLEM_NEON, Placement([s * 39.6, 10, -6], s * 0.05))
-        vent(hull, [s * 20, 16.2, -26], [8, 6], 3, s * 0.2)
-        hull.box([10, 0.5, 8], SHADE["soot"], Placement([s * 26, 16.1, 18 - s * 6]))
         socket(hull, [s * 46, 0, -20], 9, 2)
+        # The shoulder: a dark drum from the underside up to the torso's top, under the pauldron
+        # and its hinge (the flank slab's foot once it has lifted, BOSS-52).
+        hull.cylinder(
+            SHOULDER,
+            TORSO_TOP,
+            8,
+            H.dark,
+            Placement([s * PAULDRON_AT[0], 0, PAULDRON_AT[1]], math.pi / 8),
+        )
 
 
-def _draw_head(p: Any) -> None:
-    """Draw the head: a helm with a glowing visor, the twin guns under its brow."""
-    hull = p.hull
-    neon = p.neon
-    charge = p.charge
-    hull.loft(HULL_SECTION, HELM, H.panel)
-    neon.box([14, 1.2, 1], GOLEM_NEON, Placement([0, 25.6, 22.2]))
-    charge.box([10, 0.6, 0.6], WHITE, Placement([0, 26, 22.5]))
-    hull.box([3, 4, 10], SHADE["edge"], Placement([0, 28.6, 14]))
+def _draw_brow_guns(p: Any) -> None:
+    """Draw the twin guns under the helm's brow (the core's; the helm is its spine armour)."""
     for m in GOLEM_BROW:
         tip = boss_point(m[0], m[1], m[2])
-        hull.box([3.6, 3, 4], H.dark, Placement(offset(tip, 0, -1.5, -6)))
+        p.hull.box([3.6, 3, 4], H.dark, Placement(offset(tip, 0, -1.5, -6)))
         barrel(p, tip, [1.1, 5])
-
-
-def _draw_pauldrons(p: Any) -> None:
-    """Draw the pauldrons over its shoulders: domes of obsidian ringed in orange."""
-    hull = p.hull
-    neon = p.neon
-    for s in SIDES:
-        at: Vec3 = [s * 38, 14, 2]
-        hull.lathe(
-            [
-                [13, 0],
-                [13.6, 4],
-                [10, 9],
-                [4, 11],
-                [0, 11.4],
-            ],
-            8,
-            OBSIDIAN,
-            Placement(at, math.pi / 8),
-        )
-        neon.ring(13.7, 0.8, 8, GOLEM_NEON, Placement(offset(at, 0, 1.4, 0), math.pi / 8))
-        crack(
-            neon,
-            [
-                [s * 32, 6],
-                [s * 38, 0],
-                [s * 44, 3],
-            ],
-            at[1] + 9.8,
-        )
 
 
 def _draw_stack(p: Any) -> None:
@@ -219,8 +155,7 @@ def build_obsidian_golem(scene: Any) -> Any:
 
     def core(p: Any) -> None:
         _draw_torso(p)
-        _draw_head(p)
-        _draw_pauldrons(p)
+        _draw_brow_guns(p)
         _draw_stack(p)
         _draw_underside(p)
 
@@ -240,5 +175,6 @@ def build_obsidian_golem(scene: Any) -> Any:
             },
             "turrets": {"cannon-left": cannon_turret, "cannon-right": cannon_turret},
             "limbs": arm_limbs(),
+            "armour": OBSIDIAN_GOLEM_ARMOUR,
         },
     )

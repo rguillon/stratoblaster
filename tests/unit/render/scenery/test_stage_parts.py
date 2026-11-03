@@ -69,6 +69,20 @@ def test_the_stage_camera_sees_twice_the_half_field_of_view_between_its_clips() 
     assert camera.fov == pytest.approx(1.0)
     assert (camera.minZ, camera.maxZ) == (150, 800)
     assert scene.activeCamera is camera
+    assert not hasattr(camera, "viewport")
+
+
+def test_gfx_cam_02_the_stage_camera_draws_only_into_the_playfield_window(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """D-252: its viewport is the window's, as shares of the canvas."""
+    viewports: list[tuple[float, float, float, float]] = []
+    monkeypatch.setattr(
+        stage_parts, "new_viewport", lambda x, y, w, h: viewports.append((x, y, w, h)) or "viewport"
+    )
+    camera = stage_camera(FakeScene(), 0.5, (150, 800), (0.25, 0, 0.5, 1))
+    assert viewports == [(0.25, 0, 0.5, 1)]
+    assert camera.viewport == "viewport"
 
 
 class _Mesh:

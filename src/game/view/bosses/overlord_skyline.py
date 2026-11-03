@@ -220,10 +220,44 @@ def _draw_command_tower(p: Any) -> None:
     p.charge.box([1.1, 1.1, 1.1], WHITE, Placement([x - 3, roof + 11.6, z + 1]))
 
 
-def draw_skyline(parts: Any) -> None:
-    """FB-OVERLORD-01, FB-OVERLORD-02: the Overlord's city, its living towers and landmarks."""
+# Where the flank plates and the front plate lie (model X out from the middle, model Z), D-254.
+FLANK_X = 29
+FLANK_Z = [-32, 42]
+FRONT_Z = 42
+
+
+def tower_place(tower: Any) -> str:
+    """Return what a tower stands on: `flanks`, `spine` (the front plate) or `core` (D-254)."""
+    if abs(tower.x) >= FLANK_X and FLANK_Z[0] <= tower.z <= FLANK_Z[1]:
+        return "flanks"
+    if tower.z >= FRONT_Z:
+        return "spine"
+    return "core"
+
+
+def _towers_on(parts: Any, place: str) -> None:
+    """Draw the towers standing on `place` (see `tower_place`)."""
     for tower in TOWERS:
-        _spire(parts, tower)
+        if tower_place(tower) == place:
+            _spire(parts, tower)
+
+
+def draw_skyline(parts: Any) -> None:
+    """FB-OVERLORD-01, FB-OVERLORD-02: the city on the Overlord's centre strip (the core's).
+
+    The towers on its flanks and at its front stand on its armour (`overlord_armour`).
+    """
+    _towers_on(parts, "core")
+
+
+def draw_flank_city(parts: Any) -> None:
+    """Draw the city on the flank plates: its towers and its landmarks (FB-OVERLORD-02, D-254)."""
+    _towers_on(parts, "flanks")
     _draw_spire(parts)
     _draw_billboard(parts)
     _draw_command_tower(parts)
+
+
+def draw_front_towers(parts: Any) -> None:
+    """Draw the towers on the front plate (FB-OVERLORD-02, D-254)."""
+    _towers_on(parts, "spine")

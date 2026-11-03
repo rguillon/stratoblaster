@@ -32,8 +32,9 @@ right, left, right), so that no turret hides behind the head. The boss is a 6 L 
 
 #### FB-RIVER-LEVIATHAN-02 — Cyber-Organic body · MUST
 
-It reads as one living serpent with armour grafted on: a head of teal flesh, its scutes and jaw line
-grafted armour, a membrane fin on its back with the crest emitter grafted at its top; segments of
+It reads as one living serpent with armour grafted on: a head of teal flesh (its skull, flat-backed, under the plating it sheds), its
+scutes and jaw line grafted armour, a membrane fin on its back rooted in the skull with the crest
+emitter grafted at its top; segments of
 swollen teal flesh with bone ribs over them and a vein along the spine, their scutes and sponsons
 grafted armour; a tapering flesh tail with membrane flukes on bone and its reactors in flesh sacs. A
 round collar stands on each hinge so the bend between two segments never opens a gap.
@@ -186,27 +187,35 @@ and `green`.
 
 #### FB-RIVER-LEVIATHAN-13 — First transformation: back plating, two sweepers · MUST
 
-At 2 of its 5 original parts destroyed, the Leviathan transforms for the first time. The plating at
-the back of its head (one region across the centre line, 20 px either side, from 1 px ahead of the
-centre to 26 px behind it, above 5.2 px high) bursts off over a dark metal `shell` frame. Two
-sweepers come out at 7 px either side of the centre line, 19 px behind it (radius 5 px, pods 15.7 px
-high, 720 HP each), each firing a laser that sweeps after the player (see [common](../common.md)),
-1.2 s and 2.0 s into a stage.
+At 2 of its 5 original parts destroyed, the Leviathan transforms for the first time. The **back
+plating** of its head bursts off ([common](../common.md), BOSS-42): a piece drawn apart from the
+skull, the head's shoulders and back behind the split 1 px ahead of the centre, from 4.7 px (sunk
+into the skull's flat back at 5 px) up to the head's top (10 to 13.5 px), carrying the worn edges
+along its shoulders, the scutes, the moss and the river stone. Its region (`back`) is a half of the
+head's own plan either side of the crest (x 1.6..17 at the split, narrowing to 12.3 at 24 px behind
+the centre), mirrored; it bursts into plates cracked from that outline and leaves a dark metal
+`shell` frame on the skull's back, the crest standing between the halves. Two sweepers come out at 7
+px either side of the centre line, 19 px behind it (radius 5 px, pods 15.7 px high, 720 HP each),
+each firing a laser that sweeps after the player (see [common](../common.md)), 1.2 s and 2.0 s into a
+stage.
 
 **Acceptance criteria**
 - Given 2 original parts are destroyed, then the first transformation sheds the back region and
   reveals the two sweepers, which shield the core and fire (unit: `test_boss_kinds.py`).
 
-*Sources: D-221, D-224, D-229, D-227.*
+*Sources: D-221, D-224, D-229, D-227, D-254.*
 
 #### FB-RIVER-LEVIATHAN-14 — Second transformation: spine plating, two orbs · MUST
 
-At 4 original parts destroyed, it transforms again. The plating over the front of its head (20 px
-either side of the centre line, from 33 px ahead of the centre to 1 px ahead, above 4.9 px high)
-bursts off over a `shell` frame, and two orbs come out at 7 px either side, 21 px ahead (radius 5 px,
-pods 10.8 px high, 900 HP each), firing `green` rings of 10, 1.2 s and 2.0 s into a stage. It reveals
-no kind twice, it fires no less after each transformation than before, and it stays one object in
-every state.
+At 4 original parts destroyed, it transforms again. The **spine plating** over the front of its head
+bursts off: the piece drawn apart from the skull ahead of the split, the head's shoulders and back
+from 4.7 px up to the head's top (13.5 px, tapering to 6 at the snout), the teal glands and the
+glaring eyes on it. Its region (`spine`) is a half of the head's plan either side of the spine (x
+1.6..17 at the split, tapering to 5 at 29 px ahead), mirrored; it bursts into plates cracked from
+that outline and leaves a `shell` frame on the skull, the fang guns and the lens staying on the
+snout under it. Two orbs come out at 7 px either side, 21 px ahead (radius 5 px, pods 10.8 px high,
+900 HP each), firing `green` rings of 10, 1.2 s and 2.0 s into a stage. It reveals no kind twice, it
+fires no less after each transformation than before, and it stays one object in every state.
 
 **Acceptance criteria**
 - Given 4 original parts are destroyed, then the spine region bursts off and the two orbs come out
@@ -214,7 +223,7 @@ every state.
 - Given each state, then nothing of it hangs in the air (unit:
   `test_d227_the_boss_holds_together_in_every_state`).
 
-*Sources: D-221, D-224, D-229, D-227.*
+*Sources: D-221, D-224, D-229, D-227, D-254.*
 
 #### FB-RIVER-LEVIATHAN-15 — Points and drops · MUST
 
@@ -247,8 +256,8 @@ the boss's centre, X right, Y up the screen (the tail at +Y).
 | core laser | 1.5–1.6 s, every 7 → 5 s | stage volleys |
 | rage | spirals, heat 5 | |
 | transformations | at 2 and 4 parts destroyed | `default_transforms` |
-| back region | x ±20, y -1..26, from 5.2 px, `shell` | form 1 |
-| spine region | x ±20, y -33..-1, from 4.9 px, `shell` | form 2 |
+| back region | a half of the head's plan, x 1.6..17 at y -1 to 12.3 at y 24, mirrored, `shell`; plating 4.7 px to the head's top | form 1 |
+| spine region | a half of the head's plan, x 1.6..17 at y -1 to 5 at y -29, mirrored, `shell`; plating 4.7 px to the head's top | form 2 |
 | sweepers | (±7, 19), radius 5, pod 15.7, 720 HP | form 1 |
 | orbs | (±7, -21), radius 5, pod 10.8, 900 HP, `green` | form 2 |
 | points | 20 000 (2 000 a part) | |

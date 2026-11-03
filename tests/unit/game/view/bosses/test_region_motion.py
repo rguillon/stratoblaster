@@ -6,19 +6,18 @@ from types import SimpleNamespace
 from typing import Any
 
 import pytest
+from helpers.boss_wholeness import moved_triangles, posed
 
 from game.config.boss_look import BOSS_LOOK
 from game.config.bosses.moving_regions import motion_value, moving_region, slide, swing
 from game.view.bosses.region_motion import (
-    moved_triangles,
     node_pose,
-    posed,
     progress,
     relative_value,
     to_config,
     to_model,
 )
-from render.geometry.shatter import Vertex
+from render.geometry.mesh_triangles import Vertex
 
 MOTIONS = [
     swing([12, -5, 3], "up", [0, 50]),

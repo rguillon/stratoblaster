@@ -29,10 +29,11 @@ sponson on its left flank, behind the middle.
 
 Its body is Cyber-Organic flesh with metal grafts (see [art direction](../../graphics/art-direction.md)),
 drawn by code: a muscled body of cold teal flesh, rimed on top; a back and head of graphite flesh
-with dark seams; bone ribs and a row of ice spines down its back; forelegs of sinew, a sinew pulling
-each paw; a bobtail of sinew; reactor sacs at the stern. Metal shows only on its haunches (frosted
-armour plates raised over the rear) and where its guns are grafted. The ears are tufts of sinew,
-each with a dark metal whip ending in a white light.
+with dark seams, the head's crown the plating it sheds (MB-FJORD-LYNX-06); bone ribs and a row of
+ice spines down its back; forelegs of sinew, a sinew pulling each paw; a bobtail of sinew; reactor
+sacs at the stern. Metal shows only on its haunches (frosted armour plates raised over the rear) and
+where its guns are grafted. The ears are tufts of sinew on the crown, each with a dark metal whip
+ending in a white light.
 
 *Sources: P08-R10, P16-R05.*
 
@@ -66,12 +67,22 @@ frosted pads.
 
 #### MB-FJORD-LYNX-06 — What its transformation sheds · MUST
 
-At its transformation the plating over its head (region `back`: from 48 px to 10 px ahead of its
-centre, 40 px across, on the centre line) bursts off, baring a dark metal lattice (`shell`), and its
-two ring emitters rise from it. The paws, the mast's sponson and the haunches stay; the boss stays
-one object.
+At its transformation the plating over its head is the armour it sheds ([common](../common.md),
+BOSS-42), drawn as pieces of its own: the crown of the head, a loft of graphite flesh with dark seams
+lying on the flattened head from the neck (3 px ahead of the centre, sunk in the head's slope) to a
+point just over the deck 26 px ahead, 7 to 12.5 px high, the two ears on it; and a lobe of rimed
+graphite flesh on the deck (5 to 6 px) either side of the chin cannon, from 24 to 40 px ahead, where
+the ring emitters lie folded. Its region (`back`, not mirrored) is the crown's footprint (x ±9 at the
+neck, ±10 from 24 px ahead) running into the two lobes (x 5.5 to 10, to 6.5 at the nose) round the
+chin cannon's channel. It bursts into the crown's three slices, the two ears and the two lobes, and
+bares a dark metal lattice (`shell`) on the head and the deck; its two ring emitters rise from the
+lobes. The paws, the mast's sponson and the haunches stay; the boss stays one object.
 
-*Sources: D-221, D-224, D-227, D-229.*
+**Acceptance criteria**
+- Given its model, then it draws the back region's armour, and it holds together with and without
+  it (unit tests).
+
+*Sources: D-221, D-224, D-227, D-229, D-254.*
 
 ### Behaviour
 
@@ -166,7 +177,7 @@ as every boss.
 | rage_heat | 3.5 (`vortex`, blue / magenta) | `rage` |
 | transformation | after 2 of 3 parts | `boss_build.default_transforms` |
 | weapon_radius / weapon_hp | 5 px / 480 | `hidden_weapon("orb-…")`, pod 7.2 px high |
-| region `back` | x −20…20, y −48…−10, from 7.5 px up, `shell` | `armour_region("back", 1, …)` |
+| region `back` | the crown and two lobes, not mirrored: x ±9 at y −3, ±10 at y −24…−34, lobes x 5.5…10 to 5.5…6.5 at y −40 round the channel x ±5.5 from y −25; crown 7–12.5 px, lobes 5–6 px; `shell` | `armour_region("back", 1, …)`; `src/game/view/bosses/world_2/fjord_lynx_armour.py` |
 | full_hp / full_hp_with_weapons | 2 880 / 3 840 | core + parts |
 | points | 3 500 (350 a part) | `points` |
 

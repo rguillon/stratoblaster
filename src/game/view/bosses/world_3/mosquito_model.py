@@ -3,7 +3,7 @@
 
 Logical pixels, nose +Z, Y up (towards the camera). A thin bio-drone: a small armoured thorax, a
 big-eyed head, a long segmented abdomen behind, six thin legs hanging under it, moss grown over its
-back.
+back. The thorax's shell is the armour it sheds (MB-MOSQUITO-12, D-254): `draw_shell`.
 """
 
 from game.config.bosses.world_3.mosquito import MOSQUITO, MOSQUITO_MANDIBLES, MOSQUITO_SAC
@@ -31,7 +31,7 @@ from game.view.bosses.world_3.mosquito_parts import (
 )
 from game.view.enemies.enemy_shapes import SIDES
 from game.view.enemies.organic_parts import reactor_sac
-from render.geometry.organic import ROUND_SECTION, tendril
+from render.geometry.organic import ROUND_SECTION, SHELL_SECTION, tendril
 from render.geometry.solids import Placement
 
 # isort: split
@@ -45,12 +45,24 @@ type Vec3 = list[float]
 # __pragma__ ("noskip")
 
 
-# The thorax along the centre line (loft stations: z, half width, bottom, top).
+# The thorax along the centre line (loft stations: z, half width, bottom, top): the keel, flattened
+# to `KEEL_TOP` under its shell.
+KEEL_TOP = 3.3
 THORAX = table([
-    [-9, 5, -2, 6],
-    [0, 9, -3, 9],
-    [10, 8, -3, 8],
-    [16, 5, -1, 5],
+    [-9, 5, -2, KEEL_TOP],
+    [0, 9, -3, KEEL_TOP],
+    [10, 8, -3, KEEL_TOP],
+    [16, 5, -1, KEEL_TOP],
+])
+# The thorax's shell (MB-MOSQUITO-12), the armour over the keel: a ridged carapace sunk
+# `SHELL_SINK` into it, flaring out over the hips (the cannons lie under its flanks).
+SHELL_SINK = 0.3
+SHELL = table([
+    [-9, 5.5, KEEL_TOP - SHELL_SINK, 6.5],
+    [0, 9.5, KEEL_TOP - SHELL_SINK, 9.5],
+    [6, 13, KEEL_TOP - SHELL_SINK, 9.5],
+    [12, 13.5, KEEL_TOP - SHELL_SINK, 8.5],
+    [16, 8, KEEL_TOP - SHELL_SINK, 6],
 ])
 # The abdomen, tail to waist: long and segmented.
 ABDOMEN = table([
@@ -82,9 +94,9 @@ SAC = table([[3.6, 0], [3.1, 1.5], [1.6, 2.3], [0, 2.5]])
 
 
 def draw_body(p: EnemyParts) -> None:
-    """Draw the thorax and the segmented abdomen, pink bands between the segments.
+    """Draw the thorax's keel and the segmented abdomen, pink bands between the segments.
 
-    Moss on its back (MB-MOSQUITO-05).
+    Moss on the abdomen's back (MB-MOSQUITO-05); the thorax's shell is drawn apart (`draw_shell`).
     """
     hull = p.hull
     flesh = p.flesh
@@ -93,23 +105,33 @@ def draw_body(p: EnemyParts) -> None:
     # by grafted metal bands, a vein pulsing down its back.
     flesh.loft(ROUND_SECTION, THORAX, F.graphite)
     flesh.loft(ROUND_SECTION, ABDOMEN, F.slate)
-    vein_to(p, [[0, 6.4, 12], [0, 4.2, -40]], [0, 2, 0], MOSQUITO_PINK, 1)
+    vein_to(p, [[0, 5.2, -9], [0, 4.2, -40]], [0, 1.6, 0], MOSQUITO_PINK, 1)
     for seg in SEGMENTS:
         z = seg[0]
         w = seg[1]
         y = seg[2]
         neon.box([w * 1.6, 0.4, 0.8], MOSQUITO_PINK, Placement([0, y, z]))
         hull.box([w * 2.1, 1, 1.4], H.dark, Placement([0, y - 2.4, z]))
-    seam(hull, [0, 14], [0, -6], [8.6, 1.2, 0.6], SHADE["edge"])
-    moss(
-        hull,
-        [[3.5, 8.4, 4], [-4, 8.2, -3], [2, 7.2, -24], [-2.5, 6.6, -33]],
-    )
+    moss(hull, [[2, 7.2, -24], [-2.5, 6.6, -33]])
     # A strand of vine trailing from its side.
     rod(hull, [-6, 1, -22], [-10, -6, -30], 0.5, MOSS)
     reactor_sac(p, table([0, 1.8, -44.4]), 1.6, MOSQUITO_PINK, F.graphite, None)
     for s in SIDES:
         p.reactor([s * 5, 2, -9.2], 1.6)
+
+
+def draw_shell(p: EnemyParts) -> None:
+    """Draw the thorax's shell (MB-MOSQUITO-12): the armour it sheds at its transformation.
+
+    A ridged carapace over the flattened thorax, from just under its top up to its back, flaring
+    over the hips; the vein's front, a seam along its ridge and moss on it. The cannons lie folded
+    under its flanks.
+    """
+    hull = p.hull
+    p.flesh.loft(SHELL_SECTION, SHELL, F.graphite)
+    vein_to(p, [[0, 6.4, 12], [0, 5.8, -9]], [0, 1.6, 0], MOSQUITO_PINK, 1)
+    seam(hull, [0, 10], [0, -4], [8.6, 1.2, 0.6], SHADE["edge"])
+    moss(hull, [[3.5, 8.4, 4], [-4, 7.6, -3]])
 
 
 def draw_head(p: EnemyParts) -> None:
@@ -180,7 +202,7 @@ def draw_sac(p: EnemyParts) -> None:
 
 
 def mosquito_core(p: EnemyParts) -> None:
-    """Add the core of the Mosquito: its body, head, legs and sac."""
+    """Add the core of the Mosquito: its body, head, legs and sac (no shell)."""
     draw_body(p)
     draw_head(p)
     draw_legs(p)
@@ -191,7 +213,7 @@ def build_mosquito(scene: Any) -> Any:
     """MB-MOSQUITO-01, MB-MOSQUITO-06: the Mosquito, a thin, fast bio-drone with pink neon.
 
     Long buzzing wings with a fan pod under each, a big-eyed head and a needle-like proboscis that
-    aims its laser.
+    aims its laser. Its thorax's shell is the armour it sheds (MB-MOSQUITO-12).
     """
     parts: dict[str, Any] = {"wing-left": wing, "wing-right": wing, "proboscis": proboscis}
     turrets: dict[str, Any] = {"proboscis": needle}
@@ -199,5 +221,10 @@ def build_mosquito(scene: Any) -> Any:
         MOSQUITO,
         scene,
         MOSQUITO_PINK,
-        {"core": mosquito_core, "parts": parts, "turrets": turrets},
+        {
+            "core": mosquito_core,
+            "parts": parts,
+            "turrets": turrets,
+            "armour": {"back": {"whole": draw_shell}},
+        },
     )

@@ -10,8 +10,15 @@ def test_game_identity_is_set() -> None:
     assert GAME_CONFIG.title == "Stratoblaster"
 
 
-def test_playfield_is_a_portrait_screen_with_positive_size() -> None:
-    """GAME-SCREEN-01."""
-    assert GAME_CONFIG.screen.width == 480
-    assert GAME_CONFIG.screen.height == 640
-    assert GAME_CONFIG.screen.height > GAME_CONFIG.screen.width > 0
+def test_game_screen_01_the_playfield_is_a_16_9_landscape_screen() -> None:
+    """GAME-SCREEN-01 (D-249): 1280 x 720, a full HD screen at x1.5."""
+    assert GAME_CONFIG.screen.width == 1280
+    assert GAME_CONFIG.screen.height == 720
+    assert GAME_CONFIG.screen.width / GAME_CONFIG.screen.height == 16 / 9
+
+
+def test_game_screen_01_the_playfield_window_is_1000_x_720_in_the_middle_of_the_screen() -> None:
+    """D-252, D-253."""
+    window = GAME_CONFIG.playfield
+    assert (window.width, window.height) == (1000, 720)
+    assert window.left * 2 + window.width == GAME_CONFIG.screen.width

@@ -71,15 +71,29 @@ and horns glow. Its neon colour, set purple, shows bright yellow ([common](../co
 
 #### FB-OVERLORD-05 — What it sheds · MUST
 
-The armour of its flanks, from its wing roots out, is shed at its first transformation (`wing`
-frame beneath, mirrored), and the plating of its spine at its front at its second (`shell` lattice
-beneath).
+Its deck (the mantle) is drawn in two layers: a lower slab the whole deck wide (-8 to 3 px), its
+neon rim on it, and an upper one (3 to 6 px) whose flanks and front are its armour, drawn as pieces
+of their own ([common](../common.md), BOSS-42); the upper layer runs on along its middle, under the
+citadel and the boulevard behind it. The raised boulevard (5 to 10 px) is cut across before the
+citadel's weapon array.
+
+- The **flank plates** (`flanks`, mirrored), from the city's edge (32 px either side of the centre
+  line) out to the deck's edge, are shed at its first transformation, with the city standing on
+  them (its towers there, the broadcast spire, the billboard and the command stalk) and the two
+  veins across each from the boulevard. Shed, they burst into plates cracked from their outline and
+  leave `wing` frames on the lower layer, out of which the lances rise.
+- The **front plate** (`spine`), the deck before the citadel's weapon array out to its nose, is
+  shed at its second: it carries the boulevard's front, the front rib, two grafted plates, the
+  barbs at its nose and the two towers there. Shed, it leaves a `shell` lattice on the lower layer,
+  out of which the mortars rise.
 
 **Acceptance criteria**
 - Given its design, then each transformation sheds its region and its weapons lie in it (unit
   test).
+- Given its model, then it draws each region's piece, and it holds together at rest and after each
+  transformation (unit tests).
 
-*Sources: D-224.*
+*Sources: D-224, D-254.*
 
 ### Behaviour
 
@@ -205,8 +219,8 @@ All in `src/game/config/bosses/final_bosses.py` (`_OVERLORD`, `OVERLORD`) unless
 | core stage 6 | ring of 14 turning 9° every 1.2 s; laser 1.4 s every 5 s; 2 missiles, 30° apart, every 6 s | |
 | angry | spirals × 0.6 and flower × 0.4, heat 4.5 (56 bullets a second in all, 156 px/s) | |
 | transformations | 2 and 4 parts destroyed | default thresholds |
-| flank region | x 32..106, y -34..32, above 15.2 px, `wing`, mirrored | first |
-| spine region | x -32..32, y -66..-24, above 2.8 px, `shell`, not mirrored | second |
+| flank region (shed) | the deck's flank plate, x 32..64 at y -18..30, its edge to (52, -42) and (62.8, 32), back to x 32 at y -42..32, `wing`, mirrored; the plate 3-6 px, the city on it | first |
+| spine region (shed) | the deck's front plate: x -32..32 from y -34, out to (±52, -42) along y -42, then along the deck's edge to (±26, -60) and its nose (0, -64), `shell`, not mirrored; the plate 3-6 px, the boulevard's front to 10 px | second |
 | lances (`pike-*`) | (∓47, -1), radius 11, health 1 550, pod 41.1 px; first 1.2 s / 2.0 s | |
 | mortars | (∓13, -55), radius 11, health 1 940, pod 14.1 px, purple; first 1.2 s / 2.0 s | |
 | neon | purple (0.65, 0.2, 1), shown yellow | `BOSS_LOOK.neon` |

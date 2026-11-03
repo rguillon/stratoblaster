@@ -28,7 +28,6 @@ from game.view.bosses.world_1_organic_kit import (
     polygon,
     rib_cage,
     sac,
-    scale_outline,
     spine,
     tentacle,
     vein_line,
@@ -70,17 +69,58 @@ MANTLE = [
 ]
 # Heights of the mantle: its belly, its back.
 SKIRT = [-5, 3]
+# The darker fold on the mantle, behind the plating (the fold's outline is the mantle's at 0.7,
+# drawn back 3 px, cut straight at z 2 where the plating starts).
+REAR_FOLD = [
+    [25.9, 2],
+    [28, -2.3],
+    [26.6, -10],
+    [19.6, -18.4],
+    [9.8, -24],
+    [-9.8, -24],
+    [-19.6, -18.4],
+    [-26.6, -10],
+    [-28, -2.3],
+    [-25.9, 2],
+]
+# Its back plating (the armour it sheds, MB-REEF-WARDEN-05): a horseshoe round its shelled back,
+# from just behind the snout to its middle, the gatlings under its arms. The same outline as the
+# `back` region of its design (config coordinates are [x, -z]).
+PLATING = [
+    [21, 2],
+    [23, 8],
+    [22, 16],
+    [17, 24],
+    [9, 30],
+    [0, 33],
+    [-9, 30],
+    [-17, 24],
+    [-22, 16],
+    [-23, 8],
+    [-21, 2],
+    [-15, 2],
+    [-15, 10],
+    [-11, 18],
+    [-7, 24],
+    [0, 27],
+    [7, 24],
+    [11, 18],
+    [15, 10],
+    [15, 2],
+]
+# The plating lies on the mantle's back, sunk 0.3 px into it, as thick as the fold.
+PLATING_HEIGHTS = [SKIRT[1] - 0.3, SKIRT[1] + 1.5]
 
 
 def _draw_body(p: Any) -> None:
     """Draw the reef creature's body (MB-REEF-WARDEN-02).
 
     A teal ray-like mantle lined with a cyan vein, a dark shelled back along its spine, bone ribs
-    and coral barbs, gill glands either side.
+    and coral barbs (the gill glands are on its plating, `_draw_plating`).
     """
     mantle(p, MANTLE, SKIRT, F.teal, CYAN)
     neon_band(p.neon, MANTLE, [-3.4, -1.1], [0.97, 1], CYAN)
-    mantle(p, scale_outline(MANTLE, 0.7, 0, -3), [SKIRT[1] - 1, SKIRT[1] + 1.5], F.graphite)
+    mantle(p, REAR_FOLD, [SKIRT[1] - 1, SKIRT[1] + 1.5], F.graphite)
     hide(
         p,
         {
@@ -97,12 +137,24 @@ def _draw_body(p: Any) -> None:
     rib_cage(p, [-20, -12, -4, 4], {"halfWidth": 14, "y": 4, "height": 7, "thickness": 0.9})
     spine(p, [0, 13, -26], [0, 13.5, 18], {"color": CYAN})
     for s in SIDES:
-        for z in [-8, 0, 8]:
+        for z in [-8, 0]:
             vein_line(p, [s * 13, 4.5, z], [s * 28, 3.4, z - 6], [0, 1, 0], 0.9, CYAN)
-        gland(p, [s * 20, 3.5, 14], 2, CYAN)
         tentacle(p, [s * 8, 2, -28], [s * 14, 1, -36], [s * 3, 0, 0], [2, 0.3], F.teal)
     barbs(p, [0, 13, -16], {"count": 3, "spacing": 0.1, "size": 3, "dir": [0, 1, -0.3]})
     eyes(p, [0, 9.5, 23], {"count": 2, "size": 1.3, "spacing": 6}, CYAN)
+
+
+def _draw_plating(p: Any) -> None:
+    """Draw the back plating (MB-REEF-WARDEN-05): the armour it sheds at its transformation.
+
+    A dark fold of plating in a horseshoe round the shelled back, lying on the mantle from just
+    behind the snout to the middle; a gill gland on each arm and a vein running out across each.
+    """
+    mantle(p, PLATING, PLATING_HEIGHTS, F.graphite)
+    top = PLATING_HEIGHTS[1]
+    for s in SIDES:
+        gland(p, [s * 20, top + 0.5, 14], 1.7, CYAN)
+        vein_line(p, [s * 16, top + 0.2, 10], [s * 21, top + 0.2, 4], [0, 0.6, 0], 0.9, CYAN)
 
 
 def _draw_grafts(p: Any) -> None:
@@ -194,5 +246,6 @@ def build_reef_warden(scene: Any) -> Any:
                 "cannon-left": _cannon_turret,
                 "cannon-right": _cannon_turret,
             },
+            "armour": {"back": {"whole": _draw_plating}},
         },
     )

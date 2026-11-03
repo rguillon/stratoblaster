@@ -4,8 +4,6 @@
 Logical pixels, nose +Z, Y up (towards the camera).
 """
 
-import math
-
 from game.config.bosses.world_2.fjord_lynx import FJORD_LYNX
 from game.config.record import record
 from game.view.bosses.boss_model import build_boss_model
@@ -17,6 +15,7 @@ from game.view.bosses.mini_boss_shapes import (
     scaled,
     socket,
 )
+from game.view.bosses.world_2.fjord_lynx_armour import draw_plating, plating_pieces
 from game.view.bosses.world_2.fjord_lynx_frost import (
     RIME,
     icicles,
@@ -51,7 +50,7 @@ from game.view.enemies.enemy_shapes import (
 )
 from game.view.enemies.organic_parts import reactor_sac
 from render.geometry.organic import RibSpec, ribs
-from render.geometry.solids import LoftOptions, Placement, place_at
+from render.geometry.solids import LoftOptions, Placement
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -84,15 +83,20 @@ BODY = [  # type: list[list[float]]
 ]
 # Heights of the hull: its belly, its rim, its deck.
 HULL = [-3.0, 0.0, 5.0]
-# The head and back along the centre line (loft stations: z, half width, bottom, top).
+# The head and back along the centre line (loft stations: z, half width, bottom, top). The head
+# is flattened from the neck on: its crown is the plating it sheds (MB-FJORD-LYNX-06,
+# `fjord_lynx_armour`), lying on it.
 BACK = [  # type: list[list[float]]
     [-44.0, 5.0, 4.0, 7.5],
     [-30.0, 9.0, 4.0, 10.0],
     [-6.0, 11.0, 4.0, 12.0],
-    [10.0, 10.0, 4.0, 12.5],
-    [20.0, 6.0, 4.0, 9.0],
+    [4.0, 10.5, 4.0, 11.5],
+    [10.0, 10.0, 4.0, 7.5],
+    [20.0, 8.0, 4.0, 7.0],
     [24.0, 2.0, 4.0, 5.5],
 ]
+# The back's bands painted as seams (the crown carries the head's).
+BACK_SEAMS = [2]
 # The right haunch's armour (mirrored on the left), raised over the rear of the hull.
 HAUNCH = [  # type: list[list[float]]
     [6.0, -16.0],
@@ -130,16 +134,8 @@ TAIL = [  # type: list[list[float]]
 ]
 
 
-def tip(length: float, place: Placement) -> Vec3:
-    """Return the point `length` along the +Y axis of a solid placed by `place` (its tip)."""
-    at: Vec3 = place.at if place.at is not None else [0.0, 0.0, 0.0]
-    y1 = length * math.cos(place.pitch)
-    z1 = length * math.sin(place.pitch)
-    return offset(at, -y1 * math.sin(place.roll), y1 * math.cos(place.roll), z1)
-
-
 def draw_body(p: EnemyParts) -> None:
-    """Draw the hull, the back and head, the haunches and the forelegs out to the paws."""
+    """Draw the hull, the back and the flattened head, the haunches and the forelegs to the paws."""
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -150,7 +146,7 @@ def draw_body(p: EnemyParts) -> None:
         BACK,
         ICE_FLESH.graphite,
         None,
-        LoftOptions(False, canopy_paint([3, 4], ICE_FLESH.seam)),
+        LoftOptions(False, canopy_paint(BACK_SEAMS, ICE_FLESH.seam)),
     )
     ribs(
         flesh,
@@ -174,33 +170,6 @@ def draw_body(p: EnemyParts) -> None:
         neon.box([0.8, 0.5, 18.0], CYAN, Placement([s * 20.6, 0.4, -6.0], s * -0.05))
     flesh.loft(POD_SECTION, TAIL, ICE_FLESH.sinew)
     crystals(flesh, [0.0, 8.0, -50.0], 3, 3)
-
-
-def draw_ears(p: EnemyParts) -> None:
-    """Draw the tufted antennas: an ear on each side of the head, a whip with a light on its tip."""
-    hull = p.hull
-    flesh = p.flesh
-    neon = p.neon
-    for s in SIDES:
-        ear = Placement([s * 6.0, 10.0, 14.0], 0.0, -0.25, -s * 0.35)
-        flesh.cylinder(
-            3.4, 8, 3, ICE_FLESH.sinew, Placement(ear.at, s * 0.5, ear.pitch, ear.roll), 0
-        )
-        top = tip(7.0, ear)
-        whip = Placement(top, 0.0, -0.55, -s * 0.5)
-        hull.cylinder(0.4, 9, 4, H.dark, whip, 0.25)
-        end = tip(9.0, whip)
-        neon.lathe(
-            [[0.0, 0.0], [1.0, 1.2], [0.0, 3.4]],
-            4,
-            WHITE_NEON,
-            place_at(whip, end),
-        )
-        neon.box(
-            [0.6, 0.4, 3.0],
-            CYAN,
-            Placement(offset(ear.at, s * 1.2, 3.4, 0.6), 0.0, 0.0, -s * 0.35),
-        )
 
 
 def draw_deck(p: EnemyParts) -> None:
@@ -233,17 +202,23 @@ def draw_deck(p: EnemyParts) -> None:
 
 
 def draw_core(p: EnemyParts) -> None:
-    """Draw the core: the body, the ears, the deck and the reactor sacs."""
+    """Draw the core: the body, the deck and the reactor sacs (its ears are on its head plating)."""
     draw_body(p)
-    draw_ears(p)
     draw_deck(p)
     for s in SIDES:
         reactor_sac(p, [s * 7.0, 2.5, -46.0], 3, CYAN, ICE_FLESH.graphite)
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
-    """Return what `build_boss_model` draws a boss from."""
-    return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
+    """Return what `build_boss_model` draws a boss from, with its head plating as its armour."""
+    return record({
+        "core": core,
+        "parts": parts,
+        "turrets": turrets,
+        "limbs": limbs,
+        "ring": ring,
+        "armour": {"back": {"whole": draw_plating, "pieces": plating_pieces()}},
+    })
 
 
 def build_fjord_lynx(scene: Any) -> BuiltEnemyModel:
@@ -252,7 +227,7 @@ def build_fjord_lynx(scene: Any) -> BuiltEnemyModel:
     Two forward paws with cannons, tufted antennas over its head, a radar mast on its left flank,
     white and cyan neon, snow on its back. MB-FJORD-LYNX-02: now a living cyber-lynx of cold flesh,
     ribs and ice spines down its back, sinews to its paws, metal plates on its haunches and grafted
-    guns.
+    guns. Its head's crown, with the antennas, is the plating it sheds (MB-FJORD-LYNX-06).
     """
     model: BuiltEnemyModel = build_boss_model(
         FJORD_LYNX,

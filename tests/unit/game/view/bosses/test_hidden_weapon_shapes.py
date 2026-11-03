@@ -20,8 +20,7 @@ from game.view.bosses.hidden_weapon_shapes import (
     weapon_turret_drawing,
 )
 from game.view.enemies.enemy_mesh import collect_parts
-from render.geometry.islands import bounds_of
-from render.geometry.shatter import triangles
+from render.geometry.mesh_triangles import bounds_of, triangles
 
 NEON = [1.0, 0.0, 1.0]
 TURRETS = ["gatling", "cannon", "sweeper"]

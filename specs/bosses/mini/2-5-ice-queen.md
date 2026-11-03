@@ -28,8 +28,9 @@ back at its tail, and a round crown ring over it, wider than its body, carrying 
 
 Its body is Cyber-Organic flesh with metal grafts (see [art direction](../../graphics/art-direction.md)),
 drawn by code:
-- a slender body of dark flesh, rimed on its back, bone ribs across it, closing to a bone needle at
-  the nose, a crystal canopy on its back with a sensor crystal at the nose;
+- a slender body of dark flesh, its rear a flat deck under the plating it sheds (MB-ICE-QUEEN-07),
+  rimed on its back, bone ribs across it, closing to a bone needle at the nose, a crystal canopy on
+  its back with a sensor crystal at the nose;
 - swept wings of membrane stretched on bone struts, too long to flutter, frosted metal canards at
   the nose, frosted armour plates, seams and a vent on the wings, a crystal pod under each;
 - swollen engine sacs of flesh on the wing roots, reactor sacs and reactors at the tail, glands
@@ -78,11 +79,21 @@ circles and muzzles turn with it (orbiting parts, see [common.md](../common.md))
 
 #### MB-ICE-QUEEN-07 — What its transformation sheds · MUST
 
-At its transformation the plating over its rear (region `back`: 30 px either side of the centre
-line, from 9 px to 58.4 px behind the centre) bursts off, baring a dark metal lattice (`shell`), and
-its two gun batteries rise from it either side of the spine. The boss stays one object.
+At its transformation the plating over its rear is the armour it sheds ([common](../common.md),
+BOSS-42), drawn as a piece of its own: a shell of graphite plates with dark seams, snow on its
+ridge, lying over the flattened rear of the fuselage (a deck at 5.5 px) and the engine sacs either
+side, from a point on the tail 57 px behind the centre to a point sunk in the body's rise 6 px
+behind, 5 to 10 px high and up to 16.5 px out, the violet glands on it; the tail's crystal fins are
+rooted in the deck and grow through it. Its region (`back`, not mirrored) is a lozenge over the deck
+and the sacs: x ±2 at 6 px behind, ±13 at 14, ±16 from 26 to 44, ±12 at 50, ±3 at 57 px behind. It
+bursts into its five slices, baring a dark metal lattice (`shell`) on the deck and the sacs, and its
+two gun batteries rise from the sacs either side of the spine. The boss stays one object.
 
-*Sources: D-221, D-224, D-227, D-229.*
+**Acceptance criteria**
+- Given its model, then it draws the back region's armour, and it holds together with and without
+  it (unit tests).
+
+*Sources: D-221, D-224, D-227, D-229, D-254.*
 
 ### Behaviour
 
@@ -164,6 +175,6 @@ dies as every boss.
 | rage_heat | 6.5 (`flower`, purple / blue) | `rage` |
 | transformation | after 2 of 3 parts | `boss_build.default_transforms` |
 | weapon_radius / weapon_hp | 10 px / 670 | `hidden_weapon("battery-…")`, pod 16.5 px high |
-| region `back` | x −30…30, y 9…58.4, from 3.4 px up, `shell` | `armour_region("back", 1, …)` |
+| region `back` | a lozenge, not mirrored: x ±2 at y 6, ±13 at y 14, ±16 at y 26…44, ±12 at y 50, ±3 at y 57; plating 5–10 px on the deck at 5.5; `shell` | `armour_region("back", 1, …)`; `src/game/view/bosses/world_2/ice_queen_armour.py` |
 | full_hp / full_hp_with_weapons | 4 200 / 5 540 | core + parts |
 | points | 7 000 (700 a part) | `points` |

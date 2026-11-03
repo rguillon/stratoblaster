@@ -24,12 +24,20 @@ def test_top_at_past_the_nose_is_the_last_station_height() -> None:
 
 
 def test_the_ring_dome_on_its_back_is_where_its_rings_leave_from() -> None:
-    assert muzzle_kinds(drawn(module.draw_back)) == ["ring"]
+    assert muzzle_kinds(drawn(module.draw_dome)) == ["ring"]
 
 
 def test_its_back_has_no_dome_when_the_design_has_no_ring_muzzle(monkeypatch: Any) -> None:
     monkeypatch.setattr(module, "CROC_DOME", [])
+    assert drawn(module.draw_dome)["muzzles"] == []
+    # The scutes, moss and vent are still laid on its back (the plating, MB-MANGROVE-CROC-13).
     result = drawn(module.draw_back)
     assert result["muzzles"] == []
-    # The scutes, moss and vent are still laid on its back.
     assert len(result["parts"].hull.geometry.positions) > 0
+
+
+def test_mb_mangrove_croc_13_the_plating_lies_on_the_flattened_keel() -> None:
+    """D-254: the carapace starts just under the keel's top; the core carries no plating."""
+    assert module.PLATING[0][2] < module.KEEL_TOP
+    assert all(st[3] == module.KEEL_TOP for st in module.KEEL if st[0] >= module.PLATING_FROM)
+    assert all(st[0] >= module.PLATING_FROM for st in module.PLATING)

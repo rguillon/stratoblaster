@@ -28,8 +28,11 @@ wing, and the round eye on a neck at the front of the body.
 Its body is Cyber-Organic flesh with metal grafts (see [art direction](../../graphics/art-direction.md)),
 drawn by code:
 - broad membrane wings on bone struts, a layer of teal flesh rimed on their fronts, bone feather
-  lines across the trailing edge, a metal ring grafted where each pod sits;
-- a plump body of teal flesh, rimed on its back, bone ribs across it, a row of ice spines down it;
+  lines across the trailing edge, a metal ring grafted where each pod sits; their outer panels are
+  pieces of their own (MB-SNOW-OWL-07);
+- a plump body of teal flesh, its back flat under a shell of teal plates with dark seams rimed on
+  top (the plating it sheds, MB-SNOW-OWL-07), bone ribs across it, a row of ice spines down the
+  shell;
 - a sinewy neck holding the eye, a metal ring round it;
 - ear tufts of graphite flesh swept back over the head;
 - reactor sacs at its tail.
@@ -76,21 +79,31 @@ motion of [common.md](../common.md) and its transformation (MB-SNOW-OWL-07).
 
 #### MB-SNOW-OWL-07 — Its transformation changes its shape · MUST
 
-At its transformation:
-- the outer panel of each wing (region `wingtips`: from 30 to 56 px out either side, 12 px either
-  side of its centre line across) stays on and slides `tip_slide` further out, eased, as the armour
-  of other bosses would burst; the dark metal spars of a wing frame (`wing`) show in the gap it
-  leaves, and a sweeper rides each new tip;
-- the plating of its back (region `back`: 16 px either side of the centre line, from 6 px ahead of
-  the centre to 22 px behind it) bursts off, baring a dark metal lattice (`shell`), and its mortar
-  rises from it.
+At its transformation ([common](../common.md), BOSS-42, BOSS-45), its armour drawn as pieces of its
+own:
+- the outer panel of each wing (region `wingtips`, mirrored: the wing beyond 30 px out, its leading
+  edge from 9.2 px ahead at the root to 5 px ahead at 48 px out, out to 56 px, back to 12 px behind)
+  is a piece of its own: the wing's membrane slab and its rime beyond 30 px, with its leading
+  edge's white neon, the pod's socket ring and its navigation lamp (no icicles hang from it). It
+  stays on and slides `tip_slide` further out, eased, as the armour of other bosses would burst;
+  the dark metal spars of a wing frame (`wing`) show on a floor just under the wing's slab in the
+  gap it leaves, and a sweeper rides each new tip;
+- the plating of its back (region `back`, not mirrored: the flat deck of the back, x ±4.5 at 22 px
+  behind, ±6 at 18 behind, ±7.5 from 4 behind to 6 ahead) is a shell of teal plates with dark seams,
+  snow on it, lying on the flattened back (its deck at 5.9 px) from a point on the tail 24 px behind
+  to a point sunk in the head's rise 8.5 px ahead, 5.5 to 12.4 px high, carrying the lit glands and
+  stripes, the ice crystals, the spine row and the sensor's hood. It bursts into its five slices,
+  baring a dark metal lattice (`shell`) on the deck, and its mortar rises from it; the crown emitter
+  stands on a stem from the deck.
 
 The boss stays one object: the slid tips keep their whole body together.
 
 **Acceptance criteria**
 - Given the bosses viewer, when K breaks both wing pods, then the wing tips slide out with a sweeper on each, the back bursts and a mortar rises.
+- Given its model, then it draws every region's armour, and it holds together with and without it
+  (unit tests).
 
-*Sources: D-224, D-227, D-230.*
+*Sources: D-224, D-227, D-230, D-254.*
 
 ### Behaviour
 
@@ -180,7 +193,8 @@ hidden weapons do. It dies as every boss.
 | rage_heat | 4.5 (`flower`, blue / magenta) | `rage` |
 | transformation | both pods destroyed | `transformParts` |
 | tip_slide | 16 px out | `moving_region("wingtips", 1, …, slide([[0, 0, 0], [16, 0, 0]]))` |
-| region `back` | x −16…16, y −6…22, from 6 px up, `shell` | `armour_region("back", 1, …)` |
+| region `wingtips` | x 30…56 (mirrored), y −9.2 at x 30 to −5 at x 48…56, back to y 12; the panel −1.2–2.1 px; `wing` | `moving_region("wingtips", 1, …)`; `src/game/view/bosses/world_2/snow_owl_armour.py` |
+| region `back` | x ±4.5 at y 22, ±6 at y 18, ±7.5 at y 4…−6, not mirrored; shell 5.5–12.4 px on the deck at 5.9; `shell` | `armour_region("back", 1, …)`; `snow_owl_armour.py` |
 | sweeper_radius / mortar_radius | 6 px / 9 px | `hidden_weapon("sweeper-…")`, pods 7 px high; `hidden_weapon("mortar" …)`, pod 14 px high |
 | transform_hp | 680 | each hidden weapon |
 | full_hp / full_hp_with_weapons | 3 550 / 5 590 | core + parts |

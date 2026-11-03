@@ -155,18 +155,24 @@ bullets a second at 228 px/s, the hottest mini boss rage of the game.
 
 #### MB-EMBER-HERALD-11 — Transformation: back plating bursts off · MUST
 
-The Herald transforms once, when 2 of its 3 lances are destroyed. Its back plating bursts off: one
-region across the centre line, 26 px either side, from 9 px to 56.4 px behind the centre, above 5 px
-high. Under it a dark metal `shell` frame (a lattice) shows. The boss stays one object at rest and
-after its transformation (the turning ring gets a pylon at its centre, see [common](../common.md)).
+The Herald transforms once, when 2 of its 3 lances are destroyed. Its back plating bursts off
+([common](../common.md), BOSS-42): a dome drawn as a piece of its own over the tail half of the
+fuselage, which is flattened to a deck 2.6 px high under it (rising to its full height again 5 px
+ahead of the centre), from its foot at 2.3 px (sunk into the deck) up to 11 px, as wide as the
+fuselage was (12 px either side), soot-black on its back, with the dorsal spikes, the vents and the
+ridge seams on it. Its region (`back`, not mirrored) is the dome's footprint, from 6 px to 56 px
+behind the centre; it bursts into plates cracked from that outline and leaves a `shell` lattice frame
+on the deck, where the body's ribs arch. The orbs lie folded under it, over the wing roots. The boss
+stays one object at rest and after its transformation: its embers lie on its wings, its plating, its
+ring and its spire, and the ring's hub closes on the spire.
 
 **Acceptance criteria**
 - Given two lances are destroyed, then the boss transforms once and its back region bursts off,
   leaving the shell frame (unit: `test_boss_kinds.py`, `test_boss_armour.py`).
-- Given the boss at rest and after its transformation, then nothing of it hangs in the air (unit:
-  `test_d227_the_boss_holds_together_in_every_state`).
+- Given its model, then it draws the back region's armour, and it holds together with and without
+  it (unit: `test_boss_armour.py`, `test_boss_model.py`).
 
-*Sources: D-221, D-224, D-227.*
+*Sources: D-221, D-224, D-227, D-254.*
 
 #### MB-EMBER-HERALD-12 — Hidden weapons: two ring emitters · MUST
 
@@ -212,7 +218,7 @@ All in `src/game/config/bosses/world_4/ember_herald.py` (`EMBER_HERALD`) unless 
 | bullets | `magenta` 215, `purple` 190, `blue` 205 px/s | radius 4 |
 | rage | spirals, heat 13.5 (`magenta`, `purple`) | `rage.spirals` |
 | transformation | once, at 2 original parts destroyed | `src/game/sim/boss_build.py` `default_transforms` |
-| back region | x -26..26, y 9..56.4, above 5.0 px, `shell` | `armour_region("back", …)` |
+| back region | the dome's footprint, not mirrored: y 6..56, x ±10.6 at y 6, ±12 at y 14..26, ±10.5 at y 40, ±6.5 at y 52, `shell`; dome 2.3–11 px over a 2.6 px deck | `armour_region("back", …)`; `src/game/view/bosses/world_4/ember_herald_armour.py` |
 | orbs | (±10, 37), radius 8, pod 14, 960 HP, `purple`, first 1.2 / 2.0 s | `hidden_weapon`; volleys in `src/game/config/bosses/weapon_kinds.py` |
 | embers | 26, 18–62 px out, 4–26 high, 0.7–1.5 px | `src/game/view/bosses/world_4/ember_herald_parts.py` `EMBERS_*` |
 | drops | parts 0.5, hidden weapons 0.3 | `part`, `hidden_weapon` defaults |

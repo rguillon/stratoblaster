@@ -1,9 +1,10 @@
 # Copyright (c) 2026 Renaud Guillon
-"""The Harbour Kraken (FB-HARBOUR-KRAKEN-01 to FB-HARBOUR-KRAKEN-06, 2-2).
+"""The Harbour Kraken (FB-HARBOUR-KRAKEN-01 to FB-HARBOUR-KRAKEN-07, 2-2).
 
 Logical pixels, nose +Z, Y up (towards the camera). A cargo ship flying over the harbour: a long
 hull, a forecastle with its laser emitter and twin guns, a bridge tower amidships, four crane
-pedestals, the container bay at the stern.
+pedestals, the container bay at the stern. Its shell's fore and aft sections and the forecastle are
+armour drawn apart (`harbour_kraken_armour`, D-254).
 """
 
 from game.config.bosses.world_2.harbour_kraken import CRANE_REST, HARBOUR_KRAKEN
@@ -11,17 +12,22 @@ from game.config.record import record
 from game.view.bosses.boss_limbs import boss_point
 from game.view.bosses.boss_model import build_boss_model
 from game.view.bosses.final_boss_shapes import barrels, edge_strips, mirrored
-from game.view.bosses.mini_boss_greebles import lamps, mast, plate, rect
+from game.view.bosses.mini_boss_greebles import lamps, mast, rect
 from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H, offset
 from game.view.bosses.world_2.fjord_lynx_frost import (
     icicles,
     snow_cap,
     spread,
 )
-from game.view.bosses.world_2.harbour_kraken_cargo import (
-    container_bay,
-    hatch_covers,
+from game.view.bosses.world_2.harbour_kraken_armour import (
+    FORECASTLE_TOP,
+    HEAD_SPAN,
+    back_armour,
+    shell_section,
+    vein,
+    wings_armour,
 )
+from game.view.bosses.world_2.harbour_kraken_cargo import container_bay
 from game.view.bosses.world_2.harbour_kraken_cranes import (
     DECK_Y,
     ORANGE_NEON,
@@ -31,14 +37,11 @@ from game.view.bosses.world_2.harbour_kraken_cranes import (
 )
 from game.view.bosses.world_2.w2_organic import (
     ICE_FLESH,
-    crystals,
     fringe,
-    glow_vein,
-    shell,
 )
 from game.view.enemies.enemy_shapes import HULL_SECTION, SIDES
 from game.view.enemies.organic_parts import reactor_sac
-from render.geometry.organic import SegmentedBody, organ
+from render.geometry.organic import organ
 from render.geometry.solids import Placement
 
 # isort: split
@@ -65,21 +68,12 @@ HULL = mirrored([
 ])
 # Heights of the hull: its keel, its rim, its deck.
 HULL_Y = [-7.0, -1.0, DECK_Y]
-# The forecastle, raised over the bow (right half).
-FORECASTLE = mirrored([
-    [0, 72],
-    [9, 68],
-    [19, 54],
-    [22, 48],
-    [0, 48],
-])
-FORECASTLE_TOP = 8
 # The bridge tower amidships (loft stations along Z: z, half width, bottom, top).
 BRIDGE = [
-    [-14, 15, DECK_Y, 15],
+    [HEAD_SPAN[0], 15, DECK_Y, 15],
     [6, 16, DECK_Y, 18],
     [14, 13, DECK_Y, 17],
-    [17, 9, DECK_Y, 13],
+    [HEAD_SPAN[1], 9, DECK_Y, 13],
 ]
 # The laser emitter's lens (a lathe profile along its axis), at the bow.
 LENS = [
@@ -94,35 +88,17 @@ GUNS = [9.0, 9.5, 58.0]
 
 
 def draw_hull(p: EnemyParts) -> None:
-    """Draw the hull, its orange-lit rim and the forecastle.
+    """Draw the mantle, its orange-lit rim and the shell under the head.
 
-    Frost and icicles along its sides (FB-HARBOUR-KRAKEN-05).
+    Frost and icicles along its sides (FB-HARBOUR-KRAKEN-05). The shell's fore and aft sections and
+    the forecastle are its armour (`harbour_kraken_armour`).
     """
-    hull = p.hull
     flesh = p.flesh
     neon = p.neon
     # FB-HARBOUR-KRAKEN-02: the mantle of a great kraken, cold dark flesh under a ridged shell.
     flesh.bevel_slab(HULL, HULL_Y, [3, 2], ICE_FLESH.slate, None, ICE_FLESH.graphite)
-    shell(flesh, SegmentedBody(-64, 46, 6, 22, DECK_Y - 1, 11), ICE_FLESH.graphite)
-    flesh.bevel_slab(
-        FORECASTLE,
-        [DECK_Y - 1, DECK_Y, FORECASTLE_TOP],
-        [0, 1],
-        ICE_FLESH.sinew,
-        None,
-        ICE_FLESH.rime,
-    )
-    plate(hull, rect(14, 8), [FORECASTLE_TOP, 0.6], H.panel, Placement([0, 0, 56]))
-    snow_cap(
-        flesh,
-        [
-            [-12, 62],
-            [12, 62],
-            [17, 52],
-            [-17, 52],
-        ],
-        FORECASTLE_TOP,
-    )
+    shell_section(p, HEAD_SPAN[0], HEAD_SPAN[1])
+    vein(p, 1)
     for s in SIDES:
         edge_strips(
             neon,
@@ -135,11 +111,9 @@ def draw_hull(p: EnemyParts) -> None:
             [DECK_Y - 2, DECK_Y - 1],
             ORANGE_NEON,
         )
-        glow_vein(p, [s * 8, 11, 30], [s * 26, DECK_Y, -50], 1.2, ORANGE_NEON)
         fringe(flesh, [s * 29, -2, -30], [s, -0.3], 3, 9, ICE_FLESH.slate)
         icicles(flesh, spread([s * 30.5, -1, 20], [s * 30.5, -1, -50], 7), 5)
         icicles(flesh, spread([s * 21, -1, 58], [s * 11, -1, 71], 3), 4)
-        crystals(flesh, [s * 16, 10, -40], 4)
 
 
 def draw_bridge(p: EnemyParts) -> None:
@@ -169,7 +143,8 @@ def draw_bridge(p: EnemyParts) -> None:
 def draw_bow(p: EnemyParts) -> None:
     """Draw the bow (FB-HARBOUR-KRAKEN-03).
 
-    The laser emitter, its neon rings, and the twin guns either side of it.
+    The laser emitter, its neon rings, and the twin guns either side of it, their mounts standing
+    from the mantle (through the forecastle while it is on).
     """
     hull = p.hull
     neon = p.neon
@@ -187,11 +162,12 @@ def draw_bow(p: EnemyParts) -> None:
     neon.ring(5.1, 1, 8, ORANGE_NEON, Placement(offset(EMITTER, 0, 0, 2), 0, QUARTER))
     charge.lathe(LENS, 8, WHITE, Placement(offset(EMITTER, 0, 0, 6), 0, QUARTER))
     p.muzzle(offset(EMITTER, 0, 0, 10.4), "laser")
+    foot = DECK_Y - 0.2
     for s in SIDES:
         hull.box(
-            [5, 3, 6],
+            [5, FORECASTLE_TOP + 3 - foot, 6],
             H.panel,
-            Placement([s * GUNS[0], FORECASTLE_TOP, GUNS[2] - 2]),
+            Placement([s * GUNS[0], foot, GUNS[2] - 2]),
             H.base,
         )
         barrels(p, [s * GUNS[0], GUNS[1], GUNS[2]], [1, 0], [1.2, 8])
@@ -206,12 +182,11 @@ def draw_stern(p: EnemyParts) -> None:
 
 
 def draw_core(p: EnemyParts) -> None:
-    """Draw the core body: hull, bridge, bow, stern, hatches, and the crane pedestals."""
+    """Draw the core body: hull, bridge, bow, stern, and the crane pedestals."""
     draw_hull(p)
     draw_bridge(p)
     draw_bow(p)
     draw_stern(p)
-    hatch_covers(p)
     for end in ["fore", "aft"]:
         first = [0, 0]
         if len(CRANE_REST[end]) > 0:
@@ -220,9 +195,16 @@ def draw_core(p: EnemyParts) -> None:
             pedestal(p, offset(boss_point(s * first[0], first[1]), 0, DECK_Y, 0))
 
 
-def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
+def boss_drawing(core: Any, parts: Any, limbs: Any, armour: Any) -> Any:
     """Return the `BossDrawing` of a boss model: what the model is drawn from."""
-    return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
+    return record({
+        "core": core,
+        "parts": parts,
+        "turrets": None,
+        "limbs": limbs,
+        "ring": None,
+        "armour": armour,
+    })
 
 
 def build_harbour_kraken(scene: Any) -> BuiltEnemyModel:
@@ -233,6 +215,7 @@ def build_harbour_kraken(scene: Any) -> BuiltEnemyModel:
 
     FB-HARBOUR-KRAKEN-02: now a living kraken, a shelled mantle of cold flesh with a head and beak
     amidships, four tentacles ending in clawed gun-fists, a brood sac of eggs at its stern.
+    FB-HARBOUR-KRAKEN-07: its shell's fore and aft sections are armour of their own.
     """
     parts = record({
         "crane-fore-left": grab,
@@ -241,9 +224,10 @@ def build_harbour_kraken(scene: Any) -> BuiltEnemyModel:
         "crane-aft-right": grab,
         "container-bay": container_bay,
     })
+    armour = record({"back": {"whole": back_armour}, "wings": {"whole": wings_armour}})
     return build_boss_model(
         HARBOUR_KRAKEN,
         scene,
         ORANGE_NEON,
-        boss_drawing(draw_core, parts, None, crane_limbs(), None),
+        boss_drawing(draw_core, parts, crane_limbs(), armour),
     )

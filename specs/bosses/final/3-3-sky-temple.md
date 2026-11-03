@@ -33,8 +33,8 @@ and under its base an upside-down four-sided cone of rock. It is a 5.5 L boss (r
 
 #### FB-SKY-TEMPLE-02 — Cyber-Organic body · MUST
 
-The lowest tier is the living beast itself: a huge, swollen body of moss-skinned flesh carrying the
-stone tiers on its back like a shell, roots of sinew hanging from it, veins climbing the tiers along
+The lowest tier is the living beast itself: a huge, swollen body of moss-skinned flesh, its back flat
+under the stone tiers it carries like a shell, roots of sinew hanging from it, veins climbing the tiers along
 their diagonals up to the sanctum, and its reactors in flesh sacs at its back. Under the stones is the
 dark metal of a fortress: a bank of thrusters at the back and armoured buttresses on its sides with
 lights.
@@ -179,14 +179,21 @@ before the front ones in its parts' order, so the debug key K calls each transfo
 
 #### FB-SKY-TEMPLE-13 — First transformation: back wedges slide out · MUST
 
-At its first transformation:
-- its two back corner wedges (each 34 to 88 px out and 20 to 72 px behind the centre, all its height)
-  stay on and slide out diagonally, 15 px out and 15 px back, a dark metal `wing` frame showing where
-  each lay; a gun battery rides each wedge, ending at 70 px out and 50 px behind the centre (radius
-  10 px, pod 24 px high, 1 920 HP each), firing `orange` fans straight down;
-- its back terrace (32 px either side of the centre line, from 2 to 64 px behind the centre, above
-  1.2 px high) bursts off over a `shell` frame, and a mortar rises on the centre line, 36 px behind the
-  centre (radius 13 px, pod 41 px high, 1 920 HP), lobbing `orange` flak.
+At its first transformation ([common](../common.md), BOSS-42, BOSS-45):
+- its two back corner **wedges** stay on and slide out diagonally, 15 px out and 15 px back: each is
+  a piece drawn apart from the core, the corners of the first two stone tiers standing on the beast's
+  flat back (from 34 px out and 20 px behind the centre to the tiers' edges, 54 and 44 px; 8.7 to
+  27 px high, sunk 0.3 px into the back) with their gold trims and, on the right one, a patch of
+  moss. The core's tiers are notched where they lie. Its region is the corner of the beast's plan
+  (x 34..68, y 20..68, mirrored); a dark metal `wing` frame shows on the beast's back where each lay.
+  A gun battery rides each wedge, ending at 70 px out and 50 px behind the centre (radius 10 px, pod
+  24 px high, 1 920 HP each), firing `orange` fans straight down;
+- its back **terrace** bursts off: the steps of the three stone tiers behind the sanctum's back wall
+  (20 px behind the centre) between the back wedges, 34 px either side, 8.7 to 36 px high, with
+  their gold trims, the two back braziers and moss on the top step. Its region (`back`, not
+  mirrored) is x ±33, from 20 to 54 px behind the centre; it bursts into plates cracked from that
+  outline and leaves a `shell` frame on the beast's back, and a mortar rises on the centre line,
+  36 px behind the centre (radius 13 px, pod 41 px high, 1 920 HP), lobbing `orange` flak.
 
 The weapons fire 1.2 s and 2.0 s (batteries) and 1.6 s (mortar) into a stage.
 
@@ -195,12 +202,14 @@ The weapons fire 1.2 s and 2.0 s (batteries) and 1.6 s (mortar) into a stage.
   and the back terrace bursts off for the mortar (unit: `test_boss_kinds.py`; riding weapons end up
   on their piece).
 
-*Sources: D-230, D-221, D-224, D-229.*
+*Sources: D-230, D-221, D-224, D-229, D-254.*
 
 #### FB-SKY-TEMPLE-14 — Second transformation: front wedges slide out · MUST
 
-At its second transformation its two front corner wedges (34 to 88 px out, 20 to 72 px ahead of the
-centre) slide out 14 px out and 14 px forward, a `wing` frame showing where each lay, and a heavy
+At its second transformation its two front corner wedges (drawn as the back ones, the corners of
+the first two tiers from 34 px out and 20 px ahead of the centre; their region the corner of the
+beast's plan, x 34..68, y -68..-20, mirrored; moss on the left one) slide out 14 px out and 14 px
+forward, a `wing` frame showing where each lay, and a heavy
 cannon rides each, ending at 66 px out and 52 px ahead (radius 10 px, pod 24 px high, 2 400 HP each),
 firing `orange` spreads of big shells, 1.2 s and 2.4 s into a stage. No part the player can hit stands
 on a wedge as it moves (its obelisk is gone by then). It reveals no kind twice, fires no less after
@@ -212,7 +221,7 @@ each transformation than before, and stays one object in every state.
 - Given each state, then nothing of it hangs in the air (unit:
   `test_d227_the_boss_holds_together_in_every_state`).
 
-*Sources: D-230, D-221, D-229, D-227.*
+*Sources: D-230, D-221, D-229, D-227, D-254.*
 
 #### FB-SKY-TEMPLE-15 — Points and drops · MUST
 
@@ -244,9 +253,9 @@ boss's centre, X right, Y up the screen (its stair at -Y).
 | beacon missiles | 2, 30° apart, every 5.5 s | |
 | rage | vortex + flower, heat 7, half share each | |
 | transformations | on `transformParts`: back obelisks, then front ones | |
-| back wedges | x 34..88, y 20..72 (mirrored), slide (±15, 15); `wing` frame | form 1 |
-| back terrace | x ±32, y 2..64, from 1.2 px, `shell` | form 1 |
-| front wedges | x 34..88, y -72..-20 (mirrored), slide (±14, -14); `wing` frame | form 2 |
+| back wedges | the beast's corner, x 34..68, y 20..68 (mirrored), slide (±15, 15); `wing` frame; the tiers' corners 8.7–27 px | form 1 |
+| back terrace | x ±33, y 20..54, `shell`; the tiers' back steps 8.7–36 px | form 1 |
+| front wedges | the beast's corner, x 34..68, y -68..-20 (mirrored), slide (±14, -14); `wing` frame; the tiers' corners 8.7–27 px | form 2 |
 | batteries | (±70, 50), radius 10, pod 24, 1 920 HP, `orange` | form 1 |
 | mortar | (0, 36), radius 13, pod 41, 1 920 HP, `orange` | form 1 |
 | cannons | (±66, -52), radius 10, pod 24, 2 400 HP, `orange` | form 2 |

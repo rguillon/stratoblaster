@@ -228,7 +228,7 @@ the shortest of World 1: its final fight stops the ground.
 | town_streets | rows 60–110, columns 70–130, links 0.55 | `TOWN_STREETS` (also 1-4's towns and 1-5's oasis villages and towns) |
 | max_gap | 3.3 s → 2.2 s | `src/game/config/world_1/waves.py` `WORLD_1_FILLERS["1-3"]` |
 | bullet_speed_factor / fire_rate_factor | 0.9 / 0.9 | `src/game/config/world_1/difficulty.py` |
-| written | 27 beats; 78 waves and 203 groups after fill and density; 339 enemies, 8 140 HP (halves 3 760 / 4 380), Carrier launches not counted | measured from the configs |
+| written | 27 beats; 78 waves and 230 groups after fill and density; 374 enemies, 9 140 HP (halves 4 160 / 4 980), Carrier launches not counted | measured from the configs (density 2, D-249) |
 | buildings | 8 034 (halves 598 / 7 436) | each level's seed, measured for this file |
 | mini boss / final boss | `dust-devil` / `mesa-fortress` | `src/game/config/world_1/bosses.py` |
 | runout | 30 s | same |

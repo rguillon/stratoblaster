@@ -13,7 +13,7 @@ from game.view.enemies.enemy_shapes import SIDES
 
 def _pedestals(monkeypatch: Any) -> list[Any]:
     """Draw the core with only its crane pedestals; return where they stand."""
-    for name in ["draw_hull", "draw_bridge", "draw_bow", "draw_stern", "hatch_covers"]:
+    for name in ["draw_hull", "draw_bridge", "draw_bow", "draw_stern"]:
         monkeypatch.setattr(module, name, lambda _p: None)
     feet: list[Any] = []
     monkeypatch.setattr(module, "pedestal", lambda _p, at: feet.append(at))

@@ -120,8 +120,7 @@ BOSS_TIMING = record({
     # Seconds a boss is angry after the pause that follows each destroyed part (BOSS-27).
     "rageSeconds": 3,
     # Seconds a transformation lasts (its armour bursts off and its hidden weapons unfold,
-    # docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md, D-224): it neither
-    # fires nor takes damage meanwhile (BOSS-37).
+    # BOSS-43): it neither fires nor takes damage meanwhile (BOSS-37).
     "transformSeconds": 2.0,
     # Blasts each armour region it sheds bursts in, at most.
     "regionBlasts": 5,

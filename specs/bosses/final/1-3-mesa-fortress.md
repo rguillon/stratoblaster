@@ -28,8 +28,8 @@ each side reaching forward to a laser lance, and two silos on the back of its sh
 #### FB-MESA-FORTRESS-02 — Body · MUST
 
 Its body is a wide skirt of hide under a high stepped shell (slate and sinew shades) with ribs,
-veins and grafted armour plates on it, its keep's roof along the ridge of the shell, its head at its
-front. Each forelimb is a scaly limb out to its lance's cradle, a bone claw at its front.
+veins and grafted armour plates on it, its keep along the ridge of the shell standing on the lower
+shell's flat top, its head at its front. Each forelimb is a scaly limb out to its lance's cradle, a bone claw at its front.
 
 **Acceptance criteria**
 - Manual validation: a living tortoise plated with grafted armour.
@@ -62,15 +62,31 @@ red, shows bright yellow ([common](../common.md), BOSS-50).
 
 #### FB-MESA-FORTRESS-05 — What it sheds and moves · MUST
 
-The armour at the front of its wings is shed at its first transformation (`wing` frame beneath).
-At its second, the two halves of its keep's roof are the pieces that move apart (a `shell` lattice
-shows between them) and its flank armour is shed (`wing` frame beneath).
+Its skirt is drawn in two layers: a lower slab of hide the whole skirt wide (-6 to 5 px) and an
+upper one (5 to 7 px) whose flanks are its armour, drawn as pieces of their own out to the skirt's
+rim ([common](../common.md), BOSS-42, BOSS-45); the upper layer runs on along the middle. Its keep,
+the upper shell, stands on the flat top of the lower shell (17 px) and is drawn as two halves cut
+along its ridge.
+
+- The **front flanks** (`wings`, mirrored), either side of the head, are shed at its first
+  transformation, the rim's neon along each on them. Shed, they burst into plates cracked from their
+  outline and leave `wing` frames on the lower layer, out of which the batteries rise.
+- The **roof halves** (`roof`, a mirrored pair), the keep from 17 px up to its ridge at 30 px, each
+  with a vein along the ridge, a gland on its flank and two grafted plates sunk in it, are the
+  pieces that move apart at its second transformation, leaving a `shell` lattice floor on the lower
+  shell's top between them, out of which the cannon rises.
+- The **rear flanks** (`flanks`, mirrored), along the skirt behind the front flanks and over the
+  forelimbs, are shed at its second: they carry each forelimb's scaly sinew (5 to 13 px) and its
+  grafted plate, lying on the limb. Shed, they leave `wing` frames on the skirt and the limbs, out of
+  which the sweepers rise.
 
 **Acceptance criteria**
 - Given its design, then its first transformation sheds its wing fronts, its second moves its roof
   halves and sheds its flanks (unit test).
+- Given its model, then it draws each region's piece, and it holds together at rest and after each
+  transformation (unit tests).
 
-*Sources: D-224, D-230.*
+*Sources: D-224, D-230, D-254.*
 
 ### Behaviour
 
@@ -193,11 +209,11 @@ All in `src/game/config/bosses/final_bosses.py` (`_MESA_FORTRESS`, `MESA_FORTRES
 | core stage 4 | ring of 14 turning 12°, orange, every 1.5 s; fan of 5 red every 2.6 s | |
 | angry | curtain, heat 2.5 (40 bullets a second, 140 px/s), red and orange | |
 | transformation 1 | `lance-left` and `lance-right` destroyed | `transformParts` |
-| wing-front region | x 16..88, y -51..-3.5, above 4.3 px, `wing`, mirrored | |
+| wing-front region (shed) | the skirt's front flank out to the rim: x 16..46 at y -3.5..-28, then along the rim to (38, -38), (22, -46) and (16, -46.5), `wing`, mirrored; the plate 5-7 px | |
 | batteries | (∓44, -26), radius 10, health 1 200, pod 14 px, red; first 1.2 s / 2.2 s | |
 | transformation 2 | `silo-left` and `silo-right` destroyed | |
-| roof halves | x 0..23, y -6..46, above 16 px, mirrored; slide 16 px apart; `shell` frame | `moving_region`, `slide` |
-| flank region | x 34..88, y -3.5..50, above 2.2 px, `wing`, mirrored | |
+| roof halves (moving region) | the keep's own footprint, cut along the ridge: x 0..22, y -18..36, mirrored; the keep 17-30 px; slide 16 px apart; `shell` frame on the lower shell's top | `moving_region`, `slide`; `heights` 16 px |
+| flank region (shed) | the skirt's rear flank, x 34..46 at y -3.5..36 then to (34, 50), and the forelimb from (46, 6) to (72, 6), (80, 23) and (46, 24), `wing`, mirrored; the plate 5-7 px, the limb's sinew to 13 px | |
 | `cannon` | (0, 14), radius 14, health 1 500, pod 22 px, orange; first 1.4 s | rises between the roof halves |
 | sweepers | (∓60, 22), radius 8, health 1 500, pod 14 px; first 2.4 s / 6.4 s | |
 | neon | red (1, 0.1, 0.12), shown yellow | `BOSS_LOOK.neon` |

@@ -69,14 +69,27 @@ its eyes and hatches glow. Its neon colour, set orange, shows bright yellow
 
 #### FB-REFINERY-TITAN-05 — What it sheds · MUST
 
-The plating of its back, over the core, is shed at its first transformation, and the plating of its
-spine, in front of it, at its second (`shell` lattice frames beneath).
+The shell of its abdomen is drawn in three lengths along it: the core keeps the length over its
+tail; the two others are its armour, drawn as pieces of their own ([common](../common.md),
+BOSS-42). Under them the core is its belly (up to about 5 px) between the two lobes of its apron
+(either side of the belly, from 20 px out, the turrets on them).
+
+- The **back plating** (`back`), the shell's middle length over the core (from about 4 px up to its
+  ridge at 18 px), is shed at its first transformation, with the spine vein, the veins and two
+  grafted plates on it and the plated skull riding it (its eyes, spiracles, mantlet and the twin
+  cannon's barrels; the cannon goes on firing from its muzzles). Shed, it bursts into plates cracked
+  from its outline and leaves a `shell` lattice on the belly, out of which the gatlings rise.
+- The **spine plating** (`spine`), the shell's front length out to its nose (from about 5 px up to
+  17 px), is shed at its second, with the front rib and the eyes at its front. Shed, it leaves a
+  `shell` lattice on the belly, out of which the orbs rise.
 
 **Acceptance criteria**
 - Given its design, then each transformation sheds its region and its weapons lie in it (unit
   test).
+- Given its model, then it draws each region's piece, and it holds together at rest and after each
+  transformation (unit tests).
 
-*Sources: D-224.*
+*Sources: D-224, D-254.*
 
 ### Behaviour
 
@@ -190,8 +203,8 @@ All in `src/game/config/bosses/final_bosses.py` (`_REFINERY_TITAN`, `REFINERY_TI
 | core stage 5 | ring of 14 turning 9°, blue, every 1.3 s; orange burst of 3 every 2.8 s | |
 | angry | spirals, heat 3.5 (48 bullets a second, 148 px/s), orange and green | |
 | transformations | 2 and 4 parts destroyed | default thresholds |
-| back region | x -24..24, y -24..14, above 7.3 px, `shell`, not mirrored | first |
-| spine region | x -24..24, y -62..-24, above 4.3 px, `shell`, not mirrored | second |
+| back region (shed) | the shell's middle length: y -24..20, x ±27 at its ends and ±32 at y -14..8, `shell`, not mirrored; the shell 4-18 px, the skull on it to 30 px | first |
+| spine region (shed) | the shell's front length: y -24 to its nose, x ±27 to y -36, narrowing through (±20, -47), (±17, -57) and (±6, -66), `shell`, not mirrored; the shell 5-17 px | second |
 | gatlings | (∓9, -13), radius 7, health 1 450, pod 25.7 px, orange; first 1.2 s / 2.0 s | |
 | orbs | (∓9, -35), radius 7, health 1 810, pod 18.9 px, orange; first 1.2 s / 2.0 s | |
 | neon | orange (1, 0.45, 0.05), shown yellow | `BOSS_LOOK.neon` |

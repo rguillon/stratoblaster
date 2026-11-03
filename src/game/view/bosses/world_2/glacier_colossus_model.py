@@ -1,7 +1,8 @@
 # Copyright (c) 2026 Renaud Guillon
-"""The Glacier Colossus (FB-GLACIER-COLOSSUS-01 to FB-GLACIER-COLOSSUS-06, 2-4).
+"""The Glacier Colossus (FB-GLACIER-COLOSSUS-01 to FB-GLACIER-COLOSSUS-07, 2-4).
 
-Logical pixels, nose +Z, Y up (towards the camera).
+Logical pixels, nose +Z, Y up (towards the camera). Its shell and the plating of its stern deck are
+armour drawn apart (`glacier_colossus_armour`, D-254).
 """
 
 import math
@@ -24,6 +25,7 @@ from game.view.bosses.world_2.avalanche_frost import (
     icicles,
     snow_cap,
 )
+from game.view.bosses.world_2.glacier_colossus_armour import flank_armour, wings_armour
 from game.view.bosses.world_2.glacier_colossus_parts import (
     COLOSSUS_NEON,
     cutter,
@@ -32,16 +34,10 @@ from game.view.bosses.world_2.glacier_colossus_parts import (
     missile_pod,
     ore_cannon,
 )
-from game.view.bosses.world_2.w2_organic import (
-    ICE_FLESH,
-    crystals,
-    glow_vein,
-    shell,
-    spine_row,
-)
+from game.view.bosses.world_2.w2_organic import ICE_FLESH, glow_vein
 from game.view.enemies.enemy_shapes import SIDES
 from game.view.enemies.organic_parts import eyes, reactor_sac
-from render.geometry.organic import RibSpec, SegmentedBody, ribs
+from render.geometry.organic import RibSpec, ribs
 from render.geometry.solids import Placement
 
 # isort: split
@@ -90,9 +86,13 @@ TOWER = [  # type: list[list[float]]
     [-15.0, 24.0],
 ]
 TOWER_Y = [16.0, 18.0, 28.0]
-# The heat vents along each side of the deck (centres along Z, on the right at +X).
-VENTS_Z = [-40, -26, -12, 2]
+# The heat vents along each side of the deck (centres along Z, on the right at +X); the aft one
+# is on the stern plating (`glacier_colossus_armour`).
+VENTS_Z = [-26, -12, 2]
 VENT_X = 45
+# The pylons out to the cutters: from the hull's flank to under the cutters' mounts (BOSS-52).
+PYLON = [20, 9, 12]
+PYLON_AT = [66, -5.5, 10]
 
 # A weathered patch welded on the upper deck's right.
 PATCH = [  # type: list[list[float]]
@@ -138,16 +138,6 @@ def snow_caps() -> list[Any]:
         ],
         [
             [
-                [48, -46],
-                [56, -44],
-                [54, -58],
-                [48, -60],
-            ],
-            HULL_Y[2],
-            FROST,
-        ],
-        [
-            [
                 [-12, 10],
                 [12, 10],
                 [10, 18],
@@ -169,9 +159,16 @@ def snow_caps() -> list[Any]:
     ]
 
 
-def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
+def boss_drawing(core: Any, parts: Any, turrets: Any, armour: Any) -> Any:
     """Return the `BossDrawing` of a boss model: what the model is drawn from."""
-    return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
+    return record({
+        "core": core,
+        "parts": parts,
+        "turrets": turrets,
+        "limbs": None,
+        "ring": None,
+        "armour": armour,
+    })
 
 
 def draw_hull(p: EnemyParts) -> None:
@@ -179,16 +176,12 @@ def draw_hull(p: EnemyParts) -> None:
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
-    # FB-GLACIER-COLOSSUS-02: a glacier titan, a vast body of cold flesh under a ridged shell, its
-    # brain hump where the bridge tower was, eyes round it.
+    # FB-GLACIER-COLOSSUS-02: a glacier titan, a vast body of cold flesh under a ridged shell (the
+    # shell is its armour, `glacier_colossus_armour`), its brain hump where the bridge tower was,
+    # eyes round it.
     flesh.bevel_slab(HULL, HULL_Y, [3, 2.5], ICE_FLESH.sinew, None, ICE_FLESH.teal)
     neon_band(neon, HULL, [-3.6, -1.2], [0.985, 1.015], N)
     flesh.bevel_slab(UPPER, UPPER_Y, [0, 1.6], ICE_FLESH.teal, None, ICE_FLESH.graphite)
-    shell(
-        flesh,
-        SegmentedBody(-58, 6, 5, 26, UPPER_Y[2] - 1, 24),
-        ICE_FLESH.teal,
-    )
     flesh.bevel_slab(TOWER, TOWER_Y, [0, 4], ICE_FLESH.graphite, None, ICE_FLESH.rime)
     neon_band(flesh, TOWER, [22, 24.5], [1.02, 1.02], ICE_FLESH.seam)
     eyes(p, [0, 23, 28.4], record({"count": 4, "size": 1.2, "spacing": 5}), N)
@@ -196,8 +189,13 @@ def draw_hull(p: EnemyParts) -> None:
     for tip in COLOSSUS_CORE_GUNS:
         barrel_to(p, tip, [2, 8])
     for s in SIDES:
-        # The pylons out to the cutters (they stay when a cutter is gone).
-        flesh.box([16, 5, 12], ICE_FLESH.sinew, Placement([s * 64, 1, 10]), ICE_FLESH.rime)
+        # The pylons out to the cutters (they stay when a cutter is gone), under their mounts.
+        flesh.box(
+            PYLON,
+            ICE_FLESH.sinew,
+            Placement([s * PYLON_AT[0], PYLON_AT[1], PYLON_AT[2]]),
+            ICE_FLESH.rime,
+        )
         hull.box([6, 6, 13], H.panel, Placement([s * 60, 1, 10]), H.base)
         reactor_sac(p, [s * 16, 2, -78], 5, N, ICE_FLESH.graphite)
         p.reactor([s * 38, 2, -70], 4.5)
@@ -229,16 +227,9 @@ def draw_vents(p: EnemyParts) -> None:
     hull = p.hull
     neon = p.neon
     for s in SIDES:
-        # Veins out from the shell to the rim; the vents are gill slits glowing between metal
-        # grilles.
-        for pair in [[20, 24], [-48, -54]]:
-            glow_vein(
-                p,
-                [s * 30, HULL_Y[2] + 2, pair[0]],
-                [s * 58, HULL_Y[2], pair[1]],
-                1.3,
-                N,
-            )
+        # Veins out from the shell to the rim (the aft pair is on the stern plating); the vents
+        # are gill slits glowing between metal grilles.
+        glow_vein(p, [s * 30, HULL_Y[2] + 2, 20], [s * 58, HULL_Y[2], 24], 1.3, N)
         for z in VENTS_Z:
             at = [s * VENT_X, HULL_Y[2] - 0.2, z]
             neon.box([8, 0.5, 8.5], N, Placement(offset(at, 0, 0.1, 0)))
@@ -262,14 +253,12 @@ def draw_wear(p: EnemyParts) -> None:
     hull = p.hull
     flesh = p.flesh
     for s in SIDES:
-        # Glacier ice grown through the flesh on the stern, crystals over the shell.
-        crystals(flesh, [s * 38, HULL_Y[2], -57], 9, 4)
-        crystals(flesh, [s * 20, UPPER_Y[2] + 4, -20], 5)
+        # Bone ribs on its flanks (the glacier ice and the crystals over the shell ride the
+        # armour, `glacier_colossus_armour`).
         ribs(flesh, [s * 46], RibSpec(4, HULL_Y[2], 3, 0.8), ICE_FLESH.bone)
         lamps(p.neon, [[s * 60, HULL_Y[2], -8]], 1.8, N)
     plate(hull, rect(18, 8), [HULL_Y[2], 1], H.panel, Placement([0, 0, 33]))
     plate(hull, PATCH, [UPPER_Y[2], 0.6], SHADE["patch"])
-    spine_row(flesh, [0, 24, -6], [0, 22, -50], 5, 5)
     mast(p, [8, TOWER_Y[2], 12], 8, N)
     mast(p, [-24, UPPER_Y[2], -54], 6, N)
 
@@ -290,7 +279,8 @@ def build_glacier_colossus(scene: Any) -> BuiltEnemyModel:
     with snow and hung with icicles; its cutters out on its beam, its ore cannons and heat sink at
     its bow, its missile pod on its stern. FB-GLACIER-COLOSSUS-02: now a living glacier titan, a
     vast shelled body of cold flesh with glacier ice grown through it, gills glowing down its back;
-    its parts armoured organs and fleshy gun limbs.
+    its parts armoured organs and fleshy gun limbs. FB-GLACIER-COLOSSUS-07: its shell and the
+    plating of its stern deck are armour of their own.
     """
     parts = record({
         "cutter-left": cutter_mount,
@@ -301,9 +291,10 @@ def build_glacier_colossus(scene: Any) -> BuiltEnemyModel:
         "missile-pod": missile_pod,
     })
     turrets = record({"cutter-left": cutter, "cutter-right": cutter})
+    armour = record({"flanks": {"whole": flank_armour}, "wings": {"whole": wings_armour}})
     return build_boss_model(
         GLACIER_COLOSSUS,
         scene,
         N,
-        boss_drawing(draw_core, parts, turrets, None, None),
+        boss_drawing(draw_core, parts, turrets, armour),
     )

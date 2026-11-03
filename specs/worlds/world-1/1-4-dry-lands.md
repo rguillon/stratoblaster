@@ -243,7 +243,7 @@ end, for the ground that gets ahead of the level during the fights.
 | desert_woods / lone_dead_trees | cover 0.55, keep 0.15, scatter 0.01 / cover 0, keep 0, scatter 0.004 | `src/game/config/trees.py` |
 | max_gap | 3.2 s → 2 s | `src/game/config/world_1/waves.py` `WORLD_1_FILLERS["1-4"]` |
 | bullet_speed_factor / fire_rate_factor | 1 / 1 | `src/game/config/world_1/difficulty.py` |
-| written | 29 beats; 88 waves and 232 groups after fill and density; 372 enemies, 11 250 HP (halves 4 750 / 6 500), Carrier launches not counted | measured from the configs |
+| written | 29 beats; 88 waves and 262 groups after fill and density; 414 enemies, 12 660 HP (halves 5 340 / 7 320), Carrier launches not counted | measured from the configs (density 2, D-249) |
 | buildings | 14 909 (halves 2 290 / 12 619) | each level's seed, measured for this file |
 | mini boss / final boss | `scorpion` / `refinery-titan` | `src/game/config/world_1/bosses.py` |
 | runout | 70 s | same |

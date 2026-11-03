@@ -113,7 +113,8 @@ def smokestack(p: Any, at: Vec3) -> None:
     hull.cylinder(5.8, 0.3, 8, H.dark, Placement(offset(tip, 0, -0.25, 0)))
     charge.cylinder(4.6, 0.3, 8, WHITE, Placement(offset(tip, 0, -0.1, 0)))
     muzzle(tip)
-    steam(neon, offset(tip, s * 0.6, 3, -3), 3, 2.6)
+    # The first puff sits on the mouth's light, the next ones on it (BOSS-52).
+    steam(neon, offset(tip, s * 0.6, 0.6, -3), 3, 2.6)
     hull.box([2, 10, 2], H.dark, Placement([at[0] - s * 7.4, DECK, at[2] - 3]))
 
 

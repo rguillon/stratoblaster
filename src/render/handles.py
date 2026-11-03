@@ -283,6 +283,8 @@ class Camera(Node, Protocol):
     orthoBottom: float
     mode: int
     targetScreenOffset: Vector2
+    # The part of the canvas it draws into (a Babylon `Viewport`, D-252).
+    viewport: object
     includedOnlyMeshes: list[Mesh]
     renderList: list[Mesh]
 

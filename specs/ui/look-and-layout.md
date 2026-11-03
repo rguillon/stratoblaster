@@ -14,32 +14,34 @@ palette, the fonts, the selection marks and the logo. The 3D look of the levels 
 ### UI-LOOK-01 — An overlay laid out at the logical resolution · MUST
 
 The menus, the HUD, the pause menu and the end-of-level panels are an HTML/CSS overlay (`ui/`) over
-the canvas. It is laid out at the logical resolution, 480 × 640 logical px (CSS px before scaling),
-so every size in the UI specs is in logical px.
+the canvas. It is laid out at the logical resolution, 1280 × 720 logical px (CSS px before
+scaling; 480 × 640 until D-249), so every size in the UI specs is in logical px.
 
 **Acceptance criteria**
-- The overlay element is 480 × 640 px before its scale (unit test of the stage fit).
+- The overlay element is 1280 × 720 px before its scale (unit test of the stage fit).
 
 *Sources: P01-R13, GD-02, D-008, D-041.*
 
 ### UI-LOOK-02 — Fitted to the window, never cropped or stretched · MUST
 
-The canvas and the overlay share one box, the largest box with the 3:4 logical aspect ratio that
-fits the window, centred, with dark bars (letterbox) on the rest. The overlay is scaled to that box
+The canvas and the overlay share one box, the largest box with the 16:9 logical aspect ratio that
+fits the window, centred, with dark bars (letterbox) on the rest. The menus' cards, sliders and
+entry lists keep to a column (`menu_column`) in the middle of the screen, so they are not stretched
+across it. The overlay is scaled to that box
 with a CSS transform, so the 3D models and their HTML captions line up. The box follows window
 resizes.
 
 **Acceptance criteria**
-- At window sizes 800 × 600, 1920 × 1080 and 390 × 844 (portrait phone), the menu is fully visible, not cropped, not stretched (3:4 within 0.5 %), and fills the window's width or height.
+- At window sizes 800 × 600, 1920 × 1080 and 390 × 844 (portrait phone), the menu is fully visible, not cropped, not stretched (16:9 within 0.5 %), and fills the window's width or height.
 - Given the window goes from 800 × 600 to 390 × 844, then the menu follows within 5 s (e2e).
 
-*Sources: P01-R13, GD-02, GD-03, ENG-110, D-008.*
+*Sources: P01-R13, GD-02, GD-03, ENG-110, D-008, D-249.*
 
 ### UI-LOOK-03 — Neon blue/green palette · MUST
 
 The overlay uses a neon blue/green scheme (reviewer, 2026-10-30):
 - **neon**, electric cyan `#00e8ff`: the selected entries, the headings' glow, the loading bar, the scores;
-- **accent**, neon green `#3dff9a`: panel borders, labels, the sliders, the Back and pause buttons;
+- **accent**, neon green `#3dff9a`: panel borders, labels, the sliders, the Back button;
 - **deep**, deep blue `#0a5cff`: glows and the start of the bars;
 - blue-black glass panels (`rgba(2, 14, 22, 0.8)`) on a blue-black background (`#010a10`), near-white text (`#ecfdff`);
 - a blue-to-green **neon line** gradient (deep blue → cyan → green → lime) for the lines and bar fills.
@@ -66,7 +68,7 @@ Red (`#ff2244`) is used only for danger: low health, the "Game over" panel, lock
 
 The UI palette changes no gameplay colour (enemies, enemy shots, player shots, pickups) and none of
 the levels' 3D look ([graphics/readability.md](../graphics/readability.md)). Over the playfield, the
-UI draws no neon frame or line; the HUD's cyan is only in its bar at the bottom, outside the part of
+UI draws no neon frame or line; the HUD's cyan is only in its side columns, outside the part of
 the playfield the ship flies in ([hud.md](hud.md)).
 
 **Acceptance criteria**
@@ -160,9 +162,9 @@ that pulses between cyan and green (`title_glow_period`). There is no sun or oth
 
 ### UI-LOOK-13 — The logo fits the screen · MUST
 
-The logo is sized (`title_logo_size`) so the 13-letter name fits the 480 px screen with a condensed
-font. Where the system has no condensed font, its font size goes down 1 px at a time, after each
-screen is shown, until it fits its parent's width. Its letters are never clipped.
+The logo is sized (`title_logo_size`) so the 13-letter name fits the screen's width (1280 px; it
+was sized for 480) with a condensed font. Where the system has no condensed font, its font size
+goes down 1 px at a time, after each screen is shown, until it fits its parent's width. Its letters are never clipped.
 
 **Acceptance criteria**
 - e2e (also on a CI runner without condensed fonts): the logo is not wider than the screen.
@@ -184,7 +186,8 @@ Under the system's "reduce motion" setting, the logo's glow and the hints' pulse
 
 | Name | Value | Notes |
 |------|-------|-------|
-| Logical resolution | 480 × 640 | `src/game/config/game.py` `GAME_CONFIG.screen` (GD-02) |
+| Logical resolution | 1280 × 720 | `src/game/config/game.py` `GAME_CONFIG.screen` (GD-02, D-249) |
+| `menu_column` | 560 px | `index.html` `--menu-column` (UI-LOOK-02, D-249) |
 | `--neon` | `#00e8ff` | `index.html` `:root` |
 | `--accent` | `#3dff9a` | `index.html` `:root` |
 | `--deep` | `#0a5cff` | `index.html` `:root` |
@@ -211,3 +214,7 @@ Under the system's "reduce motion" setting, the logo's glow and the hints' pulse
 - From the cyberpunk and darksynth looks, these stay: the chamfered glass panels, the monospace
   readouts, the segmented loading bar, the hazard-striped locked cells, the chrome logo, the neon
   frame and bottom line, the pulsing hints and the light selected block with black text.
+- D-249 (2026-11-02): the screen is 16:9. The menus were laid out for the 3:4 screen and only
+  got a centre column; on a 390 × 844 phone the stage is now 390 × 219 CSS px, so the UI-LOOK-09
+  manual check and the UI-INPUT-11 touch targets do not hold there until the mobile layout
+  comes (the owner's choice: "we will deal with the mobile UI later").

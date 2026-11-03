@@ -36,7 +36,7 @@ def test_d199_a_viewer_shows_its_item_and_passes_the_wheel_on() -> None:
     """DEV-MENU-05: a viewer's screen."""
     wheels: list[float] = []
     view = DevViewerView("Enemies", "Wheel", "Back", 2, "Hornet", "3 / 21", scrub=False)
-    handlers = ScreenHandlers(lambda _i: None, lambda: None, None, None, None, None, wheels.append)
+    handlers = ScreenHandlers(lambda _i: None, lambda: None, None, None, None, wheels.append)
     root = render_dev_viewer_screen(FakeDocument(), view, handlers)
     assert root.querySelector(".dev-item").textContent == "Hornet"
     assert root.querySelector(".dev-position").textContent == "3 / 21"
@@ -82,7 +82,6 @@ def test_d199_a_drag_on_a_viewer_turns_its_model_but_not_from_the_back_button() 
     handlers = ScreenHandlers(
         lambda _i: None,
         lambda: None,
-        None,
         None,
         None,
         None,
@@ -148,7 +147,7 @@ class Menu:
 def test_d206_the_wheel_over_the_menu_scrolls_it() -> None:
     wheels: list[float] = []
     view = DevViewerView("Props", "Wheel", "Back", 0, "hut", "Farm · 1 / 1", scrub=False, menu=[])
-    handlers = ScreenHandlers(lambda _i: None, lambda: None, None, None, None, None, wheels.append)
+    handlers = ScreenHandlers(lambda _i: None, lambda: None, None, None, None, wheels.append)
     root = render_dev_viewer_screen(FakeDocument(), view, handlers)
     menu = Menu(None)
     target = SimpleNamespace(closest=lambda _selector: menu)

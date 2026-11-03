@@ -27,8 +27,9 @@ over its back, its stinger hanging in front of its head, between the claws.
 
 #### MB-SCORPION-02 — Body · MUST
 
-Its body is a swollen, segmented abdomen under a ridged shell (sinew, slate and graphite shades),
-its head plated with grafted armour, glowing eyes, bone legs and a plate grafted on its abdomen. It
+Its body is a swollen, segmented abdomen under a ridged shell (sinew, slate and graphite shades; the
+shell is the plating it sheds, MB-SCORPION-11), its head plated with grafted armour, glowing eyes,
+bone legs and a plate grafted on its abdomen's shell. It
 is not symmetrical: its right hind leg is missing, a torn stump in its place, and its left claw (the
 screen's left) is the bigger one, a fiddler crab's.
 
@@ -142,13 +143,23 @@ top and straightens out behind it, now towards the player, a little longer than 
 **tail cannon** at its end rises into place: it shields the core and fires a **giant laser**
 straight down the screen, four times as wide as the usual ones, its warning line first.
 
+The back plating is the abdomen's ridged shell ([common](../common.md), BOSS-42): a carapace drawn
+as a piece of its own over the flattened belly (the belly up to 1.6 px; the carapace from 1.33 px,
+its lowest point 1.5 px at its widest, up to 8 px, its nose tucked under the head plate), the yellow
+vein along its spine and the patch welded on its left. Its region is a lozenge the shell's own shape
+(`back`, not mirrored); it bursts into plates cracked from that outline and leaves a `shell` lattice
+frame over the belly, the tail's root rising through it. The tail cannon comes out of no region: it
+is at the end of the tail rig (BOSS-46).
+
 **Acceptance criteria**
 - Given both claws destroyed, then it transforms, turning by pi, and its stinger retires (unit
   test).
 - Given its tail cannon revealed, then it fires a 44 px wide laser every 7 s.
+- Given its model, then it draws the back region's armour, and it holds together with and without
+  it, its tail arched and unfolded (unit tests).
 - Manual validation: the Scorpion turns round and its tail unfolds into the cannon.
 
-*Sources: D-224, D-228.*
+*Sources: D-224, D-228, D-254.*
 
 #### MB-SCORPION-12 — Laser colour · MUST
 
@@ -199,7 +210,7 @@ named.
 | core stage 3 | ring of 12 turning 8° every 1.4 s, and 1 aimed blue every 2.4 s | |
 | angry | flower, heat 3 (44 bullets a second, 144 px/s), purple and blue | |
 | transformation | when `claw-left` and `claw-right` are destroyed; turns by pi | `transformParts`, `turns` |
-| shed region | back: x -20..20, y -2..35.5, above 4 px, `shell`, not mirrored | |
+| shed region | back: a lozenge the shell's shape, x ±16 at its widest, y 0..31.5, `shell`, not mirrored; shell 1.33–8 px | `armour_region` |
 | `tail-cannon` | ends at (0, 108), radius 15, health 1 100, shield, drop 0.3; first shot 1.5 s | `SCORPION_TAIL_CANNON`, `tail_cannon` |
 | giant laser | 44 px wide, 2.4 s, every 7 s | `src/game/config/bosses/weapon_kinds.py` `BEAM` |
 | tail rig | 6 beads, 10 % longer unfolded | `src/game/view/bosses/scorpion_tail.py` |

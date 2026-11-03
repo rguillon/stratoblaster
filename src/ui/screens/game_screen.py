@@ -1,5 +1,5 @@
 # Copyright (c) 2026 Renaud Guillon
-"""Game screen overlay: the level played (UI-HUD-06), the touch fire and pause buttons.
+"""Game screen overlay: the level played (UI-HUD-06), the touch fire button.
 
 The drag area over the playfield, the pause menu while paused (UI-PAUSE-07) and the "Level complete"
 panel at the end (UI-OVER-01).
@@ -60,10 +60,6 @@ def _level_complete(doc: Any, complete: LevelCompleteView, handlers: ScreenHandl
     return panel
 
 
-def _stop_propagation(event: Any) -> None:
-    event.stopPropagation()
-
-
 def _press(on_fire: Callable[[bool], None] | None, held: bool) -> Callable[[Any], None]:
     """Return a pointer listener of the fire button: stops the event, then reports `held`."""
 
@@ -83,27 +79,6 @@ def _fire_button(doc: Any, label: str, handlers: ScreenHandlers) -> Any:
     for event_type in ["pointerup", "pointercancel", "pointerleave"]:
         button.addEventListener(event_type, _press(handlers.on_fire, False))
     return button
-
-
-def _pause_button(doc: Any, label: str, handlers: ScreenHandlers) -> Any:
-    """Return the on-screen pause button (UI-PAUSE-02), top right of the playfield.
-
-    Its press does not start a drag.
-    """
-    button = element(doc, "div", "game-pause", label)
-    button.setAttribute("role", "button")
-    button.setAttribute("aria-label", "Pause")
-    button.addEventListener("pointerdown", _stop_propagation)
-    button.addEventListener("click", _run_pause(handlers.on_pause))
-    return button
-
-
-def _run_pause(on_pause: Callable[[], None] | None) -> Callable[[Any], None]:
-    def handler(_event: Any) -> None:
-        if on_pause is not None:
-            on_pause()
-
-    return handler
 
 
 def _drag_area(root: Any, handlers: ScreenHandlers) -> None:
@@ -134,10 +109,11 @@ def _drag_area(root: Any, handlers: ScreenHandlers) -> None:
 
 
 def render_game_screen(doc: Any, view: GameScreenView, handlers: ScreenHandlers) -> Any:
-    """Return the overlay of the game screen; the fire.
+    """Return the overlay of the game screen.
 
-    Pause buttons show only while the level is played (UI-PAUSE-02). The HUD is drawn by `GameHud`,
-    which updates every frame.
+    The fire button shows only while the level is played (no pause button since D-251: the
+    keyboard and the gamepad pause, UI-PAUSE-01). The HUD is drawn by `GameHud`, which updates
+    every frame.
     """
     root = element(doc, "div", "menu-screen game-screen")
     # No Back button over the playfield (UI-HUD-09): the level is left from the pause menu.
@@ -147,9 +123,6 @@ def render_game_screen(doc: Any, view: GameScreenView, handlers: ScreenHandlers)
     elif view.paused:
         root.append(pause_panel(doc, view.paused, view.selected, handlers))
     else:
-        root.append(
-            _fire_button(doc, view.fire, handlers),
-            _pause_button(doc, view.pause, handlers),
-        )
+        root.append(_fire_button(doc, view.fire, handlers))
         _drag_area(root, handlers)
     return root

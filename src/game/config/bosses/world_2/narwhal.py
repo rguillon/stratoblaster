@@ -114,8 +114,10 @@ _NARWHAL = record({
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
 # baring a dark metal frame, and a pair of laser lances unfold (FB-NARWHAL-13); at transformation 2
-# its spine plating bursts off, baring a dark metal frame, and a pair of missile racks unfold
-# (FB-NARWHAL-14). The regions it sheds: FB-NARWHAL-06.
+# its spine plating (the hump on it) bursts off, baring a dark metal frame, and a pair of missile
+# racks unfold (FB-NARWHAL-14). The regions it sheds: FB-NARWHAL-06 (D-254). Their outlines follow
+# the hull's plan (its half widths along the body), the two meeting at the hump's rear, 8 px behind
+# the centre; the model draws each one's plating as a cap of the hull (`narwhal_armour`).
 NARWHAL = with_weapons(
     _NARWHAL,
     [
@@ -126,14 +128,28 @@ NARWHAL = with_weapons(
     ],
     [
         armour_region(
-            "back", 1, [[-30, -2.5], [30, -2.5], [30, 41], [-30, 41]], "shell", [5.3, 1000], False
+            "back",
+            1,
+            [[13.7, 41], [17, 16], [17.3, 8], [-17.3, 8], [-17, 16], [-13.7, 41]],
+            "shell",
+            None,
+            False,
         ),
         armour_region(
             "spine",
             2,
-            [[-24, -40], [24, -40], [24, -2.5], [-24, -2.5]],
+            [
+                [14, -40],
+                [16.5, -30],
+                [18, -10],
+                [17.3, 8],
+                [-17.3, 8],
+                [-18, -10],
+                [-16.5, -30],
+                [-14, -40],
+            ],
             "shell",
-            [7.8, 1000],
+            None,
             False,
         ),
     ],

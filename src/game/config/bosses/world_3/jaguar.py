@@ -121,5 +121,6 @@ JAGUAR = with_weapons(
         hidden_weapon("lance-left", "lance", [-38, 4], 10, 880, 1, "orange", 1.2, 5.0),
         hidden_weapon("lance-right", "lance", [38, 4], 10, 880, 1, "orange", 4.9, 5.0),
     ],
-    [armour_region("wings", 1, JAGUAR_WING, "wing", [0, 4.5])],
+    # MB-JAGUAR-11 (D-254): the pelt is drawn as a plate over each wing's top face.
+    [armour_region("wings", 1, JAGUAR_WING, "wing")],
 )

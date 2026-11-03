@@ -103,8 +103,25 @@ TOUCAN = with_weapons(
         hidden_weapon("rack-right", "rack", [12, -9], 10, 620, 1, "orange", 2.0, 18.0),
     ],
     [
+        # MB-TOUCAN-12 (D-254): the two plates of its back, either side of the spine ridge, the
+        # body's own plan from the tail stub to the head (its nose at -Y); the right one given,
+        # mirrored. The racks lie under them.
         armour_region(
-            "back", 1, [[-30, -25.8], [30, -25.8], [30, 21], [-30, 21]], "shell", [4.3, 1000], False
+            "back",
+            1,
+            [
+                [2.1, -21],
+                [10.6, -21],
+                [14.5, -15],
+                [17, -6],
+                [16, 10],
+                [11, 26],
+                [2.2, 26],
+                [3.2, 10],
+                [3.4, -6],
+                [2.9, -15],
+            ],
+            "shell",
         ),
     ],
 )

@@ -3,8 +3,10 @@
 
 Three armoured tiers lit crimson, molten slits in their walls, battlements, and the throne tower
 crowned in gold whose crown fires the core's rings; the smokestacks aft, glowing at their mouths;
-watchtowers and lamps. Model space: logical pixels, nose +Z (down the screen), Y up towards the
-camera.
+watchtowers and lamps. The core draws the lowest tier, the outer stacks, the watchtowers and the
+stern lamps (`draw_keep`); the upper tiers, the tower and the inner stacks are its spine armour
+(`caldera_throne_armour`, D-254), drawn with the pieces here. Model space: logical pixels, nose +Z
+(down the screen), Y up towards the camera.
 """
 
 import math
@@ -12,7 +14,7 @@ import math
 from game.config.bosses.world_4.caldera_throne import CALDERA_CROWN
 from game.view.bosses.boss_limbs import boss_point
 from game.view.bosses.final_boss_greebles import studs
-from game.view.bosses.final_boss_mechanism import armour, conduit
+from game.view.bosses.final_boss_mechanism import armour
 from game.view.bosses.mini_boss_shapes import SHADE, WHITE, H
 from game.view.bosses.overlord_city import edge_lights
 from game.view.bosses.world_4.caldera_throne_parts import (
@@ -35,7 +37,7 @@ type Vec3 = list[float]
 # __pragma__ ("noskip")
 
 
-def _octagon(radius: float, centre: OutlinePoint) -> list[OutlinePoint]:
+def octagon(radius: float, centre: OutlinePoint) -> list[OutlinePoint]:
     """Return an octagon of `radius` (to its corners) around `[x, z]`.
 
     Its faces are square to the axes.
@@ -75,12 +77,9 @@ WATCHTOWER_X = 26
 WATCHTOWER_Z = 76
 WATCHTOWER_RADIUS = 5
 WATCHTOWER_TOP = 22
-# The gold lamps along the deck's flanks (right half, `[x, z]` from and to).
+# The gold lamps along the deck's stern flanks (right half, `[x, z]` from and to; the forward rows
+# are on the flank plates).
 LAMP_ROWS = [
-    [
-        [50.0, 46.0],
-        [60.0, 20.0],
-    ],
     [
         [60.0, -36.0],
         [52.0, -66.0],
@@ -88,26 +87,28 @@ LAMP_ROWS = [
 ]
 
 
-def _draw_tiers(p: Any) -> None:
-    """Draw the three tiers, their edges lit crimson.
+def draw_tier(p: Any, i: int) -> None:
+    """Draw tier `i` of the keep, its edges lit (crimson, gold for the middle one).
 
-    Molten slits in the lowest, battlements on it.
+    The lowest is flesh, the upper ones armour.
     """
+    tier = TIERS[i]
+    radius = tier[0]
+    y0 = tier[1]
+    y1 = tier[2]
+    outline = octagon(radius, [0, 0])
+    if i == 0:
+        armour(p.flesh, outline, [y0, y1], SKIN.base, 1.6, SKIN.dark)
+    else:
+        armour(p.hull, outline, [y0, y1], H.base, 1.6, H.panel)
+    every = list(range(len(outline)))
+    edge_lights(p.neon, outline, every, [y1 - 3.2, y1 - 2.2], GOLD if i == 1 else CRIMSON)
+
+
+def _draw_battlements(p: Any) -> None:
+    """Draw the lowest tier's molten slits and the battlements on its roof."""
     hull = p.hull
     neon = p.neon
-    flesh = p.flesh
-    for i in range(len(TIERS)):
-        tier = TIERS[i]
-        radius = tier[0]
-        y0 = tier[1]
-        y1 = tier[2]
-        outline = _octagon(radius, [0, 0])
-        if i == 0:
-            armour(flesh, outline, [y0, y1], SKIN.base, 1.6, SKIN.dark)
-        else:
-            armour(hull, outline, [y0, y1], H.base, 1.6, H.panel)
-        every = list(range(len(outline)))
-        edge_lights(neon, outline, every, [y1 - 3.2, y1 - 2.2], GOLD if i == 1 else CRIMSON)
     r0 = TIERS[0][0]
     y1 = TIERS[0][2]
     face = r0 * math.cos(math.pi / 8)
@@ -123,19 +124,16 @@ def _draw_tiers(p: Any) -> None:
             along = face * math.tan(math.pi / 8) * d * 2
             at = [s * (face - 1.6) + c * along, y1, c * (face - 1.6) - s * along]
             hull.box([3.6, 2.6, 2.2], H.dark, Placement(at, a), SHADE["edge"])
-    neon.box(
-        [10, 2.4, 0.5],
-        GOLD,
-        Placement([0, 22, TIERS[1][0] * math.cos(math.pi / 8) + 0.3]),
-    )
 
 
-def _draw_tower(p: Any) -> None:
-    """Draw the throne tower: an armoured drum, a gold crown of spikes, its charge light on top."""
+def draw_tower(p: Any) -> None:
+    """Draw the throne tower: an armoured drum, a gold crown of spikes, its charge light on top.
+
+    The crown's muzzle is the core's (`draw_keep`).
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
-    muzzle = p.muzzle
     z = TOWER_Z
     radius = TOWER_RADIUS
     top = TOWER_TOP
@@ -156,29 +154,22 @@ def _draw_tower(p: Any) -> None:
         )
     hull.cylinder(radius - 1.5, 0.8, 8, H.dark, Placement([0, top, z]))
     charge.lathe(CROWN_LIGHT, 6, WHITE, Placement([0, top, z]))
-    muzzle(boss_point(CALDERA_CROWN[0], CALDERA_CROWN[1], CALDERA_CROWN[2]), "ring")
 
 
-def _draw_stacks(p: Any) -> None:
-    """Draw the smokestacks aft: soot-black, banded crimson.
+def draw_stack(p: Any, s: float, stack: list[float]) -> None:
+    """Draw a smokestack on side `s` (`stack`: x, z, radius, top): soot-black, banded crimson.
 
-    Their mouths glow with the furnaces.
+    Its mouth glows with the furnaces.
     """
-    hull = p.hull
-    neon = p.neon
-    flesh = p.flesh
-    for s in SIDES:
-        for stack in STACKS:
-            x = stack[0]
-            z = stack[1]
-            radius = stack[2]
-            top = stack[3]
-            at = [s * x, DECK_TOP, z]
-            flesh.cylinder(radius, top - DECK_TOP, 6, SKIN.panel, Placement(at), radius * 0.85)
-            hull.ring(radius * 0.9, 2, 6, HEAT["soot"], Placement([s * x, top - 2, z]))
-            neon.ring(radius * 0.95, 0.8, 6, CRIMSON, Placement([s * x, DECK_TOP + 6, z]))
-            neon.cylinder(radius * 0.7, 0.4, 6, HEAT["molten"], Placement([s * x, top - 0.3, z]))
-        conduit(flesh, [s * 18, DECK_TOP + 3, -36], [s * 24, DECK_TOP + 3, -68], [1.6, 3])
+    x = stack[0]
+    z = stack[1]
+    radius = stack[2]
+    top = stack[3]
+    at = [s * x, DECK_TOP, z]
+    p.flesh.cylinder(radius, top - DECK_TOP, 6, SKIN.panel, Placement(at), radius * 0.85)
+    p.hull.ring(radius * 0.9, 2, 6, HEAT["soot"], Placement([s * x, top - 2, z]))
+    p.neon.ring(radius * 0.95, 0.8, 6, CRIMSON, Placement([s * x, DECK_TOP + 6, z]))
+    p.neon.cylinder(radius * 0.7, 0.4, 6, HEAT["molten"], Placement([s * x, top - 0.3, z]))
 
 
 def _draw_watch(p: Any) -> None:
@@ -215,11 +206,14 @@ def _draw_watch(p: Any) -> None:
 
 
 def draw_keep(p: Any) -> None:
-    """Draw the keep over the core (FB-CALDERA-THRONE-02).
+    """Draw the core's keep (FB-CALDERA-THRONE-02): its lowest tier and battlements.
 
-    With its throne tower, the smokestacks and watchtowers.
+    The crown's ring muzzle over it (the tower is its spine armour), the outer smokestacks and the
+    watchtowers.
     """
-    _draw_tiers(p)
-    _draw_tower(p)
-    _draw_stacks(p)
+    draw_tier(p, 0)
+    _draw_battlements(p)
+    p.muzzle(boss_point(CALDERA_CROWN[0], CALDERA_CROWN[1], CALDERA_CROWN[2]), "ring")
+    for s in SIDES:
+        draw_stack(p, s, STACKS[1])
     _draw_watch(p)

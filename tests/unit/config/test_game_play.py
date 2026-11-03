@@ -5,11 +5,11 @@ from config.game_play import GAME_PLAY_CONFIG
 from config.scenery_stage import SCENERY_STAGE_CONFIG
 
 
-def test_game_screen_05_the_ship_flies_inside_the_playfield_above_the_hud() -> None:
-    """Also UI-HUD-07: the bottom margin keeps the ship above the HUD's bar."""
+def test_game_screen_05_the_ship_flies_inside_the_playfield_window() -> None:
+    """D-251: it may reach the bottom edge (its model on screen); D-252: the window bounds it."""
     margin = GAME_PLAY_CONFIG.ship_margin
     assert margin.side > 0
-    assert margin.bottom > 48  # the HUD's bar is 48 px high
+    assert 17 <= margin.bottom <= 24  # half the balanced ship's length, ENEMY_UNIT 34
     assert margin.top > margin.bottom
 
 

@@ -217,10 +217,14 @@ the hottest bullet hell of the game.
 
 #### FB-CALDERA-THRONE-14 — First transformation: flank armour bursts off · MUST
 
-The Throne transforms a first time when 2 of its 6 original parts are destroyed. Its flank armour
-bursts off: a region either side from 34 px to 106 px out, from 53 px ahead of the centre to 15 px
-behind it, above 2.2 px high (round the bastions). Under each a dark metal `wing` frame (ribs across
-and two spars) shows. The boss stays one object after it.
+The Throne transforms a first time when 2 of its 6 original parts are destroyed. Its flank plates
+burst off: pieces of the model's own ([common](../common.md), BOSS-42), an iron plate either side
+lying on the deck's top face beside the bastion, 8 to 9.5 px high, from 34 px out to the face's
+edge (62.6 px out at the widest), from 51 px ahead of the centre to 15 px behind it; on each an
+armour plate, a molten seam, a grille, a row of gold lamps, a gland and the magma vein's forward
+run. Each bursts into plates cracked from its outline at its own height. Under each the flat deck
+and a dark metal `wing` frame (ribs across and two spars) show; the bastions beyond stay. The gun
+decks lie folded under them. The boss stays one object after it.
 
 **Acceptance criteria**
 - Given two original parts are destroyed, then the boss transforms and its flank regions burst off
@@ -228,7 +232,7 @@ and two spars) shows. The boss stays one object after it.
 - Given the boss after its first transformation, then nothing of it hangs in the air (unit:
   `test_d227_the_boss_holds_together_in_every_state`).
 
-*Sources: D-221, D-224, D-227.*
+*Sources: D-221, D-224, D-227, D-254.*
 
 #### FB-CALDERA-THRONE-15 — First hidden weapons: two gun decks · MUST
 
@@ -246,9 +250,15 @@ They shield the core and fire `magenta` fans straight down as every battery does
 #### FB-CALDERA-THRONE-16 — Second transformation: spine plating bursts off · MUST
 
 The Throne transforms a second time when 4 of its 6 original parts are destroyed. Its spine plating
-bursts off: one region across the centre line, 34 px either side, from 80 px ahead of the centre to
-103.1 px behind it, above 11.5 px high (the keep's upper works and the deck's top). Under it a dark
-metal `shell` frame (a lattice) shows. The boss stays one object after it.
+bursts off: a piece of the model's own ([common](../common.md), BOSS-42), the keep's upper works:
+its two upper tiers (18 to 36 px high) on the lowest one, the throne tower with its gold crown and
+charge light (to 50 px; the core's rings keep leaving from the crown's height), the gold plaque on
+the middle tier, and the two inner smokestacks (24 px either side, 74 px behind the centre, from
+the deck up to 27 px) with their conduits from the keep. It bursts into plates cracked from the
+middle tier's octagon. Its region is the deck round the keep, 34 px either side of the centre line,
+from 62 px ahead of the centre to 80 px behind it; under it the deck, the keep's lowest tier with
+its battlements, and a dark metal `shell` frame (a lattice) on the deck show. The lances and the
+rack lie folded under it, on the deck. The boss stays one object after it.
 
 **Acceptance criteria**
 - Given four original parts are destroyed, then the boss transforms a second time and its spine
@@ -256,7 +266,7 @@ metal `shell` frame (a lattice) shows. The boss stays one object after it.
 - Given the boss after its second transformation, then nothing of it hangs in the air (unit:
   `test_d227_the_boss_holds_together_in_every_state`).
 
-*Sources: D-221, D-224, D-227.*
+*Sources: D-221, D-224, D-227, D-254.*
 
 #### FB-CALDERA-THRONE-17 — Second hidden weapons: two lances and a missile rack · MUST
 
@@ -310,8 +320,8 @@ All in `src/game/config/bosses/world_4/caldera_throne.py` (`CALDERA_THRONE`) unl
 | bullets | `magenta` 215, `blue` 210, `purple` 205 px/s | radius 4 |
 | rage | spirals + vortex, heat 14, half each | `rage.spirals`, `rage.vortex` |
 | transformations | at 2, then 4 original parts destroyed | `src/game/sim/boss_build.py` `default_transforms` |
-| flank regions | x 34..106 (mirrored), y -53..15, above 2.2, `wing` | form 1 |
-| spine | x -34..34, y -80..103.1, above 11.5, `shell` | form 2 |
+| flank regions | the deck's top face beside the bastion (mirrored): (34, -51), (46, -51), (55, -34), (61, -8), (62.6, 15), (34, 15); `wing`; plate 8–9.5 px | form 1, `caldera_throne_armour.py` |
+| spine | x -34..34, y -62..80, `shell`, not mirrored; the keep's upper tiers, tower and inner stacks | form 2 |
 | gun decks | (±50, -19), radius 12, pod 14.2, 2 080 HP, `magenta`, first 1.2 / 2.0 s | form 1 (`battery`) |
 | lances | (±14, 75), radius 12, pod 14.2, 2 600 HP, first 1.2 / 2.0 s | form 2 |
 | rack | (0, -48), radius 12, pod 13.4, 2 600 HP, first 1.6 s | form 2 |

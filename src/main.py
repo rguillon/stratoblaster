@@ -24,7 +24,7 @@ from host.cookie_storage import CookieStorage
 from host.webgl_support import has_webgl2
 from input.gamepad_menu_input import browser_gamepads
 from render.babylon import new_engine
-from ui.stage_fit import apply_stage_fit, fit_stage
+from ui.stage_fit import apply_stage_fit, fit_stage, render_ratio
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module, ENG-153).
@@ -157,30 +157,30 @@ def pixel_ratio() -> float:
     return cap
 
 
-def fit_to_window(engine: Any, stage: Any, overlay: Any) -> None:
+def fit_to_window(engine: Any, stage: Any, overlay: Any, draw_scale: float) -> None:
     """Keep the stage and the menu overlay fitted to the window (ENG-110, GAME-SCREEN-02).
 
-    Covers UI-LOOK-02 too.
+    Covers UI-LOOK-02 too. The canvas draws `draw_scale` times the pixels of the stage (1, or
+    less in e2e builds), capped at `ENGINE_CONFIG.max_render_scale` pixels per logical pixel
+    (D-250): the hardware scaling level follows the fit, so a resize keeps the cap.
     """
 
     def fit() -> None:
-        apply_stage_fit(
-            stage,
-            overlay,
-            fit_stage(window.innerWidth, window.innerHeight, GAME.screen),
-            GAME.screen,
-        )
+        stage_fit = fit_stage(window.innerWidth, window.innerHeight, GAME.screen)
+        apply_stage_fit(stage, overlay, stage_fit, GAME.screen)
+        ratio = render_ratio(pixel_ratio(), stage_fit, ENGINE_CONFIG.max_render_scale)
+        engine.setHardwareScalingLevel(1 / (ratio * draw_scale))
         engine.resize()
 
     window.addEventListener("resize", fit)
     fit()
 
 
-def start_game(engine: Any) -> None:
+def start_game(engine: Any, draw_scale: float) -> None:
     """Start the game page: the menu, the levels and the audio."""
     document.title = GAME.title
     overlay = element("menu")
-    fit_to_window(engine, element("stage"), overlay)
+    fit_to_window(engine, element("stage"), overlay, draw_scale)
     # The URL's debug options, in every build (DEV-OPT-01, DEV-OPT-07).
     debug = parse_debug_options(window.location.search)
     options = AppOptions(
@@ -240,10 +240,10 @@ def main() -> None:
     e2e = ENGINE_CONFIG.e2e
     antialias = e2e.antialias if E2E else True
     engine = new_engine(canvas, antialias)
-    engine.setHardwareScalingLevel(1 / (pixel_ratio() * (e2e.render_scale if E2E else 1)))
     # UI-LOAD-07: a lost WebGL context asks the player to reload, with a button (ENG-110).
     engine.onContextLostObservable.add(show_context_lost)
-    start_game(engine)
+    # The pixels drawn per stage pixel: set with the fit (D-250).
+    start_game(engine, e2e.render_scale if E2E else 1)
 
 
 def is_canvas(el: Any) -> bool:

@@ -108,7 +108,7 @@ def make_look() -> SimpleNamespace:
 
 def make_game(look: Any) -> SimpleNamespace:
     scenery = SimpleNamespace(camera=CAMERA_LOOK, looks={"1-1": look})
-    return SimpleNamespace(screen=SCREEN, view=SimpleNamespace(scenery=scenery))
+    return SimpleNamespace(playfield=SCREEN, view=SimpleNamespace(scenery=scenery))
 
 
 LEVEL = SimpleNamespace(id="1-1", scroll_speed=30)
@@ -174,7 +174,7 @@ def test_dev_menu_13_with_the_environment_the_sky_lights_the_models_without_grou
     assert lit is built.scene
     assert environment.cube_size == 64
     assert (environment.intensity, environment.stops) == (0.8, ["noon"])
-    assert environment.glow.blur_kernel_size == 32
+    assert environment.glow.blur_kernel_size == 16  # D-250: as the look gives it
     # There is no ground: its glow layer goes.
     assert render.glows[0].disposed is True
     assert render.layers == [(built.scene, options)]

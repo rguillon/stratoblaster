@@ -13,8 +13,8 @@ ships map to the screen and what they may reach is in [../gameplay/screen.md](..
 ### GFX-CAM-01 — World units and axes · MUST
 
 One world unit is one logical pixel. X runs across the level (0 under the middle of the playfield),
-Z runs along it (the level scrolls towards +Z) and Y is up. The playfield is the 480 × 640 logical
-screen laid flat on a plane at the flight altitude (`flightAltitude`, 320), its bottom edge at the
+Z runs along it (the level scrolls towards +Z) and Y is up. The playfield is the 1000 × 720 playfield
+window ([../gameplay/screen.md](../gameplay/screen.md)) laid flat on a plane at the flight altitude (`flightAltitude`, 320), its bottom edge at the
 Z the level has reached. Every scenery height (ground, sea, clouds, props) is an absolute Y.
 
 **Acceptance criteria**
@@ -28,6 +28,8 @@ Z the level has reached. Every scenery height (ground, sea, clouds, props) is an
 The camera is a perspective camera above the playfield, tilted `tiltDeg` (35°) from straight down
 towards +Z, so it looks forward and the far ground is at the top of the screen. Its vertical field of
 view is `fovDeg` (40°). It never turns and never moves across X: it only follows the level along Z.
+It draws only into the playfield window's viewport of the canvas (D-252): nothing of the level
+shows under the HUD's columns, and its aspect ratio is the window's.
 
 **Acceptance criteria**
 - Given the camera config, then the tilt is 35° from vertical towards +Z and the field of view 40°.
@@ -38,13 +40,15 @@ view is `fovDeg` (40°). It never turns and never moves across X: it only follow
 ### GFX-CAM-03 — Playfield framing · MUST
 
 The camera stands above the playfield's centre line, behind its bottom edge, at the height where the
-bottom and top edges of the screen pass through the bottom and top edges of the playfield (about
-552 above the flight plane and 148 behind its bottom edge for 480 × 640). The framing refuses a tilt
-and field of view that would show the horizon. Seen through the tilted camera the playfield is a
-trapezoid: about 293 of its 480 logical pixels across the bottom edge and about 493 across the top.
+bottom and top edges of the window pass through the bottom and top edges of the playfield (about
+621 above the flight plane and 166 behind its bottom edge for a 720 px tall window; 552 and 148
+for the old 480 × 640, D-249). The framing refuses a tilt and field of view that would show the
+horizon. Seen through the tilted camera the playfield is a trapezoid: about 610 of its 1000 logical
+pixels across the bottom edge and about 1 030 across the top (a little past the window's side edges
+there).
 
 **Acceptance criteria**
-- Given the 480 × 640 playfield, then the bottom and top screen rays meet the flight plane at the
+- Given the 1000 × 720 playfield, then the bottom and top screen rays meet the flight plane at the
   playfield's bottom and top edges (unit test).
 - Given a tilt plus half field of view of 90° or more, then framing fails.
 
@@ -73,7 +77,9 @@ level's lowest ground: the water level when the level has water, its lowest reli
 terrain is generated over that window plus `margin` (80) on every side, so the camera never sees the
 edge of the generated ground. The camera never sees the sky above the horizon: the sky only lights
 the scene and gives the reflections ([sky-and-light.md](sky-and-light.md)). With the ground drawn
-twice as big, about ±195 units of ground show across at the sea level.
+twice as big, about ±390 units of ground show across the playfield window at the sea level
+(±435 at a sea bed 55 under it; ±195 on the old 480 × 640 screen, ±500 on the whole 16:9 screen
+between D-249 and D-252, ±210 and ±235 in the 540 × 720 window until D-253).
 
 **Acceptance criteria**
 - Given a level, then the terrain chunks cover the ground window plus the margin on both sides and
@@ -123,7 +129,7 @@ ground's glow ever draw over a ship.
 | `near_clip` | 200 | `src/config/scenery_stage.py` `SCENERY_STAGE_CONFIG` |
 | `far_clip` | 4000 | same place |
 | `margin` | 80 | ground generated round the window seen, same place |
-| camera height over the flight plane | ≈ 552 | worked out by `frame_playfield` (`src/render/scenery/playfield_framing.py`) |
+| camera height over the flight plane | ≈ 621 for a 720 px tall window (552 for 480 × 640) | worked out by `frame_playfield` (`src/render/scenery/playfield_framing.py`) |
 
 ## Notes
 

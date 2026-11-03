@@ -228,12 +228,17 @@ player) at once, at heat 12, each at half the rate (`orange` and `red`, `red` an
 
 #### FB-OBSIDIAN-GOLEM-16 — First transformation: the flank slabs lift · MUST
 
-Once both shoulder cannons are destroyed, the Golem transforms: its two flank slabs (from 14 px to
-56.3 px out either side, from 25 px ahead of the centre to 35 px behind it, above 8.8 px high) lift
-70° on hinges along their outer edges (56.3 px out, 20 px high), turning about the boss's length,
-like gull-wing doors, and stay up. Dark metal `wing` frames show where they lay, and two heavy
-cannons stand in the dark metal beneath. The shoulder cannons, which stood on the slabs, are gone
-before they move. The boss stays one object after the move.
+Once both shoulder cannons are destroyed, the Golem transforms: its two flank slabs lift 70° on
+hinges along their outer edges, turning about the boss's length, like gull-wing doors, and stay
+up. Each is a piece of the model's own ([common](../common.md), BOSS-42, BOSS-45): an obsidian
+plate lying on the torso's top face, 16 to 17.5 px high, from the hump's foot 14 px out to the
+face's edge (36 px out at the widest, from 24 px ahead of the centre to 31 px behind it), carrying
+the pauldron (its dome from the plate's foot up to 27.4 px), the flank's magma vein and gland, a
+vent and a soot patch; it bursts, if it must, into obsidian plates cracked at its own height. Its
+hinge is the pauldron's outer edge (51 px out, 16 px high), on a dark shoulder drum the torso
+carries under each pauldron, so the lifted slab stands on the shoulder. Dark metal `wing` frames
+show where they lay, and two heavy cannons stand in the dark metal beneath. The shoulder cannons,
+which stood beside the slabs, are gone before they move. The boss stays one object after the move.
 
 **Acceptance criteria**
 - Given both shoulder cannons are destroyed, then the boss transforms and its flank slabs swing up
@@ -241,7 +246,7 @@ before they move. The boss stays one object after the move.
 - Given the boss after this transformation, then nothing of it hangs in the air (unit:
   `test_d227_the_boss_holds_together_in_every_state`).
 
-*Sources: D-230, D-221, D-224, D-227.*
+*Sources: D-230, D-221, D-224, D-227, D-254.*
 
 #### FB-OBSIDIAN-GOLEM-17 — First hidden weapons: two heavy cannons · MUST
 
@@ -259,9 +264,14 @@ shield the core and fire `orange` spreads of large, slow shells at the player as
 #### FB-OBSIDIAN-GOLEM-18 — Second transformation: spine plating bursts off · MUST
 
 Once the armour plate and the chest emitter are destroyed, the Golem transforms again: its spine
-plating bursts off, one region across the centre line, 14 px either side, from 38 px ahead of the
-centre to 16 px behind it, above 10.6 px high. Under it a dark metal `shell` frame (a lattice) shows.
-The boss stays one object after it.
+plating bursts off: a piece of the model's own ([common](../common.md), BOSS-42), an obsidian ridge
+along the hump's crest (12 px either side, from 16 px behind the centre to 8 px ahead, sunk a px
+into the hump and 1.6 px proud of it, up to 29.4 px high) with two magma seams across it, and the
+helm at its end over the chest (9 to 10 px either side, from 8 to 22 px ahead, 16 to 29 px high);
+the twin guns under its brow are the core's and stay. Its region is 14 px either side, from 22 px
+ahead of the centre to 16 px behind it. It leaves a dark metal spine the model draws itself
+(BOSS-44): a lower ridge of dark metal with three ribs across it and a thin magma seam along its
+crest; the sweeper's pod stands where the helm was. The boss stays one object after it.
 
 **Acceptance criteria**
 - Given the plate and the emitter are destroyed, then the boss transforms a second time and its spine
@@ -269,7 +279,7 @@ The boss stays one object after it.
 - Given the boss after its second transformation, then nothing of it hangs in the air (unit:
   `test_d227_the_boss_holds_together_in_every_state`).
 
-*Sources: D-221, D-224, D-227, D-230.*
+*Sources: D-221, D-224, D-227, D-230, D-254.*
 
 #### FB-OBSIDIAN-GOLEM-19 — Second hidden weapons: a sweeper and two mortars · MUST
 
@@ -321,8 +331,8 @@ All in `src/game/config/bosses/world_4/obsidian_golem.py` (`OBSIDIAN_GOLEM`) unl
 | bullets | `red` 215, `orange` 205, `magenta` 210, `purple` 200 px/s | radius 4 |
 | rage | flower + vortex, heat 12, half each | `rage.flower`, `rage.vortex` |
 | transformations | both shoulder cannons; then plate and emitter | `transformParts` |
-| flank slabs (moving) | x 14..56.3 (mirrored), y -25..35, above 8.8; swing about the length at (±56.3, 5, 20), 0 → 70° | `moving_region("flanks", …)`, `src/game/config/bosses/moving_regions.py` |
-| spine | x -14..14, y -38..16, above 10.6, `shell` | `armour_region("spine", …)` |
+| flank slabs (moving) | the torso's top face from the hump's foot out (mirrored): (14, -24), (17, -24), (29, -16), (36, -4), (34.5, 15), (26, 29), (14, 31); above 8.8; swing about the length at (±51, 5, 16), 0 → 70°; plate 16–17.5 px, the pauldron on it | `moving_region("flanks", …)`, `src/game/config/bosses/moving_regions.py`, `obsidian_golem_armour.py` |
+| spine | x -14..14, y -22..16, `shell`, not mirrored; the ridge and the helm, its own dark spine for a frame | `armour_region("spine", …)` |
 | heavy cannons | (±34, 5), radius 10, pod 29.6, 1 280 HP, `orange`, first 1.2 / 2.0 s | form 1 |
 | sweeper | (0, -12), radius 10, pod 29.2, 1 600 HP, first 1.6 s | form 2 |
 | mortars | (±8, 7), radius 7, pod 29.2, 1 600 HP, `red`, first 1.2 / 2.6 s | form 2 |

@@ -4,7 +4,8 @@
 Logical pixels, nose +Z, Y up (towards the camera). A giant armoured barge: a long, flat hull, the
 pump house amidships with its stack, two sluice gate houses either side of the bow, the armour
 plate and the drone hangar on the bow, the chemical tanks on outriggers at its sides, rust, moss
-and vines all over.
+and vines all over. The plating over its flank decks and its bow's wing decks is the armour it sheds
+(FB-DAM-BREAKER-11, FB-DAM-BREAKER-12, D-254): drawn apart (`dam_breaker_armour`).
 """
 
 import math
@@ -32,6 +33,7 @@ from game.view.bosses.mini_boss_shapes import (
     H,
     offset,
 )
+from game.view.bosses.world_3.dam_breaker_armour import flank_plating, wing_plating
 from game.view.bosses.world_3.dam_breaker_parts import (
     DECK_Y,
     RUST,
@@ -86,9 +88,10 @@ STACK_FOOT = [0, 17, -8]
 
 
 def draw_hull(p: EnemyParts) -> None:
-    """Draw the hull, its green-lit rim, rusty patches and deck seams.
+    """Draw the hull, its green-lit rim and the deck seams between its plating.
 
-    And the swamp growing over it (FB-DAM-BREAKER-04).
+    And the swamp growing over it (FB-DAM-BREAKER-04). The flank and wing decks' plating, with the
+    seams, rust and moss on it, is drawn apart (`dam_breaker_armour`).
     """
     hull = p.hull
     flesh = p.flesh
@@ -113,10 +116,10 @@ def draw_hull(p: EnemyParts) -> None:
             [DECK_Y - 3, DECK_Y - 2],
             TOXIC,
         )
-        for z in [-40, -20, 34]:
-            seam(hull, [s * 6, z], [s * 54, z], [DECK_Y, 0.8, 0.4], H.dark)
-        seam(hull, [s * 30, 46], [s * 30, -62], [DECK_Y, 0.8, 0.4], H.dark)
-        hull.box([14, 0.4, 12], RUST, Placement([s * 40, DECK_Y, -46 + s * 6]))
+        for z in [-40, -20]:
+            seam(hull, [s * 6, z], [s * 29, z], [DECK_Y, 0.8, 0.4], H.dark)
+        seam(hull, [s * 6, 34], [s * 13, 34], [DECK_Y, 0.8, 0.4], H.dark)
+        seam(hull, [s * 28.8, 20], [s * 28.8, -62], [DECK_Y, 0.8, 0.4], H.dark)
         vines(
             hull,
             [
@@ -126,17 +129,8 @@ def draw_hull(p: EnemyParts) -> None:
                 [s * 56, DECK_Y, -58],
             ],
         )
-    moss(
-        hull,
-        [
-            [-38, DECK_Y, -30],
-            [44, DECK_Y, -58],
-            [24, DECK_Y, 50],
-            [-30, DECK_Y, 46],
-            [12, DECK_Y, -64],
-        ],
-    )
-    hazard(hull, [0, DECK_Y, 46], [40, 3], 10, 0)
+    moss(hull, [[12, DECK_Y, -64]])
+    hazard(hull, [0, DECK_Y, 46], [28, 3], 7, 0)
 
 
 def draw_pump_house(p: EnemyParts) -> None:
@@ -156,10 +150,12 @@ def draw_pump_house(p: EnemyParts) -> None:
     charge.box([26, 1, 0.6], WHITE, Placement([0, 14.1, 17.4], 0, 0.5))
     vent(hull, [10, 18, -12], [8, 7], 3)
     for s in SIDES:
-        neon.box([0.6, 0.4, 30], TOXIC, Placement([s * 19.4, 15.5, -4], s * 0.06))
+        # Lit strips along the hump's flanks, following its swell (BOSS-52).
+        seam(neon, [s * 15.2, -15], [s * 19.5, -5], [12, 0.6, 0.4], TOXIC)
+        seam(neon, [s * 19.5, -5], [s * 17.7, 5], [12, 0.6, 0.4], TOXIC)
         conduit(hull, [s * 18, 10, -16], [s * 44, DECK_Y + 6, -10], 1.2, 3)
         conduit(hull, [s * 15, 8, 14], [s * 38, DECK_Y + 8, 20], 1, 2)
-        lamps(neon, [[s * 14, 17.4, -20]], 1.4, TOXIC)
+        lamps(neon, [[s * 9, 14.5, -16]], 1.4, TOXIC)
     moss(hull, [[-8, 18, -16], [12, 17.4, 4]])
     rod(hull, [-12, 18, -16], [-12, 30, -16], 0.4)
     lamps(neon, [[-12, 30, -16]], 1, TOXIC)
@@ -229,7 +225,8 @@ def build_dam_breaker(scene: Any) -> Any:
 
     With toxic green neon: sluice gate houses letting out sludge, glowing chemical tanks at its
     sides, an armour plate and a drone hangar on its bow, a pump house and its stack amidships,
-    swamp growth over its rusty decks.
+    swamp growth over its rusty decks. The plating of its flank decks (`flanks`) and of its bow's
+    wing decks (`wings`) is the armour it sheds.
     """
     parts: dict[str, Any] = {
         "sluice-left": sluice,
@@ -243,5 +240,9 @@ def build_dam_breaker(scene: Any) -> Any:
         DAM_BREAKER,
         scene,
         TOXIC,
-        {"core": dam_breaker_core, "parts": parts},
+        {
+            "core": dam_breaker_core,
+            "parts": parts,
+            "armour": {"flanks": {"whole": flank_plating}, "wings": {"whole": wing_plating}},
+        },
     )

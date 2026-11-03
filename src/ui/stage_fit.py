@@ -45,6 +45,18 @@ def fit_stage(view_width: float, view_height: float, logical: LogicalScreen) -> 
     )
 
 
+def render_ratio(device_ratio: float, fit: StageFit, max_render_scale: float) -> float:
+    """Return the canvas pixels drawn per CSS pixel of the stage (D-250, ENG-110).
+
+    The device pixel ratio (already capped), lowered so the canvas never draws more than
+    `max_render_scale` pixels per logical pixel across: a 4K panel is drawn at 1920 x 1080 for
+    a 1280 x 720 screen at 1.5. A stage with no room keeps the device ratio.
+    """
+    if fit.scale <= 0:
+        return device_ratio
+    return min(device_ratio, max_render_scale / fit.scale)
+
+
 def _px(n: float) -> str:
     return str(n) + "px"
 

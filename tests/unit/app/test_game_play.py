@@ -352,7 +352,7 @@ def make_game(*, bombs: bool = True, model: bool = True, weapons: Any = None) ->
         bombs=FakeRenderer if bombs else None,
     )
     return SimpleNamespace(
-        screen=SimpleNamespace(width=480, height=720),
+        playfield=SimpleNamespace(width=480, height=720, viewport=None),
         player_ships=PlayerShipRoster(BASE_SPEED, [PlayerShipDefinition("alpha", "Alpha", 2, 5)]),
         player_weapons=["guns", "laser"] if weapons is None else weapons,
         enemy_kinds=[gnat_kind(areas)],

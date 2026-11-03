@@ -3,7 +3,9 @@
 
 Model space: logical pixels, nose +Z (down the screen), Y up towards the camera. A city-sized
 organism: a vast mantle with a city of living towers grown on its back, a shelled spine down its
-middle carrying the citadel (its brain), membrane wings out to the laser cannons.
+middle carrying the citadel (its brain), membrane wings out to the laser cannons. Its flank plates
+with the city on them and its front plate are drawn as pieces of their own (`overlord_armour`,
+D-254).
 """
 
 import math
@@ -11,12 +13,12 @@ import math
 from game.config.bosses.final_bosses import OVERLORD
 from game.config.enemy_look import ENEMY_LOOK
 from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.overlord_armour import DECK, draw_centre, draw_lower_deck, overlord_armour
 from game.view.bosses.overlord_city import (
     OVERLORD_DECK,
     OVERLORD_NEON,
     box2d,
     edge_lights,
-    symmetric,
 )
 from game.view.bosses.overlord_parts import (
     WING_TOP,
@@ -28,10 +30,7 @@ from game.view.bosses.overlord_skyline import draw_skyline
 from game.view.bosses.world_1_organic_kit import (
     F,
     M,
-    barbs,
     graft,
-    mantle,
-    polygon,
     rib_cage,
     tentacle,
     vein_line,
@@ -58,28 +57,7 @@ WHITE = [1, 1, 1]
 QUARTER = math.pi / 2
 N = OVERLORD_NEON
 
-# The deck (right half, front to tail), the boulevard on it, and the right wing.
-DECK = symmetric(
-    [
-        [26, 60],
-        [52, 42],
-        [64, 18],
-        [64, -30],
-        [52, -50],
-        [36, -60],
-    ],
-    64,
-)
-BOULEVARD = symmetric(
-    [
-        [14, 54],
-        [18, 26],
-        [26, -10],
-        [26, -46],
-        [16, -54],
-    ],
-    56,
-)
+# The right wing.
 WING = [
     [60, 24],
     [98, 10],
@@ -117,17 +95,17 @@ def _draw_hull(p: Any) -> None:
 
     A shelled spine down its middle (the boulevard) carrying the citadel, ribs across it, veins out
     to its edges, membrane wings out to the laser cannons on bone struts, swim bladders across its
-    tail.
+    tail. Its flank plates and front plate are its armour (`overlord_armour`).
     """
     top = OVERLORD_DECK["top"]
     boulevard = OVERLORD_DECK["boulevard"]
-    mantle(p, DECK, [-8, top], F.graphite)
+    draw_lower_deck(p)
     edges: list[int] = list(range(len(DECK)))
     edge_lights(p.neon, DECK, edges, [-2.6, -1.4], N)
-    mantle(p, BOULEVARD, [top - 1, boulevard], F.slate, N)
+    draw_centre(p)
     rib_cage(
         p,
-        [-44, -20, 20, 44],
+        [-44, -20, 20],
         {"halfWidth": 30, "y": top - 1, "height": 7, "thickness": 1.3},
     )
     segmented_body(p.flesh, SegmentedBody(-68, -50, 3, 36, -7, 6), F.sinew)
@@ -137,16 +115,7 @@ def _draw_hull(p: Any) -> None:
         edge_lights(p.neon, wing, [0, 1, 2], [-1.5, -0.5], N)
         tentacle(p, [s * 56, 1, 20], [s * 102, 2, 2], [0, 2, 0], [2.6, 0.8], F.bone, 4)
         tentacle(p, [s * 56, 1, -30], [s * 100, 2, -16], [0, 2, 0], [2.4, 0.8], F.bone, 4)
-        for z in [-40, -6, 30]:
-            vein_line(p, [s * 24, boulevard, z], [s * 60, top + 0.2, z + 6], [0, 2, 0], 1.3, N)
-        graft(
-            p,
-            polygon(5, 6, [1.4, 1]),
-            [top - 0.4, top + 0.8],
-            [s * 30, 0, 44],
-            {"color": M.base},
-        )
-    barbs(p, [0, top, 58], {"count": 5, "spacing": 8, "size": 4, "dir": [0, -0.2, 1]})
+        vein_line(p, [s * 24, boulevard, -40], [s * 60, top + 0.2, -34], [0, 2, 0], 1.3, N)
 
 
 def _draw_citadel(p: Any) -> None:
@@ -242,5 +211,6 @@ def build_overlord(scene: Any) -> Any:
                 "generator-left": draw_generator,
                 "generator-right": draw_generator,
             },
+            "armour": overlord_armour(),
         },
     )

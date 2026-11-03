@@ -136,3 +136,22 @@ def test_ui_hud_01_dispose_removes_the_hud() -> None:
     hud, _ = make_hud()
     hud.dispose()
     assert hud.root.parentElement is None
+
+
+def test_ui_hud_01_the_hud_is_two_side_columns_the_readouts_down_the_left_one() -> None:
+    """D-251: the left column holds the readouts in order.
+
+    The right one is empty and keeps the playfield in the middle.
+    """
+    hud, _ = make_hud()
+    panels = hud.root.querySelectorAll(".hud-panel")
+    assert len(panels) == 2
+    left, right = panels
+    assert [child.className for child in left.children] == [
+        "hud-progress",
+        "hud-health",
+        "hud-score",
+        "hud-weapon",
+    ]
+    assert right.className == "hud-panel hud-panel-right"
+    assert len(right.children) == 0

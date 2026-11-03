@@ -229,10 +229,14 @@ at half the rate (`orange` and `red`, `red` and `orange`): about 124 bullets a s
 
 #### FB-FOUNDRY-ARK-16 — First transformation: fore flank armour bursts off · MUST
 
-The Ark transforms a first time when 2 of its 6 original parts are destroyed. Its fore flank armour
-bursts off: a region either side from 20 px to 88 px out, from 78 px to 13.5 px ahead of the centre,
-above 1.5 px under the playfield's level. Under each a dark metal `wing` frame
-(ribs across and two spars) shows. The boss stays one object after it.
+The Ark transforms a first time when 2 of its 6 original parts are destroyed. Its fore flank
+plates burst off: pieces of the model's own ([common](../common.md), BOSS-42), an iron plate either
+side lying on the flesh deck, 4 to 5.5 px high, from 20 px out to the deck's edge (60 px out at
+the widest, 44.9 at the bow end), from 78 px to 13.5 px ahead of the centre; on each the hazard
+paint, a vent, a soot stain and a molten seam between the deck plates. Each bursts into plates
+cracked from its outline at its own height. Under each the flat deck and a dark metal `wing` frame
+(ribs across and two spars) show. The gun batteries lie folded under them. The boss stays one
+object after it.
 
 **Acceptance criteria**
 - Given two original parts are destroyed, then the boss transforms and its fore flank regions burst
@@ -240,7 +244,7 @@ above 1.5 px under the playfield's level. Under each a dark metal `wing` frame
 - Given the boss after its first transformation, then nothing of it hangs in the air (unit:
   `test_d227_the_boss_holds_together_in_every_state`).
 
-*Sources: D-221, D-224, D-227.*
+*Sources: D-221, D-224, D-227, D-254.*
 
 #### FB-FOUNDRY-ARK-17 — First hidden weapons: two gun batteries · MUST
 
@@ -257,12 +261,18 @@ They shield the core and fire `orange` fans straight down as every battery does 
 
 #### FB-FOUNDRY-ARK-18 — Second transformation: aft wings and spine burst off · MUST
 
-The Ark transforms a second time when 4 of its 6 original parts are destroyed. Its aft wing armour
-(either side from 30 px to 88 px out, from 13.5 px ahead of the centre to 45 px behind it, above
-0.2 px under the playfield's level) and its spine plating (36 px wide across the centre line, from 49 px
-ahead of the centre to 11 px behind it, above 16.8 px high, round the furnace) burst off, leaving
-dark metal frames: `wing` frames on the wings, a `shell` lattice on the spine. The boss stays one
-object after it.
+The Ark transforms a second time when 4 of its 6 original parts are destroyed. Its aft wing plates
+and its spine plating, pieces of the model's own ([common](../common.md), BOSS-42), burst off. Each
+wing plate is an iron plate lying on the flesh deck, 4 to 5.5 px high, from 30 px out to the deck's
+edge (62 px out at the widest), from 13.5 px ahead of the centre to 45 px behind it; on it the
+forward casting shed, the magma vein's middle run, a gland, a vent and a molten seam. The spine
+plating is the furnace's crown plate, an octagon 21 px across the hearth's flat top (16.8 to 18 px
+high, its sides facing the axes), carrying the furnace's stack (tapering up to 37.5 px, sooted at
+its lip, ringed in orange, the throat's charge light in its mouth); the core's ring volleys keep
+leaving from the throat's height. Each bursts into plates cracked from its outline at the plate's
+own height. They leave dark metal frames: `wing` frames on the deck where the wing plates lay, a
+`shell` lattice on the hearth's top. The gatlings lie folded under the wing plates and the drone
+hangar under the crown, in the hearth. The boss stays one object after it.
 
 **Acceptance criteria**
 - Given four original parts are destroyed, then the boss transforms a second time and these regions
@@ -270,7 +280,7 @@ object after it.
 - Given the boss after its second transformation, then nothing of it hangs in the air (unit:
   `test_d227_the_boss_holds_together_in_every_state`).
 
-*Sources: D-221, D-224, D-227.*
+*Sources: D-221, D-224, D-227, D-254.*
 
 #### FB-FOUNDRY-ARK-19 — Second hidden weapons: two gatlings and a drone hangar · MUST
 
@@ -323,9 +333,9 @@ All in `src/game/config/bosses/world_4/foundry_ark.py` (`FOUNDRY_ARK`) unless no
 | bullets | `red` 215, `orange` 210, `magenta` 205, `purple` 200 px/s | radius 4 |
 | rage | curtain + spirals, heat 13, half each | `rage.curtain`, `rage.spirals` |
 | transformations | at 2, then 4 original parts destroyed | `src/game/sim/boss_build.py` `default_transforms` |
-| fore flanks | x 20..88 (mirrored), y -78..-13.5, above -1.5, `wing` | form 1 |
-| aft wings | x 30..88 (mirrored), y -13.5..45, above -0.2, `wing` | form 2 |
-| spine | x -18..18, y -49..11, above 16.8, `shell` | form 2 |
+| fore flanks | the fore deck from x 20 to its edge (mirrored): (20, -78), (44.9, -78), (56, -60), (60, -20), (60.3, -13.5), (20, -13.5); `wing`; plate 4–5.5 px | form 1, `foundry_ark_armour.py` |
+| aft wings | the aft deck from x 30 to its edge (mirrored): (30, -13.5), (60.3, -13.5), (62, 40), (61.2, 45), (30, 45); `wing`; plate 4–5.5 px | form 2 |
+| spine | an octagon 21 px across the hearth's top, `shell`, not mirrored; crown plate 16.8–18 px, the stack on it | form 2, `octagon(21)` |
 | batteries | (±41, -43), radius 13, pod 10.2, 1 920 HP, `orange`, first 1.2 / 2.0 s | form 1 |
 | gatlings | (±48, 13), radius 10, pod 8.8, 2 400 HP, `orange`, first 1.2 / 2.0 s | form 2 |
 | hangar | (0, -19), radius 10, pod 22.4, 2 400 HP; 2 Gnats every 7 s, first 1.6 s | form 2; `src/game/config/bosses/weapon_kinds.py` `WEAPON_FIRE.hangar` |

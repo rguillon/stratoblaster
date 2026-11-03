@@ -121,14 +121,15 @@ def _draw_nacelles(p: EnemyParts) -> None:
 def _draw_crystals(p: EnemyParts) -> None:
     """Draw the crystal fins leaning back at the tail, and low crystals along the spine.
 
-    The low crystals sit under the crown ring and its spokes as they turn.
+    The tail's fins are rooted in the rear deck and grow through the plating over it
+    (MB-ICE-QUEEN-07); the low crystals sit under the crown ring and its spokes as they turn.
     """
     hull = p.flesh
     for s in SIDES:
-        crystal(hull, [s * 4.5, 7, -44], [-0.8, -0.35 * s, 0], [2.2, 13])
-        crystal(hull, [s * 3, 8.4, -26], [-0.5, -0.6 * s, 0], [1.3, 3.5])
-        crystal(hull, [s * 6.5, 8.6, -6], [-0.3, -0.9 * s, 0], [1.2, 3.2])
-    crystal(hull, [0, 6.2, -50], [-0.6, 0, 0], [1.6, 8])
+        crystal(hull, [s * 4.5, 5.3, -44], [-0.8, -0.35 * s, 0], [2.2, 13])
+        crystal(hull, [s * 3, 5.3, -26], [-0.5, -0.6 * s, 0], [1.3, 3.5])
+        crystal(hull, [s * 3.5, 5.8, -6], [-0.3, -0.9 * s, 0], [1.2, 3.2])
+    crystal(hull, [0, 5.3, -50], [-0.6, 0, 0], [1.6, 8])
 
 
 def _draw_wing_detail(p: EnemyParts) -> None:

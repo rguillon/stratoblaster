@@ -175,11 +175,23 @@ VERDANT_CROWN = with_weapons(
         hidden_weapon("mortar-right", "mortar", [13, 69], 11, 2300, 2, "green", 2.0, 11.0),
     ],
     [
+        # FB-VERDANT-CROWN-12: the plating over each flank's deck, from the dome's rim out to the
+        # deck's edge, clear of the root generator ahead (mirrored); an orb lies under each.
         armour_region(
-            "flanks", 1, [[28, -50], [104, -50], [104, 16], [28, 16]], "wing", [4.7, 1000]
+            "flanks",
+            1,
+            [[34, -36], [46, -36], [46, -50], [51, -50], [55, -44], [61, 0], [58.5, 24], [34, 24]],
+            "wing",
         ),
+        # FB-VERDANT-CROWN-13: the plating over the aft deck behind the dome, round the missile
+        # hatches' block, to the deck's tail; the mortars lie under it.
         armour_region(
-            "spine", 2, [[-32, 38], [32, 38], [32, 95.2], [-32, 95.2]], "shell", [5.5, 1000], False
+            "spine",
+            2,
+            [[-32, 36], [32, 36], [32, 72], [24, 85], [-24, 85], [-32, 72]],
+            "shell",
+            None,
+            False,
         ),
     ],
 )
