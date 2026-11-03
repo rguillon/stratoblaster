@@ -202,8 +202,11 @@ the game's playfield camera and the playfield layer, over a plain dark backdrop.
 - Given the enemies viewer, then the first enemy shows at once, moving as in game, at the middle of
   the view.
 - Given an enemy that leaves the playfield, then a new one of its kind comes in.
+- Given the enemies viewer's menu, then the kinds are grouped by tier (`Tier 1 (5)` … `Tier 4 (5)`,
+  ENM-01) and each tier's five buttons are on one line (`DEV_MENU_COLUMNS`); ▲ ▼ jump from tier to
+  tier, the caption gives the tier and the place in it (`Tier 2 · 3 / 5`) (unit test).
 
-*Sources: D-199, D-222, P05-R11, P16-R10.*
+*Sources: D-199, D-222, P05-R11, P16-R10; the tiers' lines, reviewer request 2026-11-03.*
 
 ### DEV-MENU-14 — The bosses viewer · MUST
 

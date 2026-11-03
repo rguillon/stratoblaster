@@ -292,9 +292,12 @@ class DevViewerView(BackView):
         position: str,
         scrub: bool,
         menu: list[DevChoice] | None = None,
+        columns: int = 3,
     ) -> None:
         BackView.__init__(self, heading, hint, back, selected)
         self.item = item
+        # How many buttons a row of the menu holds.
+        self.columns = columns
         # E.g. `3 / 40`.
         self.position = position
         # True: the wheel scrubs the level's time (the levels viewer); False: it moves through

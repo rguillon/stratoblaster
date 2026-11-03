@@ -28,7 +28,7 @@ def game() -> SimpleNamespace:
         SimpleNamespace(id="1-1", scenery="sea"),
         SimpleNamespace(id="1-2", scenery="town"),
     ]
-    base.enemy_kinds = [SimpleNamespace(id="gnat", name="Gnat")]
+    base.enemy_kinds = [SimpleNamespace(id="hornet", name="Hornet", group="Tier 1")]
     base.boss_kinds = [SimpleNamespace(id="warden", name="Reef Warden")]
     base.view = SimpleNamespace(scenery={"propModels": {}}, audio=None)
     return base
@@ -69,7 +69,9 @@ def test_d199_the_ships_enemies_and_bosses_are_shown_over_the_first_level() -> N
         ("alpha", "Alpha", "1-1"),
         ("beta", "Beta", "1-1"),
     ]
-    assert [(i.id, i.label) for i in dev_items(g, "enemies")] == [("gnat", "Gnat")]
+    assert [(i.id, i.label, i.group) for i in dev_items(g, "enemies")] == [
+        ("hornet", "Hornet", "Tier 1")
+    ]
     assert [(i.id, i.label) for i in dev_items(g, "bosses")] == [("warden", "Reef Warden")]
 
 
@@ -221,3 +223,14 @@ def test_dev_menu_20_a_request_with_no_argument_gives_an_empty_one() -> None:
     assert music_item_id(MusicRequest("level", None, None)) == "level:"
     assert music_item_id(MusicRequest("jingle", None, None)) == "jingle:"
     assert music_request("jingle").jingle is None
+
+
+def test_dev_menu_13_the_enemies_are_listed_under_their_kind_s_group() -> None:
+    """The enemies viewer groups the kinds by tier: a line of buttons per group."""
+    g = game()
+    g.enemy_kinds = [
+        SimpleNamespace(id="hornet", name="Hornet", group="Tier 1"),
+        SimpleNamespace(id="wasp", name="Wasp", group="Tier 2"),
+    ]
+    groups = dev_groups(catalog_of(g))
+    assert groups["enemies"] == ["Tier 1", "Tier 2"]

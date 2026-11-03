@@ -185,7 +185,7 @@ def _simple_items(game: Any, viewer: str) -> list[DevItem] | None:
     if viewer == "ships":
         return [DevItem(ship.id, ship.name, host) for ship in game.player_ships.ships]
     if viewer == "enemies":
-        return [DevItem(kind.id, kind.name, host) for kind in game.enemy_kinds]
+        return [DevItem(kind.id, kind.name, host, kind.group) for kind in game.enemy_kinds]
     if viewer == "bosses":
         kinds = game.boss_kinds if game.boss_kinds is not None else []
         return [DevItem(kind.id, kind.name, host) for kind in kinds]

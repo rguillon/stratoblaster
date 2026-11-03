@@ -364,11 +364,13 @@ class EnemySpawnArea:
 class EnemyKindDefinition:
     """A kind of enemy a game offers: a name, and how one group of it appears (ENM-07)."""
 
-    def __init__(self, id_: str, name: str, spawn: EnemyKindSpawn) -> None:
+    def __init__(self, id_: str, name: str, spawn: EnemyKindSpawn, group: str = "") -> None:
         """`spawn` creates one group of this kind (one enemy, or e.g. a swarm).
 
-        Just outside the playfield.
+        Just outside the playfield. `group` is the label the dev viewer lists the kind under
+        ("": none), e.g. its tier.
         """
         self.id = id_
         self.name = name
         self.spawn = spawn
+        self.group = group

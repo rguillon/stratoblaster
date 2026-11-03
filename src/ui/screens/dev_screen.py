@@ -44,12 +44,13 @@ def _wheel_listener(handlers: ScreenHandlers) -> Any:
     return on_wheel
 
 
-def _menu(doc: Any, entries: list[DevChoice], handlers: ScreenHandlers) -> Any:
+def _menu(doc: Any, entries: list[DevChoice], handlers: ScreenHandlers, columns: int = 3) -> Any:
     """Return the scrolling menu of a dev viewer's items (DEV-MENU-07, D-206): each group's heading.
 
     Then its items; a tap on an entry shows its item.
     """
     menu = element(doc, "div", "dev-menu")
+    menu.style.setProperty("--dev-columns", str(columns))
     for choice in entries:
         kind = "dev-menu-group" if choice.heading else "dev-menu-item"
         line = entry(doc, kind, choice.index, choice.selected, handlers.on_tap)
@@ -167,7 +168,7 @@ def render_dev_viewer_screen(doc: Any, view: DevViewerView, handlers: ScreenHand
         caption,
     )
     if view.menu is not None:
-        root.append(_menu(doc, view.menu, handlers))
+        root.append(_menu(doc, view.menu, handlers, view.columns))
     root.append(element(doc, "div", "menu-hint dev-hint", view.hint))
     root.addEventListener("wheel", _wheel_listener(handlers))
     _drag_to_turn(root, handlers)

@@ -14,7 +14,7 @@ from game.config.enemy_harrier import HARRIER_CONFIG
 from game.config.enemy_hatchery import HATCHERY_CONFIG
 from game.config.enemy_prism import PRISM_CONFIG
 from game.config.enemy_sweeper import SWEEPER_CONFIG
-from game.config.enemy_tiers import all_kinds
+from game.config.enemy_tiers import all_kinds, tier_of
 from game.sim.elite_kinds import ELITE_KINDS
 from game.sim.enemies.broodmother import Broodmother
 from game.sim.enemies.carrier import Carrier
@@ -182,7 +182,11 @@ def _all_kinds() -> list[EnemyKindDefinition]:
     for group in [FIRST_KINDS, VETERAN_KINDS, ELITE_KINDS]:
         for kind in group:
             by_id[kind.id] = kind
-    return [by_id[kind_id] for kind_id in all_kinds() if kind_id in by_id]
+    ordered = [by_id[kind_id] for kind_id in all_kinds() if kind_id in by_id]
+    for kind in ordered:
+        # ENM-02: the dev viewer lists the kinds tier by tier.
+        kind.group = "Tier " + str(tier_of(kind.id))
+    return ordered
 
 
 ENEMY_KINDS = _all_kinds()

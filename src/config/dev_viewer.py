@@ -6,6 +6,11 @@ ships, the enemies, the bosses, the props and the levels, drawn as in game, and 
 the music, played as in game (DEV-MENU-19, DEV-MENU-20).
 """
 
+# How many buttons a row of a dev viewer's menu holds, by viewer (DEV-MENU-07): the enemies' five, a
+# tier's five kinds on one line (DEV-MENU-13); three for the others.
+DEV_MENU_COLUMNS = {"enemies": 5}
+DEFAULT_DEV_MENU_COLUMNS = 3
+
 
 class DevViewerTexts:
     """Texts of the dev menu and viewers (a developer tool: not the game's texts, DEV-MENU-04)."""

@@ -230,3 +230,19 @@ def test_dev_menu_19_a_button_pressed_is_held_until_the_pointer_lets_go() -> Non
     items[0].fire("pointerdown")
     root.fire("pointerleave")
     assert holds == [True, False, True, False, True, False]
+
+
+def test_dev_menu_13_a_viewer_menu_has_the_number_of_buttons_a_row_holds() -> None:
+    """The enemies' five a row, a tier on each line; three by default."""
+    menu = [DevChoice("Tier 1 (1)", 0, selected=True, heading=True), DevChoice("Hornet", 0, True)]
+    handlers = ScreenHandlers(lambda _i: None, lambda: None)
+    five = DevViewerView(
+        "Enemies", "Wheel", "Back", 0, "Hornet", "Tier 1 · 1 / 1", scrub=False, menu=menu, columns=5
+    )
+    three = DevViewerView(
+        "Props", "Wheel", "Back", 0, "hut", "Farm · 1 / 1", scrub=False, menu=menu
+    )
+    panel = render_dev_viewer_screen(FakeDocument(), five, handlers).querySelector(".dev-menu")
+    assert panel.style.getPropertyValue("--dev-columns") == "5"
+    other = render_dev_viewer_screen(FakeDocument(), three, handlers).querySelector(".dev-menu")
+    assert other.style.getPropertyValue("--dev-columns") == "3"
