@@ -26,12 +26,21 @@ from core.systems.player_hull import HullRules
 class LogicalScreen:
     """The logical resolution the game is laid out on (GAME-SCREEN-01).
 
-    It is scaled to fit the window (GAME-SCREEN-02).
+    It is scaled to fit the window (GAME-SCREEN-02). A playfield window (D-252) is a logical
+    screen of its own, laid in a `viewport` of the screen (x, y, width, height as shares of the
+    screen, from its top left): the 3D camera draws only there, and the game is played there.
+    Without a viewport, the whole screen.
     """
 
-    def __init__(self, width: float, height: float) -> None:
+    def __init__(
+        self,
+        width: float,
+        height: float,
+        viewport: tuple[float, float, float, float] | None = None,
+    ) -> None:
         self.width = width
         self.height = height
+        self.viewport = viewport
 
 
 class GameDefinition:
@@ -54,6 +63,7 @@ class GameDefinition:
         hull: HullRules,
         texts: MenuTexts,
         view: object,
+        playfield: LogicalScreen | None = None,
     ) -> None:
         """Fields, in the same order.
 
@@ -73,6 +83,8 @@ class GameDefinition:
         - `hull`: what hurts the player, and its lives (GAME-LIFE-02, GAME-LIFE-03).
         - `texts`: texts of the menu screens.
         - `view`: presentation bindings for the content above.
+        - `playfield`: the window of the screen the level is drawn and played in (D-252,
+          GAME-SCREEN-01); the whole screen when None.
         """
         self.id = id_
         self.title = title
@@ -89,3 +101,6 @@ class GameDefinition:
         self.hull = hull
         self.texts = texts
         self.view = view
+        self.playfield = (
+            playfield if playfield is not None else LogicalScreen(screen.width, screen.height)
+        )

@@ -21,7 +21,6 @@ class ScreenHandlers:
         on_back: Callable[[], None],
         on_fire: Callable[[bool], None] | None = None,
         on_drag: Callable[[float, float], None] | None = None,
-        on_pause: Callable[[], None] | None = None,
         on_set: Callable[[int, float], None] | None = None,
         on_wheel: Callable[[float], None] | None = None,
         on_turn: Callable[[float, float], None] | None = None,
@@ -35,8 +34,6 @@ class ScreenHandlers:
         self.on_fire = on_fire
         # Game screen: a finger dragged over the playfield, by screen pixels (Y down).
         self.on_drag = on_drag
-        # Game screen: the on-screen pause button was tapped (UI-PAUSE-02).
-        self.on_pause = on_pause
         # Settings screen: slider `index` was tapped or dragged to `value` (UI-SET-03).
         self.on_set = on_set
         # Dev viewer (D-199): the mouse wheel turned by this many pixels (down positive).

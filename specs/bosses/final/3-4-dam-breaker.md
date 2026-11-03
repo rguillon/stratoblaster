@@ -34,7 +34,8 @@ and a chemical tank on an outrigger out from each side (76 px out). It is a 5.5 
 #### FB-DAM-BREAKER-02 — Cyber-Organic body · MUST
 
 It reads as one bloated swamp beast: a broad back of moss-skinned flesh with rusty plates, sluices
-and tanks grafted on and veins of toxin pulsing through it. The pump house is a swollen hump of flesh
+and tanks grafted on and veins of toxin pulsing through it; the plates over its flank and bow decks
+are the armour it sheds (FB-DAM-BREAKER-11, FB-DAM-BREAKER-12). The pump house is a swollen hump of flesh
 over bone ribs with its stack grafted on, its windows lighting up as it charges. At the stern are
 three reactors, a rudder housing and the pistons of its dam-breaking ram.
 
@@ -158,24 +159,29 @@ After the pause that follows each destroyed part, it fires a curtain at heat 8, 
 
 #### FB-DAM-BREAKER-11 — First transformation: flank armour, two batteries · MUST
 
-At 2 of its 6 original parts destroyed, it transforms for the first time. Its flank armour (a region
-on each side, 30 to 66 px out and 7 to 74 px behind the centre, from just under the deck up) bursts
-off over a dark metal `wing` frame, and two gun batteries come out at 50 px either side, 41 px behind
-the centre (radius 12 px, pods 9.4 px high, 1 520 HP each), firing `green` fans straight down, 1.2 s
-and 2.0 s into a stage.
+At 2 of its 6 original parts destroyed, it transforms for the first time. Its **flank plating**
+bursts off ([common](../common.md), BOSS-42): a plate of rusty metal drawn apart from the hull, lying
+on each flank's deck from 3.7 px (sunk into the deck at 4) up to 5.2 px, from the sluice mounts (7 px
+behind the centre) back to the stern (70 px), from 30 px out to the deck's edge (56 px), carrying the
+deck's cross seams, a rusty patch and moss. Its region (`flanks`, mirrored) is that plate's plan; it
+bursts into plates cracked from the outline and leaves a dark metal `wing` frame on the deck. Two gun
+batteries come out at 50 px either side, 41 px behind the centre (radius 12 px, pods 9.4 px high,
+1 520 HP each), firing `green` fans straight down, 1.2 s and 2.0 s into a stage.
 
 **Acceptance criteria**
 - Given 2 original parts are destroyed, then both flank regions burst off and the two batteries come
   out and fire (unit: `test_boss_kinds.py`).
 
-*Sources: D-221, D-224, D-229, D-227.*
+*Sources: D-221, D-224, D-229, D-227, D-254.*
 
 #### FB-DAM-BREAKER-12 — Second transformation: wing armour, two missile racks · MUST
 
-At 4 original parts destroyed, it transforms again. Its wing armour (a region on each side of the bow,
-14 to 60.4 px out and 21 to 76 px ahead of the centre, from just under the deck up) bursts off over a
-`wing` frame, and two missile racks come out at 34 px either side, 55 px ahead (radius 12 px, pods
-9.4 px high, 1 900 HP each), each firing 2 homing missiles every 6 s, 1.2 s and 2.0 s into a stage.
+At 4 original parts destroyed, it transforms again. Its **wing plating** bursts off: a plate drawn
+apart on each side of the bow's deck, from 3.7 to 5.2 px, beside the armour plate and the hangar
+(from 14 px out) to the deck's edge (56 px), from 21 to 71 px ahead of the centre, carrying the bow
+seam and moss. Its region (`wings`, mirrored) is that plate's plan; it leaves a `wing` frame on the
+deck. Two missile racks come out at 34 px either side, 55 px ahead (radius 12 px, pods 9.4 px high,
+1 900 HP each), each firing 2 homing missiles every 6 s, 1.2 s and 2.0 s into a stage.
 It reveals no kind twice, fires no less after each transformation than before, and stays one object
 in every state.
 
@@ -185,7 +191,7 @@ in every state.
 - Given each state, then nothing of it hangs in the air (unit:
   `test_d227_the_boss_holds_together_in_every_state`).
 
-*Sources: D-221, D-224, D-229, D-227.*
+*Sources: D-221, D-224, D-229, D-227, D-254.*
 
 #### FB-DAM-BREAKER-13 — Points and drops · MUST
 
@@ -218,8 +224,8 @@ boss's centre, X right, Y up the screen (its bow at -Y).
 | sludge | `green` 125 px/s, radius 7; 5 then 4 globs × 15°, every 4 s | `SLUDGE`, `waves` |
 | rage | curtain, heat 8 | |
 | transformations | at 2 and 4 parts destroyed | `default_transforms` |
-| flank regions | x 30..66, y 7..74 (mirrored), from -0.2 px, `wing` | form 1 |
-| wing regions | x 14..60.4, y -76..-21 (mirrored), from -2.6 px, `wing` | form 2 |
+| flank regions | the flank deck's plan, x 30..56, y 7..70 (mirrored), `wing`; plating 3.7–5.2 px | form 1 |
+| wing regions | the bow deck's plan, x 14..56, y -71..-21 (mirrored), `wing`; plating 3.7–5.2 px | form 2 |
 | batteries | (±50, 41), radius 12, pod 9.4, 1 520 HP, `green` | form 1 |
 | missile racks | (±34, -55), radius 12, pod 9.4, 1 900 HP | form 2 |
 | points | 15 000 (1 500 a part) | |

@@ -1,7 +1,9 @@
 # Copyright (c) 2026 Renaud Guillon
 """The Boreal Citadel's polar city (FB-BOREAL-CITADEL-03, FB-BOREAL-CITADEL-06, 2-5).
 
-Its colours, the towers and heated domes on its deck, and the icicles under its edges.
+Its colours, the towers and heated domes on its deck, and the icicles under its edges. What stands
+on its armour (the bow doors and the wing panels, FB-BOREAL-CITADEL-08) is drawn with the armour:
+each drawing of the city takes a `Zone`, the part of the deck it draws.
 
 Model space: logical pixels, nose +Z (down the screen), Y up towards the camera; +X is the
 screen's left.
@@ -46,6 +48,45 @@ FROST = record({
 
 # Heights of the deck's top and of the raised avenue down its middle.
 CITADEL_DECK = record({"top": 6, "avenue": 12})
+
+# Where its armour lies on the deck (FB-BOREAL-CITADEL-08, model space): the bow doors within
+# `DOOR_X` of the centre line ahead of `DOOR_Z`, the wing panels beyond `DOOR_X` from `WING_TAIL` to
+# `DOOR_Z`.
+DOOR_X = 32
+DOOR_Z = 40
+WING_TAIL = -26
+
+
+class Zone:
+    """A part of the deck: `name` (`core`, `door` or `wing`) on the model sides `sides`.
+
+    From `span[0]` (included) to `span[1]` along Z.
+    """
+
+    def __init__(self, name: str, sides: list[int], span: list[float]) -> None:
+        self.name = name
+        self.sides = sides
+        self.span = span
+
+
+def zone_of(x: float, z: float) -> str:
+    """Return the part of the deck `(x, z)` lies on: `door`, `wing` or `core` (see `DOOR_X`)."""
+    if abs(x) <= DOOR_X:
+        return "door" if z >= DOOR_Z else "core"
+    return "wing" if WING_TAIL <= z <= DOOR_Z else "core"
+
+
+def in_zone(zone: Zone, x: float, z: float) -> bool:
+    """Whether `(x, z)` lies on `zone`."""
+    return zone_of(x, z) == zone.name and zone.span[0] <= z < zone.span[1]
+
+
+# The core (what no armour carries) and each bow door (model -X is the config's right:
+# `bow-doors-right`); the wing panels' slices are zones of their own (`boreal_citadel_armour`).
+EVERYWHERE = [-1000.0, 1000.0]
+CORE = Zone("core", SIDES, EVERYWHERE)
+DOOR_RIGHT = Zone("door", [-1], EVERYWHERE)
+DOOR_LEFT = Zone("door", [1], EVERYWHERE)
 
 
 def rect(w: float, d: float, centre: list[float] | None = None) -> list[OutlinePoint]:
@@ -150,7 +191,8 @@ def _draw_tower(p: EnemyParts, t: Tower, s: float) -> None:
     )
     # The left half's towers have the other colour, so the city is not a mirror image.
     lit = t.lit if s > 0 else (VIOLET if t.lit is AURORA else AURORA)
-    windows(neon, [x, base, t.z + t.d / 2 + 0.1], [t.w, t.h], lit)
+    # Only the rows under its bevelled top: a row there would hang off the sloping face (BOSS-52).
+    windows(neon, [x, base, t.z + t.d / 2 + 0.1], [t.w, t.h - t.w * 0.3 + 1.8], lit)
     if t.tier == None:
         return
     w = t.tier[0]
@@ -178,14 +220,18 @@ CITY_DOME = [
 ]
 
 
-def draw_city(p: EnemyParts) -> None:
-    """Draw the city on the deck (FB-BOREAL-CITADEL-03).
+def draw_city(p: EnemyParts, zone: Zone) -> None:
+    """Draw the city on the `zone` of the deck (FB-BOREAL-CITADEL-03).
 
     Its towers, two small heated domes and a few roof masts.
     """
-    for s in SIDES:
+    for s in zone.sides:
         for t in TOWERS:
-            _draw_tower(p, t, s)
+            if in_zone(zone, s * t.x, t.z):
+                _draw_tower(p, t, s)
+        if not in_zone(zone, s * 15, 77):
+            continue
+        # The heated dome and the mast on the tower behind it, both on the bow door.
         at: Vec3 = [s * 15, CITADEL_DECK.top, 77]
         p.flesh.cylinder(5.6, 1.2, 7, ICE_FLESH.graphite, Placement(at))
         p.neon.lathe(

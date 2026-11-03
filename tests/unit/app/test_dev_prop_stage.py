@@ -44,7 +44,7 @@ def test_d205_the_game_distance_is_the_cameras_down_its_view_in_ground_units() -
     """DEV-MENU-17."""
     camera = SimpleNamespace(tiltDeg=0.0, fovDeg=60.0, flightAltitude=100.0, groundScale=2.0)
     game = SimpleNamespace(
-        screen=SimpleNamespace(width=480, height=720),
+        playfield=SimpleNamespace(width=480, height=720),
         view=SimpleNamespace(scenery=SimpleNamespace(camera=camera)),
     )
     # Straight down: the playfield fills the view, from 720 / (2 tan 30°) above the flight plane.
@@ -261,7 +261,7 @@ def make_stage_game(tiles: Any = "8") -> SimpleNamespace:
     elif tiles is None:
         fields["propTiles"] = None
     return SimpleNamespace(
-        screen=SimpleNamespace(width=480, height=720),
+        playfield=SimpleNamespace(width=480, height=720),
         view=SimpleNamespace(scenery=FakeScenery(fields)),
     )
 

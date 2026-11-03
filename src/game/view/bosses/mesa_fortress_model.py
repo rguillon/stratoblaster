@@ -4,7 +4,8 @@
 The final boss of 1-3 Logical pixels, nose +Z, Y up (towards the camera). A colossal canyon
 tortoise: a wide skirt of hide under a high, stepped shell like the mesas, plated with grafted
 armour, a fan cannon on its brow, a forelimb on each side cradling a laser lance, two spore silos on
-its back, red veins along its shell.
+its back, red veins along its shell. Its skirt's flank plates and its keep's roof halves are drawn
+as pieces of their own (`mesa_fortress_armour`, D-254).
 """
 
 import math
@@ -13,18 +14,21 @@ from game.config.boss_look import BOSS_LOOK
 from game.config.bosses.final_bosses import MESA_FORTRESS
 from game.view.bosses.boss_model import build_boss_model
 from game.view.bosses.final_boss_mesa import BASE_TOP, draw_lance, draw_silo
-from game.view.bosses.final_boss_shapes import edge_strips, mirrored, shift, sided
+from game.view.bosses.final_boss_shapes import edge_strips, shift, sided
+from game.view.bosses.mesa_fortress_armour import (
+    KEEP_Y,
+    draw_centre,
+    draw_skirt,
+    mesa_armour,
+)
 from game.view.bosses.world_1_organic_kit import (
     F,
     M,
     barbs,
-    gland,
     graft,
     hide,
-    mantle,
     polygon,
     rib_cage,
-    spine,
     tentacle,
     vein_line,
 )
@@ -45,20 +49,11 @@ N = BOSS_LOOK.neon["mesa-fortress"]
 WHITE = [1, 1, 1]
 QUARTER = math.pi / 2
 
-# The skirt of hide (right half, front to back): the silos stand on its rear.
-BASE = mirrored([
-    [0, 48],
-    [22, 46],
-    [40, 30],
-    [44, 10],
-    [44, -36],
-    [34, -50],
-    [0, -54],
-])
-# The right forelimb: an upper limb out from the body, then a forearm forward.
+# The right forelimb: a broad paddle out from the body, the lance cradled on it, then a forearm
+# forward to the claw.
 ARM = [
-    [40, -6],
-    [72, -6],
+    [40, 20],
+    [72, 20],
     [74, 26],
     [78, 32],
     [85, 30],
@@ -75,21 +70,22 @@ FAN_HOUSING = [
     [-7, 12],
     [-14, 4],
 ]
-FAN_AT = [0, 15, 26]
-# Grafted armour plates on the shell (x, z, radius), mirrored.
-SHELL_PLATES = [
-    [14, -26, 6],
-    [20, 2, 5],
-    [10, 14, 4.5],
+FAN_AT = [0, 13, 26]
+# Grafted armour plates on the lower shell's brow (x, z, radius), mirrored; the keep's plates are
+# on its roof halves.
+BROW_PLATES = [
+    [12, 24, 4.5],
 ]
 
 
 def _draw_body(p: Any) -> None:
-    """Draw the body (FB-MESA-FORTRESS-02): the skirt, the stepped shell with its ribs.
+    """Draw the body (FB-MESA-FORTRESS-02): the skirt, the lower shell with its ribs and veins.
 
-    Veins and grafted plates, the head at its front.
+    Its keep (the upper shell) is drawn apart as its roof halves, and the skirt's flank plates as
+    its armour. The lower shell's top is the flat step the keep stands on; the head is at its front.
     """
-    mantle(p, BASE, [-6, BASE_TOP], F.sinew, N)
+    draw_skirt(p)
+    draw_centre(p)
     hide(
         p,
         {
@@ -97,67 +93,43 @@ def _draw_body(p: Any) -> None:
             "nose": 30,
             "width": 38,
             "bottom": BASE_TOP - 2,
-            "top": 22,
+            "top": KEEP_Y[0],
             "segments": 4,
             "shell": [F.slate, F.membrane],
             "belly": F.graphite,
         },
     )
-    hide(
-        p,
-        {
-            "tail": -36,
-            "nose": 18,
-            "width": 22,
-            "bottom": 14,
-            "top": 30,
-            "segments": 3,
-            "shell": [F.sinew, F.slate],
-            "belly": F.slate,
-        },
-    )
     rib_cage(
         p,
         [-40, 22],
-        {"halfWidth": 34, "y": BASE_TOP, "height": 13, "thickness": 1.4},
+        {"halfWidth": 34, "y": BASE_TOP, "height": 9, "thickness": 1.4},
         F.bone,
     )
-    spine(p, [0, 30.5, -32], [0, 30.5, 14], {"color": N, "width": 1.6})
-    rim = [
-        [-34, 28.5],
-        [-19, 41.5],
-        [19, 41.5],
-        [34, 28.5],
-    ]
-    edge_strips(p.neon, rim, 1.2, [BASE_TOP - 0.2, BASE_TOP + 0.5], N)
     for s in SIDES:
-        shell_plates: list[Any] = SHELL_PLATES
-        for plate in shell_plates:
+        brow_plates: list[Any] = BROW_PLATES
+        for plate in brow_plates:
             graft(
                 p,
                 polygon(6, plate[2], [1, 1.3]),
-                [17, 18.4],
+                [13.2, 14.4],
                 [s * plate[0], 0, plate[1]],
                 {"color": M.base},
             )
         for z in [-30, -8]:
-            vein_line(p, [s * 18, 27, z], [s * 38, 12, z - 6], [s * 3, 4, 0], 1.3, N)
-        gland(p, [s * 12, 29, 0], 2.2, N)
+            vein_line(p, [s * 12, 16.5, z], [s * 30, 13.2, z - 6], [s * 2, 2, 0], 1.3, N)
         reactor_sac(p, [s * 10, 0.5, -53.4], 3.8, N)
         reactor_sac(p, [s * 24, 0.5, -51.8], 3.8, N)
-    eyes(p, [0, 12, 40], {"count": 2, "size": 1.6, "spacing": 10}, N)
-    barbs(p, [0, 7, 46], {"count": 4, "spacing": 6, "size": 3, "dir": [0, -0.2, 1]})
+    eyes(p, [0, BASE_TOP + 0.2, 40], {"count": 2, "size": 1.6, "spacing": 10}, N)
+    barbs(p, [0, BASE_TOP, 46], {"count": 4, "spacing": 6, "size": 3, "dir": [0, -0.2, 1]})
 
 
 def _draw_arms(p: Any) -> None:
-    """Draw the forelimbs (FB-MESA-FORTRESS-02): a scaly limb out to each lance's cradle.
+    """Draw the forelimbs (FB-MESA-FORTRESS-02): a broad paddle out to each lance's cradle.
 
-    A bone claw at its front.
+    A bone claw at its front; its scaly sinew lies on it (the flank armour, drawn apart).
     """
     for s in SIDES:
         p.flesh.bevel_slab(sided(ARM, s), [-4, 0, 5], [1, 2], F.sinew, None, F.slate)
-        tentacle(p, [s * 36, 6, -15], [s * 76, 7, -14], [0, 3, 0], [6, 4], F.slate, 5)
-        graft(p, polygon(4, 5, [2, 0.9]), [8.5, 9.6], [s * 56, 0, -16])
         for dx in [-3, 3]:
             tentacle(
                 p,
@@ -219,7 +191,8 @@ def build_mesa_fortress(scene: Any) -> Any:
     """FB-MESA-FORTRESS-01, FB-MESA-FORTRESS-04: the Mesa Fortress, a colossal canyon tortoise.
 
     It is 5 L across with red veins; a laser lance in each forelimb, two spore silos on its back,
-    and a fan cannon on its armoured brow (the core).
+    and a fan cannon on its armoured brow (the core). Its skirt's flank plates and its roof halves
+    are drawn apart (FB-MESA-FORTRESS-05).
     """
 
     def core(p: Any) -> None:
@@ -239,5 +212,6 @@ def build_mesa_fortress(scene: Any) -> Any:
                 "silo-right": draw_silo,
             },
             "turrets": {"core": _draw_fan_cannon},
+            "armour": mesa_armour(),
         },
     )

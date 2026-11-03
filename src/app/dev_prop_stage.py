@@ -78,7 +78,7 @@ def game_distance(game: Any) -> float:
     Seen with the game's field of view, is as big as in game.
     """
     look = game.view.scenery.camera
-    framing = frame_playfield(game.screen, look)
+    framing = frame_playfield(game.playfield, look)
     scale = look.groundScale if look.groundScale is not None else 1
     height = look.flightAltitude + framing.height
     distance: float = height / math.cos(framing.tilt) / scale
@@ -138,7 +138,7 @@ class DevPropStage:
         self.scene = scene
         self.block = _block_size(game)
         self._distance = game_distance(game)
-        self._fov = frame_playfield(game.screen, game.view.scenery.camera).half_fov * 2
+        self._fov = frame_playfield(game.playfield, game.view.scenery.camera).half_fov * 2
         self.camera = new_arc_rotate_camera(
             "dev-props-camera", -math.pi / 2, props.pitch, self._distance, vector3_zero(), scene
         )

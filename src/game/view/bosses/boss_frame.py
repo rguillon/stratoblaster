@@ -1,10 +1,9 @@
 # Copyright (c) 2026 Renaud Guillon
-"""The dark metal frame a boss's shed armour leaves.
+"""The dark metal frame a boss's shed armour leaves (BOSS-44, D-254).
 
-See docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md: a dark floor in the armour's
-own top-view shape, metal ribs across it (wing, shell or ring), neon seams on every other rib and
-pipes along the longest (BOSS-44). Its pylons and bridges hold pieces up so the boss stays one
-object (BOSS-52).
+A dark floor in the region's own top-view outline, metal ribs across it (wing, shell or ring), neon
+seams on one rib in three and pipes along the two longest. Drawn from the region's outlines, under
+the armour's lowest point, unless the boss draws its own.
 
 Model space of a boss: logical pixels, +Y up (towards the camera), see `boss_limbs.boss_point`.
 """
@@ -13,8 +12,9 @@ import math
 
 from game.config.boss_look import BOSS_LOOK
 from render.geometry.frame_lines import Footprint, clip_line, frame_lines
-from render.geometry.shatter import Vertex, append_triangles, up_facing
+from render.geometry.outline import reversed_copy, ring_at
 from render.geometry.solids import Placement
+from render.geometry.triangulate import triangulate_polygon
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -25,41 +25,34 @@ from typing import Any
 
 
 QUARTER = math.pi / 2
-# How steep a face of the armour may be and still count in its top view (unit normal Y).
-UP = 0.3
+# How thick the floor is drawn.
+FLOOR = 0.4
 
 
-def floor_height(tris: list[list[Vertex]]) -> float:
-    """Return the height of the frame's floor under armour made of `tris`.
-
-    Just over its lowest point.
-    """
-    low = math.inf
-    for tri in tris:
-        for v in tri:
-            low = min(low, v.position[1])
-    lift: float = BOSS_LOOK.frame.lift
-    return (low if low < math.inf else 0) + lift
+def _double_area(ring: list[Any]) -> float:
+    total = 0.0
+    n = len(ring)
+    for i in range(n):
+        a = ring[i]
+        b = ring[(i + 1) % n]
+        total += a[0] * b[1] - b[0] * a[1]
+    return total
 
 
-def floor_triangles(tris: list[list[Vertex]], y: float) -> list[list[Vertex]]:
-    """Return the up-facing faces of `tris` laid flat at height `y`, in the frame's floor colour."""
-    c = BOSS_LOOK.frame.floor
-    color = [c[0], c[1], c[2], 1]
-    result: list[list[Vertex]] = [
-        [Vertex([v.position[0], y, v.position[2]], color) for v in tri]
-        for tri in tris
-        if up_facing(tri, UP)
-    ]
-    return result
+def footprint_of(outlines: list[Any]) -> Footprint:
+    """Return the top view of `outlines` (XZ polygons), triangulated."""
+    tris: list[Any] = []
+    for outline in outlines:
+        ring = list(outline) if _double_area(outline) > 0 else reversed_copy(outline)
+        for a, b, c in triangulate_polygon(ring):
+            tris.append([ring_at(ring, a), ring_at(ring, b), ring_at(ring, c)])
+    return Footprint(tris)
 
 
-def frame_segments(tris: list[list[Vertex]], style: str) -> list[list[Any]]:
-    """Return the frame's ribs over the top view of `tris`, each `[a, b]` (XZ), in the `style`."""
+def frame_segments(outlines: list[Any], style: str) -> list[list[Any]]:
+    """Return the frame's ribs over `outlines`, each `[a, b]` (XZ), in the `style`."""
     look = BOSS_LOOK.frame
-    shape = Footprint([
-        [[v.position[0], v.position[2]] for v in tri] for tri in tris if up_facing(tri, UP)
-    ])
+    shape = footprint_of(outlines)
     if shape.empty():
         return []
     result: list[list[Any]] = []
@@ -88,111 +81,57 @@ def longest_two(segments: list[list[Any]]) -> list[list[Any]]:
     return result
 
 
-def draw_pylon(p: Any, floor: float, support: list[float], neon: Any) -> None:
-    """Draw a pylon up to the base of a piece standing over the frame.
-
-    Its `support` is `[x, z, height, width]`, and the height it stands on when known, else the
-    frame's `floor`, so it does not hover (D-227): a base plate, a column, a collar and a neon band.
-    """
+def _draw_rib(p: Any, segment: list[Any], y: float, seam: Any) -> None:
+    """Draw a rib along `segment` at height `y`, with a neon `seam` on top if given."""
     look = BOSS_LOOK.frame
-    x = support[0]
-    z = support[1]
-    if len(support) > 4:
-        floor = support[4]
-    height = support[2] - floor
-    if height <= look.lift:
-        return
-    w = min(look.pylonMost, max(look.pylonLeast, support[3] * look.pylonShare))
-    p.hull.box([w * 1.8, 0.6, w * 1.8], look.metal, Placement([x, floor, z]))
-    p.hull.box([w, height, w], look.metal, Placement([x, floor, z]))
-    p.hull.box([w * 1.4, 0.8, w * 1.4], look.pipe, Placement([x, floor + height - 0.8, z]))
-    p.neon.box([w * 1.05, 0.3, w * 1.05], neon, Placement([x, floor + height * 0.5, z]))
-
-
-def draw_bridge(p: Any, bridge: list[Any], neon: Any) -> None:
-    """Draw a beam `[from, to]` holding a patch of frame to the boss (D-227).
-
-    Along the floor from `from` to under `to`, then a post up (or down) to `to`, a neon seam along
-    the beam.
-    """
-    look = BOSS_LOOK.frame
-    a = bridge[0]
-    b = bridge[1]
-    w = look.ribWidth * 1.5
+    a = segment[0]
+    b = segment[1]
     dx = b[0] - a[0]
-    dz = b[2] - a[2]
+    dz = b[1] - a[1]
     length = math.hypot(dx, dz)
     yaw = math.atan2(dx, dz)
-    if length > 0:
-        mid = [(a[0] + b[0]) / 2, a[1], (a[2] + b[2]) / 2]
-        p.hull.box([w, look.ribHeight, length + w], look.metal, Placement(mid, yaw))
-        p.neon.box(
-            [w * 0.3, 0.2, length * 0.8],
-            neon,
-            Placement([mid[0], a[1] + look.ribHeight, mid[2]], yaw),
-        )
-    low = min(a[1], b[1])
-    high = max(a[1], b[1])
-    p.hull.box([w, high - low + look.ribHeight, w], look.metal, Placement([b[0], low, b[2]]))
+    mid = [(a[0] + b[0]) / 2, y, (a[1] + b[1]) / 2]
+    w = look.ribWidth
+    h = look.ribHeight
+    p.hull.box([w, h, length], look.metal, Placement(mid, yaw))
+    if seam != None:
+        p.neon.box([w * 0.25, 0.2, length * 0.8], seam, Placement([mid[0], y + h, mid[2]], yaw))
 
 
-def frame_drawings(
-    tris: list[list[Vertex]],
-    style: str,
-    neon: Any,
-    supports: list[Any] | None = None,
-    floor: Any = None,
-    bridges: list[Any] | None = None,
-) -> list[Any]:
-    """Return the drawings (`draw(p)`) of the frame left where the armour `tris` was.
-
-    They are `[floor, ribs]` (the floor alone carries the frame's glowing outline), at height
-    `floor` (else just over the armour's lowest point); the ribs hold up the pieces standing over it
-    (`supports`, see `draw_pylon`) and beams hold its patches to the boss (`bridges`, see
-    `draw_bridge`).
-    """
-    held = supports if supports is not None else []
-    beams = bridges if bridges is not None else []
+def _draw_pipe(p: Any, segment: list[Any], y: float) -> None:
+    """Draw a pipe beside the rib along `segment`, on the floor."""
     look = BOSS_LOOK.frame
-    y = floor if floor != None else floor_height(tris)
-    floor = floor_triangles(tris, y)
-    segments = frame_segments(tris, style)
+    a = segment[0]
+    b = segment[1]
+    dx = b[0] - a[0]
+    dz = b[1] - a[1]
+    length = math.hypot(dx, dz)
+    w = look.ribWidth
+    ox = (dz / length) * w * 1.6
+    oz = (-dx / length) * w * 1.6
+    r = look.pipeRadius
+    place = Placement([a[0] + ox, y + r, a[1] + oz], math.atan2(dx, dz), QUARTER)
+    p.hull.cylinder(r, length, 6, look.pipe, place)
+
+
+def frame_drawings(outlines: list[Any], style: str, neon: Any, floor: float) -> list[Any]:
+    """Return the drawings (`draw(p)`) of the frame left in `outlines` (XZ, model space).
+
+    They are `[floor, ribs]` (the floor alone carries the frame's glowing outline): a dark floor
+    `FLOOR` thick up to height `floor`, and the ribs of the `style` on it.
+    """
+    look = BOSS_LOOK.frame
+    segments = frame_segments(outlines, style)
     longest = longest_two(segments)
 
     def draw_floor(p: Any) -> None:
-        append_triangles(p.hull.geometry, floor)
+        for outline in outlines:
+            p.hull.slab(outline, [floor - FLOOR, floor], look.floor)
 
     def draw_ribs(p: Any) -> None:
-        w = look.ribWidth
-        h = look.ribHeight
         for i in range(len(segments)):
-            a = segments[i][0]
-            b = segments[i][1]
-            dx = b[0] - a[0]
-            dz = b[1] - a[1]
-            length = math.hypot(dx, dz)
-            yaw = math.atan2(dx, dz)
-            mid = [(a[0] + b[0]) / 2, y, (a[1] + b[1]) / 2]
-            p.hull.box([w, h, length], look.metal, Placement(mid, yaw))
-            if i % look.seamEvery == 0:
-                p.neon.box(
-                    [w * 0.25, 0.2, length * 0.8], neon, Placement([mid[0], y + h, mid[2]], yaw)
-                )
+            _draw_rib(p, segments[i], floor, neon if i % look.seamEvery == 0 else None)
         for segment in longest:
-            a = segment[0]
-            b = segment[1]
-            dx = b[0] - a[0]
-            dz = b[1] - a[1]
-            length = math.hypot(dx, dz)
-            # Beside the rib, on the floor.
-            ox = (dz / length) * w * 1.6
-            oz = (-dx / length) * w * 1.6
-            r = look.pipeRadius
-            place = Placement([a[0] + ox, y + r, a[1] + oz], math.atan2(dx, dz), QUARTER)
-            p.hull.cylinder(r, length, 6, look.pipe, place)
-        for support in held:
-            draw_pylon(p, y, support, neon)
-        for bridge in beams:
-            draw_bridge(p, bridge, neon)
+            _draw_pipe(p, segment, floor)
 
     return [draw_floor, draw_ribs]

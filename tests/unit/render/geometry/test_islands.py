@@ -1,10 +1,9 @@
 # Copyright (c) 2026 Renaud Guillon
-"""Unit tests of `src/render/geometry/islands.py`: which pieces of a model hold together (D-227)."""
+"""Unit tests of `tests/helpers/islands.py`: which pieces of a model hold together (BOSS-52)."""
 
 import pytest
-
-from render.geometry import islands
-from render.geometry.islands import (
+from helpers import islands
+from helpers.islands import (
     bounds_of,
     holding,
     holding_surfaces,
@@ -12,7 +11,8 @@ from render.geometry.islands import (
     pieces,
     touch,
 )
-from render.geometry.shatter import triangles
+
+from render.geometry.mesh_triangles import triangles
 from render.geometry.solids import Placement, SolidBuilder
 
 WHITE = [1.0, 1.0, 1.0]

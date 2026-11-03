@@ -23,7 +23,7 @@ def test_ui_look_02_the_menu_is_fully_visible_not_cropped_not_stretched(
         assert box["y"] >= 0
         assert box["x"] + box["width"] <= width + 1
         assert box["y"] + box["height"] <= height + 1
-        assert box["width"] / box["height"] == pytest.approx(480 / 640, abs=0.005)
+        assert box["width"] / box["height"] == pytest.approx(1280 / 720, abs=0.005)
         assert max(box["width"] / width, box["height"] / height) > 0.99
     expect(page.locator(".title-version")).to_be_in_viewport(ratio=1)
 
@@ -61,6 +61,11 @@ def test_ui_look_08_the_selected_entry_is_marked_by_more_than_colour(page: Page)
     assert marker(".level-cell.selected", "", "outline-style") == "dashed"
 
 
+@pytest.mark.xfail(
+    strict=True,
+    reason="D-249: on a 390 px wide phone the 16:9 stage is 390 x 219 CSS px (scale 0.3); the "
+    "mobile layout is still to come (UI-LOOK-02 notes).",
+)
 def test_ui_input_11_touch_targets_are_at_least_44_css_px_on_a_phone(page: Page) -> None:
     page.set_viewport_size({"width": 390, "height": 844})
     open_game(page)

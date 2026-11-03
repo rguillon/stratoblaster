@@ -183,11 +183,10 @@ GEYSER_RIG = with_weapons(
         hidden_weapon("orb-right", "orb", [33, -29], 11, 1300, 2, "red", 2.0, 12.4),
     ],
     [
-        armour_region(
-            "back", 1, [[-32, 26], [32, 26], [32, 72], [-32, 72]], "shell", [8.3, 1000], False
-        ),
-        armour_region(
-            "wings", 2, [[14, -41.2], [48, -41.2], [48, 4], [14, 4]], "wing", [6.0, 1000]
-        ),
+        # D-254: the back plating carrying the cooling tower, within the deck's stern (its edge at
+        # y 70) and clear of the steam vents' valve blocks; the wing plates carrying the pipe
+        # racks, inset from the deck's edge, their bow corners cut as the deck's are.
+        armour_region("back", 1, [[-27, 26], [27, 26], [27, 70], [-27, 70]], "shell", None, False),
+        armour_region("wings", 2, [[14, -37], [29, -37], [41, -28], [41, 4], [14, 4]], "wing"),
     ],
 )

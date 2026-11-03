@@ -165,7 +165,8 @@ def make_level() -> SimpleNamespace:
 
 def make_game(look: Any) -> SimpleNamespace:
     return SimpleNamespace(
-        screen="screen", view=SimpleNamespace(scenery=FakeScenery({"1-1": look}))
+        playfield=SimpleNamespace(viewport="viewport"),
+        view=SimpleNamespace(scenery=FakeScenery({"1-1": look})),
     )
 
 
@@ -198,12 +199,12 @@ def test_dev_menu_08_the_look_of_a_level_is_found_or_is_an_error() -> None:
         scenery_look(game, SimpleNamespace(id="9-9"))
 
 
-def test_gfx_terrain_15_the_ground_glow_is_full_resolution_antialiased_and_as_wide() -> None:
+def test_gfx_terrain_15_the_ground_glow_is_half_resolution_antialiased_and_as_wide() -> None:
+    """D-250: back at Babylon's default resolution, the blur as the look gives it."""
     glow = ground_glow_look(SimpleNamespace(intensity=0.6, blurKernelSize=16))
     assert glow.intensity == 0.6
-    # Twice Babylon's default resolution: twice the blur, as wide on screen.
-    assert glow.blur_kernel_size == 32
-    assert glow.ratio == 1
+    assert glow.blur_kernel_size == 16
+    assert glow.ratio == 0.5
     assert glow.samples == GROUND_GLOW_SAMPLES
 
 
@@ -333,7 +334,7 @@ def test_dev_menu_08_a_plain_level_scene_has_its_stage_track_and_playfield(
     assert scene.stage is stage
     assert stage.scene is scene.scene
     stage_options = stage.options
-    assert stage_options.screen == "screen"
+    assert stage_options.screen is game.playfield
     assert stage_options.camera == "camera-look"
     assert stage_options.level is options.level
     assert stage_options.look is look
@@ -341,6 +342,7 @@ def test_dev_menu_08_a_plain_level_scene_has_its_stage_track_and_playfield(
     assert stage_options.kit is level_scene.create_plain_scenery_kit
     assert stage_options.config == "stage-config"
     assert stage_options.atmosphere == "atmosphere"
+    assert stage_options.viewport == "viewport"  # D-252
     assert scene.look is look
     # 15 s of scrolling at 20 units a second.
     assert (scene.track.speed, scene.track.length_) == (20, 300)
@@ -358,7 +360,7 @@ def test_gfx_terrain_15_with_the_environment_the_ground_glows_without_glowing_th
     assert lit is scene.scene
     assert environment.cube_size == 64
     assert (environment.intensity, environment.stops) == (0.8, ["noon"])
-    assert environment.glow.blur_kernel_size == 32
+    assert environment.glow.blur_kernel_size == 16  # D-250: as the look gives it
     (stage,) = render.stages
     assert stage.options.kit is level_scene.create_scenery_kit
     (glow,) = render.environment_glows

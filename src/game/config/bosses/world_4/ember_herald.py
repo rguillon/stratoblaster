@@ -132,8 +132,29 @@ EMBER_HERALD = with_weapons(
         hidden_weapon("orb-right", "orb", [10, 37], 8, 960, 1, "purple", 2.0, 14.0),
     ],
     [
+        # MB-EMBER-HERALD-11: the back plating, a dome over the flattened tail half of the fuselage
+        # (its footprint; the nose at -Y, see `ember_herald_armour.DOME`); the orbs lie under it.
         armour_region(
-            "back", 1, [[-26, 9], [26, 9], [26, 56.4], [-26, 56.4]], "shell", [5.0, 1000], False
+            "back",
+            1,
+            [
+                [0, 56],
+                [6.5, 52],
+                [10.5, 40],
+                [12, 26],
+                [12, 14],
+                [11, 9],
+                [10.6, 6],
+                [-10.6, 6],
+                [-11, 9],
+                [-12, 14],
+                [-12, 26],
+                [-10.5, 40],
+                [-6.5, 52],
+            ],
+            "shell",
+            None,
+            False,
         ),
     ],
 )

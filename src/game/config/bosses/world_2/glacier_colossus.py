@@ -149,8 +149,8 @@ _GLACIER_COLOSSUS = record({
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its flank armour bursts off,
 # baring a dark metal frame, and a pair of ring emitters unfold (FB-GLACIER-COLOSSUS-15); at
-# transformation 2 its wing armour bursts off, baring a dark metal frame, and a pair of sweeping
-# lasers unfold (FB-GLACIER-COLOSSUS-16). The regions it sheds: FB-GLACIER-COLOSSUS-07.
+# transformation 2 its shell bursts off, baring a dark metal frame, and a pair of sweeping lasers
+# unfold (FB-GLACIER-COLOSSUS-16). The regions it sheds: FB-GLACIER-COLOSSUS-07.
 GLACIER_COLOSSUS = with_weapons(
     _GLACIER_COLOSSUS,
     [
@@ -160,9 +160,36 @@ GLACIER_COLOSSUS = with_weapons(
         hidden_weapon("sweeper-right", "sweeper", [25, 29], 9, 1900, 2, "orange", 2.0, 23.1),
     ],
     [
+        # FB-GLACIER-COLOSSUS-07 (D-254): the plating of the stern deck either side of the upper
+        # deck (its plan from the upper deck's edge to the rim; the ring emitters under it), and the
+        # ridged shell along the upper deck (its plan, a little wider than the shell at the
+        # sweepers).
         armour_region(
-            "flanks", 1, [[16, 39.5], [74, 39.5], [74, 79], [16, 79]], "wing", [1.3, 1000]
+            "flanks",
+            1,
+            [[31, 34], [58, 34], [44, 66], [21, 77], [10, 77], [10, 61], [24, 57]],
+            "wing",
         ),
-        armour_region("wings", 2, [[8, -2], [74, -2], [74, 39.5], [8, 39.5]], "wing", [2.9, 1000]),
+        armour_region(
+            "wings",
+            2,
+            [
+                [0, -6],
+                [15, 0],
+                [23, 13],
+                [28, 26],
+                [23, 39],
+                [15, 52],
+                [0, 58],
+                [-15, 52],
+                [-23, 39],
+                [-28, 26],
+                [-23, 13],
+                [-15, 0],
+            ],
+            "wing",
+            None,
+            False,
+        ),
     ],
 )

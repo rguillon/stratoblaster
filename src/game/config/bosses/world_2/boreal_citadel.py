@@ -161,18 +161,24 @@ BOREAL_CITADEL = with_weapons(
         hidden_weapon("heavy-left", "cannon", [-47, -7], 12, 2150, 2, "green", 1.2, 16.4),
         hidden_weapon("heavy-right", "cannon", [47, -7], 12, 2150, 2, "green", 2.0, 16.4),
     ],
+    # FB-BOREAL-CITADEL-08: the outlines of the deck's panels its model draws as its armour (D-254,
+    # `boreal_citadel_armour`): the bow ahead of 40 px, a door either side of the centre line out to
+    # 32 px, and the deck's sides beyond 32 px out to its edge, from 40 px ahead to 26 px behind.
     concat(
         moving_region(
             "bow-doors",
             1,
-            [[0, -90], [32, -90], [32, -40], [0, -40]],
+            [[0, -83.7], [19.2, -81.8], [32, -72.2], [32, -40], [0, -40]],
             swing([32, -40, 10], "up", [0, 75]),
             "shell",
             [4, 1000],
         ),
         [
             armour_region(
-                "wings", 2, [[32, -40], [102, -40], [102, 26], [32, 26]], "wing", [8.0, 1000]
+                "wings",
+                2,
+                [[32, -40], [55.3, -40], [57.8, -35.4], [59.7, 19.8], [58.4, 26], [32, 26]],
+                "wing",
             ),
         ],
     ),

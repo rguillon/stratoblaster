@@ -474,3 +474,235 @@
   and `TitleView` each take one more optional, positional piece (ENG-151). The menu sounds
   ignore the new feedback (no cue for `fullscreen`).
 - **Status:** Proposed
+
+### D-249 — A 16:9 screen: 1280 × 720 logical pixels
+- **Date:** 2026-11-02
+- **Requirements:** GAME-SCREEN-01, GAME-SCREEN-02, GAME-SCREEN-04, GAME-SCREEN-05,
+  GAME-SCREEN-06, GFX-CAM-01, GFX-CAM-03, GFX-CAM-05, UI-LOOK-01, UI-LOOK-02, UI-LOOK-13,
+  GFX-ROAD-19, WLD-1-20, WLD-3-13, WLD-4-13, GFX-FX-10, ENM-09, GAME-BONUS-07.
+- **Context:** owner: "change the game aspect ratio. I want to take a full standard 1920×1080
+  screen. That means generating new levels and adapting the enemy waves. We will deal with the
+  mobile UI later."
+- **Decision:** the logical screen is **1280 × 720** (16:9), chosen with the owner over
+  1138 × 640 (today's height, only widened; not an exact 16:9, a 1 px letterbox line at
+  1920 × 1080) and 1920 × 1080 (native; every px tunable of the game and the specs would have
+  to be rescaled ×1.69). 1280 × 720 is an exact 16:9 with integer sides, ×1.5 at 1920 × 1080
+  and ×1 at 1280 × 720, and keeps the logical pixel: every speed, size, margin and HUD value is
+  unchanged. The playfield is 80 px taller (the ship's flight area goes up to y = 520) and
+  800 px wider. The screen size is one record (`GAME_CONFIG.screen`); the camera framing, the
+  trapezoid seen of the playfield, the ship's reach, the ground window the terrain is generated
+  over, the stage fit and the overlay scale all derive from it, so nothing else of the engine
+  changes. What the content needed:
+  - *Levels (the ground):* the camera now sees about ±500 ground units across at the sea level
+    (±560 at a sea bed), not ±195, so the terrain, roads, districts, props, cars and clouds are
+    generated over that window as before (GFX-CAM-05). The one content extent keyed to the old
+    width, `offscreenX` (where roads and street grids start and end, and how far from the middle
+    lone buildings and hamlets stand), goes from 420 to 1 000 in Worlds 1–2 and from 240 to 640 in
+    Worlds 3–4, keeping their ratio to the ground in view. The shores, canyons, dunes and set
+    pieces are noise or meanders in ground units and need no change: the coast of 1-1 and 1-2
+    (land from x ≈ −40) still gives about 45 % of sea across the view.
+  - *Waves:* the scripts are written in fractions of the ship's reach (ENM-09, WLD-1-19), so the
+    entries, spreads and paths already spread over the wider playfield; the reach is about 2.8
+    times as wide (804 px instead of 282), so `WAVE_DENSITY` goes from 1.5 to 2 (every world uses
+    it through `wave_script`), which brings 5 to 25 % more enemies depending on the beats'
+    rounding. The counts recorded in the level files were re-measured from the configs (same
+    method: fillers and density in, Carrier launches and Splitter pods out). The difficulty orders
+    of WLD-1-22 and WLD-1-24 still hold (278 / 342 / 374 / 414 / 448 enemies, each second half
+    heavier).
+  - *Bomb ring:* its radius goes from 820 to 1 000 px, past the far corner of the new playfield
+    (about 900 from where the ship starts).
+  - *UI:* the overlay is 1280 × 720; the ship cards, the settings sliders and the dev entries keep
+    to a 560 px column in the middle (`--menu-column`) instead of stretching across; the HUD bar
+    spans the width as before. The logo keeps its size (sized for 480 px, it is small on 1280;
+    to revisit with the mobile layout).
+- **Alternatives considered:** keeping 480 × 640 logical and letting the canvas show more of
+  the world on the sides (the overlay and the gameplay would stay 3:4: not what was asked);
+  scaling the ship's and the enemies' horizontal speeds with the width (not in the model: X and
+  Y share one speed).
+- **Consequences / open points for the owner to tune after a playtest:**
+  - the player ship crosses its reach in about 3.6 s instead of 1.3 s (`base_speed` 225 px/s is
+    unchanged); the Strafer's pass across the screen takes about 9 s instead of 4 (9 fans instead
+    of 4); the Gnat S-path, in fractions of the reach, swings 400 px wide instead of 140, so the
+    Gnats stay on screen longer. These are GAME-SHIP-02, ENM-STRAFER and ENM-GNAT tunables.
+  - the terrain, props and streets cover about 2.6 times as much ground across: more triangles
+    and more instances per chunk (PERF budgets to watch, e2e perf test unchanged).
+  - on a portrait phone (390 × 844) the stage is 390 × 219 CSS px (scale 0.3): the e2e checks
+    of UI-INPUT-11 (touch targets), UI-PAUSE-02 (the pause button on the phone) and UI-SET-03
+    (the sliders on the phone) are marked expected-to-fail (strict) until the mobile layout;
+    UI-LOOK-09's manual check at 390 × 844 does not hold either. The owner deferred the mobile
+    UI. In an 800 × 600 window the stage's scale is 0.625 (it was 0.94 at 3:4), so the pause
+    button grows from 56 to 72 px to stay at 44 CSS px there (UI-PAUSE-02).
+  - the readability probe (DEV-API-09) is run on 4-1 at 60 s instead of 90 s: the probe takes the
+    first player shot in view, and with the waves' new timing the shot at 90 s (and at 120 s)
+    flies over a lit tile of the garden town, where it reads at 1.3 to 1.9 against a floor of 2
+    (4.8 at 60 s). The weak reading is the tile's, not the screen's: GFX-READ-14's player shot
+    opacity (0.7) is the knob if it shows in play.
+  - the view's horizontal field of view is about 66° (vertical 40°, unchanged): the sides of the
+    screen show more perspective than before; `fovDeg` is the knob if it reads as distortion.
+- **Status:** Proposed
+
+### D-250 — The canvas is never drawn above full HD; the ground glow back at half resolution
+- **Date:** 2026-11-02
+- **Requirements:** ENG-110, GFX-TERRAIN-15, PERF-32.
+- **Context:** owner: "i'm down to 30fps in 4k on my Snapdragon X, any way to improve that?"
+  On a 4K panel (device pixel ratio 2, capped at 2) the canvas was 3840 × 2160 pixels with
+  multisampling, nine times the pixels of the 1280 × 720 screen, plus the ground's glow drawn as
+  a second full-size multisampled pass, and the full-screen cloud, weather and aurora layers
+  blended at that size. On an integrated GPU the frame is fill-rate bound.
+- **Decision:** (1) `ENGINE_CONFIG.max_render_scale` (1.5): the hardware scaling level follows the
+  stage fit, so the canvas draws at most 1.5 pixels per logical pixel across (1920 × 1080),
+  whatever the window and the device ratio; the browser upscales the rest (`render_ratio` in
+  `ui/stage_fit.py`, set on every fit, so a resize keeps the cap). (2) The ground's glow image
+  goes back to Babylon's default half resolution, keeping its 4 samples (the samples, not the
+  resolution, hold the thin lights steady) and its blur kernel as the look gives it.
+- **Alternatives considered:** a render scale slider in the settings (UI-SET-02 allows two
+  sliders and nothing else; a later step if the cap is not enough); fewer cloud layers or
+  coarser far terrain (not measured as the bottleneck).
+- **Consequences:** at 1920 × 1080 and below nothing changes (the device ratio is 1 there);
+  the e2e builds draw as before (their 0.5 factor applies on top). Not measured on the
+  owner's machine: to check with the F2 tile on 2-5 and 4-5.
+- **Status:** Proposed
+
+### D-251 — The HUD in side columns, no pause button, the ship down to the bottom edge
+- **Date:** 2026-11-02
+- **Requirements:** UI-HUD-01, UI-HUD-02, UI-HUD-03, UI-HUD-05, UI-HUD-06, UI-HUD-07, UI-HUD-08,
+  UI-HUD-10, UI-HUD-12, UI-PAUSE-01, UI-PAUSE-02 (removed), GAME-SCREEN-05, GAME-SCREEN-06,
+  UI-LOOK-03, UI-LOOK-05, UI-INPUT-11, UI-OVER-01.
+- **Context:** owner: "move the UI to the left side, remove the pause button, reduce the right
+  side the same way as the left to keep the screen symmetrical. And make sure the player ship
+  can now fly up to the bottom of the screen."
+- **Decision:** the HUD is two glass columns 200 px wide (`--hud-side`, the whole height) down
+  the sides of the 16:9 playfield. The left one stacks the readouts (progress line, ship, lives,
+  bombs, health, score, high score, weapon), the boss gauge under them (at 270 px from the top,
+  it was along the left edge from the top) and the level played at its foot. The right one is
+  empty, so the playfield stays in the middle; on touch screens it holds the fire and bomb
+  buttons. The pause button is gone with its view label, handler and texts (the keyboard and the
+  gamepad pause; a touch way to pause comes with the mobile layout). The ship's bounds take the
+  columns: its half width at a height is the smaller of the width seen there and the space
+  between the columns, less the 18 px side margin (`ShipMargin.panel`); its bottom margin goes
+  from 78 (30 px above the old bar) to 20 px, half the balanced ship's length, so it reaches the
+  bottom edge with its model on screen. The reach (GAME-SCREEN-06), now at y = 20, is about
+  x 260 … 1 020 (the width seen at y = 20 is the narrower of the two bounds).
+- **Alternatives considered:** letterboxing the 3D view to the middle 880 px (the owner asked
+  to reduce the sides the same way as the left: glass columns over the view, as the left HUD
+  is); keeping the pause button in the right column (the owner asked for it removed).
+- **Consequences:** `GameScreenView` and `ScreenHandlers` lose their pause pieces (ENG-151);
+  the e2e checks of UI-PAUSE-02 are gone, the pointer test pauses with Escape. The test of
+  the dev model scene's glow kernel is aligned with D-250 here (it still expected 32).
+- **Status:** Proposed
+
+### D-252 — The level drawn and played in a 540 × 720 window between the HUD's columns
+- **Date:** 2026-11-02
+- **Requirements:** GAME-SCREEN-01, GAME-SCREEN-04, GAME-SCREEN-05, GAME-SCREEN-06, GFX-CAM-01,
+  GFX-CAM-02, GFX-CAM-03, GFX-CAM-05, UI-HUD-01, UI-HUD-03, UI-HUD-07, GFX-ROAD-19, WLD-1-20,
+  WLD-3-13, WLD-4-13, GFX-FX-10, ENM-09, GAME-BONUS-07, ENG-144.
+- **Context:** owner: "make the UI more vertical, and restrict the player's movement to the new
+  window size. Dont draw the background outside the playing area."
+- **Decision:** the game definition gets a `playfield` (ENG-144, one more optional positional
+  piece, ENG-151): a logical screen of its own with a `viewport` of the canvas. This game's is
+  540 × 720 (3:4) at x = 370 of the 1280 × 720 screen, the width left by two 370 px HUD columns.
+  The scenery camera draws only into that viewport (Babylon `Viewport`, set on the stage camera
+  from the stage options), so its aspect ratio is the window's and nothing of the level is drawn
+  under the columns, which are opaque. Every gameplay use of the screen (the ship's bounds and
+  start, the enemies' spawn area, the shots' and bonuses' area, what is on screen, the enemy
+  shots' eye point, the audio pan, the dev viewers' framing) reads `game.playfield` instead; the
+  stage fit and the overlay keep `game.screen`. The ship's bounds are the width seen of the
+  window less the side margin: the `panel` margin of D-251 is gone with the columns outside the
+  window. The column readouts are one under the other (the ship, its lives, its bombs each on a
+  line), the health bar and the score a size up.
+- **What it undoes of D-249:** the playfield is a 3:4 window again (×1.125 the old 480 × 640), so
+  the content extents that followed the wide view go back: `WAVE_DENSITY` 2 → 1.5 (the level
+  files' counts re-measured, the original figures), `offscreenX` 1 000 → 420 in Worlds 1–2 and
+  640 → 300 in Worlds 3–4 (the window shows ±210 ground units at the sea level, ±235 at a sea bed:
+  240 would end streets in view), the bomb ring 1 000 → 820 px (the window's far corner is about
+  690 from the ship's start). The ship's reach at y = 20 is about x 120 … 420.
+- **Alternatives considered:** keeping the 3D view across the whole screen behind glass columns
+  (the owner: nothing drawn outside the playing area, and the narrower view also costs about
+  2.4 times fewer ground pixels and chunks across); changing the logical screen to 540 × 720 and
+  putting the columns outside the stage (the stage is the 16:9 screen, UI-LOOK-02).
+- **Consequences:** the ship crosses its reach in about 1.3 s again; the enemies' timing of
+  D-249's open points is back to the 480 × 640 game's. The e2e checks on the HUD and the
+  readability probe run on the window (the probe projects through the camera's viewport).
+- **Status:** Proposed
+
+### D-253 — A 1000 × 720 playfield window, the HUD columns 140 px
+- **Date:** 2026-11-02
+- **Requirements:** GAME-SCREEN-01, GAME-SCREEN-04, GAME-SCREEN-06, GFX-CAM-01, GFX-CAM-03,
+  GFX-CAM-05, UI-HUD-01, UI-HUD-04, UI-HUD-10, GFX-ROAD-19, WLD-1-20, WLD-3-13, WLD-4-13,
+  GFX-FX-10, ENM-09, GAME-BONUS-07.
+- **Context:** owner, on D-252's layout: "the lateral bars are far too big, make the playing area
+  at least square", then, on a 720 × 720 window with 280 px columns: "reduce the lateral bar
+  more, about half their current size."
+- **Decision:** the playfield window is **1000 × 720** (25:18), from x = 140 to 1 140 of the
+  1280 × 720 screen, the HUD columns 140 px each (`--hud-side`, `GAME_CONFIG.playfield`). Nothing
+  else of the engine changes: the camera's viewport, the ship's bounds and reach, the spawn area,
+  the ground window and the audio pan all derive from the window record (D-252). What follows
+  from the width:
+  - the camera sees ±305 px of the playfield across the bottom edge and ±514 across the top
+    (±165 and ±278 in the 540 px window); the ship's reach at y = 20 is about x 207 … 793,
+    586 px wide (300 before, 804 on the whole 16:9 screen);
+  - the ground in view is about ±390 units at the sea level and ±435 at a sea bed (±210 / ±235),
+    so `offscreenX` goes to 780 in Worlds 1–2 and 560 in Worlds 3–4 (their ratio to the ground
+    in view kept: 2 × and about 1.3 ×);
+  - the bomb ring's radius goes from 820 to 900 px: the window's far corner is about 860 from
+    the ship's start (750 before);
+  - `WAVE_DENSITY` goes back to 2, as on the whole screen (D-249): the reach is nearly twice as
+    wide as the 540 px window's, and the waves, written in fractions of it, would come in thin
+    at 1.5. The level files' counts are D-249's again (measured from the configs).
+  - the column contents fit 140 px: 12 px of padding, the health text under its bar (116 px
+    wide, 160 before), the score at 22 px, the weapon line allowed to wrap; the touch fire and
+    bomb buttons stay centred in the right column.
+- **Alternatives considered:** a square window (720 × 720, 280 px columns: the owner's first
+  ask, found still too wide once seen); a 4:3 window (960 × 720, 160 px columns: not what was
+  asked); a 16:9 window with the HUD over the level (D-252 settled that the level is drawn only
+  in the window).
+- **Consequences / open points for the owner:** the reach is nearly twice D-252's, so the ship
+  crosses it in about 2.6 s instead of 1.3 (`base_speed` unchanged) and the Strafer's and Gnat's
+  paths, in fractions of the reach, are about twice as wide (D-249's open points, to a lesser
+  degree). The view draws about 1.85 times the ground pixels of the 540 px window (0.78 of the
+  whole screen's).
+- **Status:** Proposed
+
+### D-254 — Boss armour drawn as pieces of its own, no longer cut out of the body
+- **Date:** 2026-11-02
+- **Requirements:** BOSS-42, BOSS-43, BOSS-44, BOSS-45, BOSS-52; each boss's shedding requirement
+  as its model is redrawn (MB-SENTINEL-05 first).
+- **Context:** owner: "I dont want the code to cut into an existing part to generate the pieces
+  after an explosion. I want the bosses to have all their possible parts defined in code and
+  simply replace the intact hull by broken pieces when needed." Until now the armour regions were
+  carved out of the core's triangles at build time (`cut_armour`: faces near the outlines
+  subdivided, the ones inside moved to the region), chunked on a grid, their frame derived from
+  the carved faces, and a hold-together analysis (`islands.py`) added stems, pylons and bridges or
+  moved hanging pieces of the core into the region.
+- **Decision:** a boss drawing gets an `armour` field, one entry per region id: its `whole`
+  armour (a drawing, as it rests on the core), and optionally the `pieces` it bursts into (a list
+  of drawings) and the `frame` it leaves (a drawing). The core is drawn without the armour. The
+  engine only toggles nodes: the whole piece until the burst, the pieces flying from the middle of
+  what each draws until `reveal.burstEnd`, the frame from the burst on; a moving region's whole
+  piece rides its mover node. The defaults the owner chose: pieces left out are plates cracked
+  from the region's outline (`render/geometry/plates.py`: the outline triangulated, cut down to
+  about a third of its size, its inner corners nudged, the triangles grown into at most
+  `armour.chunks` connected groups whose boundaries are the plates), `armour.plate` px thick at
+  the top of the armour, in its hull colour (else its flesh's, else its lights'); a frame left out
+  is drawn from the outline (`boss_frame.frame_drawings`: a floor slab in the outline just over
+  the armour's lowest point, the ribs of `frame_lines` clipped to it). The hold-together
+  automation is gone: BOSS-52 keeps its unit test (the states composed from the drawings) and the
+  drawings are fixed by hand where they do not hold. The cut, `shatter.py` (now
+  `mesh_triangles.py`: reading and appending triangles only), `islands.py` (now a test helper),
+  `boss_stems.py`, the pylons and bridges, and the `armour.cut` tunable are removed. A region the
+  model draws no armour for has no view while the bosses are migrated: the bosses not yet drawn,
+  and those whose drawings do not hold yet, are strict expected failures (ENG-163) struck off one
+  by one; the migration goes one world at a time and ends with no expected failure left. The
+  region outlines stay in the config: the blasts of a shed region (BOSS-37), the check that a
+  hidden weapon lies in a shed region, and the plates and frame drawn by default come from them;
+  a region's `heights` now only tell whether a weapon rides a moving piece.
+- **Alternatives considered:** hand-drawn pieces for every region (kept as the override: hundreds
+  of shapes to author otherwise); shattering the standalone region drawing (still a triangle
+  split); the frame drawn into the core and always there (triangles at rest, pokes through the
+  armour); dropping BOSS-52's test with the automation (pieces could float unnoticed).
+- **Consequences:** every boss model (all 40 have regions) must draw its armour apart from its
+  core, and 19 of them must hold together without stems; until a boss is redrawn it sheds nothing
+  visible and its weapons unfold out of its hull. At rest a boss may look slightly different from
+  before, as its armour is now a piece lying on the core rather than the core's own skin. D-224,
+  D-227 and D-230 are superseded where they describe the cut, the chunks, the stems and pylons.
+- **Status:** Proposed

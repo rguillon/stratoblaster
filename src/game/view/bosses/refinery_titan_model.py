@@ -4,13 +4,26 @@
 Model space: logical pixels, nose +Z (down the screen), Y up towards the camera. A bloated
 industrial beetle: a huge shelled body plumbed with grafted pipes, limbs cradling two glowing fuel
 bladders, smoking chimneys of flesh on its back, a fleshy apron in front carrying the two rotary
-turrets.
+turrets. Its back and spine plating are drawn as pieces of their own (`refinery_titan_armour`,
+D-254).
 """
 
 import math
 
 from game.config.bosses.final_bosses import REFINERY_TITAN
 from game.view.bosses.boss_model import build_boss_model
+from game.view.bosses.final_boss_shapes import sided
+from game.view.bosses.refinery_titan_armour import (
+    BOTTOM,
+    MID,
+    NOSE,
+    SEGMENTS,
+    TAIL,
+    WIDTH,
+    draw_cannon_muzzles,
+    draw_rear_shell,
+    titan_armour,
+)
 from game.view.bosses.refinery_titan_parts import (
     TITAN_DECK,
     TITAN_NEON,
@@ -25,21 +38,15 @@ from game.view.bosses.world_1_organic_kit import (
     barbs,
     gland,
     graft,
-    hide,
     mantle,
     polygon,
     rib_cage,
-    spine,
     tentacle,
     vein_line,
 )
 from game.view.enemies.enemy_shapes import SIDES
-from game.view.enemies.organic_parts import eyes, reactor_sac
-from render.geometry.organic import (
-    SegmentedBody,
-    organ,
-    segmented_body,
-)
+from game.view.enemies.organic_parts import reactor_sac
+from render.geometry.organic import SegmentedBody, segmented_body
 from render.geometry.solids import Placement
 
 # isort: split
@@ -54,16 +61,15 @@ type Vec3 = list[Any]
 WHITE = [1, 1, 1]
 QUARTER = math.pi / 2
 
-# The apron of flesh the turrets stand on.
+# The right lobe of the apron of flesh the turrets stand on, either side of the belly (the
+# gatlings and orbs rise between the two lobes).
 SPONSON = [
-    [-50, 12],
-    [-50, 32],
-    [-42, 40],
+    [20, 40],
     [42, 40],
     [50, 32],
     [50, 12],
     [42, 4],
-    [-42, 4],
+    [20, 4],
 ]
 # A chimney of flesh (lathe profile, bottom to top).
 COLUMN = [
@@ -76,33 +82,23 @@ COLUMN = [
 
 
 def _draw_structure(p: Any) -> None:
-    """Draw the body (FB-REFINERY-TITAN-02): a huge shelled abdomen, ribs, a spine vein.
+    """Draw the body (FB-REFINERY-TITAN-02): a huge abdomen, its shell over the tail, ribs.
 
-    Armour plates grafted on.
+    A spine vein and armour plates grafted on; the rest of its shell is its armour.
     """
-    hide(
-        p,
-        {
-            "tail": -62,
-            "nose": 68,
-            "width": 36,
-            "bottom": -8,
-            "top": 18,
-            "segments": 6,
-            "shell": [F.sinew, F.slate],
-            "belly": F.graphite,
-        },
+    segmented_body(
+        p.flesh,
+        SegmentedBody(TAIL, NOSE, SEGMENTS, WIDTH, BOTTOM, MID, 0.15),
+        F.graphite,
     )
-    mantle(p, SPONSON, [-4, TITAN_DECK["sponson"]], F.slate, TITAN_NEON)
-    p.neon.box([72, 1.2, 0.8], TITAN_NEON, Placement([0, -0.6, 40.2]))
-    rib_cage(p, [-46, -36, 50], {"halfWidth": 33, "y": 0, "height": 15, "thickness": 1.5})
-    spine(p, [0, 18.5, -55], [0, 18.5, 25], {"color": TITAN_NEON, "width": 1.8})
+    draw_rear_shell(p)
     for s in SIDES:
-        for z in [-48, 8]:
-            graft(p, polygon(6, 6, [1.2, 1.8]), [13, 14.6], [s * 20, 0, z], {"color": M.base})
-        for z in [-40, -18]:
-            vein_line(p, [s * 12, 17, z], [s * 34, 4, z + 6], [s * 3, 4, 0], 1.4, TITAN_NEON)
+        mantle(p, sided(SPONSON, s), [-4, TITAN_DECK["sponson"]], F.slate, TITAN_NEON)
+        graft(p, polygon(6, 6, [1.2, 1.8]), [13, 14.6], [s * 20, 0, -48], {"color": M.base})
+        vein_line(p, [s * 12, 17, -40], [s * 34, 4, -34], [s * 3, 4, 0], 1.4, TITAN_NEON)
         gland(p, [s * 28, 8, 34], 2, TITAN_NEON)
+    p.neon.box([72, 1.2, 0.8], TITAN_NEON, Placement([0, -0.6, 40.2]))
+    rib_cage(p, [-46, -36], {"halfWidth": 33, "y": 0, "height": 15, "thickness": 1.5})
 
 
 def _draw_cradles(p: Any) -> None:
@@ -144,37 +140,27 @@ def _draw_columns(p: Any) -> None:
     p.hull.cylinder(1.6, 84, 6, M.dark, Placement([-42, 13, -34], 0, 0, -QUARTER))
 
 
-def _draw_bridge(p: Any) -> None:
-    """Draw the head over the core (FB-REFINERY-TITAN-02): a plated skull with clustered eyes.
+def _draw_jaws(p: Any) -> None:
+    """Draw the mandibles at its front and the barbs on its tail (FB-REFINERY-TITAN-02).
 
-    Two smoking spiracles, the twin cannon grafted under its brow (the core's weapon,
-    FB-REFINERY-TITAN-03), mandibles at its front.
+    The plated skull with the twin cannon rides the back plating (`refinery_titan_armour`); the
+    core keeps the cannon's muzzles.
     """
-    organ(p.flesh, 17, 8, F.slate, Placement([0, 12, 2], math.pi / 8), 0.38)
-    graft(p, polygon(6, 11, [1, 1.3]), [23, 24.5], [0, 0, 0])
-    eyes(p, [0, 22, 15], {"count": 4, "size": 1.2, "spacing": 3.4}, TITAN_NEON)
     for s in SIDES:
-        p.flesh.cylinder(3.2, 8, 6, F.sinew, Placement([s * 9, 22, -14]), 2.6)
-        p.neon.ring(2.7, 0.8, 6, TITAN_NEON, Placement([s * 9, 29.5, -14]))
-        # The twin cannon's barrels, out of a mantlet on the head's front.
-        p.hull.cylinder(1.8, 14, 6, M.dark, Placement([s * 4.5, 19, 20], 0, QUARTER))
-        p.charge.cylinder(2.2, 1.8, 6, WHITE, Placement([s * 4.5, 19, 34], 0, QUARTER))
-        p.muzzle([s * 4.5, 19, 35.8], None)
         tentacle(p, [s * 8, 4, 62], [s * 3, 3, 70], [s * 3, 0, 0], [2.4, 0.2], F.bone, 4)
-    p.hull.box([15, 4, 7], M.base, Placement([0, 17, 21]), M.panel)
-    eyes(p, [0, 6.5, 60], {"count": 2, "size": 1.2, "spacing": 6}, TITAN_NEON)
+    draw_cannon_muzzles(p)
     barbs(p, [0, 17, -50], {"count": 3, "spacing": 0.1, "size": 4, "dir": [0, 1, -0.5]})
 
 
 def _draw_core(p: Any) -> None:
-    """Draw the core: body, cradles, pipes, head and chimneys.
+    """Draw the core: body, cradles, pipes, jaws and chimneys.
 
     Four reactors sit at the tail in sacs.
     """
     _draw_structure(p)
     _draw_cradles(p)
     _draw_pipes(p)
-    _draw_bridge(p)
+    _draw_jaws(p)
     _draw_columns(p)
     for s in SIDES:
         segmented_body(
@@ -208,5 +194,6 @@ def build_refinery_titan(scene: Any) -> Any:
                 "missile-battery": draw_missile_battery,
             },
             "turrets": {"turret-left": draw_rotary, "turret-right": draw_rotary},
+            "armour": titan_armour(),
         },
     )

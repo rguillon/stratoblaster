@@ -199,7 +199,6 @@ class GameScreenView:
         self,
         level: str,
         fire: str,
-        pause: str,
         complete: LevelCompleteView | None,
         paused: PauseView | None,
         selected: int,
@@ -207,8 +206,6 @@ class GameScreenView:
         self.level = level
         # Label of the on-screen fire button.
         self.fire = fire
-        # Label of the on-screen pause button (UI-PAUSE-02).
-        self.pause = pause
         self.complete = complete
         # The pause menu, while the level is paused (UI-PAUSE-07).
         self.paused = paused

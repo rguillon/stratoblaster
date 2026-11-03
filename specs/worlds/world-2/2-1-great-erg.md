@@ -196,7 +196,7 @@ Narwhal's chase.
 | dune_field | crests 45 high every 240 units, at 70°, warp 0.6 | `dunes(45, 240, 70)` |
 | max_gap | 3.4 s → 2.3 s | `src/game/config/world_2/waves.py` `WORLD_2_FILLERS["2-1"]` |
 | bullet_speed_factor / fire_rate_factor | 0.9 / 0.9 | `src/game/config/world_2/difficulty.py` |
-| written | 52 beats; 98 waves and 384 groups after fill and density; 584 enemies, 12 330 HP (halves 5 140 / 7 190); 116.8 enemies and 2 466 HP a minute | measured from the configs; D-067 |
+| written | 52 beats; 98 waves and 462 groups after fill and density; 686 enemies, 14 780 HP (halves 6 160 / 8 620); 137.2 enemies and 2 956 HP a minute | measured from the configs; D-067, density 2 (D-249) |
 | buildings | 1 384 (halves 525 / 859) | each level's seed, measured for this file |
 | mini boss / final boss | `floe-breaker` / `narwhal` | `src/game/config/world_2/bosses.py` `WORLD_2_BOSSES` |
 | runout | 160 s | same |

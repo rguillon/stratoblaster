@@ -160,8 +160,26 @@ FURNACE_DRAKE = with_weapons(
         hidden_weapon("cannon-right", "cannon", [11, 7], 7, 880, 1, "red", 2.0, 13.2),
     ],
     [
+        # MB-FURNACE-DRAKE-13: the back plating, a carapace over the flattened torso (its footprint,
+        # the nose at -Y; see `furnace_drake_armour.TORSO`); the cannons lie under it.
         armour_region(
-            "back", 1, [[-26, -20], [26, -20], [26, 24], [-26, 24]], "shell", [2.0, 1000], False
+            "back",
+            1,
+            [
+                [6.5, 22],
+                [11.5, 12],
+                [13.5, 0],
+                [11.5, -10],
+                [7.5, -17],
+                [-7.5, -17],
+                [-11.5, -10],
+                [-13.5, 0],
+                [-11.5, 12],
+                [-6.5, 22],
+            ],
+            "shell",
+            None,
+            False,
         ),
     ],
 )

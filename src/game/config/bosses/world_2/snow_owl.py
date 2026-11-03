@@ -94,17 +94,35 @@ SNOW_OWL = with_weapons(
         hidden_weapon("mortar", "mortar", [0, 8], 9, 680, 1, "purple", 2.0, 14),
     ],
     concat(
+        # MB-SNOW-OWL-07: the outer panel of each wing from 30 px out (its leading edge at -Y),
+        # and the deck it slides along out to 56 px; a sweeper rides it.
         moving_region(
             "wingtips",
             1,
-            [[30, -12], [56, -12], [56, 12], [30, 12]],
+            [[30, -9.2], [48, -5], [56, -5], [56, 12], [30, 12]],
             slide([[0, 0, 0], [16, 0, 0]]),
             "wing",
             [-3, 1000],
         ),
         [
+            # MB-SNOW-OWL-07: the plating of its back, over the flat deck of the back from the
+            # tail (22 px behind) to the head's root (6 px ahead); the mortar lies under it.
             armour_region(
-                "back", 1, [[-16, -6], [16, -6], [16, 22], [-16, 22]], "shell", [6, 1000], False
+                "back",
+                1,
+                [
+                    [-4.5, 22],
+                    [4.5, 22],
+                    [6, 18],
+                    [7.5, 4],
+                    [7.3, -6],
+                    [-7.3, -6],
+                    [-7.5, 4],
+                    [-6, 18],
+                ],
+                "shell",
+                None,
+                False,
             ),
         ],
     ),

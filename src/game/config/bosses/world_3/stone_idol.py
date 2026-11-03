@@ -114,10 +114,25 @@ STONE_IDOL = with_weapons(
         hidden_weapon("mortar-left", "mortar", [-30, 30], 8, 760, 1, "purple", 1.2, 13),
         hidden_weapon("mortar-right", "mortar", [30, 30], 8, 760, 1, "purple", 2.6, 13),
     ],
+    # MB-STONE-IDOL-11 (D-254): the lid is the back of the head over the skull cut (7 px), its plan
+    # the head's section there behind the brows (its chin at -Y); the hinge's pin runs across the
+    # back of the crown. The third eye and the mortars lie under it, on the head.
     moving_region(
         "crown",
         1,
-        [[-54, 4], [54, 4], [54, 56], [-54, 56]],
+        [
+            [-44.5, 4],
+            [44.5, 4],
+            [44.5, 11.8],
+            [41.6, 29.1],
+            [34.3, 40],
+            [21.4, 45.6],
+            [0, 47.5],
+            [-21.4, 45.6],
+            [-34.3, 40],
+            [-41.6, 29.1],
+            [-44.5, 11.8],
+        ],
         swing([0, 50, 7], "across", [0, -75]),
         "ring",
         [7, 1000],

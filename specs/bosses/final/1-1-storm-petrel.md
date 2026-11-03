@@ -66,14 +66,31 @@ BOSS-50).
 
 #### FB-STORM-PETREL-05 — What it sheds and moves · MUST
 
-Its outer wings are the pieces that move at its first transformation; the plating over its tail and
-over its wing roots is the armour it sheds at its second (`shell` and `wing` frames beneath).
+Its wings and its tail plating are drawn as pieces of their own, resting on the body
+([common](../common.md), BOSS-42, BOSS-45). Each wing is split at its hinge, 31 px out from the
+centre line:
+
+- Its **outer wings** (`outer-wings`, a mirrored pair) are the pieces that move at its first
+  transformation: the membrane beyond the hinge (6–9.5 px) with the struts' and the vein's outer
+  lengths, the neon round the leading edge and the tip, and the gland at the tip. No frame.
+- Its **wing roots** (`wing-roots`, mirrored) are armour it sheds at its second: the membrane from
+  the body's flank to the hinge (6–9.5 px) with the struts' and the vein's inner lengths and the
+  leading edge's neon, and the engine sac standing on it with its reactor, its grafted plate and its
+  intake ring (up to 16 px). Shed, it bursts into plates cracked from the wing root's outline and
+  leaves a `wing` frame (ribs and spars) between the body and the outer wing, out of which the
+  sweepers rise.
+- Its **tail plating** (`tail`, not mirrored) is the length of the body's shell over the tail,
+  from the shell's own bottom (about 5 px) up to its ridge (about 15 px), with the spine vein and
+  the bone barbs on it; the body's belly runs on beneath. Shed, it bursts into plates cracked from
+  its lozenge and leaves a `shell` lattice frame on the belly, out of which the cannon rises.
 
 **Acceptance criteria**
 - Given its design, then its first transformation moves its outer wings and its second sheds its
   tail and wing-root regions (unit test).
+- Given its model, then it draws each region's piece, and it holds together at rest and after each
+  transformation (unit tests).
 
-*Sources: D-224, D-230.*
+*Sources: D-224, D-230, D-254.*
 
 ### Behaviour
 
@@ -196,11 +213,11 @@ All in `src/game/config/bosses/final_bosses.py` (`_STORM_PETREL`, `STORM_PETREL`
 | core stage 4 | ring of 12 turning 8°, red, every 1.5 s | |
 | angry | flower, heat 0.5 (24 bullets a second, 124 px/s), magenta and red | |
 | transformation 1 | `pod-left` and `pod-right` destroyed | `transformParts` |
-| outer wings | x 31..84, y -24..20, above 4 px, mirrored; swing about the vertical at (±31, -13.4, 8) by 30° forward; no frame | `moving_region`, `swing` |
+| outer wings (moving region) | the outer wing's own outline beyond the hinge: x 31..77, y -13.4..13.8 at the hinge narrowing to the squared tip, mirrored; the membrane 6–9.5 px; swing about the vertical at (±31, -13.4, 8) by 30° forward; no frame | `moving_region`, `swing`; `heights` 4 px tell the batteries ride it |
 | batteries | (∓52, -13), radius 8, health 810, pod 13 px, magenta; first 1.2 s / 2.0 s | ride the outer wings |
 | transformation 2 | `missile-rack` and `belly-plate` destroyed | |
-| tail region | x -14..14, y 18..48, above 9 px, `shell`, not mirrored | |
-| wing-root region | x 13..26, y -24..2, above 4.6 px, `wing`, mirrored | |
+| tail region (shed) | a lozenge the shell's shape: x ±12.5 at y 18..30 narrowing to ±8 at y 48, `shell`, not mirrored; the plating about 5–15 px | |
+| wing-root region (shed) | the wing root's own outline: x 12.5..31, y -18.7..18.7 at the flank narrowing to -13.4..13.9 at the hinge, `wing`, mirrored; the membrane 6–9.5 px, the engine sac on it up to 16 px | |
 | `cannon` | (0, 32), radius 11, health 1 010, pod 14.5 px, red; first 1.4 s | |
 | sweepers | (∓19, -12), radius 6, health 1 010, pod 12.9 px; first 2.2 s / 4.6 s | |
 | neon | magenta (1, 0.1, 0.85), shown yellow | `BOSS_LOOK.neon` |

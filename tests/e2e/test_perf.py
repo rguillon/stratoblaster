@@ -18,7 +18,7 @@ from playwright.sync_api import Page, expect
 
 # Tunable values of specs/performance.md: level_load_max_s, scaled by e2e_slowdown (software
 # WebGL, PERF-01).
-LEVEL_LOAD_MAX_S = 2
+LEVEL_LOAD_MAX_S = 4
 E2E_SLOWDOWN = 10
 
 

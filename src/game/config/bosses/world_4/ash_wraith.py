@@ -112,8 +112,32 @@ ASH_WRAITH = with_weapons(
         hidden_weapon("lance-right", "lance", [12, -7], 10, 660, 1, "blue", 2.0, 9.0),
     ],
     [
+        # MB-ASH-WRAITH-12: the back plating, a dome over the flattened fuselage as wide as the
+        # fuselage was (its nose at -Y; see `ash_wraith_model.DOME`); the lances lie under it.
         armour_region(
-            "back", 1, [[-30, -37], [30, -37], [30, 23], [-30, 23]], "shell", [4.5, 1000], False
+            "back",
+            1,
+            [
+                [1.5, 30],
+                [5.5, 26],
+                [10.5, 14],
+                [13.5, 2],
+                [13.5, -8],
+                [10, -16],
+                [5, -22],
+                [1, -25],
+                [-1, -25],
+                [-5, -22],
+                [-10, -16],
+                [-13.5, -8],
+                [-13.5, 2],
+                [-10.5, 14],
+                [-5.5, 26],
+                [-1.5, 30],
+            ],
+            "shell",
+            None,
+            False,
         ),
     ],
 )

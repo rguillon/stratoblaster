@@ -75,8 +75,8 @@ _FLOE_BREAKER = record({
 })
 
 # Its hidden weapons (boss transformations, D-224, MB-FLOE-BREAKER-12): at transformation 1 its
-# back plating bursts off, baring a dark metal frame (MB-FLOE-BREAKER-07), and a pair of gatling
-# turrets unfold.
+# front plating bursts off, baring a dark metal frame (MB-FLOE-BREAKER-07), and a pair of gatling
+# turrets unfold either side of its ram.
 FLOE_BREAKER = with_weapons(
     _FLOE_BREAKER,
     [
@@ -84,8 +84,15 @@ FLOE_BREAKER = with_weapons(
         hidden_weapon("gatling-right", "gatling", [12, -27], 10, 520, 1, "red", 2.0, 12.0),
     ],
     [
+        # MB-FLOE-BREAKER-07: the plating of the front deck, a plate either side of the bone ram
+        # (its nose at -Y) from the shell's front to short of the ram's point, out to the deck's
+        # edge behind the sponsons' sockets; a gatling lies under each.
         armour_region(
-            "back", 1, [[-30, -57], [30, -57], [30, 3], [-30, 3]], "shell", [1.7, 1000], False
+            "back",
+            1,
+            [[13, -2], [22, -2], [23, -12], [17, -25], [10.5, -34], [7, -34], [10, -20]],
+            "shell",
+            None,
         ),
     ],
 )

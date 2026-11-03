@@ -182,17 +182,22 @@ second at 220 px/s.
 #### MB-FURNACE-DRAKE-13 — Transformation: back plating bursts off · MUST
 
 The Drake transforms once, when 2 of its 3 original parts are destroyed. Its back plating bursts
-off: one region across the centre line, 26 px either side, from 20 px ahead of the centre to 24 px
-behind it, above 2 px high. Under it a dark metal `shell` frame (a lattice) shows. The boss stays one
-object at rest and after its transformation.
+off ([common](../common.md), BOSS-42): a carapace drawn as a piece of its own over the torso, which
+is flattened to a deck 2.2 px high under it, from its foot at 1.9 px (sunk into the deck) up to the
+torso's old back (6–12 px), the torso's own width (13 px either side at the middle), with the
+molten seams, the soot streaks, the vents, the glands, the magma vein down the back and the bone
+spines on it. Its region (`back`, not mirrored) is the torso's footprint from 17 px ahead of the
+centre to 22 px behind it; it bursts into plates cracked from that outline and leaves a `shell`
+lattice frame on the deck, where the ribs arch and the furnace heart's stack rises through. The
+cannons lie folded under it; the wings' shoulders, the legs and the tail stay on the body.
 
 **Acceptance criteria**
 - Given two original parts are destroyed, then the boss transforms once and its back region bursts
   off, leaving the shell frame (unit: `test_boss_kinds.py`, `test_boss_armour.py`).
-- Given the boss at rest and after its transformation, then nothing of it hangs in the air (unit:
-  `test_d227_the_boss_holds_together_in_every_state`).
+- Given its model, then it draws the back region's armour, and it holds together with and without
+  it (unit: `test_boss_armour.py`, `test_boss_model.py`).
 
-*Sources: D-221, D-224, D-227.*
+*Sources: D-221, D-224, D-227, D-254.*
 
 #### MB-FURNACE-DRAKE-14 — Hidden weapons: two heavy cannons · MUST
 
@@ -241,7 +246,7 @@ All in `src/game/config/bosses/world_4/furnace_drake.py` (`FURNACE_DRAKE`) unles
 | bullets | `red` 215, `orange` 210, `purple` 205 px/s | radius 4 |
 | rage | flower, heat 12.5 (`orange`, `red`) | `rage.flower` |
 | transformation | once, at 2 original parts destroyed | `src/game/sim/boss_build.py` `default_transforms` |
-| back region | x -26..26, y -20..24, above 2.0 px, `shell` | `armour_region("back", …)` |
+| back region | the torso's footprint, not mirrored: y -17..22, x ±7.5 at y -17, ±13.5 at y 0, ±6.5 at y 22, `shell`; carapace 1.9–12 px over a 2.2 px deck | `armour_region("back", …)`; `src/game/view/bosses/world_4/furnace_drake_armour.py` |
 | cannons | (±11, 7), radius 7, pod 13.2, 880 HP, `red`, first 1.2 / 2.0 s | `hidden_weapon`; volleys in `src/game/config/bosses/weapon_kinds.py` |
 | drops | parts 0.5, hidden weapons 0.3 | `part`, `hidden_weapon` defaults |
 | points | 8 500 (850 a part) | `points`, `boss_part_points` |

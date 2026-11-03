@@ -173,8 +173,29 @@ MAGMA_SALAMANDER = with_weapons(
         hidden_weapon("sweeper-right", "sweeper", [9, 13], 7, 720, 1, "orange", 2.0, 12.4),
     ],
     [
+        # MB-MAGMA-SALAMANDER-13: the back plating, the three scale plates over its back as shells
+        # on the flattened belly (their footprint; the nose at -Y, see
+        # `magma_salamander_armour.PLATES`); the sweepers lie under it.
         armour_region(
-            "back", 1, [[-24, -14], [24, -14], [24, 28], [-24, 28]], "shell", [5.2, 1000], False
+            "back",
+            1,
+            [
+                [-7, 26],
+                [7, 26],
+                [8, 18],
+                [13.5, 17],
+                [13.5, 4],
+                [14.5, 2],
+                [14.5, -10],
+                [-14.5, -10],
+                [-14.5, 2],
+                [-13.5, 4],
+                [-13.5, 17],
+                [-8, 18],
+            ],
+            "shell",
+            None,
+            False,
         ),
     ],
 )

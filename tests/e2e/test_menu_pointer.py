@@ -32,10 +32,11 @@ def run_flow(page: Page, press: Callable[[Locator], None]) -> None:
     press(page.locator(".level-cell").first)
     expect_state(page, {"screen": "game", "chosenShipId": "light", "chosenLevelId": "1-1"})
     expect(page.locator(".game-level")).to_have_text("Level 1-1")
-    # No Back button over the playfield (UI-HUD-09); the pause button (UI-PAUSE-02), then Main
-    # menu and Yes, leave (UI-PAUSE-10).
+    # No Back button and no pause button over the playfield (UI-HUD-09, D-251): Escape pauses
+    # (UI-PAUSE-01), then Main menu and Yes, leave, by pointer (UI-PAUSE-10).
     expect(page.locator(".menu-back")).to_have_count(0)
-    press(page.locator(".game-pause"))
+    expect(page.locator(".game-pause")).to_have_count(0)
+    page.keyboard.press("Escape")
     expect_state(page, {"screen": "pause", "paused": True, "selectedId": "resume"})
     press(page.locator(".pause-entry").nth(2))
     expect_state(page, {"selectedId": "main-menu"})

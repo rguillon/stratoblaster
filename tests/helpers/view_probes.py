@@ -137,8 +137,8 @@ def drawn(draw: Callable[[Any], None]) -> dict[str, Any]:
 def drawings_of(capture: Any) -> dict[str, dict[str, Any]]:
     """Run every drawing of a capture on real solid builders.
 
-    The drawings are keyed by their place in the model: `body`, `ring`, `core`, `limbs.<joint>` and
-    `parts.<id>`.
+    The drawings are keyed by their place in the model: `body`, `ring`, `core`, `limbs.<joint>`,
+    `parts.<id>` and, for a boss, `armour.<region>` (its whole armour).
     """
     if isinstance(capture, EnemyCapture):
         return {"body": drawn(capture.draw)}
@@ -158,6 +158,8 @@ def drawings_of(capture: Any) -> dict[str, dict[str, Any]]:
         for part_id, draw in (drawing.get("parts") or {}).items():
             out["parts." + part_id] = drawn(draw)
         return out
+    for region_id, armour in (drawing.get("armour") or {}).items():
+        out["armour." + region_id] = drawn(armour.whole)
     spots = {spec.id: spec for spec in capture.design.stats.parts}
     for part_id, draw in (drawing.get("parts") or {}).items():
         # A boss part's drawing is handed the point it sits at (`boss_model._part_builder`).

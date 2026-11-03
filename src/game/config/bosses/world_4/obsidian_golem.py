@@ -225,22 +225,21 @@ OBSIDIAN_GOLEM = with_weapons(
         hidden_weapon("mortar-right", "mortar", [8, 7], 7, 1600, 2, "red", 2.6, 29.2),
     ],
     concat(
+        # D-254: the flank slabs are obsidian plates on the torso's top face, from the hump's foot
+        # out to the face's edge, each carrying its pauldron; they hinge at the pauldron's outer
+        # edge, on the shoulder drum (51 px out, 16 px high). The spine plating is the obsidian
+        # ridge along the hump's crest with the helm at its end.
         moving_region(
             "flanks",
             1,
-            [[14, -25], [56.3, -25], [56.3, 35], [14, 35]],
-            swing([56.3, 5, 20], "along", [0, 70]),
+            [[14, -24], [17, -24], [29, -16], [36, -4], [34.5, 15], [26, 29], [14, 31]],
+            swing([51, 5, 16], "along", [0, 70]),
             "wing",
             [8.8, 1000],
         ),
         [
             armour_region(
-                "spine",
-                2,
-                [[-14, -38], [14, -38], [14, 16], [-14, 16]],
-                "shell",
-                [10.6, 1000],
-                False,
+                "spine", 2, [[-14, -22], [14, -22], [14, 16], [-14, 16]], "shell", None, False
             ),
         ],
     ),

@@ -35,7 +35,8 @@ Each leg rises from its hip to a raised knee and drops to its foot. It is a 5 L 
 
 It reads as one living spider with metal grafted on: a chitin-shelled cephalothorax, a swollen dark
 abdomen with bone ribs and pulsing veins, a sinew waist between them, and metal plates and vents
-grafted on both. An hourglass mark is drawn in neon on the abdomen's back. Its head has two big eyes
+grafted on both; the shell and the abdomen's back are the plating it sheds (FB-CANOPY-SPIDER-12,
+FB-CANOPY-SPIDER-13), drawn over flat-topped lower bodies. An hourglass mark is drawn in neon on the abdomen's back. Its head has two big eyes
 at the front and smaller ones behind, all neon, and fangs (flesh chelicerae with bone fangs and a
 metal cap) curving down in front of it.
 
@@ -167,23 +168,31 @@ small fans at the player) at heat 6, in `red` and `purple`.
 
 #### FB-CANOPY-SPIDER-12 — First transformation: back plating, two gatlings · MUST
 
-At 2 of its 5 original parts destroyed, it transforms for the first time. The plating over its
-abdomen (one region across the centre line, 28 px either side, from 2 px to 49 px behind the centre,
-above 7 px high) bursts off over a dark metal `shell` frame, and two gatling turrets come out at 13 px
-either side, 25 px behind the centre (radius 7 px, pods 22.3 px high, 1 000 HP each), firing `red`
-bursts, 1.2 s and 2.0 s into a stage.
+At 2 of its 5 original parts destroyed, it transforms for the first time. The **back plating** over
+its abdomen bursts off ([common](../common.md), BOSS-42): a piece drawn apart from the belly (the
+abdomen's lower half, flat-topped at 7 px), the chitin over it from 6.7 px up to the abdomen's back
+(21 px), carrying its bone ribs and pulsing veins, the red hourglass, the grafted seams, the moss and
+the patch. Its region (`back`, not mirrored) is the abdomen's own plan from the waist (8 px behind the
+centre) to its tip (47 px), 15.3 px either side at its widest; it bursts into plates cracked from
+that outline and leaves a dark metal `shell` frame on the belly, the vines still hanging on its
+flanks. Two gatling turrets come out at 13 px either side, 25 px behind the centre (radius 7 px, pods
+22.3 px high, 1 000 HP each), firing `red` bursts, 1.2 s and 2.0 s into a stage.
 
 **Acceptance criteria**
 - Given 2 original parts are destroyed, then the back region bursts off and the two gatlings come out
   and fire (unit: `test_boss_kinds.py`).
 
-*Sources: D-221, D-224, D-229, D-227.*
+*Sources: D-221, D-224, D-229, D-227, D-254.*
 
 #### FB-CANOPY-SPIDER-13 — Second transformation: spine plating, two lances · MUST
 
-At 4 original parts destroyed, it transforms again. The plating over its cephalothorax (24 px either
-side of the centre line, from 42 px ahead of the centre to 2 px behind it, above 6.4 px high) bursts
-off over a `shell` frame, and two laser lances unfold at 9 px either side, 21 px ahead (radius 7 px,
+At 4 original parts destroyed, it transforms again. The **spine plating** over its cephalothorax
+bursts off: the ridged chitin shell drawn apart from the lower shell (flat-topped at 4.6 px), from
+4.3 px up to the ridge (15 px), carrying its eyes, the grafted seams, vents and moss. Its region
+(`spine`, not mirrored) is the cephalothorax's own plan from the waist (8 px behind the centre) to the
+head (30 px ahead), 15 px either side at its widest; it bursts into plates cracked from that outline
+and leaves a `shell` frame on the lower shell, the fangs and the crown emitter (on a stalk rooted in
+the lower shell) staying up. Two laser lances unfold at 9 px either side, 21 px ahead (radius 7 px,
 pods 12.8 px high, 1 250 HP each), firing their lasers 1.2 s and 2.0 s into a stage. It reveals no
 kind twice, fires no less after each transformation than before, and stays one object in every state.
 
@@ -193,7 +202,7 @@ kind twice, fires no less after each transformation than before, and stays one o
 - Given each state, then nothing of it hangs in the air (unit:
   `test_d227_the_boss_holds_together_in_every_state`).
 
-*Sources: D-221, D-224, D-229, D-227.*
+*Sources: D-221, D-224, D-229, D-227, D-254.*
 
 #### FB-CANOPY-SPIDER-14 — Points and drops · MUST
 
@@ -228,8 +237,8 @@ boss's centre, X right, Y up the screen (its head at -Y).
 | Gnats | 3 every 7 s, first 3 s into a stage | `launches` |
 | rage | flower, heat 6 | |
 | transformations | at 2 and 4 parts destroyed | `default_transforms` |
-| back region | x ±28, y 2..49, from 7 px, `shell` | form 1 |
-| spine region | x ±24, y -42..2, from 6.4 px, `shell` | form 2 |
+| back region | the abdomen's plan, y 8..47, x ±15.3 at its widest, `shell`; plating 6.7–21 px over a belly flat at 7 | form 1 |
+| spine region | the cephalothorax's plan, y -30..8, x ±15 at its widest, `shell`; plating 4.3–15 px over a shell flat at 4.6 | form 2 |
 | gatlings | (±13, 25), radius 7, pod 22.3, 1 000 HP, `red` | form 1 |
 | lances | (±9, -21), radius 7, pod 12.8, 1 250 HP | form 2 |
 | points | 14 000 (1 400 a part) | |

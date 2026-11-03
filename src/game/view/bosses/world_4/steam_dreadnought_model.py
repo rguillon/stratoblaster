@@ -22,22 +22,31 @@ from game.view.bosses.boss_model import build_boss_model
 from game.view.bosses.final_boss_greebles import mast
 from game.view.bosses.mini_boss_greebles import seam, vent
 from game.view.bosses.mini_boss_shapes import QUARTER, WHITE, H, offset
-from game.view.bosses.overlord_city import edge_lights, symmetric
+from game.view.bosses.overlord_city import symmetric
 from game.view.bosses.world_4.black_sands_kit import (
     FORGE,
     barrel_to,
     blot,
     bolts,
-    molten_seam,
     soot,
 )
 from game.view.bosses.world_4.living_forge import (
     SKIN,
     back_ribs,
     flesh_shell,
-    glands,
     magma_vein,
     reactor_sacs,
+)
+from game.view.bosses.world_4.steam_dreadnought_armour import (
+    CITADEL_Z,
+    SPINE_BOW,
+    citadel,
+    cowl,
+    deck_plate,
+    deck_seam,
+    draw_deck,
+    draw_flanks,
+    draw_spine,
 )
 from game.view.bosses.world_4.steam_dreadnought_parts import (
     DREAD_RED,
@@ -73,30 +82,31 @@ HULL = [
     [70.0, 13.0, -2.0, 7.5],
     [84.0, 5.0, 0.0, 7.0],
 ]
-# The deck (right half, bow to stern), wide at the sponsons, closed across the bow.
-DECK_OUTLINE = symmetric(
+# The core's deck (right half, bow to stern), closed across the bow: the bow, a strip down the
+# spine and the mid band between the armour decks (`steam_dreadnought_armour`: the front side
+# decks, x 20 out, z -2..54, and the stern flank decks, x 18 out, z -76..-17), which lie on the
+# hull beside it and complete the deck's shape at rest.
+CORE_DECK = symmetric(
     [
         [10, 78],
         [22, 56],
-        [36, 40],
-        [66, 32],
-        [70, 20],
-        [66, 8],
-        [40, 2],
-        [39, -30],
-        [32, -60],
-        [20, -76],
+        [20, 54],
+        [20, -2],
+        [40, -2],
+        [39.5, -17],
+        [18, -17],
+        [18, -76],
     ],
     84,
 )
+# Its lit edges: the bow, the mid band's sides and the stern (not the seams with the armour).
+CORE_DECK_RIM = [0, 1, 5, 8, 11, 15, 16]
 # The bridge's tiers (width, height, depth, z of their middle), bottom to top.
 BRIDGE = [
     [34.0, 8.0, 34.0, 4.0],
     [24.0, 8.0, 24.0, 6.0],
     [14.0, 8.0, 14.0, 7.0],
 ]
-# The raised citadel amidships, under the bridge and between the stacks (w, h, d, z).
-CITADEL = [36.0, 3.0, 74.0, -9.0]
 # The laser lens at the stem (a lathe profile along its axis).
 LENS = [
     [0.0, 0.0],
@@ -107,25 +117,11 @@ LENS = [
 
 
 def _deck_flesh(p: Any, s: float) -> None:
-    """FB-STEAM-DREADNOUGHT-02: its living flesh: veins, glands and ribs."""
-    magma_vein(
-        p,
-        [
-            [s * 34, DECK + 0.3, -60],
-            [s * 40, DECK + 0.3, -20],
-            [s * 36, DECK + 0.3, 30],
-        ],
-        1.4,
-    )
-    glands(
-        p,
-        [
-            [s * 46, DECK, 0],
-            [s * 30, DECK, 44],
-        ],
-        2.2,
-        N,
-    )
+    """FB-STEAM-DREADNOUGHT-02: its living flesh on the core's deck: the molten vein's middle run.
+
+    The vein's stern and forward runs, and the glands, are on the armour decks either side.
+    """
+    magma_vein(p, [[s * 40, DECK + 0.3, -17], [s * 39.5, DECK + 0.3, -3]], 1.4)
 
 
 def _draw_hull(p: Any) -> None:
@@ -143,12 +139,10 @@ def _draw_hull(p: Any) -> None:
             None,
             LoftOptions(True, None),
         )
-    p.flesh.bevel_slab(DECK_OUTLINE, [4.5, 7, DECK], [1, 0.8], SKIN.dark, None, SKIN.panel)
+    deck_plate(p, CORE_DECK, CORE_DECK_RIM)
     back_ribs(p, [-60, -48, 36, 48], RibSpec(30, DECK - 2, 4, 1))
     for s in SIDES:
         _deck_flesh(p, s)
-    every = list(range(len(DECK_OUTLINE)))
-    edge_lights(neon, DECK_OUTLINE, every, [5.8, 6.8], N)
     reactor_sacs(p, [[0, 3, -82]], 5, FORGE["molten"])
     reactor_sacs(
         p,
@@ -162,39 +156,19 @@ def _draw_hull(p: Any) -> None:
 
 
 def _draw_deck(p: Any) -> None:
-    """Draw the deck's dressing.
+    """Draw the core deck's dressing.
 
-    Molten seams between its plates, soot behind the stacks, cowls, bolts.
+    The citadel's bow half under the bridge, a molten seam between the deck plates, soot at the bow,
+    cowls, bolts and a hot vent (the stern soot, cowls and seam are on the armour,
+    `steam_dreadnought_armour`).
     """
     hull = p.hull
-    neon = p.neon
-    w = CITADEL[0]
-    h = CITADEL[1]
-    d = CITADEL[2]
-    middle = CITADEL[3]
-    hull.box([w, h, d], H.base, Placement([0, DECK, middle]), H.panel)
-    for row in [[DECK, 24, 34], [DECK + h, w / 2 - 2, -30]]:
-        y = row[0]
-        half = row[1]
-        at = row[2]
-        molten_seam(
-            neon,
-            [
-                [-half, at],
-                [-half * 0.4, at + 1.5],
-                [half * 0.15, at - 1],
-                [half, at + 0.8],
-            ],
-            y + 0.05,
-        )
+    citadel(hull, [SPINE_BOW, CITADEL_Z[1]])
+    deck_seam(p.neon, DECK, 19, 34)
     for x in [-44, 44]:
         seam(hull, [x, 36], [x, 4], [DECK, 0.6, 0.15], H.dark)
     for s in SIDES:
-        soot(hull, blot([s * 30, -32], 7, 1.6, s), DECK)
-        soot(hull, blot([s * 50, 20], 5, 0.8, 2 * s), DECK)
-        for z in [-4, -44]:
-            hull.cylinder(1.6, 3, 5, H.panel, Placement([s * 22, DECK, z]))
-            hull.box([3, 2.2, 2.4], H.dark, Placement([s * 22, DECK + 3, z + 0.6]))
+        cowl(hull, [s * 22, DECK, -4])
         bolts(
             hull,
             [
@@ -291,5 +265,13 @@ def build_steam_dreadnought(scene: Any) -> Any:
                 "rack": missile_rack,
             },
             "turrets": {"turret-left": broadside, "turret-right": broadside},
+            # D-254: the front side decks (`decks-right` at -X: config x > 0), the stern flank
+            # decks and the spine plating, drawn apart from the core.
+            "armour": {
+                "decks-right": {"whole": draw_deck(-1)},
+                "decks-left": {"whole": draw_deck(1)},
+                "flanks": {"whole": draw_flanks},
+                "spine": {"whole": draw_spine},
+            },
         },
     )

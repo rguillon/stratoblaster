@@ -37,7 +37,8 @@ flesh, with grafted metal on it. The hover skirt is a grafted metal belly with a
 A pulsing vein runs down its spine under bone rib arches. Rows of armour scutes run either side of
 the spine. The head has two bulging flesh eye sockets, each holding a gland under a neon slit, a
 brow ridge, and nostrils at the snout. Its two reactors sit in flesh sacs at the tail. Metal plates
-and pylons on its flanks carry the pontoons.
+and pylons on its flanks carry the pontoons. The head and the back's growth lie on the back plating
+(MB-MANGROVE-CROC-13), the ring dome on the hump behind it.
 
 **Acceptance criteria**
 - Given the model, then its body is drawn in the flesh layer with grafted hull pieces (skirt, scutes,
@@ -188,18 +189,23 @@ rage of World 3.
 #### MB-MANGROVE-CROC-13 — Transformation: back plating bursts off · MUST
 
 The Croc transforms once, when half of its original parts (2 of 3) are destroyed. Its back plating
-bursts off: the region of the body from 32 px ahead of its centre to 12 px behind it, 24 px either
-side of the centre line (one region across it), above 3.3 px high, so the keel stays. Under it a
-dark metal `shell` frame (a lattice) shows. The boss stays one object at rest and after its
-transformation.
+bursts off ([common](../common.md), BOSS-42): a ridged carapace drawn as a piece of its own over the
+flattened keel, from just under the keel's top (3.3 px) up to the hull's back (10.5 px at its
+widest, 6 px at the snout), from 8 px behind the centre (just ahead of the ring dome's hump) to the
+snout, 30 px ahead. It carries the head (the eye sockets and their neon slits, the brow ridge, the
+nostrils), the chines and spine along it and the back's growth (scutes, moss, a river stone, the
+vent); the ring dome stays on the keel's hump behind it. Its region (`back`, one across the centre
+line) is the carapace's own plan, the hull's taper from 17 px either side at its rear to 7.5 px at
+the snout; it bursts into plates cracked from that outline and leaves a dark metal `shell` frame (a
+lattice) on the keel. The boss stays one object at rest and after its transformation.
 
 **Acceptance criteria**
 - Given two original parts are destroyed, then the boss transforms once and its back region bursts
   off, leaving the shell frame (unit: `test_boss_kinds.py`, `test_boss_armour.py`).
-- Given the boss at rest and after its transformation, then nothing of it hangs in the air (unit:
-  `test_d227_the_boss_holds_together_in_every_state`).
+- Given its model, then it draws the back region's armour, and the boss holds together with and
+  without it (unit: `test_boss_52_the_boss_holds_together_in_every_state`).
 
-*Sources: D-221, D-224, D-227.*
+*Sources: D-221, D-224, D-227, D-254.*
 
 #### MB-MANGROVE-CROC-14 — Hidden weapons: two gatlings · MUST
 
@@ -245,7 +251,7 @@ boss's centre, X right, Y up the screen (its nose at -Y).
 | bullets | `green` 205, `orange` 195, `blue` 192, `purple` 200 px/s | radius 4 |
 | rage | vortex, heat 4.5 | `rage.vortex` |
 | transformation | once, at 2 parts destroyed | `boss_build.default_transforms` |
-| back region | x ±24, y -32..12, from 3.3 px up, `shell` | `armour_region("back", …)` |
+| back region | the carapace's plan: x ±17 at y 8, ±15 at y -10, ±11 at y -22, ±7.5 at y -30, `shell`, not mirrored; plating 3.0–10.5 px over the keel (top 3.3) | `armour_region("back", …)`; `mangrove_croc_model.py` `KEEL`, `PLATING` |
 | gatlings | (±9, -15), radius 7, pod 13.1, 500 HP, `orange`, first 1.2 / 2.0 s | `hidden_weapon` |
 | points | 7 500 (750 a part) | `points`, `boss_part_points` |
 | neon | [0.25, 1, 0.3] | `src/game/config/boss_look.py` `BOSS_LOOK.neon["mangrove-croc"]` |

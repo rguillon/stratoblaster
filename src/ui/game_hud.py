@@ -1,8 +1,9 @@
 # Copyright (c) 2026 Renaud Guillon
-"""The in-game HUD: one bar along the bottom of the playfield (UI-HUD-01).
+"""The in-game HUD: a column down the left side of the playfield (UI-HUD-01, D-251).
 
-The level's progress along its top edge, the ship's health, lives and bombs, the score and the
-weapon.
+The level's progress along its top, then the ship's health, lives and bombs, the score and the
+weapon, one under the other; an empty column of the same width down the right side keeps the
+playfield in the middle (it holds the touch buttons).
 """
 
 from org.transcrypt.stubs.browser import window
@@ -121,6 +122,7 @@ class GameHud:
         self.root = element(doc, "div", "game-hud")
         self.root.setAttribute("aria-hidden", "true")
         panel = element(doc, "div", "hud-panel")
+        right = element(doc, "div", "hud-panel hud-panel-right")
         progress = element(doc, "div", "hud-progress")
         self._progress_bar = element(doc, "div", "hud-progress-fill")
         progress.append(self._progress_bar)
@@ -142,7 +144,7 @@ class GameHud:
         score.append(self._score, self._high_score)
         self._weapon = element(doc, "div", "hud-weapon")
         panel.append(progress, health, score, self._weapon)
-        self.root.append(panel)
+        self.root.append(panel, right)
         self._bomb_button = (
             self._new_bomb_button(doc, setup.on_bomb) if setup.on_bomb is not None else None
         )

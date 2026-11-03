@@ -34,7 +34,7 @@ class DevModelStage:
 
     def __init__(self, scene: Any, game: Any, level: Any, look: Any, config: Any) -> None:
         self.scene = scene
-        self._screen = game.screen
+        self._screen = game.playfield
         self._camera_look = game.view.scenery.camera
         self.framing = frame_playfield(self._screen, self._camera_look)
         self.camera = stage_camera(

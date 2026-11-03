@@ -185,7 +185,7 @@ def create_app_audio(game: Any, options: PageOptions) -> "AppAudio":
     can_start = audio_options.can_start if audio_options is not None else None
     audio = GameAudio(
         game.view.audio,
-        GameAudioOptions(create_context, can_start, _clock_of(elapsed), game.screen.width),
+        GameAudioOptions(create_context, can_start, _clock_of(elapsed), game.playfield.width),
     )
     return AppAudio(audio, _frame_wrapper(audio, options, elapsed))
 

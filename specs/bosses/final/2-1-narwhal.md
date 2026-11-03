@@ -76,17 +76,32 @@ crystals on its fins and flukes, rime on the pods.
 
 #### FB-NARWHAL-06 — What its transformations shed · MUST
 
-- First transformation: the plating of its back behind the centre (region `back`: from 2.5 px ahead
-  of its centre to 41 px behind it, 60 px across, on the centre line) bursts off, baring a dark
-  metal lattice (`shell`), and its two lances rise from it.
-- Second transformation: the plating of its spine ahead of the centre (region `spine`: from 40 px
-  ahead of its centre to 2.5 px ahead of it, 48 px across) bursts off the same way, and its two
-  missile racks rise from it.
+Its plating is armour drawn as pieces of its own over the body ([common](../common.md), BOSS-42):
+under both regions the core's hull is only the body's lower half, flat on top at 5.3 px, and each
+region's armour is the cap over it, the hull's upper half from 5 px up (the snow patches and the
+two neon lines on it), with what stands on the back there.
 
-Each region cuts only the upper part of the body, so its keel stays and its tail never floats free
-once its back is gone: the boss stays one object.
+- First transformation: the plating of its back behind the hump (region `back`: from 8 px behind
+  its centre to 41 px behind it, the hull's own plan, 35 px across at the widest) bursts off, baring
+  a dark metal lattice (`shell`) on the flat deck, and its two lances rise from it. The cap carries
+  the bone ribs and the metal band round the body there, two deck plates, the gland, the rear spines
+  of ice, the blowhole and its valve, the escape hatch and the aft whip antenna.
+- Second transformation: the plating of its spine (region `spine`: from 40 px ahead of its centre to
+  8 px behind it, the hull's plan, 36 px across at the widest) bursts off the same way, and its two
+  missile racks rise from it. The cap carries the hump (the dorsal sail with its fins, feelers,
+  emitter, antenna, lamps and windows), the bone ribs and the metal band ahead of the hump, and the
+  frozen crust of the forward deck.
 
-*Sources: D-221, D-224, D-227, D-229.*
+The tail and the nose stay whole, the deck gun stands on a pedestal of the core, so the boss stays
+one object (BOSS-52).
+
+**Acceptance criteria**
+- Given its design, then its first transformation sheds the back region and both lances lie in it,
+  its second the spine region and both racks lie in it (unit test).
+- Given its model, then it draws both regions' armour, and it holds together at rest and after each
+  transformation (unit tests).
+
+*Sources: D-221, D-224, D-227, D-229, D-254.*
 
 ### Behaviour
 
@@ -201,8 +216,8 @@ do, its hidden weapons as hidden weapons do. It dies as every boss, and its deat
 | transformations | after 2 and 4 of 5 parts | `boss_build.default_transforms` |
 | t1_radius / t1_hp | 10 px / 880 | `hidden_weapon("lance-…")`, pod 21.1 px high |
 | t2_radius / t2_hp | 7 px / 1 100 | `hidden_weapon("rack-…")`, pod 26.1 px high |
-| region `back` | x −30…30, y −2.5…41, from 5.3 px up, `shell` | `armour_region("back", 1, …)` |
-| region `spine` | x −24…24, y −40…−2.5, from 7.8 px up, `shell` | `armour_region("spine", 2, …)` |
+| region `back` | the hull's plan from y 8 to 41 (x ±17.3 at y 8, ±13.7 at y 41), `shell`; cap 5–17 px | `armour_region("back", 1, …)`; `narwhal_armour.back_armour` |
+| region `spine` | the hull's plan from y −40 to 8 (x ±18 at y −10, ±14 at y −40), `shell`; cap 5–17.5 px, the hump to 27 | `armour_region("spine", 2, …)`; `narwhal_armour.spine_armour` |
 | full_hp / full_hp_with_weapons | 6 500 / 10 460 | core + parts |
 | points | 16 000 (1 600 a part) | `points` |
 

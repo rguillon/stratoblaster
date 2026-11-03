@@ -181,17 +181,22 @@ bullets a second at 208 px/s.
 #### MB-MAGMA-SALAMANDER-13 — Transformation: back plating bursts off · MUST
 
 The Salamander transforms once, when 2 of its 3 original parts are destroyed. Its back plating
-bursts off: one region across the centre line, 24 px either side, from 14 px ahead of the centre to
-28 px behind it, above 5.2 px high (so its belly stays). Under it a dark metal `shell` frame (a
-lattice) shows. The boss stays one object at rest and after its transformation.
+bursts off ([common](../common.md), BOSS-42): the three scale plates over its back (from 26 px
+behind the centre to 10 px ahead of it), drawn as shells of their own over the belly, which is
+flattened to 3.2 px under them, from a flat underside at 2.8 px up to their ridges (8, 11 and 12
+px), with the molten seams between them, the orange lights along their flanks, the vent, a gland and
+the spine's magma vein on them. The two plates over its neck stay on the body. Its region (`back`,
+not mirrored) is the three plates' footprint; it bursts into plates cracked from that outline and
+leaves a `shell` lattice frame on the flattened belly, where the ribs arch, the fins' sockets stand
+and the magma vent's stack rises. The sweepers lie folded under it.
 
 **Acceptance criteria**
 - Given two original parts are destroyed, then the boss transforms once and its back region bursts
   off, leaving the shell frame (unit: `test_boss_kinds.py`, `test_boss_armour.py`).
-- Given the boss at rest and after its transformation, then nothing of it hangs in the air (unit:
-  `test_d227_the_boss_holds_together_in_every_state`).
+- Given its model, then it draws the back region's armour, and it holds together with and without
+  it (unit: `test_boss_armour.py`, `test_boss_model.py`).
 
-*Sources: D-221, D-224, D-227.*
+*Sources: D-221, D-224, D-227, D-254.*
 
 #### MB-MAGMA-SALAMANDER-14 — Hidden weapons: two sweepers · MUST
 
@@ -249,7 +254,7 @@ All in `src/game/config/bosses/world_4/magma_salamander.py` (`MAGMA_SALAMANDER`)
 | bullets | `red` 215, `orange` 210, `magenta` 205 px/s | radius 4 |
 | rage | curtain, heat 11 (`orange`, `red`) | `rage.curtain` |
 | transformation | once, at 2 original parts destroyed | `src/game/sim/boss_build.py` `default_transforms` |
-| back region | x -24..24, y -14..28, above 5.2 px, `shell` | `armour_region("back", …)` |
+| back region | the three back plates' footprint, not mirrored: y -10..26, x ±14.5 at y -10..2, ±13.5 at y 4..17, ±7 at y 26, `shell`; shells 2.8–12 px over a 3.2 px belly | `armour_region("back", …)`; `src/game/view/bosses/world_4/magma_salamander_armour.py` |
 | sweepers | (±9, 13), radius 7, pod 12.4, 720 HP, first 1.2 / 2.0 s | `hidden_weapon`; volleys in `src/game/config/bosses/weapon_kinds.py` |
 | drops | parts 0.5, hidden weapons 0.3 | `part`, `hidden_weapon` defaults |
 | points | 8 000 (800 a part) | `points`, `boss_part_points` |

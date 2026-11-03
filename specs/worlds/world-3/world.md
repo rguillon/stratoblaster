@@ -351,7 +351,7 @@ phrygian, minor or harmonic minor keys, at `music_tempo`. World 3's boss track i
 | building groups | heavy industry (foundries, plants, 34–38 high), industrial (works, factories, tanks, 6–25), docks (containers, cranes, warehouses, 8–18), workshops (7–8), workers' flats (14–19), residences (homes of the future, 5–9), garden villages (small homes, 4–11) | WLD-3-07; `WORLD_3_GROUPS`, `WORLD_3_PROPS`, `src/game/config/world_3/props.py`; models in `TILE_GROUPS`, `src/game/config/tile_buildings.py`; heights in model units |
 | loners / hamlets | a lone building in 15 % of 150-unit cells; hamlets of 5–9 buildings every 700–1 400 | `WORLD_3_PROPS.loners`, `.hamlets` |
 | street_blocks (rows × columns) | streets 45–90 × 50–110; terraced streets 33–56 × 38–76; suburbs 40–70 × 50–95; garden suburbs 36–62 × 46–88; avenues 36–62 × 40–78; village streets 40–70 × 45–90; lanes 35–60 × 40–80 | WLD-3-13; `STREETS` … `LANES`, `src/game/config/world_3/scenery.py` |
-| streets_offscreen_x | 240 | WLD-3-13; `WORLD_3_ROADS.offscreenX` (D-139) |
+| streets_offscreen_x | 560 (240 before D-249, 640 until D-252, 300 until D-253) | WLD-3-13; `WORLD_3_ROADS.offscreenX` (D-139) |
 | background tone | 0.45 | WLD-3-11; `READABILITY.tones.world3`, `src/game/config/readability.py` |
 | water colour / flow | RGB 0.1, 0.13, 0.12; drift 0, 16 | WLD-3-10; `WATER`, `RIVER_FLOW`, `src/game/config/world_3/looks.py` (unused while World 3 has no water) |
 | enemy_bullet_speed_factor 3-1 → 3-5 | 1 / 1.05 / 1.1 / 1.2 / 1.25 | WLD-3-17; `WORLD_3_DIFFICULTY`, `src/game/config/world_3/difficulty.py` |

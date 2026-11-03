@@ -13,6 +13,11 @@ def test_eng17_device_pixel_ratio_is_capped() -> None:
     assert ENGINE_CONFIG.max_device_pixel_ratio >= 1
 
 
+def test_eng_110_the_render_scale_is_capped_at_full_hd_for_the_logical_screen() -> None:
+    """D-250: at most 1.5 pixels per logical pixel, 1920 x 1080 for 1280 x 720."""
+    assert ENGINE_CONFIG.max_render_scale == 1.5
+
+
 def test_eng52_the_e2e_build_renders_fewer_pixels_without_antialiasing() -> None:
     assert 0 < ENGINE_CONFIG.e2e.render_scale < 1
     assert ENGINE_CONFIG.e2e.antialias is False

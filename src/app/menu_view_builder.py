@@ -169,7 +169,6 @@ def _game_view(state: MenuState, ctx: MenuViewContext) -> GameScreenView:
     return GameScreenView(
         texts.gameLevel(label(state.chosen_level_id)),
         texts.fire,
-        texts.pauseButton,
         complete,
         paused,
         _selected_on_game(state, paused),

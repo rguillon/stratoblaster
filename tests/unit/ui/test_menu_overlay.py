@@ -105,7 +105,7 @@ def test_ui_input_10_the_back_button_sends_back() -> None:
 def test_game_ctrl_05_the_touch_fire_button_reports_press_and_release() -> None:
     touch = FakeTouch()
     overlay, _, root, _ = make_overlay(touch)
-    overlay.show(GameScreenView("Level 1", "FIRE", "II", None, None, 0))
+    overlay.show(GameScreenView("Level 1", "FIRE", None, None, 0))
     fire = root.children[0].querySelector(".game-fire")
     fire.fire("pointerdown")
     fire.fire("pointerup")
@@ -116,18 +116,11 @@ def test_game_ctrl_04_a_drag_is_passed_on_in_logical_pixels_with_y_up() -> None:
     touch = FakeTouch()
     overlay, _, root, _ = make_overlay(touch)
     root.rect.width = 200  # the overlay is drawn at twice its logical size
-    overlay.show(GameScreenView("Level 1", "FIRE", "II", None, None, 0))
+    overlay.show(GameScreenView("Level 1", "FIRE", None, None, 0))
     playfield = root.children[0]
     playfield.fire("pointerdown", FakeEvent(x=10, y=10))
     playfield.fire("pointermove", FakeEvent(x=30, y=0))
     assert touch.drags == [(10.0, 5.0)]
-
-
-def test_ui_pause_02_the_game_pause_button_sends_pause() -> None:
-    overlay, _, root, commands = make_overlay()
-    overlay.show(GameScreenView("Level 1", "FIRE", "II", None, None, 0))
-    root.children[0].querySelector(".game-pause").fire("click")
-    assert commands == ["pause"]
 
 
 def test_ui_set_03_a_slider_is_set_by_its_value_under_the_pointer() -> None:
@@ -216,7 +209,7 @@ def test_dev_menu_19_a_held_audio_button_reaches_the_hold_handler() -> None:
 def test_game_ctrl_04_without_touch_handlers_the_fire_button_and_drags_do_nothing() -> None:
     """Also GAME-CTRL-05: the fire button is there, nothing listens to it."""
     overlay, _, root, commands = make_overlay()
-    overlay.show(GameScreenView("Level 1", "FIRE", "II", None, None, 0))
+    overlay.show(GameScreenView("Level 1", "FIRE", None, None, 0))
     screen = root.children[0]
     screen.querySelector(".game-fire").fire("pointerdown")
     screen.fire("pointerdown", FakeEvent(x=10, y=10))

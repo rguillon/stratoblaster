@@ -31,7 +31,8 @@ three jointed walking legs each side folded under its rim.
 Its body is a wide flesh mantle under a domed, plated shell (slate, graphite and sinew shades), bone
 ribs over its back, its bone legs jointed and still, and eyes on stalks at its front over its mouth.
 Metal is grafted on: a riveted back plate, armour bands on its flanks, exhausts, running lights and a
-short mast off the centre line, towards its tail. Its bow gun sits in its mouth (the hold).
+short mast off the centre line, towards its tail (the back plate, the bands and the mast on its rear
+shell, the plating of MB-BREAKWATER-05). Its bow gun sits in its mouth (the hold).
 
 **Acceptance criteria**
 - Manual validation: a living crab under grafted armour; the mast off-centre.
@@ -64,13 +65,21 @@ glands glow. Its neon colour, set orange, shows bright yellow ([common](../commo
 #### MB-BREAKWATER-05 — Back plating · MUST
 
 The plating of its back, from its middle to its tail, is the armour it sheds at its transformation
-(a `shell` lattice frame beneath); the pair of missile racks lies folded under it.
+([common](../common.md), BOSS-42): its rear shell, a carapace drawn as a piece of its own over the
+flattened rear belly (the belly up to 8.9 px, the carapace from 7.7 px, its lowest point 8.2 px at
+its widest, up to 16 px), the bone ribs clamped over it, the orange vein along its spine, the glands
+on its flanks with veins running down them, and the grafts on it: the riveted back plate, the armour
+bands and the mast. Its region is a lozenge the shell's own shape (`back`, not mirrored); it bursts
+into plates cracked from that outline and leaves a `shell` lattice frame over the rear belly. The
+pair of missile racks lies folded under it.
 
 **Acceptance criteria**
 - Given its design, then its one transformation sheds the back region and both racks lie in it
   (unit test).
+- Given its model, then it draws the back region's armour, and it holds together with and without
+  it (unit tests).
 
-*Sources: D-221, D-224.*
+*Sources: D-221, D-224, D-254.*
 
 ### Behaviour
 
@@ -164,6 +173,6 @@ All in `src/game/config/bosses/mini_bosses.py` (`_BREAKWATER`, `BREAKWATER`) unl
 | core stage 3 | ring of 10 turning 9°, every 1.7 s | |
 | angry | curtain, heat 1 (28 bullets a second, 128 px/s), red and orange | |
 | transformation | 2 parts destroyed | default threshold |
-| shed region | back: x -28..28, y 4..43, above 6.2 px, `shell`, not mirrored | |
+| shed region | back: a lozenge the rear shell's shape, x ±23 at its widest, y 14..41, `shell`, not mirrored; plating 7.7–16 px | `armour_region` |
 | racks | (∓11, 33), radius 9, health 650, pod 17.7 px; first 1.2 s / 2.0 s | |
 | neon | orange (1, 0.5, 0.05), shown yellow | `BOSS_LOOK.neon` |

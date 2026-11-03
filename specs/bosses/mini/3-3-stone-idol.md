@@ -35,7 +35,8 @@ on each side. It is a 3 L boss (radius 1.5 L).
 
 It is a living head of grey-green flesh with the carved stone grown over it as armour (its helmet,
 brows, nose and ear spools), roots of sinew trailing from its chin with veins and glands on them, and
-its thrusters in flesh sacs at the back of its head. The brow ridge is broken on the left.
+its thrusters in flesh sacs at the back of its head. The brow ridge is broken on the left. The back
+of the head over the skull cut, with the helmet and brows, is the lid of its crown (MB-STONE-IDOL-11).
 
 **Acceptance criteria**
 - Given the model, then flesh shows between the stone pieces and roots trail from the chin
@@ -156,19 +157,26 @@ After the pause that follows each destroyed part, it fires a flower at heat 6.5,
 #### MB-STONE-IDOL-11 — Transformation: the back of its head flips up · MUST
 
 At 2 of its 3 original parts destroyed (whichever they are), the Idol transforms once by changing
-shape. The back of its head (one piece across the centre line, 54 px either side, from 4 px to 56 px
-behind the centre, above 7 px high) stays on and flips up and back like a lid, 75° about a hinge
-across its crown (50 px behind the centre, 7 px high): it strains, then swings open. Where it lay, a
-dark metal `ring` frame (spokes and a hoop) shows round the hidden weapons. No part the player can hit
-stands on the lid. The boss stays one object at rest and after its transformation.
+shape. The back of its head is the lid of its crown, drawn as a piece of its own ([common](../common.md),
+BOSS-45): the head is cut flat at 7 px (the skull cut) behind the brows, 4 px behind the centre, and
+the lid is the head's slice from just under the cut up to the face (12 px) over that back half, the
+Olmec helmet (up to 17 px), the brows, the forehead jewel and the crown's cracks, moss, vines and
+glands on it, a stone strap at its rear round the hinge's pin, which runs across the back of the
+crown on the head. It stays on and flips up and back like a lid, 75° about the hinge (50 px behind
+the centre, 7 px high): it strains, then swings open. Its region is the lid's own plan (the head's
+section at the skull cut behind the brows: 44.5 px either side at the brows, tapering to the back of
+the crown 47.5 px behind the centre). Where it lay, a dark metal `ring` frame (spokes and a hoop)
+shows on the skull cut round the hidden weapons; the core's last-stage spiral still leaves from
+where the jewel was set. No part the player can hit stands on the lid. The boss stays one object at
+rest and after its transformation.
 
 **Acceptance criteria**
 - Given 2 original parts are destroyed, then the lid swings 75° open and stays open (unit:
   `test_boss_kinds.py`, `test_region_motion.py`).
-- Given each state, then nothing of it hangs in the air (unit:
-  `test_d227_the_boss_holds_together_in_every_state`).
+- Given its model, then it draws the lid, and the boss holds together with the lid shut and open
+  (unit: `test_boss_52_the_boss_holds_together_in_every_state`).
 
-*Sources: D-230, D-224, D-227.*
+*Sources: D-230, D-224, D-227, D-254.*
 
 #### MB-STONE-IDOL-12 — Hidden weapons: a third eye and two mortars · MUST
 
@@ -212,7 +220,7 @@ boss's centre, X right, Y up the screen (its chin at -Y).
 | boulders | ring of 9, `purple` 115 px/s, radius 9, every 3 s, turn 20° | `BOULDER` |
 | rage | flower, heat 6.5 | |
 | transformation | once, at 2 parts destroyed | `default_transforms` |
-| crown lid | x ±54, y 4..56, from 7 px; swing `across` about (0, 50, 7), 0 → -75°; `ring` frame | `moving_region("crown", …)` |
+| crown lid | the head's section at the skull cut behind the brows: x ±44.5 at y 4–11.8, ±41.6 at y 29.1, ±34.3 at y 40, ±21.4 at y 45.6, to y 47.5 on the centre line; from 7 px; swing `across` about (0, 50, 7), 0 → -75°; `ring` frame; lid 6.7–19 px | `moving_region("crown", …)`; `stone_idol_lid.py` |
 | third eye | sweeper (0, 24), radius 13, pod 12, 760 HP, first 1.6 s | |
 | mortars | (±30, 30), radius 8, pod 13, 760 HP, `purple`, first 1.2 / 2.6 s | |
 | points | 7 500 (750 a part) | |

@@ -160,9 +160,6 @@ class MenuOverlay:
             if self._touch is not None:
                 self._touch.drag(dx / scale, -dy / scale)
 
-        def on_pause() -> None:
-            self._on_command("pause")
-
         def on_set(index: int, value: float) -> None:
             self._on_command(MenuSet(index, value))
 
@@ -171,7 +168,6 @@ class MenuOverlay:
             on_back,
             on_fire,
             on_drag,
-            on_pause,
             on_set,
             self._on_wheel,
             self._on_turn,

@@ -1,7 +1,9 @@
 # Copyright (c) 2026 Renaud Guillon
 """FB-SKY-TEMPLE-01 to FB-SKY-TEMPLE-06, 3-3: the Sky Temple.
 
-Logical pixels, nose +Z (its grand stair, down the screen), Y up (towards the camera).
+Logical pixels, nose +Z (its grand stair, down the screen), Y up (towards the camera). Its corner
+wedges and its back terrace are the armour it moves and sheds (FB-SKY-TEMPLE-13, FB-SKY-TEMPLE-14,
+D-254): drawn apart (`sky_temple_armour`), the core's tiers notched where they lie.
 """
 
 from game.config.bosses.world_3.sky_temple import (
@@ -22,6 +24,15 @@ from game.view.bosses.mini_boss_shapes import (
     socket,
 )
 from game.view.bosses.world_3.jungle_flesh import F, table
+from game.view.bosses.world_3.sky_temple_armour import (
+    BRAZIER_OUT,
+    TRIM,
+    TRIM_SCALE,
+    back_terrace,
+    brazier,
+    corner_wedge,
+    tier_outline,
+)
 from game.view.bosses.world_3.sky_temple_details import temple_jungle, temple_machinery
 from game.view.bosses.world_3.sky_temple_flesh import temple_body
 from game.view.bosses.world_3.sky_temple_parts import (
@@ -54,6 +65,8 @@ ROOTS = table([[0, -34], [57, -20], [99, -4], [104.6, 0]])
 STAIR = record({"steps": 9, "width": 20, "front": 88, "depth": 5.8, "bottom": -4})
 # The sanctum on the summit (the core): its centre along Z, its size, its door's face.
 SANCTUM = record({"z": -8, "size": [30, 10, 24], "door": 4})
+# A part's socket on the beast's back: it stands from `SOCKET_FOOT` up to the plinth's foot.
+SOCKET_FOOT = 7
 
 
 def square(half: float) -> list[list[float]]:
@@ -62,7 +75,11 @@ def square(half: float) -> list[list[float]]:
 
 
 def draw_pyramid(p: EnemyParts) -> None:
-    """Draw the stepped pyramid: its tiers, each trimmed with neon, and the rock under it."""
+    """Draw the stepped pyramid: its tiers, each trimmed with neon, and the rock under it.
+
+    The stone tiers are notched where the corner wedges and the back terrace lie (`tier_outline`):
+    that stone is armour, drawn apart.
+    """
     hull = p.hull
     neon = p.neon
     # FB-SKY-TEMPLE-02: the lowest tier is the living beast itself; the stone tiers grew on its
@@ -71,19 +88,15 @@ def draw_pyramid(p: EnemyParts) -> None:
     for i in range(len(TIERS.halves)):
         half = TIERS.halves[i]
         y = i * TIERS.height
+        outline = square(half) if i == 0 else tier_outline(half)
         if i > 0:
-            hull.box(
-                [half * 2, TIERS.height, half * 2],
-                STONE.base,
-                Placement([0, y, 0]),
-                STONE.light,
-            )
+            hull.slab(outline, [y, y + TIERS.height], STONE.base, None, STONE.light)
         trim = TEMPLE_CYAN if i == 0 else TEMPLE_GOLD
         neon_band(
             neon,
-            square(half),
-            [y + TIERS.height - 1.4, y + TIERS.height - 0.6],
-            [1.006, 1.006],
+            outline,
+            [y + TIERS.height - TRIM[0], y + TIERS.height - TRIM[1]],
+            TRIM_SCALE,
             trim,
         )
     p.flesh.lathe(ROOTS, 4, F.sinew, Placement(None, SQUARE), False)
@@ -193,22 +206,16 @@ def draw_cannons(p: EnemyParts) -> None:
 
 
 def draw_braziers(p: EnemyParts) -> None:
-    """Braziers on the summit's corners, flaring as the next attack charges."""
-    hull = p.hull
-    charge = p.charge
-    at = TIERS.halves[len(TIERS.halves) - 1] or 34
+    """Braziers on the summit's front corners (the back ones stand on the terrace, drawn apart)."""
     for x in SIDES:
-        for z in SIDES:
-            spot: Vec3 = [x * (at - 4), SUMMIT, z * (at - 4)]
-            hull.cylinder(2.6, 2.4, 6, STONE.dark, Placement(spot), 3)
-            charge.cylinder(2, 3, 6, WHITE, Placement([spot[0], SUMMIT + 2.4, spot[2]]), 0.3)
+        brazier(p, [x * BRAZIER_OUT, SUMMIT, BRAZIER_OUT])
 
 
 def sky_temple_core(p: EnemyParts) -> None:
     """Add the core of the Sky Temple (FB-SKY-TEMPLE-03).
 
     Its pyramid, stair, sanctum, braziers and machinery; its parts are drawn apart
-    (FB-SKY-TEMPLE-04).
+    (FB-SKY-TEMPLE-04), as are its corner wedges and back terrace (its armour).
     """
     draw_pyramid(p)
     draw_stair(p)
@@ -218,7 +225,7 @@ def sky_temple_core(p: EnemyParts) -> None:
     temple_jungle(p)
     for key in OBELISKS.keys():
         xy = OBELISKS[key]
-        socket(p.hull, boss_point(xy[0], xy[1], TIERS.height), 7, 0.6)
+        socket(p.hull, boss_point(xy[0], xy[1], SOCKET_FOOT), 7, TIERS.height - SOCKET_FOOT + 0.6)
     beacon_at = TEMPLE_PARTS.beacon
     socket(p.hull, boss_point(beacon_at[0], beacon_at[1], SUMMIT), 7, 0.6)
 
@@ -228,15 +235,28 @@ def build_sky_temple(scene: Any) -> Any:
 
     A flying stepped pyramid with four corner obelisks, gold and cyan neon: a sanctum on its summit,
     a beacon before it, a grand stair, the jungle's moss and vines over its stones, and the dark
-    metal of a fortress under them (thrusters, buttresses).
+    metal of a fortress under them (thrusters, buttresses). Its corner wedges slide out and its back
+    terrace bursts off as it transforms.
     """
     parts: dict[str, Any] = {}
     for key in OBELISKS.keys():
         parts[key] = obelisk
     parts["beacon"] = beacon
+    # The wedges: config right (+X) is model -X, config back (+Y) is model -Z. Moss patches on two
+    # of them (the jungle's asymmetry).
     return build_boss_model(
         SKY_TEMPLE,
         scene,
         TEMPLE_GOLD,
-        {"core": sky_temple_core, "parts": parts},
+        {
+            "core": sky_temple_core,
+            "parts": parts,
+            "armour": {
+                "back-corners-right": {"whole": corner_wedge(-1, -1, [-49, 18, -30, 3.5])},
+                "back-corners-left": {"whole": corner_wedge(1, -1, None)},
+                "back": {"whole": back_terrace},
+                "front-corners-right": {"whole": corner_wedge(-1, 1, None)},
+                "front-corners-left": {"whole": corner_wedge(1, 1, [48, 18, 30, 3])},
+            },
+        },
     )

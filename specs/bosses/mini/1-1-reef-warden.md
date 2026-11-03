@@ -28,7 +28,8 @@ tentacles trailing behind.
 
 Its body is a teal flesh mantle with a second, darker fold on it, a dark shelled back (slate and
 membrane shell, sinew belly) along its spine, bone ribs across its back, coral barbs on its back and
-before its cannons, gill glands either side and two eyes over its snout. Metal is grafted on: a
+before its cannons, gill glands either side (on its back plating, MB-REEF-WARDEN-05) and two eyes
+over its snout. Metal is grafted on: a
 riveted nose plate, a back plate, a plate on each flank, sockets for the cannons, a short mast off
 the centre line, and a prow cannon on its snout. Two reactors sit in flesh sacs at its tail, with a
 third reactor between them.
@@ -65,13 +66,19 @@ screen's left) and starboard; set red and green, they show yellow and green.
 #### MB-REEF-WARDEN-05 — Back plating · MUST
 
 Its back plating, from just behind its snout to its middle, is the armour it sheds at its
-transformation (a `shell` lattice frame beneath); the pair of gatlings lies folded under it.
+transformation ([common](../common.md), BOSS-42): a dark fold of plating drawn as a piece of its own,
+a horseshoe round its shelled back lying on the mantle's back (from 2.7 px, sunk into the mantle, up
+to 4.5 px), a gill gland on each of its arms and a vein running out across each. Its region is that
+horseshoe (`back`, not mirrored); it bursts into plates cracked from that outline and leaves a
+`shell` lattice frame on the mantle. The pair of gatlings lies folded under its arms.
 
 **Acceptance criteria**
 - Given its design, then its one transformation sheds the back region and both gatlings lie in it
   (unit test).
+- Given its model, then it draws the back region's armour, and it holds together with and without
+  it (unit tests).
 
-*Sources: D-221, D-224.*
+*Sources: D-221, D-224, D-254.*
 
 ### Behaviour
 
@@ -161,6 +168,6 @@ All in `src/game/config/bosses/mini_bosses.py` (`_REEF_WARDEN`, `REEF_WARDEN`) u
 | core stage 2 | ring of 8 turning 11°, every 1.8 s | |
 | angry | spirals, heat 0 (20 bullets a second, 120 px/s), orange and red | `rage` |
 | transformation | 1 part destroyed | default threshold |
-| shed region | back: x -32..32, y -40..6, above 2.2 px, `shell`, not mirrored | `armour_region` |
+| shed region | back: a horseshoe round the shelled back, y -33..-2, its arms x 15..23 at the rear narrowing towards the snout, joined by a bar y -33..-27 at the centre line; `shell`, not mirrored; plating 2.7–4.5 px | `armour_region` |
 | gatlings | (∓13, -25), radius 11, health 500, pod 8 px; red bursts, first 1.2 s / 2.0 s | `hidden_weapon` |
 | neon | cyan (0.1, 0.9, 1), shown green | `src/game/config/boss_look.py` `BOSS_LOOK.neon` |

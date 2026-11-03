@@ -28,26 +28,17 @@ type Vec3 = list[float]
 # __pragma__ ("noskip")
 
 
-# The casting sheds along the deck's sides (right side): centre, width, length, height.
-SHEDS = [
-    [38.0, -62.0, 14.0, 22.0, 9.0],
-    [42.0, 0.0, 10.0, 20.0, 7.0],
-]
+# The casting shed along the deck's sides aft (right side): centre, width, length, height (the
+# forward one stands on the aft wing plate, `foundry_ark_armour`).
+SHEDS = [[38.0, -62.0, 14.0, 22.0, 9.0]]
 # The ore wagons on the rails between the furnace and the battery (centre along Z).
 WAGONS = [42.0, 56.0]
-# The deck plates' molten seams (right side): glowing cracks where the plates meet.
+# The deck plates' molten seams (right side): glowing cracks where the plates meet (the others are
+# on the armour plates).
 SEAMS = [
-    [
-        [22.0, 30.0],
-        [46.0, 52.0],
-    ],
     [
         [20.0, -36.0],
         [26.0, -84.0],
-    ],
-    [
-        [50.0, -30.0],
-        [56.0, 6.0],
     ],
 ]
 # The pipe runs from the furnace to the chimney row (right side): from, bend, to.
@@ -58,8 +49,12 @@ PIPE = [
 ]
 
 
-def _shed(p: Any, s: float, spec: list[float]) -> None:
-    """Add a casting shed: a long block with a sawtooth roof, a row of furnace-lit windows."""
+def shed(p: Any, s: float, spec: list[float], y: float) -> None:
+    """Add a casting shed standing at height `y` on side `s`.
+
+    `spec` is its centre, width, length and height: a long block with a sawtooth roof, a row of
+    furnace-lit windows.
+    """
     hull = p.hull
     neon = p.neon
     flesh = p.flesh
@@ -69,14 +64,10 @@ def _shed(p: Any, s: float, spec: list[float]) -> None:
     d = spec[3]
     h = spec[4]
     # FB-FOUNDRY-ARK-02: a swollen flesh growth, metal ribs across its top.
-    flesh.box([w, h, d], SKIN.base, Placement([s * x, DECK_TOP, z]), SKIN.panel)
+    flesh.box([w, h, d], SKIN.base, Placement([s * x, y, z]), SKIN.panel)
     for dz in [-d / 3, 0, d / 3]:
-        hull.box([w * 0.9, 2, 2], H.panel, Placement([s * x, DECK_TOP + h, z + dz], 0, 0, s * 0.35))
-    neon.box(
-        [0.4, 1.2, d * 0.8],
-        ARK_ORANGE,
-        Placement([s * (x - w / 2 - 0.2), DECK_TOP + h / 2, z]),
-    )
+        hull.box([w * 0.9, 2, 2], H.panel, Placement([s * x, y + h, z + dz], 0, 0, s * 0.35))
+    neon.box([0.4, 1.2, d * 0.8], ARK_ORANGE, Placement([s * (x - w / 2 - 0.2), y + h / 2, z]))
 
 
 def _wagon(p: Any, z: float) -> None:
@@ -94,7 +85,7 @@ def draw_yard(p: Any) -> None:
     neon = p.neon
     for s in SIDES:
         for spec in SHEDS:
-            _shed(p, s, spec)
+            shed(p, s, spec, DECK_TOP)
         for pair in SEAMS:
             a = pair[0]
             b = pair[1]

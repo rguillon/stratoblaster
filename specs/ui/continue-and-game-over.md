@@ -21,7 +21,7 @@ middle of the playfield, over the still running level, with:
 - `New high score!` when the score beat the saved high score (UI-OVER-02);
 - the hint "Press Space / Enter or tap to go on".
 
-The HUD stays visible; the touch fire and pause buttons are gone.
+The HUD stays visible; the touch fire button is gone.
 
 **Acceptance criteria**
 - Given the panel is shown after level `1-2`, then it shows `1-2`, the destroyed / spawned counts and the score.

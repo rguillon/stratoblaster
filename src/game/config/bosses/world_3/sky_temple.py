@@ -161,23 +161,30 @@ SKY_TEMPLE = with_weapons(
         hidden_weapon("cannon-right", "cannon", [66, -52], 10, 2400, 2, "orange", 2.4, 24),
     ],
     concat(
+        # FB-SKY-TEMPLE-13: the back corner wedges, the corners of the first two tiers on the
+        # beast's back from 34 px out and 20 px behind the centre; their region the corner of the
+        # beast's plan (mirrored). A battery rides each.
         moving_region(
             "back-corners",
             1,
-            [[34, 20], [88, 20], [88, 72], [34, 72]],
+            [[34, 20], [68, 20], [66, 45], [55, 58], [48, 66], [34, 68]],
             slide([[0, 0, 0], [15, 15, 0]]),
             "wing",
             [-8, 1000],
         ),
         [
+            # FB-SKY-TEMPLE-13: the back terrace, the tiers' steps behind the sanctum between the
+            # back wedges; the mortar rises through it.
             armour_region(
-                "back", 1, [[-32, 2], [32, 2], [32, 64], [-32, 64]], "shell", [1.2, 1000], False
+                "back", 1, [[-33, 20], [33, 20], [33, 54], [-33, 54]], "shell", None, False
             ),
         ],
+        # FB-SKY-TEMPLE-14: the front corner wedges, the same ahead of the centre; a cannon rides
+        # each.
         moving_region(
             "front-corners",
             2,
-            [[34, -72], [88, -72], [88, -20], [34, -20]],
+            [[34, -68], [48, -66], [55, -58], [66, -45], [68, -20], [34, -20]],
             slide([[0, 0, 0], [14, -14, 0]]),
             "wing",
             [-8, 1000],

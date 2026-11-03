@@ -3,7 +3,8 @@
 
 Model space: logical pixels, nose +Z (down the screen), Y up towards the camera; +X is the screen's
 left. A war fortress: an armoured hull carrying a stepped keep over the core, a prow gun deck, side
-bastions out to the magma cannons, missile batteries and smokestacks aft. FB-CALDERA-THRONE-02: a
+bastions out to the magma cannons, missile batteries and smokestacks aft; the flank plates and the
+keep's upper works are its armour (D-254, `caldera_throne_armour`). FB-CALDERA-THRONE-02: a
 living tyrant of the caldera, its vast flesh back ribbed in bone and veined with magma, a keep of
 flesh and armour rising over its heart, crowned in metal and gold.
 """
@@ -20,6 +21,7 @@ from game.view.bosses.final_boss_greebles import grille, hazard, plate, rect
 from game.view.bosses.final_boss_mechanism import glow_line
 from game.view.bosses.mini_boss_shapes import QUARTER, WHITE, H
 from game.view.bosses.overlord_city import edge_lights, symmetric
+from game.view.bosses.world_4.caldera_throne_armour import CALDERA_THRONE_ARMOUR
 from game.view.bosses.world_4.caldera_throne_keep import draw_keep
 from game.view.bosses.world_4.caldera_throne_parts import (
     BASTION_TOP,
@@ -91,12 +93,9 @@ LENS = [
     [2.6, 3.0],
     [0.0, 4.0],
 ]
-# The molten seams across the deck (right half, `[x, z]` from and to).
+# The molten seams across the deck (right half, `[x, z]` from and to; the flank plates carry
+# their own, `caldera_throne_armour`).
 SEAMS = [
-    [
-        [40.0, 30.0],
-        [56.0, 6.0],
-    ],
     [
         [42.0, -24.0],
         [58.0, -46.0],
@@ -112,7 +111,6 @@ SEAMS = [
 ]
 # Armour plates on the deck (right half): centre, size, turn.
 PLATES = [
-    [48.0, 14.0, 12.0, 20.0, -0.25],
     [50.0, -30.0, 12.0, 22.0, 0.2],
     [20.0, -82.0, 14.0, 10.0, 0.0],
 ]
@@ -147,24 +145,17 @@ def _draw_hull(p: Any) -> None:
     for s in SIDES:
         bastion = BASTION if s > 0 else _flipped(BASTION)
         p.flesh.bevel_slab(bastion, [-5, -1, BASTION_TOP], [1, 2], SKIN.panel, None, SKIN.dark)
+        # The magma vein's stern run; its forward run and the flank's gland are on the flank plate.
         magma_vein(
             p,
             [
                 [s * 22, DECK_TOP + 0.3, -46],
                 [s * 42, DECK_TOP + 0.3, -20],
-                [s * 40, DECK_TOP + 0.3, 30],
+                [s * 41.5, DECK_TOP + 0.3, -16],
             ],
             1.6,
         )
-        glands(
-            p,
-            [
-                [s * 50, DECK_TOP - 0.5, -6],
-                [s * 36, DECK_TOP, 58],
-            ],
-            2.6,
-            CRIMSON,
-        )
+        glands(p, [[s * 36, DECK_TOP, 58]], 2.6, CRIMSON)
         edge_lights(neon, bastion, [0, 1, 2, 3, 4], [-1.4, -0.4], GOLD)
         edge_lights(neon, bastion, [1, 2, 3], [-4.2, -3.6], CRIMSON)
 
@@ -195,7 +186,6 @@ def _draw_deck(p: Any) -> None:
                 0.8,
             )
         grille(hull, [s * 30, -40], [10, 12], [4, DECK_TOP + 0.05])
-        grille(hull, [s * 44, 40], [8, 10], [3, DECK_TOP + 0.05], s * 0.4)
     hazard(hull, [0, 46], [24, 4], 6, DECK_TOP + 0.05)
     hazard(hull, [0, -80], [30, 4], 7, DECK_TOP + 0.05)
 
@@ -281,5 +271,6 @@ def build_caldera_throne(scene: Any) -> Any:
                 "shield-right": shield_generator,
             },
             "turrets": {"magma-left": magma_cannon, "magma-right": magma_cannon},
+            "armour": CALDERA_THRONE_ARMOUR,
         },
     )

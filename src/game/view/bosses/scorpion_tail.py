@@ -17,9 +17,9 @@ from game.view.bosses.scorpion_look import YELLOW
 from game.view.bosses.world_1_organic_kit import F
 from game.view.enemies.enemy_mesh import build_enemy_model, collect_parts
 from render.babylon import new_transform_node
+from render.geometry.mesh_triangles import Vertex, triangles
 from render.geometry.organic import SegmentedBody, carapace
 from render.geometry.outline import hypot2
-from render.geometry.shatter import Vertex, triangles
 from render.geometry.solids import Placement
 
 # isort: split

@@ -131,7 +131,7 @@ def test_aud_engine_03_a_pressed_gamepad_button_is_a_gesture() -> None:
 def test_aud_engine_03_the_audio_is_made_from_the_game_and_unlocked_by_a_gamepad_button() -> None:
     game = MagicMock()
     game.view.audio = MagicMock(name="bindings")
-    game.screen.width = 320
+    game.playfield.width = 320
     created: list = []
 
     def create() -> object:
@@ -153,7 +153,7 @@ def test_aud_engine_03_the_audio_is_made_from_the_game_and_unlocked_by_a_gamepad
 
 def test_aud_engine_05_the_frame_wrapper_runs_the_frame_then_schedules_the_music() -> None:
     game = MagicMock()
-    game.screen.width = 320
+    game.playfield.width = 320
     app_audio = create_app_audio(game, page())
     simulate = MagicMock()
     inner = Ticker(simulate, MagicMock())
@@ -165,7 +165,7 @@ def test_aud_engine_05_the_frame_wrapper_runs_the_frame_then_schedules_the_music
 def test_aud_engine_07_the_audio_clock_counts_the_game_s_frames() -> None:
     """The sound effect limits count in game time: a frame of a negative `dt` does not count."""
     game = MagicMock()
-    game.screen.width = 320
+    game.playfield.width = 320
     app_audio = create_app_audio(game, page())
     clock = app_audio.audio._options.clock
     assert clock() == 0.0

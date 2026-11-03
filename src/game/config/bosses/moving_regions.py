@@ -5,10 +5,10 @@ Their piece moves into a new pose as the boss transforms (a wing swings forward,
 slides apart), instead of bursting off. Design:
 docs/superpowers/specs/2026-11-01-boss-weapon-variety-and-shape-shifts-design.md, Part B.
 
-A region's piece is cut out of the core's drawing as any armour region's is; its `motion` takes it
-from its rest pose to its end pose. The drawn geometry is the pose at angle 0 or offset 0: a piece
-may rest folded (a rest angle other than 0) and unfold to the model as drawn, or rest as drawn and
-move away from it.
+A region's piece is the armour its boss's model draws for it (`drawing.armour`, D-254); its
+`motion` takes it from its rest pose to its end pose. The drawn geometry is the pose at angle 0 or
+offset 0: a piece may rest folded (a rest angle other than 0) and unfold to the model as drawn, or
+rest as drawn and move away from it.
 
 Px from the boss's centre, X right, Y up the screen (its nose points down, at -Y), Z height above
 the playfield; angles in degrees, turning by the right-hand rule about the axis: `up` (+Z, counter-
@@ -120,7 +120,7 @@ def moving_region(
 ) -> list[Any]:
     """Return the pieces of a moving region (see the module).
 
-    The part of the body inside `outline`, between `heights` (all of it when left out), moving by
+    The armour drawn in `outline`, between `heights` (all of it when left out), moving by
     `motion` at transformation `form`, and with `mirror` its mirror image moving the mirror way (two
     regions, `region_id` + `-right` and `-left`). `frame` (`wing`, `shell` or `ring`): what shows
     where a piece was drawn once it has moved; nothing when left out.
@@ -160,7 +160,7 @@ def drawn_spot(region: Any, point: list[float]) -> list[float]:
     return move_point(m, inverse_value(m, motion_value(m, 1)), point)
 
 
-def _inside(outline: list[Any], x: float, y: float) -> bool:
+def inside_outline(outline: list[Any], x: float, y: float) -> bool:
     """Whether `(x, y)` is inside `outline` (even-odd)."""
     result = False
     n = len(outline)
@@ -191,6 +191,6 @@ def ridden_region(design: Any, part: Any) -> Any:
             continue
         # On its piece: over it, and no lower than where it was cut (not beneath a lifted one).
         spot = drawn_spot(region, [part.x, part.y, height])
-        if _inside(region.outlines[0], spot[0], spot[1]) and spot[2] >= region.heights[0]:
+        if inside_outline(region.outlines[0], spot[0], spot[1]) and spot[2] >= region.heights[0]:
             return region
     return None

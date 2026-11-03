@@ -65,7 +65,6 @@ MENU_TEXTS = record({
     "settingsHint": "▲ ▼ to pick · ◀ ▶ or tap to set",
     "musicVolume": "Music",
     "sfxVolume": "Sound effects",
-    "pauseButton": "❚❚",
     "paused": "Paused",
     "resume": "Resume",
     "mainMenu": "Main menu",

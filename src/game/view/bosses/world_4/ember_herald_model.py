@@ -3,7 +3,8 @@
 
 Model space: logical pixels, nose +Z (down the screen), Y up towards the camera; +X is the screen's
 left. MB-EMBER-HERALD-02: a living fire-wasp, its long flesh body ribbed in bone, scorched membrane
-wings veined molten, bone spines and a metal spire and halo grafted on.
+wings veined molten, bone spines and a metal spire and halo grafted on. The tail half of its body is
+under the back plating it sheds (MB-EMBER-HERALD-11, `ember_herald_armour`).
 """
 
 import math
@@ -16,9 +17,9 @@ from game.config.bosses.world_4.ember_herald import (
 )
 from game.view.bosses.boss_limbs import boss_point
 from game.view.bosses.boss_model import build_boss_model
-from game.view.bosses.mini_boss_greebles import seam, vent
 from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H
 from game.view.bosses.overlord_city import edge_lights, symmetric
+from game.view.bosses.world_4.ember_herald_armour import draw_plating
 from game.view.bosses.world_4.ember_herald_parts import (
     GOLD,
     HEAT,
@@ -48,11 +49,16 @@ type Vec3 = list[float]
 # __pragma__ ("noskip")
 
 
-# The fuselage (loft stations, tail to nose): a long, hard-edged body closing to a needle nose.
+# The fuselage (loft stations, tail to nose): a long, hard-edged body closing to a needle nose, its
+# tail half flattened to a deck `DECK` high under its back plating (the dome it sheds,
+# MB-EMBER-HERALD-11), rising to its full height again ahead of it.
+DECK = 2.6
 FUSELAGE = [
-    [-54.0, 6.0, 0.0, 6.0],
-    [-40.0, 9.0, 0.0, 9.5],
-    [-14.0, 11.0, 0.0, 11.0],
+    [-54.0, 6.0, 0.0, DECK],
+    [-40.0, 9.0, 0.0, DECK],
+    [-14.0, 11.0, 0.0, DECK],
+    [-8.0, 10.8, 0.0, DECK],
+    [-5.0, 10.5, 0.0, 10.8],
     [14.0, 9.5, 0.0, 10.0],
     [36.0, 6.5, 0.5, 7.5],
     [50.0, 3.5, 1.5, 4.5],
@@ -60,8 +66,10 @@ FUSELAGE = [
 ]
 # The fuselage's back (sides of its section), sooted behind the canopy.
 BACK = [2, 3, 4, 5]
-# The bands of the fuselage's back that are sooted (the first ones, behind the canopy).
-SOOT_BANDS = 2
+# The bands of the fuselage that are sooted: the deck under the plating, behind the canopy.
+SOOT_BANDS = 4
+# The bands of the fuselage the canopy is painted on.
+CANOPY_BANDS = [5, 6]
 
 # The spiky wings seen from above (right half, front to tail): a forward spike off the wing root, a
 # long spike at the tip, a sawtooth trailing edge and a spike at the tail.
@@ -145,13 +153,13 @@ def _along_nose(x: float, y: float, z: float, dz: float) -> Any:
 
 
 def _draw_fuselage(p: Any) -> None:
-    """Draw the fuselage, soot-black behind its canopy, with reactors aft.
+    """Draw the fuselage, its tail flattened to a deck under its plating (`draw_plating`).
 
-    Gold strips run down its flanks.
+    Soot-black on the deck behind its canopy, reactors aft; gold strips run down its flanks, and
+    its ribs arch over the deck under the dome.
     """
-    hull = p.hull
     neon = p.neon
-    canopy: Any = canopy_paint([3, 4], H.dark)
+    canopy: Any = canopy_paint(CANOPY_BANDS, H.dark)
 
     def paint(side: int, band: int) -> Any:
         # Soot over its back behind the canopy, from the reactors' heat.
@@ -166,9 +174,8 @@ def _draw_fuselage(p: Any) -> None:
     back_ribs(p, [-26, -18, 18], RibSpec(8.5, 2, 7, 0.7))
     glands(p, [[0, 9.6, 24]], 1.4, HEAT["molten"])
     for s in SIDES:
-        neon.box([0.5, 0.5, 34], GOLD, Placement([s * 9.4, 4, 4], s * 0.07))
+        neon.box([0.5, 0.5, 26], GOLD, Placement([s * 9.4, 4, 8], s * 0.07))
         neon.box([0.5, 0.4, 16], HEAT["molten"], Placement([s * 4.6, 7.4, 38], -s * 0.1))
-        vent(hull, [s * 5.5, 9, -32], [4, 8], 3, 0)
     reactor_sacs(
         p,
         [
@@ -187,7 +194,6 @@ def _draw_fuselage(p: Any) -> None:
         2.2,
         GOLD,
     )
-    seam(hull, [0, -50], [0, -16], [11.05, 0.8, 0.4], H.dark)
 
 
 def _draw_wings(p: Any) -> None:
@@ -234,14 +240,6 @@ def _draw_wings(p: Any) -> None:
         neon.box([0.5, 0.5, 10], GOLD, Placement([s * 15, 10.2, -36], 0, 0, s * 0.45))
 
 
-def _draw_spikes(p: Any) -> None:
-    """Draw the dorsal spikes down its back, leaning aft."""
-    for i, pair in enumerate([[-22.0, 3.0], [-30.0, 3.6], [-38.0, 3.0]]):
-        z = pair[0]
-        size = pair[1]
-        spike(p, [0, 9.8 - i * 0.6, z], [-0.7, 0, 0], [size * 0.5, size * 2.6])
-
-
 def _draw_nose_guns(p: Any) -> None:
     """Draw the twin ember cannons under the nose, their tips at the design's muzzles."""
     hull = p.hull
@@ -271,10 +269,12 @@ def _draw_spire(p: Any) -> None:
 
 
 def _draw_core(p: Any) -> None:
-    """Draw the core body: fuselage, wings, spikes, nose guns, spire and the embers round it."""
+    """Draw the core body: fuselage, wings, nose guns, spire and the embers on it.
+
+    The dorsal spikes are on its back plating (`draw_plating`).
+    """
     _draw_fuselage(p)
     _draw_wings(p)
-    _draw_spikes(p)
     _draw_nose_guns(p)
     _draw_spire(p)
     embers(p.neon)
@@ -341,5 +341,6 @@ def build_ember_herald(scene: Any) -> Any:
             "core": _draw_core,
             "ring": _draw_ring,
             "parts": lances,
+            "armour": {"back": {"whole": draw_plating}},
         },
     )

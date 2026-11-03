@@ -3,7 +3,8 @@
 
 Logical pixels, nose +Z, Y up (towards the camera). A stubby gunship: a round black body, short
 wings carrying the fan pods, a fanned tail, and the huge bright beak (its cannon, a part) in front
-of its head.
+of its head. Its back plating, two plates either side of the spine ridge over the flattened body,
+is the armour it sheds (MB-TOUCAN-12, D-254): `draw_plating`.
 """
 
 from game.config.bosses.world_3.toucan import TOUCAN, TOUCAN_CHEEK_GUNS, TOUCAN_CREST
@@ -47,7 +48,8 @@ type Vec3 = list[float]
 # __pragma__ ("noskip")
 
 
-# The body along the centre line, tail to head (loft stations: z, half width, bottom, top).
+# The body's shape along the centre line, tail to head (loft stations: z, half width, bottom, top).
+# Its back from `PLATING_FROM` to the head is the plating (MB-TOUCAN-12).
 BODY = table([
     [-36, 5, 0, 5],
     [-26, 11, -2, 9.5],
@@ -56,9 +58,38 @@ BODY = table([
     [15, 14.5, -3, 14.2],
     [21, 10.6, -1.5, 12.6],
 ])
-# The cream bib under its head (the lower sides of the body's last bands).
+# Where the plating starts (z): the tail stub behind it stays low.
+PLATING_FROM = -26
+# The keel: the body as drawn (the core), flattened to `KEEL_TOP` under the plating, whose plates
+# start at `PLATE_BOTTOM`, sunk into it.
+KEEL_TOP = 4.3
+PLATE_BOTTOM = 4.0
+# The heights of the orange neon strip along a plate's flank, on its bottom edge.
+FLANK_STRIP = [PLATE_BOTTOM, PLATE_BOTTOM + 0.8]
+KEEL = table([[st[0], st[1], st[2], KEEL_TOP if st[0] >= PLATING_FROM else st[3]] for st in BODY])
+# The spine ridge along the back, between the plates: `RIDGE_SHARE` of the body's half width, from
+# `RIDGE_BOTTOM` up to the body's back, tapering to a point on the tail stub. It carries the crest.
+RIDGE_SHARE = 0.2
+RIDGE_BOTTOM = 3.5
+RIDGE = table(
+    [[PLATING_FROM - 2, 0, KEEL_TOP, KEEL_TOP]]
+    + [[st[0], st[1] * RIDGE_SHARE, RIDGE_BOTTOM, st[3]] for st in BODY if st[0] >= PLATING_FROM]
+)
+# A plate's loft stations (the body's over the keel) and its cross-section (the right one, counter-
+# clockwise seen from the nose): the body's skin from the ridge over the shoulder down to its
+# flank, closed by a flat bottom on the keel and a wall along the ridge.
+PLATES = table([[st[0], st[1], PLATE_BOTTOM, st[3]] for st in BODY if st[0] >= PLATING_FROM])
+PLATE_SECTION = table([
+    [RIDGE_SHARE, 0],
+    [0.96, 0],
+    [1.0, 0.22],
+    [0.65, 0.83],
+    [RIDGE_SHARE, 1.0],
+])
+# The cream bib under its head (the lower sides of the body's last band).
 BIB = [0.7, 0.64, 0.42]
 BIB_SIDES = [0, 1, 7, 8]
+BIB_BAND = len(BODY) - 2
 # The wings seen from above (right half, front to back), the pods at their ends.
 WINGS = mirrored([
     [0, 13],
@@ -76,37 +107,88 @@ TAIL = mirrored([[0, -30], [8, -32], [11, -45], [5, -48], [0, -44]])
 
 def body_paint(side: int, band: int) -> Any:
     """Return the body's paint: the bib on the lower sides of its last band."""
-    if band == 4 and side in BIB_SIDES:
+    if band == BIB_BAND and side in BIB_SIDES:
         return BIB
     return None
 
 
 def draw_body(p: EnemyParts) -> None:
-    """Draw the body: black plates, a cream bib, orange neon along its flanks, moss on its back."""
-    hull = p.hull
+    """Draw the body: the flattened keel with its cream bib, the spine ridge and the ribcage.
+
+    The plating over it is drawn apart (`draw_plating`).
+    """
     flesh = p.flesh
-    neon = p.neon
     # MB-TOUCAN-02: a round, living bird's body of dark flesh, a bone ribcage over its back.
     flesh.loft(
         ROUND_SECTION,
-        BODY,
+        KEEL,
         F.graphite,
         None,
         LoftOptions(False, body_paint),
     )
+    flesh.loft(ROUND_SECTION, RIDGE, F.graphite)
     path: list[Vec3] = [[0, st[3] + 0.3, st[0]] for st in BODY[1:]]
+    # The ribs stand from the keel's widest flank (BOSS-52), their arches over the plating.
     spine(
         p,
         path,
-        {"at": [-20, -12, -4], "halfWidth": 13, "y": 2, "height": 11.8},
+        {"at": [-20, -12, -4], "halfWidth": 13, "y": 1, "height": 12.8},
         TOUCAN_ORANGE,
     )
+
+
+def plate_section(s: float) -> Any:
+    """Return the plate section of side `s` (+1 the right one at +X), counter-clockwise."""
+    if s > 0:
+        return PLATE_SECTION
+    n = len(PLATE_SECTION)
+    return table([[-PLATE_SECTION[n - 1 - k][0], PLATE_SECTION[n - 1 - k][1]] for k in range(n)])
+
+
+def draw_plate(p: EnemyParts, s: float) -> None:
+    """Draw the plate on side `s` of the ridge: the body's back there, and what lies on it.
+
+    Orange neon along its flank, a seam and a vent on its back, moss, and the eye on its cheek.
+    """
+    hull = p.hull
+    neon = p.neon
+    charge = p.charge
+    p.flesh.loft(plate_section(s), PLATES, F.graphite)
+    # Orange neon along the plate's bottom edge.
+    strip(neon, [s * 15.6, 4], [s * 12, -20], 0.8, FLANK_STRIP, TOUCAN_ORANGE)
+    seam(hull, [s * 6, 10], [s * 7, -22], [12.4, 0.8, 0.5], H.dark)
+    vent(hull, [s * 9, 11.4, -14], [3.2, 6], 3, s * 0.12)
+    if s > 0:
+        moss(hull, [5, 14.2, -4], 4.2, 0.7)
+    else:
+        moss(hull, [-7, 11.6, -19], 3.4, 2.1)
+    # MB-TOUCAN-03: the round neon eye on the cheek.
+    eye: Vec3 = [s * 12.4, 8.6, 15]
+    hull.cylinder(3.2, 0.8, 8, H.dark, Placement(eye, 0, 0, -s * QUARTER))
+    neon.ring(
+        3.3,
+        0.9,
+        8,
+        TOUCAN_YELLOW,
+        Placement(offset(eye, s * 0.4, 0, 0), 0, 0, -s * QUARTER),
+    )
+    charge.cylinder(
+        1.5,
+        0.5,
+        8,
+        WHITE,
+        Placement(offset(eye, s * 0.6, 0, 0), 0, 0, -s * QUARTER),
+    )
+
+
+def draw_plating(p: EnemyParts) -> None:
+    """Draw the back plating (MB-TOUCAN-12): the armour it sheds at its transformation.
+
+    Two plates, one either side of the spine ridge, from just under the keel's top up to the body's
+    back, from the tail stub to the head, the eyes on their cheeks. The racks lie folded under them.
+    """
     for s in SIDES:
-        strip(neon, [s * 15.6, 4], [s * 12, -20], 0.8, [3.6, 4.4], TOUCAN_ORANGE)
-        seam(hull, [s * 6, 10], [s * 7, -22], [12.4, 0.8, 0.5], H.dark)
-        vent(hull, [s * 9, 11.4, -14], [3.2, 6], 3, s * 0.12)
-    moss(hull, [5, 14.2, -4], 4.2, 0.7)
-    moss(hull, [-7, 12.2, -19], 3.4, 2.1)
+        draw_plate(p, s)
 
 
 def draw_wings_and_tail(p: EnemyParts) -> None:
@@ -143,31 +225,14 @@ def draw_wings_and_tail(p: EnemyParts) -> None:
 
 
 def draw_head(p: EnemyParts) -> None:
-    """Draw the head (MB-TOUCAN-03).
+    """Draw the head (MB-TOUCAN-03): the cheek guns, and the crest emitter on the spine ridge.
 
-    Its round neon eyes either side, the cheek guns under them, the crest emitter.
+    The eyes are on the plating's cheeks (`draw_plate`).
     """
     hull = p.hull
     neon = p.neon
     charge = p.charge
     muzzle = p.muzzle
-    for s in SIDES:
-        eye: Vec3 = [s * 12.4, 8.6, 15]
-        hull.cylinder(3.2, 0.8, 8, H.dark, Placement(eye, 0, 0, -s * QUARTER))
-        neon.ring(
-            3.3,
-            0.9,
-            8,
-            TOUCAN_YELLOW,
-            Placement(offset(eye, s * 0.4, 0, 0), 0, 0, -s * QUARTER),
-        )
-        charge.cylinder(
-            1.5,
-            0.5,
-            8,
-            WHITE,
-            Placement(offset(eye, s * 0.6, 0, 0), 0, 0, -s * QUARTER),
-        )
     for m in TOUCAN_CHEEK_GUNS:
         tip = boss_point(m[0], m[1], m[2])
         x = tip[0]
@@ -193,7 +258,7 @@ def draw_head(p: EnemyParts) -> None:
 
 
 def toucan_core(p: EnemyParts) -> None:
-    """Add the core of the Toucan: its body, wings, tail and head."""
+    """Add the core of the Toucan: its body, wings, tail and head (no plating)."""
     draw_body(p)
     draw_wings_and_tail(p)
     draw_head(p)
@@ -202,7 +267,8 @@ def toucan_core(p: EnemyParts) -> None:
 def build_toucan(scene: Any) -> Any:
     """MB-TOUCAN-01, MB-TOUCAN-06: the Toucan, a stubby gunship with a huge bright beak.
 
-    It has yellow and orange neon, moss on its back and vines hanging from its wings.
+    It has yellow and orange neon, moss on its back and vines hanging from its wings. Its back
+    plating is the armour it sheds (MB-TOUCAN-12).
     """
     parts: dict[str, Any] = {
         "pod-left": wing_pod,
@@ -213,5 +279,9 @@ def build_toucan(scene: Any) -> Any:
         TOUCAN,
         scene,
         TOUCAN_YELLOW,
-        {"core": toucan_core, "parts": parts},
+        {
+            "core": toucan_core,
+            "parts": parts,
+            "armour": {"back": {"whole": draw_plating}},
+        },
     )

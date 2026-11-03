@@ -62,14 +62,26 @@ colour, set green, shows bright green ([common](../common.md), BOSS-50).
 
 #### FB-GULL-MOTHERSHIP-05 — What it sheds · MUST
 
-The armour of its flanks, behind its middle, is shed at its first transformation, and the armour of
-its wings, in front of its middle, at its second (`wing` frames beneath, mirrored).
+Its mantle is drawn in two layers: a lower teal slab the whole mantle wide (-5 to 1.9 px) and an
+upper one (1.9 to 4 px) with the graphite fold on it. The upper layer's flanks are its armour, drawn
+as pieces of their own out to the mantle's rim ([common](../common.md), BOSS-42), the fold's flanks
+and the veins across them on them; the upper layer runs on along the middle and over the front:
+
+- The **rear flanks** (`flanks`, mirrored), behind its middle, are shed at its first
+  transformation: they carry the swim bladders (up to 12.5 px) with their reactors in sacs. Shed,
+  they burst into plates cracked from their outline and leave `wing` frames on the lower layer, out
+  of which the lances rise.
+- The **front flanks** (`wings`, mirrored), in front of its middle up to a line across the mantle's
+  front, at its second: they carry a grafted plate each. Shed, they leave `wing` frames likewise, out
+  of which the orbs rise.
 
 **Acceptance criteria**
 - Given its design, then each transformation sheds its region and its weapons lie in it (unit
   test).
+- Given its model, then it draws both regions' pieces, and it holds together at rest and after each
+  transformation (unit tests).
 
-*Sources: D-224.*
+*Sources: D-224, D-254.*
 
 ### Behaviour
 
@@ -190,8 +202,8 @@ named.
 | core stage 4 | laser 1.6 s every 4.5 s; ring of 12 turning 9°, green, every 1.5 s | |
 | angry | vortex, heat 1.5 (32 bullets a second, 132 px/s), green and orange | |
 | transformations | 2 and 3 parts destroyed | default thresholds |
-| flank region | x 18..49, y 6..54, above 1.9 px, `wing`, mirrored | first |
-| wing region | x 22..49, y -38..6, above -0.3 px, `wing`, mirrored | second |
+| flank region (shed) | the rear flank out to the rim: x 18..47 at y 6..30, then along the rim to (34, 48) and (18, 54.4), `wing`, mirrored; the plate 1.9-4 px, the bladders to 12.5 px | first |
+| wing region (shed) | the front flank out to the rim: x 22..47 at y 6..-20, then along the rim to (40, -32) and (33.1, -38), cut across at y -38, `wing`, mirrored; the plate 1.9-4 px | second |
 | lances (`pike-*`) | (∓35, 23), radius 9, health 840, pod 9.6 px; first 1.2 s / 2.0 s | |
 | orbs | (∓37, -9), radius 7, health 1 050, pod 7.6 px, green; first 1.2 s / 2.0 s | |
 | neon | green (0.2, 1, 0.35) | `BOSS_LOOK.neon` |

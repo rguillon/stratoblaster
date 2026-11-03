@@ -350,8 +350,36 @@ REEF_WARDEN = with_weapons(
         hidden_weapon("gatling-right", "gatling", [13, -25], 11, 500, 1, "red", 2.0, 8.0),
     ],
     [
+        # MB-REEF-WARDEN-05 (D-254): the plating is a horseshoe round its shelled back, from just
+        # behind the snout (at -Y) to its middle; the gatlings lie under its arms.
         armour_region(
-            "back", 1, [[-32, -40], [32, -40], [32, 6], [-32, 6]], "shell", [2.2, 1000], False
+            "back",
+            1,
+            [
+                [21, -2],
+                [23, -8],
+                [22, -16],
+                [17, -24],
+                [9, -30],
+                [0, -33],
+                [-9, -30],
+                [-17, -24],
+                [-22, -16],
+                [-23, -8],
+                [-21, -2],
+                [-15, -2],
+                [-15, -10],
+                [-11, -18],
+                [-7, -24],
+                [0, -27],
+                [7, -24],
+                [11, -18],
+                [15, -10],
+                [15, -2],
+            ],
+            "shell",
+            None,
+            False,
         ),
     ],
 )
@@ -366,8 +394,30 @@ BREAKWATER = with_weapons(
         hidden_weapon("rack-right", "rack", [11, 33], 9, 650, 1, "orange", 2.0, 17.7),
     ],
     [
+        # MB-BREAKWATER-05 (D-254): the plating is its rear shell, a lozenge the shell's own shape
+        # from its middle to its tail (at +Y); the racks lie under it.
         armour_region(
-            "back", 1, [[-28, 4], [28, 4], [28, 43], [-28, 43]], "shell", [6.2, 1000], False
+            "back",
+            1,
+            [
+                [0, 14],
+                [12, 15],
+                [20, 18],
+                [23, 22],
+                [23, 29],
+                [22, 34],
+                [14, 38],
+                [0, 41],
+                [-14, 38],
+                [-22, 34],
+                [-23, 29],
+                [-23, 22],
+                [-20, 18],
+                [-12, 15],
+            ],
+            "shell",
+            None,
+            False,
         ),
     ],
 )
@@ -382,13 +432,30 @@ DUST_DEVIL = with_weapons(
         hidden_weapon("orb-right", "orb", [12, 5], 8, 500, 1, "green", 2.0, 10.2),
     ],
     [
+        # MB-DUST-DEVIL-05 (D-254): the plating is the bell's domed cap, round the hub carrying its
+        # emitter: two half-rings (the right one and its mirror image) from 4.8 to 15.2 px out; the
+        # orbs lie under them.
         armour_region(
             "back",
             1,
-            [[-28, -20.4], [28, -20.4], [28, 24.5], [-28, 24.5]],
+            [
+                [0, -15.2],
+                [5.8, -14],
+                [10.7, -10.7],
+                [14, -5.8],
+                [15.2, 0],
+                [14, 5.8],
+                [10.7, 10.7],
+                [5.8, 14],
+                [0, 15.2],
+                [0, 4.8],
+                [3.4, 3.4],
+                [4.8, 0],
+                [3.4, -3.4],
+                [0, -4.8],
+            ],
             "shell",
-            [1.2, 1000],
-            False,
+            None,
         ),
     ],
 )
@@ -410,8 +477,29 @@ SCORPION = with_weapons(
     ),
     [tail_cannon("tail-cannon", SCORPION_TAIL_CANNON, 15, 1100, 1, 1.5)],
     [
+        # MB-SCORPION-11 (D-254): the plating is the abdomen's shell, a lozenge the shell's own
+        # shape from under the head plate (at -Y) to the tail; the tail rig rises through it.
         armour_region(
-            "back", 1, [[-20, -2], [20, -2], [20, 35.5], [-20, 35.5]], "shell", [4, 1000], False
+            "back",
+            1,
+            [
+                [12, 0],
+                [14, 3],
+                [16, 8],
+                [16, 16],
+                [14, 21],
+                [10, 27],
+                [0, 31.5],
+                [-10, 27],
+                [-14, 21],
+                [-16, 16],
+                [-16, 8],
+                [-14, 3],
+                [-12, 0],
+            ],
+            "shell",
+            None,
+            False,
         ),
     ],
 )
@@ -426,8 +514,28 @@ SENTINEL = with_weapons(
         hidden_weapon("rack-right", "rack", [12, -7], 8, 620, 1, "blue", 2.0, 6.1),
     ],
     [
+        # MB-SENTINEL-05: the plating over its thorax, a lozenge the thorax's own shape (its nose
+        # at -Y); the racks lie under it.
         armour_region(
-            "back", 1, [[-28, -35], [28, -35], [28, 21], [-28, 21]], "shell", [4.2, 1000], False
+            "back",
+            1,
+            [
+                [0, -24],
+                [7, -20],
+                [12.5, -12],
+                [14, 0],
+                [12.5, 12],
+                [7, 22],
+                [0, 28],
+                [-7, 22],
+                [-12.5, 12],
+                [-14, 0],
+                [-12.5, -12],
+                [-7, -20],
+            ],
+            "shell",
+            None,
+            False,
         ),
     ],
 )

@@ -103,12 +103,13 @@ def _playfield_glow(scene: Any, look: Any) -> Any:
 
 
 def ground_glow_look(glow: Any) -> Any:
-    """Return the ground's glow (GFX-TERRAIN-15) drawn at full resolution and antialiased.
+    """Return the ground's glow (GFX-TERRAIN-15), antialiased, at Babylon's default resolution.
 
-    Reviewer, 2026-10-28: small lights blinked as the ground scrolled; its blur stays as wide on
-    screen as before.
+    Reviewer, 2026-10-28: small lights blinked as the ground scrolled; the 4 samples hold them
+    steady. D-250: the image was drawn at full resolution on top of that, a full multisampled
+    pass at the screen's size; back at half, the blur kernel stays as the look gives it.
     """
-    ratio = 1
+    ratio = DEFAULT_GLOW_RATIO
     return ShowcaseGlow(
         glow.intensity,
         (glow.blurKernelSize * ratio) / DEFAULT_GLOW_RATIO,
@@ -284,7 +285,7 @@ def build_level_scene(engine: Any, game: Any, options: LevelSceneOptions) -> Lev
     # The kit factory is one of two (with and without the environment): typed as Any.
     kit: Any = create_scenery_kit if options.environment else create_plain_scenery_kit
     stage_options = SceneryStageOptions(
-        game.screen,
+        game.playfield,
         game.view.scenery.camera,
         level,
         look,
@@ -292,6 +293,8 @@ def build_level_scene(engine: Any, game: Any, options: LevelSceneOptions) -> Lev
         kit,
         options.stage,
         options.atmosphere,
+        # D-252: the camera draws only into the playfield window.
+        game.playfield.viewport,
     )
     stage = SceneryStage(scene, stage_options)
     if ground_glow is not None:

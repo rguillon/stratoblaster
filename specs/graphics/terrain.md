@@ -225,9 +225,9 @@ vertex is at a multiple of the cell.
 
 The ground's self-lit accents (windows, lamps, neon, car lights, lava) bloom through a glow layer of
 their own: only the accent meshes glow, at the look's `glow.intensity` (0.3 by default). The glow
-image is drawn at full resolution, its blur kernel doubled to spread as wide on screen, and
-antialiased (4 samples), so lights thinner than a pixel neither blink nor flicker as the ground
-scrolls. The props, the tree imposters (cut out by their alpha) and the terrain chunks are drawn into
+image is drawn at half the screen's resolution (Babylon's default; it was full resolution from
+2026-10-28 to D-250, a whole multisampled pass at the screen's size), antialiased (4 samples), so
+lights thinner than a pixel neither blink nor flicker as the ground scrolls. The props, the tree imposters (cut out by their alpha) and the terrain chunks are drawn into
 it black, so a light behind a building or a hill does not glow through it. A car's imposter quad is
 not, as it stands in front of its own far lights and would hide them ([traffic.md](traffic.md)). The
 glow is composed under the clouds ([camera.md](camera.md)).
@@ -314,7 +314,7 @@ WLD-1-31).
 | scarps `face` / `lowest` / `angle_deg` / `warp` | 0.06 / 0 / 125 / 0.8 | World 1's hills, `src/game/config/world_1/scenery_coast.py` `scarps` (`SCARP_FACE`, `SCARP_ANGLE`); heights 24–40 over wavelengths 320–360 per section |
 | `SCARP_BEND_SCALE` / `SCARP_CREST_SCALE` / `SCARP_CREST_SPREAD` | 3 / 1.2 wavelengths / 0.45 | `src/core/scenery/height_field.py` |
 | `transition` | 420 (World 1), 900 (Worlds 2–4) | per level, `src/game/config/world_*/scenery*.py` (`TRANSITION`) |
-| `glow` | intensity 0.3, blur 16 | base look; full resolution, 4 samples (`src/app/level_scene.py` `ground_glow_look`, `GROUND_GLOW_SAMPLES`) |
+| `glow` | intensity 0.3, blur 16 | base look; half resolution, 4 samples (`src/app/level_scene.py` `ground_glow_look`, `GROUND_GLOW_SAMPLES`; D-250) |
 | `castsShadows` | False in World 4 | `src/game/config/world_4/looks.py` `city` |
 
 ## Notes
