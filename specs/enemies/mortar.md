@@ -2,9 +2,10 @@
 
 > **Area:** enemies · **Prefix:** `ENM-MORTAR` · **Related:** [common.md](common.md), [minelayer.md](minelayer.md), [World 3](../worlds/world-3/world.md), [World 4](../worlds/world-4/world.md)
 
-The Mortar is a veteran kind ([common.md](common.md)): a squat gunship that comes down slowly and
-lobs big, slow shells at the player, each bursting into a ring of bullets a moment later. It has no
-moving parts.
+The Mortar is a veteran kind ([common.md](common.md)) and **tier 3's missile launcher** (World 3's
+enemies, `src/game/config/enemy_tiers.py`): a squat gunship that comes down slowly and lobs big,
+slow homing missiles at the player. A missile can be shot down; if it is not, its fuse runs out and
+it bursts into a ring of bullets. It has no moving parts.
 
 ## Requirements
 
@@ -13,12 +14,12 @@ moving parts.
 #### ENM-MORTAR-01 — Shape and size · MUST
 
 The Mortar is a squat gunship 1.2 L across, wider than it is long (about 0.8 L long). A short, wide
-barrel stands on a raised mount in its middle, pointing forward, and a swollen sac bulges on each
-flank.
+launcher tube stands on a raised mount in its middle, pointing forward, with a missile loaded in
+it (its nose cone and a neon band show at the mouth), and a swollen sac bulges on each flank.
 
 **Acceptance criteria**
 - Given the Mortar's model, then it is 1.2 L across (within the size tolerance of
-  [common.md](common.md)) and its barrel on its mount shows from above.
+  [common.md](common.md)) and its launcher tube on its mount shows from above, with a missile in it.
 
 *Sources: P05-R15, P16-R04.*
 
@@ -54,7 +55,7 @@ for bright shades of yellow or green (D-231).
 
 #### ENM-MORTAR-04 — Charge light · SHOULD
 
-A charge ring at the barrel's mouth brightens as the next shell charges and is at full brightness
+A charge ring at the tube's mouth brightens as the next missile charges and is at full brightness
 when it leaves ([common.md](common.md)).
 
 **Acceptance criteria**
@@ -95,35 +96,45 @@ leaves at the bottom.
 
 *Sources: P05-R15.*
 
-#### ENM-MORTAR-08 — Shells · MUST
+#### ENM-MORTAR-08 — Missiles · MUST
 
-While its centre is over the playfield, every 2.5 s (the first 1 s after it is over it) the Mortar
-lobs one big, slow shell (radius 7, 110 px/s) aimed at the player, from its barrel's mouth.
+While its centre is over the playfield, every 3.5 s (the first 1 s after it is over it) the Mortar
+launches one heavy, slow homing missile from its tube's mouth, first towards the player (radius 8,
+90 px/s, turning at up to 55°/s towards the player for 2.2 s, then flying straight on). It is one
+of the engine's enemy missiles ([rocketeer.md](rocketeer.md), ENM-18): the player's shots can hit it
+(20 HP) and shoot it down, and it is drawn bigger than a Rocketeer's missile in proportion to its
+radius.
 
 **Acceptance criteria**
-- Given a Mortar fires, then its shell leaves the barrel's mouth and flies towards the player.
+- Given a Mortar fires, then its missile leaves the tube's mouth, heading towards the player, with
+  the speed, turn rate, radius and health above.
 - Given a Mortar outside the playfield, then it fires nothing.
 
 *Sources: P05-R15.*
 
-#### ENM-MORTAR-09 — Shell burst · MUST
+#### ENM-MORTAR-09 — Missile burst · MUST
 
-1.2 s after it was fired, a shell bursts where it is into a ring of 8 bullets (150 px/s), evenly all
-around, the first along the shell's heading; the shell is gone.
+2.5 s after it was launched (its fuse), a missile still in flight bursts where it is into a ring of
+10 bullets (130 px/s), evenly all around, the first along the missile's heading; the missile is
+gone. A missile shot down before its fuse is out does not burst, and neither does one that has left
+the playfield. The engine's missile spec carries the burst (`EnemyMissileSpec.burst`), as a
+bullet's does (`EnemyBulletSpec.burst`); its bullets are as fast as the level makes bullets
+(ENM-22).
 
 **Acceptance criteria**
-- Given a Mortar shell, when 1.2 s have passed, then it is replaced by 8 bullets 45° apart, leaving
-  from where it was.
+- Given a Mortar missile, when 2.5 s have passed, then it is replaced by 10 bullets 36° apart,
+  leaving from where it was.
+- Given a Mortar missile shot down at 1 s, then it leaves no bullets.
 
 *Sources: P05-R15.*
 
 #### ENM-MORTAR-10 — Health, points and hit circle · MUST
 
-A Mortar has 140 HP and scores 400 points. Its hit circle, at its centre, is 0.8 of the usual one
+A Mortar has 120 HP and scores 350 points. Its hit circle, at its centre, is 0.8 of the usual one
 for its size ([common.md](common.md)): 13.9 px.
 
 **Acceptance criteria**
-- Given a Mortar, then it takes 140 damage to destroy and scores 400 points.
+- Given a Mortar, then it takes 120 damage to destroy and scores 350 points.
 
 *Sources: P05-R15.*
 
@@ -143,14 +154,15 @@ the second veteran kind after the Wasp, and the waves of every later level (3-2 
 | Name | Value | Notes |
 |------|-------|-------|
 | size | 1.2 L | `src/game/config/enemies_veteran.py` `VETERAN_CONFIG.mortar.size` |
-| health / points | 140 / 400 | `VETERAN_CONFIG.mortar.stats` |
+| health / points | 120 / 350 | `VETERAN_CONFIG.mortar.stats` |
 | hit radius | 13.9 px | `radius(1.2) * 0.8` |
 | xRange | 20 % – 80 % of the width | when the wave gives no entry |
 | speed | 40 px/s | straight down |
-| fireInterval / firstShot | 2.5 s / 1 s | times the level's fire rate factor ([common.md](common.md)) |
-| shell | style `green`, 110 px/s, radius 7 | `VETERAN_CONFIG.mortar.shell` |
-| shell burst | after 1.2 s, 8 bullets, style `green`, 150 px/s, radius 4 | `shell.burst` |
-| muzzles | `[0, -12.5, 7]` | the barrel's mouth, on its raised mount |
+| fireInterval / firstShot | 3.5 s / 1 s | times the level's fire rate factor ([common.md](common.md)) |
+| missile | style `mortar`, 90 px/s, radius 8, 20 HP, turn 55°/s for 2.2 s | `VETERAN_CONFIG.mortar.missile` |
+| missile burst | after 2.5 s, 10 bullets, style `green`, 130 px/s, radius 4 | `missile.burst` |
+| muzzles | `[0, -12.5, 7]` | the tube's mouth, on its raised mount |
+| missile model scale | radius / 5 | `ENEMY_LOOK.missile.baseRadius` |
 | neon | `[0.55, 0.7, 0.12]`, drawn `[0.7, 0.7, 0.12]` | `VETERAN_NEON.mortar` |
 | triangle budget | 700 (veteran) | `src/game/config/enemy_look.py` `ENEMY_LOOK.budget.veteran` |
 
@@ -166,7 +178,8 @@ cycle in each of [3-2](../worlds/world-3/3-2-docklands.md),
 no level's filler.
 
 - The bosses' "mortar" hidden weapons (D-221) are a boss weapon kind, not this enemy.
-- The shell's style names (`green`) are kept from phase 5; every enemy bullet style is now drawn
+- The Mortar used to lob shells that burst into a ring after 1.2 s (140 HP, 400 points); tier 3
+  made it the missile launcher. The burst bullets' style name (`green`) is kept from phase 5; every enemy bullet style is now drawn
   orange to amber ([graphics/shots.md](../graphics/shots.md)).
 - Known gaps: no unit test checks the model's size or its triangle count since the Python port
   (D-220).

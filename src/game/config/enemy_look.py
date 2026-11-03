@@ -239,6 +239,9 @@ ENEMY_LOOK = record({
         "tip": [1, 0.5, 0.04],
         "flame": glow([1, 0.95, 0.7], [1, 0.45, 0.1], [0.35, 0.12, 0]),
         "flameSize": [2.6, 6],
+        # The hit radius the model is drawn for (the Rocketeer's); a missile with a bigger one
+        # (the Mortar's, ENM-MORTAR-08) is drawn bigger in proportion.
+        "baseRadius": 5,
     },
     "laser": {
         # Colour of the lasers of a style (`EnemyLaserSpec.style`) that is not a boss's: the

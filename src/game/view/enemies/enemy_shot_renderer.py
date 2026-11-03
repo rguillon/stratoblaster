@@ -337,6 +337,8 @@ def sync_missiles(pool: Any, missiles: list[Any]) -> None:
         m = missiles[i]
         node.position.set(m.x, m.y, -0.5)
         node.rotation.z = -m.heading
+        size = m.radius / LOOK.missile.baseRadius
+        node.scaling.set(size, size, size)
 
 
 class ShotRendererHandle:

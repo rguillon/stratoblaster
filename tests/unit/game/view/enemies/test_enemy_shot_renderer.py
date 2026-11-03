@@ -377,12 +377,19 @@ def test_gfx_shot_15_each_missile_node_sits_on_its_shot_facing_its_heading() -> 
     pool = MagicMock()
     # A pool may hand back spare nodes: they are left alone.
     pool.show.return_value = nodes
-    missiles = [SimpleNamespace(x=1.0, y=2.0, heading=0.3), SimpleNamespace(x=4, y=5, heading=0)]
+    base = sr.LOOK.missile.baseRadius
+    missiles = [
+        SimpleNamespace(x=1.0, y=2.0, heading=0.3, radius=base),
+        SimpleNamespace(x=4, y=5, heading=0, radius=2 * base),
+    ]
     sr.sync_missiles(pool, missiles)
     pool.show.assert_called_once_with(2)
     nodes[0].position.set.assert_called_once_with(1.0, 2.0, -0.5)
     assert nodes[0].rotation.z == pytest.approx(-0.3)
     nodes[1].position.set.assert_called_once_with(4, 5, -0.5)
+    # ENM-MORTAR-08: a bigger missile is drawn bigger in proportion.
+    nodes[0].scaling.set.assert_called_once_with(1, 1, 1)
+    nodes[1].scaling.set.assert_called_once_with(2, 2, 2)
     nodes[2].position.set.assert_not_called()
 
 
@@ -462,7 +469,7 @@ def test_gfx_shot_15_the_renderer_draws_bullets_missiles_and_lasers_each_frame(
     renderer: SimpleNamespace,
 ) -> None:
     bullet = SimpleNamespace(style="red", x=1.0, y=2.0, radius=3.0, age=0.0, heading=0.0)
-    missile = SimpleNamespace(x=7.0, y=8.0, heading=0.5)
+    missile = SimpleNamespace(x=7.0, y=8.0, heading=0.5, radius=5)
     lasers = [SimpleNamespace(spec=SimpleNamespace(style="lancer"))]
     frame = SimpleNamespace(dt_seconds=0.25, bullets=[bullet], missiles=[missile], lasers=lasers)
     renderer.handle.sync(frame)
@@ -492,7 +499,10 @@ def test_the_renderer_disposes_its_layers_lasers_missiles_and_flame(
     renderer: SimpleNamespace,
 ) -> None:
     frame = SimpleNamespace(
-        dt_seconds=0.0, bullets=[], missiles=[SimpleNamespace(x=0, y=0, heading=0)], lasers=[]
+        dt_seconds=0.0,
+        bullets=[],
+        missiles=[SimpleNamespace(x=0, y=0, heading=0, radius=5)],
+        lasers=[],
     )
     renderer.handle.sync(frame)
     renderer.handle.dispose()

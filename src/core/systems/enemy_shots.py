@@ -76,7 +76,8 @@ class EnemyMissile:
 
     It homes on the player for a while, and can be shot down (ENM-18). It is a shot target (the
     player's shots can hit it). `homing` is the seconds of homing left, `age` the seconds since
-    launch.
+    launch; `burst` is what it bursts into once `burst.after` seconds old
+    (`EnemyMissileSpec.burst`).
     """
 
     def __init__(self) -> None:
@@ -93,6 +94,7 @@ class EnemyMissile:
         self.homing = 0.0
         self.style = ""
         self.age = 0.0
+        self.burst: EnemyBurstSpec | None = None
 
 
 class EnemyLaser:
@@ -223,6 +225,7 @@ class EnemyShots:
         missile.turn_rate = spec.turn_rate_deg * DEG
         missile.homing = spec.homing_seconds
         missile.style = spec.style
+        missile.burst = spec.burst
         missile.age = 0
 
     def fire_laser(self, owner: LaserOwner, spec: EnemyLaserSpec) -> None:
@@ -291,6 +294,14 @@ class EnemyShots:
         m.age += dt
         if self._is_out(m.x, m.y):
             m.alive = False
+        elif m.burst and m.age >= m.burst.after:
+            self._burst_missile(m, m.burst)
+
+    def _burst_missile(self, m: EnemyMissile, burst: EnemyBurstSpec) -> None:
+        """Remove a missile whose fuse is out and fire its ring of bullets from where it was."""
+        m.alive = False
+        for k in range(burst.count):
+            self.fire_bullet(m.x, m.y, m.heading + (2 * math.pi * k) / burst.count, burst.bullet)
 
     def _step_laser(self, laser: EnemyLaser, dt: float) -> bool:
         """Advances a laser; returns false once it is over (or its owner is gone)."""
