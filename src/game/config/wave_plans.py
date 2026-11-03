@@ -51,10 +51,11 @@ KIND_ENTRY = record({
 
 # The roles in the order a world brings them in over its levels (the cheap ones first).
 ROLE_ORDER = ["diver", "shooter", "laser", "missile", "carrier"]
-# One cycle of phrases, by role: divers and shooters often, the heavy kinds once.
+# One cycle of phrases, by role: divers and shooters often, the heavy kinds once. A shooter comes
+# first, so a level shows enemy bullets from its first beat.
 CYCLE = [
-    "diver",
     "shooter",
+    "diver",
     "laser",
     "diver",
     "missile",
