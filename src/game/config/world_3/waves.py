@@ -1,5 +1,5 @@
 # Copyright (c) 2026 Renaud Guillon
-"""The wave scripts of World 3 (WLD-3-17, WLD-3-19), composed from its tier's kinds (ENM-49).
+"""The wave scripts of World 3 (WLD-3-17, WLD-3-19), composed from its tier's kinds (ENM-50).
 
 See `game/config/wave_plans.py`: each level cycles through the phrases of the kinds World 3 uses
 (its tier's five), a beat every `gap` seconds shrinking over the level, its groups growing; the

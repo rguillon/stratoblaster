@@ -83,9 +83,9 @@ def test_boss_20_armed_pattern_arms_each_volley_in_order() -> None:
     assert [v.every for v in armed] == [1, 2]
 
 
-def test_boss_25_a_launch_volley_fires_its_enemies_on_the_launch_side() -> None:
+def test_boss_25_a_launch_volley_fires_its_enemies_from_its_part() -> None:
     launch = record({"from": "hangar", "kind": "hornets", "count": 2, "every": 6, "first": 1})
-    armed = launch_volley(launch, 1)
+    armed = launch_volley(launch)
     assert armed.from_ == "hangar"
     assert armed.every == 6
     assert armed.first == 1

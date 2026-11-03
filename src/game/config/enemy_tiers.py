@@ -1,9 +1,9 @@
 # Copyright (c) 2026 Renaud Guillon
-"""The four enemy tiers (ENM-01, ENM-02, ENM-48): their kinds, their world and their colours.
+"""The four enemy tiers (ENM-01, ENM-02, ENM-49): their kinds, their world and their colours.
 
 A tier is one world's enemies (tier N is World N's). It holds exactly one kind of each role: a
 diver, a shooter, a missile launcher, a laser and a carrier (which launches the tier's diver). Each
-tier has its own colour theme (ENM-48): a neon hue on the yellow-green ladder of the enemy colour
+tier has its own colour theme (ENM-49): a neon hue on the yellow-green ladder of the enemy colour
 family (GFX-READ-04), and a hull tint, picked to stand out from its world's ground.
 Colours are linear RGB 0..1, hues in degrees.
 """

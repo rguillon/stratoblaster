@@ -99,5 +99,5 @@ VETERAN_CONFIG = record({
     },
 })
 
-# Neon colours of the veteran-era kinds: their tier's (ENM-48), as `ENEMY_LOOK.neon`.
+# Neon colours of the veteran-era kinds: their tier's (ENM-49), as `ENEMY_LOOK.neon`.
 VETERAN_NEON = ENEMY_LOOK.neon

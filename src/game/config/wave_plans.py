@@ -1,5 +1,5 @@
 # Copyright (c) 2026 Renaud Guillon
-"""The wave plans of the four worlds, composed from their tier (WLD-1-17, WLD-2-17, ENM-49).
+"""The wave plans of the four worlds, composed from their tier (WLD-1-17, WLD-2-17, ENM-50).
 
 World N uses the five kinds of tier N and no other (ENM-01). Each level cycles through its own
 phrases: a beat every `gap` seconds (from `gap[0]` at the start to `gap[1]` at the end, so the level

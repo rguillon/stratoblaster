@@ -272,7 +272,7 @@ def build_enemy_model(
     """
     if breath is None:
         breath = new_breath()
-    # ENM-48: an enemy of a tier is lit in its tier's hue, on a hull tinted in its tier's colour.
+    # ENM-49: an enemy of a tier is lit in its tier's hue, on a hull tinted in its tier's colour.
     theme = tier_look(name)
     hues = [theme.hue] if theme is not None else None
     # GFX-ART-05: every enemy's lights in the enemies' colour family.

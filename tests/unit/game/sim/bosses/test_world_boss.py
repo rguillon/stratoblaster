@@ -12,12 +12,7 @@ from game.config.bosses.mini_bosses import REEF_WARDEN
 from game.config.bosses.world_3.stone_idol import STONE_IDOL
 from game.config.bosses.world_4.caldera_throne import CALDERA_THRONE
 from game.config.record import merge
-from game.sim.bosses.world_boss import WorldBoss, _sign, boss_half_width
-
-
-def test_boss_25_sign_is_minus_one_zero_or_one() -> None:
-    """Which side a part's launches go out to."""
-    assert (_sign(3.5), _sign(-2), _sign(0)) == (1, -1, 0)
+from game.sim.bosses.world_boss import WorldBoss, boss_half_width
 
 
 def test_boss_10_the_half_width_reaches_the_farthest_part_or_the_core() -> None:
@@ -123,14 +118,14 @@ def test_a_hidden_weapon_fires_only_once_revealed_and_its_armour_blows_off() -> 
 def test_boss_25_a_part_s_launches_go_out_from_it_while_it_stands() -> None:
     """A launch from a part the boss does not have has no side, and never goes out."""
     launches = [
-        {"from": "cannon-left", "kind": "gnats", "count": 2, "every": 1, "first": 0.1},
+        {"from": "cannon-left", "kind": "hornets", "count": 2, "every": 1, "first": 0.1},
         {"from": "ghost", "kind": "hornets", "count": 1, "every": 1, "first": 0.1},
     ]
     boss = WorldBoss(merge(REEF_WARDEN, {"launches": launches}), area(width=480, height=640))
     ctx = FakeContext()
     for _ in range(5):
         boss.update_pattern(ctx, 0.1)
-    assert [type(enemy).__name__ for enemy in ctx.spawned] == ["Gnat", "Gnat"]
+    assert [type(enemy).__name__ for enemy in ctx.spawned] == ["Hornet", "Hornet"]
 
 
 def _turret_aims(boss: WorldBoss) -> list[float]:

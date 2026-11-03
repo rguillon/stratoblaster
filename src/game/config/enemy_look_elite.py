@@ -6,5 +6,5 @@ Each kind's neon colour (its tier's), linear RGB 0..1, in the style of `ENEMY_LO
 
 from game.config.enemy_look import ENEMY_LOOK
 
-# Neon colours of the elite-era kinds: their tier's (ENM-48), as `ENEMY_LOOK.neon`.
+# Neon colours of the elite-era kinds: their tier's (ENM-49), as `ENEMY_LOOK.neon`.
 ELITE_NEON = ENEMY_LOOK.neon

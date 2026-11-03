@@ -706,3 +706,30 @@
   before, as its armour is now a piece lying on the core rather than the core's own skin. D-224,
   D-227 and D-230 are superseded where they describe the cut, the chunks, the stems and pylons.
 - **Status:** Proposed
+
+### D-255 — Four enemy tiers of five roles, one world each, one colour theme each
+- **Date:** 2026-11-03
+- **Requirements:** ENM-01, ENM-02, ENM-03, ENM-38, ENM-49, ENM-50.
+- **Context:** the enemies were 21 kinds in three tiers (basic, veteran, elite) that joined the
+  waves world by world, each kind with its own neon colour snapped to yellow or green. The reviewer
+  asked for four tiers, each with one diver, one shooter, one missile launcher, one laser and one
+  carrier (launching divers), tier N assigned to world N, redesigning kinds where needed, with a
+  colour theme per tier picked against its world's ground.
+- **Decision:** 20 kinds in `src/game/config/enemy_tiers.py` (ENM-01): tier 1 Hornet, Scout,
+  Rocketeer, Lancer, Carrier; tier 2 Wasp, Strafer, Harrier, Sweeper, Hatchery; tier 3 Phantom,
+  Spinner, Mortar, Prism, Broodmother; tier 4 Splitter, Juggernaut, Hydra, Scissor, Hive. Gnat,
+  Weaver, Bulwark, Mantis, Minelayer and Orbiter are removed; Harrier, Sweeper, Hatchery, Prism and
+  Broodmother are new; Mortar, Phantom, Splitter, Hydra and Hive are redesigned to their role, and
+  the Carrier and the bosses' hangars launch Hornets. World N uses only tier N's kinds (ENM-50),
+  its waves composed from them in `src/game/config/wave_plans.py`. Each tier has a neon hue on the
+  yellow-green ladder (60° / 110° / 85° / 135°) and a hull tint (steel blue / teal / indigo /
+  graphite) (ENM-49): the model builder takes both from the tier of its model key, so a kind's
+  models need no colour of their own; the readability enemy family (60°–140°) is unchanged and the
+  bosses keep the two `enemyHues`.
+- **Alternatives considered:** widening the enemy hue family to give the tiers more separate hues
+  (changes the readability rules for bosses and shots); keeping older tiers in later worlds (the
+  reviewer asked for one tier a world); keeping the removed kinds as fillers.
+- **Consequences:** the triangle budgets are per tier (400 / 600 / 900 / 1200); World 1 has no
+  Gnat swarms and its waves are composed like the others instead of written by hand; contrast of
+  tier 3's chartreuse on the grass of 3-4 and 3-5 relies on brightness more than hue.
+- **Status:** Proposed

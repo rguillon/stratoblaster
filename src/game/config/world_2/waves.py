@@ -1,5 +1,5 @@
 # Copyright (c) 2026 Renaud Guillon
-"""The wave scripts of World 2 (WLD-2-17, WLD-2-19), composed from its tier's kinds (ENM-49).
+"""The wave scripts of World 2 (WLD-2-17, WLD-2-19), composed from its tier's kinds (ENM-50).
 
 See `game/config/wave_plans.py`: each level cycles through the phrases of the kinds World 2 uses
 (its tier's five), a beat every `gap` seconds shrinking over the level, its groups growing; the

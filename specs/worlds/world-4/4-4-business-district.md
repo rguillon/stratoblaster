@@ -58,19 +58,15 @@ along the level. The windows and the cars are lit (World 4's ground lights).
 
 ### LVL-4-4-04 — Enemy waves · MUST
 
-4-4's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, with a beat every `wave_gap` seconds and
-groups growing by `wave_growth`. The cycle: Carrier 1, Bulwark 2, Scout 5, Carrier 1, Lancer 3,
-Bulwark 1, Rocketeer 2, Spinner 3, Weaver 5, Splitter 3, Bulwark 1, Strafer 3 (from the right),
-Hornet 6, Gnat 3, Wasp 2, Mortar 1, Minelayer 1 (from the right), Mantis 1, Phantom 1, Hydra 1,
-Orbiter 1, Scissor 1, Hive 1, Juggernaut 1. Carriers (twice a cycle) and Bulwarks (three times) lead
-the waves between the towers. The filler draws Gnats, Weavers, Hornets, Scouts, Splitters and
-Spinners, at most `filler_gap` apart. 4-4 uses every kind of the game.
+4-4 uses all five kinds of tier 4, Splitter, Juggernaut, Scissor, Hydra and Hive, and no other. 4-4's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, with a beat every `wave_gap` seconds (3.4 s to 2.4 s) and
+groups growing by `wave_growth` (105 %) over the level (100 beats). The cycle of phrases, each a kind with its number of
+groups at the start: Splitter 2, Juggernaut 1, Scissor 1, Splitter 2, Hydra 1, Juggernaut 1, Splitter 2, Hive 1, Scissor 1, Juggernaut 1, Hydra 1. The filler draws Splitters and Juggernauts, at most `filler_gap` apart.
 
 **Acceptance criteria**
-- Unit test: 4-4's waves use all 21 enemy kinds.
+- Unit test: 4-4's waves use exactly Splitter, Juggernaut, Scissor, Hydra and Hive, and each of them.
 - Unit test: 4-4's waves are the same each time the level is built.
 
-*Sources: P10-R09, P05-R24, D-087, D-090.*
+*Sources: P10-R09, P05-R24, D-087, D-090, ENM-50.*
 
 ### LVL-4-4-05 — Difficulty · MUST
 
@@ -124,9 +120,9 @@ the two fights.
 | clouds | 0.6 / 0.5, storm 0.6 (not shown) | `LEVEL_4_4_LOOK`, `src/game/config/world_4/looks.py` |
 | underglow | colour 1, 0.5, 0.15; 0.7 | `FURNACE_GLOW`, `LEVEL_4_4_LOOK` |
 | ash / embers | 0.3 / 0.3 | `LEVEL_4_4_LOOK.start.weather`, `.secondWeather` |
-| wave_gap | 2.8 s → 2 s | `PLAN_4_4.gap`, `src/game/config/world_4/waves.py` |
-| wave_growth | 0.6 | `PLAN_4_4.growth` |
-| filler_gap | 2.4 s → 1.5 s | `WORLD_4_FILLERS["4-4"].maxGap` |
+| wave_gap | 3.4 s → 2.4 s | `PLAN_4_4.gap`, `src/game/config/world_4/waves.py` |
+| wave_growth | 1.05 | `PLAN_4_4.growth` |
+| filler_gap | 2.9 s → 1.8 s | `WORLD_4_FILLERS["4-4"].maxGap` |
 | bullet speed / fire rate factors | 1.3 / 1.3 | `WORLD_4_DIFFICULTY["4-4"]` |
 | measured | 225.0 enemies/min, 11 238 HP/min, peak 62 | D-090 |
 | runout | 100 s | `WORLD_4_BOSSES["4-4"].runout` |

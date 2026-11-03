@@ -127,7 +127,7 @@ ENEMY_LOOK = record({
         "miniBoss": 4000,
         "finalBoss": 10000,
     },
-    # Neon colour of each kind: its tier's (ENM-48, `ENEMY_TIERS`), the same for the five kinds
+    # Neon colour of each kind: its tier's (ENM-49, `ENEMY_TIERS`), the same for the five kinds
     # of a tier; each is drawn in its tier's hue (GFX-ART-05).
     "neon": record({kind: ENEMY_TIERS[str(tier_of(kind))].neon for kind in all_kinds()}),
     # Reactors (ENM-40; phase 5 review): a dark nozzle with a glowing core, and the player

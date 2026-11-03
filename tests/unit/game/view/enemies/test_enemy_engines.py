@@ -55,7 +55,7 @@ def babylon(monkeypatch: Any) -> Any:
     monkeypatch.setattr(ee, "new_transform_node", new_node)
     monkeypatch.setattr(ee, "node_name", lambda node: node.label)
     monkeypatch.setattr(ee, "mesh_of", mesh_of)
-    monkeypatch.setattr(ee, "enemy_color", lambda color: color)
+    monkeypatch.setattr(ee, "enemy_color", lambda color, _hues=None: color)
     monkeypatch.setattr(ee, "flame_materials", lambda _scene, color: ("flame", color))
     monkeypatch.setattr(
         ee, "build_reactor_flame", lambda _name, options, _node, _mats: flames.append(options)

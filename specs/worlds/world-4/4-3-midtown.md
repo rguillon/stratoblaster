@@ -57,20 +57,15 @@ along the level. The orange glow of the city lights the haze and the ground from
 
 ### LVL-4-3-04 — Enemy waves · MUST
 
-4-3's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, with a beat every `wave_gap` seconds and
-groups growing by `wave_growth`. The cycle: Lancer 3, Rocketeer 2, Scout 4, Lancer 3, Rocketeer 3,
-Spinner 2, Weaver 4, Bulwark 1, Lancer 2, Splitter 2, Carrier 1, Rocketeer 2, Strafer 3 (from the
-left), Hornet 5, Gnat 3, Wasp 2, Mortar 1, Minelayer 1 (from the left), Mantis 1, Phantom 1, Hydra 1,
-Orbiter 1, Scissor 1, Hive 1. Lancers and Rocketeers (three phrases each a cycle) lead the waves along
-midtown's old quays. The filler draws Gnats, Weavers, Hornets, Scouts, Splitters and Spinners, at most
-`filler_gap` apart. 4-3 uses every basic and veteran kind, the Hydra, the Orbiter, the Scissor and the
-Hive.
+4-3 brings in the Hive, the last kind of tier 4, and so uses Splitter, Juggernaut, Scissor, Hydra and Hive, no other. 4-3's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, with a beat every `wave_gap` seconds (3.8 s to 2.7 s) and
+groups growing by `wave_growth` (100 %) over the level (89 beats). The cycle of phrases, each a kind with its number of
+groups at the start: Splitter 2, Juggernaut 1, Scissor 1, Splitter 2, Hydra 1, Juggernaut 1, Splitter 2, Hive 1, Scissor 1, Juggernaut 1, Hydra 1. The filler draws Splitters and Juggernauts, at most `filler_gap` apart.
 
 **Acceptance criteria**
-- Unit test: 4-3's waves use the eleven basic kinds, the five veteran kinds, the Hydra, the Orbiter, the Scissor and the Hive, and not the Juggernaut.
+- Unit test: 4-3's waves use exactly Splitter, Juggernaut, Scissor, Hydra and Hive, and each of them.
 - Unit test: 4-3's waves are the same each time the level is built.
 
-*Sources: P10-R09, P05-R24, D-087, D-090.*
+*Sources: P10-R09, P05-R24, D-087, D-090, ENM-50.*
 
 ### LVL-4-3-05 — Difficulty · MUST
 
@@ -125,9 +120,9 @@ the two fights.
 | clouds | 0.5 / 0.4, storm 0.5 (not shown) | `LEVEL_4_3_LOOK`, `src/game/config/world_4/looks.py` |
 | embers | 0.4 | same |
 | underglow | colour 1, 0.42, 0.12; 0.25 → 0.8 over 60–280 s | `LAVA_GLOW`, `LEVEL_4_3_LOOK` |
-| wave_gap | 3 s → 2 s | `PLAN_4_3.gap`, `src/game/config/world_4/waves.py` |
+| wave_gap | 3.8 s → 2.7 s | `PLAN_4_3.gap`, `src/game/config/world_4/waves.py` |
 | wave_growth | 1 | `PLAN_4_3.growth` |
-| filler_gap | 2.5 s → 1.6 s | `WORLD_4_FILLERS["4-3"].maxGap` |
+| filler_gap | 3 s → 2 s | `WORLD_4_FILLERS["4-3"].maxGap` |
 | bullet speed / fire rate factors | 1.2 / 1.2 | `WORLD_4_DIFFICULTY["4-3"]` |
 | measured | 211.2 enemies/min, 10 644 HP/min, peak 57 | D-090 |
 | runout | 100 s | `WORLD_4_BOSSES["4-3"].runout` |

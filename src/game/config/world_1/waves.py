@@ -138,7 +138,7 @@ def fill(beats: list[Any], filler: Any) -> list[Any]:
     return out
 
 
-# The written beats of each level (LVL-1-1-08 … LVL-1-5-08), composed from World 1's tier (ENM-49):
+# The written beats of each level (LVL-1-1-08 … LVL-1-5-08), composed from World 1's tier (ENM-50):
 # 1-1 has the Hornet and the Scout, and each level brings in one more kind: the Lancer, the
 # Rocketeer, then the Carrier, with every kind in 1-5.
 WAVES_1_1 = compose_beats(level_plan(1, 1))

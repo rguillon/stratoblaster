@@ -117,66 +117,48 @@ here and there (`lone_dead_trees`) (WLD-1-14).
 
 #### LVL-1-4-08 — Enemy kinds · MUST
 
-1-4 brings the 1-3 kinds plus Lancers and Rocketeers: Gnat, Hornet, Scout, Strafer, Weaver,
-Splitter, Carrier, Spinner, Lancer, Rocketeer, in its beats and its fillers. No Bulwark yet.
+1-4 brings in the last kind, the Carrier, and so uses the five kinds of tier 1 (Hornet, Scout, Lancer, Rocketeer and Carrier), in its beats and its fillers, and no other kind.
 
 **Acceptance criteria**
-- Given the 1-4 wave script, then it only uses these ten kinds and uses Lancers and Rocketeers (unit test).
+- Given the 1-4 wave script, then it only uses Hornet, Scout, Lancer, Rocketeer and Carrier, and it uses each of them (unit test).
 
-*Sources: P06-R07.*
+*Sources: P06-R07, ENM-50.*
 
-#### LVL-1-4-09 — Written beats · MUST
+#### LVL-1-4-09 — Wave plan · MUST
 
-1-4's waves are these beats, as written (WLD-1-19; the density of WLD-1-20 applies on top). They
-leave the stretch from 102 s to 130 s to the fillers, around the mini boss at 120 s, and no wave
-starts in the 10 s before each boss ([level-flow.md](../../gameplay/level-flow.md)).
+1-4's waves are composed from this plan (WLD-1-19; the density of WLD-1-20 applies on top):
 
-| s | Kind | Groups | Between groups (s) | Side | Position | Spread |
+Beats from 4 s to 226 s, one every 5.2 s at the start down to 3.7 s at the end, groups growing by 75 % over the level (50 beats, the last at 222.5 s). The phrases, in their cycle:
+
+| # | Kind | Groups | Between groups (s) | Side | Position | Spread |
 |---|------|--------|--------------------|------|----------|--------|
-| 4 | Scout | 3 | 1.2 | top | 0.25 | 0.25 |
-| 10 | Gnat | 2 | 2.5 | top | 0.3 | 0.4 |
-| 18 | Lancer | 1 | 0 | top | 0.5 | — |
-| 26 | Hornet | 4 | 0.8 | top | 0.15 | 0.23 |
-| 32 | Weaver | 3 | 1.5 | top | 0.3 | 0.2 |
-| 40 | Rocketeer | 1 | 0 | top | 0.5 | — |
-| 48 | Strafer | 2 | 2 | left | 0.8 | — |
-| 54 | Splitter | 2 | 2 | top | 0.3 | 0.4 |
-| 62 | Spinner | 2 | 3 | top | 0.3 | 0.4 |
-| 70 | Lancer | 2 | 3 | top | 0.25 | 0.5 |
-| 78 | Carrier | 1 | 0 | top | 0.5 | — |
-| 86 | Scout | 4 | 1 | top | 0.15 | 0.23 |
-| 94 | Rocketeer | 2 | 3 | top | 0.3 | 0.4 |
-| 102 | Gnat | 2 | 2 | top | 0.3 | 0.4 |
-| 130 | Lancer | 2 | 2 | top | 0.3 | 0.4 |
-| 134 | Hornet | 5 | 0.7 | top | 0.1 | 0.2 |
-| 142 | Rocketeer | 2 | 3 | top | 0.25 | 0.5 |
-| 148 | Weaver | 4 | 1.2 | top | 0.2 | 0.2 |
-| 156 | Carrier | 1 | 0 | top | 0.4 | — |
-| 164 | Spinner | 2 | 3 | top | 0.7 | -0.4 |
-| 170 | Strafer | 3 | 1.5 | right | 0.8 | — |
-| 178 | Splitter | 3 | 2 | top | 0.2 | 0.3 |
-| 186 | Lancer | 3 | 2 | top | 0.2 | 0.3 |
-| 194 | Gnat | 2 | 2 | top | 0.3 | 0.4 |
-| 200 | Rocketeer | 2 | 2 | top | 0.3 | 0.4 |
-| 206 | Scout | 4 | 0.8 | top | 0.15 | 0.23 |
-| 212 | Carrier | 1 | 0 | top | 0.6 | — |
-| 218 | Hornet | 5 | 0.6 | top | 0.1 | 0.2 |
-| 224 | Spinner | 2 | 2 | top | 0.3 | 0.4 |
+| 1 | Hornet | 4 | 0.8 | top | 0.15 | 0.23 |
+| 2 | Scout | 3 | 1.2 | top | 0.25 | 0.25 |
+| 3 | Lancer | 2 | 2.5 | top | 0.25 | 0.5 |
+| 4 | Hornet | 4 | 0.8 | top | 0.85 | -0.23 |
+| 5 | Rocketeer | 1 | 0 | top | 0.5 | — |
+| 6 | Scout | 3 | 1.2 | top | 0.75 | -0.25 |
+| 7 | Hornet | 4 | 0.8 | top | 0.15 | 0.23 |
+| 8 | Carrier | 1 | 0 | top | 0.5 | — |
+| 9 | Lancer | 2 | 2.5 | top | 0.75 | -0.5 |
+| 10 | Scout | 3 | 1.2 | top | 0.25 | 0.25 |
+| 11 | Rocketeer | 1 | 0 | top | 0.5 | — |
+
+No wave starts in the 10 s before each boss ([level-flow.md](../../gameplay/level-flow.md)).
 
 **Acceptance criteria**
-- Given the 1-4 beats, then each names a kind and a side, in order of time (unit test).
+- Given the 1-4 plan, then it composes beats that name its kinds and sides in order of time (unit test).
 
-*Sources: P06-R07, D-044.*
+*Sources: P06-R07, D-067, ENM-50.*
 
 #### LVL-1-4-10 — Filler · MUST
 
-1-4's filler (WLD-1-21) brings Gnat, Weaver, Hornet, Scout, Splitter, in turn, one group every
-`max_gap`.
+1-4's filler (WLD-1-21) brings the level's divers and shooters, Hornet, Scout, Hornet, Scout, in turn, one group every `max_gap`.
 
 **Acceptance criteria**
-- Given the 1-4 filler, then its kinds are those five and its gap shrinks (unit test).
+- Given the 1-4 filler, then its kinds are the Hornet and the Scout only and its gap shrinks (unit test).
 
-*Sources: D-051.*
+*Sources: D-051, ENM-50.*
 
 ### Difficulty
 
@@ -243,7 +225,7 @@ end, for the ground that gets ahead of the level during the fights.
 | desert_woods / lone_dead_trees | cover 0.55, keep 0.15, scatter 0.01 / cover 0, keep 0, scatter 0.004 | `src/game/config/trees.py` |
 | max_gap | 3.2 s → 2 s | `src/game/config/world_1/waves.py` `WORLD_1_FILLERS["1-4"]` |
 | bullet_speed_factor / fire_rate_factor | 1 / 1 | `src/game/config/world_1/difficulty.py` |
-| written | 29 beats; 88 waves and 262 groups after fill and density; 414 enemies, 12 660 HP (halves 5 340 / 7 320), Carrier launches not counted | measured from the configs (density 2, D-249) |
+| written | 50 beats from the plan; waves, groups, enemies and HP after fill and density: to be measured again with the new kinds | `src/game/config/wave_plans.py` `level_plan(1, 4)`; density 2 (D-249) |
 | buildings | 14 909 (halves 2 290 / 12 619) | each level's seed, measured for this file |
 | mini boss / final boss | `scorpion` / `refinery-titan` | `src/game/config/world_1/bosses.py` |
 | runout | 70 s | same |

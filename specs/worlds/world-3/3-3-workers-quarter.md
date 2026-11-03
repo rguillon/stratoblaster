@@ -62,19 +62,15 @@ lightning (the flash limits are in [weather](../../graphics/weather.md)).
 
 ### LVL-3-3-04 — Enemy waves · MUST
 
-3-3's waves follow its wave plan (WLD-3-16) from 4 s to 292 s, with a beat every `wave_gap` seconds and
-groups growing by `wave_growth`. The cycle: Spinner 3, Rocketeer 2, Scout 4, Spinner 2, Lancer 2,
-Rocketeer 2, Weaver 4, Bulwark 1, Splitter 2, Carrier 1, Strafer 3 (from the right), Hornet 5, Gnat 3,
-Wasp 2, Mortar 1, Minelayer 1 (from the right). Groups of Spinners and Rocketeers (twice each a cycle)
-lead the waves over the workers' quarter. The filler draws Gnats, Weavers, Hornets, Scouts, Splitters
-and Spinners, at most `filler_gap` apart. 3-3 uses every basic kind, the Wasp, the Mortar and the
-Minelayer.
+3-3 brings in the Broodmother, the last kind of tier 3, and so uses Phantom, Spinner, Prism, Mortar and Broodmother, no other. 3-3's waves follow its wave plan (WLD-3-16) from 4 s to 292 s, with a beat every `wave_gap` seconds (4.4 s to 3.2 s) and
+groups growing by `wave_growth` (90 %) over the level (77 beats). The cycle of phrases, each a kind with its number of
+groups at the start: Phantom 1, Spinner 2, Prism 1, Phantom 1, Mortar 1, Spinner 2, Phantom 1, Broodmother 1, Prism 1, Spinner 2, Mortar 1. The filler draws Phantoms and Spinners, at most `filler_gap` apart.
 
 **Acceptance criteria**
-- Unit test: 3-3's waves use the eleven basic kinds, the Wasp, the Mortar and the Minelayer, and no other kind.
+- Unit test: 3-3's waves use exactly Phantom, Spinner, Prism, Mortar and Broodmother, and each of them.
 - Unit test: 3-3's waves are the same each time the level is built.
 
-*Sources: P09-R07, P05-R24, D-080, D-090.*
+*Sources: P09-R07, P05-R24, D-080, D-090, ENM-50.*
 
 ### LVL-3-3-05 — Difficulty · MUST
 
@@ -129,9 +125,9 @@ the two fights.
 | storm start | clouds 0.5 / 0.5, storm 0.3 | `LEVEL_3_3_LOOK`, `src/game/config/world_3/looks.py` |
 | thunderstorm | clouds 0.9 / 0.9, storm 1, lightning 1, built over 0–75 s | `THUNDERSTORM` |
 | rain | 0.8 | `THUNDERSTORM.weather` |
-| wave_gap | 4.6 s → 3.1 s | `PLAN_3_3.gap`, `src/game/config/world_3/waves.py` |
-| wave_growth | 0.6 | `PLAN_3_3.growth` |
-| filler_gap | 2.8 s → 1.8 s | `WORLD_3_FILLERS["3-3"].maxGap` |
+| wave_gap | 4.4 s → 3.2 s | `PLAN_3_3.gap`, `src/game/config/world_3/waves.py` |
+| wave_growth | 0.9 | `PLAN_3_3.growth` |
+| filler_gap | 3 s → 2 s | `WORLD_3_FILLERS["3-3"].maxGap` |
 | bullet speed / fire rate factors | 1.1 / 1.1 | `WORLD_3_DIFFICULTY["3-3"]` |
 | measured | 190.0 enemies/min, 6 452 HP/min, peak 45 | D-090 |
 | runout | 70 s | `WORLD_3_BOSSES["3-3"].runout` |

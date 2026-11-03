@@ -58,19 +58,15 @@ no glow from below, with no change along the level.
 
 ### LVL-4-1-04 — Enemy waves · MUST
 
-4-1's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, with a beat every `wave_gap` seconds and
-groups growing by `wave_growth`. The cycle: Weaver 4, Strafer 3 (from the left), Scout 4, Weaver 4,
-Lancer 2, Strafer 3 (from the right), Spinner 2, Hornet 5, Weaver 5, Rocketeer 2, Splitter 2, Strafer 3
-(from the left), Bulwark 1, Carrier 1, Gnat 3, Wasp 2, Mortar 1, Minelayer 1 (from the left), Mantis 1,
-Phantom 1, Hydra 1, Orbiter 1. Weavers and Strafers (three phrases each a cycle) lead the waves low
-over the garden town. The filler draws Weavers, Gnats, Hornets, Scouts, Splitters and Spinners, at most
-`filler_gap` apart. 4-1 uses every basic and veteran kind, and the Hydra and the Orbiter.
+4-1 brings Splitter, Juggernaut and Scissor (a diver, a shooter and a laser) and no other kind. 4-1's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, with a beat every `wave_gap` seconds (4.6 s to 3.3 s) and
+groups growing by `wave_growth` (90 %) over the level (74 beats). The cycle of phrases, each a kind with its number of
+groups at the start: Splitter 2, Juggernaut 1, Scissor 1, Splitter 2, Juggernaut 1, Splitter 2, Scissor 1, Juggernaut 1. The filler draws Splitters and Juggernauts, at most `filler_gap` apart.
 
 **Acceptance criteria**
-- Unit test: 4-1's waves use the eleven basic kinds, the five veteran kinds, the Hydra and the Orbiter, and no other elite kind.
+- Unit test: 4-1's waves use exactly Splitter, Juggernaut and Scissor, and each of them.
 - Unit test: 4-1's waves are the same each time the level is built.
 
-*Sources: P10-R09, P05-R24, D-087, D-090.*
+*Sources: P10-R09, P05-R24, D-087, D-090, ENM-50.*
 
 ### LVL-4-1-05 — Difficulty · MUST
 
@@ -125,9 +121,9 @@ the two fights.
 | streets | lanes 35–60 × 40–80; village 40–70 × 45–90; streets 45–90 × 50–110 (rows × columns) | `LANES`, `VILLAGE_STREETS`, `STREETS`, `src/game/config/world_3/scenery.py` |
 | smoke_haze_fog / smoke_haze_white | 0.75 / 0.2 | `SMOKE_HAZE`, `src/game/config/world_4/looks.py` |
 | clouds | 0.4 / 0.3 (tint 0.95, 0.84, 0.86, not shown) | `LEVEL_4_1_LOOK` |
-| wave_gap | 3 s → 2.6 s | `PLAN_4_1.gap`, `src/game/config/world_4/waves.py` |
+| wave_gap | 4.6 s → 3.3 s | `PLAN_4_1.gap`, `src/game/config/world_4/waves.py` |
 | wave_growth | 0.9 | `PLAN_4_1.growth` |
-| filler_gap | 2.7 s → 1.8 s | `WORLD_4_FILLERS["4-1"].maxGap` |
+| filler_gap | 3.4 s → 2.3 s | `WORLD_4_FILLERS["4-1"].maxGap` |
 | bullet speed / fire rate factors | 1.1 / 1.1 | `WORLD_4_DIFFICULTY["4-1"]` |
 | measured | 195.2 enemies/min, 7 496 HP/min, peak 53 | D-090 (3-3: 190.0, 6 452, 45) |
 | runout | 120 s | `WORLD_4_BOSSES["4-1"].runout`, `src/game/config/world_4/bosses.py` |

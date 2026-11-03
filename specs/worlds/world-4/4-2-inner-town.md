@@ -56,20 +56,15 @@ their brown-grey tint does not show, the clouds being plain), a dim, flat, yello
 
 ### LVL-4-2-04 — Enemy waves · MUST
 
-4-2's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, with a beat every `wave_gap` seconds and
-groups growing by `wave_growth`. The cycle: Splitter 3, Spinner 3, Scout 4, Splitter 3, Lancer 2,
-Spinner 2, Weaver 4, Rocketeer 2, Splitter 3, Bulwark 1, Strafer 3 (from the right), Spinner 3,
-Carrier 1, Hornet 5, Gnat 3, Splitter 3, Spinner 2, Wasp 2, Mortar 1, Minelayer 1 (from the right),
-Mantis 1, Phantom 1, Hydra 1, Orbiter 1, Scissor 1. Splitters and Spinners (four phrases each a cycle)
-lead the waves over the inner town. The filler draws Splitters, Gnats, Weavers, Hornets, Scouts and
-Spinners, at most `filler_gap` apart. 4-2 uses every basic and veteran kind, the Hydra, the Orbiter
-and the Scissor.
+4-2 adds the Hydra to the kinds of 4-1 and uses Splitter, Juggernaut, Scissor and Hydra, no other. 4-2's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, with a beat every `wave_gap` seconds (4.2 s to 3 s) and
+groups growing by `wave_growth` (95 %) over the level (81 beats). The cycle of phrases, each a kind with its number of
+groups at the start: Splitter 2, Juggernaut 1, Scissor 1, Splitter 2, Hydra 1, Juggernaut 1, Splitter 2, Scissor 1, Juggernaut 1, Hydra 1. The filler draws Splitters and Juggernauts, at most `filler_gap` apart.
 
 **Acceptance criteria**
-- Unit test: 4-2's waves use the eleven basic kinds, the five veteran kinds, the Hydra, the Orbiter and the Scissor, and no other elite kind.
+- Unit test: 4-2's waves use exactly Splitter, Juggernaut, Scissor and Hydra, and each of them.
 - Unit test: 4-2's waves are the same each time the level is built.
 
-*Sources: P10-R09, P05-R24, D-087, D-090.*
+*Sources: P10-R09, P05-R24, D-087, D-090, ENM-50.*
 
 ### LVL-4-2-05 — Difficulty · MUST
 
@@ -124,9 +119,9 @@ the two fights, the longest runout of World 4, as the chase runs the ground ahea
 | clouds | 0.9 / 0.9 (tint 0.8, 0.72, 0.62, not shown) | `LEVEL_4_2_LOOK`, `src/game/config/world_4/looks.py` |
 | ash_light | ambient × 1.04, 0.96, 0.74 | `ASH_LIGHT` |
 | ash | 0.5 | `LEVEL_4_2_LOOK.start.weather` |
-| wave_gap | 3 s → 2.1 s | `PLAN_4_2.gap`, `src/game/config/world_4/waves.py` |
-| wave_growth | 1.1 | `PLAN_4_2.growth` |
-| filler_gap | 2.6 s → 1.7 s | `WORLD_4_FILLERS["4-2"].maxGap` |
+| wave_gap | 4.2 s → 3 s | `PLAN_4_2.gap`, `src/game/config/world_4/waves.py` |
+| wave_growth | 0.95 | `PLAN_4_2.growth` |
+| filler_gap | 3.2 s → 2.1 s | `WORLD_4_FILLERS["4-2"].maxGap` |
 | bullet speed / fire rate factors | 1.15 / 1.15 | `WORLD_4_DIFFICULTY["4-2"]` |
 | measured | 204.4 enemies/min, 9 216 HP/min, peak 55 | D-090 |
 | runout | 150 s | `WORLD_4_BOSSES["4-2"].runout` |

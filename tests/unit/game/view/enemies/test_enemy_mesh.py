@@ -8,6 +8,7 @@ from typing import Any
 import pytest
 
 from game.config.enemy_look import ENEMY_LOOK
+from game.config.enemy_tiers import tier_look
 from game.view.enemies import enemy_mesh
 from game.view.enemies.enemy_materials import body_color, enemy_color, rim_of
 from game.view.enemies.enemy_mesh import (
@@ -169,7 +170,9 @@ def scene(monkeypatch: Any) -> SimpleNamespace:
     monkeypatch.setattr(enemy_mesh, "node_name", lambda n: n.name)
     monkeypatch.setattr(enemy_mesh, "mesh_of", mesh_of)
     monkeypatch.setattr(enemy_mesh, "in_body_shades", lambda geo: ("body-shades", geo))
-    monkeypatch.setattr(enemy_mesh, "in_enemy_family", lambda geo: ("enemy-family", geo))
+    monkeypatch.setattr(
+        enemy_mesh, "in_enemy_family", lambda geo, _hues=None: ("enemy-family", geo)
+    )
     monkeypatch.setattr(enemy_mesh, "set_trim", lambda mesh, rim: made.trims.append((mesh, rim)))
     monkeypatch.setattr(
         enemy_mesh, "add_model_animation", lambda n, anim: made.animations.append((n, anim))
@@ -292,7 +295,7 @@ def test_enm_34_a_model_is_a_root_with_its_body_reactors_and_muzzles(
     assert (gun.parent, gun.at) == (root, [0, 0, 5])
     assert (cannon.parent, cannon.at) == (root, [1, 0, 5])
     # The reactors hang on the root, the rotors on the body, with the hull material.
-    name, reactors, _parts, reactor_root, neon = scene.reactors[0]
+    name, reactors, _parts, reactor_root, neon, _hues = scene.reactors[0]
     assert (name, reactor_root, neon) == ("gnat", root, [1.0, 0.1, 0.1])
     assert [r.at for r in reactors] == [[0, 0, -4]]
     rotor_name, rotors, rotor_mat, rotor_parent = scene.rotors[0]
@@ -430,3 +433,28 @@ def test_enm_weaver_07_a_heading_wrapping_round_is_not_a_sharp_turn() -> None:
 
 def test_an_enemy_without_bank_never_rolls() -> None:
     assert enemy_mesh.bank_roll([None, 0.0], SimpleNamespace(), 0.1, None) == 0
+
+
+def test_enm_49_a_model_of_a_tier_is_lit_in_its_tier_s_hue_on_its_tier_s_hull(
+    scene: SimpleNamespace,
+) -> None:
+    """The lights take the tier's hue, the hull and flesh the tier's tint, not the neon's."""
+    theme = tier_look("hornet")
+    neon = [1.0, 0.1, 0.1]
+    enemy_mesh.build_enemy_model("hornet", "scene", neon, _gnat)
+    tint = ",".join(str(c) for c in theme.hull)
+    names = {m.name for m in scene.meshes}
+    assert "hornet-hull:" + tint in names
+    assert "hornet-wing-0-flesh:" + tint in names
+    # Its reactors are told the tier's hue, and its trim is the rim of the tier's colour.
+    assert scene.reactors[0][5] == [theme.hue]
+    assert scene.trims[0][1] == rim_of(enemy_color(neon, [theme.hue]))
+
+
+def test_enm_49_a_model_with_no_tier_keeps_the_neon_s_own_body_tint(
+    scene: SimpleNamespace,
+) -> None:
+    neon = [0.2, 1.0, 0.2]
+    enemy_mesh.build_enemy_model("blob", "scene", neon, _hull_and_neon, "breath")
+    tint = body_color(enemy_color(neon))
+    assert "blob-hull:" + ",".join(str(c) for c in tint) in {m.name for m in scene.meshes}

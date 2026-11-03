@@ -92,47 +92,47 @@ It has World 1's roads (WLD-2-14). No tree grows.
 
 #### LVL-2-2-07 — Enemy kinds · MUST
 
-2-2's waves are led by the 2-1 kinds plus Splitters and Lancers, over the mines: Gnat, Hornet,
-Scout, Strafer, Weaver, Splitter, Lancer, and no other kind, in its beats and its fillers.
+2-2 adds the Harrier to the 2-1 kinds (Wasp, Strafer, Sweeper and Harrier), in its beats and its fillers, and uses no other kind.
 
 **Acceptance criteria**
-- Given the 2-2 wave script, then it only uses these seven kinds (unit test).
+- Given the 2-2 wave script, then it only uses Wasp, Strafer, Sweeper and Harrier, and it uses each of them (unit test).
 
-*Sources: P08-R08.*
+*Sources: P06-R07, ENM-50.*
 
 #### LVL-2-2-08 — Wave plan · MUST
 
 2-2's waves are composed from this plan (WLD-2-19; World 1's density and filler apply on top):
 
-Beats from 4 s to 292 s, one every 5.4 s at the start down to 3.9 s at the end, groups growing by 60 % over the level (63 beats, the last at 290.8 s). The phrases, in their cycle:
+Beats from 4 s to 292 s, one every 5.4 s at the start down to 3.9 s at the end, groups growing by 75 % over the level (63 beats, the last at 290.4 s). The phrases, in their cycle:
 
 | # | Kind | Groups | Between groups (s) | Side | Position | Spread |
 |---|------|--------|--------------------|------|----------|--------|
-| 1 | Scout | 3 | 1.2 | top | 0.25 | 0.25 |
-| 2 | Splitter | 2 | 2 | top | 0.3 | 0.4 |
-| 3 | Weaver | 3 | 1.2 | top | 0.3 | 0.2 |
-| 4 | Lancer | 2 | 2.5 | top | 0.25 | 0.5 |
-| 5 | Strafer | 2 | 1.5 | left | 0.8 | — |
-| 6 | Hornet | 4 | 0.8 | top | 0.15 | 0.23 |
-| 7 | Splitter | 2 | 2 | top | 0.7 | -0.4 |
-| 8 | Gnat | 2 | 2 | top | 0.3 | 0.4 |
-| 9 | Lancer | 2 | 2 | top | 0.3 | 0.4 |
-| 10 | Strafer | 2 | 1.5 | right | 0.78 | — |
+| 1 | Wasp | 2 | 1.6 | top | 0.4 | 0.3 |
+| 2 | Strafer | 2 | 1.5 | left | 0.8 | — |
+| 3 | Sweeper | 1 | 0 | top | 0.5 | — |
+| 4 | Wasp | 2 | 1.6 | top | 0.6 | -0.3 |
+| 5 | Harrier | 2 | 2 | top | 0.3 | 0.4 |
+| 6 | Strafer | 2 | 1.5 | right | 0.2 | — |
+| 7 | Wasp | 2 | 1.6 | top | 0.4 | 0.3 |
+| 8 | Sweeper | 1 | 0 | top | 0.5 | — |
+| 9 | Strafer | 2 | 1.5 | left | 0.8 | — |
+| 10 | Harrier | 2 | 2 | top | 0.7 | -0.4 |
+
+No wave starts in the 10 s before each boss ([level-flow.md](../../gameplay/level-flow.md)).
 
 **Acceptance criteria**
 - Given the 2-2 plan, then it composes beats that name its kinds and sides in order of time (unit test).
 
-*Sources: P08-R08, D-067.*
+*Sources: P06-R07, D-067, ENM-50.*
 
 #### LVL-2-2-09 — Filler · MUST
 
-2-2's filler (WLD-1-21) brings Hornet, Gnat, Weaver, Scout, Splitter, in turn, one group every
-`max_gap`.
+2-2's filler (WLD-1-21) brings the level's divers and shooters, Wasp, Strafer, Wasp, Strafer, in turn, one group every `max_gap`.
 
 **Acceptance criteria**
-- Given the 2-2 filler, then its kinds are those five and its gap shrinks (unit test).
+- Given the 2-2 filler, then its kinds are the Wasp and the Strafer only and its gap shrinks (unit test).
 
-*Sources: D-051, D-067.*
+*Sources: D-051, ENM-50.*
 
 ### Difficulty
 
@@ -196,7 +196,7 @@ shortest of World 2: its final fight stops the ground.
 | suburb_streets | rows 60–110, columns 70–130, links 0.55 | `SUBURB_STREETS` (also 2-3's company town and 2-4's suburbs) |
 | max_gap | 3.2 s → 2.1 s | `src/game/config/world_2/waves.py` `WORLD_2_FILLERS["2-2"]` |
 | bullet_speed_factor / fire_rate_factor | 0.95 / 0.95 | `src/game/config/world_2/difficulty.py` |
-| written | 63 beats; 119 waves and 490 groups after fill and density; 698 enemies, 20 080 HP (halves 7 880 / 12 200); 139.6 enemies and 4 016 HP a minute | measured from the configs; D-067, density 2 (D-249) |
+| written | 63 beats from the plan; waves, groups, enemies and HP after fill and density: to be measured again with the new kinds | `src/game/config/wave_plans.py` `level_plan(2, 2)`; density 2 (D-249) |
 | buildings | 12 834 (halves 5 005 / 7 829) | each level's seed, measured for this file |
 | mini boss / final boss | `fjord-lynx` / `harbour-kraken` | `src/game/config/world_2/bosses.py` |
 | runout | 50 s | same |

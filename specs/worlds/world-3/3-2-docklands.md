@@ -58,18 +58,15 @@ clears over 192–208 s. No lightning.
 
 ### LVL-3-2-04 — Enemy waves · MUST
 
-3-2's waves follow its wave plan (WLD-3-16) from 4 s to 292 s, with a beat every `wave_gap` seconds and
-groups growing by `wave_growth`. The cycle: Hornet 6, Lancer 2, Scout 4, Hornet 6, Spinner 2,
-Lancer 3, Carrier 1, Weaver 4, Rocketeer 1, Hornet 6, Splitter 2, Bulwark 1, Strafer 3 (from the left),
-Gnat 3, Wasp 2, Mortar 1. Swarms of six Hornets (three a cycle) diving over the docks and Lancers along
-the canal (twice a cycle) lead the waves. The filler draws Hornets, Gnats, Weavers, Scouts, Splitters
-and Spinners, at most `filler_gap` apart. 3-2 uses every basic kind, the Wasp and the Mortar.
+3-2 adds the Mortar to the kinds of 3-1 and uses Phantom, Spinner, Prism and Mortar, no other. 3-2's waves follow its wave plan (WLD-3-16) from 4 s to 292 s, with a beat every `wave_gap` seconds (4.8 s to 3.5 s) and
+groups growing by `wave_growth` (85 %) over the level (71 beats). The cycle of phrases, each a kind with its number of
+groups at the start: Phantom 1, Spinner 2, Prism 1, Phantom 1, Mortar 1, Spinner 2, Phantom 1, Prism 1, Spinner 2, Mortar 1. The filler draws Phantoms and Spinners, at most `filler_gap` apart.
 
 **Acceptance criteria**
-- Unit test: 3-2's waves use the eleven basic kinds, the Wasp and the Mortar, and no other kind.
+- Unit test: 3-2's waves use exactly Phantom, Spinner, Prism and Mortar, and each of them.
 - Unit test: 3-2's waves are the same each time the level is built.
 
-*Sources: P09-R07, P05-R24, D-080, D-090.*
+*Sources: P09-R07, P05-R24, D-080, D-090, ENM-50.*
 
 ### LVL-3-2-05 — Difficulty · MUST
 
@@ -122,9 +119,9 @@ the two fights.
 | streets | rows 45–90, columns 50–110 | `STREETS` |
 | clouds | 0.5 / 0.3 | `MIDDAY`, `src/game/config/world_3/looks.py` |
 | rain | 0.4, in over 92–108 s, out over 192–208 s | `LEVEL_3_2_LOOK` |
-| wave_gap | 5 s → 3.6 s | `PLAN_3_2.gap`, `src/game/config/world_3/waves.py` |
-| wave_growth | 0.7 | `PLAN_3_2.growth` |
-| filler_gap | 2.9 s → 1.9 s | `WORLD_3_FILLERS["3-2"].maxGap` |
+| wave_gap | 4.8 s → 3.5 s | `PLAN_3_2.gap`, `src/game/config/world_3/waves.py` |
+| wave_growth | 0.85 | `PLAN_3_2.growth` |
+| filler_gap | 3.2 s → 2.1 s | `WORLD_3_FILLERS["3-2"].maxGap` |
 | bullet speed / fire rate factors | 1.05 / 1.05 | `WORLD_3_DIFFICULTY["3-2"]` |
 | measured | 184.0 enemies/min, 5 494 HP/min, peak 38 | D-090 |
 | runout | 100 s | `WORLD_3_BOSSES["3-2"].runout` |

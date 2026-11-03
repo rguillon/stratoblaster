@@ -31,15 +31,6 @@ BossDesign = Any
 # __pragma__ ("noskip")
 
 
-def _sign(value: float) -> int:
-    """`Math.sign`."""
-    if value > 0:
-        return 1
-    if value < 0:
-        return -1
-    return 0
-
-
 def boss_half_width(design: BossDesign) -> float:
     """How far its hit circles reach left and right of its centre (orbiting parts all around)."""
     stats = design.stats

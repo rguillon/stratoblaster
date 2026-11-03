@@ -20,34 +20,37 @@ bullets, missiles, lasers and explosions look is in [shots](../graphics/shots.md
 
 ### Kinds and tiers
 
-#### ENM-01 — Twenty-one kinds in three tiers · MUST
+#### ENM-01 — Twenty kinds in four tiers of five roles · MUST
 
-The game has 21 enemy kinds, in three tiers:
+The game has 20 enemy kinds, in four tiers. Each tier holds exactly one kind of each of five roles:
+a **diver** (rams, or dives at the player), a **shooter** (bullets), a **missile launcher**
+(homing missiles the player can shoot down), a **laser** (a warning line, then a beam) and a
+**carrier** (launches the tier's diver). The kinds are, tier by tier, role by role in that order:
 
-- **basic** (11): [Gnat](gnat.md), [Hornet](hornet.md), [Scout](scout.md), [Strafer](strafer.md),
-  [Weaver](weaver.md), [Spinner](spinner.md), [Lancer](lancer.md), [Rocketeer](rocketeer.md),
-  [Bulwark](bulwark.md), [Splitter](splitter.md), [Carrier](carrier.md);
-- **veteran** (5): [Wasp](wasp.md), [Mortar](mortar.md), [Mantis](mantis.md),
-  [Phantom](phantom.md), [Minelayer](minelayer.md);
-- **elite** (5): [Hydra](hydra.md), [Orbiter](orbiter.md), [Scissor](scissor.md),
-  [Juggernaut](juggernaut.md), [Hive](hive.md).
+| Tier | Diver | Shooter | Missile launcher | Laser | Carrier |
+|------|-------|---------|------------------|-------|---------|
+| 1 | [Hornet](hornet.md) | [Scout](scout.md) | [Rocketeer](rocketeer.md) | [Lancer](lancer.md) | [Carrier](carrier.md) (Hornets) |
+| 2 | [Wasp](wasp.md) | [Strafer](strafer.md) | [Harrier](harrier.md) | [Sweeper](sweeper.md) | [Hatchery](hatchery.md) (Wasps) |
+| 3 | [Phantom](phantom.md) | [Spinner](spinner.md) | [Mortar](mortar.md) | [Prism](prism.md) | [Broodmother](broodmother.md) (Phantoms) |
+| 4 | [Splitter](splitter.md) | [Juggernaut](juggernaut.md) | [Hydra](hydra.md) | [Scissor](scissor.md) | [Hive](hive.md) (Splitters) |
 
-The basic kinds come in every world. The veteran kinds join the waves from World 3, the elite kinds
-only in World 4 (the world and level files say which level uses which kind). The pods a Splitter
-breaks into are part of the Splitter kind, not a kind of their own.
+The tiers are in the code's tier table (`src/game/config/enemy_tiers.py`). The pods a Splitter
+breaks into are part of the Splitter kind, not a kind of their own. A boss's hangars and bays
+launch Hornets.
 
 **Acceptance criteria**
-- Given the game's list of enemy kinds, then it holds these 21 ids once each, basic, then veteran,
-  then elite.
+- Given the game's list of enemy kinds, then it holds these 20 ids once each, tier 1 first, each
+  tier in the order of the table; and each tier holds one kind of each role (unit test).
 
-*Sources: phase 5 preamble, P05-R12, D-090.*
+*Sources: phase 5 preamble, P05-R12, D-090; reworked into four tiers at the reviewer's request,
+2026-11-03.*
 
 #### ENM-02 — The tier shows in the look · MUST
 
-The tier is readable from the look. A basic kind is one body with a few metal grafts; a veteran
-has more armour plates and more limbs; an elite is heavily armoured, with plated shells and more
-organs and veins. Elites look more armoured and more complex than veterans, veterans more than
-basic kinds.
+The tier is readable from the look, by its colour theme (ENM-49) and by how armoured and complex
+the kind is: a tier 1 kind is one body with a few metal grafts, each higher tier has more armour
+plates, limbs and organs than the one below, and a tier 4 kind is heavily armoured, with plated
+shells.
 
 **Acceptance criteria**
 - Given the dev enemies viewer, when the kinds are seen side by side, then the tier of each kind
@@ -57,15 +60,15 @@ basic kinds.
 
 #### ENM-03 — Triangle budget per tier · MUST
 
-Each enemy model stays within the triangle budget of its tier: `budget.basic` for a basic kind,
-`budget.veteran` for a veteran, `budget.elite` for an elite (reactor flames included).
+Each enemy model stays within the triangle budget of its tier: `budget.tier1` (400), `budget.tier2`
+(600), `budget.tier3` (900) and `budget.tier4` (1200), reactor flames included.
 
 **Acceptance criteria**
 - Unit test: each model's triangle count is within its tier's budget.
 
-**Discrepancy:** since the glowing edge trim was built into the models (D-220), 8 of the 11 basic
-kinds go over the basic budget (up to about 516 for the Spinner; D-220 left open whether the trim
-counts); and no unit test checks the budgets since the Python port.
+**Discrepancy:** since the glowing edge trim was built into the models (D-220), some kinds go over
+their budget (D-220 left open whether the trim counts); and no unit test checks the budgets since
+the Python port.
 
 *Sources: P16-R09, D-220.*
 
@@ -466,14 +469,13 @@ glands, eye slits), pulsing veins with the eyes and glands lit as veins (ENM-42)
 #### ENM-38 — Bright yellow or bright green · MUST
 
 Every enemy's lights (neon, veins, eyes, charge lights), its edge trim and its reactor flames are
-bright yellow or bright green: each colour of a kind takes the nearer of the two `enemyHues`,
-keeping its brightness, never a shade in between (no khaki), and never pink, magenta, violet or
-red. Warm neon turns yellow, cool neon green; each kind file says which its colour is. The enemy
-colours stay in the enemy colour family, which the enemy shots, the bonuses and the player do not
-use (see [readability](../graphics/readability.md)).
+bright yellow or bright green, in the hue of its tier (ENM-49), keeping their brightness, never a
+shade in between (no khaki), and never pink, magenta, violet or red. A boss's colours each take the
+nearer of the two `enemyHues`. The enemy colours stay in the enemy colour family, which the enemy
+shots, the bonuses and the player do not use (see [readability](../graphics/readability.md)).
 
 **Acceptance criteria**
-- Unit test: an enemy's light colours have one of the two hues; greys stay grey.
+- Unit test: an enemy's light colours have its tier's hue; greys stay grey.
 
 *Sources: D-231, P14-R02.*
 
@@ -580,13 +582,53 @@ lit enough that its shape reads. The edge of its silhouette has a contrast ratio
 #### ENM-48 — Kinds told apart at a glance · MUST
 
 Each kind is recognisable at gameplay size and told apart from the others by its silhouette, not
-only by its colour (there are only two enemy colours).
+only by its colour (the colour tells the tier, ENM-49, not the kind).
 
 **Acceptance criteria**
 - Given the dev enemies viewer, when the kinds are seen side by side at gameplay size, then each
   can be named (manual check).
 
 *Sources: P16-R03, D-231.*
+
+#### ENM-49 — One colour theme per tier · MUST
+
+Each tier has a colour theme, the same for its five kinds, picked to stand out from the ground of
+its world (the neon sits on the yellow-to-green ladder of the enemy colour family, so it never
+leaves it; the hull is tinted its own colour):
+
+| Tier (world) | Neon (hue) | Hull | Against the ground |
+|--------------|------------|------|--------------------|
+| 1 (World 1: sea, grass, red desert) | yellow, 60° | steel blue | yellow is furthest from the turquoise sea and the green grass; blue-grey against warm sand |
+| 2 (World 2: rust desert, industry) | lime, 110° | dark teal | green is the complement of rust and orange light; a cold hull on a warm ground |
+| 3 (World 3: dark damp earth, canals, stone) | chartreuse, 85° | indigo slate | brighter than the dark grey-green ground (weakest in hue on the grass of 3-4 and 3-5, so brightness carries it) |
+| 4 (World 4: bright city, grey concrete) | emerald, 135° | near-black graphite | a deep saturated green on pale concrete, where yellow would wash out |
+
+The enemy shots keep their own orange to amber family whatever the tier: the colour of an enemy
+tells its tier, never what shoots at the player.
+
+**Acceptance criteria**
+- Given the four tiers, then their neon hues are in the enemy family (60°–140°) and at least 20°
+  apart, and every kind's neon is its tier's (unit test).
+- Given a model of a kind of a tier, when it is built, then its lights are drawn in its tier's hue
+  and its hull is tinted its tier's colour (unit test).
+- Given each world's level, then an enemy of its tier meets the contrast threshold of
+  [readability](../graphics/readability.md) (e2e, one level of each world).
+
+*Sources: reviewer request, 2026-11-03.*
+
+#### ENM-50 — A world uses the kinds of its tier · MUST
+
+World N uses the five kinds of tier N, and no other kind. A world's levels bring them in over time:
+World 1 starts with its diver and its shooter and each level adds one kind (the laser, the missile
+launcher, then the carrier), every kind being in 1-5; Worlds 2 to 4 start with three kinds (diver,
+shooter, laser), add the missile launcher in the second level and have all five from the third.
+The waves of every level are composed from the kinds of the level (`src/game/config/wave_plans.py`).
+
+**Acceptance criteria**
+- Given each level's waves and filler, then they name only kinds of the level's world's tier
+  (unit test).
+
+*Sources: reviewer request, 2026-11-03.*
 
 ## Tunable values
 
@@ -601,14 +643,15 @@ only by its colour (there are only two enemy colours).
 | `max_enemy_age` | 40 s | `GAME_PLAY_CONFIG` |
 | `bullet_radius` | 4 px | `bullet()` in `enemies.py` |
 | `blasts.missileScale` | 0.6 | `src/game/config/enemy_look.py` |
-| `budget` basic / veteran / elite | 400 / 700 / 1200 triangles | `ENEMY_LOOK["budget"]` |
+| `budget` tier 1 / 2 / 3 / 4 | 400 / 600 / 900 / 1200 triangles | `ENEMY_LOOK["budget"]` |
 | `hitbox_footprint_tolerance` | 15 % | model footprint vs. the kind's size |
 | `min_object_contrast` | 3:1 | see [readability](../graphics/readability.md) |
 | `hull` metallic / roughness | 0.85 / 0.38 | `ENEMY_LOOK["hull"]`; shades base, panel, dark |
 | `hull.tint` / `hull.selfLight` | 0.3 / 0.04 | D-231 (tint was 0.6) |
 | `flesh` metallic / roughness / tint | 0.25 / 0.5 / 0.15 | `ENEMY_LOOK["flesh"]`; shades slate, graphite, teal, sinew, bone, membrane, wound |
 | `hullLight` direct / environment | 1.8 / 1.8 | `src/game/config/readability.py` `READABILITY` |
-| `enemyHues` | 60° (yellow), 125° (green) | `READABILITY` |
+| `enemyHues` | 60° (yellow), 125° (green) | `READABILITY`: bosses; enemies use their tier's hue |
+| tier themes | neon 60° / 110° / 85° / 135°, hull blue / teal / indigo / graphite | `ENEMY_TIERS` in `src/game/config/enemy_tiers.py` |
 | `enemyBody` | hues 100–250° kept, else saturation ≤ 0.1 | `READABILITY` |
 | `enemyTrim` | whiten 0.25, strength 2.6, width 1.4 px, offset 0.1 px | `READABILITY` |
 | `chargeIdle` | 0.18 | `ENEMY_LOOK` |
@@ -621,9 +664,8 @@ only by its colour (there are only two enemy colours).
 ## Notes
 
 - The P05 enemies were first dark metal hulls with neon strips (lofted fuselages, bevelled wings);
-  phase 16 reworked every model as Cyber-Organic. Their first neon colours (cyan, red, magenta,
-  orange, blue, purple, amber…) are still the config's `neon` values: they are snapped to yellow or
-  green when drawn (D-231), and still pick which of the two a kind gets.
+  phase 16 reworked every model as Cyber-Organic. Their neon colours used to differ per kind; since
+  the four tiers (2026-11-03) every kind takes its tier's colours (ENM-49).
 - The rim outline of phase 14 was replaced by the edge trim built into the models (D-220).
 - Reactor flames were all one light blue for a while (phase 5 review); they now take the enemy's
   colour (D-231).
