@@ -4,7 +4,7 @@
 from core.entities.enemy import Enemy
 from core.systems.gun_muzzles import GunMuzzles
 from game.config.enemies import ENEMY_CONFIG
-from game.sim.enemies.enemy_helpers import DOWN, Cadence, on_playfield
+from game.sim.enemies.enemy_helpers import DOWN, Cadence, missile_spec, on_playfield
 
 # isort: split
 # __pragma__ ("skip")
@@ -40,5 +40,5 @@ class Rocketeer(Enemy):
         for _i in range(_count):
             for pod in self._pods:
                 point = pod.along(ctx, self, DOWN)
-                ctx.fire_missile(point.x, point.y, DOWN, CFG.missile)
+                ctx.fire_missile(point.x, point.y, DOWN, missile_spec(CFG.missile))
         self.charge = self._launcher.progress

@@ -5,7 +5,7 @@ from core.entities.jointed_enemy import JointedEnemy
 from core.systems.enemy_motion import approach
 from core.systems.projectile_motion import heading_to
 from game.config.enemies_elite import ELITE_CONFIG
-from game.sim.enemies.enemy_helpers import DOWN, Cadence, on_playfield
+from game.sim.enemies.enemy_helpers import DOWN, Cadence, missile_spec, on_playfield
 from game.sim.joints import jointed_design
 
 # isort: split
@@ -71,5 +71,5 @@ class Hydra(JointedEnemy):
             self._next = index + 1
             point = ctx.seen(head.place(spec.muzzle))
             aim = heading_to(point.x, point.y, ctx.player_x, ctx.player_y)
-            ctx.fire_missile(point.x, point.y, aim, CFG.missile)
+            ctx.fire_missile(point.x, point.y, aim, missile_spec(CFG.missile))
             return

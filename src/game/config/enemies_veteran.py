@@ -8,7 +8,7 @@ centre facing down the screen, X right, Y up, and heights).
 
 from game.config.enemies import ENEMY_UNIT
 from game.config.enemy_look import ENEMY_LOOK
-from game.config.record import merge, record
+from game.config.record import record
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).

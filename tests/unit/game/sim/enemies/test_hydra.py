@@ -72,7 +72,7 @@ def test_enm_hydra_09_the_heads_launch_homing_missiles_not_bullets() -> None:
     run(hydra, ctx, 1.0)
     assert ctx.bullets == []
     assert len(ctx.missiles) == 1
-    assert ctx.missiles[0][3] is CFG.missile
+    assert ctx.missiles[0][3].turn_rate_deg == CFG.missile.turnRateDeg
     assert CFG.missile.speed < ENEMY_CONFIG.rocketeer.missile.speed
     assert CFG.headFireInterval > 0.5
 
