@@ -178,6 +178,7 @@ def scene(monkeypatch: Any) -> SimpleNamespace:
     )
     monkeypatch.setattr(enemy_mesh, "unlit", unlit)
     monkeypatch.setattr(enemy_mesh, "tinted_hull", tinted_hull)
+    monkeypatch.setattr(enemy_mesh, "matte_of", lambda name, _albedo, _scene: _Material(name))
     monkeypatch.setattr(
         enemy_mesh, "enemy_materials", lambda _scene: SimpleNamespace(neon=_Material("enemy-neon"))
     )
@@ -296,7 +297,7 @@ def test_enm_34_a_model_is_a_root_with_its_body_reactors_and_muzzles(
     rotor_name, rotors, rotor_mat, rotor_parent = scene.rotors[0]
     assert (rotor_name, rotor_parent) == ("gnat", body)
     assert [r.at for r in rotors] == [[2, 0, 0]]
-    assert rotor_mat.name.startswith("hull:")
+    assert rotor_mat.name == "gnat-blades"
 
 
 def test_gfx_art_05_the_body_is_tinted_by_the_neon_moved_into_the_enemies_family(
@@ -380,3 +381,11 @@ def test_enm_23_the_charge_lights_brighten_as_the_attack_charges(
     k = ENEMY_LOOK.chargeIdle + (1 - ENEMY_LOOK.chargeIdle) * charge
     color = enemy_color(neon)
     assert scene.unlit["gnat-charge"].emissive == pytest.approx(tuple(c * k for c in color))
+
+
+def test_the_fan_blades_are_matte_not_the_shiny_hull(scene: SimpleNamespace) -> None:
+    """The rotors' blades get their own matte material, so they show no highlight."""
+    enemy_mesh.build_enemy_model("gnat", "scene", [1.0, 0.1, 0.1], _gnat)
+    (_name, _rotors, blades, _body) = scene.rotors[0]
+    assert blades.name == "gnat-blades"
+    assert not blades.name.startswith("hull")

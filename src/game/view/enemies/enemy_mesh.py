@@ -14,6 +14,7 @@ from game.view.enemies.enemy_materials import (
     enemy_materials,
     in_body_shades,
     in_enemy_family,
+    matte_of,
     mesh_of,
     rim_of,
     tinted_hull,
@@ -26,6 +27,7 @@ from game.view.enemies.living_motion import (
     new_breath,
 )
 from render.babylon import (
+    color3,
     new_transform_node,
     node_name,
 )
@@ -263,7 +265,10 @@ def build_enemy_model(
     body.parent = root
     clock = [0.0]
     add_reactors(name, reactors, parts, root, neon_color)
-    add_rotors(name, rotors, mats.hull, body)
+    # The blades are matte (no highlight on the fan), not the shiny metal of the hull.
+    dark = ENEMY_LOOK.hull.dark
+    blades = matte_of(name + "-blades", color3(dark[0], dark[1], dark[2]), scene)
+    add_rotors(name, rotors, blades, body)
     for i, entry in enumerate(muzzles):
         at = entry[0]
         node = new_transform_node(name + "-muzzle-" + entry[1] + "-" + str(i), scene)

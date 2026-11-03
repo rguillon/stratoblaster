@@ -46,9 +46,9 @@ N = ENEMY_LOOK.neon
 QUARTER = math.pi / 2
 
 # ENM-GNAT-02: the duct around the Gnat's fan, which is its body (a lathe profile, around Y).
-GNAT_DUCT = [[3.9, -0.5], [4.5, 0], [3.9, 0.5], [3.9, -0.5]]  # type: list[list[float]]
+GNAT_DUCT = [[4.9, -0.5], [5.5, 0], [4.9, 0.5], [4.9, -0.5]]  # type: list[list[float]]
 # ENM-GNAT-01: the pointed nose cone, standing on the duct's front edge and tipped at GNAT_NOSE.
-GNAT_NOSE_BASE = 4.0
+GNAT_NOSE_BASE = 5.0
 GNAT_NOSE = 10.6
 
 
@@ -67,8 +67,8 @@ def build_gnat(scene: Any) -> Any:
         reactor = p.reactor
         rotor = p.rotor
         hull.lathe(GNAT_DUCT, 8, H.panel, None, False)
-        neon.ring(4.7, 0.5, 8, N.gnat)
-        rotor([0, 0, 0], 3.6)
+        neon.ring(5.8, 0.5, 8, N.gnat)
+        rotor([0, 0, 0], 4.6)
         flesh.cylinder(
             2.4,
             GNAT_NOSE - GNAT_NOSE_BASE,
@@ -78,7 +78,7 @@ def build_gnat(scene: Any) -> Any:
             0,
         )
         eye_pair(p, [0, 0.4, 6.6], 0.5, 0.45, N.gnat)
-        reactor([0, 0, -4.4], 1.1)
+        reactor([0, 0, -5.5], 1.1)
 
     return build_enemy_model("gnat", scene, N.gnat, draw)
 

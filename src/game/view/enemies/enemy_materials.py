@@ -178,6 +178,22 @@ def flesh_of(name: str, albedo: Any, scene: Any) -> Any:
     return mat
 
 
+def matte_of(name: str, albedo: Any, scene: Any) -> Any:
+    """Return a matte dark material with no specular highlight, lit as the hulls are.
+
+    For parts that must not glint, such as a fan's blades.
+    """
+    was = block_material_marks(scene, True)
+    mat = new_pbr_material(name, scene)
+    mat.albedoColor = albedo
+    mat.metallic = 0
+    mat.roughness = 1
+    mat.directIntensity = READABILITY.hullLight.direct
+    mat.environmentIntensity = READABILITY.hullLight.environment
+    block_material_marks(scene, was)
+    return mat
+
+
 # The materials that show an enemy's body, flashed white when a boss part is hit.
 BODY_MATERIALS = ["enemy-hull", "enemy-flesh"]
 
