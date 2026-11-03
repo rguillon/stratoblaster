@@ -130,8 +130,8 @@ def _spawn_bulwark(area: EnemySpawnArea) -> list[Enemy]:
 
 
 def _spawn_splitter(area: EnemySpawnArea) -> list[Enemy]:
-    mirror = _mirror_for(area, C.splitter.path[0][0])
-    return [Splitter(playfield_path(C.splitter.path, area, mirror))]
+    x = _entry_x(area, C.splitter.xRange)
+    return [Splitter(x, _top(area), C.splitter.stopFraction * area.height)]
 
 
 def _spawn_carrier(area: EnemySpawnArea) -> list[Enemy]:

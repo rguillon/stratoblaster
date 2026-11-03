@@ -1,9 +1,9 @@
 # Hive
 
-> **Area:** enemies · **Prefix:** `ENM-HIVE` · **Related:** [common.md](common.md), [wasp.md](wasp.md), [carrier.md](carrier.md), [World 4](../worlds/world-4/world.md)
+> **Area:** enemies · **Prefix:** `ENM-HIVE` · **Related:** [common.md](common.md), [splitter.md](splitter.md), [carrier.md](carrier.md), [World 4](../worlds/world-4/world.md)
 
-The Hive is an elite kind ([common.md](common.md)): a huge, rounded hive-ship that flies slowly
-straight down the screen, launching [Wasps](wasp.md) from a turning ring on its back and firing
+The Hive is tier 4's **carrier** (World 4) and an elite kind ([common.md](common.md)): a huge, rounded hive-ship that flies slowly
+straight down the screen, launching [Splitters](splitter.md) from a turning ring on its back and firing
 rings of bullets from its rim, until it gets too close to the player. It has no destroyable parts;
 only its ring moves.
 
@@ -48,7 +48,7 @@ configured honey-amber is on the yellow side of the two enemy hues ([common.md](
 #### ENM-HIVE-04 — Launch ring and vents · MUST
 
 The launch ring is a metal ring on its back with a launch hatch on it. It turns with the Hive's
-spin, so the hatch goes round, and the hatch is where the Wasps come out. The twelve vents round its
+spin, so the hatch goes round, and the hatch is where the Splitters come out. The twelve vents round its
 rim point outwards; each is where one bullet of a ring leaves.
 
 **Acceptance criteria**
@@ -60,7 +60,7 @@ rim point outwards; each is where one bullet of a ring leaves.
 
 #### ENM-HIVE-05 — Charge lights · SHOULD
 
-The hatch is a charge light that glows as the next Wasp comes and is at full brightness when it
+The hatch is a charge light that glows as the next Splitter comes and is at full brightness when it
 comes out; the charge lights at the vents' mouths follow the same charge. Below the lowest height it
 launches from, they are dark ([common.md](common.md)).
 
@@ -104,20 +104,21 @@ at the bottom. Its launch ring turns at 45°/s all the time.
 
 *Sources: P05-R23.*
 
-#### ENM-HIVE-09 — Launching Wasps · MUST
+#### ENM-HIVE-09 — Launching Splitters · MUST
 
-While its centre is over the playfield and above 30 % of its height, every 4 s (the first 1.5 s
-after it is over it) the Hive launches a Wasp from the hatch, where the ring has turned it. The Wasp
-is an ordinary [Wasp](wasp.md): it flies down 55 px from the hatch, pauses, fires its aimed fan and
-dives. The launch timer is the same in every level (the level's fire rate factor does not speed it
-up).
+While its centre is over the playfield and above 30 % of its height, every 6 s (the first 2 s after
+it is over it) the Hive launches a [Splitter](splitter.md) from the hatch, where the ring has turned
+it. The Splitter is built mid-screen at the hatch, `Splitter(x, y, stop_y)`, and flies down 55 px
+from the hatch, pauses turning to the player, then dives at where the player was, and breaks into its
+pods if destroyed (ENM-SPLITTER-05 to -08). The launch timer is the same in every level (the level's
+fire rate factor does not speed it up).
 
 **Acceptance criteria**
-- Given a Hive is over the playfield, when its launch timer runs out, then a Wasp appears at its
-  ring's hatch and attacks.
-- Given a launched Wasp, then it pauses 55 px below where it came out.
+- Given a Hive is over the playfield, when its launch timer runs out, then a Splitter appears at its
+  ring's hatch and goes into its dive sequence.
+- Given a launched Splitter, then it pauses 55 px below where it came out.
 
-*Sources: P05-R23.*
+*Sources: P05-R23, tier 4 redesign (launched Wasps).*
 
 #### ENM-HIVE-10 — Rings of bullets · MUST
 
@@ -136,18 +137,18 @@ Below 30 % of the playfield height, too close to the player, the Hive stops laun
 it flies on down and off the screen.
 
 **Acceptance criteria**
-- Given a Hive below 30 % of the height, then it launches no Wasp and fires no ring.
+- Given a Hive below 30 % of the height, then it launches no Splitter and fires no ring.
 
 *Sources: P05-R23.*
 
 #### ENM-HIVE-12 — Health, points and hit circle · MUST
 
 A Hive has 420 HP and scores 900 points. Its hit circle, at its centre, is 0.8 of the usual one for
-its size ([common.md](common.md)): 23.1 px. It has no destroyable part. The Wasps it launched are
+its size ([common.md](common.md)): 23.1 px. It has no destroyable part. The Splitters it launched are
 enemies of their own: they stay, with their own health and points, when it is destroyed.
 
 **Acceptance criteria**
-- Given a Hive, then it takes 420 damage to destroy and scores 900 points; its Wasps still on the
+- Given a Hive, then it takes 420 damage to destroy and scores 900 points; its Splitters still on the
   screen fly on.
 
 *Sources: P05-R23.*
@@ -183,9 +184,9 @@ The Hive is an elite kind: only World 4's waves use it. 4-3 brings it in, the fo
 | xRange | 30 % – 70 % of the width | when the wave gives no entry |
 | speed | 28 px/s | straight down |
 | ringSpin | 45°/s | the launch ring |
-| launchInterval / firstLaunch | 4 s / 1.5 s | not scaled by the level's fire rate |
+| launchInterval / firstLaunch | 6 s / 2 s | not scaled by the level's fire rate |
 | port | `[0, 14, 9]` | the hatch on the ring, turned with it |
-| launchDrop | 55 px | a launched Wasp's pause, below the hatch |
+| launchDrop | 55 px | a launched Splitter's pause, below the hatch |
 | ringInterval / firstRing / ringCount | 3 s / 1 s / 12 | style `orange`, 150 px/s; times the level's fire rate factor |
 | ringMuzzles | 12 vents, 32 px out, 1 px up | `around(12, 32, 1)` |
 | lastFraction | 0.3 | no launch nor ring below it |
@@ -199,9 +200,9 @@ each of [4-3](../worlds/world-4/4-3-midtown.md), [4-4](../worlds/world-4/4-4-bus
 and [4-5](../worlds/world-4/4-5-downtown.md); the groups grow over each level. It is in no level's
 filler.
 
-- The Wasp's model is one of the child models built with every level's own models
+- The Splitter's model is one of the child models built with every level's own models
   (`CHILD_MODELS` in `src/game/view/enemies/enemy_bindings.py`), so no model is built in play when
   a Hive launches ([performance.md](../performance.md)).
-- It launches like the [Carrier](carrier.md) launches Gnats, one Wasp at a time.
+- It launches like the [Carrier](carrier.md) launches Gnats, one Splitter at a time.
 - Known gaps: no unit test checks the model's size or its triangle count since the Python port
   (D-220).

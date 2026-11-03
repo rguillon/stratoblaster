@@ -21,7 +21,7 @@ class Wasp(Hornet):
 
     It flies down to its stop height, pauses 0.4 s turning its nose to the player, fires a fan of 3
     bullets 12° apart aimed at the player once (ENM-WASP-09, ENM-20), then dives at where the player
-    was at that moment, like a Hornet (ENM-WASP-10). The Hive launches them too (ENM-HIVE-09).
+    was at that moment, like a Hornet (ENM-WASP-10).
     """
 
     def __init__(self, x: float, y: float, stop_y: float) -> None:

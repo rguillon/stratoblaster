@@ -5,6 +5,7 @@ import math
 
 import pytest
 
+from game.config.enemies import ENEMY_CONFIG
 from game.config.enemies_elite import (
     ELITE_CONFIG,
     HYDRA_NECKS,
@@ -73,3 +74,15 @@ def test_enm_orbiter_08_orbiter_has_three_drones_each_on_a_ring_round_its_centre
     assert [d["id"] for d in drones] == ["drone-0", "drone-1", "drone-2"]
     radii = {round(math.hypot(*d["centre"]), 6) for d in drones}
     assert len(radii) == 1
+
+
+def test_enm_hydra_14_hydra_launches_slower_homing_missiles_than_the_rocketeer() -> None:
+    hydra = ELITE_CONFIG.hydra
+    assert "bullet" not in hydra
+    assert hydra.missile.speed < ENEMY_CONFIG.rocketeer.missile.speed
+    assert hydra.missile.homingSeconds > 0
+    assert hydra.headFireInterval > 0.5
+
+
+def test_enm_hive_09_hive_launches_a_splitter_every_six_seconds() -> None:
+    assert ELITE_CONFIG.hive.launchInterval == 6

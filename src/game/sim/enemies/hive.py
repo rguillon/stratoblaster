@@ -8,7 +8,7 @@ from core.entities.muzzle import muzzle_point
 from core.systems.gun_muzzles import GunMuzzles
 from game.config.enemies_elite import ELITE_CONFIG
 from game.sim.enemies.enemy_helpers import DEG, DOWN, Cadence, on_playfield
-from game.sim.enemies.wasp import Wasp
+from game.sim.enemies.splitter import Splitter
 from game.sim.joints import jointed_design
 
 # isort: split
@@ -25,11 +25,11 @@ class Hive(JointedEnemy):
     """ENM-HIVE-08: a huge rounded hive-ship with a launch ring turning on its back.
 
     Its `spin` turns the ring, and it has no destroyable parts. It flies slowly straight down the
-    screen and leaves at the bottom. Every 4 s a Wasp comes out of the hatch on its ring and attacks
-    (ENM-HIVE-09); every 3 s it fires a ring of 12 bullets from the vents around its rim
-    (ENM-HIVE-10). It stops launching and firing in the lower part of the screen (ENM-HIVE-11). Its
-    `charge` is how close the next launch is (ENM-HIVE-05). It is built from the engine's specs
-    (ENM-HIVE-13).
+    screen and leaves at the bottom. As tier 4's carrier, every 6 s a Splitter comes out of the
+    hatch on its ring and dives (ENM-HIVE-09); every 3 s it fires a ring of 12 bullets from the
+    vents around its rim (ENM-HIVE-10). It stops launching and firing in the lower part of the
+    screen (ENM-HIVE-11). Its `charge` is how close the next launch is (ENM-HIVE-05). It is built
+    from the engine's specs (ENM-HIVE-13).
     """
 
     def __init__(self, x: float, y: float) -> None:
@@ -54,7 +54,7 @@ class Hive(JointedEnemy):
         _count = self._launcher.tick(dt)
         for _i in range(_count):
             x, y = self.hatch(ctx)
-            ctx.spawn(Wasp(x, y, y - CFG.launchDrop))
+            ctx.spawn(Splitter(x, y, y - CFG.launchDrop))
         self.charge = self._launcher.progress
         _count = self._ring.tick(dt * ctx.fire_rate)
         for _i in range(_count):
