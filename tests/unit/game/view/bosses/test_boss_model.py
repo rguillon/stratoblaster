@@ -111,24 +111,10 @@ def test_flash_group_lights_its_body_hulls_white_for_a_moment_after_a_hit(monkey
 
 # BOSS-52 (D-254): every boss model is one object, at rest and after each of its transformations: no
 # piece of it hangs in the air (its parts and weapons, its armour and frames, its rig). The game
-# draws no stem or pylon of its own any more: the bosses whose drawings do not hold yet are strict
-# expected failures (ENG-163), struck off as they are migrated.
-NOT_HELD_YET = {
-    "boreal-citadel",
-}
+# draws no stem or pylon of its own: the drawings hold together as drawn.
 
 
-def _held(design: Any) -> Any:
-    if design.id in NOT_HELD_YET:
-        return pytest.param(
-            design,
-            id=design.id,
-            marks=pytest.mark.xfail(strict=True, reason="loose pieces, not redrawn yet (D-254)"),
-        )
-    return pytest.param(design, id=design.id)
-
-
-@pytest.mark.parametrize("design", [_held(d) for d in BOSS_DESIGNS])
+@pytest.mark.parametrize("design", BOSS_DESIGNS, ids=[d.id for d in BOSS_DESIGNS])
 def test_boss_52_the_boss_holds_together_in_every_state(design: Any) -> None:
     mp = pytest.MonkeyPatch()
     try:

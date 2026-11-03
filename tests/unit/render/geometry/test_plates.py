@@ -144,3 +144,17 @@ def test_the_boundary_of_a_ring_of_triangles_drops_its_hole() -> None:
     [loop] = plates._loops(tris)
     assert _area(loop) == 9
     assert len(loop) == 4
+
+
+def test_a_degenerate_triangle_gives_its_corners_no_room() -> None:
+    assert plates._height([[0.0, 0.0], [1.0, 1.0], [1.0, 1.0]], 0) == 0
+    assert plates._height([[0.0, 2.0], [-1.0, 0.0], [1.0, 0.0]], 0) == pytest.approx(2)
+
+
+def test_the_leftmost_edge_is_kept_whichever_comes_first() -> None:
+    corner = [0.0, 0.0]
+    left = [corner, [0.0, 1.0]]
+    right = [corner, [0.0, -1.0]]
+    # Coming in along +X: turning to +Y is a left turn.
+    assert plates._leftmost([left, right], [1.0, 0.0]) == 0
+    assert plates._leftmost([right, left], [1.0, 0.0]) == 1

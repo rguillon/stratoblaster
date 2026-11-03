@@ -172,7 +172,8 @@ def armour_top(tris: list[Any]) -> float:
         total += area
     heights.sort()
     reached = 0.0
-    for y in heights:
+    for i in range(len(heights) - 1):
+        y = heights[i]
         reached += area_at[str(round(y * 100))]
         if reached >= TOP_SHARE * total:
             return y

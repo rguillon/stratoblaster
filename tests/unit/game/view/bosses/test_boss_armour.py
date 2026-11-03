@@ -410,61 +410,10 @@ def test_a_moving_piece_strains_then_moves_into_its_new_pose(built: Any) -> None
     built.views[2].show(_boss(1, 0, 0), {}, 0.1)
 
 
-# BOSS-42 (D-254): every boss draws each of its armour regions. The bosses not yet drawn are strict
-# expected failures (ENG-163), struck off as they are migrated.
-DRAWN = {
-    "sentinel",
-    "reef-warden",
-    "breakwater",
-    "dust-devil",
-    "scorpion",
-    "river-leviathan",
-    "canopy-spider",
-    "sky-temple",
-    "dam-breaker",
-    "verdant-crown",
-    "steam-dreadnought",
-    "geyser-rig",
-    "obsidian-golem",
-    "foundry-ark",
-    "caldera-throne",
-    "floe-breaker",
-    "fjord-lynx",
-    "snow-owl",
-    "avalanche",
-    "ice-queen",
-    "mangrove-croc",
-    "toucan",
-    "stone-idol",
-    "mosquito",
-    "jaguar",
-    "storm-petrel",
-    "gull-mothership",
-    "mesa-fortress",
-    "narwhal",
-    "harbour-kraken",
-    "aurora-station",
-    "glacier-colossus",
-    "cinder-crab",
-    "ash-wraith",
-    "magma-salamander",
-    "furnace-drake",
-    "ember-herald",
-}
-NOT_YET_DRAWN = {d.id for d in BOSS_DESIGNS} - DRAWN
+# BOSS-42 (D-254): every boss draws each of its armour regions.
 
 
-def _design(design: Any) -> Any:
-    if design.id in NOT_YET_DRAWN:
-        return pytest.param(
-            design,
-            id=design.id,
-            marks=pytest.mark.xfail(strict=True, reason="armour not drawn yet (D-254)"),
-        )
-    return pytest.param(design, id=design.id)
-
-
-@pytest.mark.parametrize("design", [_design(d) for d in BOSS_DESIGNS])
+@pytest.mark.parametrize("design", BOSS_DESIGNS, ids=[d.id for d in BOSS_DESIGNS])
 def test_boss_42_every_region_of_the_boss_is_drawn(design: Any) -> None:
     mp = pytest.MonkeyPatch()
     try:

@@ -96,14 +96,22 @@ moves but the shared living motion of [common.md](../common.md) and its transfor
 
 #### FB-BOREAL-CITADEL-08 — Its transformations change its shape · MUST
 
-- First transformation: its bow doors (region `bow-doors`: the bow from 40 px to 90 px ahead of the
-  centre, 32 px either side of the centre line, a door either side) stay on and swing open sideways
-  by `door_swing` about hinges at their rear outer corners, eased, as the armour of other bosses
-  would burst; the dark metal of its hold (`shell`) shows where they were, with the hangar and two
-  mortars rising in it.
-- Second transformation: the armour of both wings (region `wings`: from 32 px to 102 px out either
-  side, from 40 px ahead of the centre to 26 px behind it) bursts off, baring dark metal ribs and
-  spars (`wing`), and its two heavy cannons rise from it.
+Its deck is a slab of flesh up to 4 px, under panels of rimed flesh up to its top (6 px):
+its armour is drawn as panels of their own (D-254), lying on the deck's slab, and the core is drawn
+without them.
+
+- First transformation: its bow doors (regions `bow-doors-right` and `bow-doors-left`: the deck's
+  panels of the bow from 40 px ahead of the centre to its nose, within 32 px of the centre line, a
+  door either side) stay on and swing open sideways by `door_swing` about hinges at their rear outer
+  corners, eased, as the armour of other bosses would burst. Each door carries what stands on it:
+  the front towers, a heated city dome, a roof mast and a snow drift. The dark metal floor of its
+  hold (`shell`) shows where they were, just over the deck's slab, with the hangar and two mortars
+  rising in it.
+- Second transformation: its wing panels (region `wings`: the deck's panels from 32 px out either
+  side to the deck's edge, from 40 px ahead of the centre to 26 px behind it), with what stands on
+  them (the side towers, snow drifts, the dish, a mast, a skirt and the arteries from the domes to
+  the outriggers), burst off in three slices each, baring dark metal ribs and spars (`wing`) over
+  the deck's slab, and its two heavy cannons rise from it.
 
 The boss stays one object (the opened doors keep their whole body together; they overlap the hull
 where they swing over it).
@@ -111,7 +119,7 @@ where they swing over it).
 **Acceptance criteria**
 - Given the bosses viewer, when K breaks both domes, then the bow doors swing open and a hangar and two mortars rise in the hold.
 
-*Sources: D-224, D-227, D-230.*
+*Sources: D-224, D-227, D-230, D-254.*
 
 ### Behaviour
 
@@ -226,7 +234,8 @@ completes 2-5 and World 2.
 | rage_heat | 7 (`curtain` green / purple + `spirals` purple / magenta, 0.5 share each) | `rage` |
 | transformations | both domes; both batteries | `transformParts` |
 | door_swing | 0° → 75° about the `up` axis, hinge (±32, −40, 10) | `moving_region("bow-doors", 1, …, swing(…))` |
-| region `wings` | x 32…102 (mirrored), y −40…26, from 8 px up, `wing` | `armour_region("wings", 2, …)` |
+| moving region `bow-doors` | the bow's panels: x 0…32 (mirrored), from y −40 to the deck's bow edge and nose (y −83.7 on the centre line), `shell` | `moving_region("bow-doors", 1, …)`; drawn in `src/game/view/bosses/world_2/boreal_citadel_armour.py` |
+| shed region `wings` | the deck's side panels: x 32 (mirrored) out to the deck's edge (55.3…59.7), y −40…26, `wing` | `armour_region("wings", 2, …)`; drawn in `boreal_citadel_armour.py` |
 | hangar_radius / mortar_radius | 13 px / 8 px | `hidden_weapon("hangar" …)`, pod 9 px high; `hidden_weapon("mortar-…")`, pods 11 px high |
 | t1_hp | 1 720 | hangar and mortars |
 | t2_radius / t2_hp | 12 px / 2 150 | `hidden_weapon("heavy-…", "cannon", …)`, pod 16.4 px high |

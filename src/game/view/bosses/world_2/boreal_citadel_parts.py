@@ -188,11 +188,12 @@ def draw_battery(p: EnemyParts, pos: Vec3) -> None:
         muzzle([cx, height, cz], "missile")
     for s in [-1, 1]:
         neon.box([0.6, 1.4, 20], VIOLET, Placement([x + s * 12.2, base + 3.4, z]))
-    neon.box([18, 1.2, 0.6], AURORA, Placement([x, base + 3.4, z + 13.2]))
+    # In its sloping front, the icicles off the hatch plate's front edge (BOSS-52: not in the air).
+    neon.box([18, 1.2, 0.6], AURORA, Placement([x, base + 3.4, z + 11.6]))
     icicles(
         flesh,
-        [[x - 10, z + 13.4], [x + 10, z + 13.4]],
-        top,
+        [[x - 10, z + 10.5], [x + 10, z + 10.5]],
+        top - 0.6,
         4,
     )
 

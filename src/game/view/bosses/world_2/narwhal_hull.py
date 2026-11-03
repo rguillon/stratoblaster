@@ -26,8 +26,6 @@ from game.view.enemies.enemy_mesh import EnemyParts
 
 
 N = BOSS_LOOK.neon.narwhal
-if N == None:
-    N = [0.05, 0.95, 0.75]
 
 # The pressure hull (loft stations, tail to nose: z, half width, bottom, top): round, its widest
 # just behind the hump.
@@ -113,10 +111,8 @@ def half_width(z: float) -> float:
     return station_at(HULL, z)[1]
 
 
-def _stripe_stations(stations: list[list[float]], bottom: Any) -> list[list[float]]:
-    """Return `stations` with their bottom at `bottom` (a cap's), or as they are."""
-    if bottom == None:
-        return stations
+def _stripe_stations(stations: list[list[float]], bottom: float) -> list[list[float]]:
+    """Return `stations` with their bottom at `bottom` (a cap's)."""
     return [[st[0], st[1], bottom, st[3]] for st in stations]
 
 
@@ -127,16 +123,15 @@ def _neon_lines(p: EnemyParts, section: Any, sides: list[int], stations: Any) ->
         p.neon.loft(stripe, stations, N, None, LoftOptions(True))
 
 
-def _whole(p: EnemyParts, z0: float, z1: float, neon_z: Any) -> None:
+def _whole(p: EnemyParts, z0: float, z1: float, neon_z: list[float]) -> None:
     """Draw the body whole from `z0` to `z1` (its tail or its nose).
 
-    The neon lines run over `neon_z` (a span along Z), when given.
+    The neon lines run over `neon_z` (a span along Z).
     """
     span = hull_span(z0, z1)
     paint = shifted_paint(hull_paint, span[1])
     p.flesh.loft(SUB_SECTION, span[0], ICE_FLESH.teal, None, LoftOptions(False, paint))
-    if neon_z != None:
-        _neon_lines(p, SUB_SECTION, [BACK - 1, BACK + 1], hull_span(neon_z[0], neon_z[1])[0])
+    _neon_lines(p, SUB_SECTION, [BACK - 1, BACK + 1], hull_span(neon_z[0], neon_z[1])[0])
 
 
 def hull_body(p: EnemyParts) -> None:
@@ -152,7 +147,7 @@ def hull_body(p: EnemyParts) -> None:
         [[st[0], st[1], st[2], DECK] for st in lower],
         ICE_FLESH.teal,
     )
-    _whole(p, SPINE_SPAN[1], HULL[-1][0], [SPINE_SPAN[1], NEON_TO])
+    _whole(p, SPINE_SPAN[1], HULL[len(HULL) - 1][0], [SPINE_SPAN[1], NEON_TO])
 
 
 def hull_cap(p: EnemyParts, z0: float, z1: float) -> None:

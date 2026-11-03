@@ -481,11 +481,34 @@ REFINERY_TITAN = with_weapons(
         hidden_weapon("orb-right", "orb", [9, -35], 7, 1810, 2, "orange", 2.0, 18.9),
     ],
     [
+        # The middle length of its shell, the plated skull over the core riding it (D-254).
         armour_region(
-            "back", 1, [[-24, -24], [24, -24], [24, 14], [-24, 14]], "shell", [7.3, 1000], False
+            "back",
+            1,
+            [[-27, 20], [27, 20], [32, 8], [32, -14], [27, -24], [-27, -24], [-32, -14], [-32, 8]],
+            "shell",
+            None,
+            False,
         ),
+        # The front length of its shell, out to its nose.
         armour_region(
-            "spine", 2, [[-24, -62], [24, -62], [24, -24], [-24, -24]], "shell", [4.3, 1000], False
+            "spine",
+            2,
+            [
+                [-27, -24],
+                [27, -24],
+                [27, -36],
+                [20, -47],
+                [17, -57],
+                [6, -66],
+                [-6, -66],
+                [-17, -57],
+                [-20, -47],
+                [-27, -36],
+            ],
+            "shell",
+            None,
+            False,
         ),
     ],
 )
@@ -503,11 +526,28 @@ OVERLORD = with_weapons(
         hidden_weapon("mortar-right", "mortar", [13, -55], 11, 1940, 2, "purple", 2.0, 14.1),
     ],
     [
+        # The deck's flank plates, out to its edge, the city on them (D-254).
         armour_region(
-            "flanks", 1, [[32, -34], [106, -34], [106, 32], [32, 32]], "wing", [15.2, 1000]
+            "flanks", 1, [[32, -42], [52, -42], [64, -18], [64, 30], [62.8, 32], [32, 32]], "wing"
         ),
+        # The deck's front plate, before the citadel, with the boulevard's front.
         armour_region(
-            "spine", 2, [[-32, -66], [32, -66], [32, -24], [-32, -24]], "shell", [2.8, 1000], False
+            "spine",
+            2,
+            [
+                [0, -64],
+                [26, -60],
+                [52, -42],
+                [32, -42],
+                [32, -34],
+                [-32, -34],
+                [-32, -42],
+                [-52, -42],
+                [-26, -60],
+            ],
+            "shell",
+            None,
+            False,
         ),
     ],
 )

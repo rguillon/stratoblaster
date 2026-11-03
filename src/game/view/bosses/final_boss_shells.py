@@ -35,14 +35,18 @@ def shell_body(
 
 
 def station_at(stations: list[Any], z: float) -> list[float]:
-    """Return the loft station at `z`, interpolated between the two of `stations` around it."""
+    """Return the loft station at `z`, interpolated between the two of `stations` around it.
+
+    Past the last station, the last one.
+    """
     for k in range(len(stations) - 1):
         a = stations[k]
         b = stations[k + 1]
-        if a[0] <= z <= b[0]:
+        if z <= b[0]:
             t = 0 if b[0] == a[0] else (z - a[0]) / (b[0] - a[0])
             return [a[i] + (b[i] - a[i]) * t for i in range(4)]
-    raise ValueError("No shell station at z " + str(z))
+    last: list[float] = stations[len(stations) - 1]
+    return last
 
 
 def shell_stations(body: SegmentedBody, z0: float, z1: float) -> list[Any]:
