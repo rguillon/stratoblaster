@@ -6,7 +6,7 @@ parts) and the ones that left, and moves their shots. Its `targets` are what the
 can hit. Pure and deterministic.
 """
 
-from core.entities.enemy import EnemyBulletSpec, EnemyBurstSpec
+from core.entities.enemy import EnemyBulletSpec, EnemyBurstSpec, EnemyMissileSpec
 from core.entities.muzzle import PlanePoint, seen_on_playfield
 from core.entities.shot_target import is_alive
 from core.systems.enemy_shots import EnemyShots, EnemyShotsOptions
@@ -18,7 +18,6 @@ from core.entities.enemy import (
     DropSource,
     Enemy,
     EnemyLaserSpec,
-    EnemyMissileSpec,
     LaserOwner,
 )
 from core.entities.muzzle import PlayfieldEye, RaisedPoint
