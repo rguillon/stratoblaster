@@ -1,45 +1,58 @@
 # Copyright (c) 2026 Renaud Guillon
-"""Whether a boss model holds together as one object (BOSS-52, D-227).
+"""Whether a boss model holds together as one object (BOSS-52, D-254).
 
-At rest and after each of its transformations: its core (what the armour cut leaves), the armour
-still on, the pieces of the regions that move (D-230) as they rest or once moved, the frames of the
-regions shed (with their pylons), the parts standing (with their turrets) and the hidden weapons
-revealed (with what slides out of them).
+At rest and after each of its transformations: its core, the armour still on, the pieces of the
+regions that move (BOSS-45) as they rest or once moved, the frames of the regions shed, the parts
+standing (with their turrets) and the hidden weapons revealed (with what slides out of them). The
+game draws no stem or pylon of its own any more: the drawings must hold together as drawn.
 """
 
 from typing import Any
 
 from game.config.boss_look import BOSS_LOOK
-from game.config.bosses.moving_regions import is_moving
+from game.config.bosses.moving_regions import is_moving, motion_value, move_point
 from game.config.record import record
 from game.view.bosses.boss_armour import (
     LAYERS,
-    cut_armour,
-    lasting_surfaces,
-    rooted,
-    supports_in,
+    all_triangles,
+    drawn_layers,
+    most_pieces,
+    region_drawing,
 )
-from game.view.bosses.boss_frame import frame_drawings
 from game.view.bosses.boss_limbs import boss_point
-from game.view.bosses.boss_model import _part_builder, part_supports, rest_stems
+from game.view.bosses.boss_model import _part_builder
 from game.view.bosses.boss_models import BOSS_MODELS
-from game.view.bosses.boss_stems import stems_drawing
 from game.view.bosses.hidden_weapon_shapes import weapon_drawing, weapon_slides
-from game.view.bosses.region_motion import posed
-from game.view.enemies.enemy_mesh import collect_parts
+from game.view.bosses.region_motion import to_config, to_model
+from helpers.islands import bounds_of, loose_triangles, pieces
 from helpers.view_probes import probe_builder
-from render.geometry.islands import bounds_of, loose_triangles, pieces
-from render.geometry.shatter import triangles
+from render.geometry.mesh_triangles import Vertex
 
 NEON = [1.0, 0.0, 1.0]
 
 
+def moved_triangles(tris: list[Any], motion: Any, value: Any) -> list[Any]:
+    """`tris` (model space) moved by `value` of `motion` from the pose as drawn."""
+    return [
+        [Vertex(to_model(move_point(motion, value, to_config(v.position))), v.color) for v in tri]
+        for tri in tris
+    ]
+
+
+def posed(tris: list[Any], region: Any, form: int) -> list[Any]:
+    """`tris` (model space) as `region` rests, or moved once a boss has done `form` transformations.
+
+    A region that does not move is left as drawn.
+    """
+    if not is_moving(region):
+        return tris
+    return moved_triangles(
+        tris, region.motion, motion_value(region.motion, 1 if form >= region.form else 0)
+    )
+
+
 def _drawn(draw: Any) -> list[Any]:
-    parts = collect_parts(draw)["parts"]
-    result: list[Any] = []
-    for layer in LAYERS:
-        result.extend(triangles(getattr(parts, layer).geometry))
-    return result
+    return all_triangles(drawn_layers(draw))
 
 
 def _field(obj: Any, key: str) -> Any:
@@ -63,16 +76,11 @@ def _part_tris(design: Any, drawing: Any, spec: Any) -> list[Any]:
     return result
 
 
-def _core_triangles(design: Any, drawing: Any, cut: Any) -> list[Any]:
-    """Return the core left by the armour cut, its ring, and the stems holding its loose pieces."""
-    core: list[Any] = []
-    for layer in LAYERS:
-        core.extend(cut.kept[layer])
-        core.extend(cut.floating.get(layer, []))
+def _core_triangles(drawing: Any) -> list[Any]:
+    """Return the core as drawn, and its ring."""
+    core = _drawn(drawing.core)
     if drawing.get("ring") is not None:
         core.extend(_drawn(drawing["ring"]))
-    # The stems holding its loose pieces, on its core (D-227).
-    core.extend(_drawn(stems_drawing(rest_stems(design, drawing, cut, NEON), NEON)))
     return core
 
 
@@ -95,23 +103,28 @@ def _gone_by_form(design: Any, forms: int) -> list[set[str]]:
     return gone
 
 
-def _armour_triangles(design: Any, cut: Any, supports: Any, form: int) -> list[Any]:
+def region_drawings(design: Any, drawing: Any) -> list[Any]:
+    """Return how each armour region of `design` is drawn by `drawing` (None when it is not)."""
+    regions = design.get("armour") or []
+    if len(regions) == 0:
+        return []
+    armour = drawing.get("armour")
+    most = most_pieces(regions)
+    return [region_drawing(armour, region, NEON, most) for region in regions]
+
+
+def _armour_triangles(design: Any, drawn: list[Any], form: int) -> list[Any]:
     """Return the regions still on or moved into their new pose, and the shed regions' frames."""
     tris: list[Any] = []
     for k, region in enumerate(design.armour):
-        layers = cut.regions[k]
-        if region.form > form or is_moving(region):
-            # On still, or moved into its new pose (D-230).
-            for layer in LAYERS:
-                tris.extend(posed(layers[layer], region, form))
-        if region.form > form or region.frame is None:
+        if drawn[k] is None:
             continue
-        held = supports_in(region, supports)
-        drawings = frame_drawings(
-            cut.frames[k], region.frame, NEON, held, cut.floors[k], cut.bridges[k]
-        )
-        tris.extend(_drawn(drawings[0]))
-        tris.extend(_drawn(drawings[1]))
+        if region.form > form or is_moving(region):
+            # On still, or moved into its new pose (BOSS-45).
+            tris.extend(posed(_drawn(drawn[k].whole), region, form))
+        if region.form <= form and drawn[k].frame is not None:
+            for frame in drawn[k].frame:
+                tris.extend(_drawn(frame))
     return tris
 
 
@@ -138,13 +151,16 @@ def _parts_triangles(design: Any, drawing: Any, gone: set[str], form: int) -> li
     return tris
 
 
+def boss_drawing(boss_id: str, monkeypatch: Any) -> Any:
+    """Return the drawing of a boss model, as a record."""
+    return record(probe_builder(monkeypatch, BOSS_MODELS[boss_id]).drawing)
+
+
 def boss_states(boss_id: str, design: Any, monkeypatch: Any) -> list[list[Any]]:
     """Return the triangles of the boss model at rest and after each transformation."""
-    capture = probe_builder(monkeypatch, BOSS_MODELS[boss_id])
-    drawing = record(capture.drawing)
-    cut = cut_armour(drawing.core, design.armour)
-    core = _core_triangles(design, drawing, cut)
-    supports = rooted(part_supports(design, drawing, NEON), lasting_surfaces(cut))
+    drawing = boss_drawing(boss_id, monkeypatch)
+    core = _core_triangles(drawing)
+    drawn = region_drawings(design, drawing)
     forms = _last_form(design)
     gone = _gone_by_form(design, forms)
     rig = drawing.get("rig")
@@ -154,7 +170,7 @@ def boss_states(boss_id: str, design: Any, monkeypatch: Any) -> list[list[Any]]:
         if rig is not None:
             # Its rig (D-228), unfolded from the first transformation on.
             tris.extend(rig.triangles(1 if form >= 1 else 0))
-        tris.extend(_armour_triangles(design, cut, supports, form))
+        tris.extend(_armour_triangles(design, drawn, form))
         tris.extend(_parts_triangles(design, drawing, gone[form], form))
         states.append(tris)
     return states
@@ -173,3 +189,6 @@ def loose_pieces(tris: list[Any], least: float) -> list[list[float]]:
         if max(b[3] - b[0], b[4] - b[1], b[5] - b[2]) >= least:
             result.append(b)
     return result
+
+
+__all__ = ["LAYERS", "boss_drawing", "boss_states", "loose_pieces", "moved_triangles", "posed"]

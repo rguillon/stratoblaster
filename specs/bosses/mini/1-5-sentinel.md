@@ -30,9 +30,10 @@ pouch at the nose, between the bodies. Each body ends in a tail fin.
 
 Each body is a long segmented worm (slate and graphite shades) with a shell plated on its back, lit
 veins along its flanks and a tail fin of membrane on bone struts; a reactor in a flesh sac at each
-tail, a third behind the thorax. The thorax carries glands and the core's two guns, built into it.
+tail, a third behind the thorax. The thorax is a flattened body carrying the core's two guns, built
+into it, its eyes at its nose, and its back plating over it (MB-SENTINEL-05) with the glands.
 Grafts differ between the bodies: a radome and a mast on one, a searchlight and an extra plate on
-the other, and a whip antenna off-centre on the thorax.
+the other, and a whip antenna off-centre on the thorax's plating.
 
 **Acceptance criteria**
 - Manual validation: the two bodies are not alike in their grafts.
@@ -63,14 +64,20 @@ light glands on its back, its eyes, its drones and its reactors take the colour 
 
 #### MB-SENTINEL-05 — Back plating · MUST
 
-The plating over the middle of its thorax, between the two bodies, is the armour it sheds at its
-transformation (a `shell` lattice frame beneath); the pair of racks lies folded under it.
+The plating over its thorax, between the two bodies, is the armour it sheds at its transformation
+([common](../common.md), BOSS-42): a carapace drawn as a piece of its own over the flattened thorax,
+from just under the thorax's back (4.2 px) up to 10 px, the police-light glands, their light bar and
+the whip antenna on it. Its region is a lozenge the thorax's own shape (`back`, not mirrored); it
+bursts into plates cracked from that outline and leaves a `shell` lattice frame on the thorax's
+back. The pair of racks lies folded under it.
 
 **Acceptance criteria**
 - Given its design, then its one transformation sheds the back region and both racks lie in it
   (unit test).
+- Given its model, then it draws the back region's armour, and it holds together with and without
+  it (unit tests).
 
-*Sources: D-221, D-224.*
+*Sources: D-221, D-224, D-254.*
 
 ### Behaviour
 
@@ -166,7 +173,7 @@ All in `src/game/config/bosses/mini_bosses.py` (`_SENTINEL`, `SENTINEL`) unless 
 | core stage 3 | ring of 14 turning 7°, red, every 1.3 s; fan of 5 blue every 2.6 s | |
 | angry | curtain, heat 4 (52 bullets a second, 152 px/s), blue and red | |
 | transformation | 2 parts destroyed | default threshold |
-| shed region | back: x -28..28, y -35..21, above 4.2 px, `shell`, not mirrored | |
+| shed region | back: a lozenge x ±14 at the middle, y -24..28, `shell`, not mirrored; plating 4.2–10 px | |
 | racks | (∓12, -7), radius 8, health 620, pod 6.1 px; first 1.2 s / 2.0 s | |
 | neon | blue (0.15, 0.4, 1), shown green; other body police red (1, 0.08, 0.1), shown yellow | `BOSS_LOOK.neon`; `src/game/view/bosses/sentinel_model.py` `POLICE_RED` |
 

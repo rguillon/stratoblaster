@@ -662,3 +662,47 @@
   degree). The view draws about 1.85 times the ground pixels of the 540 px window (0.78 of the
   whole screen's).
 - **Status:** Proposed
+
+### D-254 — Boss armour drawn as pieces of its own, no longer cut out of the body
+- **Date:** 2026-11-02
+- **Requirements:** BOSS-42, BOSS-43, BOSS-44, BOSS-45, BOSS-52; each boss's shedding requirement
+  as its model is redrawn (MB-SENTINEL-05 first).
+- **Context:** owner: "I dont want the code to cut into an existing part to generate the pieces
+  after an explosion. I want the bosses to have all their possible parts defined in code and
+  simply replace the intact hull by broken pieces when needed." Until now the armour regions were
+  carved out of the core's triangles at build time (`cut_armour`: faces near the outlines
+  subdivided, the ones inside moved to the region), chunked on a grid, their frame derived from
+  the carved faces, and a hold-together analysis (`islands.py`) added stems, pylons and bridges or
+  moved hanging pieces of the core into the region.
+- **Decision:** a boss drawing gets an `armour` field, one entry per region id: its `whole`
+  armour (a drawing, as it rests on the core), and optionally the `pieces` it bursts into (a list
+  of drawings) and the `frame` it leaves (a drawing). The core is drawn without the armour. The
+  engine only toggles nodes: the whole piece until the burst, the pieces flying from the middle of
+  what each draws until `reveal.burstEnd`, the frame from the burst on; a moving region's whole
+  piece rides its mover node. The defaults the owner chose: pieces left out are plates cracked
+  from the region's outline (`render/geometry/plates.py`: the outline triangulated, cut down to
+  about a third of its size, its inner corners nudged, the triangles grown into at most
+  `armour.chunks` connected groups whose boundaries are the plates), `armour.plate` px thick at
+  the top of the armour, in its hull colour (else its flesh's, else its lights'); a frame left out
+  is drawn from the outline (`boss_frame.frame_drawings`: a floor slab in the outline just over
+  the armour's lowest point, the ribs of `frame_lines` clipped to it). The hold-together
+  automation is gone: BOSS-52 keeps its unit test (the states composed from the drawings) and the
+  drawings are fixed by hand where they do not hold. The cut, `shatter.py` (now
+  `mesh_triangles.py`: reading and appending triangles only), `islands.py` (now a test helper),
+  `boss_stems.py`, the pylons and bridges, and the `armour.cut` tunable are removed. A region the
+  model draws no armour for has no view while the bosses are migrated: the bosses not yet drawn,
+  and those whose drawings do not hold yet, are strict expected failures (ENG-163) struck off one
+  by one; the migration goes one world at a time and ends with no expected failure left. The
+  region outlines stay in the config: the blasts of a shed region (BOSS-37), the check that a
+  hidden weapon lies in a shed region, and the plates and frame drawn by default come from them;
+  a region's `heights` now only tell whether a weapon rides a moving piece.
+- **Alternatives considered:** hand-drawn pieces for every region (kept as the override: hundreds
+  of shapes to author otherwise); shattering the standalone region drawing (still a triangle
+  split); the frame drawn into the core and always there (triangles at rest, pokes through the
+  armour); dropping BOSS-52's test with the automation (pieces could float unnoticed).
+- **Consequences:** every boss model (all 40 have regions) must draw its armour apart from its
+  core, and 19 of them must hold together without stems; until a boss is redrawn it sheds nothing
+  visible and its weapons unfold out of its hull. At rest a boss may look slightly different from
+  before, as its armour is now a piece lying on the core rather than the core's own skin. D-224,
+  D-227 and D-230 are superseded where they describe the cut, the chunks, the stems and pylons.
+- **Status:** Proposed

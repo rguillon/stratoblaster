@@ -1,11 +1,10 @@
 # Copyright (c) 2026 Renaud Guillon
-"""The lines of a dark metal frame laid where armour was cut away.
+"""The lines of a dark metal frame laid where armour has burst off.
 
-Ribs across the armour's footprint, clipped to it
-(docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md).
+Ribs across the armour's footprint, clipped to it.
 
-Pure: no Babylon. Points are `[x, z]` in the XZ plane; a footprint is the top view of the armour's
-up-facing triangles.
+Pure: no Babylon. Points are `[x, z]` in the XZ plane; a footprint is the top view of the armour,
+as triangles.
 """
 
 import math

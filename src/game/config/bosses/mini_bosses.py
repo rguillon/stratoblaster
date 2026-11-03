@@ -426,8 +426,28 @@ SENTINEL = with_weapons(
         hidden_weapon("rack-right", "rack", [12, -7], 8, 620, 1, "blue", 2.0, 6.1),
     ],
     [
+        # MB-SENTINEL-05: the plating over its thorax, a lozenge the thorax's own shape (its nose
+        # at -Y); the racks lie under it.
         armour_region(
-            "back", 1, [[-28, -35], [28, -35], [28, 21], [-28, 21]], "shell", [4.2, 1000], False
+            "back",
+            1,
+            [
+                [0, -24],
+                [7, -20],
+                [12.5, -12],
+                [14, 0],
+                [12.5, 12],
+                [7, 22],
+                [0, 28],
+                [-7, 22],
+                [-12.5, 12],
+                [-14, 0],
+                [-12.5, -12],
+                [-7, -20],
+            ],
+            "shell",
+            None,
+            False,
         ),
     ],
 )

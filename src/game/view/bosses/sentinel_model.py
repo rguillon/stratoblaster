@@ -37,6 +37,7 @@ from game.view.enemies.organic_parts import eyes, reactor_sac
 from render.geometry.organic import (
     MembraneWing,
     SegmentedBody,
+    carapace,
     membrane_wing,
     organ,
     segmented_body,
@@ -78,6 +79,11 @@ FIN = [
 ]
 # Height of the hulls' flat backs.
 BACK = 7.5
+# The thorax: a flattened body up to `THORAX_TOP`, its back plating (the armour it sheds,
+# MB-SENTINEL-05) a carapace over it up to `PLATING_TOP`, sunk `PLATING_SINK` into the body.
+THORAX_TOP = 4.2
+PLATING_TOP = 10
+PLATING_SINK = 0.3
 # A plate on the membrane between the thorax and a body (around its centre).
 WING_PANEL = [
     [-3, -12],
@@ -85,12 +91,13 @@ WING_PANEL = [
     [3, -1],
     [-3, 1],
 ]
-# A plate grafted on the red body's back (the blue body's extra plate is the same, further back).
+# A plate grafted on the red body's back (the blue body's extra plate is the same, further back),
+# around its centre (the rivets of `graft` sit at 0.82 of the outline: it must be centred).
 PATCH = [
-    [-34, -6],
-    [-26, -7],
-    [-26, 2],
-    [-33, 3],
+    [-4, -6],
+    [4, -7],
+    [4, 2],
+    [-3, 3],
 ]
 # A gun's sponson on the hull's outer flank, around the gun's centre.
 SPONSON = [
@@ -166,22 +173,22 @@ def _draw_hull(p: Any, x: float, color: Any) -> None:
     )
     lamps(p.neon, [[s * 56, 3.2, -32]], 1.4, color)
     graft(p, polygon(4, 4, [1, 1.8]), [BACK - 0.2, BACK + 0.8], [x, 0, 31])
-    barbs(p, [x, BACK + 0.5, -20], {"count": 3, "spacing": 4, "size": 2.5, "dir": [0, 1, -0.4]})
+    # Rooted in the shell, which slopes down towards the tail there (BOSS-52).
+    barbs(p, [x, BACK - 2.4, -20], {"count": 3, "spacing": 4, "size": 2.5, "dir": [0, 1, -0.4]})
 
 
 def _draw_gear(p: Any) -> None:
     """Grafts on the bodies (MB-SENTINEL-02).
 
-    A radome and mast on the red one, a searchlight and an extra plate on the blue one, a whip
-    antenna off-centre on the thorax.
+    A radome and mast on the red one, a searchlight and an extra plate on the blue one (the whip
+    antenna off-centre on the thorax is on its plating, `_draw_plating`).
     """
     mast(p, [-HULL_X - 3, BACK, 10], 9, POLICE_RED)
-    graft(p, PATCH, [BACK, BACK + 0.8], [0, 0, 0], {"color": M.base})
+    graft(p, PATCH, [BACK, BACK + 0.8], [-HULL_X, 0, 0], {"color": M.base})
     p.hull.cylinder(2.2, 2, 6, M.panel, Placement([HULL_X, BACK, 20]))
     p.hull.box([3.6, 2.4, 2], M.dark, Placement([HULL_X, BACK + 2, 20.5], 0, -0.2))
     p.charge.box([2.8, 1.6, 0.4], WHITE, Placement([HULL_X, BACK + 2.4, 21.6], 0, -0.2))
-    graft(p, scaled(PATCH, 1, 2 * HULL_X, -14), [BACK, BACK + 1], [0, 0, 0])
-    mast(p, [-3.5, 9.4, -20], 7, BLUE)
+    graft(p, PATCH, [BACK, BACK + 1], [HULL_X, 0, -14])
     for s in SIDES:
         graft(
             p,
@@ -200,24 +207,39 @@ def _draw_gear(p: Any) -> None:
         )
 
 
-def _draw_body(p: Any) -> None:
-    """Draw the Sentinel's body: its thorax, its membrane, both bodies and the core's guns.
+def _thorax(width: float, bottom: float, top: float) -> SegmentedBody:
+    """Return the thorax's body of `width`, from `bottom` to `top`: three segments along Z."""
+    return SegmentedBody(-28, 24, 3, width, bottom, top)
 
-    The thorax with its glands, the membrane joining the bodies, both bodies, the core's guns.
+
+def _draw_plating(p: Any) -> None:
+    """Draw the thorax's back plating (MB-SENTINEL-05): the armour it sheds at its transformation.
+
+    A carapace over the flattened thorax, from just under its back up to `PLATING_TOP`, the light
+    bar on it (a red gland and a blue one, their lights behind) and the whip antenna off-centre.
     """
-    mantle(p, WING, [-1.5, 2.5], F.membrane)
-    rib_cage(p, [-14, 2], {"halfWidth": HULL_X - 6, "y": 1, "height": 3, "thickness": 0.9})
-    segmented_body(
+    carapace(
         p.flesh,
-        SegmentedBody(-28, 24, 3, 11, -3, 10),
-        F.slate,
+        _thorax(11 * 0.92, THORAX_TOP - PLATING_SINK, PLATING_TOP),
+        [F.graphite, F.membrane],
     )
-    eyes(p, [0, 7, 18], {"count": 2, "size": 1.2, "spacing": 4}, BLUE)
-    # The light bar on the thorax's back: a red gland and a blue one.
     gland(p, [2.4, 9, -8], 1.6, BLUE)
     gland(p, [-2.4, 9, -8], 1.6, POLICE_RED)
     p.neon.box([3.6, 0.6, 2.4], BLUE, Placement([2.4, 10.4, -12]))
     p.neon.box([3.6, 0.6, 2.4], POLICE_RED, Placement([-2.4, 10.4, -12]))
+    mast(p, [-3.5, 9.4, -20], 7, BLUE)
+
+
+def _draw_body(p: Any) -> None:
+    """Draw the Sentinel's body: its thorax, its membrane, both bodies and the core's guns.
+
+    The thorax (flattened: its plating is drawn apart, `_draw_plating`) with its eyes at the nose,
+    the membrane joining the bodies, both bodies, the core's guns.
+    """
+    mantle(p, WING, [-1.5, 2.5], F.membrane)
+    rib_cage(p, [-14, 2], {"halfWidth": HULL_X - 6, "y": 1, "height": 3, "thickness": 0.9})
+    segmented_body(p.flesh, _thorax(11, -3, THORAX_TOP), F.slate)
+    eyes(p, [0, 3.2, 21.5], {"count": 2, "size": 1.2, "spacing": 4}, BLUE)
     _draw_hull(p, HULL_X, BLUE)
     _draw_hull(p, -HULL_X, POLICE_RED)
     for s in SIDES:
@@ -305,7 +327,8 @@ def build_sentinel(scene: Any) -> Any:
     """MB-SENTINEL-01, MB-SENTINEL-04: the Sentinel, a twin-bodied city hunter.
 
     A blue body and a red one joined by a membrane through its thorax, police-light glands on its
-    back, a gun growth on each body's outer flank and a brood pouch at the nose, between the bodies.
+    back plating (the armour it sheds, MB-SENTINEL-05), a gun growth on each body's outer flank and
+    a brood pouch at the nose, between the bodies.
     """
 
     def core(p: Any) -> None:
@@ -323,5 +346,6 @@ def build_sentinel(scene: Any) -> Any:
             "core": core,
             "parts": {"gun-left": _hull_gun, "gun-right": _hull_gun, "drone-bay": _drone_bay},
             "turrets": {"gun-left": _hull_gun_turret, "gun-right": _hull_gun_turret},
+            "armour": {"back": {"whole": _draw_plating}},
         },
     )

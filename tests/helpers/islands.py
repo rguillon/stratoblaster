@@ -1,22 +1,21 @@
 # Copyright (c) 2026 Renaud Guillon
-"""Which pieces of a model hold together (a boss stays one object, D-227).
+"""Which pieces of a model hold together (a boss stays one object, BOSS-52).
 
-Design: docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md.
+A test helper (D-254): the game no longer analyses its geometry; the unit tests check that every
+boss model is drawn as one object.
 
-Pure: no Babylon. Triangles are lists of three `shatter.Vertex`. Two triangles are in the same piece
-when they share a corner position; two pieces hold together when their surfaces come within about
-`cell` of each other (sampled into cubes of `cell` px), as solids standing on or sunk into each
-other do. Bounds alone would not do: a hull's bounds hold the whole model.
+Pure: no Babylon. Triangles are lists of three `mesh_triangles.Vertex`. Two triangles are in the
+same piece when they share a corner position; two pieces hold together when their surfaces come
+within about `cell` of each other (sampled into cubes of `cell` px), as solids standing on or sunk
+into each other do. Bounds alone would not do: a hull's bounds hold the whole model.
 """
 
 import math
-
-# isort: split
-# Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
-# __pragma__ ("skip")
 from typing import Any
 
-# __pragma__ ("noskip")
+from render.geometry.mesh_triangles import bounds_of
+
+__all__ = ["bounds_of", "holding", "loose_triangles", "main_object", "pieces", "touch"]
 
 
 def _find(parent: list[int], a: int) -> int:
@@ -35,18 +34,6 @@ def _join(parent: list[int], a: int, b: int) -> None:
 
 def _key(p: list[float]) -> str:
     return str(round(p[0] * 50)) + ":" + str(round(p[1] * 50)) + ":" + str(round(p[2] * 50))
-
-
-def bounds_of(tris: list[Any]) -> list[float]:
-    """Return the bounds of `tris`: `[x0, y0, z0, x1, y1, z1]`."""
-    b = [math.inf, math.inf, math.inf, -math.inf, -math.inf, -math.inf]
-    for tri in tris:
-        for v in tri:
-            p = v.position
-            for a in range(3):
-                b[a] = min(b[a], p[a])
-                b[a + 3] = max(b[a + 3], p[a])
-    return b
 
 
 def touch(a: list[float], b: list[float], tolerance: float) -> bool:

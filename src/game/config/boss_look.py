@@ -80,10 +80,9 @@ BOSS_LOOK = record({
         "color": [0.16, 0.15, 0.15],
         "alpha": 0.55,
     },
-    # A boss's transformation (BOSS-43; D-224,
-    # docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md), in shares of its
-    # length: its armour strains (shudders `shudder` px, strobing `strobeHz`) until `burst`,
-    # then bursts off in chunks that are gone by `burstEnd`, thrown `throw` px out, rising
+    # A boss's transformation (BOSS-43, D-224, D-254), in shares of its length: its armour
+    # strains (shudders `shudder` px, strobing `strobeHz`) until `burst`, then bursts off in
+    # pieces that are gone by `burstEnd`, thrown `throw` px out, rising
     # `lift` px and falling `fall` px, tumbling `spin` radians. Its hidden weapons swing up on
     # their hinges from `swing[0]` to `swing[1]`, rising from `sink` of their radius down, then
     # slide their barrels out from `slide[0]` to `slide[1]`, overshooting by `overshoot` (a
@@ -104,10 +103,10 @@ BOSS_LOOK = record({
         "sink": 0.9,
         "overshoot": 1.7,
     },
-    # How armour is cut out of a boss's body: faces cut down to `cut` px first, at most
-    # `chunks` chunks a region and `bossChunks` a boss; surfaces within about `hold` px hold
-    # together (BOSS-43, D-227).
-    "armour": {"cut": 6, "chunks": 12, "bossChunks": 24, "hold": 1.2},
+    # The armour a boss sheds (BOSS-43, D-254): a region drawn without its own pieces cracks into
+    # at most `chunks` plates (`bossChunks` a boss), `plate` px thick at the top of its armour;
+    # surfaces within about `hold` px of each other hold together (BOSS-52).
+    "armour": {"chunks": 12, "bossChunks": 24, "hold": 1.2, "plate": 2.5},
     # The dark metal frame a shed region leaves (BOSS-44, `boss_frame.py`): a `floor` where the
     # armour was, `lift` px over its lowest point; `metal` ribs `ribWidth` wide and `ribHeight`
     # high, `ribGap` px apart (sampled every `step` px against the floor, at least `least` px
@@ -125,10 +124,5 @@ BOSS_LOOK = record({
         "pipeRadius": 0.9,
         "spokes": 12,
         "seamEvery": 3,
-        # Pylons holding up the pieces over it (D-227): `pylonShare` of the piece's radius
-        # wide, between `pylonLeast` and `pylonMost` px.
-        "pylonShare": 0.7,
-        "pylonLeast": 3,
-        "pylonMost": 10,
     },
 })

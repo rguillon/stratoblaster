@@ -620,26 +620,29 @@ centre line.
 
 #### BOSS-42 — Shedding armour regions · MUST
 
-At each transformation a boss sheds one or more **armour regions**: the part of its body inside a
-top-view outline (mirrored across the centre line unless asked not to), above a height (the upper
-part of the hull there, so its keel stays and no cut splits the boss in two). The armour is cut out
-of the boss's own body, not redrawn: at rest the boss looks as drawn. Each hidden weapon lies in a
-region its transformation sheds (unless it rides a moving piece, BOSS-45, or sits on a rig,
-BOSS-46).
+At each transformation a boss sheds one or more **armour regions**. A region is a top-view outline
+of the boss's design (mirrored across the centre line unless asked not to), and a piece of armour
+its model draws as a part of its own, lying on the core there: at rest the boss looks as drawn, its
+armour on. The core is drawn without the armour, so nothing is ever cut out of a drawing: the whole
+armour is simply replaced by its broken pieces and its frame when it is shed. Each hidden weapon
+lies in a region its transformation sheds (unless it rides a moving piece, BOSS-45, or sits on a
+rig, BOSS-46).
 
 **Acceptance criteria**
 - Given each boss, then every transformation sheds a region and every hidden weapon lies in one its
   transformation sheds (unit test).
-- Given each region, then it cuts armour from the body and stays within the chunk budget (unit
-  test).
+- Given each region, then the boss's model draws its armour, and the pieces it bursts into stay
+  within the piece budget (unit test).
 
-*Sources: D-224, D-227.*
+*Sources: D-224, D-227, D-254.*
 
 #### BOSS-43 — How armour bursts and weapons unfold · MUST
 
 Through a transformation (in shares of its length): the armour strains, shuddering and strobing,
-until `reveal.burst`; it bursts into chunks (at most `armour.chunks` a region and `armour.bossChunks`
-a boss) thrown out, up and down, tumbling and shrinking away, gone by `reveal.burstEnd`. Each hidden
+until `reveal.burst`; it bursts into **pieces** thrown out, up and down, tumbling and shrinking
+away, gone by `reveal.burstEnd`. The pieces are the ones the model draws for the region, else
+plates cracked from the region's outline (at most `armour.chunks` a region and `armour.bossChunks`
+a boss), `armour.plate` thick at the top of the armour, in the armour's own colour. Each hidden
 weapon, folded flat under the armour until `reveal.swing[0]`, swings up on its hinge (its mount, or
 its inner side, folded back along the hull), rising, until `reveal.swing[1]`, then slides its
 barrel, cells, orb, tube, doors or turret out, overshooting a little, until `reveal.slide[1]`.
@@ -648,29 +651,33 @@ Nothing grows or shrinks into place.
 **Acceptance criteria**
 - Given a hidden weapon, then it stays folded away until the armour has burst and ends unfolded,
   its barrel out, at its full size (unit test).
+- Given a region drawn without its own pieces, then its plates cover its outline, within the piece
+  budget, in its colour (unit test).
 - Manual validation: the armour bursts off and the weapons unfold out of the frame.
 
-*Sources: D-221, D-224.*
+*Sources: D-221, D-224, D-254.*
 
 #### BOSS-44 — The frame a shed region leaves · MUST
 
-Where armour has burst off, a dark metal **frame** shows: a dark floor in the armour's own top-view
-shape just over its lowest point, and dark metal ribs across it (`wing`: ribs across and two spars;
-`shell`: a lattice; `ring`: spokes and a hoop), one rib in three with a thin neon seam, pipes along
-the two longest. Only the floor carries a glowing outline, so the frame reads as dark metal.
+Where armour has burst off, a dark metal **frame** shows: a dark floor in the region's own outline,
+just over the armour's lowest point, and dark metal ribs across it (`wing`: ribs across and two
+spars; `shell`: a lattice; `ring`: spokes and a hoop), one rib in three with a thin neon seam, pipes
+along the two longest. The frame is drawn from the region's outline unless the boss's model draws
+its own. Only the floor carries a glowing outline, so the frame reads as dark metal.
 
 **Acceptance criteria**
-- Given a shed region, then its floor lies flat and dark under the armour and its ribs stay within
-  the armour's top view (unit test).
+- Given a shed region, then its floor lies flat and dark within its outline and its ribs stay within
+  it (unit test).
 
-*Sources: D-224.*
+*Sources: D-224, D-254.*
 
 #### BOSS-45 — Changing shape · MUST
 
-Instead of bursting off, an armour region's piece may stay on and **move** into a new pose as the
-boss transforms: a swing about a pivot (about the vertical, along the boss or across it) between two
+Instead of bursting off, an armour region's piece (its drawn armour) may stay on and **move** into
+a new pose as the boss transforms: a swing about a pivot (about the vertical, along the boss or across it) between two
 angles, or a slide between two offsets, mirrored for a pair. It strains as armour does, then moves
-between `reveal.move[0]` and `reveal.move[1]`, eased, and may leave a frame where it was. A hidden
+between `reveal.move[0]` and `reveal.move[1]`, eased, and may leave a frame where it was drawn. A
+hidden
 weapon whose pod lies on a moving piece in its end pose rides it in. A part the player can hit never
 stands on a piece as it moves: such parts are gone by then (the transformation names them). Two
 bosses in each world change shape.
@@ -768,13 +775,10 @@ pause ([enemies common](../enemies/common.md)).
 #### BOSS-52 — A boss stays one object · MUST
 
 At rest and after each transformation, a boss is one object: its core, the armour still on, the
-frames of shed regions, its parts standing (and what slides out of its weapons), its rigs, stems and
-pylons hold together (surfaces within `armour.hold` of each other). Nothing of it hangs in the air:
-- a loose piece of its drawing (a light over a hull) gets a dark metal stem down to the body, or a
-  beam out to it;
-- a part standing over a shed region gets a pylon from the surface beneath it;
-- a patch of frame held only by what was shed gets a beam to the boss;
-- a piece of the body left hanging by a cut flies off with the armour of its transformation.
+frames of shed regions, its parts standing (and what slides out of its weapons) and its rigs hold
+together (surfaces within `armour.hold` of each other). Nothing of it hangs in the air: the model is
+drawn so (a light over a hull on a stem of its own; a part standing where a surface stays under it
+once the armour is gone). The game adds no stem, pylon or beam of its own.
 
 Turrets (on their parts) and limbs (on their joints) are not checked.
 
@@ -782,7 +786,7 @@ Turrets (on their parts) and limbs (on their joints) are not checked.
 - Given every boss, at rest and after each transformation, then its surfaces make one piece (unit
   test).
 
-*Sources: D-227, D-230.*
+*Sources: D-227, D-230, D-254.*
 
 #### BOSS-53 — Triangle budget · MUST
 
@@ -902,9 +906,9 @@ same fight drops the same bonuses.
 | battery | fans of 7, 9° apart, straight down, 180 px/s, every 2 s | BOSS-40; `WEAPON_FIRE.battery` |
 | sweeper | sweeping laser 2 s every 8 s | BOSS-40; `WEAPON_FIRE.sweeper` |
 | hangar | 2 Gnats every 7 s | BOSS-40; `WEAPON_FIRE.hangar` |
-| `reveal` timeline | strain to 0.15, chunks gone by 0.6; weapons swing 0.4–0.75, slide 0.7–1.0 (overshoot 1.7); moving pieces 0.15–0.6; shudder 0.8 px, strobe 9 Hz | BOSS-43, BOSS-45; `BOSS_LOOK.reveal` |
-| `armour` | cut to 6 px, 12 chunks a region, 24 a boss, hold 1.2 px | BOSS-43, BOSS-52; `BOSS_LOOK.armour` |
-| `frame` | ribs 1.6 px wide, 9 px apart, a neon seam every 3; pylons 0.7 of the part's radius, 3–10 px | BOSS-44, BOSS-52; `BOSS_LOOK.frame` |
+| `reveal` timeline | strain to 0.15, pieces gone by 0.6; weapons swing 0.4–0.75, slide 0.7–1.0 (overshoot 1.7); moving pieces 0.15–0.6; shudder 0.8 px, strobe 9 Hz | BOSS-43, BOSS-45; `BOSS_LOOK.reveal` |
+| `armour` | 12 pieces a region, 24 a boss, plates 2.5 px thick, hold 1.2 px | BOSS-43, BOSS-52; `BOSS_LOOK.armour` |
+| `frame` | floor 0.6 px over the armour's lowest point; ribs 1.6 px wide, 9 px apart, a neon seam every 3 | BOSS-44; `BOSS_LOOK.frame` |
 | boss neon colours | one per boss | BOSS-50; `BOSS_LOOK.neon` |
 | enemy hues | 60° (yellow), 125° (green) | BOSS-50; `src/game/config/readability.py` `READABILITY.enemyHues` |
 | `tri_budget_mini_boss` / `tri_budget_final_boss` | 4 000 / 10 000 | BOSS-53; `src/game/config/enemy_look.py` `ENEMY_LOOK.budget` |

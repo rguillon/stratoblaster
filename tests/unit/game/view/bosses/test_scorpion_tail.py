@@ -11,6 +11,7 @@ from types import SimpleNamespace
 
 import pytest
 from helpers.bosses_top_fakes import FakeNode, patch_models
+from helpers.islands import loose_triangles
 
 from game.config.boss_look import BOSS_LOOK
 from game.view.bosses import scorpion_tail
@@ -24,7 +25,6 @@ from game.view.bosses.scorpion_tail import (
     tail_triangles,
     unfolding,
 )
-from render.geometry.islands import loose_triangles
 
 
 def tail_tip(unfold: float) -> list[float]:
