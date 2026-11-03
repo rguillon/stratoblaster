@@ -32,7 +32,8 @@ its centre, by far its most visible shape. It is a 3 L boss (radius 1.5 L).
 #### MB-TOUCAN-02 — Cyber-Organic body · MUST
 
 Its body is a living bird's: a round body of dark flesh with a bone ribcage over its back and a vein
-down its spine, a cream bib under its head, short heavy membrane wings on bone struts, a fan of bone
+down its spine, the spine a ridge along its back between the two plates of its back plating
+(MB-TOUCAN-12), a cream bib under its head, short heavy membrane wings on bone struts, a fan of bone
 quills for a tail, and its two reactors in flesh sacs at the tail. Its heavy wings stay still (they do
 not flutter). The beak is living horn with a metal band at its root.
 
@@ -44,9 +45,10 @@ not flutter). The beak is living horn with a metal band at its root.
 
 #### MB-TOUCAN-03 — Head · MUST
 
-Its head has a round neon eye on each side with a charge light at its centre, a cheek gun under each
-eye (11 px either side, 24 px ahead of the centre) and a crest emitter on top of its head (17 px
-high) on a socket ringed with neon.
+Its head has a round neon eye on each side with a charge light at its centre (on the cheek of its
+back plating, MB-TOUCAN-12), a cheek gun under each eye (11 px either side, 24 px ahead of the
+centre) and a crest emitter on top of its head (17 px high) on a socket ringed with neon, on the
+spine ridge.
 
 **Acceptance criteria**
 - Given the model, then the cheek guns and the crest stand at the design's muzzles (unit:
@@ -163,21 +165,27 @@ over a ring) at heat 5.5, in `orange` and `red`.
 
 #### MB-TOUCAN-12 — Transformation: back plating, two missile racks · MUST
 
-At 2 of its 3 original parts destroyed, the Toucan transforms once. Its back plating (one region
-across the centre line, 30 px either side, from 25.8 px ahead of the centre to 21 px behind it, above
-4.3 px high) bursts off over a dark metal `shell` frame, and two missile racks come out at 12 px
-either side of the centre line, 9 px ahead of the centre (radius 10 px, pods 18 px high, 620 HP each,
-30 % drop chance). They shield the core and each fires 2 homing missiles every 6 s, 1.2 s and 2.0 s
-into a stage. The Toucan fires no less after its transformation than before, and stays one object in
-every state.
+At 2 of its 3 original parts destroyed, the Toucan transforms once. Its back plating bursts off
+([common](../common.md), BOSS-42): two plates drawn as pieces of their own, one either side of the
+spine ridge, over the flattened body, from just under the body's top (4.3 px) up to its back (15 px
+at its fullest), from the tail stub (26 px behind the centre) to the head (21 px ahead). Each plate
+is the body's own skin there, from the ridge over the shoulder down to the flank, and carries the
+eye on its cheek, the orange neon along its flank, the seam and vent on its back and its moss; the
+spine ridge with the crest emitter, the ribcage's arches and the cheek guns stay on the body. The
+region (`back`, the right plate's plan mirrored: from 2 to 17 px out, between the ridge and the
+body's flank) bursts into plates cracked from the two outlines and leaves a dark metal `shell` frame
+either side of the ridge. Two missile racks come out at 12 px either side of the centre line, 9 px
+ahead of the centre (radius 10 px, pods 18 px high, 620 HP each, 30 % drop chance). They shield the
+core and each fires 2 homing missiles every 6 s, 1.2 s and 2.0 s into a stage. The Toucan fires no
+less after its transformation than before, and stays one object in every state.
 
 **Acceptance criteria**
 - Given 2 original parts are destroyed, then the back region bursts off and both racks come out and
   fire (unit: `test_boss_kinds.py`).
-- Given each state, then nothing of it hangs in the air (unit:
-  `test_d227_the_boss_holds_together_in_every_state`).
+- Given its model, then it draws the back region's armour, and the boss holds together with and
+  without it (unit: `test_boss_52_the_boss_holds_together_in_every_state`).
 
-*Sources: D-221, D-224, D-229, D-227.*
+*Sources: D-221, D-224, D-229, D-227, D-254.*
 
 #### MB-TOUCAN-13 — Points and drops · MUST
 
@@ -207,7 +215,7 @@ X right, Y up the screen (its beak at -Y).
 | beak laser | 1.4 s every 6 s | |
 | rage | curtain, heat 5.5 | |
 | transformation | once, at 2 parts destroyed | `default_transforms` |
-| back region | x ±30, y -25.8..21, from 4.3 px, `shell` | |
+| back region | two plates either side of the ridge: right one x 2.1–10.6 at y -21, to 17 at y -6, 16 at y 10, 2.2–11 at y 26 (mirrored), `shell`; plates 4.0–15 px over the body (top 4.3) | `armour_region("back", …)`; `toucan_model.py` `KEEL`, `PLATES` |
 | missile racks | (±12, -9), radius 10, pod 18, 620 HP, first 1.2 / 2.0 s | |
 | points | 6 000 (600 a part) | |
 | neon | [1, 0.7, 0.1]; accent [1, 0.36, 0.04] | `BOSS_LOOK.neon["toucan"]`; `src/game/view/bosses/world_3/toucan_parts.py` `TOUCAN_ORANGE` |

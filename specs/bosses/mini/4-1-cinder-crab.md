@@ -185,18 +185,22 @@ bullets a second at 196 px/s, World 4's coolest rage, going on from World 3's ho
 
 #### MB-CINDER-CRAB-13 — Transformation: flank armour bursts off · MUST
 
-The Crab transforms once, when 2 of its 3 original parts are destroyed. Its flank armour bursts off:
-a region either side of the carapace from 12 px to 56.4 px out, from 9 px ahead of the centre to
-34.5 px behind it, above 2.9 px high (so its belly stays). Under it a dark metal `wing` frame (ribs
-across and two spars) shows. The boss stays one object at rest and after its transformation.
+The Crab transforms once, when 2 of its 3 original parts are destroyed. Its flank plating bursts
+off ([common](../common.md), BOSS-42): a wedge of banded shell drawn as a piece of its own either
+side of the carapace, from the chine (2.2–3.6 px high) up the carapace's slope to the edge of its
+flat top (4–12 px, the top's edge at 0.6 of the carapace's half width), resting on a low skirt of
+the body, with the orange neon stripe along its slope. Its region (`flanks`, mirrored) follows the
+carapace's stations, from the edge of the top out to the chine, tail to front; the plating bursts
+into its six bands a side and leaves a `wing` frame (ribs across and two spars) on the skirt. The
+gatlings lie folded under it; the legs stay on the body's skirt.
 
 **Acceptance criteria**
 - Given two original parts are destroyed, then the boss transforms once and its flank regions burst
   off, leaving the wing frames (unit: `test_boss_kinds.py`, `test_boss_armour.py`).
-- Given the boss at rest and after its transformation, then nothing of it hangs in the air (unit:
-  `test_d227_the_boss_holds_together_in_every_state`).
+- Given its model, then it draws the flank region's armour and its twelve pieces, and it holds
+  together with and without it (unit: `test_boss_armour.py`, `test_boss_model.py`).
 
-*Sources: D-221, D-224, D-227.*
+*Sources: D-221, D-224, D-227, D-254.*
 
 #### MB-CINDER-CRAB-14 — Hidden weapons: two gatlings · MUST
 
@@ -244,7 +248,7 @@ All in `src/game/config/bosses/world_4/cinder_crab.py` (`CINDER_CRAB`) unless no
 | bullets | `orange` 205, `red` 200, `purple` 195, `magenta` 210 px/s | radius 4 |
 | rage | curtain, heat 9.5 (`orange`, `red`) | `rage.curtain`; `src/game/config/bosses/boss_rage.py` |
 | transformation | once, at 2 original parts destroyed | `src/game/sim/boss_build.py` `default_transforms` |
-| flank regions | x 12..56.4 (mirrored), y -9..34.5, above 2.9 px, `wing` | `armour_region("flanks", …)` |
+| flank regions | the carapace's flanks (mirrored) from 0.6 of its half width to its chine, station by station (x 7.2..12 at y -24, 28.8..48 at y -2, 8.4..14 at y 32), `wing`; plating from the chine (2.2–3.6 px) to the top (4–12 px) | `armour_region("flanks", …)`; `src/game/view/bosses/world_4/cinder_crab_armour.py` |
 | gatlings | (±28, 21), radius 8, pod 11.7, 400 HP, `red`, first 1.2 / 2.0 s | `hidden_weapon`; volleys in `src/game/config/bosses/weapon_kinds.py` |
 | drops | parts 0.5, hidden weapons 0.3 | `part`, `hidden_weapon` defaults |
 | points | 8 000 (800 a part) | `points`, `src/game/config/scoring.py` `boss_part_points` |

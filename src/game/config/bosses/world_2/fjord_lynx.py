@@ -110,8 +110,29 @@ FJORD_LYNX = with_weapons(
         hidden_weapon("orb-right", "orb", [7, -35], 5, 480, 1, "blue", 2.0, 7.2),
     ],
     [
+        # MB-FJORD-LYNX-06: the plating over its head (its nose at -Y): the crown of the head from
+        # the neck to the nose, and a lobe on the deck either side of the chin cannon, where the
+        # orbs lie.
         armour_region(
-            "back", 1, [[-20, -48], [20, -48], [20, -10], [-20, -10]], "shell", [7.5, 1000], False
+            "back",
+            1,
+            [
+                [-9, -3],
+                [9, -3],
+                [10, -24],
+                [10, -34],
+                [6.5, -40],
+                [5.5, -40],
+                [5.5, -25],
+                [-5.5, -25],
+                [-5.5, -40],
+                [-6.5, -40],
+                [-10, -34],
+                [-10, -24],
+            ],
+            "shell",
+            None,
+            False,
         ),
     ],
 )

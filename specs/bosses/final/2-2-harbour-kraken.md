@@ -86,17 +86,33 @@ muzzles move with them.
 
 #### FB-HARBOUR-KRAKEN-07 — What its transformations shed · MUST
 
-- First transformation: the plating over its fore half (region `back`: from 66 px to 4 px ahead of
-  its centre, 64 px across, on the centre line) bursts off, baring a dark metal lattice (`shell`),
-  and its two gatlings rise from it either side of the head.
-- Second transformation: the plating of both aft flanks (region `wings`: from 10 to 44 px out
-  either side, 4 px ahead of the centre to 62 px behind it) bursts off, baring dark metal ribs and
-  spars (`wing`), and its two gun batteries rise from it.
+Its ridged shell is armour drawn as pieces of its own over the mantle ([common](../common.md),
+BOSS-42), lofted in three sections: the stub under the head (14 px behind the centre to 17 px
+ahead) stays with the core; the two others are its regions.
 
-The keel stays under each cut, and a part still standing over a shed region gets a pylon: the boss
-stays one object.
+- First transformation: the fore plating (region `back`: the shell ahead of the head and the
+  forecastle, from 17 px to 72 px ahead of its centre, their plan bulged to 46 px across at the
+  gatlings) bursts off, baring a dark metal lattice (`shell`) on the mantle, and its two gatlings
+  rise from it either side of the head. The piece carries the shell's plates from the head's front
+  to its nose (3.8 to 9 px), the forecastle of sinew (3.8 to 8 px) with its metal plate and snow
+  cap, the bow hatch cover with its gland, and the first length of the veins.
+- Second transformation: the aft plating (region `wings`: the shell behind the head, from 14 px to
+  62 px behind its centre, the shell's plan either side of the centre line, bulged to 59 px across at
+  the batteries and clear of the aft tentacles' roots) bursts off, baring dark metal ribs and spars
+  (`wing`), and its two gun batteries rise from its flanks. The piece carries the shell's plates
+  from the head's rear to its tail (3.8 to 11 px), the aft hatch cover, the crystals on the shell
+  and the veins' last length.
 
-*Sources: D-221, D-224, D-227, D-229.*
+The mantle stays under both, the tentacles' roots and the head stand on it, and the bow guns'
+mounts reach down to it: the boss stays one object (BOSS-52).
+
+**Acceptance criteria**
+- Given its design, then its first transformation sheds the back region and both gatlings lie in
+  it, its second the wings region and both batteries lie in it (unit test).
+- Given its model, then it draws both regions' armour, and it holds together at rest and after each
+  transformation (unit tests).
+
+*Sources: D-221, D-224, D-227, D-229, D-254.*
 
 ### Behaviour
 
@@ -187,7 +203,7 @@ do, its hidden weapons as hidden weapons do. It dies as every boss, and its deat
 | bob | 6 px, 5 s | `bob` |
 | ground_speed | ×0 | `groundSpeed` |
 | core_radius / core_hp | 22 px / 2 700 | `coreRadius`, `coreHealth`; core drop 1 |
-| crane rest points | shoulder (±28, −26) / (±28, 22), elbow (±50, −34) / (±52, 27), grab (±70, −44) / (±72, 34) | `CRANE_REST` (fore / aft) |
+| crane rest points | shoulder (±28, −26) / (±28, 15), elbow (±50, −34) / (±52, 27), grab (±70, −44) / (±72, 34) | `CRANE_REST` (fore / aft) |
 | shoulder_swing | ±10° fore, ±9° aft, 5.2 s | `SWING`, `crane_joints` |
 | elbow_swing | ±18° fore, ±16° aft, 3.7 s | `SWING`, `crane_joints` |
 | swing_phases | 0, 0.31, 0.58, 0.83 of a period (elbows +0.2) | `SWING` |
@@ -200,8 +216,8 @@ do, its hidden weapons as hidden weapons do. It dies as every boss, and its deat
 | transformations | after 2 and 4 of 5 parts | `boss_build.default_transforms` |
 | t1_radius / t1_hp | 11 px / 720 | `hidden_weapon("gatling-…")`, pod 12.7 px high |
 | t2_radius / t2_hp | 11 px / 900 | `hidden_weapon("battery-…")`, pod 16.9 px high |
-| region `back` | x −32…32, y −66…−4, from 3 px up, `shell` | `armour_region("back", 1, …)` |
-| region `wings` | x 10…44 (mirrored), y −4…62, from 3 px up, `wing` | `armour_region("wings", 2, …)` |
+| region `back` | the shell's and forecastle's plan from y −17 to −72 (x ±18 at y −17, ±23 at y −48, ±9 at y −68), `shell` | `armour_region("back", 1, …)`; `harbour_kraken_armour.back_armour` |
+| region `wings` | the aft shell's plan from y 14 to 62 either side of the centre line (x 0…20 at y 14, 0…29.5 at y 24…36, 0…6 at y 62; mirrored), `wing` | `armour_region("wings", 2, …)`; `harbour_kraken_armour.wings_armour` |
 | full_hp / full_hp_with_weapons | 7 000 / 10 240 | core + parts |
 | points | 10 500 (1 050 a part) | `points` |
 

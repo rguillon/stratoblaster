@@ -12,7 +12,7 @@ from game.config.record import record
 from game.view.bosses.boss_limbs import boss_point
 from game.view.bosses.boss_model import build_boss_model
 from game.view.bosses.final_boss_shapes import barrels
-from game.view.bosses.mini_boss_greebles import dish, lamps, mast, plate, rect
+from game.view.bosses.mini_boss_greebles import dish, lamps, mast
 from game.view.bosses.mini_boss_shapes import (
     SHADE,
     WHITE,
@@ -23,6 +23,7 @@ from game.view.bosses.mini_boss_shapes import (
     socket,
     turret,
 )
+from game.view.bosses.world_2.floe_breaker_armour import draw_plating
 from game.view.bosses.world_2.floe_breaker_details import floe_dressing
 from game.view.bosses.world_2.floe_breaker_frost import FROST
 from game.view.bosses.world_2.w2_organic import (
@@ -81,7 +82,9 @@ FLOE_HULL = [
 ]
 # Heights of the skirt: its bottom, its rim (the widest), its deck.
 SKIRT = [-5.0, -1.0, 3.0]
-# The armoured bow: a ridged wedge over the front deck, cutting through the floes.
+# The armoured bow: a ridged wedge of bone along the front deck, cutting through the floes. It is
+# a keel the front plating lies either side of (MB-FLOE-BREAKER-07, `floe_breaker_armour`): the
+# gatlings rise beside it once the plating is shed.
 BOW_SECTION = [
     [1.0, 0.0],
     [0.8, 0.5],
@@ -91,14 +94,18 @@ BOW_SECTION = [
     [-0.8, 0.5],
     [-1.0, 0.0],
 ]
-# Its loft stations (z, half width, bottom, top), aft to the point of the bow.
+# Its loft stations (z, half width, bottom, top), aft to the point of the bow; its base lies on
+# the deck.
 BOW = [
-    [6.0, 21.0, 3.0, 9.0],
-    [20.0, 18.0, 3.0, 10.0],
-    [36.0, 10.0, 2.5, 8.0],
+    [4.0, 13.0, 3.0, 9.0],
+    [20.0, 10.0, 3.0, 10.0],
+    [36.0, 6.5, 2.5, 8.0],
     [49.0, 3.0, 1.5, 4.5],
     [56.0, 0.0, 2.5, 2.5],
 ]
+# The ice-breaking blades grafted on the ram's flanks, `[z, x]`, and the height of their base.
+BLADES = [[44.0, 4.3], [33.0, 6.7], [22.0, 8.9]]
+BLADE_Y = 4.2
 # The sponsons' mounting plate (an octagon, in units of the part's radius).
 MOUNT = [
     [math.sin(2 * math.pi * (k + 0.5) / 8), math.cos(2 * math.pi * (k + 0.5) / 8)] for k in range(8)
@@ -136,7 +143,11 @@ def bow_paint(side: int, band: int) -> Any:
 
 
 def draw_hull(p: EnemyParts) -> None:
-    """Draw the swollen body: a belly of rimed flesh on the hull, a shelled back, a bone ram."""
+    """Draw the swollen body: a belly of rimed flesh on the hull, a shelled back, a bone ram.
+
+    The shell ends under the ram's base: the front deck either side of the ram carries the plating
+    it sheds (`draw_plating`).
+    """
     flesh = p.flesh
     neon = p.neon
     hull = p.hull
@@ -144,18 +155,18 @@ def draw_hull(p: EnemyParts) -> None:
     # photophores.
     flesh.bevel_slab(FLOE_HULL, SKIRT, [3.0, 3.0], ICE_FLESH.teal, None, ICE_FLESH.rime)
     neon_band(neon, FLOE_HULL, [-3.4, -1.1], [0.985, 1.02], CYAN)
-    shell(flesh, SegmentedBody(-44.0, 18.0, 5, 27.0, 2.0, 11.0))
+    shell(flesh, SegmentedBody(-44.0, 8.0, 5, 27.0, 2.0, 11.0))
     flesh.loft(BOW_SECTION, BOW, ICE_FLESH.bone, None, LoftOptions(False, bow_paint))
     for side in [0, 5]:
         stripe = side_stripe(BOW_SECTION, side, [0.35, 0.8], 1.05)
         neon.loft(stripe, BOW[0:4], CYAN, None, LoftOptions(True))
-    # The ice-breaking teeth: metal blades grafted along the ram's waterline.
+    # The ice-breaking teeth: metal blades grafted along the ram's flanks, just over the plating.
     for s in SIDES:
-        for station in [[44.0, 6.0], [33.0, 12.0], [22.0, 17.0]]:
+        for station in BLADES:
             hull.box(
                 [2.2, 2.4, 4.0],
                 SHADE["edge"],
-                Placement([s * station[1], 1.6, station[0]], s * 0.6),
+                Placement([s * station[1], BLADE_Y, station[0]], s * 0.6),
             )
         fringe(flesh, [s * 33.0, -2.0, -8.0], [s, -0.2], 3, 7)
     ice_teeth(flesh, FLOE_HULL, SKIRT[1], 3)
@@ -195,18 +206,21 @@ def draw_bridge(p: EnemyParts) -> None:
 
 
 def draw_deck(p: EnemyParts) -> None:
-    """Back details: armour plates, crystals, glands, veins, the ram's guns."""
+    """Back details: crystals, glands, veins, the ram's guns.
+
+    The frosted plates and the crystals of the front deck are on its plating (`draw_plating`); the
+    veins run from the hump down to the deck under it (they lie on the frame once it is shed).
+    """
     hull = p.hull
     neon = p.neon
     for s in SIDES:
-        plate(hull, rect(8.0, 10.0), [5.0, 0.6], FROST.panel, Placement([s * 15.0, 0.0, -2.0]))
-        glow_vein(p, [s * 6.0, 10.0, -10.0], [s * 22.0, 5.0, 10.0], 0.9, CYAN)
-        crystals(p.flesh, [s * 12.0, 4.6, 12.0 + s * 3.0], 3.5)
+        glow_vein(p, [s * 6.0, 10.0, -10.0], [s * 22.0, 4.0, 10.0], 0.9, CYAN)
         gland(p, [s * 24.0, 4.0, -22.0], 1.4, CYAN)
-    crystals(p.flesh, [-4.0, 9.5, 30.0], 2.5, 2)
-    # An antenna stalk and a dish grafted on the hump, uneven.
+    crystals(p.flesh, [-2.5, 8.0, 30.0], 2.5, 2)
+    # An antenna stalk and a dish grafted on the hump, uneven (the mast rooted in the hump's flesh,
+    # BOSS-52).
     dish(hull, [6.5, 17.0, -20.0], 3.2, -0.5, 0.4)
-    mast(p, [-6.0, 17.0, -21.0], 6.0, CYAN)
+    mast(p, [-6.0, 14.0, -21.0], 6.0, CYAN)
     crystals(p.flesh, [22.0, 3.0, -40.0], 4)
     spine_row(p.flesh, [0.0, 9.0, -38.0], [0.0, 12.0, -30.0], 3, 3)
     lamps(neon, [[30.0, SKIRT[2], -30.0]], 1.6, PORT_RED)
@@ -249,7 +263,8 @@ def sponson(p: EnemyParts, at: Vec3) -> None:
     organ(p.flesh, 3.4, 5, ICE_FLESH.sinew, Placement(reel, 0.0, 0.0, s * 0.8), 0.8)
     crystals(p.flesh, offset(at, s * 6.0, 3.0, 6.0), 3, 2)
     sinew(p.flesh, offset(at, -s * 8.0, 0.0, -4.0), offset(at, -s * 14.0, 1.0, -10.0), 1.6)
-    p.neon.box([0.4, 1.2, 4.0], CYAN, Placement(offset(at, s * 11.6, 2.6, 4.0)))
+    # The light on its outer side, set in the muscle's flank (BOSS-52).
+    p.neon.box([0.4, 1.2, 4.0], CYAN, Placement(offset(at, s * 10.4, 0.4, 3.0)))
 
 
 def harpoon_turret(p: EnemyParts, at: Vec3) -> None:
@@ -276,9 +291,21 @@ def harpoon_turret(p: EnemyParts, at: Vec3) -> None:
         )
 
 
+def plating(p: EnemyParts) -> None:
+    """Draw the `back` region's armour (MB-FLOE-BREAKER-07): the plating lying on the deck."""
+    draw_plating(p, SKIRT[2])
+
+
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
-    """Return what `build_boss_model` draws a boss from."""
-    return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
+    """Return what `build_boss_model` draws a boss from, with its `back` plating as its armour."""
+    return record({
+        "core": core,
+        "parts": parts,
+        "turrets": turrets,
+        "limbs": limbs,
+        "ring": ring,
+        "armour": {"back": {"whole": plating}},
+    })
 
 
 def build_floe_breaker(scene: Any) -> BuiltEnemyModel:
@@ -289,7 +316,7 @@ def build_floe_breaker(scene: Any) -> BuiltEnemyModel:
 
     MB-FLOE-BREAKER-02: now a living ice-ram, a shelled sea beast with a bone ram, a brain hump and
     eyes, frost crystals grown through its flesh; its harpoons sit on muscles bulging from its
-    flanks.
+    flanks. The plating of its front deck is the armour it sheds (MB-FLOE-BREAKER-07).
     """
     model: BuiltEnemyModel = build_boss_model(
         FLOE_BREAKER,

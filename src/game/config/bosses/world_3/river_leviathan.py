@@ -225,11 +225,22 @@ RIVER_LEVIATHAN = with_weapons(
         hidden_weapon("orb-right", "orb", [7, -21], 5, 900, 2, "green", 2.0, 10.8),
     ],
     [
+        # FB-RIVER-LEVIATHAN-13: the plating at the back of its head, a half of the head's own plan
+        # either side of its crest (mirrored), from 1 px ahead of the centre to 24 px behind; the
+        # sweepers lie under it.
         armour_region(
-            "back", 1, [[-20, -1], [20, -1], [20, 26], [-20, 26]], "shell", [5.2, 1000], False
+            "back",
+            1,
+            [[1.6, -1], [17, -1], [16, 12], [12.3, 24], [1.6, 24]],
+            "shell",
         ),
+        # FB-RIVER-LEVIATHAN-14: the plating over the front of its head down to the snout, a half
+        # either side of the spine (mirrored); the orbs lie under it.
         armour_region(
-            "spine", 2, [[-20, -33], [20, -33], [20, -1], [-20, -1]], "shell", [4.9, 1000], False
+            "spine",
+            2,
+            [[1.6, -29], [5, -29], [9.5, -23], [14.3, -14], [17, -1], [1.6, -1]],
+            "shell",
         ),
     ],
 )

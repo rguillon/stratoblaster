@@ -20,7 +20,6 @@ from game.view.bosses.world_1_organic_kit import (
     F,
     M,
     graft,
-    hide,
     scale_outline,
     spine,
     tentacle,
@@ -29,6 +28,9 @@ from game.view.enemies.enemy_shapes import SIDES
 from game.view.enemies.organic_parts import eyes, reactor_sac
 from render.geometry.organic import (
     ROUND_SECTION,
+    SegmentedBody,
+    carapace,
+    segmented_body,
 )
 from render.geometry.solids import Placement
 
@@ -57,12 +59,14 @@ LEG_ROOTS = [
     [18, -7, -0.6],
     [15, -13, -0.9],
 ]
-# A patch welded on the abdomen's left.
+# A patch welded on the abdomen's left, around its centre `PATCH_AT` (the rivets of `graft` sit at
+# 0.82 of the outline: it must be centred).
+PATCH_AT = [7.75, 0, -18.75]
 PATCH = [
-    [4, -14],
-    [12, -15],
-    [10, -22],
-    [5, -24],
+    [-3.75, 4.75],
+    [4.25, 3.75],
+    [2.25, -3.25],
+    [-2.75, -5.25],
 ]
 # The stinger around its centre: a bulb along +Z (loft stations), its emitter at the tip.
 STINGER = [
@@ -79,6 +83,15 @@ STINGER_EMITTER = [
 # Height of the stinger, and its downward tilt (it aims at the player).
 STINGER_Y = 15
 STINGER_TILT = 0.35
+# The abdomen along Z: a belly flattened up to `BELLY_TOP`, and over it its ridged shell (the back
+# plating it sheds, MB-SCORPION-11): a carapace from `PLATING_BOTTOM` (its lowest point 1.5 px, at
+# its widest) up to `SHELL_TOP`.
+ABDOMEN_TAIL = -31
+ABDOMEN_NOSE = 6
+ABDOMEN_WIDTH = 18
+BELLY_TOP = 1.6
+PLATING_BOTTOM = 1.33
+SHELL_TOP = 8
 
 
 def _along(at: Vec3, pitch: float, y: float, z: float) -> Vec3:
@@ -94,21 +107,14 @@ def _along(at: Vec3, pitch: float, y: float, z: float) -> Vec3:
 def _draw_body(p: Any) -> None:
     """Draw the body (MB-SCORPION-02): a swollen, segmented abdomen under a ridged shell.
 
-    The head plated with grafted armour, bone legs, glowing eyes, and the tail of shelled beads.
+    The abdomen's belly, flattened under its shell (the plating it sheds, `_draw_plating`), the
+    head plated with grafted armour, bone legs, glowing eyes (the tail of shelled beads is a rig).
     """
     flesh = p.flesh
-    hide(
-        p,
-        {
-            "tail": -31,
-            "nose": 6,
-            "width": 18,
-            "bottom": -3,
-            "top": 8,
-            "segments": 4,
-            "shell": [F.slate, F.membrane],
-            "belly": F.sinew,
-        },
+    segmented_body(
+        flesh,
+        SegmentedBody(ABDOMEN_TAIL, ABDOMEN_NOSE, 4, ABDOMEN_WIDTH, -3, BELLY_TOP, 0.15),
+        F.sinew,
     )
     flesh.bevel_slab(HEAD, [-3, 0, 6], [1.5, 3], F.sinew, None, F.slate)
     graft(p, scale_outline(HEAD, 0.7, 0, 5), [6, 7], [0, 0, 0])
@@ -126,12 +132,28 @@ def _draw_body(p: Any) -> None:
 def _draw_machinery(p: Any) -> None:
     """Draw the living works (MB-SCORPION-02): the torn stump of the missing right hind leg.
 
-    A plate grafted on the abdomen (the tail is a rig of its own, `scorpion_tail`).
+    The plate grafted on the abdomen is on its shell (`_draw_plating`); the tail is a rig of its
+    own (`scorpion_tail`).
     """
     # The missing right hind leg: a torn stump.
     p.flesh.cylinder(1.6, 2.4, 6, F.wound, Placement([-15, -0.5, -13], 0, 0, QUARTER))
-    graft(p, PATCH, [5.5, 6.6], [0, 0, 0], {"color": M.base})
-    spine(p, [0, 8.5, -26], [0, 8.5, 0], {"color": YELLOW, "width": 1})
+
+
+def _draw_plating(p: Any) -> None:
+    """Draw the abdomen's shell (MB-SCORPION-11): the back plating it sheds at its transformation.
+
+    A ridged carapace over the flattened belly, from the tail to under the head plate, the yellow
+    vein along its spine and the patch welded on its left.
+    """
+    carapace(
+        p.flesh,
+        SegmentedBody(
+            ABDOMEN_TAIL, ABDOMEN_NOSE, 4, ABDOMEN_WIDTH * 0.92, PLATING_BOTTOM, SHELL_TOP
+        ),
+        [F.slate, F.membrane],
+    )
+    graft(p, PATCH, [7, 8.1], PATCH_AT, {"color": M.base})
+    spine(p, [0, 7.6, -24], [0, 7.6, -2], {"color": YELLOW, "width": 1, "bow": 1})
 
 
 def _stinger(p: Any, at: Vec3) -> None:
@@ -204,5 +226,6 @@ def build_scorpion(scene: Any) -> Any:
             "limbs": merge(arm_limbs("left"), arm_limbs("right")),
             # D-228: its tail, which unfolds as it turns round.
             "rig": {"build": build_tail_rig, "triangles": tail_triangles},
+            "armour": {"back": {"whole": _draw_plating}},
         },
     )

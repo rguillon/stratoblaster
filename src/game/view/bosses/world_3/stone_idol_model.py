@@ -2,7 +2,8 @@
 """MB-STONE-IDOL-01 to MB-STONE-IDOL-05, 3-3: the Stone Idol.
 
 Logical pixels, nose +Z (the chin, down the screen), Y up (towards the camera): a carved head flying
-face up, so the camera sees its face.
+face up, so the camera sees its face. The back of its head over the skull cut is the lid of its
+crown, the moving piece of its armour (MB-STONE-IDOL-11, D-254): `stone_idol_lid.draw_lid`.
 """
 
 from game.config.bosses.world_3.stone_idol import (
@@ -20,7 +21,15 @@ from game.view.bosses.mini_boss_shapes import (
     neon_band,
     socket,
 )
-from game.view.bosses.world_3.jungle_flesh import JUNGLE_FLESH, F, gland, sinew, table, vein_to
+from game.view.bosses.world_3.jungle_flesh import JUNGLE_FLESH, F, sinew, table, vein_to
+from game.view.bosses.world_3.stone_idol_lid import (
+    CUT_Z,
+    HINGE_WIDTH,
+    HINGE_Z,
+    SIDE_VINE_CUT,
+    SKULL,
+    draw_lid,
+)
 from game.view.bosses.world_3.stone_idol_parts import (
     FACE,
     IDOL_NEON,
@@ -62,18 +71,20 @@ HEAD_RIGHT = table([
 HEAD = []
 HEAD.extend(HEAD_RIGHT)
 HEAD.extend(reversed_copy(flip_x(HEAD_RIGHT))[1:-1])
-# The helmet over the forehead (an Olmec headdress), outline seen from above.
-HELMET = table([
-    [0, -47],
-    [23, -45],
-    [35, -38],
-    [42, -26],
-    [41, -18],
-    [0, -21],
-    [-41, -18],
-    [-42, -26],
-    [-35, -38],
-    [-23, -45],
+# The face: the head's section at the skull cut (its outline inset 2.5 px, as its bevel runs),
+# ahead of the cut; the lid (`stone_idol_lid.LID`) is the rest.
+FACE_BLOCK = table([
+    [44.5, CUT_Z],
+    [44.5, 5.8],
+    [41.6, 21.1],
+    [34.1, 34.4],
+    [22.9, 43.7],
+    [0, 47.5],
+    [-22.9, 43.7],
+    [-34.1, 34.4],
+    [-41.6, 21.1],
+    [-44.5, 5.8],
+    [-44.5, CUT_Z],
 ])
 # The nose: a rounded ridge (loft section) from between the brows to its tip over the mouth.
 NOSE_SECTION = table([[1, 0], [0.65, 0.75], [0, 1], [-0.65, 0.75], [-1, 0]])
@@ -85,10 +96,8 @@ NOSE = table([
 ])
 # The neon cracks across the face (paths seen from above), lit from inside the stone.
 CRACKS = table([
-    [[-14, -46], [-10, -36], [-15, -28], [-12, -20]],
     [[30, 16], [24, 22], [26, 30], [19, 38], [21, 45]],
     [[-28, 14], [-36, 20], [-34, 30]],
-    [[8, -16], [14, -6]],
 ])
 
 
@@ -100,20 +109,21 @@ def nose_paint(side: int, _band: int) -> Any:
 
 
 def draw_head(p: EnemyParts) -> None:
-    """Draw the carved head: its block, the neon glowing under its rim, the helmet and the brows."""
+    """Draw the carved head without its lid: its block, the neon under its rim, the nose, the ears.
+
+    The block is flattened to the skull cut behind `CUT_Z` (the lid lies there), the face rising to
+    `FACE` ahead of it; the hinge's pin runs across the back of the crown.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
     # MB-STONE-IDOL-02: a living head of grey-green flesh, the carved stone grown over it as armour
     # (its helmet, brows, nose and ear spools), roots of sinew trailing from its chin.
-    flesh.bevel_slab(HEAD, [-10, 2, FACE], [6, 5], F.sinew, None, JUNGLE_FLESH)
+    flesh.bevel_slab(HEAD, [-10, 2, SKULL], [6, 2.5], F.sinew, None, JUNGLE_FLESH)
+    flesh.bevel_slab(FACE_BLOCK, [SKULL, SKULL, FACE], [0, 2.5], F.sinew, None, JUNGLE_FLESH)
     neon_band(neon, HEAD, [-4.5, -1.5], [0.92, 0.975], IDOL_NEON)
-    hull.bevel_slab(HELMET, [FACE - 1, FACE + 2, FACE + 5], [0, 1.5], STONE.base, None, STONE.light)
-    neon.box([60, 0.6, 0.6], IDOL_NEON, Placement([0, FACE + 3.2, -19.6], 0))
-    # The brow ridge over the eyes, broken on the left (the model's +X).
-    hull.box([30, 3.5, 6], STONE.base, Placement([-19, FACE - 0.5, -10]), STONE.light)
-    hull.box([22, 3, 6], STONE.base, Placement([21, FACE - 0.5, -10], 0.08), STONE.light)
-    hull.box([5, 2.4, 4], STONE.dark, Placement([36, FACE - 0.5, -12], 0.6), STONE.base)
+    pin = Placement([-HINGE_WIDTH / 2, SKULL, HINGE_Z], 0, 0, -QUARTER)
+    hull.cylinder(1.6, HINGE_WIDTH, 8, STONE.dark, pin)
     hull.loft(NOSE_SECTION, NOSE, STONE.base, None, LoftOptions(False, nose_paint))
     # The ear spools on the sides, lit in their bores.
     for s in SIDES:
@@ -123,21 +133,15 @@ def draw_head(p: EnemyParts) -> None:
 
 
 def draw_guns(p: EnemyParts) -> None:
-    """Draw the forehead jewel (its last-stage spiral) and the nostrils (its fans), charge-lit."""
+    """Mark the forehead jewel's muzzle (its last-stage spiral) and draw the nostrils (its fans).
+
+    The jewel itself is set in the lid (`stone_idol_lid.draw_jewel`).
+    """
     hull = p.hull
-    neon = p.neon
     charge = p.charge
     muzzle = p.muzzle
     for m in IDOL_JEWEL:
-        jewel = boss_point(m[0], m[1], m[2])
-        x = jewel[0]
-        y = jewel[1]
-        z = jewel[2]
-        hull.cylinder(4.2, 1.2, 8, STONE.gilt, Placement([x, FACE + 5, z]), 3.6)
-        neon.ring(4.3, 0.5, 8, IDOL_NEON, Placement([x, FACE + 5.6, z]))
-        gem = [[3, FACE + 6.2], [3.4, y - 1.6], [0, y]]
-        charge.lathe(gem, 6, WHITE, Placement([x, 0, z]))
-        muzzle(jewel, "ring")
+        muzzle(boss_point(m[0], m[1], m[2]), "ring")
     for m in IDOL_NOSTRILS:
         nostril = boss_point(m[0], m[1], m[2])
         x = nostril[0]
@@ -149,7 +153,7 @@ def draw_guns(p: EnemyParts) -> None:
 
 
 def draw_roots(p: EnemyParts) -> None:
-    """MB-STONE-IDOL-02: the sinew roots trailing from its chin, its veins and glands."""
+    """MB-STONE-IDOL-02: the sinew roots trailing from its chin, and the veins on its cheeks."""
     for root in [[-16, -3], [14, 4], [28, 2]]:
         x = root[0]
         bow = root[1]
@@ -168,40 +172,24 @@ def draw_roots(p: EnemyParts) -> None:
             IDOL_NEON,
             1.2,
         )
-        gland(p, [s * 38, FACE - 0.5, -32], 3, IDOL_NEON)
 
 
 def draw_jungle(p: EnemyParts) -> None:
-    """Draw the idol's cracks, moss and vines (MB-STONE-IDOL-04), and its thrusters.
+    """Draw the face's cracks, moss and vine (MB-STONE-IDOL-04), its roots and its thrusters.
 
-    Its cracks, the moss in its hollows, the vines over its crown (MB-STONE-IDOL-04), and the
-    thrusters it flies on.
+    The crown's growth is on the lid (`stone_idol_lid.draw_crown_growth`).
     """
     hull = p.hull
-    neon = p.neon
     for path in CRACKS:
-        crack(neon, path, FACE + 0.15, IDOL_NEON)
-    crack(neon, [[-24, -40], [-30, -33], [-27, -27]], FACE + 5.1, IDOL_NEON)
-    for patch in table([[-22, 20, 4.5], [30, 30, 3.5], [12, 42, 3], [-38, -6, 3.5], [24, -40, 4]]):
+        crack(p.neon, path, FACE + 0.15, IDOL_NEON)
+    for patch in table([[-22, 20, 4.5], [30, 30, 3.5], [12, 42, 3]]):
         x = patch[0]
         z = patch[1]
         size = patch[2]
-        moss(hull, [x, FACE + 5 if z < -20 else FACE, z], size, x)
-    vine(
-        hull,
-        [
-            [18, FACE + 5, -40],
-            [30, FACE + 4.6, -34],
-            [40, FACE, -26],
-            [46.5, 4, -22],
-            [48, -6, -20],
-        ],
-    )
-    vine(
-        hull,
-        [[-10, FACE + 5, -44], [-14, FACE + 2, -49], [-15, -2, -51], [-13, -8, -50]],
-    )
+        moss(hull, [x, FACE, z], size, x)
     vine(hull, [[-30, FACE, 32], [-36, FACE - 2, 36], [-38, -2, 39]])
+    # The side vine from the crown's lid, hanging on down the head's right side.
+    vine(hull, [SIDE_VINE_CUT, [46.5, 4, -22], [48, -6, -20]])
     leaf(hull, [-40, FACE - 4, 25], 4, 3)
     draw_roots(p)
     for s in SIDES:
@@ -227,7 +215,7 @@ def build_stone_idol(scene: Any) -> Any:
     """MB-STONE-IDOL-01, MB-STONE-IDOL-05: the Stone Idol, a flying stone head.
 
     With neon cracks, glowing eyes and mouth; moss and vines over its crown, an Olmec helmet, a
-    jewel on its forehead.
+    jewel on its forehead. The lid of its crown flips up as it transforms (MB-STONE-IDOL-11).
     """
     parts: dict[str, Any] = {
         "eye-left": eye_socket,
@@ -239,5 +227,10 @@ def build_stone_idol(scene: Any) -> Any:
         STONE_IDOL,
         scene,
         IDOL_NEON,
-        {"core": stone_idol_core, "parts": parts, "turrets": turrets},
+        {
+            "core": stone_idol_core,
+            "parts": parts,
+            "turrets": turrets,
+            "armour": {"crown": {"whole": draw_lid}},
+        },
     )

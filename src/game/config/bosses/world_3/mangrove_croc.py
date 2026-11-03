@@ -156,8 +156,24 @@ MANGROVE_CROC = with_weapons(
         hidden_weapon("gatling-right", "gatling", [9, -15], 7, 500, 1, "orange", 2.0, 13.1),
     ],
     [
+        # MB-MANGROVE-CROC-13 (D-254): the carapace over its keel, the hull's own plan from ahead
+        # of the dome's hump to the snout (its nose at -Y); the gatlings lie under it.
         armour_region(
-            "back", 1, [[-24, -32], [24, -32], [24, 12], [-24, 12]], "shell", [3.3, 1000], False
+            "back",
+            1,
+            [
+                [-17, 8],
+                [17, 8],
+                [15, -10],
+                [11, -22],
+                [7.5, -30],
+                [-7.5, -30],
+                [-11, -22],
+                [-15, -10],
+            ],
+            "shell",
+            None,
+            False,
         ),
     ],
 )

@@ -1,11 +1,13 @@
 # Copyright (c) 2026 Renaud Guillon
 """The Narwhal's hull dressing (FB-NARWHAL-02, FB-NARWHAL-05, 2-1).
 
-Phase 7 review: detail and some asymmetry, World 2 frost. Logical pixels, nose +Z, Y up.
+Phase 7 review: detail and some asymmetry, World 2 frost. Logical pixels, nose +Z, Y up. The
+dressing of its back and hump lies on its armour (FB-NARWHAL-06, `narwhal_armour`).
 """
 
 from game.config.enemy_look import ENEMY_LOOK
 from game.view.bosses.mini_boss_greebles import lamps, mast, plate, rect
+from game.view.bosses.world_2.narwhal_hull import half_width
 from game.view.bosses.world_2.w2_organic import ICE_FLESH
 from game.view.enemies.enemy_shapes import SIDES
 from render.geometry.solids import Placement
@@ -27,30 +29,16 @@ PORT_RED = [1, 0.1, 0.12]
 STARBOARD_GREEN = [0.2, 1, 0.35]
 
 
-# Where the hull narrows at its stern and bow, and the gap in the gill slits by the mast.
-_STERN_Z = -40
-_BOW_Z = 30
+# The gap in the gill slits by the hump.
 _SLIT_GAP_FROM = -6
 _SLIT_GAP_TO = 14
 
 
-def _flank(z: float) -> float:
-    """Return the hull's half width at `z` (between its stations).
-
-    The dressing along its flanks follows it.
-    """
-    if z < _STERN_Z:
-        return 14 + (z - _STERN_Z) * 0.3
-    if z > _BOW_Z:
-        return 16.5 - (z - _BOW_Z) * 0.3
-    return 17.5
-
-
 def hull_dressing(p: EnemyParts, n: Rgb) -> None:
-    """Add the dressing along both flanks and on the belly.
+    """Add the dressing along both flanks and on the belly (the core's).
 
-    Along both flanks: rows of dark free-flood slots, the hull's ring seams, its bow planes; on its
-    belly a sonar window lit teal.
+    Along both flanks: rows of dark free-flood slots, its bow planes; on its belly a sonar window
+    lit teal.
     """
     flesh = p.flesh
     neon = p.neon
@@ -62,7 +50,7 @@ def hull_dressing(p: EnemyParts, n: Rgb) -> None:
             flesh.box(
                 [0.6, 1.4, 3.6],
                 ICE_FLESH.seam,
-                Placement([s * (_flank(z) + 0.1), 1.6, z]),
+                Placement([s * (half_width(z) + 0.1), 1.6, z]),
             )
         bow_plane = [
             [s * 11, 44],
@@ -81,13 +69,24 @@ def hull_dressing(p: EnemyParts, n: Rgb) -> None:
     neon.box([5, 0.5, 6], n, Placement([0, -5.6, 40]))
 
 
-def deck_dressing(p: EnemyParts, n: Rgb) -> None:
-    """Add the dressing on its back (FB-NARWHAL-05).
+def back_dressing(p: EnemyParts, n: Rgb) -> None:
+    """Add the dressing on its back behind the hump (FB-NARWHAL-05), on the back's armour.
 
-    A frozen crust on the forward deck, a railing, a capstan, an escape hatch, whip antennas
-    off-centre, navigation lamps on the sail.
+    A blowhole with its grafted metal valve, an escape hatch and a whip antenna off-centre.
     """
     hull = p.hull
+    p.flesh.cylinder(2.4, 2.2, 6, ICE_FLESH.sinew, Placement([-3, 15.6, -33]), 1.6)
+    hull.cylinder(1.6, 0.6, 8, EDGE, Placement([-3, 17.8, -33]))
+    plate(hull, rect(4, 4), [17.4, 0.5], H.panel, Placement([-3, 0, -13]))
+    mast(p, [2.5, 15, -40], 4, n)
+
+
+def hump_dressing(p: EnemyParts, n: Rgb) -> None:
+    """Add the dressing on the hump and the forward deck (FB-NARWHAL-05), on the spine's armour.
+
+    A frozen crust on the forward deck, a whip antenna off-centre on the hump, navigation lamps
+    on its flanks and its front windows, lit teal.
+    """
     neon = p.neon
     crust = [
         [-4, 33],
@@ -97,13 +96,8 @@ def deck_dressing(p: EnemyParts, n: Rgb) -> None:
         [-4, 42],
     ]
     p.flesh.slab(crust, [12.5, 16.4], ICE_FLESH.crystal, None, ICE_FLESH.rime)
-    # A blowhole, its metal valve grafted on.
-    p.flesh.cylinder(2.4, 2.2, 6, ICE_FLESH.sinew, Placement([-3, 15.6, -33]), 1.6)
-    hull.cylinder(1.6, 0.6, 8, EDGE, Placement([-3, 17.8, -33]))
-    plate(hull, rect(4, 4), [17.4, 0.5], H.panel, Placement([-3, 0, -13]))
     mast(p, [-3, 27, -1], 5, n)
-    mast(p, [2.5, 15, -40], 4, n)
     lamps(neon, [[5.2, 20, 8]], 1.2, PORT_RED)
     lamps(neon, [[-5.2, 20, 8]], 1.2, STARBOARD_GREEN)
-    # The sail's front windows, lit teal.
+    # The hump's front windows, lit teal.
     neon.box([4, 0.9, 0.4], n, Placement([0, 21.6, 22.1]))

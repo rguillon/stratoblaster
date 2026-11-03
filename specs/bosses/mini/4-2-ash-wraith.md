@@ -171,17 +171,22 @@ bullets a second at 204 px/s.
 #### MB-ASH-WRAITH-12 — Transformation: back plating bursts off · MUST
 
 The Wraith transforms once, when 2 of its 3 original parts are destroyed. Its back plating bursts
-off: one region across the centre line, 30 px either side, from 37 px ahead of the centre to 23 px
-behind it, above 4.5 px high (so its wing's underside stays). Under it a dark metal `shell` frame (a
-lattice) shows. The boss stays one object at rest and after its transformation.
+off ([common](../common.md), BOSS-42): a faceted dome drawn as a piece of its own over the
+fuselage, which is flattened to a deck 3.3 px high under it, from 2.8 px (its foot sunk into the
+wing's top) up to 10 px, as wide as the fuselage was (13.5 px either side at the middle); the dark
+canopy is painted on its back and it carries the glands, the ridge light, the vents and the scorched
+flank strips. Its region (`back`, not mirrored) is the dome's footprint, a lozenge from 25 px ahead
+of the centre to 30 px behind it; it bursts into plates cracked from that outline and leaves a
+`shell` lattice frame on the deck, where the body's ribs arch and the ash vent's stack rises. The
+lances lie folded under it.
 
 **Acceptance criteria**
 - Given two original parts are destroyed, then the boss transforms once and its back region bursts
   off, leaving the shell frame (unit: `test_boss_kinds.py`, `test_boss_armour.py`).
-- Given the boss at rest and after its transformation, then nothing of it hangs in the air (unit:
-  `test_d227_the_boss_holds_together_in_every_state`).
+- Given its model, then it draws the back region's armour, and it holds together with and without
+  it (unit: `test_boss_armour.py`, `test_boss_model.py`).
 
-*Sources: D-221, D-224, D-227.*
+*Sources: D-221, D-224, D-227, D-254.*
 
 #### MB-ASH-WRAITH-13 — Hidden weapons: two laser lances · MUST
 
@@ -227,7 +232,7 @@ All in `src/game/config/bosses/world_4/ash_wraith.py` (`ASH_WRAITH`) unless note
 | bullets | `blue` 205, `purple` 200, `magenta` 210 px/s | radius 4 |
 | rage | vortex, heat 10.5 (`blue`, `purple`) | `rage.vortex` |
 | transformation | once, at 2 original parts destroyed | `src/game/sim/boss_build.py` `default_transforms` |
-| back region | x -30..30, y -37..23, above 4.5 px, `shell` | `armour_region("back", …)` |
+| back region | the dome's footprint, not mirrored: a lozenge y -25..30, x ±13.5 at y -8..2, ±10.5 at y 14, ±5.5 at y 26, `shell`; dome 2.8–10 px over a 3.3 px deck | `armour_region("back", …)`; `src/game/view/bosses/world_4/ash_wraith_armour.py` |
 | lances | (±12, -7), radius 10, pod 9, 660 HP, first 1.2 / 2.0 s | `hidden_weapon`; volleys in `src/game/config/bosses/weapon_kinds.py` |
 | drops | parts 0.5, hidden weapons 0.3 | `part`, `hidden_weapon` defaults |
 | points | 7 000 (700 a part) | `points`, `boss_part_points` |

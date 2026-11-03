@@ -212,11 +212,15 @@ bullets a second at 200 px/s, World 4's coolest final boss rage.
 #### FB-STEAM-DREADNOUGHT-15 — First transformation: the decks fan out · MUST
 
 Once both broadside turrets are destroyed, the Dreadnought transforms: its two front side decks
-(from 20 px to 74 px out, from 54 px ahead of the centre to 2 px behind it, the whole piece from
-8 px under the playfield up) swing 25° outwards, each on a hinge at its inner bow
-corner (20 px out, 54 px ahead), turning about the vertical, and stay in their new pose. Dark metal
-`wing` frames show in the wedges they open. A gun battery rides each deck: drawn where the deck ends
-up, it comes in with it. The turrets, which stood on the decks, are gone before they move. The boss
+swing 25° outwards, each on a hinge at its inner bow corner (20 px out, 54 px ahead), turning
+about the vertical, and stay in their new pose. Each is a piece of the model's own ([common](../common.md),
+BOSS-42, BOSS-45): the sponson deck plate from its seam with the core's deck at 20 px out round
+the deck's own edge (from 54 px ahead of the centre to 2 px behind it, 70 px out at the widest),
+a bevelled slab of scorched hide 4.5 to 9 px high with the deck's red rim lights on its edge, and
+on it the molten vein's forward run, two glands and a soot stain; the broadside turret's barbette
+stands on it while the turret lives. Dark metal `wing` frames show in the wedges they open, on the
+hull flanks where the decks lay. A gun battery rides each deck: drawn where the deck ends up, it
+comes in with it. The turrets, which stood on the decks, are gone before they move. The boss
 stays one object after the move.
 
 **Acceptance criteria**
@@ -226,7 +230,7 @@ stays one object after the move.
 - Given the boss after this transformation, then nothing of it hangs in the air (unit:
   `test_d227_the_boss_holds_together_in_every_state`).
 
-*Sources: D-230, D-221, D-224, D-227.*
+*Sources: D-230, D-221, D-224, D-227, D-254.*
 
 #### FB-STEAM-DREADNOUGHT-16 — First hidden weapons: two gun batteries · MUST
 
@@ -243,11 +247,17 @@ shield the core and fire `red` fans straight down as every battery does (see
 
 #### FB-STEAM-DREADNOUGHT-17 — Second transformation: stern and spine plating burst off · MUST
 
-Once both smokestacks are destroyed, the Dreadnought transforms again: the plating of its stern
-flanks (from 18 px to 72 px out either side, from 17 px to 77 px behind the centre, above 2.1 px
-high) and of its spine (36 px wide across the centre line, from 1 px to 57 px behind the centre,
-above 6.4 px high) burst off, leaving dark metal frames: `wing` frames on the flanks, a `shell`
-lattice on the spine. The boss stays one object after it.
+Once both smokestacks are destroyed, the Dreadnought transforms again: its stern flank decks and
+its spine plating, pieces of the model's own ([common](../common.md), BOSS-42), burst off. Each
+flank deck is the stern deck plate from its seam with the core's deck at 18 px out round the deck's
+own edge (from 17 px to 76 px behind the centre, 39.5 px out at the widest, the stern edge at 76),
+a bevelled slab of scorched hide 4.5 to 9 px high with the deck's red rim lights, and on it the
+molten vein's stern run, a soot stain and a cowl. The spine plating is the stern half of the
+citadel (36 px wide across the centre line, from 13 px to 46 px behind the centre, 9 to 12 px high)
+with the molten seam on its top. They leave dark metal frames: `wing` frames on the hull flanks
+where the decks lay, a `shell` lattice on the deck where the citadel stood. The mortars lie folded
+under the flank decks and the ring emitter under the spine plating. The boss stays one object
+after it.
 
 **Acceptance criteria**
 - Given both stacks are destroyed, then the boss transforms a second time and these regions burst
@@ -255,7 +265,7 @@ lattice on the spine. The boss stays one object after it.
 - Given the boss after its second transformation, then nothing of it hangs in the air (unit:
   `test_d227_the_boss_holds_together_in_every_state`).
 
-*Sources: D-221, D-224, D-227, D-230.*
+*Sources: D-221, D-224, D-227, D-230, D-254.*
 
 #### FB-STEAM-DREADNOUGHT-18 — Second hidden weapons: two mortars and an orb · MUST
 
@@ -308,9 +318,9 @@ All in `src/game/config/bosses/world_4/steam_dreadnought.py` (`STEAM_DREADNOUGHT
 | bullets | `red` 205, `orange` 195, `magenta` 210, `purple` 200, `blue` 200 px/s | radius 4 |
 | rage | flower, heat 10 (`red`, `orange`) | `rage.flower` |
 | transformations | both turrets; then both stacks | `transformParts` |
-| decks (moving) | x 20..74 (mirrored), y -54..2, above -8; swing about up at (±20, -54), 0 → 25° out | `moving_region("decks", …)`, `src/game/config/bosses/moving_regions.py` |
-| stern flanks | x 18..72 (mirrored), y 17..77, above 2.1, `wing` | `armour_region("flanks", …)` |
-| spine | x -18..18, y 1..57, above 6.4, `shell` | `armour_region("spine", …)` |
+| decks (moving) | the sponson deck's shape (mirrored): from (20, -54) along the bow edge to (36, -40), (66, -32), (70, -20), (66, -8), (40, -2) and back along x 40 then x 20 to y 2; above -8; swing about up at (±20, -54), 0 → 25° out; deck 4.5–9 px | `moving_region("decks", …)`, `src/game/config/bosses/moving_regions.py`, `steam_dreadnought_armour.py` |
+| stern flanks | the stern deck's shape (mirrored): from (18, 17) out to (39.5, 17), along the edge to (39, 30), (32, 60), (20, 76) and back along the stern edge to (18, 76); `wing`; deck 4.5–9 px | `armour_region("flanks", …)` |
+| spine | x -18..18, y 13..46, `shell`, not mirrored; the citadel's stern half, 9–12 px | `armour_region("spine", …)` |
 | batteries | (±57, -45), radius 9, pod 16, 760 HP, `red`, first 1.2 / 2.0 s | form 1 |
 | mortars | (±30, 47), radius 8, pod 12.6, 950 HP, `orange`, first 1.2 / 2.6 s | form 2 |
 | orb | (0, 29), radius 11, pod 15.6, 950 HP, `red`, first 1.6 s | form 2 |

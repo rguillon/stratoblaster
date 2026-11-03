@@ -47,8 +47,9 @@ emitter. Its reactors sit at the tail.
 #### MB-JAGUAR-03 — Spotted armour · MUST
 
 Its armour is a warm ochre metal (a body shade, greyed by the enemy colour rule) painted with jaguar
-rosettes: on each wing seven rosettes of five dark blotches in a ring round a darker heart, and spots
-on the claw pads and the tail pods. Its wings' leading edges are lit with neon.
+rosettes: on each wing's pelt (MB-JAGUAR-11) seven rosettes of five dark blotches in a ring round a
+darker heart, and spots on the claw pads and the tail pods. Its wings' leading edges are lit with
+neon.
 
 **Acceptance criteria**
 - Given the model, then rosettes are visible on both wings (manual).
@@ -150,17 +151,21 @@ After the pause that follows each destroyed part, it fires a curtain at heat 8.5
 
 At 2 of its 3 original parts destroyed, the Jaguar transforms once. The spotted pelt of each whole
 wing, from the fuselage's side out to the wing tip (its outline drawn by hand, mirrored for the left
-wing), bursts off in chunks, keeping the wing's lower skin (only the pelt from the playfield up to
-4.5 px high goes), and bares a dark metal `wing` frame: dark ribs across it and two spars, one rib in
-three with a thin neon seam. The boss stays one object at rest and after its transformation.
+wing), bursts off ([common](../common.md), BOSS-42): the pelt is drawn as a piece of its own, a plate
+of ochre armour lying on the wing's top face (inset 2 px from the outline, as the wing's bevel runs),
+from just under the wing's top (3 px) up to 4.5 px, carrying the wing's seven rosettes, its vent and
+the vein across it; the wing itself (its lower skin, up to 3 px), its lit leading edge, the sinews
+and the canted fins stay. It bursts into plates cracked from the outline and bares a dark metal
+`wing` frame on the wing: dark ribs across it and two spars, one rib in three with a thin neon seam.
+The boss stays one object at rest and after its transformation.
 
 **Acceptance criteria**
 - Given 2 original parts are destroyed, then both wings' pelt bursts off and the wing frames show
   (unit: `test_boss_kinds.py`, `test_boss_armour.py`; manual: the wings read as bared dark metal).
-- Given each state, then nothing of it hangs in the air (unit:
-  `test_d227_the_boss_holds_together_in_every_state`).
+- Given its model, then it draws the wings' pelt, and the boss holds together with and without it
+  (unit: `test_boss_52_the_boss_holds_together_in_every_state`).
 
-*Sources: D-224, D-221, D-227.*
+*Sources: D-224, D-221, D-227, D-254.*
 
 #### MB-JAGUAR-12 — Hidden weapons: a laser lance on each wing · MUST
 
@@ -204,7 +209,7 @@ X right, Y up the screen (its nose at -Y).
 | tail laser | 1.4 s every 6 s | on a turret |
 | rage | curtain, heat 8.5 | |
 | transformation | once, at 2 parts destroyed | `default_transforms` |
-| wing pelt | `JAGUAR_WING` outline (mirrored), 0 to 4.5 px high, `wing` frame | `armour_region("wings", …)` |
+| wing pelt | `JAGUAR_WING` outline (mirrored), `wing` frame; the pelt a plate 2.7–4.5 px high on the wing's top face (3 px), inset 2 px | `armour_region("wings", …)`; `src/game/view/bosses/world_3/jaguar_pelt.py` |
 | lances | (±38, 4), radius 10, pod 5, 880 HP, first 1.2 / 4.9 s | |
 | points | 8 000 (800 a part) | |
 | coat | [0.2, 0.135, 0.06] | `src/game/view/bosses/world_3/jaguar_parts.py` `COAT` |

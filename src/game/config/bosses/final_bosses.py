@@ -369,17 +369,29 @@ STORM_PETREL = with_weapons(
         moving_region(
             "outer-wings",
             1,
-            [[31, -24], [84, -24], [84, 20], [31, 20]],
+            # The outer wing's own outline, beyond the hinge at x 31 (the membrane the model draws
+            # there, D-254).
+            [[31, -13.4], [36, -12], [74, -3], [77, 1], [76, 7], [56, 10], [31, 13.8]],
             swing([31, -13.4, 8], "up", [0, -30]),
             None,
             [4, 1000],
         ),
         [
+            # The tail plating: a lozenge the shell's own shape over the tail (its tail at +Y).
             armour_region(
-                "tail", 2, [[-14, 18], [14, 18], [14, 48], [-14, 48]], "shell", [9, 1000], False
+                "tail",
+                2,
+                [[-8, 48], [8, 48], [12.5, 30], [12.5, 18], [-12.5, 18], [-12.5, 30]],
+                "shell",
+                None,
+                False,
             ),
+            # The wing root: the membrane from the body's flank to the hinge, with its engine sac.
             armour_region(
-                "wing-roots", 2, [[13, -24], [26, -24], [26, 2], [13, 2]], "wing", [4.6, 1000]
+                "wing-roots",
+                2,
+                [[12.5, -18.7], [31, -13.4], [31, 13.9], [30, 14], [12.5, 18.7]],
+                "wing",
             ),
         ],
     ),
@@ -398,8 +410,12 @@ GULL_MOTHERSHIP = with_weapons(
         hidden_weapon("orb-right", "orb", [37, -9], 7, 1050, 2, "green", 2.0, 7.6),
     ],
     [
-        armour_region("flanks", 1, [[18, 6], [49, 6], [49, 54], [18, 54]], "wing", [1.9, 1000]),
-        armour_region("wings", 2, [[22, -38], [49, -38], [49, 6], [22, 6]], "wing", [-0.3, 1000]),
+        # The mantle's flank plates, out to its rim (D-254): the rear ones behind the middle, the
+        # front ones in front of it, cut across the mantle's front at y -38.
+        armour_region("flanks", 1, [[18, 6], [47, 6], [47, 30], [34, 48], [18, 54.4]], "wing"),
+        armour_region(
+            "wings", 2, [[22, 6], [47, 6], [47, -20], [40, -32], [33.1, -38], [22, -38]], "wing"
+        ),
     ],
 )
 
@@ -422,21 +438,31 @@ MESA_FORTRESS = with_weapons(
     ],
     concat(
         [
+            # The skirt's front flank plates, either side of the head, out to the rim (D-254).
             armour_region(
-                "wings", 1, [[16, -51], [88, -51], [88, -3.5], [16, -3.5]], "wing", [4.3, 1000]
+                "wings",
+                1,
+                [[16, -3.5], [46, -3.5], [46, -28], [38, -38], [22, -46], [16, -46.5]],
+                "wing",
             ),
         ],
+        # The keep's roof halves: the upper shell's own footprint, cut along the ridge.
         moving_region(
             "roof",
             2,
-            [[0, -6], [23, -6], [23, 46], [0, 46]],
+            [[0, -18], [22, -18], [22, 36], [0, 36]],
             slide([[0, 0, 0], [16, 0, 0]]),
             "shell",
             [16, 1000],
         ),
         [
+            # The skirt's rear flank plates, with the forelimbs' scaly sinews (the sweepers rise
+            # out of the limbs).
             armour_region(
-                "flanks", 2, [[34, -3.5], [88, -3.5], [88, 50], [34, 50]], "wing", [2.2, 1000]
+                "flanks",
+                2,
+                [[34, -3.5], [46, -3.5], [46, 6], [72, 6], [80, 23], [46, 24], [46, 36], [34, 50]],
+                "wing",
             ),
         ],
     ),

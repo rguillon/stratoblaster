@@ -1,8 +1,8 @@
 # Copyright (c) 2026 Renaud Guillon
 """The Harbour Kraken's cargo (FB-HARBOUR-KRAKEN-03, FB-HARBOUR-KRAKEN-02, 2-2).
 
-The container bay at its stern (a part, launching Gnats) and the hatch covers along its deck.
-Logical pixels, nose +Z, Y up (towards the camera).
+The container bay at its stern (a part, launching Gnats); the hatch covers along its deck are on
+its armour (`harbour_kraken_armour`). Logical pixels, nose +Z, Y up (towards the camera).
 """
 
 import math
@@ -11,9 +11,9 @@ from game.config.enemy_look import ENEMY_LOOK
 from game.view.bosses.final_boss_shapes import open_hatch
 from game.view.bosses.mini_boss_greebles import rect
 from game.view.bosses.mini_boss_shapes import offset
-from game.view.bosses.world_2.fjord_lynx_frost import RIME, snow_cap
+from game.view.bosses.world_2.fjord_lynx_frost import RIME
 from game.view.bosses.world_2.harbour_kraken_cranes import DECK_Y, ORANGE_NEON, beam
-from game.view.bosses.world_2.w2_organic import ICE_FLESH, crystals, gland
+from game.view.bosses.world_2.w2_organic import ICE_FLESH, crystals
 from render.geometry.organic import organ
 from render.geometry.solids import Placement
 
@@ -39,10 +39,10 @@ PAINT = [
     ICE_FLESH.teal,
     ICE_FLESH.sinew,
 ]
-# Hatch covers past this z (the bow cover) are nudged over by 2 instead of 3.
-FRONT_COVER_Z = 20
-# A container's size: across, high, along.
+# A container's size: across, high, along; and where an egg lying in its place is widest, along
+# it from its base (`organ`: 0.45 of its length).
 BOX = [7, 5, 13]
+EGG_WIDEST = 0.45 * BOX[2]
 # The stacks either side of the launch hatch: x, z, and how many high.
 STACKS = [  # type: Stacks
     [-14.5, -6, 2],
@@ -59,9 +59,17 @@ def _container(p: EnemyParts, at: Vec3, paint: Rgb) -> None:
 
     Its doors' end hatched, snow on its roof.
     """
-    # FB-HARBOUR-KRAKEN-03: an egg lying in the brood sac where a container was, a gland lit in it.
+    # FB-HARBOUR-KRAKEN-03: an egg lying in the brood sac where a container was, a gland lit in it
+    # (on the egg's back where it is widest, BOSS-52).
     organ(p.flesh, BOX[0] / 2, 6, paint, Placement(at, 0, math.pi / 2), BOX[2] / BOX[0])
-    organ(p.vein, 0.9, 4, ORANGE_NEON, Placement(offset(at, 0, BOX[1] * 0.8, 0)), 0.6)
+    organ(
+        p.vein,
+        0.9,
+        4,
+        ORANGE_NEON,
+        Placement(offset(at, 0, BOX[1] * 0.8, EGG_WIDEST)),
+        0.6,
+    )
 
 
 def container_bay(p: EnemyParts, at: Vec3) -> None:
@@ -105,29 +113,3 @@ def container_bay(p: EnemyParts, at: Vec3) -> None:
         )
         neon.box([9, 0.4, 0.6], ORANGE_NEON, Placement(offset(floor_at, 0, 13.45, z)))
     crystals(p.flesh, offset(floor_at, -17, 0, -14), 3)
-
-
-def hatch_covers(p: EnemyParts) -> None:
-    """Add the hatch covers on the deck between the cranes (FB-HARBOUR-KRAKEN-02).
-
-    Frosted lids with seams and a vent.
-    """
-    hull = p.hull
-    flesh = p.flesh
-    for z in [-20, 40]:
-        # Armour plates grafted on the shell.
-        hull.bevel_slab(
-            rect(26, 12),
-            [DECK_Y - 0.5, DECK_Y, DECK_Y + 2],
-            [0, 1],
-            H.panel,
-            Placement([0, 0, z]),
-            RIME,
-        )
-        snow_cap(
-            flesh,
-            rect(18, 7),
-            DECK_Y + 2,
-            Placement([2 if z > FRONT_COVER_Z else -3, 0, z]),
-        )
-    gland(p, [-10, DECK_Y + 2.4, 40], 1.4, ORANGE_NEON)

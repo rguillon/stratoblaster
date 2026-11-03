@@ -7,7 +7,6 @@ round it. Logical pixels, nose +Z, Y up.
 
 import math
 
-from core.math.rng import create_rng
 from game.config.boss_look import BOSS_LOOK
 from game.view.bosses.boss_limbs import boss_point
 from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H
@@ -134,14 +133,37 @@ def ember_lance(p: Any, muzzles: list[Any], at: Vec3) -> None:
     p.hull.box([6, 3, 5], SHADE["edge"], Placement(clamp, yaw), H.panel)
 
 
-# The embers wreathing it: how many, how far out, and how high they drift.
-EMBERS_COUNT = 26
-EMBERS_INNER = 18
-EMBERS_OUTER = 62
-EMBERS_LOW = 4
-EMBERS_HIGH = 26
-EMBERS_SIZE = [0.7, 1.5]
-
+# The embers wreathing it (MB-EMBER-HERALD-02): where each mote lies (x, the surface under it, z)
+# and its size, on the wings, the back plating, the ring's rim and hub and the spire, so that none
+# floats free (BOSS-52).
+EMBERS = [
+    [10.0, 2.5, 12.0, 1.1],
+    [22.0, 2.5, 0.0, 0.8],
+    [34.0, 2.5, 2.0, 1.4],
+    [34.0, 2.5, -20.0, 0.9],
+    [40.0, 2.5, -14.0, 1.2],
+    [46.0, 2.5, 10.0, 0.7],
+    [50.0, 2.5, -20.0, 1.0],
+    [24.0, 2.5, -30.0, 1.3],
+    [12.0, 2.5, -34.0, 0.8],
+    [28.0, 2.5, -12.0, 1.0],
+    [-10.0, 2.5, 12.0, 0.9],
+    [-22.0, 2.5, 0.0, 1.3],
+    [-34.0, 2.5, 2.0, 0.8],
+    [-34.0, 2.5, -20.0, 1.2],
+    [-40.0, 2.5, -14.0, 0.7],
+    [-46.0, 2.5, 10.0, 1.1],
+    [-50.0, 2.5, -20.0, 1.4],
+    [-24.0, 2.5, -30.0, 0.9],
+    [3.0, 9.5, -34.0, 1.0],
+    [-4.0, 10.0, -24.0, 1.2],
+    [15.6, 10.4, 36.8, 0.8],
+    [37.8, 10.4, -12.9, 1.1],
+    [-14.0, 10.4, -37.5, 0.9],
+    [-35.3, 10.4, 18.8, 1.3],
+    [7.5, 13.2, 2.0, 0.8],
+    [-5.0, 13.2, -5.5, 1.0],
+]
 # The embers' colours, in turn.
 EMBER_COLOURS = [GOLD, HEAT["ember"], HEAT["molten"]]
 
@@ -149,14 +171,11 @@ EMBER_COLOURS = [GOLD, HEAT["ember"], HEAT["molten"]]
 def embers(neon: Any) -> None:
     """Add the embers wreathing the Ember Herald (MB-EMBER-HERALD-02).
 
-    Small glowing motes scattered round the hull and up past its ring, some molten orange, some
-    bright gold, the same every time.
+    Small glowing motes lying on the hull and up on the ring and the spire, some molten orange,
+    some bright gold, the same every time.
     """
-    random = create_rng(4505)
-    for i in range(EMBERS_COUNT):
-        a = random() * math.pi * 2
-        r = EMBERS_INNER + (EMBERS_OUTER - EMBERS_INNER) * math.sqrt(random())
-        s = EMBERS_SIZE[0] + (EMBERS_SIZE[1] - EMBERS_SIZE[0]) * random()
-        y = EMBERS_LOW + (EMBERS_HIGH - EMBERS_LOW) * random()
-        at = [math.sin(a) * r, y, math.cos(a) * r]
-        neon.box([s, s, s], EMBER_COLOURS[i % len(EMBER_COLOURS)], Placement(at, a, 0.6))
+    for i in range(len(EMBERS)):
+        e = EMBERS[i]
+        s = e[3]
+        at = [e[0], e[1] + s * 0.35, e[2]]
+        neon.box([s, s, s], EMBER_COLOURS[i % len(EMBER_COLOURS)], Placement(at, i * 0.9, 0.6))

@@ -20,16 +20,16 @@ from game.config.bosses.world_4.foundry_ark import (
 )
 from game.view.bosses.boss_limbs import boss_point
 from game.view.bosses.boss_model import build_boss_model
-from game.view.bosses.final_boss_greebles import grille, hazard
+from game.view.bosses.final_boss_greebles import grille
 from game.view.bosses.mini_boss_greebles import seam, vent
 from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H
 from game.view.bosses.overlord_city import box2d, edge_lights, symmetric
+from game.view.bosses.world_4.foundry_ark_armour import FOUNDRY_ARK_ARMOUR
 from game.view.bosses.world_4.foundry_ark_parts import (
     ARK_ORANGE,
     ARK_RED,
     DECK_TOP,
     MOLTEN,
-    SOOT,
     battery,
     chimney_row,
     crucible,
@@ -44,7 +44,7 @@ from game.view.bosses.world_4.living_forge import (
     magma_vein,
     reactor_sacs,
 )
-from game.view.enemies.enemy_shapes import SIDES, decal, flip_x
+from game.view.enemies.enemy_shapes import SIDES, flip_x
 from render.geometry.organic import RibSpec
 from render.geometry.solids import Placement
 
@@ -83,21 +83,15 @@ OUTRIGGER = [
 ]
 # The engine block across the stern.
 ENGINES = box2d(70, 12, [0, -94])
-# The blast furnace: its octagonal hearth, then its tapering stack (lathe profiles).
+# The blast furnace's octagonal hearth (a lathe profile), its top flat under the crown plate the
+# stack stands on (its spine armour, `foundry_ark_armour`).
 HEARTH = [
     [25.0, 0.0],
     [25.0, 9.0],
-    [21.0, 13.0],
-    [15.0, 15.0],
-]
-STACK = [
-    [13.0, 0.0],
-    [11.5, 12.0],
-    [9.5, 18.0],
-    [11.0, 19.5],
+    [22.0, 12.0],
+    [21.0, 13.8],
 ]
 HEARTH_FOOT = DECK_TOP - 1
-STACK_FOOT = HEARTH_FOOT + 15
 # The slag channels from the furnace out to each crucible (the right one; mirrored).
 CHANNEL = [
     [18.0, -14.0],
@@ -113,7 +107,11 @@ def _flipped(outline: Any) -> Any:
 
 
 def _draw_hull(p: Any) -> None:
-    """Draw the deck with its lit rim, the outriggers, the engine block, rust and soot."""
+    """Draw the deck with its lit rim, the outriggers, the engine block, rust and soot.
+
+    The fore flank and aft wing plates lying on the deck, with the dressing that stands on them,
+    are its armour (`foundry_ark_armour`).
+    """
     hull = p.hull
     neon = p.neon
     flesh = p.flesh
@@ -124,51 +122,31 @@ def _draw_hull(p: Any) -> None:
     for s in SIDES:
         wing = OUTRIGGER if s > 0 else _flipped(OUTRIGGER)
         flesh.bevel_slab(wing, [-5, -1, DECK_TOP - 0.6], [1, 2], SKIN.panel, None, SKIN.dark)
-        magma_vein(
-            p,
-            [
-                [s * 20, DECK_TOP + 0.3, -50],
-                [s * 44, DECK_TOP + 0.3, -36],
-                [s * 56, DECK_TOP + 0.3, -10],
-            ],
-            1.6,
-            MOLTEN,
-        )
-        glands(
-            p,
-            [
-                [s * 50, DECK_TOP, 10],
-                [s * 18, DECK_TOP, 84],
-            ],
-            2.6,
-            ARK_ORANGE,
-        )
+        # The magma vein's stern run; its middle run is on the aft wing plate.
+        magma_vein(p, [[s * 20, DECK_TOP + 0.3, -50], [s * 29, DECK_TOP + 0.3, -45]], 1.6, MOLTEN)
+        glands(p, [[s * 18, DECK_TOP, 84]], 2.6, ARK_ORANGE)
         edge_lights(neon, wing, [0, 1, 2, 3, 4], [-2, -1], ARK_ORANGE)
-        for z in [-60, -20, 40]:
-            vent(hull, [s * 48, DECK_TOP, z], [8, 10], 4)
-        hazard(hull, [s * 40, 76], [10, 6], 4, DECK_TOP + 0.05)
+        vent(hull, [s * 48, DECK_TOP, -60], [8, 10], 4)
         grille(hull, [s * 26, -72], [14, 10], [5, DECK_TOP + 0.05])
-        decal(hull, box2d(20, 14, [s * 30, 40]), DECK_TOP + 0.04, SOOT)
         seam(hull, [s * 8, 96], [s * 8, -90], [DECK_TOP, 1.4, 0.6], SHADE["edge"])
 
 
 def _draw_furnace(p: Any) -> None:
-    """Draw the blast furnace (the core): hearth, stack, glowing slits, door and tap guns."""
+    """Draw the blast furnace (the core): hearth, glowing slits, door and tap guns.
+
+    Its stack on the crown plate is its spine armour; the throat's rings leave from its mouth.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
     muzzle = p.muzzle
     p.flesh.lathe(HEARTH, 8, SKIN.base, Placement([0, HEARTH_FOOT, 0], math.pi / 8))
-    hull.lathe(STACK, 8, H.panel, Placement([0, STACK_FOOT, 0], math.pi / 8))
-    hull.ring(11.2, 2.6, 8, SOOT, Placement([0, STACK_FOOT + 17, 0], math.pi / 8))
-    neon.ring(12.3, 0.8, 8, ARK_ORANGE, Placement([0, STACK_FOOT + 6, 0], math.pi / 8))
     for k in range(8):
         a = (k * math.pi) / 4
         at = [math.sin(a) * 25.2, HEARTH_FOOT + 3, math.cos(a) * 25.2]
         if k != 0:
             neon.box([3, 4, 0.4], MOLTEN, Placement(at, a))
     throat = boss_point(ARK_THROAT[0], ARK_THROAT[1], ARK_THROAT[2])
-    charge.cylinder(9, 0.4, 8, WHITE, Placement([0, throat[1] - 0.6, throat[2]]))
     muzzle(throat, "ring")
     charge.box([9, 6, 0.6], WHITE, Placement([0, HEARTH_FOOT + 2, 25.2]))
     for m in ARK_TAPS:
@@ -203,8 +181,9 @@ def _draw_stern(p: Any) -> None:
     for s in SIDES:
         reactor_sacs(p, [[s * 12, 1, -100.2]], 5.5, MOLTEN)
         reactor_sacs(p, [[s * 28, 1, -100.2]], 4.2, MOLTEN)
-        p.neon.box([1.2, 0.8, 1.2], ARK_RED, Placement([s * 56, DECK_TOP + 0.2, -74]))
-        p.neon.box([1.2, 0.8, 1.2], ARK_RED, Placement([s * 40, DECK_TOP + 0.2, 86]))
+        # On the deck's top face, inside its bevel (BOSS-52).
+        p.neon.box([1.2, 0.8, 1.2], ARK_RED, Placement([s * 50, DECK_TOP + 0.2, -70]))
+        p.neon.box([1.2, 0.8, 1.2], ARK_RED, Placement([s * 34, DECK_TOP + 0.2, 82]))
 
 
 def build_foundry_ark(scene: Any) -> Any:
@@ -237,5 +216,6 @@ def build_foundry_ark(scene: Any) -> Any:
                 "crucible-right": crucible,
             },
             "turrets": {"rail-left": rail_cannon, "rail-right": rail_cannon},
+            "armour": FOUNDRY_ARK_ARMOUR,
         },
     )

@@ -9,6 +9,7 @@ import math
 
 from game.config.enemy_look import ENEMY_LOOK
 from game.config.record import record
+from game.view.enemies.enemy_shapes import FIGHTER_SECTION
 from render.geometry.organic import carapace, curve, organ, tendril, vein
 from render.geometry.solids import Placement
 
@@ -42,6 +43,15 @@ ICE_FLESH = record({
     # The seams between shell plates.
     "seam": [0.02, 0.04, 0.05],
 })
+
+
+def deck_section(flat: float) -> list[list[float]]:
+    """Return a fighter's section flattened into a deck `flat` of the way up (D-254).
+
+    The flanks of `FIGHTER_SECTION` under a flat back: the body a boss's shed plating lies on, so
+    the frame's floor lies on it once the plating is gone.
+    """
+    return [[q[0], min(q[1], flat)] for q in FIGHTER_SECTION]
 
 
 def shell(b: SolidBuilder, body: SegmentedBody, color: Rgb = ICE_FLESH.teal) -> None:

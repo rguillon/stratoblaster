@@ -10,21 +10,21 @@ from game.config.bosses.world_2.snow_owl import OWL_CHIN_GUNS, OWL_CROWN, SNOW_O
 from game.config.record import record
 from game.view.bosses.boss_limbs import boss_point
 from game.view.bosses.boss_model import build_boss_model
-from game.view.bosses.mini_boss_greebles import lamps, seam
-from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H, scaled
+from game.view.bosses.mini_boss_greebles import seam
+from game.view.bosses.mini_boss_shapes import QUARTER, WHITE, H, scaled
+from game.view.bosses.world_2.snow_owl_armour import (
+    TIP_ROOT,
+    clip_x,
+    draw_wing_slabs,
+    owl_armour,
+)
 from game.view.bosses.world_2.snow_owl_parts import (
     OWL_WHITE,
     eye,
     icicles,
     radar_pod,
 )
-from game.view.bosses.world_2.w2_organic import (
-    ICE_FLESH,
-    crystals,
-    gland,
-    sinew,
-    spine_row,
-)
+from game.view.bosses.world_2.w2_organic import ICE_FLESH, deck_section, sinew
 from game.view.enemies.enemy_shapes import FIGHTER_SECTION, SIDES, canopy_paint
 from game.view.enemies.organic_parts import reactor_sac
 from render.geometry.organic import RibSpec, ribs
@@ -39,10 +39,6 @@ from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts
 
 # __pragma__ ("noskip")
 
-
-# Navigation lights: red to port (+X, the screen's left), green to starboard.
-PORT_RED = [1, 0.1, 0.12]
-STARBOARD_GREEN = [0.2, 1, 0.35]
 
 # The right wing seen from above, from the leading edge's root out to the tip and back.
 HALF_WING = [  # type: list[list[float]]
@@ -70,57 +66,61 @@ WING = list(HALF_WING)
 for j in range(len(HALF_WING) - 2):
     i = len(HALF_WING) - 2 - j
     WING.append([-HALF_WING[i][0], HALF_WING[i][1]])
-# The leading edge's neon, root to tip (one wing; mirrored for the other).
+# The rimed flesh over the wings.
+WING_RIME = scaled(WING, 0.86, 0, 2)
+# The leading edge's neon of the inner wing, root to the tip panel's root (one wing; mirrored).
 LEADING_EDGE = [  # type: list[list[float]]
     [5, 13.6],
     [14, 12.8],
     [28, 8.8],
-    [40, 3.8],
-    [47, 0.4],
+    [30, 7.97],
 ]
-# The body along the centre line (loft stations: z, half width, bottom, top).
-BODY = [  # type: list[list[float]]
-    [-27, 5, -1, 6],
-    [-18, 10, -3, 10],
-    [-4, 13, -4, 12],
-    [10, 12, -3, 11],
+# The back's deck: the flattened back the plating lies on (MB-SNOW-OWL-07, `snow_owl_armour`),
+# `FLAT` of the way up its stations.
+DECK = 5.9
+FLAT = 0.62
+# The body's section: the fighter's flanks under a flat back.
+BACK_SECTION = deck_section(FLAT)
+
+
+def back_station(z: float, half_width: float, bottom: float) -> list[float]:
+    """Return a loft station of the back whose flat deck lies at `DECK`."""
+    return [z, half_width, bottom, bottom + (DECK - bottom) / FLAT]
+
+
+# The back along the centre line, tail to the head's root (loft stations: z, half width, bottom,
+# top), and the head rising from the deck to the neck.
+BACK = [
+    back_station(-27, 5, -1),
+    back_station(-18, 10, -3),
+    back_station(-4, 13, -4),
+    back_station(6, 12.3, -3.2),
+]
+HEAD = [  # type: list[list[float]]
+    [6, 12.3, -3.2, 6.0],
+    [12, 11.8, -3, 10.5],
     [20, 9, -2, 8],
     [24, 5, 0, 5],
 ]
-# Where the trailing edge's icicles hang (one wing; mirrored for the other).
+# Where the inner wing's trailing-edge icicles hang (one wing; mirrored for the other).
 WING_ICICLES = [  # type: list[list[float]]
-    [43, -1, -6.5],
-    [37, -1, -8],
     [29, -1, -10],
     [20, -1, -12.5],
 ]
 
 
 def draw_wings(p: EnemyParts) -> None:
-    """Draw the wings: dark metal under a crust of snow (MB-SNOW-OWL-05).
+    """Draw the inner wings, to the root of the tip panels (MB-SNOW-OWL-05, MB-SNOW-OWL-07).
 
-    White neon along their leading edges.
+    Membrane on bone struts under a crust of snow, white neon along their leading edges; the tip
+    panels are the moving pieces of `snow_owl_armour`.
     """
-    hull = p.hull
     flesh = p.flesh
     neon = p.neon
     # MB-SNOW-OWL-02: broad membrane wings on bone struts, rime on their fronts; too big to flutter.
-    flesh.bevel_slab(
-        WING,
-        [-1.2, 0, 1.6],
-        [0.8, 1.2],
-        ICE_FLESH.membrane,
-        None,
-        ICE_FLESH.graphite,
-    )
-    flesh.bevel_slab(
-        scaled(WING, 0.86, 0, 2),
-        [1.5, 1.7, 2.1],
-        [0, 0.5],
-        ICE_FLESH.teal,
-        None,
-        ICE_FLESH.rime,
-    )
+    inner = clip_x(clip_x(WING, TIP_ROOT, -1), -TIP_ROOT, 1)
+    rime = clip_x(clip_x(WING_RIME, TIP_ROOT, -1), -TIP_ROOT, 1)
+    draw_wing_slabs(p, inner, rime)
     for s in SIDES:
         for i in range(len(LEADING_EDGE) - 1):
             a = LEADING_EDGE[i]
@@ -138,25 +138,27 @@ def draw_wings(p: EnemyParts) -> None:
             )
         sinew(flesh, [s * 5, 2.4, 10], [s * 50, 1.8, -2], 1.1, ICE_FLESH.bone, [0, 1, 6])
         icicles(flesh, WING_ICICLES, s)
-        hull.ring(8, 1, 8, H.panel, Placement([s * 38, 1.6, 2]))
-    lamps(neon, [[50.5, 0.4, -3]], 1.4, PORT_RED)
-    lamps(neon, [[-50.5, 0.4, -3]], 1.4, STARBOARD_GREEN)
 
 
 def draw_body(p: EnemyParts) -> None:
-    """Draw the body: a rounded fuselage, snow on its back, ear tufts, vents and twin reactors."""
+    """Draw the body: the flat-backed fuselage, the head, ear tufts, vents and twin reactors.
+
+    The back's plating (the glands, crystals, spines and stripes on it) is the armour it sheds,
+    `snow_owl_armour`.
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
     # MB-SNOW-OWL-02: a plump body of cold flesh, ribbed, a sinewy neck holding the great eye.
     hull.ring(6.4, 1.2, 8, H.panel, Placement([0, 5, 21], 0, QUARTER))
     flesh.loft(
-        FIGHTER_SECTION,
-        BODY,
+        BACK_SECTION,
+        BACK,
         ICE_FLESH.teal,
         None,
         LoftOptions(False, canopy_paint([1, 2], ICE_FLESH.rime)),
     )
+    flesh.loft(FIGHTER_SECTION, HEAD, ICE_FLESH.teal)
     ribs(
         flesh,
         [-16, -8, 0],
@@ -173,11 +175,7 @@ def draw_body(p: EnemyParts) -> None:
             ICE_FLESH.rime,
         )
         neon.box([1.2, 1.2, 1.2], OWL_WHITE, Placement([s * 9.9, 14.6, 10.7]))
-        gland(p, [s * 7, 9.4, -10], 1.2, OWL_WHITE)
-        crystals(flesh, [s * 5, 9, -20], 2.6)
-        neon.box([0.6, 0.4, 14], OWL_WHITE, Placement([s * 10.6, 6.2, -8], s * 0.05))
         reactor_sac(p, [s * 4, 2.5, -27.2], 2.6, OWL_WHITE, ICE_FLESH.graphite)
-    spine_row(flesh, [0, 12, 4], [0, 9, -18], 4, 2.6)
 
 
 def draw_guns(p: EnemyParts) -> None:
@@ -192,6 +190,8 @@ def draw_guns(p: EnemyParts) -> None:
     crowns = [boss_point(m[0], m[1], m[2]) for m in OWL_CROWN]
     if len(crowns) > 0:
         crown = crowns[0]
+        # On a stem from the deck: the plating round it is shed (BOSS-52).
+        hull.cylinder(2.6, crown[1] - 2 - DECK, 8, H.base, Placement([crown[0], DECK, crown[2]]))
         hull.cylinder(3.4, 1.5, 8, H.base, Placement([crown[0], crown[1] - 2, crown[2]]))
         neon.ring(3.5, 0.4, 8, OWL_WHITE, Placement([crown[0], crown[1] - 1.2, crown[2]]))
         charge.cylinder(2, 0.5, 8, WHITE, Placement([crown[0], crown[1] - 0.5, crown[2]]))
@@ -208,16 +208,22 @@ def draw_guns(p: EnemyParts) -> None:
 
 
 def draw_core(p: EnemyParts) -> None:
-    """Draw the core body: wings, body, the guns, and the sensor's hood."""
+    """Draw the core body: the inner wings, the body and the guns (the hood is on the plating)."""
     draw_wings(p)
     draw_body(p)
     draw_guns(p)
-    p.hull.box([12, 0.4, 3], SHADE["edge"], Placement([0, 11.5, 2]))
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
-    """Return the `BossDrawing` of a boss model: what the model is drawn from."""
-    return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
+    """Return the `BossDrawing` of a boss model: what the model is drawn from, with its armour."""
+    return record({
+        "core": core,
+        "parts": parts,
+        "turrets": turrets,
+        "limbs": limbs,
+        "ring": ring,
+        "armour": owl_armour(WING, WING_RIME),
+    })
 
 
 def build_snow_owl(scene: Any) -> BuiltEnemyModel:
@@ -226,7 +232,7 @@ def build_snow_owl(scene: Any) -> BuiltEnemyModel:
     A wide-winged recon drone with white neon: snow on its broad wings, two radar pods with turning
     antennas on them and a big round sensor eye at its front. MB-SNOW-OWL-02: now a living owl of
     cold flesh with membrane wings on bone, its radomes grafted on swollen nacelles, its eye a real
-    eye in a lid of flesh.
+    eye in a lid of flesh. Its wing tips and its back plating are its armour (MB-SNOW-OWL-07).
     """
     parts = record({"pod-left": radar_pod, "pod-right": radar_pod, "eye": eye})
     return build_boss_model(

@@ -114,24 +114,7 @@ def test_flash_group_lights_its_body_hulls_white_for_a_moment_after_a_hit(monkey
 # draws no stem or pylon of its own any more: the bosses whose drawings do not hold yet are strict
 # expected failures (ENG-163), struck off as they are migrated.
 NOT_HELD_YET = {
-    "storm-petrel",
-    "gull-mothership",
-    "mesa-fortress",
-    "floe-breaker",
-    "narwhal",
-    "harbour-kraken",
-    "snow-owl",
-    "avalanche",
-    "glacier-colossus",
-    "ice-queen",
     "boreal-citadel",
-    "dam-breaker",
-    "jaguar",
-    "steam-dreadnought",
-    "ash-wraith",
-    "obsidian-golem",
-    "foundry-ark",
-    "ember-herald",
 }
 
 

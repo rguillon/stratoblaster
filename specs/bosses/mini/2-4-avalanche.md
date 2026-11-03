@@ -29,13 +29,15 @@ the head, their drills pointing down the screen, and the crop sac on its back be
 
 Its body is Cyber-Organic flesh with metal grafts (see [art direction](../../graphics/art-direction.md)),
 drawn by code:
-- a squat body of sinew under a ridged teal shell, bone ribs across it, a row of ice spines down it;
+- a squat body of sinew under a ridged teal shell (a dorsal ridge, and the shell's two flanks drawn
+  as the armour it sheds, MB-AVALANCHE-07), bone ribs across it, a row of ice spines down it;
 - its head in front (the old cab) of graphite flesh, angry yellow eyes on it, a metal plate grafted
   on top;
 - a crawling flank of five swollen teal segments either side (where the tracks were), a metal fender
   over each, short clawed legs of bone digging under it;
 - two spiracles breathing out of the shell, each capped by a sooted metal valve;
-- a weathered metal patch on its deck, reactor sacs at its tail.
+- a weathered metal patch on its deck beside the head, yellow lamps on the fenders, reactor sacs at
+  its tail.
 
 *Sources: P08-R10, P16-R05.*
 
@@ -78,12 +80,22 @@ Its two drill arms are moving limbs on two joints each (the limb rules of
 
 #### MB-AVALANCHE-07 — What its transformation sheds · MUST
 
-At its transformation the armour of both flanks (region `flanks`: from 10 to 44 px out either side,
-from 12 px ahead of the centre to 38 px behind it) bursts off, baring dark metal ribs and spars
-(`wing`), and its two heavy cannons rise from it. The keel stays under the cut and the boss stays one
-object.
+At its transformation the two flanks of its shell are the armour it sheds ([common](../common.md),
+BOSS-42), drawn as pieces of their own: either side of the dorsal ridge (12 px wide) left on the
+core, the shell's outer slope of teal plates with dark seams, from just under the deck (6.5 px) up
+to the ridge's shoulder (about 11 px, the shell's own stations from 36 px behind the centre to 6 px
+ahead), its inner edge sunk in the ridge, a lit gland at its foot near the nose and ice crystals on
+its tail. Its region (`flanks`, mirrored) runs from 6 to 32 px out either side, from 6 px ahead of
+the centre to 36 px behind it: over the flank, the deck's edge and the fender. Each flank bursts into
+four slices, baring dark metal ribs and spars (`wing`) on the deck and over the fenders, and its two
+heavy cannons rise through the fenders. The spiracles are rooted in the deck, the ridge, the fenders
+and the keel stay, and the boss stays one object.
 
-*Sources: D-221, D-224, D-227, D-229.*
+**Acceptance criteria**
+- Given its model, then it draws the flanks' armour, and it holds together with and without it
+  (unit tests).
+
+*Sources: D-221, D-224, D-227, D-229, D-254.*
 
 ### Behaviour
 
@@ -171,6 +183,6 @@ dies as every boss.
 | rage_heat | 5.5 (`spirals`, orange / red) | `rage` |
 | transformation | after 2 of 3 parts | `boss_build.default_transforms` |
 | weapon_radius / weapon_hp | 11 px / 720 | `hidden_weapon("cannon-…")`, pod 12.2 px high |
-| region `flanks` | x 10…44 (mirrored), y −12…38, from 4.2 px up, `wing` | `armour_region("flanks", 1, …)` |
+| region `flanks` | x 6…32 (mirrored), y −6…36; the shell's flanks 6.5–13.6 px either side of a 12 px ridge; `wing` | `armour_region("flanks", 1, …)`; `src/game/view/bosses/world_2/avalanche_armour.py` |
 | full_hp / full_hp_with_weapons | 3 800 / 5 240 | core + parts |
 | points | 7 000 (700 a part) | `points` |

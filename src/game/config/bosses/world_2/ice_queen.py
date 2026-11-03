@@ -139,8 +139,28 @@ ICE_QUEEN = with_weapons(
         hidden_weapon("battery-right", "battery", [12, 39], 10, 670, 1, "purple", 2.0, 16.5),
     ],
     [
+        # MB-ICE-QUEEN-07: the plating over its rear (its nose at -Y): a lozenge over the rear
+        # deck and the engine sacs, from the spire's gland to the tail; the batteries lie under it.
         armour_region(
-            "back", 1, [[-30, 9], [30, 9], [30, 58.4], [-30, 58.4]], "shell", [3.4, 1000], False
+            "back",
+            1,
+            [
+                [-2, 6],
+                [2, 6],
+                [13, 14],
+                [16, 26],
+                [16, 44],
+                [12, 50],
+                [3, 57],
+                [-3, 57],
+                [-12, 50],
+                [-16, 44],
+                [-16, 26],
+                [-13, 14],
+            ],
+            "shell",
+            None,
+            False,
         ),
     ],
 )

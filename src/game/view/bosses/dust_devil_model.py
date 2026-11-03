@@ -34,16 +34,37 @@ type Vec3 = list[Any]
 
 AMBER = BOSS_LOOK.neon["dust-devil"]
 
-# The core: a gyro disc (a lathe profile), domed on top, and its ring emitter on the dome.
+# The core: a gyro disc (a lathe profile) flattened to `DISC_TOP`, a hub standing from its middle
+# that carries the ring emitter; its domed cap is the plating it sheds (MB-DUST-DEVIL-05): a shell
+# of revolution (a closed lathe profile) round the hub, from `CAP_RIM` at its rim (sunk into the
+# disc) up to the hub's top.
+DISC_TOP = 2.2
+CAP_RIM = 2.0
 GYRO_DISC = [
     [0, -4],
     [14, -4],
     [18, -1],
     [18, 1.5],
-    [15, 4],
-    [9, 7],
-    [0, 8],
+    [16, DISC_TOP],
+    [4.6, DISC_TOP],
+    [3.8, 7.6],
+    [0, 7.8],
 ]
+CAP = [
+    [15.2, CAP_RIM],
+    [15.4, 2.8],
+    [13, 3.8],
+    [10, 5.5],
+    [7, 6.9],
+    [4.4, 7.7],
+    [4.4, 6.7],
+    [7, 6.0],
+    [10, 4.5],
+    [13, 2.9],
+    [15.2, CAP_RIM],
+]
+# Radius of the cap, and of the hub it leaves round (the `back` region's two half-rings).
+CAP_RADIUS = 15.2
 EMITTER = [
     [3.6, 7.6],
     [2.4, 9.4],
@@ -116,33 +137,45 @@ POD_SCALE = 1.15
 def _draw_core(p: Any) -> None:
     """Draw the core (MB-DUST-DEVIL-02): a swollen fleshy bell (the gyro disc grown over).
 
-    Plated ribs radiating across it, the amber charge gland on its crown (the ring emitter), eyes at
-    its front, its reactors in sacs behind.
+    The disc flattened under its cap (the plating it sheds, `_draw_plating`), the hub on its middle
+    with the amber charge gland on top (the ring emitter), eyes at its front, its reactors in sacs
+    behind.
     """
     p.flesh.lathe(GYRO_DISC, 10, F.sinew, Placement(None, math.pi / 10))
     p.neon.ring(18.2, 1.2, 10, AMBER, Placement([0, -0.4, 0], math.pi / 10))
-    organ(p.flesh, 9, 8, F.slate, Placement([0, 4, 0]), 0.25)
+    for s in SIDES:
+        reactor_sac(p, [s * 6, 4, -23], 2.6, AMBER)
+        tentacle(p, [s * 5, 3, -14], [s * 6, 4, -21], [0, 1, 0], [3, 2.6], F.slate, 5)
+    eyes(p, [0, DISC_TOP + 0.3, 16.6], {"count": 3, "size": 1, "spacing": 3}, AMBER)
+    # Brightens as the core's next volley charges; its bullets leave from its top.
+    p.charge.lathe(EMITTER, 6, WHITE, None)
+    p.muzzle([0, 10, 0], None)
+
+
+def _draw_plating(p: Any) -> None:
+    """Draw the bell's cap (MB-DUST-DEVIL-05): the armour it sheds at its transformation.
+
+    A domed shell over the flattened disc, round the hub, the bone ribs radiating down it to its
+    rim, the plated ribs and the nose plate grafted on it, a vein down each side.
+    """
+    p.flesh.lathe(CAP, 10, F.sinew, Placement(None, math.pi / 10), False)
     for a in around(8):
         x = math.sin(a)
         z = math.cos(a)
-        tentacle(p, [x * 5, 8, z * 5], [x * 18, 1.6, z * 18], [0, 2.2, 0], [1.1, 0.6], F.bone, 3)
+        tentacle(
+            p, [x * 5, 7.6, z * 5], [x * 14.8, 3.1, z * 14.8], [0, 1.6, 0], [1.1, 0.6], F.bone, 3
+        )
         if abs(z) < 0.95:
             graft(
                 p,
                 polygon(4, 2.6, [0.8, 1.4]),
-                [4.4, 5.6],
+                [3.9, 5.1],
                 [x * 13, 0, z * 13],
                 {"yaw": a},
             )
     for s in SIDES:
-        vein_line(p, [s * 4, 7.5, -3], [s * 15, 3, -10], [0, 1.5, 0], 0.9, AMBER)
-        reactor_sac(p, [s * 6, 4, -23], 2.6, AMBER)
-        tentacle(p, [s * 5, 3, -14], [s * 6, 4, -21], [0, 1, 0], [3, 2.6], F.slate, 5)
-    eyes(p, [0, 4.5, 16], {"count": 3, "size": 1, "spacing": 3}, AMBER)
-    graft(p, polygon(5, 4, [1.2, 0.8]), [3, 4.4], [0, 0, 13])
-    # Brightens as the core's next volley charges; its bullets leave from its top.
-    p.charge.lathe(EMITTER, 6, WHITE, None)
-    p.muzzle([0, 10, 0], None)
+        vein_line(p, [s * 4, 7.5, -3], [s * 12, 3.4, -8.5], [0, 1.5, 0], 0.9, AMBER)
+    graft(p, polygon(5, 4, [1.2, 0.8]), [3.9, 5.1], [0, 0, 13])
 
 
 def _draw_ring(p: Any) -> None:
@@ -225,5 +258,6 @@ def build_dust_devil(scene: Any) -> Any:
             "core": _draw_core,
             "ring": _draw_ring,
             "parts": {"blade-1": _blade_pod, "blade-2": _blade_pod, "blade-3": _blade_pod},
+            "armour": {"back": {"whole": _draw_plating}},
         },
     )

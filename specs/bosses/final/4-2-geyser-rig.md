@@ -213,9 +213,13 @@ bullets a second at 208 px/s.
 #### FB-GEYSER-RIG-15 — First transformation: back plating bursts off · MUST
 
 The Rig transforms a first time when 2 of its 5 original parts are destroyed. Its back plating
-bursts off: one region across the centre line, 32 px either side, from 26 px to 72 px behind the
-centre, above 8.3 px high (so its deck stays). Under it a dark metal `shell` frame (a lattice) shows.
-The boss stays one object after it.
+bursts off: a piece of the model's own ([common](../common.md), BOSS-42), a plate of scorched hide
+lying on the deck across the centre line, 27 px either side, from 26 px to 70 px behind the centre
+(the deck's stern edge), 7 to 8.5 px high, clear of the steam vents' valve blocks; on it the
+cooling tower, two bone ribs arching over it, two glands, two worn deck plates, ash drifts, soot
+streaks and the molten veins' stern runs. It bursts into plates cracked from its outline at its own
+height. Under it the flat deck and a dark metal `shell` frame (a lattice) show. The missile racks
+lie folded under it. The boss stays one object after it.
 
 **Acceptance criteria**
 - Given two original parts are destroyed, then the boss transforms and its back region bursts off,
@@ -223,7 +227,7 @@ The boss stays one object after it.
 - Given the boss after its first transformation, then nothing of it hangs in the air (unit:
   `test_d227_the_boss_holds_together_in_every_state`).
 
-*Sources: D-221, D-224, D-227.*
+*Sources: D-221, D-224, D-227, D-254.*
 
 #### FB-GEYSER-RIG-16 — First hidden weapons: two missile racks · MUST
 
@@ -241,9 +245,14 @@ chance). They shield the core and fire homing missiles as every rack does (see
 #### FB-GEYSER-RIG-17 — Second transformation: wing armour bursts off · MUST
 
 The Rig transforms a second time when 4 of its 5 original parts are destroyed. Its wing armour
-bursts off: a region either side from 14 px to 48 px out, from 41.2 px ahead of the centre to 4 px
-behind it, above 6 px high. Under each a dark metal `wing` frame (ribs across and two spars) shows.
-The boss stays one object after it.
+bursts off: a plate of scorched hide either side, a piece of the model's own ([common](../common.md),
+BOSS-42), lying on the deck from 14 px to 41 px out (inset from the deck's edge so the yellow
+strip along it stays in sight), from 37 px ahead of the centre to 4 px behind it, its bow corner
+cut as the deck's is (from (29, -37) to (41, -28)), 7 to 8.5 px high; on it the pipe rack (its
+stern trestle standing on the deck behind the plate), the hazard paint, a molten seam, a worn deck
+plate and an ash drift. It bursts into plates cracked from its outline at its own height. Under
+each the flat deck and a dark metal `wing` frame (ribs across and two spars) show. The ring
+emitters lie folded under them. The boss stays one object after it.
 
 **Acceptance criteria**
 - Given four original parts are destroyed, then the boss transforms a second time and its wing
@@ -251,7 +260,7 @@ The boss stays one object after it.
 - Given the boss after its second transformation, then nothing of it hangs in the air (unit:
   `test_d227_the_boss_holds_together_in_every_state`).
 
-*Sources: D-221, D-224, D-227.*
+*Sources: D-221, D-224, D-227, D-254.*
 
 #### FB-GEYSER-RIG-18 — Second hidden weapons: two ring emitters · MUST
 
@@ -301,8 +310,8 @@ All in `src/game/config/bosses/world_4/geyser_rig.py` (`GEYSER_RIG`) unless note
 | bullets | `red` 210, `orange` 200, `magenta` 205, `purple` 195 px/s | radius 4 |
 | rage | curtain, heat 11 (`orange`, `red`) | `rage.curtain` |
 | transformations | at 2, then 4 original parts destroyed | `src/game/sim/boss_build.py` `default_transforms` |
-| back region | x -32..32, y 26..72, above 8.3, `shell` | form 1 |
-| wing regions | x 14..48 (mirrored), y -41.2..4, above 6.0, `wing` | form 2 |
+| back region | x -27..27, y 26..70, `shell`, not mirrored; plating 7–8.5 px, the cooling tower on it | form 1, `geyser_rig_armour.py` |
+| wing regions | (14, -37), (29, -37), (41, -28), (41, 4), (14, 4) (mirrored), `wing`; plating 7–8.5 px, the pipe racks on it | form 2 |
 | racks | (±13, 57), radius 11, pod 12.4, 1 040 HP, first 1.2 / 2.0 s | form 1 |
 | orbs | (±33, -29), radius 11, pod 12.4, 1 300 HP, `red`, first 1.2 / 2.0 s | form 2 |
 | drops | parts 0.6, hidden weapons 0.3, core 1 | `fpart`, `coreDrop` |

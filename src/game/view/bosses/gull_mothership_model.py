@@ -3,7 +3,8 @@
 
 Logical pixels, nose +Z, Y up (towards the camera). A brood-mother of the sea: a wide fleshy mantle,
 a shelled body along its middle ending in a huge glowing eye (its laser), a brood pouch at each
-flank and two flak growths on its front.
+flank and two flak growths on its front. The mantle's flank plates, with the swim bladders on the
+rear ones, are its armour, drawn apart (`gull_mothership_armour`, D-254).
 """
 
 import math
@@ -12,7 +13,8 @@ from game.config.boss_look import BOSS_LOOK
 from game.config.bosses.final_bosses import GULL_MOTHERSHIP
 from game.view.bosses.boss_model import build_boss_model
 from game.view.bosses.final_boss_gull import DECK_TOP, draw_flak, draw_hangar
-from game.view.bosses.final_boss_shapes import mirrored, shift, turret
+from game.view.bosses.final_boss_shapes import shift, turret
+from game.view.bosses.gull_mothership_armour import draw_centre, draw_mantle, gull_armour
 from game.view.bosses.world_1_organic_kit import (
     F,
     M,
@@ -20,17 +22,13 @@ from game.view.bosses.world_1_organic_kit import (
     gland,
     graft,
     hide,
-    mantle,
     polygon,
     rib_cage,
-    scale_outline,
     spine,
     tentacle,
-    vein_line,
 )
 from game.view.enemies.enemy_shapes import SIDES
 from game.view.enemies.organic_parts import eyes, reactor_sac
-from render.geometry.organic import SegmentedBody, segmented_body
 from render.geometry.solids import Placement
 
 # isort: split
@@ -46,17 +44,6 @@ N = BOSS_LOOK.neon["gull-mothership"]
 WHITE = [1, 1, 1]
 QUARTER = math.pi / 2
 
-# The mantle seen from above (right half, front to back); the pouches sit on its flat sides.
-DECK = mirrored([
-    [0, 50],
-    [24, 46],
-    [40, 32],
-    [47, 20],
-    [47, -30],
-    [34, -48],
-    [14, -56],
-    [0, -56],
-])
 # The laser eye's lens (a lathe profile along its axis), at the body's nose.
 LENS = [
     [0, 0],
@@ -69,11 +56,12 @@ LENS = [
 def _draw_hull(p: Any) -> None:
     """Draw the body (FB-GULL-MOTHERSHIP-02): a teal mantle lined with a green vein.
 
-    A second fold on it, a shelled body along its middle with ribs over its back and glands down its
-    spine.
+    Its upper layer and the second fold on it drawn only along the middle (their flanks are the
+    armour, drawn apart), a shelled body along its middle with ribs over its back and glands down
+    its spine.
     """
-    mantle(p, DECK, [-5, DECK_TOP], F.teal, N)
-    mantle(p, scale_outline(DECK, 0.72, 0, -4), [DECK_TOP - 1, DECK_TOP + 1.6], F.graphite)
+    draw_mantle(p)
+    draw_centre(p)
     hide(
         p,
         {
@@ -99,12 +87,8 @@ def _draw_hull(p: Any) -> None:
     graft(p, polygon(6, 7, [1, 1.6]), [20.5, 22], [0, 0, 30])
     barbs(p, [0, 21, -44], {"count": 3, "spacing": 0.1, "size": 4, "dir": [0, 1, -0.4]})
     for s in SIDES:
-        for z in [-34, -14, 6, 26]:
-            vein_line(
-                p, [s * 15, DECK_TOP + 6, z], [s * 40, DECK_TOP + 1, z - 8], [0, 3, 0], 1.1, N
-            )
         tentacle(p, [s * 10, 0, -52], [s * 18, -1, -60], [s * 4, 0, 0], [3, 0.4], F.teal)
-        graft(p, polygon(4, 5, [1.6, 0.9]), [DECK_TOP + 1.4, DECK_TOP + 2.4], [s * 30, 0, 22])
+        reactor_sac(p, [s * 6, DECK_TOP + 2.5, -60], 2.8, N)
 
 
 def _draw_emitter(p: Any) -> None:
@@ -125,19 +109,6 @@ def _draw_emitter(p: Any) -> None:
     p.muzzle(lens, None)
 
 
-def _draw_engines(p: Any) -> None:
-    """Draw the swim bladders on the back of the mantle, their reactors in sacs."""
-    for s in SIDES:
-        segmented_body(
-            p.flesh,
-            SegmentedBody(-51, -24, 2, 5.5, 0, 9.5),
-            F.slate,
-            Placement([s * 30, DECK_TOP - 1, 0]),
-        )
-        reactor_sac(p, [s * 30, DECK_TOP + 3, -50], 3.4, N)
-        reactor_sac(p, [s * 6, DECK_TOP + 2.5, -60], 2.8, N)
-
-
 def _flak_turret(p: Any, at: Vec3) -> None:
     """Add a flak growth's twin guns, on its crown (FB-GULL-MOTHERSHIP-03)."""
     turret(p, shift(at, [0, DECK_TOP + 2.5, 0]), 8.5, [2, N])
@@ -148,13 +119,12 @@ def build_gull_mothership(scene: Any) -> Any:
 
     A brood-mother of the sea 5 L across: green veins and glands, a brood pouch on each flank (they
     launch the Gnats), two flak growths on its front, and a huge laser eye at the nose of its body
-    (the core).
+    (the core). Its flank plates are its armour, drawn apart (FB-GULL-MOTHERSHIP-05).
     """
 
     def core(p: Any) -> None:
         _draw_hull(p)
         _draw_emitter(p)
-        _draw_engines(p)
 
     return build_boss_model(
         GULL_MOTHERSHIP,
@@ -169,5 +139,6 @@ def build_gull_mothership(scene: Any) -> Any:
                 "flak-right": draw_flak,
             },
             "turrets": {"flak-left": _flak_turret, "flak-right": _flak_turret},
+            "armour": gull_armour(),
         },
     )

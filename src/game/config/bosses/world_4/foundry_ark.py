@@ -9,6 +9,8 @@ stage, once it stands alone. Its core always drops a bonus (FB-FOUNDRY-ARK-20). 
 (FB-FOUNDRY-ARK-09) tuned for WLD-4-22.
 """
 
+import math
+
 from game.config.bosses.boss_kit import (
     bullet,
     bursting,
@@ -30,6 +32,17 @@ from game.config.record import concat, merge, record
 from typing import Any
 
 # __pragma__ ("noskip")
+
+
+def octagon(radius: float) -> list[list[float]]:
+    """Return an octagon of `radius` round the centre, its sides facing the axes."""
+    return [
+        [
+            round(math.cos((k + 0.5) * math.pi / 4) * radius, 2),
+            round(math.sin((k + 0.5) * math.pi / 4) * radius, 2),
+        ]
+        for k in range(8)
+    ]
 
 
 def fpart(part_id: str, at: Any, radius: float, health: float, options: Any = None) -> Any:
@@ -173,14 +186,18 @@ FOUNDRY_ARK = with_weapons(
         hidden_weapon("hangar-centre", "hangar", [0, -19], 10, 2400, 2, "orange", 1.6, 22.4),
     ],
     [
+        # D-254: iron plates lying on the deck, out to its edge (the fore flank plates from x 20,
+        # the aft wing plates from x 30), and the furnace's crown plate (an octagon the hearth's
+        # top, its sides facing the axes) carrying the stack.
         armour_region(
-            "flanks", 1, [[20, -78], [88, -78], [88, -13.5], [20, -13.5]], "wing", [-1.5, 1000]
+            "flanks",
+            1,
+            [[20, -78], [44.9, -78], [56, -60], [60, -20], [60.3, -13.5], [20, -13.5]],
+            "wing",
         ),
         armour_region(
-            "wings", 2, [[30, -13.5], [88, -13.5], [88, 45], [30, 45]], "wing", [-0.2, 1000]
+            "wings", 2, [[30, -13.5], [60.3, -13.5], [62, 40], [61.2, 45], [30, 45]], "wing"
         ),
-        armour_region(
-            "spine", 2, [[-18, -49], [18, -49], [18, 11], [-18, 11]], "shell", [16.8, 1000], False
-        ),
+        armour_region("spine", 2, octagon(21), "shell", None, False),
     ],
 )

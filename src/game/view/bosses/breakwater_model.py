@@ -35,6 +35,7 @@ from game.view.bosses.world_1_organic_kit import (
 )
 from game.view.enemies.enemy_shapes import SIDES
 from game.view.enemies.organic_parts import eyes, reactor_sac
+from render.geometry.organic import SegmentedBody, carapace, segmented_body
 from render.geometry.solids import Placement
 
 # isort: split
@@ -79,12 +80,23 @@ PLATE = [
     [-21, -5],
     [-20, 5],
 ]
+# The shell along Z: a forward shell (a hide from the waist `SHELL_SPLIT` to the nose) and, behind
+# it, the back plating (the armour it sheds, MB-BREAKWATER-05): a carapace from `PLATING_BOTTOM` up
+# to `SHELL_TOP` over the rear belly, flattened up to `REAR_BELLY_TOP` (just under the plating).
+SHELL_TAIL = -41
+SHELL_SPLIT = -14
+SHELL_NOSE = 13
+SHELL_WIDTH = 27
+SHELL_TOP = 16
+PLATING_BOTTOM = 7.7
+REAR_BELLY_TOP = 8.9
 
 
 def _draw_body(p: Any) -> None:
     """Draw the crab's body (MB-BREAKWATER-02): a wide mantle under a domed, plated shell.
 
-    Ribs over its back, an orange vein along its spine, eyes on stalks at its front over its mouth
+    The forward shell with ribs over it and an orange vein along its spine, the rear belly flattened
+    under its plating (the armour, `_draw_plating`), eyes on stalks at its front over its mouth
     (the bow gun).
     """
     deck = HULL_Y[2]
@@ -93,24 +105,49 @@ def _draw_body(p: Any) -> None:
     hide(
         p,
         {
-            "tail": -41,
-            "nose": 13,
-            "width": 27,
+            "tail": SHELL_SPLIT,
+            "nose": SHELL_NOSE,
+            "width": SHELL_WIDTH,
             "bottom": deck - 1,
-            "top": 16,
-            "segments": 4,
+            "top": SHELL_TOP,
+            "segments": 2,
             "shell": [F.slate, F.membrane],
             "belly": F.graphite,
         },
     )
-    rib_cage(p, [-30, -20, -10, 0], {"halfWidth": 22, "y": deck, "height": 10, "thickness": 1.1})
-    spine(p, [0, 16, -34], [0, 16.5, 6], {"color": ORANGE, "width": 1.4})
+    segmented_body(
+        p.flesh,
+        SegmentedBody(SHELL_TAIL, SHELL_SPLIT, 2, SHELL_WIDTH, deck - 1, REAR_BELLY_TOP, 0.15),
+        F.graphite,
+    )
+    rib_cage(p, [-10, 0], {"halfWidth": 22, "y": deck, "height": 10, "thickness": 1.1})
+    spine(p, [0, 14.2, -11], [0, 15.2, 8], {"color": ORANGE, "width": 1.4, "bow": 1.2})
     for s in SIDES:
         tentacle(p, [s * 4, deck + 3, 12], [s * 6, deck + 9, 19], [0, 1, 0], [0.9, 0.5], F.sinew, 3)
         eyes(p, [s * 6, deck + 9, 19], {"count": 1, "size": 1.3}, ORANGE)
-        gland(p, [s * 16, deck + 8, -28], 2, ORANGE)
-        for z in [-24, -10]:
-            vein_line(p, [s * 10, 14, z], [s * 26, deck + 1, z - 4], [s * 2, 3, 0], 1, ORANGE)
+        vein_line(p, [s * 10, 14, -10], [s * 26, deck + 1, -14], [s * 2, 3, 0], 1, ORANGE)
+
+
+def _draw_plating(p: Any) -> None:
+    """Draw the back plating (MB-BREAKWATER-05): the armour it sheds at its transformation.
+
+    The rear shell, a carapace over the flattened rear belly from its middle to its tail: bone ribs
+    clamped over it, an orange vein along its spine, glands on its flanks with veins running down
+    them, and the grafts on it (the riveted back plate, the armour bands, the mast).
+    """
+    carapace(
+        p.flesh,
+        SegmentedBody(SHELL_TAIL, SHELL_SPLIT, 2, SHELL_WIDTH * 0.92, PLATING_BOTTOM, SHELL_TOP),
+        [F.slate, F.membrane],
+    )
+    rib_cage(p, [-30, -20], {"halfWidth": 22, "y": 11.8, "height": 4.6, "thickness": 1.1})
+    spine(p, [0, 14.6, -38], [0, 14.6, -17], {"color": ORANGE, "width": 1.4, "bow": 1.5})
+    graft(p, polygon(6, 8, [1.2, 1]), [15, 16.6], [0, 0, -27])
+    for s in SIDES:
+        gland(p, [s * 16, 14, -28], 2, ORANGE)
+        vein_line(p, [s * 8, 15.4, -24], [s * 20.5, 11, -27], [s * 2, 2, 0], 1, ORANGE)
+        graft(p, polygon(5, 5, [0.8, 1.6]), [12.6, 14], [s * 19, 0, -24], {"color": M.base})
+    mast(p, [11, 15, -22], 8, ORANGE)
 
 
 def _draw_legs(p: Any) -> None:
@@ -123,18 +160,18 @@ def _draw_legs(p: Any) -> None:
 
 
 def _draw_grafts(p: Any) -> None:
-    """Grafts: a riveted back plate, armour bands on the flanks, exhausts, running lights."""
-    graft(p, polygon(6, 8, [1.2, 1]), [15, 16.6], [0, 0, -14])
-    graft(p, polygon(4, 6, [1.3, 0.7]), [13.6, 15], [0, 0, 2], {"color": M.base})
+    """Grafts on the core: a plate on the forward shell, running lights.
+
+    The riveted back plate, the armour bands and the mast are on its plating (`_draw_plating`).
+    """
+    graft(p, polygon(4, 6, [1.3, 0.7]), [15.2, 16.6], [0, 0, 2], {"color": M.base})
     for s in SIDES:
-        graft(p, polygon(5, 5, [0.8, 1.6]), [9, 10.4], [s * 18, 0, -16], {"color": M.base})
         lamps(
             p.neon,
             [[s * 27, HULL_Y[2] + 0.4, z] for z in [16, 2, -29]],
             1.2,
             ORANGE,
         )
-    mast(p, [11, 15, -22], 8, ORANGE)
 
 
 def _bow_gun(p: Any, at: Vec3) -> None:
@@ -220,5 +257,6 @@ def build_breakwater(scene: Any) -> Any:
                 "mortar-left": _mortar_turret,
                 "mortar-right": _mortar_turret,
             },
+            "armour": {"back": {"whole": _draw_plating}},
         },
     )

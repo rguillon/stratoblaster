@@ -26,8 +26,9 @@ it carrying three blade pods 120° apart, the ring turning slowly clockwise.
 #### MB-DUST-DEVIL-02 — Body · MUST
 
 Its core is a swollen fleshy bell (a gyro disc grown over, slate and sinew shades) with plated ribs
-radiating across it, a charge gland on its crown (its ring emitter), eyes at its front and its
-reactors in flesh sacs behind. The ring is a sinew collar round the bell, a fleshy rim, three
+radiating across its cap (the plating of MB-DUST-DEVIL-05, round the hub on its middle), a charge
+gland on its crown (its ring emitter, on the hub), eyes at its front and its reactors in flesh sacs
+behind. The ring is a sinew collar round the bell, a fleshy rim, three
 tentacle spokes out to the pods and membrane fins between them.
 
 **Acceptance criteria**
@@ -58,14 +59,22 @@ yellow ([common](../common.md), BOSS-50).
 
 #### MB-DUST-DEVIL-05 — Back plating · MUST
 
-The plating over the middle of its bell is the armour it sheds at its transformation (a `shell`
-lattice frame beneath); the pair of orbs lies folded under it.
+The plating over the middle of its bell is the armour it sheds at its transformation
+([common](../common.md), BOSS-42): the bell's domed cap, a shell of revolution drawn as a piece of its
+own over the flattened disc (the disc up to 2.2 px; the cap from 2 px at its rim, 15.2 px out, sunk
+into the disc, up to 7.7 px round the hub that carries the emitter), the bone ribs radiating down it
+to its rim, the plated ribs and the nose plate grafted on it, a vein down each side. Its region is
+two half-rings round the hub, from 4.8 to 15.2 px out (`back`, the right one mirrored); it bursts
+into plates cracked from those outlines and leaves a `shell` lattice frame on the disc, round the
+hub. The pair of orbs lies folded under it.
 
 **Acceptance criteria**
 - Given its design, then its one transformation sheds the back region and both orbs lie in it
   (unit test).
+- Given its model, then it draws the back region's armour, and it holds together with and without
+  it (unit tests).
 
-*Sources: D-221, D-224.*
+*Sources: D-221, D-224, D-254.*
 
 ### Behaviour
 
@@ -158,6 +167,6 @@ All in `src/game/config/bosses/mini_bosses.py` (`_DUST_DEVIL`, `DUST_DEVIL`) unl
 | core stage 3 | ring of 12 turning 15°, every 1.5 s | |
 | angry | vortex, heat 2 (36 bullets a second, 136 px/s), green and purple | |
 | transformation | 2 parts destroyed | default threshold |
-| shed region | back: x -28..28, y -20.4..24.5, above 1.2 px, `shell`, not mirrored | |
+| shed region | back: two half-rings round the hub, 4.8..15.2 px out, mirrored, `shell`; cap 2–7.7 px | `armour_region` |
 | orbs | (∓12, 5), radius 8, health 500, pod 10.2 px; first 1.2 s / 2.0 s | |
 | neon | amber (1, 0.75, 0.15), shown yellow | `BOSS_LOOK.neon` |

@@ -111,14 +111,14 @@ def steam(neon: Any, origin: Vec3, count: int, size: float) -> None:
     """Puffs of steam (FB-STEAM-DREADNOUGHT-03) trailing back (towards -Z) and rising from `from`.
 
     Low-poly lumps growing as they go, faintly lit by the furnaces below (drawn as lights, so the
-    hull's tint leaves them).
+    hull's tint leaves them), each puff touching the one before (BOSS-52).
     """
     for i in range(count):
         r = size * (1 + 0.45 * i)
         at = [
             origin[0] + (0.8 if i % 2 else -0.6),
-            origin[1] + 1.6 * i,
-            origin[2] - 4.5 * i,
+            origin[1] + 1.2 * i,
+            origin[2] - 3.4 * i,
         ]
         neon.lathe(
             [

@@ -79,7 +79,7 @@ def draw_hangar(p: Any, at: Vec3) -> None:
     )
     organ(p.flesh, 16, 8, F.graphite, Placement(shift(at, [0, -1, -1]), math.pi / 8), 0.32)
     hatch = shift(at, [s * 2, HANGAR_TOP, -2])
-    p.charge.slab(SLIT, [HANGAR_TOP - 1.2, HANGAR_TOP - 0.4], WHITE, Placement(hatch))
+    p.charge.slab(SLIT, [-1.2, -0.4], WHITE, Placement(hatch))
     for dx in [-1, 1]:
         tentacle(
             p,

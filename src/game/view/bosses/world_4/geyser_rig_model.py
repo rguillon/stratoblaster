@@ -3,7 +3,8 @@
 
 Logical pixels, nose +Z, Y up (towards the camera). A flying drilling platform: a heavy deck, a
 lattice derrick in its middle (the core), two drill arms reaching forward from its bow corners, two
-steam vents at its stern, a drone hangar jutting from its bow and a squat cooling tower aft.
+steam vents at its stern, a drone hangar jutting from its bow and a squat cooling tower aft on its
+back plating.
 FB-GEYSER-RIG-02: a living rock-tick, its back a scorched flesh shell veined molten, a bone spire
 over its core, its drills, pipes and guns metal grafts.
 """
@@ -14,17 +15,12 @@ from game.config.bosses.world_4.geyser_rig import GEYSER_RIG, RIG_CORE_GUNS
 from game.view.bosses.boss_limbs import boss_point
 from game.view.bosses.boss_model import build_boss_model
 from game.view.bosses.final_boss_shapes import mirrored, strip
-from game.view.bosses.mini_boss_greebles import hazard, lamps, vent
+from game.view.bosses.mini_boss_greebles import lamps, vent
 from game.view.bosses.mini_boss_mechanism import conduit
-from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H, offset
+from game.view.bosses.mini_boss_shapes import QUARTER, WHITE, H
 from game.view.bosses.world_3.toucan_jungle import segment
-from game.view.bosses.world_4.ash_plains_soot import (
-    EMBER,
-    SCORCH,
-    ash_drift,
-    molten_seam,
-    soot_streaks,
-)
+from game.view.bosses.world_4.ash_plains_soot import EMBER, SCORCH, molten_seam
+from game.view.bosses.world_4.geyser_rig_armour import GEYSER_RIG_ARMOUR, deck_plates
 from game.view.bosses.world_4.geyser_rig_parts import (
     DECK_Y,
     RIG_YELLOW,
@@ -68,92 +64,42 @@ DECK = mirrored([
 DERRICK_FOOT = 9
 DERRICK_TOP = 3
 DERRICK_HEIGHT = 42
-# The squat cooling tower aft (a lathe profile, from the deck up), around its centre.
-COOLING_TOWER = [
-    [10.0, 0.0],
-    [8.2, 5.0],
-    [7.2, 9.0],
-    [7.6, 12.0],
-    [8.4, 14.0],
-]
-TOWER_AT = [0.0, DECK_Y, -50.0]
-
-
-def _pipe_rack(hull: Any, s: float) -> None:
-    """Add the pipe rack along the `s` side of the deck: two pipes on trestles, a valve wheel."""
-    for z in [16, -2, -18]:
-        hull.box([7, 3, 1.6], H.dark, Placement([s * 35, DECK_Y, z]))
-    for dx in [-1.8, 1.8]:
-        conduit(hull, [s * (35 + dx), DECK_Y + 3.6, 20], [s * (35 + dx), DECK_Y + 3.6, -21], 1.1, 4)
-    hull.cylinder(2.4, 0.6, 8, SHADE["edge"], Placement([s * 35, DECK_Y + 5, 4]))
-
-
-# Deck plates, a little proud of the deck: worn, lighter metal.
-PLATES = [
-    [-20.0, 26.0, 14.0, 10.0],
-    [22.0, 28.0, 12.0, 8.0],
-    [-26.0, -14.0, 10.0, 14.0],
-    [24.0, -44.0, 12.0, 10.0],
-    [-8.0, -36.0, 10.0, 8.0],
-]
+# The deck plate left on the core's deck (the others lie on the armour, `geyser_rig_armour`).
+PLATES = [[-26.0, -14.0, 10.0, 14.0]]
 
 
 def _deck_veins(p: Any, s: float) -> None:
-    """FB-GEYSER-RIG-02: its living flesh: veins, glands and ribs."""
+    """FB-GEYSER-RIG-02: its living flesh on the core's deck: a vein between the plating, a gland.
+
+    The veins' stern runs, the ribs over the back and the other glands lie on the back plating.
+    """
     magma_vein(
         p,
         [
             [s * 8, DECK_Y + 0.2, 22],
-            [s * 20, DECK_Y + 0.2, 4],
-            [s * 16, DECK_Y + 0.2, -40],
+            [s * 13, DECK_Y + 0.2, 4],
+            [s * 17, DECK_Y + 0.2, -25],
         ],
         1.3,
     )
-    glands(
-        p,
-        [
-            [s * 28, DECK_Y, -44],
-            [s * 6, DECK_Y, 30],
-        ],
-        2,
-        RIG_YELLOW,
-    )
+    glands(p, [[s * 6, DECK_Y, 30]], 2, RIG_YELLOW)
 
 
 def _draw_deck(p: Any) -> None:
-    """Draw the deck: dark bevelled plates, yellow neon along its sides.
+    """Draw the deck: a dark bevelled slab, yellow neon along its sides.
 
-    It has hazard paint, ash and soot.
+    Its dressing between the plating: a bone rib over the bow, molten seams, vents, a conduit, a
+    deck plate; the pipe racks, hazard paint, ash and soot lie on the armour (`geyser_rig_armour`).
     """
     hull = p.hull
     neon = p.neon
     p.flesh.bevel_slab(DECK, [0, 3, DECK_Y], [2, 1.5], SKIN.base, None, SKIN.dark)
-    back_ribs(p, [-40, -28, 28], RibSpec(30, DECK_Y - 2, 3.5, 1))
+    back_ribs(p, [28], RibSpec(30, DECK_Y - 2, 3.5, 1))
     for s in SIDES:
         _deck_veins(p, s)
         strip(neon, [s * 41.6, 22], [s * 41.6, -52], 0.8, [DECK_Y, DECK_Y + 0.4], RIG_YELLOW)
-        _pipe_rack(hull, s)
-        hazard(hull, [s * 33, DECK_Y, 33], [14, 4], 5, s * 0.75)
-        soot_streaks(
-            hull,
-            [
-                [
-                    [s * 26, -38],
-                    [s * 30, -56],
-                ],
-                [
-                    [s * 18, -20],
-                    [s * 14, -42],
-                ],
-            ],
-            DECK_Y,
-            2,
-        )
-        molten_seam(p, [s * 12, 4], [s * 24, -14], DECK_Y)
-        molten_seam(p, [s * 30, 12], [s * 38, -6], DECK_Y)
-        vent(hull, [s * 22, DECK_Y, -2], [6, 9], 3)
-        ash_drift(hull, [s * 36, DECK_Y, 10], 3.4, s * 1.1)
-        ash_drift(hull, [s * 14, DECK_Y, -62], 3, s * 2.4)
+        molten_seam(p, [s * 12, -6], [s * 24, -20], DECK_Y)
+        vent(hull, [s * 22, DECK_Y, -10], [6, 9], 3)
         conduit(hull, [s * 27, DECK_Y + 2, -30], [s * 8, DECK_Y + 2, -12], 1.3, 3)
     reactor_sacs(
         p,
@@ -165,13 +111,7 @@ def _draw_deck(p: Any) -> None:
         EMBER,
     )
     reactor_sacs(p, [[0, 3.6, -70]], 3.6, EMBER)
-    for plate in PLATES:
-        hull.box(
-            [plate[2], 0.3, plate[3]],
-            SHADE["edge"],
-            Placement([plate[0], DECK_Y, plate[1]]),
-            H.panel,
-        )
+    deck_plates(hull, PLATES, DECK_Y)
 
 
 def _derrick_point(x: float, z: float, k: float) -> Vec3:
@@ -249,32 +189,18 @@ def _draw_gun_house(p: Any) -> None:
         muzzle(tip)
 
 
-def _draw_cooling_tower(p: Any) -> None:
-    """Draw the cooling tower aft: a squat flared stack.
-
-    Hot metal glows in its mouth, ash on its rim.
-    """
-    hull = p.hull
-    neon = p.neon
-    p.flesh.lathe(COOLING_TOWER, 10, SKIN.panel, Placement(TOWER_AT), False)
-    hull.cylinder(7.6, 0.4, 10, SHADE["soot"], Placement(offset(TOWER_AT, 0, 8, 0)))
-    neon.ring(5.6, 1.2, 10, EMBER, Placement(offset(TOWER_AT, 0, 8.2, 0)))
-    neon.ring(8.5, 0.6, 10, RIG_YELLOW, Placement(offset(TOWER_AT, 0, 12.6, 0)))
-    ash_drift(hull, offset(TOWER_AT, 4, 14, 5), 2.2, 0.6)
-
-
 def build_geyser_rig(scene: Any) -> Any:
     """Build the Geyser Rig (FB-GEYSER-RIG-01, FB-GEYSER-RIG-06).
 
     A flying drilling rig with two drill heads and steam vents, yellow neon, soot, ash and molten
-    seams on its deck.
+    seams on its deck; its back plating with the cooling tower and its wing plates with the pipe
+    racks are armour of its own (D-254, `geyser_rig_armour`).
     """
 
     def core(p: Any) -> None:
         _draw_deck(p)
         _draw_derrick(p)
         _draw_gun_house(p)
-        _draw_cooling_tower(p)
 
     return build_boss_model(
         GEYSER_RIG,
@@ -290,5 +216,6 @@ def build_geyser_rig(scene: Any) -> Any:
                 "hangar": hangar,
             },
             "limbs": arm_limbs(),
+            "armour": GEYSER_RIG_ARMOUR,
         },
     )

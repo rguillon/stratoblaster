@@ -2,10 +2,11 @@
 """MB-MAGMA-SALAMANDER-01 to MB-MAGMA-SALAMANDER-06, 4-3: the Magma Salamander.
 
 Logical pixels, nose +Z, Y up (towards the camera). A segmented lizard-ship: a flat, wedge-shaped
-head, a body of overlapping armour plates with magma glowing in the seams between them, four clawed
-legs splayed out, a spiny fin on each side of its back (its parts) and a tail curling back to its
-right (on two joints). MB-MAGMA-SALAMANDER-02: a living lizard, its scorched flesh body under bony
-scale plates and metal grafts, magma glands along its spine, its reactors set in flesh sacs.
+head, a body of overlapping armour plates with magma glowing in the seams between them (the three
+over its back the plating it sheds, MB-MAGMA-SALAMANDER-13), four clawed legs splayed out, a spiny
+fin on each side of its back (its parts) and a tail curling back to its right (on two joints).
+MB-MAGMA-SALAMANDER-02: a living lizard, its scorched flesh body under bony scale plates and metal
+grafts, magma glands along its spine, its reactors set in flesh sacs.
 """
 
 import math
@@ -17,7 +18,6 @@ from game.config.bosses.world_4.magma_salamander import (
 )
 from game.view.bosses.boss_limbs import boss_point
 from game.view.bosses.boss_model import build_boss_model
-from game.view.bosses.mini_boss_greebles import vent
 from game.view.bosses.mini_boss_shapes import QUARTER, SHADE, WHITE, H, offset, socket
 from game.view.bosses.world_3.toucan_jungle import segment
 from game.view.bosses.world_4.living_forge import (
@@ -27,6 +27,15 @@ from game.view.bosses.world_4.living_forge import (
     lumps,
     magma_vein,
     reactor_sacs,
+)
+from game.view.bosses.world_4.magma_salamander_armour import (
+    BELLY_FLAT,
+    PLATES,
+    SHED_PLATES,
+    draw_plating,
+    plate_colour,
+    plate_seam,
+    plate_stations,
 )
 from game.view.bosses.world_4.magma_salamander_parts import (
     MOLTEN,
@@ -51,21 +60,14 @@ type Vec3 = list[float]
 # __pragma__ ("noskip")
 
 
-# The underbody along the centre line, tail to neck (loft stations: z, half width, bottom, top).
+# The underbody along the centre line, tail to neck (loft stations: z, half width, bottom, top),
+# flattened to `BELLY_FLAT` under the back plating it sheds (MB-MAGMA-SALAMANDER-13).
 BELLY = [
-    [-26.0, 6.0, 0.0, 6.0],
-    [-12.0, 12.0, -1.0, 9.5],
-    [8.0, 13.0, -1.0, 10.5],
+    [-26.0, 6.0, 0.0, BELLY_FLAT],
+    [-12.0, 12.0, -1.0, BELLY_FLAT],
+    [8.0, 13.0, -1.0, BELLY_FLAT],
     [26.0, 10.0, 0.0, 9.5],
     [36.0, 7.0, 1.0, 8.0],
-]
-# The armour plates over the body, back to front: from and to (z), half width, top.
-PLATES = [
-    [-26.0, -18.0, 8.0, 8.0],
-    [-17.0, -4.0, 13.5, 11.0],
-    [-2.0, 10.0, 14.5, 12.0],
-    [12.0, 24.0, 13.0, 11.5],
-    [26.0, 35.0, 10.0, 10.0],
 ]
 # The head: a flat wedge, from its neck to its snout.
 HEAD = [
@@ -83,37 +85,24 @@ LEGS = [
 
 
 def _draw_body(p: Any) -> None:
-    """Draw the underbody and its plates, a molten seam glowing between each plate and the next."""
+    """Draw the underbody, flattened under its back plating (`draw_plating`), and its neck plates.
+
+    A molten seam glows between each plate and the one behind it; its ribs arch over the belly.
+    """
     hull = p.hull
     neon = p.neon
     flesh = p.flesh
     flesh.loft(HULL_SECTION, BELLY, SKIN.base)
     last = len(PLATES) - 1
-    for i in range(len(PLATES)):
-        entry = PLATES[i]
-        z0 = entry[0]
-        z1 = entry[1]
-        half = entry[2]
-        top = entry[3]
-        plate = [
-            [z0, half * 0.85, 1, top - 1.2],
-            [z0 + 2, half, 0.5, top],
-            [z1 - 2, half, 0.5, top],
-            [z1, half * 0.88, 1, top - 1],
-        ]
+    for i in range(SHED_PLATES, len(PLATES)):
         b = hull if i == last else flesh
-        colour = SKIN.dark if i % 2 == 0 else SKIN.panel
-        b.loft(FIGHTER_SECTION, plate, colour, None, None)
-        if i > 0:
-            molten_seam(neon, [half * 1.5, top - 1.6, z0 - 0.5])
-    for s in SIDES:
-        neon.box([0.6, 0.5, 40], SALAMANDER_NEON, Placement([s * 13.6, 6.2, 4], s * 0.04))
-        hull.box([4, 0.5, 6], SCORCH, Placement([s * 6, 11.6, 16 - s * 10]))
-    vent(hull, [-6, 12.2, 3], [5, 6], 3)
+        b.loft(FIGHTER_SECTION, plate_stations(i), plate_colour(i), None, None)
+        plate_seam(neon, i)
+    # A scorch mark on the neck plate, lying on its slope (BOSS-52).
+    hull.box([4, 0.5, 6], SCORCH, Placement([-4.5, 10.4, 19]))
     glands(
         p,
         [
-            [4, 12, -11],
             [-3, 11.6, 17],
             [0, 10.6, 29],
         ],
@@ -177,7 +166,10 @@ def _sign(v: float) -> float:
 
 
 def _draw_back(p: Any) -> None:
-    """Draw the fins' sockets on its back, the magma vent between them, and its reactors."""
+    """Draw the fins' sockets on its back, the magma vent between them, and its reactors.
+
+    The vent's stack stands on the flattened belly and rises through the back plating.
+    """
     hull = p.hull
     neon = p.neon
     charge = p.charge
@@ -193,12 +185,12 @@ def _draw_back(p: Any) -> None:
         2.2,
         MOLTEN,
     )
+    # The spine's vein over the neck plates (its length over the back plating is on the plating).
     magma_vein(
         p,
         [
-            [0, 9, -20],
-            [0, 11, -8],
-            [0, 12, 10],
+            [0, 11, 13],
+            [0, 12, 18],
             [0, 10.5, 30],
         ],
         1,
@@ -207,14 +199,9 @@ def _draw_back(p: Any) -> None:
         return
     m = SALAMANDER_VENT[0]
     top = boss_point(m[0], m[1], m[2])
-    hull.cylinder(
-        5.4,
-        top[1] - 10.4,
-        7,
-        SCORCH,
-        Placement(offset(top, 0, -(top[1] - 10), 0)),
-        3.4,
-    )
+    # The vent's stack rises from the flattened belly, through the back plating (BOSS-52).
+    foot = BELLY_FLAT - 0.2
+    hull.cylinder(5.4, top[1] - 0.4 - foot, 7, SCORCH, Placement([top[0], foot, top[2]]), 3.4)
     neon.ring(3.6, 0.6, 7, MOLTEN, Placement(offset(top, 0, -1.2, 0)))
     charge.cylinder(2.8, 0.6, 7, WHITE, Placement(offset(top, 0, -0.6, 0)))
     muzzle(top, "ring")
@@ -242,5 +229,6 @@ def build_magma_salamander(scene: Any) -> Any:
             "core": core,
             "parts": {"fin-left": fin, "fin-right": fin, "tail": tail},
             "limbs": tail_limbs(),
+            "armour": {"back": {"whole": draw_plating}},
         },
     )

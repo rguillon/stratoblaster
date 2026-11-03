@@ -218,11 +218,49 @@ CANOPY_SPIDER = with_weapons(
         hidden_weapon("lance-right", "lance", [9, -21], 7, 1250, 2, "red", 2.0, 12.8),
     ],
     [
+        # FB-CANOPY-SPIDER-12: the plating over its abdomen, the abdomen's own plan from the waist
+        # (8 px behind the centre) to its tip; the gatlings lie under it.
         armour_region(
-            "back", 1, [[-28, 2], [28, 2], [28, 49], [-28, 49]], "shell", [7.0, 1000], False
+            "back",
+            1,
+            [
+                [-7, 8],
+                [7, 8],
+                [11.9, 12],
+                [15.3, 20],
+                [15.3, 34],
+                [11.9, 40],
+                [4.3, 47],
+                [-4.3, 47],
+                [-11.9, 40],
+                [-15.3, 34],
+                [-15.3, 20],
+                [-11.9, 12],
+            ],
+            "shell",
+            None,
+            False,
         ),
+        # FB-CANOPY-SPIDER-13: the plating over its cephalothorax, its own plan from the waist to
+        # the head; the lances lie under it.
         armour_region(
-            "spine", 2, [[-24, -42], [24, -42], [24, 2], [-24, 2]], "shell", [6.4, 1000], False
+            "spine",
+            2,
+            [
+                [-11.4, 8],
+                [11.4, 8],
+                [15, 0],
+                [14.1, -12],
+                [10.6, -22],
+                [6.2, -30],
+                [-6.2, -30],
+                [-10.6, -22],
+                [-14.1, -12],
+                [-15, 0],
+            ],
+            "shell",
+            None,
+            False,
         ),
     ],
 )

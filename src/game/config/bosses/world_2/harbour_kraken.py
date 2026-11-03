@@ -186,7 +186,7 @@ _HARBOUR_KRAKEN = record({
 
 # Its hidden weapons (boss transformations, D-224): at transformation 1 its back plating bursts off,
 # baring a dark metal frame, and a pair of gatling turrets unfold (FB-HARBOUR-KRAKEN-13); at
-# transformation 2 its wing armour bursts off, baring a dark metal frame, and a pair of gun
+# transformation 2 its aft plating bursts off, baring a dark metal frame, and a pair of gun
 # batteries unfold (FB-HARBOUR-KRAKEN-14). The regions it sheds: FB-HARBOUR-KRAKEN-07.
 HARBOUR_KRAKEN = with_weapons(
     _HARBOUR_KRAKEN,
@@ -197,9 +197,47 @@ HARBOUR_KRAKEN = with_weapons(
         hidden_weapon("battery-right", "battery", [29, 29], 11, 900, 2, "red", 2.0, 16.9),
     ],
     [
+        # FB-HARBOUR-KRAKEN-07 (D-254): the fore plating, the shell ahead of the head and the
+        # forecastle (its outline their plan, bulged to take the gatlings), and the aft plating,
+        # the shell behind the head (its outline the shell's plan either side of the centre line,
+        # bulged to take the batteries, clear of the aft tentacles' roots).
         armour_region(
-            "back", 1, [[-32, -66], [32, -66], [32, -4], [-32, -4]], "shell", [3.0, 1000], False
+            "back",
+            1,
+            [
+                [18, -17],
+                [20, -28],
+                [22, -38],
+                [23, -48],
+                [19, -54],
+                [9, -68],
+                [0, -72],
+                [-9, -68],
+                [-19, -54],
+                [-23, -48],
+                [-22, -38],
+                [-20, -28],
+                [-18, -17],
+            ],
+            "shell",
+            None,
+            False,
         ),
-        armour_region("wings", 2, [[10, -4], [44, -4], [44, 62], [10, 62]], "wing", [3.0, 1000]),
+        armour_region(
+            "wings",
+            2,
+            [
+                [0, 14],
+                [20, 14],
+                [20, 22],
+                [29.5, 24],
+                [29.5, 36],
+                [17, 46],
+                [12, 56],
+                [6, 62],
+                [0, 62],
+            ],
+            "wing",
+        ),
     ],
 )

@@ -412,7 +412,46 @@ def test_a_moving_piece_strains_then_moves_into_its_new_pose(built: Any) -> None
 
 # BOSS-42 (D-254): every boss draws each of its armour regions. The bosses not yet drawn are strict
 # expected failures (ENG-163), struck off as they are migrated.
-NOT_YET_DRAWN = {d.id for d in BOSS_DESIGNS} - {"sentinel"}
+DRAWN = {
+    "sentinel",
+    "reef-warden",
+    "breakwater",
+    "dust-devil",
+    "scorpion",
+    "river-leviathan",
+    "canopy-spider",
+    "sky-temple",
+    "dam-breaker",
+    "verdant-crown",
+    "steam-dreadnought",
+    "geyser-rig",
+    "obsidian-golem",
+    "foundry-ark",
+    "caldera-throne",
+    "floe-breaker",
+    "fjord-lynx",
+    "snow-owl",
+    "avalanche",
+    "ice-queen",
+    "mangrove-croc",
+    "toucan",
+    "stone-idol",
+    "mosquito",
+    "jaguar",
+    "storm-petrel",
+    "gull-mothership",
+    "mesa-fortress",
+    "narwhal",
+    "harbour-kraken",
+    "aurora-station",
+    "glacier-colossus",
+    "cinder-crab",
+    "ash-wraith",
+    "magma-salamander",
+    "furnace-drake",
+    "ember-herald",
+}
+NOT_YET_DRAWN = {d.id for d in BOSS_DESIGNS} - DRAWN
 
 
 def _design(design: Any) -> Any:

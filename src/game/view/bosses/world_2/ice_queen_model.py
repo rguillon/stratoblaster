@@ -20,6 +20,7 @@ from game.view.bosses.boss_model import build_boss_model
 from game.view.bosses.mini_boss_greebles import plate, rect
 from game.view.bosses.mini_boss_shapes import QUARTER, WHITE, H
 from game.view.bosses.overlord_city import edge_lights
+from game.view.bosses.world_2.ice_queen_armour import draw_plating, plating_pieces
 from game.view.bosses.world_2.ice_queen_details import draw_details
 from game.view.bosses.world_2.ice_queen_shards import (
     FROST,
@@ -31,7 +32,7 @@ from game.view.bosses.world_2.ice_queen_shards import (
 )
 from game.view.bosses.world_2.w2_organic import (
     ICE_FLESH,
-    gland,
+    deck_section,
     sinew,
 )
 from game.view.enemies.enemy_shapes import FIGHTER_SECTION, SIDES, around, flip_x
@@ -49,16 +50,32 @@ from game.view.enemies.enemy_mesh import BuiltEnemyModel, EnemyParts
 # __pragma__ ("noskip")
 
 
-# The fuselage (loft stations, tail to nose): long and slender, closing to a needle nose.
-FUSELAGE = [  # type: list[list[float]]
-    [-56, 5, 0, 5],
-    [-40, 8, -0.5, 8],
-    [-10, 10, -1, 10],
+# The fuselage, long and slender: its rear flattened into a deck at `DECK` (`FLAT` of the way up
+# its stations), where the plating it sheds lies (MB-ICE-QUEEN-07, `ice_queen_armour`); its front
+# rising from the deck and closing to a needle nose (loft stations, tail to nose).
+DECK = 5.5
+FLAT = 0.62
+REAR_SECTION = deck_section(FLAT)
+
+
+def rear_station(z: float, half_width: float, bottom: float) -> list[float]:
+    """Return a loft station of the rear whose flat deck lies at `DECK`."""
+    return [z, half_width, bottom, bottom + (DECK - bottom) / FLAT]
+
+
+REAR = [
+    rear_station(-56, 5, 0),
+    rear_station(-40, 8, -0.5),
+    rear_station(-10, 10, -1),
+]
+FRONT = [  # type: list[list[float]]
+    [-10, 10, -1, DECK + 0.1],
+    [-2, 10, -1, 9.5],
     [20, 8, -0.5, 8.5],
     [42, 4.5, 0, 6],
     [58, 0, 2.5, 2.5],
 ]
-# The fuselage's back (sides of the section), snowed over behind the canopy.
+# The fuselage's back (sides of the section), snowed over on the rear deck.
 BACK = [3, 4]
 CANOPY = [2, 3, 4, 5]
 
@@ -115,42 +132,42 @@ SPOKE = [  # type: list[list[float]]
 ]
 
 
-# The loft bands of the fuselage: the canopy's band, the band past it (the needle nose), and
-# the bands before the canopy.
-CANOPY_BAND = 3
-NOSE_BAND = 4
+# The loft bands of the fuselage's front: the canopy's band and the band past it (the needle
+# nose).
+CANOPY_BAND = 2
+NOSE_BAND = 3
 
 
-def fuselage_paint(side: int, band: int) -> Any:
-    """Return the canopy's seam, the nose's bone, and the rimed back of the fuselage."""
+def front_paint(side: int, band: int) -> Any:
+    """Return the canopy's seam and the nose's bone on the fuselage's front."""
     if band == CANOPY_BAND and side in CANOPY:
         return ICE_FLESH.seam
     if band == NOSE_BAND:
         return ICE_FLESH.bone
-    if band < CANOPY_BAND and side in BACK:
-        return ICE_FLESH.rime
     return None
 
 
+def rear_paint(side: int, _band: int) -> Any:
+    """Return the rimed back of the fuselage's rear deck."""
+    return ICE_FLESH.rime if side in BACK else None
+
+
 def draw_fuselage(p: EnemyParts) -> None:
-    """Draw the fuselage, its snowed back and canopy, and the reactors at its tail."""
+    """Draw the fuselage (its rear a flat deck under the plating), and the reactors at its tail.
+
+    The glands of the rear are on its plating (`draw_plating`).
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
     # MB-ICE-QUEEN-02: a slender body of violet flesh, ribbed, closing to a bone needle at the nose.
-    flesh.loft(
-        FIGHTER_SECTION,
-        FUSELAGE,
-        ICE_FLESH.graphite,
-        None,
-        LoftOptions(False, fuselage_paint),
-    )
+    flesh.loft(REAR_SECTION, REAR, ICE_FLESH.graphite, None, LoftOptions(False, rear_paint))
+    flesh.loft(FIGHTER_SECTION, FRONT, ICE_FLESH.graphite, None, LoftOptions(False, front_paint))
     for s in SIDES:
         neon.box([0.5, 0.5, 30], PALE_BLUE, Placement([s * 8.6, 4.5, 2], s * 0.06))
         neon.box([0.5, 0.4, 18], VIOLET, Placement([s * 5.2, 6.4, 33], -s * 0.12))
         reactor_sac(p, [s * 3.6, 3.4, -57], 2.8, PALE_BLUE, ICE_FLESH.membrane, 5)
         p.reactor([s * 12.5, 2.6, -53], 2.2)
-        gland(p, [s * 5, 8.6, -30], 1.1, VIOLET)
     ribs(
         flesh,
         [-40, -32, -24, -16],
@@ -333,8 +350,15 @@ def shard_parts() -> Any:
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
-    """Return the `BossDrawing` of a boss model: what the model is drawn from."""
-    return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
+    """Return the `BossDrawing` of a boss model: what the model is drawn from, with its armour."""
+    return record({
+        "core": core,
+        "parts": parts,
+        "turrets": turrets,
+        "limbs": limbs,
+        "ring": ring,
+        "armour": {"back": {"whole": draw_plating, "pieces": plating_pieces()}},
+    })
 
 
 def build_ice_queen(scene: Any) -> BuiltEnemyModel:
@@ -343,7 +367,8 @@ def build_ice_queen(scene: Any) -> BuiltEnemyModel:
     It has pale blue and violet neon: swept frosted wings, a crystal spire over the core, and a
     crown ring turning over it carrying three crystal shards. MB-ICE-QUEEN-02: now a living
     ice-wraith of violet flesh, membrane wings on bone and crystals grown through it, its crown of
-    bone carrying three crystals grown from flesh sacs.
+    bone carrying three crystals grown from flesh sacs. The plating over its rear is the armour it
+    sheds (MB-ICE-QUEEN-07).
     """
     return build_boss_model(
         ICE_QUEEN,

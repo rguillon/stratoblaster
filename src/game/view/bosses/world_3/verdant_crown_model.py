@@ -3,7 +3,9 @@
 
 Model space: logical pixels, nose +Z (down the screen), Y up towards the camera; +X is the screen's
 left. A city-ship: an overgrown deck carrying a glass garden dome over the core, a gun deck on its
-bow, outriggers out to the thorn cannons.
+bow, outriggers out to the thorn cannons. The plating over its flank decks and its aft deck is the
+armour it sheds (FB-VERDANT-CROWN-12, FB-VERDANT-CROWN-13, D-254): drawn apart
+(`verdant_crown_armour`), the city's towers there standing on it.
 """
 
 import math
@@ -22,7 +24,8 @@ from game.view.bosses.overlord_city import (
     symmetric,
 )
 from game.view.bosses.world_3.jungle_flesh import JUNGLE_FLESH, F, table, vein_to
-from game.view.bosses.world_3.verdant_crown_city import draw_city
+from game.view.bosses.world_3.verdant_crown_armour import flank_plating, spine_plating
+from game.view.bosses.world_3.verdant_crown_city import CORE, draw_city
 from game.view.bosses.world_3.verdant_crown_garden import (
     DECK_TOP,
     EMERALD,
@@ -195,10 +198,13 @@ def draw_hatches(p: EnemyParts) -> None:
 
 
 def verdant_crown_core(p: EnemyParts) -> None:
-    """Add the core of the Verdant Crown: its deck, garden, city, bow and hatches, and its roots."""
+    """Add the core of the Verdant Crown: its deck, garden, city, bow and hatches, and its roots.
+
+    The city's towers on the flank and aft plating are drawn with it (`verdant_crown_armour`).
+    """
     draw_hull(p)
     draw_garden(p)
-    draw_city(p)
+    draw_city(p, CORE, DECK_TOP)
     draw_bow(p)
     draw_hatches(p)
     for s in SIDES:
@@ -211,7 +217,8 @@ def build_verdant_crown(scene: Any) -> Any:
 
     Under emerald and magenta neon: an overgrown city round a glass garden dome over its core, two
     thorn cannons on its outriggers, two seed batteries aft, two root generators ahead, and a bow
-    carrying twin cannons and a laser.
+    carrying twin cannons and a laser. The plating of its flank decks (`flanks`) and of its aft deck
+    (`spine`) is the armour it sheds.
     """
     parts: dict[str, Any] = {
         "thorn-left": thorn_mount,
@@ -226,5 +233,10 @@ def build_verdant_crown(scene: Any) -> Any:
         VERDANT_CROWN,
         scene,
         EMERALD,
-        {"core": verdant_crown_core, "parts": parts, "turrets": turrets},
+        {
+            "core": verdant_crown_core,
+            "parts": parts,
+            "turrets": turrets,
+            "armour": {"flanks": {"whole": flank_plating}, "spine": {"whole": spine_plating}},
+        },
     )

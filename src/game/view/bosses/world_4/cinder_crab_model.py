@@ -21,6 +21,12 @@ from game.view.bosses.world_4.black_sands_kit import (
     soot,
     strut,
 )
+from game.view.bosses.world_4.cinder_crab_armour import (
+    BODY_SECTION,
+    CARAPACE,
+    PLATE_PIECES,
+    draw_plating,
+)
 from game.view.bosses.world_4.cinder_crab_parts import (
     CRAB_LIMBS,
     CRAB_ORANGE,
@@ -36,9 +42,9 @@ from game.view.bosses.world_4.living_forge import (
     magma_vein,
     reactor_sacs,
 )
-from game.view.enemies.enemy_shapes import HULL_SECTION, SIDES, side_stripe
+from game.view.enemies.enemy_shapes import SIDES
 from render.geometry.organic import RibSpec
-from render.geometry.solids import LoftOptions, Placement
+from render.geometry.solids import Placement
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -49,16 +55,6 @@ type Vec3 = list[float]
 # __pragma__ ("noskip")
 
 
-# The carapace (loft stations, tail to front: z, half width, bottom, top): wide and low.
-CARAPACE = [
-    [-32.0, 14.0, 1.0, 4.0],
-    [-25.0, 32.0, -1.0, 8.0],
-    [-12.0, 45.0, -2.0, 11.0],
-    [2.0, 48.0, -2.0, 12.0],
-    [14.0, 40.0, -1.0, 10.0],
-    [20.0, 26.0, 0.0, 7.5],
-    [24.0, 12.0, 1.0, 4.0],
-]
 # The legs either side: where along the carapace each hangs (z), and how it is bent.
 LEGS = [9.0, -3.0, -15.0]
 LEG_HIP = 3
@@ -102,18 +98,9 @@ def _width_at(z: float) -> float:
 
 
 def _draw_carapace(p: Any) -> None:
-    """Draw the carapace, its orange neon flanks, the belly plate and the reactors."""
+    """Draw the carapace's body, the belly plate and the reactors (its flanks: `draw_plating`)."""
     hull = p.hull
-    neon = p.neon
-    flesh_shell(p.flesh, HULL_SECTION, CARAPACE, [SKIN.base, SKIN.dark])
-    for side in [1, 3]:
-        neon.loft(
-            side_stripe(HULL_SECTION, side, [0.15, 0.4], 1.03),
-            CARAPACE[1:6],
-            CRAB_ORANGE,
-            None,
-            LoftOptions(True, None),
-        )
+    flesh_shell(p.flesh, BODY_SECTION, CARAPACE, [SKIN.base, SKIN.dark])
     hull.box([44, 2.4, 40], H.dark, Placement([0, -3.4, -6]), H.panel)
     reactor_sacs(
         p,
@@ -253,5 +240,6 @@ def build_cinder_crab(scene: Any) -> Any:
             "core": core,
             "parts": {"claw-left": claw, "claw-right": claw, "mortar": _mortar_part},
             "limbs": CRAB_LIMBS,
+            "armour": {"flanks": {"whole": draw_plating, "pieces": PLATE_PIECES}},
         },
     )

@@ -23,6 +23,11 @@ from game.view.bosses.mini_boss_shapes import (
     offset,
     socket,
 )
+from game.view.bosses.world_2.avalanche_armour import (
+    RIDGE_WIDTH,
+    draw_flanks,
+    flank_pieces,
+)
 from game.view.bosses.world_2.avalanche_arms import (
     AVALANCHE_YELLOW,
     arm_limbs,
@@ -37,8 +42,6 @@ from game.view.bosses.world_2.avalanche_frost import (
 )
 from game.view.bosses.world_2.w2_organic import (
     ICE_FLESH,
-    crystals,
-    gland,
     glow_vein,
     shell,
     sinew,
@@ -116,17 +119,16 @@ ROCKS = [
     (-6.0, 6.0, 6.5, 1.4, False),
     (0.0, -1.0, 8.0, 0.9, False),
 ]
-# Snow caps on the deck and the cab's roof: outline, height, depth.
+# Snow caps on the right fender, the deck and the cab's roof: outline, height, depth.
 SNOW = [
     (
         [
-            [9.0, 2.0],
-            [20.0, 0.0],
-            [22.0, -14.0],
-            [14.0, -18.0],
-            [10.0, -10.0],
+            [27.0, 6.0],
+            [35.0, 4.0],
+            [35.5, -6.0],
+            [28.0, -8.0],
         ],
-        DECK[2],
+        6.5,
         1.0,
     ),
     (
@@ -150,12 +152,12 @@ SNOW = [
         0.8,
     ),
 ]
-# A weathered patch welded on the deck's right.
+# A weathered patch welded on the deck's right, beside the head.
 PATCH = [  # type: list[list[float]]
-    [-22.0, -6.0],
-    [-15.0, -6.0],
-    [-15.0, 4.0],
-    [-21.0, 6.0],
+    [-20.0, 16.0],
+    [-13.0, 16.0],
+    [-13.0, 24.0],
+    [-19.0, 26.0],
 ]
 
 
@@ -165,7 +167,10 @@ def unit_girth(_t: float) -> float:
 
 
 def draw_body(p: EnemyParts) -> None:
-    """Draw the chassis, its tracks, the cab and the engine deck."""
+    """Draw the chassis, its tracks, the cab and the engine deck.
+
+    The shell's ridge only: its flanks are the armour it sheds (`avalanche_armour`).
+    """
     hull = p.hull
     flesh = p.flesh
     neon = p.neon
@@ -173,7 +178,7 @@ def draw_body(p: EnemyParts) -> None:
     # front.
     flesh.bevel_slab(CHASSIS, DECK, [2.0, 2.2], ICE_FLESH.sinew, None, ICE_FLESH.graphite)
     neon_band(neon, CHASSIS, [-2.2, -0.6], [0.985, 1.02], YELLOW)
-    shell(flesh, SegmentedBody(-36.0, 6.0, 4, 21.0, 4.0, 13.0))
+    shell(flesh, SegmentedBody(-36.0, 6.0, 4, RIDGE_WIDTH, 4.0, 13.0))
     flesh.loft(
         FIGHTER_SECTION,
         CAB,
@@ -189,7 +194,8 @@ def draw_body(p: EnemyParts) -> None:
         decal(neon, eye, 11.2, YELLOW)
     for s in SIDES:
         draw_track(p, s)
-    # Spiracles breathing out of the shell, metal valves sooted at their tops.
+    # Spiracles breathing out of the shell's flanks, rooted in the deck (BOSS-52), metal valves
+    # sooted at their tops; veins from the head down to the deck; lamps on the fenders.
     ribs(
         flesh,
         [-24.0, -16.0, -8.0],
@@ -197,12 +203,10 @@ def draw_body(p: EnemyParts) -> None:
         ICE_FLESH.bone,
     )
     for s in SIDES:
-        flesh.cylinder(
-            2.6, 13.0, 5, ICE_FLESH.sinew, Placement([s * 10.0, DECK[2] + 4.0, -15.0]), 1.8
-        )
-        glow_vein(p, [s * 4.0, 16.0, 10.0], [s * 16.0, 10.0, -26.0], 0.9, YELLOW)
-        hull.cylinder(2.1, 1.5, 6, SHADE["soot"], Placement([s * 10.0, DECK[2] + 17.0, -15.0]))
-        lamps(neon, [[s * 13.5, DECK[2] + 6.0, -2.0]], 1.4, YELLOW)
+        flesh.cylinder(2.6, 13.0, 5, ICE_FLESH.sinew, Placement([s * 10.0, DECK[2], -15.0]), 1.8)
+        glow_vein(p, [s * 4.0, 16.0, 10.0], [s * 16.0, DECK[2] + 0.5, -26.0], 0.9, YELLOW)
+        hull.cylinder(2.1, 1.5, 6, SHADE["soot"], Placement([s * 10.0, DECK[2] + 13.0, -15.0]))
+        lamps(neon, [[s * 31.0, 6.5, -2.0]], 1.4, YELLOW)
 
 
 def draw_track(p: EnemyParts, s: float) -> None:
@@ -269,7 +273,7 @@ def draw_track(p: EnemyParts, s: float) -> None:
 def draw_frost(p: EnemyParts) -> None:
     """Draw the frost over the deck, icicles under the nose and along the flanks (MB-AVALANCHE-05).
 
-    Also the hazard paint and the sockets.
+    Also the patch and the sockets (the glands and the crystals of the flanks are on their armour).
     """
     hull = p.hull
     flesh = p.flesh
@@ -287,8 +291,6 @@ def draw_frost(p: EnemyParts) -> None:
         icicles(flesh, flank, 3.5)
         shoulder = AVALANCHE_ARM.shoulder
         socket(hull, boss_point(s * shoulder[0], shoulder[1], DECK[2]), 6, 1.5)
-        crystals(flesh, [s * 14.0, 12.0, -28.0], 4)
-        gland(p, [s * 18.0, DECK[2], -6.0], 1.5, YELLOW)
     spine_row(flesh, [0.0, 15.0, -4.0], [0.0, 13.0, -30.0], 4, 4)
     plate(hull, PATCH, [DECK[2], 0.6], SHADE["patch"])
 
@@ -373,11 +375,18 @@ def hopper(p: EnemyParts, at: Vec3) -> None:
 
 
 def boss_drawing(core: Any, parts: Any, turrets: Any, limbs: Any, ring: Any) -> Any:
-    """Return what `build_boss_model` draws a boss from: a plain object.
+    """Return what `build_boss_model` draws a boss from: a plain object, with its flank armour.
 
     Its `ring` and `limbs` are None when absent.
     """
-    return record({"core": core, "parts": parts, "turrets": turrets, "limbs": limbs, "ring": ring})
+    return record({
+        "core": core,
+        "parts": parts,
+        "turrets": turrets,
+        "limbs": limbs,
+        "ring": ring,
+        "armour": {"flanks": {"whole": draw_flanks, "pieces": flank_pieces()}},
+    })
 
 
 def build_avalanche(scene: Any) -> BuiltEnemyModel:
@@ -386,7 +395,8 @@ def build_avalanche(scene: Any) -> BuiltEnemyModel:
     In yellow neon: a tracked chassis crusted with snow and icicles, a cab at its nose, two drill
     arms swinging in front of it and a rock hopper heaped with ice and stone on its back.
     MB-AVALANCHE-02: now a burrowing beast of flesh under a ridged shell, crawling on segmented
-    flanks, a crop sac of rock and ice on its back and fleshy arms ending in grafted drills.
+    flanks, a crop sac of rock and ice on its back and fleshy arms ending in grafted drills. The
+    shell's flanks are the armour it sheds (MB-AVALANCHE-07).
     """
     limbs = merge(arm_limbs("left"), arm_limbs("right"))
     model: BuiltEnemyModel = build_boss_model(

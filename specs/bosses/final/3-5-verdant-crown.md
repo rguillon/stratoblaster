@@ -35,7 +35,8 @@ boss (radius 3 L).
 
 It reads as one living plant-beast with a city grafted on it: its deck a broad body of moss-skinned
 flesh, its outriggers fleshy limbs ending in swollen knuckles under the grafted turntables, and veins
-pulsing out from under the dome across the deck.
+pulsing out from under the dome across the deck. The stone plating over its flank and aft decks,
+carrying part of the city, is the armour it sheds (FB-VERDANT-CROWN-12, FB-VERDANT-CROWN-13).
 
 **Acceptance criteria**
 - Given the model, then the deck and outriggers read as living flesh carrying the city (manual).
@@ -177,25 +178,31 @@ World 3.
 
 #### FB-VERDANT-CROWN-12 — First transformation: flank armour, two orbs · MUST
 
-At 2 of its 6 original parts destroyed, it transforms for the first time. Its flank armour (a region on
-each side, 28 to 104 px out and from 50 px ahead of the centre to 16 px behind it, above 4.7 px high)
-bursts off over a dark metal `wing` frame, and two orbs come out at 47 px either side, 17 px ahead of
-the centre (radius 11 px, pods 11 px high, 1 840 HP each), firing `green` rings, 1.2 s and 2.0 s into a
-stage.
+At 2 of its 6 original parts destroyed, it transforms for the first time. Its **flank plating**
+bursts off ([common](../common.md), BOSS-42): a plate of old stone drawn apart from the deck, lying on
+each flank's deck from 5.7 px (sunk into the deck at 6) up to 7.2 px, from the dome's rim (34 px out)
+to the deck's edge (61 px), from 24 px behind the centre to 50 px ahead, clear of the root generator
+ahead of it; the three towers of the city there (at (44, -30), (52, 4) and (56, -20)), two moss
+patches and a vine stand on it. Its region (`flanks`, mirrored) is that plate's plan; it bursts into
+plates cracked from the outline and leaves a dark metal `wing` frame on the deck. Two orbs come out
+at 47 px either side, 17 px ahead of the centre (radius 11 px, pods 11 px high, 1 840 HP each),
+firing `green` rings, 1.2 s and 2.0 s into a stage.
 
 **Acceptance criteria**
 - Given 2 original parts are destroyed, then both flank regions burst off and the two orbs come out and
   fire (unit: `test_boss_kinds.py`).
 
-*Sources: D-221, D-224, D-229, D-227.*
+*Sources: D-221, D-224, D-229, D-227, D-254.*
 
 #### FB-VERDANT-CROWN-13 — Second transformation: spine plating, two mortars · MUST
 
-At 4 original parts destroyed, it transforms again. Its spine plating aft of the dome (one region
-across the centre line, 32 px either side, from 38 to 95.2 px behind the centre, above 5.5 px high)
-bursts off over a `shell` frame, and two flak mortars come out at 13 px either side, 69 px behind the
-centre (radius 11 px, pods 11 px high, 2 300 HP each), lobbing `green` flak, 1.2 s and 2.0 s into a
-stage. It reveals no kind twice, fires no less after each transformation than before, and stays one
+At 4 original parts destroyed, it transforms again. Its **spine plating** aft of the dome bursts off:
+a plate drawn apart over the aft deck, from 5.7 to 7.2 px, 32 px either side of the centre line from
+36 px behind the centre, narrowing to 24 px at the deck's tail (85 px), round the missile hatches'
+block (which stays, the core's); the two towers of the city there (at (±20, 40) and (±18, 76)) and a
+moss patch stand on it. Its region (`spine`, not mirrored) is that plate's plan; it leaves a `shell`
+frame on the deck. Two flak mortars come out at 13 px either side, 69 px behind the centre (radius
+11 px, pods 11 px high, 2 300 HP each), lobbing `green` flak, 1.2 s and 2.0 s into a stage. It reveals no kind twice, fires no less after each transformation than before, and stays one
 object in every state.
 
 **Acceptance criteria**
@@ -204,7 +211,7 @@ object in every state.
 - Given each state, then nothing of it hangs in the air (unit:
   `test_d227_the_boss_holds_together_in_every_state`).
 
-*Sources: D-221, D-224, D-229, D-227.*
+*Sources: D-221, D-224, D-229, D-227, D-254.*
 
 #### FB-VERDANT-CROWN-14 — Points and drops · MUST
 
@@ -238,8 +245,8 @@ boss's centre, X right, Y up the screen (its bow at -Y).
 | seed pod | `green` 115 px/s, radius 7, bursts after 1.1 s into 8 `magenta` at 190 px/s | `SEED_POD` |
 | rage | flower + spirals, heat 9, half share each | |
 | transformations | at 2 and 4 parts destroyed | `default_transforms` |
-| flank regions | x 28..104, y -50..16 (mirrored), from 4.7 px, `wing` | form 1 |
-| spine region | x ±32, y 38..95.2, from 5.5 px, `shell` | form 2 |
+| flank regions | the flank deck's plan, x 34..61, y -50..24 (mirrored), `wing`; plating 5.7–7.2 px | form 1 |
+| spine region | the aft deck's plan, x ±32 at y 36 to ±24 at y 85, `shell`; plating 5.7–7.2 px | form 2 |
 | orbs | (±47, -17), radius 11, pod 11, 1 840 HP, `green` | form 1 |
 | mortars | (±13, 69), radius 11, pod 11, 2 300 HP, `green` | form 2 |
 | points | 22 000 (2 200 a part) | |

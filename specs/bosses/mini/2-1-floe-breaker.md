@@ -38,8 +38,9 @@ drawn by code:
   blades grafted along each side at its waterline, a fringe of flesh on each flank;
 - reactor sacs at the stern, lit cyan.
 
-Metal shows only where it is grafted: frosted armour plates on the back, the bow chasers' mount on
-the ram, an antenna stalk and a small dish on the hump, the sponsons' mounts. The dressing is not a
+Metal shows only where it is grafted: frosted plates on the front deck's plating
+(MB-FLOE-BREAKER-07), the bow chasers' mount on the ram, an antenna stalk and a small dish on the
+hump, the sponsons' mounts. The dressing is not a
 mirror image: an egg sac to port (the screen's left), a coiled tow sinew on the stern to starboard.
 
 *Sources: P08-R10, P16-R05.*
@@ -83,16 +84,23 @@ they aim (MB-FLOE-BREAKER-09). Nothing else moves but the shared living motion o
 
 #### MB-FLOE-BREAKER-07 — What its transformation sheds · MUST
 
-At its transformation the plating over its front half (region `back`: from 57 px ahead of its
-centre to 3 px behind it, 60 px across, one region on the centre line) bursts off in chunks,
-baring a dark metal lattice frame (`shell`), and its two gatlings rise from it either side of the
-ram. Only the upper part of the body is cut, so the keel, the sponsons and the harpoon guns stay,
-and the boss stays one object.
+At its transformation the plating of its front deck is the armour it sheds ([common](../common.md),
+BOSS-42): a rimed plate of teal flesh drawn as a piece of its own either side of the bone ram, lying
+on the deck (3 px) and 3 px thick, dark seams across it, a frosted metal plate grafted on each and
+ice crystals grown through it. Its region (`back`, mirrored) is a plate from 2 px ahead of its
+centre to 34 px ahead, from the ram's flank (x 13 at the back, 7 at the nose) out to the deck's
+edge behind the sponsons' sockets (x 22 to 23 at the back, 17 at 25 px ahead, 10.5 at the nose).
+It bursts into plates cracked from that outline and bares a dark metal lattice frame (`shell`) on
+the deck; the two gatlings rise from it either side of the ram, which stays, a keel of bone the
+plating lay against. The belly, the shell, the hump, the sponsons and the harpoon guns stay, and the
+boss stays one object.
 
 **Acceptance criteria**
-- Given the bosses viewer, when K breaks a harpoon gun, then the front plating bursts, a dark lattice shows and two gatlings unfold from it; nothing of the boss is left hanging in the air.
+- Given the bosses viewer, when K breaks a harpoon gun, then the front plating bursts, a dark lattice shows and two gatlings unfold from it either side of the ram; nothing of the boss is left hanging in the air.
+- Given its model, then it draws the back region's armour, and it holds together with and without
+  it (unit tests).
 
-*Sources: D-221, D-224, D-227, D-229.*
+*Sources: D-221, D-224, D-227, D-229, D-254.*
 
 ### Behaviour
 
@@ -168,7 +176,7 @@ boss parts do, its gatlings as hidden weapons do. It dies as every boss.
 | rage_heat | 2.5 (`curtain`, blue / magenta) | `rage` |
 | transformation | after 1 of 2 parts | `boss_build.default_transforms` |
 | weapon_radius / weapon_hp | 10 px / 520 | `FLOE_BREAKER`, `hidden_weapon("gatling-…")`; pod 12 px high |
-| region `back` | x −30…30, y −57…3, from 1.7 px up, `shell` | `armour_region("back", 1, …)` |
+| region `back` | a plate either side of the ram, mirrored: x 13…22 at y −2, 23 at y −12, 17 at y −25, 7…10.5 at y −34, inner edge x 10 at y −20; plating 3–6 px; `shell` | `armour_region("back", 1, …)`; `src/game/view/bosses/world_2/floe_breaker_armour.py` |
 | full_hp / full_hp_with_weapons | 2 720 / 3 760 | core + parts |
 | points | 5 500 (550 a part) | `points`; part share in `src/game/config/scoring.py` |
 
