@@ -31,11 +31,19 @@ def test_enm_gnat_01_gnat_is_a_fan_drone_with_a_reactor_at_the_rear(probe: Any) 
     assert len(body["parts"].flesh.geometry.positions) > 0
 
 
-def test_enm_gnat_02_gnat_fan_is_centred_and_lies_flat(probe: Any) -> None:
+def test_enm_gnat_02_gnat_fan_is_centred_on_the_arrow(probe: Any) -> None:
     _capture, body = probe(module.build_gnat)
     (fan,) = body["rotors"]
-    # Centred on the body, in its plane (the fan turns around +Y, so it reads as a disc from above).
-    assert fan.at == pytest.approx([0, 0, 0])
+    # Across the middle of the arrow, just above its flat body (the fan turns around +Y).
+    assert fan.at[0] == pytest.approx(0)
+    assert fan.at[1] >= module.GNAT_THICKNESS[1]
+    assert 0 < fan.at[2] < module.GNAT_NOSE
+
+
+def test_enm_gnat_01_gnat_is_a_flat_arrow(probe: Any) -> None:
+    _capture, body = probe(module.build_gnat)
+    ys = body["parts"].flesh.geometry.positions[1::3]
+    assert max(ys) - min(ys) == pytest.approx(module.GNAT_THICKNESS[1] - module.GNAT_THICKNESS[0])
 
 
 def test_enm_gnat_01_gnat_nose_is_a_point_ahead_of_the_eyes(probe: Any) -> None:

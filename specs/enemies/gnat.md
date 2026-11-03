@@ -11,32 +11,32 @@ bullet kills it. Carriers and some bosses launch Gnats too.
 
 ### Look
 
-#### ENM-GNAT-01 — A fan drone with a pointed nose · MUST
+#### ENM-GNAT-01 — A flat arrow drone · MUST
 
-The Gnat is a small, unmanned drone about `size` L across, mainly a ducted fan: a flat fan at its
-centre whose duct is its body, with a neon rim around the duct. A cone points forward from the
-duct's front edge, tipped with two eyes near its point, and the Gnat has no cockpit.
+The Gnat is a small, unmanned drone about `size` L long, shaped as a flat arrow pointing forward:
+a thin plate with a point at its nose and a straight back, two eyes near the point. It has no
+cockpit.
 
 **Acceptance criteria**
 - Given the dev enemies viewer, then the Gnat reads as a drone, not a manned ship (manual check).
-- Given the Gnat's model, then its nose cone is the front-most point of its body.
+- Given the Gnat's model, then its body is a flat plate and its nose is its front-most point.
 
-*Sources: P05-R01, P16-R03; redesign (fan body, pointed front).*
+*Sources: P05-R01, P16-R03; redesign (flat arrow).*
 
 #### ENM-GNAT-02 — One fan at the centre · MUST
 
-A single fan is centred in the Gnat's body and lies flat: a two-bladed rotor that turns around the
-vertical axis, inside a metal duct that is the body.
+A single fan stands at the centre of the arrow, lying flat: a two-bladed rotor that turns around the
+vertical axis, in a metal duct with a neon rim.
 
 **Acceptance criteria**
-- Unit test: the model has one rotor, centred on the body.
+- Unit test: the model has one rotor, centred across the arrow.
 
 *Sources: P05-R01, P16-R03; redesign (single fan).*
 
 #### ENM-GNAT-03 — Green, one reactor · MUST
 
 The Gnat's lights (its ring, its eyes) and its reactor flame are bright green (was cyan). It has
-one reactor at the rear.
+one reactor at the back of the arrow.
 
 *Sources: phase 5 review, D-231.*
 
@@ -78,7 +78,7 @@ The Gnat has `hp` health: a single level 1 bullet destroys it. It scores `points
 | `speed` | 190 px/s | |
 | `path` | (0.75, 1.1) → (0.75, 0.85) → (0.25, 0.65) → (0.75, 0.4) → (0.25, 0.18) → (0.4, −0.15) | fractions of the playfield (x across the ship's reach, y up) |
 | `neon` | [0.1, 0.95, 1], drawn bright green | `src/game/config/enemy_look.py` `ENEMY_LOOK["neon"]["gnat"]` |
-| rotor | 1 fan, 2 blades, 30 rad/s, centred, radius 3.6 inside a duct of radius 3.9–4.5 | `ENEMY_LOOK["rotor"]`; `build_gnat` in `small_enemy_models.py` |
+| rotor | 1 fan, 2 blades, 30 rad/s, radius 4 in a duct of radius 4.3–4.9, centred on the arrow | `ENEMY_LOOK["rotor"]`; `build_gnat` in `small_enemy_models.py` |
 
 ## Notes
 
