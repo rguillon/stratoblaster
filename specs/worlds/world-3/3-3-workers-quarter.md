@@ -4,8 +4,8 @@
 
 The third level of World 3. From the first flats 3-2 ended on, the player flies over blocks of
 workers' flats, terraced streets, a park and brick terraces to the first houses, while an afternoon
-thunderstorm builds over the first quarter and then rages, with lightning. Spinners and Rocketeers
-lead the waves and the Minelayer comes in. Its mini boss stops the ground. Its checkpoint is its
+thunderstorm builds over the first quarter and then rages, with lightning. Spinners and Mortars
+lead the waves and the Broodmother comes in. Its mini boss stops the ground. Its checkpoint is its
 mini boss (see [level flow](../../gameplay/level-flow.md)).
 
 ## Requirements

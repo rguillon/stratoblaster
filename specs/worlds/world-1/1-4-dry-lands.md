@@ -4,7 +4,7 @@
 
 The fourth level of World 1: sunset over the dry lands, from the dry grassland 1-3 ended on into an
 American desert of red dirt and scrub, rock, a cracked dry lake, an oasis town, a canyon, mesas and a
-desert town, to the desert outskirts. No sea, no sand dunes. Lancers and Rocketeers join the 1-3
+desert town, to the desert outskirts. No sea, no sand dunes. The Carrier joins the 1-3
 kinds. The Scorpion waits at the middle and the Refinery Titan at the end.
 
 ## Requirements
@@ -165,7 +165,7 @@ No wave starts in the 10 s before each boss ([level-flow.md](../../gameplay/leve
 #### LVL-1-4-11 — Difficulty · MUST
 
 1-4's enemies fire at `fire_rate_factor` of their rate and their bullets fly at
-`bullet_speed_factor` of their speed: the basic kinds' own values. It has more enemies, more enemy
+`bullet_speed_factor` of their speed: the kinds' own values. It has more enemies, more enemy
 HP and a higher peak on screen than 1-3, fewer than 1-5 (WLD-1-22), its second half more than its
 first.
 

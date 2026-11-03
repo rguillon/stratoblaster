@@ -28,7 +28,7 @@ ship ramming it. Enemies that leave the screen or are removed for age score noth
 other enemies spawn (Splitter pods, Carrier launches, …) score their own kind's points.
 
 **Acceptance criteria**
-- Given a Gnat destroyed by a shot, then the score rises by the Gnat's points (unit test).
+- Given a Hornet destroyed by a shot, then the score rises by the Hornet's points (unit test).
 - Given an enemy destroyed by ramming or by a bomb, then it scores its points too (unit test).
 - Given an enemy that leaves the screen alive, then the score does not change (unit test).
 
@@ -105,7 +105,7 @@ score), and both change on the step the points are scored ([ui/hud.md](../ui/hud
 
 | Name | Value | Notes |
 |------|-------|-------|
-| enemy points | per kind, from Gnat 50 to Juggernaut 1 000 | each kind's `stats.points`, `src/game/config/enemies.py`, `enemies_veteran.py`, `enemies_elite.py` |
+| enemy points | per kind, from Hornet 100 to Juggernaut 1 000 | each kind's `stats.points`, `src/game/config/enemies.py`, `enemies_veteran.py`, `enemies_elite.py` (the new kinds' values are set with their files) |
 | boss points | per boss | each boss's data, `src/game/config/bosses/` |
 | boss_part_share | 10 %, rounded to 10 | `src/game/config/scoring.py` `SCORING["bossPartShare"]`, `["roundTo"]` |
 | high score key | `<game id>_high_score` (cookie) | `src/app/saved_choices.py` |

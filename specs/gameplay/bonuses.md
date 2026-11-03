@@ -21,8 +21,8 @@ others by its shape, not only its colour ([graphics/effects.md](../graphics/effe
 
 A destroyed enemy drops a weapon bonus with a chance that grows with its toughness:
 `weapon_chance_per_health` × its full health, kept within [`weapon_chance_min`,
-`weapon_chance_max`] (6 % to 20 %): 6 % for the small kinds of up to 40 health (Gnat, Hornet,
-Scout, Strafer, Weaver), a Lancer 12 %, a Rocketeer 15 %, a Bulwark or a Carrier 20 %. The chance
+`weapon_chance_max`] (6 % to 20 %): 6 % for the small kinds of up to 40 health (Hornet, Scout,
+Wasp, Strafer), a Lancer 12 %, a Rocketeer 15 %, a Carrier or any kind of 134 health or more 20 %. The chance
 does not depend on the weapon used.
 
 **Acceptance criteria**

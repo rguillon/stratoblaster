@@ -1,11 +1,11 @@
 # Harbour Kraken — 2-2 final boss
 
-> **Area:** bosses · **Prefix:** `FB-HARBOUR-KRAKEN` · **Related:** [common.md](../common.md), [2-2 Mining mesas](../../worlds/world-2/2-2-mining-mesas.md), [World 2](../../worlds/world-2/world.md), [Fjord Lynx (2-2 mini)](../mini/2-2-fjord-lynx.md), [Gnat](../../enemies/gnat.md)
+> **Area:** bosses · **Prefix:** `FB-HARBOUR-KRAKEN` · **Related:** [common.md](../common.md), [2-2 Mining mesas](../../worlds/world-2/2-2-mining-mesas.md), [World 2](../../worlds/world-2/world.md), [Fjord Lynx (2-2 mini)](../mini/2-2-fjord-lynx.md), [Hornet](../../enemies/hornet.md)
 
 The Harbour Kraken is the final boss of 2-2, met at the level's end; the ground stops for its fight.
 It is a 5 L living kraken: a shelled mantle of cold flesh with a head and beak amidships, four
 tentacles swinging at the shoulder and the elbow, each ending in a clawed gun-fist, and a brood sac
-at its stern that launches Gnats, in orange neon. It was designed as a cargo crane-ship fighting
+at its stern that launches Hornets, in orange neon. It was designed as a cargo crane-ship fighting
 over a harbour of the Frozen North; World 2 became the Industrial Desert (D-110), 2-2 has no harbour
 any more, and the boss kept its name and its frost. Everything all bosses share is in
 [common.md](../common.md).
@@ -51,7 +51,7 @@ drawn by code:
   grafted cannon that fires at the player.
 - The container bay at the stern: a brood sac of membrane full of eggs, each lit by a gland, its
   mouth held open by metal, an orange-lit gantry over it, armour plates grafted on its shell; its
-  Gnats leave through the mouth.
+  Hornets leave through the mouth.
 
 *Sources: P08-R10, P16-R06.*
 
@@ -137,7 +137,7 @@ bursts of 3 red bullets, 0.16 s apart, every 3 s, one after the other round the 
 #### FB-HARBOUR-KRAKEN-10 — Container bay · MUST
 
 Part `container-bay`, on the stern 46 px behind the centre, `bay_radius` round with `bay_hp`. It
-does not shield the core. While it stands it launches a group of 3 Gnats every 7 s (the first 3 s
+does not shield the core. While it stands it launches a group of 3 Hornets every 7 s (the first 3 s
 into a stage).
 
 *Sources: P08-R10.*
@@ -209,7 +209,7 @@ do, its hidden weapons as hidden weapons do. It dies as every boss, and its deat
 | swing_phases | 0, 0.31, 0.58, 0.83 of a period (elbows +0.2) | `SWING` |
 | grab_radius / grab_hp | 13 px / 900 | `grab(crane, 900)` |
 | bay_radius / bay_hp | 16 px / 700 | `fpart("container-bay" …)` |
-| launches | 3 Gnats every 7 s, first at 3 s | `launches` |
+| launches | 3 Hornets every 7 s, first at 3 s | `launches` |
 | bullets | red 190, magenta 185, orange 175 px/s | `RED`, `MAGENTA`, `ORANGE`; times the level's factors |
 | laser | 12 px wide, 1 s warning | `boss_kit.laser_of` |
 | rage_heat | 4 (`vortex`, orange / magenta) | `rage` |

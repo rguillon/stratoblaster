@@ -4,8 +4,8 @@
 
 The fourth level of World 4. From the tower edge 4-3 ended on, the player flies among city towers, over
 a tower park and the financial district, where the first skyscrapers rise, and high rise, to the first
-skyline, at midday under an orange glow, ash falling and embers rising together. Carriers and Bulwarks
-lead the waves and the Juggernaut, the last elite kind, comes in. Its checkpoint is its mini boss (see
+skyline, at midday under an orange glow, ash falling and embers rising together. Hives and Hydras
+lead the waves, all five kinds of tier 4 in the mix. Its checkpoint is its mini boss (see
 [level flow](../../gameplay/level-flow.md)).
 
 ## Requirements

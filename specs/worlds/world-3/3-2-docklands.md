@@ -4,8 +4,8 @@
 
 The second level of World 3. From the canal workshops 3-1 ended on, the player flies over warehouses
 on the docks, workshop streets and old mills to the first workers' flats, under a bright midday sky
-with a rain shower over the middle third. Every basic kind is in its waves, led by Hornet swarms and
-Lancers, and the Mortar comes in. Its checkpoint is its mini boss (see
+with a rain shower over the middle third. Phantoms, Spinners and Prisms lead its waves, and the
+Mortar comes in. Its checkpoint is its mini boss (see
 [level flow](../../gameplay/level-flow.md)).
 
 ## Requirements

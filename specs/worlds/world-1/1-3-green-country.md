@@ -4,7 +4,7 @@
 
 The third level of World 1: a golden late afternoon over the green country, from the farmland 1-2
 ended on, through woods, green hills and a market town, to where the grass turns yellow and dry.
-No sea. Carriers and Spinners join the 1-2 kinds. The Dust Devil waits at the middle and the Mesa
+No sea. The Rocketeer joins the 1-2 kinds. The Dust Devil waits at the middle and the Mesa
 Fortress at the end.
 
 ## Requirements

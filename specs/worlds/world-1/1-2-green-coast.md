@@ -3,8 +3,8 @@
 > **Area:** Worlds · **Prefix:** `LVL-1-2` · **Related:** [World 1](world.md), [1-1 Open sea](1-1-open-sea.md), [1-3 Green country](1-3-green-country.md), [Breakwater](../../bosses/mini/1-2-breakwater.md), [Gull Mothership](../../bosses/final/1-2-gull-mothership.md), [level flow](../../gameplay/level-flow.md), [terrain](../../graphics/terrain.md), [sky and light](../../graphics/sky-and-light.md)
 
 The second level of World 1: early afternoon along the green coast where 1-1 ended, its beaches and
-bays, then inland over green meadows, groves and farmland once the sea is gone. Weavers and
-Splitters join the 1-1 kinds. The Breakwater waits at the middle and the Gull Mothership at the end.
+bays, then inland over green meadows, groves and farmland once the sea is gone. The Lancer
+joins the 1-1 kinds. The Breakwater waits at the middle and the Gull Mothership at the end.
 
 ## Requirements
 

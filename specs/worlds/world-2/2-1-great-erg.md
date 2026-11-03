@@ -4,7 +4,7 @@
 
 The first level of World 2: a clear desert morning over the great erg, from an oasis edge across
 great dunes, caravan posts and a dune field to rocky desert and desert outposts, the first mines in
-the last 30 seconds. Open sand to the end, no sea. Gnats, Hornets, Scouts, Strafers and Weavers lead
+the last 30 seconds. Open sand to the end, no sea. Wasps, Strafers and Sweepers lead
 the waves. A breather after 1-5, about as hard as 1-3. The Floe Breaker waits at the middle and the
 Narwhal at the end.
 

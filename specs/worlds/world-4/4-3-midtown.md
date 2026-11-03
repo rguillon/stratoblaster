@@ -4,7 +4,7 @@
 
 The third level of World 4. From the mid-rise blocks 4-2 ended on, the player flies over offices among
 mid-rise blocks, office blocks, the old river quays and plazas to the first city towers, at midday,
-embers rising and the city's orange glow growing from below. Lancers and Rocketeers lead the waves and
+embers rising and the city's orange glow growing from below. Scissors and Hydras lead the waves and
 the Hive comes in. Its checkpoint is its mini boss (see [level flow](../../gameplay/level-flow.md)).
 
 ## Requirements

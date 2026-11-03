@@ -3,7 +3,7 @@
 > **Area:** bosses · **Prefix:** `FB-FOUNDRY-ARK` · **Related:** [common boss rules](../common.md),
 > [4-4 Business district](../../worlds/world-4/4-4-business-district.md),
 > [World 4](../../worlds/world-4/world.md), [Furnace Drake](../mini/4-4-furnace-drake.md),
-> [Gnat](../../enemies/gnat.md), [readability](../../graphics/readability.md),
+> [Hornet](../../enemies/hornet.md), [readability](../../graphics/readability.md),
 > [shots](../../graphics/shots.md)
 
 The Foundry Ark is the final boss of level 4-4, met at the end of the level. It is a huge flying
@@ -287,13 +287,13 @@ hangar under the crown, in the hearth. The boss stays one object after it.
 The second transformation reveals two gatling turrets on the bared wings, 48 px either side of the
 centre and 13 px behind it (radius 10 px, pods 8.8 px high, 2 400 HP each), firing `orange` bursts
 and following the player, and a drone hangar on the centre line 19 px ahead of the centre (radius
-10 px, pod 22.4 px high, 2 400 HP), its doors sliding apart to launch 2 [Gnats](../../enemies/gnat.md)
+10 px, pod 22.4 px high, 2 400 HP), its doors sliding apart to launch 2 [Hornets](../../enemies/hornet.md)
 every 7 s, as those kinds do (see [common](../common.md)); first 1.2 s, 2.0 s and 1.6 s into a
 stage. They shield the core and drop a bonus 30 % of the time. It is World 4's only hangar. Its fire
 goes up at each transformation (about 4.9, then 9.4, then 21.4 weighted shots a second).
 
 **Acceptance criteria**
-- Given the second transformation is over, then the gatlings fire and the hangar launches Gnats, of
+- Given the second transformation is over, then the gatlings fire and the hangar launches Hornets, of
   kinds not revealed at the first (unit: `test_boss_kinds.py`: kinds, hangars on final bosses only,
   at most one a world).
 
@@ -338,7 +338,7 @@ All in `src/game/config/bosses/world_4/foundry_ark.py` (`FOUNDRY_ARK`) unless no
 | spine | an octagon 21 px across the hearth's top, `shell`, not mirrored; crown plate 16.8–18 px, the stack on it | form 2, `octagon(21)` |
 | batteries | (±41, -43), radius 13, pod 10.2, 1 920 HP, `orange`, first 1.2 / 2.0 s | form 1 |
 | gatlings | (±48, 13), radius 10, pod 8.8, 2 400 HP, `orange`, first 1.2 / 2.0 s | form 2 |
-| hangar | (0, -19), radius 10, pod 22.4, 2 400 HP; 2 Gnats every 7 s, first 1.6 s | form 2; `src/game/config/bosses/weapon_kinds.py` `WEAPON_FIRE.hangar` |
+| hangar | (0, -19), radius 10, pod 22.4, 2 400 HP; 2 Hornets every 7 s, first 1.6 s | form 2; `src/game/config/bosses/weapon_kinds.py` `WEAPON_FIRE.hangar` |
 | drops | parts 0.6, hidden weapons 0.3, core 1 | `fpart`, `coreDrop` |
 | points | 20 000 (2 000 a part) | `points`, `boss_part_points` |
 | neon | [1, 0.55, 0.12], drawn [1, 1, 0.12]; laser [1, 0.38, 0.12] | `src/game/config/boss_look.py` `BOSS_LOOK.neon["foundry-ark"]` |

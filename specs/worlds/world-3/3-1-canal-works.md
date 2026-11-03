@@ -4,8 +4,8 @@
 
 The first level of World 3. The player flies on from the great works 2-5 ended on, past foundries,
 rail yards, the canal docks and factory yards, to the first workshops, under a morning mist that
-lifts over the first half. The waves are a fresh start after World 2, with the first veteran kind,
-the Wasp. Its checkpoint is its mini boss, as in every level (see [level flow](../../gameplay/level-flow.md)).
+lifts over the first half. The waves are a fresh start after World 2, with tier 3's diver, shooter
+and laser, the Phantom, the Spinner and the Prism. Its checkpoint is its mini boss, as in every level (see [level flow](../../gameplay/level-flow.md)).
 
 ## Requirements
 

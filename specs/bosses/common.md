@@ -357,12 +357,12 @@ into account.
 #### BOSS-25 — Launched enemies · MUST
 
 A part may launch regular enemies while it stands, in every stage, on its own timer: a hangar's
-Gnats fly out to the side of the boss it is on, then down the Carrier's launch path
-([Gnat](../enemies/gnat.md)); a bay's Hornets leave side by side and dive at the player
-([Hornet](../enemies/hornet.md)). They count among the level's spawned enemies.
+Hornets fly out to the side of the boss it is on, then down the Carrier's launch path; a bay's
+Hornets leave side by side and dive at the player ([Hornet](../enemies/hornet.md), whatever the
+world). They count among the level's spawned enemies.
 
 **Acceptance criteria**
-- Given a hangar launch, then the asked count of Gnats leaves towards the hangar's side (unit test).
+- Given a hangar launch, then the asked count of Hornets leaves towards the hangar's side (unit test).
 - Given a bay launch, then the Hornets leave side by side, centred on the bay (unit test).
 
 *Sources: P07-R04, D-055.*
@@ -595,7 +595,7 @@ box), and fires as its kind does (numbers in Tunable values):
   ring;
 - **battery**: a long, low deck with five barrels in a row, firing wide fans straight down;
 - **sweeper**: a turret with two prongs and a lens, firing a laser that sweeps after the player;
-- **hangar**: a box whose two doors slide apart, launching Gnats.
+- **hangar**: a box whose two doors slide apart, launching Hornets.
 
 Its muzzles are worked out from its size and pod height, and the model is drawn from the same
 numbers, so shots leave its barrels.
@@ -905,7 +905,7 @@ same fight drops the same bonuses.
 | mortar | 1 flak shell 110 px/s radius 8, bursting into 8 at 170 px/s after 1.1 s, every 3.2 s | BOSS-40; `WEAPON_FIRE.mortar` |
 | battery | fans of 7, 9° apart, straight down, 180 px/s, every 2 s | BOSS-40; `WEAPON_FIRE.battery` |
 | sweeper | sweeping laser 2 s every 8 s | BOSS-40; `WEAPON_FIRE.sweeper` |
-| hangar | 2 Gnats every 7 s | BOSS-40; `WEAPON_FIRE.hangar` |
+| hangar | 2 Hornets every 7 s | BOSS-40; `WEAPON_FIRE.hangar` |
 | `reveal` timeline | strain to 0.15, pieces gone by 0.6; weapons swing 0.4–0.75, slide 0.7–1.0 (overshoot 1.7); moving pieces 0.15–0.6; shudder 0.8 px, strobe 9 Hz | BOSS-43, BOSS-45; `BOSS_LOOK.reveal` |
 | `armour` | 12 pieces a region, 24 a boss, plates 2.5 px thick, hold 1.2 px | BOSS-43, BOSS-52; `BOSS_LOOK.armour` |
 | `frame` | floor 0.6 px over the armour's lowest point; ribs 1.6 px wide, 9 px apart, a neon seam every 3 | BOSS-44; `BOSS_LOOK.frame` |

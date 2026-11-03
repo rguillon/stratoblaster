@@ -4,8 +4,8 @@
 
 The fourth level of World 2: dusk through the smog over the industrial belt, from the industrial
 edge 2-3 ended on, through workers' suburbs, warehouses and yards, a power plant and factory yards,
-to the factory district, the window, street and car lights coming on. Mostly paved ground. Every
-basic kind comes, Rocketeers and Bulwarks leading. The Avalanche waits at the middle and the Glacier
+to the factory district, the window, street and car lights coming on. Mostly paved ground. All five
+kinds of tier 2 come, Harriers and Sweepers leading. The Avalanche waits at the middle and the Glacier
 Colossus at the end.
 
 ## Requirements

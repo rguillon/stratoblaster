@@ -4,8 +4,8 @@
 
 The last and hardest level of World 2: night over the factory district, lit by the factories'
 windows, neon, streets and cars, from the factory district 2-4 ended on, through foundries, rail
-yards and heavy industry, to great works filling every block at the end. Paved to the end. Every
-basic kind comes in the heaviest mixes, Bulwarks and Carriers together. The Ice Queen waits at the
+yards and heavy industry, to great works filling every block at the end. Paved to the end. All five
+kinds of tier 2 come in the heaviest mixes, Hatcheries and Sweepers together. The Ice Queen waits at the
 middle and the Boreal Citadel at the end.
 
 ## Requirements

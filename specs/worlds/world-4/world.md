@@ -251,30 +251,31 @@ lines are drawn with their light, contrasting core (see [shots](../../graphics/s
 
 ### WLD-4-17 — Enemy roster · MUST
 
-Every World 4 level uses the eleven basic enemy kinds and the five veteran kinds; the five elite kinds
-come in two in 4-1, then one more a level, so 4-4 and 4-5 use all five (see
-[enemies](../../enemies/common.md)):
+World 4 uses the five kinds of tier 4 and no other (ENM-50; see [enemies](../../enemies/common.md)):
+[Splitter](../../enemies/splitter.md) (diver), [Juggernaut](../../enemies/juggernaut.md) (shooter),
+[Scissor](../../enemies/scissor.md) (laser), [Hydra](../../enemies/hydra.md) (missile launcher) and
+[Hive](../../enemies/hive.md) (launches Splitters). It starts with three kinds, adds the Hydra in 4-2
+and the Hive in 4-3, so 4-3 to 4-5 use all five:
 
-| Level | Elite kinds |
+| Level | Enemy kinds |
 |-------|-------------|
-| 4-1 | [Hydra](../../enemies/hydra.md), [Orbiter](../../enemies/orbiter.md) |
-| 4-2 | Hydra, Orbiter, [Scissor](../../enemies/scissor.md) |
-| 4-3 | Hydra, Orbiter, Scissor, [Hive](../../enemies/hive.md) |
-| 4-4 | all five, with the [Juggernaut](../../enemies/juggernaut.md) |
-| 4-5 | all five |
+| 4-1 | Splitter, Juggernaut, Scissor |
+| 4-2 | Splitter, Juggernaut, Scissor, Hydra |
+| 4-3 to 4-5 | all five |
 
 **Acceptance criteria**
-- Unit test: each World 4 level's waves use all eleven basic kinds, all five veteran kinds, and exactly the elite kinds of its row.
+- Unit test: each World 4 level's waves (plan and filler) use exactly the kinds of its row.
+- Unit test: no World 4 level uses a kind of another tier.
 
-*Sources: P10-R09, P05-R24, D-087, D-090.*
+*Sources: P10-R09, P05-R24, D-087, D-090, ENM-50.*
 
 **Gap:** the unit tests check only that the kinds exist, not the table.
 
 ### WLD-4-18 — Wave plans · SHOULD
 
-Each World 4 level's waves are written as a wave plan, as in World 3 (WLD-3-16): from 4 s to 292 s,
-every kind in every cycle, the level's lead kinds two or three times a cycle, its gap and growth chosen
-by sweeping them with the play-through. A filler of light kinds fills the lulls. The waves are
+Each World 4 level's waves are composed from a wave plan, as in World 3 (WLD-3-16): from 4 s to 292 s,
+every kind of the level in every cycle, its gap and growth set in `wave_plans.py`. A filler of the
+level's divers and shooters fills the lulls. The waves are
 deterministic. Each level's plan is in its file.
 
 **Acceptance criteria**
@@ -396,9 +397,9 @@ faster, in phrygian.
 | background tone | 0.55 | WLD-4-11; `READABILITY.tones.world4`, `src/game/config/readability.py` (D-162) |
 | enemy_bullet_speed_factor 4-1 → 4-5 | 1.1 / 1.15 / 1.2 / 1.3 / 1.35 | WLD-4-19; `WORLD_4_DIFFICULTY`, `src/game/config/world_4/difficulty.py` |
 | enemy_fire_rate_factor 4-1 → 4-5 | 1.1 / 1.15 / 1.2 / 1.3 / 1.35 | WLD-4-19; same |
-| enemies per minute 4-1 → 4-5 | 195.2 / 204.4 / 211.2 / 225.0 / 302.0 | WLD-4-19; last measured (D-090), seed 606, without shooting (3-3: 190.0, 3-5: 247.8) |
-| enemy HP per minute 4-1 → 4-5 | 7 496 / 9 216 / 10 644 / 11 238 / 13 752 | WLD-4-19; same (3-3: 6 452, 3-5: 8 952) |
-| peak_on_screen 4-1 → 4-5 | 53 / 55 / 57 / 62 / 64 | WLD-4-19; same (3-3: 45, 3-5: 53); the first target (15 … 21) was never met, the order is kept (D-087) |
+| enemies per minute 4-1 → 4-5 | 195.2 / 204.4 / 211.2 / 225.0 / 302.0 | WLD-4-19; last measured (D-090), seed 606, without shooting (3-3: 190.0, 3-5: 247.8); measured with the old eleven-kind roster, to be measured again (ENM-50) |
+| enemy HP per minute 4-1 → 4-5 | 7 496 / 9 216 / 10 644 / 11 238 / 13 752 | WLD-4-19; same (3-3: 6 452, 3-5: 8 952); measured with the old eleven-kind roster, to be measured again (ENM-50) |
+| peak_on_screen 4-1 → 4-5 | 53 / 55 / 57 / 62 / 64 | WLD-4-19; same (3-3: 45, 3-5: 53); the first target (15 … 21) was never met, the order is kept (D-087); measured with the old eleven-kind roster, to be measured again (ENM-50) |
 | boss full HP, mini 4-1 → 4-5 | 4 450 / 5 500 / 5 940 / 6 910 / 7 470 (core and first parts: 3 650 / 4 180 / 4 500 / 5 150 / 5 550) | WLD-4-22; `src/game/config/bosses/world_4/*.py`; World 3: 4 200 / 5 020 / 6 480 / 6 100 / 6 860 |
 | boss full HP, final 4-1 → 4-5 | 12 170 / 14 380 / 19 760 / 25 840 / 33 160 (core and first parts: 7 800 / 9 700 / 12 400 / 14 800 / 21 200) | WLD-4-22; World 3: 10 040 / 13 550 / 20 510 / 20 840 / 27 780 |
 | mini_fight_time 4-1 → 4-5 | 40–50 s → 55–65 s | WLD-4-22; last measured 44.4 / 48.0 / 53.2 / 56.3 / 59.7 s (phase 10, before D-221) |

@@ -3,8 +3,8 @@
 > **Area:** Worlds · **Prefix:** `LVL-1-1` · **Related:** [World 1](world.md), [1-2 Green coast](1-2-green-coast.md), [Reef Warden](../../bosses/mini/1-1-reef-warden.md), [Storm Petrel](../../bosses/final/1-1-storm-petrel.md), [level flow](../../gameplay/level-flow.md), [terrain](../../graphics/terrain.md), [water](../../graphics/water.md), [sky and light](../../graphics/sky-and-light.md)
 
 The first level of the game, and the easiest: midday over a clear turquoise sea, with small wooded
-islands and reefs, and the first green coast in the last 30 seconds. Gnats, Hornets, Scouts and
-Strafers come a few at a time; the Reef Warden waits at the middle and the Storm Petrel at the end.
+islands and reefs, and the first green coast in the last 30 seconds. Hornets and
+Scouts come a few at a time; the Reef Warden waits at the middle and the Storm Petrel at the end.
 It is meant to be easy, even for a kid.
 
 ## Requirements

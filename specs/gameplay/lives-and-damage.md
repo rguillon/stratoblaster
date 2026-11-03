@@ -67,8 +67,8 @@ overlaps the ship's.
 ### GAME-LIFE-05 — What a hit does to what hit · MUST
 
 When a hit lands: the enemy bullet is gone, the enemy missile blows up, the laser beam hurts the
-ship no more, and a rammed enemy takes `ram_damage` (40): enemies with up to 40 health (Gnat,
-Hornet, Scout, Strafer, Weaver, Splitter pods) blow up, tougher ones are hurt. A boss and its parts
+ship no more, and a rammed enemy takes `ram_damage` (40): enemies with up to 40 health (Hornet,
+Scout, Wasp, Strafer, Splitter pods) blow up, tougher ones are hurt. A boss and its parts
 take no ramming damage. An enemy destroyed by ramming counts as destroyed: it scores and may drop a
 bonus.
 

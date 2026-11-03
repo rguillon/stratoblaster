@@ -4,8 +4,8 @@
 
 The first level of World 4. From the garden villages 3-5 ended on, the player flies over suburban
 lanes, suburbs, terraced streets and flats to a town centre with the first mid-rise blocks, on the
-flat, fully paved city ground, at a bright midday under a smoke haze. Weavers and Strafers lead the
-waves; every veteran kind is there and the first two elite kinds, the Hydra and the Orbiter, come in.
+flat, fully paved city ground, at a bright midday under a smoke haze. Splitters and Juggernauts lead the
+waves, and the Scissor comes in with them.
 Its checkpoint is its mini boss (see [level flow](../../gameplay/level-flow.md)).
 
 ## Requirements

@@ -4,7 +4,7 @@
 
 The second level of World 2: a high, hard midday sun over the mining mesas, from the first mines 2-1
 ended on, over mesas and along a canyon, through a mining town and open pits, to the first oil wells
-among the last mines. Splitters and Lancers join the 2-1 kinds. The Fjord Lynx waits at the middle
+among the last mines. The Harrier joins the 2-1 kinds. The Fjord Lynx waits at the middle
 and the Harbour Kraken at the end.
 
 ## Requirements

@@ -1,6 +1,6 @@
 # Boreal Citadel — 2-5 final boss
 
-> **Area:** bosses · **Prefix:** `FB-BOREAL-CITADEL` · **Related:** [common.md](../common.md), [2-5 Factory district](../../worlds/world-2/2-5-factory-district.md), [World 2](../../worlds/world-2/world.md), [Ice Queen (2-5 mini)](../mini/2-5-ice-queen.md), [Gnat](../../enemies/gnat.md)
+> **Area:** bosses · **Prefix:** `FB-BOREAL-CITADEL` · **Related:** [common.md](../common.md), [2-5 Factory district](../../worlds/world-2/2-5-factory-district.md), [World 2](../../worlds/world-2/world.md), [Ice Queen (2-5 mini)](../mini/2-5-ice-queen.md), [Hornet](../../enemies/hornet.md)
 
 The Boreal Citadel is the final boss of 2-5 and World 2's last boss, the hardest so far. It is a
 6 L colossal living beast carrying a city on its back: rimed flesh, a spine of bone down its middle,
@@ -189,7 +189,7 @@ It transforms a first time when both dome generators are destroyed (named parts,
 lost). The transformation opens its bow doors (FB-BOREAL-CITADEL-08) and reveals, `t1_hp` each (0.8
 of a dome's), all shielding the core:
 - `hangar`, on the centre line 68 px ahead of the centre (`hangar_radius`), its two doors sliding
-  apart, launching 2 Gnats every 7 s (first 3 s into a stage) ([common.md](../common.md));
+  apart, launching 2 Hornets every 7 s (first 3 s into a stage) ([common.md](../common.md));
 - `mortar-left` and `mortar-right`, at ±20 px across and 48 px ahead of the centre
   (`mortar_radius`), firing green flak shells that burst into rings, first 1.2 s and 2.8 s into each
   stage.

@@ -338,7 +338,7 @@ does not create it (D-183, cause open).
 
 The enemy and boss models a level needs are built while it loads, one per loading frame with its
 shaders, not during play: the models of the kinds its waves bring, of its bosses, and of the enemies
-others send out (Gnat, Hornet, splitter pod, Wasp). The models of kinds the level does not use are
+others send out (the Hornets of a Carrier or of a boss, the Wasps of a Hatchery, the Phantoms of a Broodmother, the Splitters of a Hive and their pods). The models of kinds the level does not use are
 not built; one left out by mistake is still built when its first enemy shows. Each model is built
 once per level and reused for every enemy of its kind.
 
@@ -487,7 +487,7 @@ one in the debug overlay).
 
 ### PERF-33 — Triangle budgets of the enemy and boss models · MUST
 
-Each enemy and boss model stays within the triangle budget of its tier: basic, veteran, elite, mini
+Each enemy and boss model stays within the triangle budget of its tier: tier 1 to tier 4, mini
 boss, final boss (values below). Models are built once and shared (PERF-21). A unit test checks every
 model against its budget.
 
@@ -495,8 +495,8 @@ model against its budget.
 - Given each enemy and boss model, then its triangle count is within its tier's budget (unit test).
 
 **Discrepancy:** no unit test checks the budgets since the Python port, and with the glowing edge
-trim (D-220) 8 of the 11 basic kinds are over 400 (up to 516, the Spinner); whether the trim counts
-is left to the reviewer (D-220).
+trim (D-220) many kinds were over their budget on the old roster (up to 516 against 400, the Spinner);
+whether the trim counts is left to the reviewer (D-220), and the four tiers are to be measured again.
 
 *Sources: P16-R09.*
 
@@ -526,9 +526,10 @@ is left to the reviewer (D-220).
 | `prop_reach` | 40 before, 120 past | Around the ground in view. `src/config/scenery_stage.py` `SCENERY_STAGE_CONFIG.prop_reach` |
 | `prop_step` | 40 | `src/config/scenery_stage.py` `SCENERY_STAGE_CONFIG.prop_step` |
 | `terrain_skip` | 1/512 | `src/render/scenery/terrain_blend_plugin_visual.py` `TERRAIN_SKIP` |
-| `tri_budget_basic` | 400 | `src/game/config/enemy_look.py` `ENEMY_LOOK["budget"]["basic"]` |
-| `tri_budget_veteran` | 700 | `ENEMY_LOOK["budget"]["veteran"]` |
-| `tri_budget_elite` | 1200 | `ENEMY_LOOK["budget"]["elite"]` |
+| `tri_budget_tier1` | 400 | `src/game/config/enemy_look.py` `ENEMY_LOOK["budget"]["tier1"]` |
+| `tri_budget_tier2` | 600 | `ENEMY_LOOK["budget"]["tier2"]` |
+| `tri_budget_tier3` | 900 | `ENEMY_LOOK["budget"]["tier3"]` |
+| `tri_budget_tier4` | 1200 | `ENEMY_LOOK["budget"]["tier4"]` |
 | `tri_budget_mini_boss` | 4000 | `ENEMY_LOOK["budget"]["miniBoss"]` |
 | `tri_budget_final_boss` | 10000 | `ENEMY_LOOK["budget"]["finalBoss"]` |
 

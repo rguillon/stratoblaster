@@ -4,8 +4,8 @@
 
 The fourth level of World 3. From the suburb edge 3-3 ended on, the player flies over garden suburbs,
 houses along the river, a town park and leafy avenues to the first garden villages, on gently rolling
-ground, at a rainy dusk with the windows and streets lit. No industry is left. Carriers lead the
-waves and the Mantis comes in. Its checkpoint is its mini boss (see
+ground, at a rainy dusk with the windows and streets lit. No industry is left. Broodmothers and Prisms lead
+the waves, all five kinds of tier 3 in the mix. Its checkpoint is its mini boss (see
 [level flow](../../gameplay/level-flow.md)).
 
 ## Requirements

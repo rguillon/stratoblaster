@@ -4,8 +4,8 @@
 
 The middle level of World 2: a golden afternoon over the oil fields, from the oil edge 2-2 ended on,
 through pumpjacks and tanks, a company town, refineries and tank farms, to the first factories at the
-end, the ground more and more paved. The first smoke greys the clouds. Every basic kind comes, with
-Carrier and Spinner groups. The Snow Owl waits at the middle and the Aurora Station at the end.
+end, the ground more and more paved. The first smoke greys the clouds. All five kinds of tier 2 come, the
+Hatchery with them. The Snow Owl waits at the middle and the Aurora Station at the end.
 
 ## Requirements
 
@@ -140,9 +140,9 @@ No wave starts in the 10 s before each boss ([level-flow.md](../../gameplay/leve
 #### LVL-2-3-10 — Difficulty · MUST
 
 2-3's enemies fire at `fire_rate_factor` of their rate and their bullets fly at
-`bullet_speed_factor` of their speed: the basic kinds' own values. Per minute of scroll it has more
+`bullet_speed_factor` of their speed: the kinds' own values. Per minute of scroll it has more
 enemies and more enemy HP than 2-2 and fewer than 2-4, and a higher peak on screen than 2-2 (the
-Carriers' Gnats raise it, WLD-2-20); its second half more HP than its first.
+Hatcheries' Wasps raise it, WLD-2-20); its second half more HP than its first.
 
 **Acceptance criteria**
 - Given the 2-3 difficulty, then both factors are 1 (unit test).

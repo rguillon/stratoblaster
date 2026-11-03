@@ -4,8 +4,8 @@
 
 The last level of World 3. From the village edge 3-4 ended on, the player flies over a village green,
 allotments and cottages to garden villages of small houses, which last to the end, on gently rolling
-ground, on a rainy night whose clouds open on a moonlit sky before the final boss. Bulwarks escort
-Carriers in the heaviest mixes of World 3, and the Phantom comes in. World 4 begins where 3-5 ends.
+ground, on a rainy night whose clouds open on a moonlit sky before the final boss. Broodmothers and Prisms
+come in the heaviest mixes of World 3. World 4 begins where 3-5 ends.
 Its checkpoint is its mini boss (see [level flow](../../gameplay/level-flow.md)).
 
 ## Requirements

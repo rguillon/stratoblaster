@@ -50,9 +50,10 @@ requirements that now carry it.
 `weather.md` `GFX-WEATHER` · `roads.md` `GFX-ROAD` · `buildings.md` `GFX-BLDG` · `props.md` `GFX-PROP` ·
 `traffic.md` `GFX-CAR`
 
-**enemies/** — basic: `gnat` `hornet` `scout` `strafer` `weaver` `spinner` `lancer` `rocketeer`
-`bulwark` `splitter` `carrier` · veteran: `wasp` `mortar` `mantis` `phantom` `minelayer` ·
-elite: `hydra` `orbiter` `scissor` `juggernaut` `hive` (file `enemies/gnat.md`, prefix `ENM-GNAT`).
+**enemies/** — tier 1: `hornet` `scout` `rocketeer` `lancer` `carrier` · tier 2: `wasp` `strafer`
+`harrier` `sweeper` `hatchery` · tier 3: `phantom` `spinner` `mortar` `prism` `broodmother` ·
+tier 4: `splitter` `juggernaut` `hydra` `scissor` `hive` (file `enemies/hornet.md`, prefix
+`ENM-HORNET`).
 
 **bosses/** — one file per boss, named after its level:
 
@@ -91,12 +92,12 @@ elite: `hydra` `orbiter` `scissor` `juggernaut` `hive` (file `enemies/gnat.md`, 
 
 ## Requirement IDs
 
-- An ID is the file's prefix, a dash and a two-digit number: `ENM-GNAT-03`, `LVL-2-4-07`,
+- An ID is the file's prefix, a dash and a two-digit number: `ENM-HORNET-03`, `LVL-2-4-07`,
   `GFX-ROAD-12`, `BOSS-05`. `ENG` keeps the three-digit numbers it already had (`ENG-52`, `ENG-110`).
 - Numbers are never reused. A removed requirement keeps its heading, marked *Removed* with the date
   and the reason.
-- In code, a requirement is traced by its ID in a comment or docstring (`# ENM-GNAT-03: ...`) or in a
-  test name, lower case with underscores (`def test_enm_gnat_03_follows_the_s_path():`).
+- In code, a requirement is traced by its ID in a comment or docstring (`# ENM-HORNET-03: ...`) or in a
+  test name, lower case with underscores (`def test_enm_hornet_03_follows_the_s_path():`).
 - Every requirement has a priority: **MUST** (mandatory), **SHOULD** (expected unless a decision
   says why not), **MAY** (optional).
 

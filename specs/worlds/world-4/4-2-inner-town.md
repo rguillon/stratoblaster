@@ -4,7 +4,7 @@
 
 The second level of World 4. From the town centre 4-1 ended on, the player flies over town streets,
 the ring road, mid-rise flats and a city park to mid-rise blocks among the first offices, at midday
-under an ash cloud with ash falling. Splitters and Spinners lead the waves and the Scissor comes in.
+under an ash cloud with ash falling. Splitters and Juggernauts lead the waves and the Hydra comes in.
 Its mini boss is a chase. Its checkpoint is its mini boss (see [level flow](../../gameplay/level-flow.md)).
 
 ## Requirements

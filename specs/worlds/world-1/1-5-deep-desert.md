@@ -4,8 +4,8 @@
 
 The last and hardest level of World 1: dusk over the deep desert, from the desert outskirts 1-4
 ended on, past buttes, oasis villages and a rocky pass, into desert towns ever bigger and denser, to
-a great oasis town on the red land at the end, its lights on. No sea, no factory, no city. Every
-basic kind comes, Bulwarks included. The Sentinel waits at the middle and the Overlord at the end.
+a great oasis town on the red land at the end, its lights on. No sea, no factory, no city. All five
+kinds of tier 1 come. The Sentinel waits at the middle and the Overlord at the end.
 
 ## Requirements
 

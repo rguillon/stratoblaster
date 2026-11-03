@@ -3,7 +3,7 @@
 > **Area:** Graphics · **Prefix:** `GFX-SHOT` · **Related:** [../gameplay/weapons.md](../gameplay/weapons.md), [readability.md](readability.md), [effects.md](effects.md), [art-direction.md](art-direction.md), [player-ships.md](player-ships.md), [../enemies/common.md](../enemies/common.md), [../bosses/common.md](../bosses/common.md)
 
 How the shots look and where they are seen leaving from: the player's minigun tracers, laser and
-missiles, and the enemies' bullets, missiles, mines and lasers. What the shots do (streams, damage,
+missiles, and the enemies' bullets, missiles and lasers. What the shots do (streams, damage,
 speeds, homing, piercing) is in [GAME-WPN](../gameplay/weapons.md) and the enemy and boss files;
 the hits and explosions they cause are in [GFX-FX](effects.md); the colour, size and draw-order
 rules they follow are in [GFX-READ](readability.md). Shots are flat, unlit, vertex-coloured meshes
@@ -178,14 +178,14 @@ fly. A bullet has no node of its own.
 
 *Sources: D-074.*
 
-### GFX-SHOT-14 — Shells and mines · MUST
+### GFX-SHOT-14 — Shells · MUST
 
-A bursting shot (the Mortar's shell, the Minelayer's mine) is drawn as a ball of plasma of its
-style, as a bullet, bigger: its hit radius (7 px for the shell, 6 px for the mine, 4 px for a plain
+A bursting shot (the Mortar's shell; the mine of the removed Minelayer is gone) is drawn as a ball
+of plasma of its style, as a bullet, bigger: its hit radius (7 px for the shell, 4 px for a plain
 bullet) sets its size. The bullets it bursts into are plain bullets.
 
 **Acceptance criteria**
-- Given a shell or a mine, then it is drawn as a plasma ball larger than a plain bullet of its
+- Given a shell, then it is drawn as a plasma ball larger than a plain bullet of its
   style.
 
 *Sources: P05-R15, P05-R18, D-074.*
@@ -272,7 +272,7 @@ shades, all orange to amber.
 | Enemy beam | glow width 2 ×, flicker ±0.12 at 21 Hz | `ENEMY_LOOK["laser"]["beam"]` |
 | Enemy beam flare | as the player's base glow | `ENEMY_LOOK["laser"]["flare"]` |
 | Lancer laser colour | [1, 0.3, 0.4] (folded when drawn) | `ENEMY_LOOK["laser"]["color"]` |
-| Shell / mine hit radius | 7 / 6 px | `src/game/config/enemies_veteran.py` |
+| Shell hit radius | 7 px | `src/game/config/enemies_veteran.py` |
 
 ## Notes
 
