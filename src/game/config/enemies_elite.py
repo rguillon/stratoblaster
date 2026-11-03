@@ -172,10 +172,19 @@ ELITE_CONFIG = record({
         "stopFraction": 0.74,
         "stay": 7,
         "exitSpeed": 95,
-        # One head fires every `headFireInterval`, in turn; the first after `firstShot`.
-        "headFireInterval": 0.5,
-        "firstShot": 0.4,
-        "bullet": bullet("green", 200),
+        # One head launches a missile every `headFireInterval`, in turn; the first after
+        # `firstShot` (ENM-HYDRA-09).
+        "headFireInterval": 0.8,
+        "firstShot": 0.5,
+        # Homing missiles, a little slower than the Rocketeer's (ENM-HYDRA-14).
+        "missile": {
+            "speed": 130,
+            "turnRateDeg": 90,
+            "homingSeconds": 3.5,
+            "radius": 5,
+            "health": 10,
+            "style": "rocketeer",
+        },
         "heads": HYDRA_HEADS,
         "design": {
             "joints": fold_entries([
@@ -318,12 +327,12 @@ ELITE_CONFIG = record({
         "speed": 28,
         # How fast its launch ring turns, degrees per second.
         "ringSpin": 45,
-        # A Wasp from the ring every `launchInterval`, the first after `firstLaunch`.
-        "launchInterval": 4,
-        "firstLaunch": 1.5,
-        # The ring's launch hatch, on the turning ring: Wasps come out of it.
+        # A Splitter from the ring every `launchInterval`, the first after `firstLaunch`.
+        "launchInterval": 6,
+        "firstLaunch": 2,
+        # The ring's launch hatch, on the turning ring: Splitters come out of it.
         "port": [0, 14, 9],
-        # A launched Wasp flies this far down from the hatch before its pause.
+        # A launched Splitter flies this far down from the hatch before its pause.
         "launchDrop": 55,
         "ringInterval": 3,
         "firstRing": 1,

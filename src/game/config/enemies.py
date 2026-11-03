@@ -172,25 +172,22 @@ ENEMY_CONFIG = record({
         },
         "xRange": [0.2, 0.8],
     },
-    # ENM-SPLITTER-09: health and points.
+    # ENM-SPLITTER-09: health and points. Tier 4's diver (ENM-SPLITTER-05): like a Hornet, but
+    # bigger and tougher, and it never shoots.
     "splitter": {
-        "stats": {"model": "splitter", "radius": radius(1), "health": 50, "points": 200},
+        "stats": {"model": "splitter", "radius": radius(1), "health": 200, "points": 450},
         "size": 1,
-        "speed": 95,
-        "fireInterval": 2.5,
-        "firstShot": 0.8,
-        "bullet": bullet("purple", 200),
-        # The eye on top of its core (ENM-SPLITTER-02).
-        "muzzles": [[0, 0, 5.4]],
-        # Curved path, fractions of the playfield; mirrored at random.
-        "path": [
-            [0.2, 1.1],
-            [0.3, 0.7],
-            [0.65, 0.45],
-            [0.8, -0.15],
-        ],
+        "entrySpeed": 150,
+        # Height where it stops before diving, in the upper half.
+        "stopFraction": 0.7,
+        # Deceleration into the stop.
+        "entryBrake": 300,
+        "pause": 0.7,
+        "diveAcceleration": 800,
+        "diveMaxSpeed": 480,
         # Distance of the three pods from the centre.
         "podOffset": 0.38 * ENEMY_UNIT,
+        "xRange": [0.2, 0.8],
     },
     # ENM-CARRIER-10: health and points.
     "carrier": {
@@ -202,7 +199,7 @@ ENEMY_CONFIG = record({
         },
         "size": 1.8,
         "speed": 30,
-        # A Gnat from each side port every `launchInterval`, the first after `firstLaunch`.
+        # A Hornet from each side port every `launchInterval`, the first after `firstLaunch`.
         "launchInterval": 3,
         "firstLaunch": 1.2,
         # The launch ports on its right side (mirrored on the left), from its centre: out to
@@ -213,16 +210,6 @@ ENEMY_CONFIG = record({
         ],
         # It stops launching below this height, too close to the player (ENM-CARRIER-09).
         "lastLaunchFraction": 0.3,
-        # The launched Gnats' path from a port, in px, for the right side (mirrored for the
-        # left): out sideways, then down past the bottom of the screen (ENM-CARRIER-08).
-        "launchPath": [
-            [0, 0],
-            [28, -4],
-            [55, -30],
-            [64, -110],
-            [40, -260],
-            [20, -800],
-        ],
         "xRange": [0.3, 0.7],
     },
     # The pods a destroyed Splitter breaks into: small Hornets (ENM-SPLITTER-08; health and

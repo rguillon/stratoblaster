@@ -8,6 +8,7 @@ import pytest
 from helpers.enemy_steps import area, run, run_until
 from helpers.fakes import FakeContext
 
+from game.config.enemies import ENEMY_CONFIG
 from game.sim.enemies.hydra import CFG, Hydra
 from game.sim.enemy_kinds import ENEMY_KINDS
 
@@ -38,15 +39,15 @@ def test_enm_hydra_07_a_spawned_enemy_moves_and_stays_finite_over_a_long_run() -
 
 
 class _Eyes(FakeContext):
-    """Records which head of `hydra` each bullet leaves from."""
+    """Records which head of `hydra` each missile leaves from."""
 
     def __init__(self, hydra: Hydra) -> None:
         super().__init__()
         self.hydra = hydra
         self.heads: list[str] = []
 
-    def fire_bullet(self, x: float, y: float, heading: float, spec: Any) -> None:
-        super().fire_bullet(x, y, heading, spec)
+    def fire_missile(self, x: float, y: float, heading: float, spec: Any) -> None:
+        super().fire_missile(x, y, heading, spec)
         for head in CFG.heads:
             part = self.hydra.part(head.id)
             eye = self.seen(part.place(head.muzzle)) if part is not None else None
@@ -64,11 +65,23 @@ def test_enm_hydra_08_a_hydra_stays_its_time_then_leaves_downward() -> None:
     assert hydra.y == pytest.approx(y - CFG.exitSpeed)
 
 
+def test_enm_hydra_09_the_heads_launch_homing_missiles_not_bullets() -> None:
+    """Also ENM-HYDRA-14: slower than the Rocketeer's, a little slower cadence than before."""
+    ctx = FakeContext()
+    hydra = Hydra(200, 450, 450)
+    run(hydra, ctx, 1.0)
+    assert ctx.bullets == []
+    assert len(ctx.missiles) == 1
+    assert ctx.missiles[0][3] is CFG.missile
+    assert CFG.missile.speed < ENEMY_CONFIG.rocketeer.missile.speed
+    assert CFG.headFireInterval > 0.5
+
+
 def test_enm_hydra_09_the_heads_left_fire_in_turn() -> None:
     hydra = Hydra(200, 450, 450)
     ctx = _Eyes(hydra)
     hydra.part("head-left").health = 0
-    run(hydra, ctx, 1.6)  # shots at 0.4, 0.9 and 1.4 s
+    run(hydra, ctx, 2.2)  # shots at 0.5, 1.3 and 2.1 s
     assert ctx.heads == ["head-middle", "head-right", "head-middle"]
 
 
@@ -78,6 +91,7 @@ def test_enm_hydra_10_with_every_head_gone_it_no_longer_fires() -> None:
     for head in CFG.heads:
         hydra.part(head.id).health = 0
     run(hydra, ctx, 2.0)
+    assert ctx.missiles == []
     assert ctx.bullets == []
     assert len(ctx.broken) == len(CFG.heads)
     assert hydra.health > 0

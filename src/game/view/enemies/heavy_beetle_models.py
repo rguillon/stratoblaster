@@ -72,7 +72,7 @@ def build_splitter(scene: Any) -> Any:
     """ENM-SPLITTER-01: a body visibly made of the three grubs it splits into.
 
     They are curled around a small flesh heart with a neon ring (yellow, ENM-SPLITTER-04), its eye
-    charging before it fires, and one reactor (ENM-SPLITTER-02).
+    charging before it dives, and one reactor (ENM-SPLITTER-02).
     """
     offset = ENEMY_CONFIG.splitter.podOffset
 
@@ -82,14 +82,12 @@ def build_splitter(scene: Any) -> Any:
         neon = p.neon
         charge = p.charge
         reactor = p.reactor
-        muzzle = p.muzzle
         organ(flesh, 8.6, 6, F.graphite, Placement([0, -3, 0]), 0.4)
         neon.ring(8.4, 0.7, 6, N.splitter, Placement([0, 0.6, 0]))
         for a in around(3):
             pod(flesh, hull, neon, p.vein, Placement(radial(a, offset, 0), a))
         eye = [[0, 0], [2.2, 0.4], [0, 1.4]]
         charge.lathe(eye, 6, WHITE, Placement([0, 4, 0]))
-        muzzle([0, 5.4, 0], "gun")
         reactor([0, 0, -7.8], 1.6)
 
     return build_enemy_model("splitter", scene, N.splitter, draw)

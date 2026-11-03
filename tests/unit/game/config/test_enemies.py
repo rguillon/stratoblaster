@@ -55,3 +55,17 @@ def test_enm_07_spawn_margin_is_positive() -> None:
 def test_enm_splitter_09_splitter_pod_is_a_smaller_kind_than_the_splitter() -> None:
     """The pods of ENM-SPLITTER-08."""
     assert ENEMY_CONFIG.splitterPod.stats.health < ENEMY_CONFIG.splitter.stats.health
+
+
+def test_enm_splitter_05_the_splitter_is_a_diver_with_no_gun_and_no_path() -> None:
+    """Tier 4's diver: dive tunables like a Hornet's, nothing to shoot with."""
+    splitter = ENEMY_CONFIG.splitter
+    for name in ("entrySpeed", "stopFraction", "pause", "diveAcceleration", "diveMaxSpeed"):
+        assert splitter[name] > 0, name
+    for name in ("bullet", "fireInterval", "path", "muzzles"):
+        assert name not in splitter, name
+
+
+def test_enm_splitter_09_the_splitter_is_tougher_than_a_hornet() -> None:
+    assert ENEMY_CONFIG.splitter.stats.health > ENEMY_CONFIG.hornet.stats.health
+    assert ENEMY_CONFIG.splitter.stats.points > ENEMY_CONFIG.hornet.stats.points

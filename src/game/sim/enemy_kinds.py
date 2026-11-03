@@ -16,7 +16,6 @@ from game.sim.enemies.enemy_helpers import (
     clamp_entry,
     coin,
     pick_x,
-    playfield_path,
     top_x,
 )
 from game.sim.enemies.hornet import Hornet, hornet_options
@@ -114,8 +113,8 @@ def _spawn_rocketeer(area: EnemySpawnArea) -> list[Enemy]:
 
 
 def _spawn_splitter(area: EnemySpawnArea) -> list[Enemy]:
-    mirror = _mirror_for(area, C.splitter.path[0][0])
-    return [Splitter(playfield_path(C.splitter.path, area, mirror))]
+    x = _entry_x(area, C.splitter.xRange)
+    return [Splitter(x, _top(area), C.splitter.stopFraction * area.height)]
 
 
 def _spawn_carrier(area: EnemySpawnArea) -> list[Enemy]:
