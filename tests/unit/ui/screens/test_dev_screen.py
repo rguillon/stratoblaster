@@ -246,3 +246,28 @@ def test_dev_menu_13_a_viewer_menu_has_the_number_of_buttons_a_row_holds() -> No
     assert panel.style.getPropertyValue("--dev-columns") == "5"
     other = render_dev_viewer_screen(FakeDocument(), three, handlers).querySelector(".dev-menu")
     assert other.style.getPropertyValue("--dev-columns") == "3"
+
+
+def test_dev_menu_21_the_view_buttons_are_tapped_as_minus_one_minus_their_index() -> None:
+    taps: list[int] = []
+    modes = [
+        DevChoice("Model", 0, selected=True),
+        DevChoice("Wireframe", 1, selected=False),
+        DevChoice("Game view", 2, selected=False),
+    ]
+    view = DevViewerView("Enemies", "Wheel", "Back", 0, "Hornet", "1 / 1", scrub=False, modes=modes)
+    root = render_dev_viewer_screen(FakeDocument(), view, ScreenHandlers(taps.append, lambda: None))
+    buttons = root.querySelector(".dev-modes").querySelectorAll(".dev-mode")
+    assert [b.textContent for b in buttons] == ["Model", "Wireframe", "Game view"]
+    assert buttons[0].classList.contains("selected")
+    buttons[1].fire("click")
+    buttons[2].fire("click")
+    assert taps == [-2, -3]
+
+
+def test_dev_menu_21_a_viewer_without_views_has_no_view_buttons() -> None:
+    view = DevViewerView("Ships", "Wheel", "Back", 0, "Alpha", "1 / 2", scrub=False)
+    root = render_dev_viewer_screen(
+        FakeDocument(), view, ScreenHandlers(lambda _i: None, lambda: None)
+    )
+    assert not root.querySelector(".dev-modes")

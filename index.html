@@ -1045,6 +1045,28 @@
         text-overflow: ellipsis;
         cursor: pointer;
       }
+      /* The view buttons of the enemies and bosses viewers (DEV-MENU-21): a row over the menu. */
+      .dev-modes {
+        position: absolute;
+        left: 14px;
+        bottom: 182px;
+        display: flex;
+        gap: 4px;
+        z-index: 1;
+      }
+      .dev-modes .menu-entry {
+        min-height: 24px;
+        padding: 2px 14px;
+        border-width: 1px;
+        font-family: var(--font-tech);
+        font-size: 12px;
+        font-weight: 700;
+        line-height: 18px;
+        cursor: pointer;
+      }
+      .dev-modes .menu-entry.selected {
+        color: var(--black);
+      }
       .dev-menu-group {
         grid-column: 1 / -1;
         margin-top: 6px;

@@ -18,15 +18,17 @@ from app.dev_prop_stage import DevPropStage
 from app.level_prepare import level_of, prepare_level, scenery_with_runout
 from app.level_scene import LevelSceneOptions, build_level_scene
 from app.shot_viewer_scene import PlayfieldShip
+from config.dev_viewer import DEV_VIEW_MODES
 from config.dev_viewer import DEV_VIEWER_CONFIG as CFG
 from config.game_play import GAME_PLAY_CONFIG
 from core.entities.boss import Boss
 from core.entities.enemy import EnemySpawnArea
 from core.entities.muzzle import PlanePoint
 from core.math.rng import create_rng
-from core.systems.enemy_world import EnemyBlast
+from core.systems.enemy_world import EnemyBlast, EnemyWorld, EnemyWorldOptions
 from render.babylon import dispose_node, get_hierarchy_bounding_vectors
 from render.enemy_layer import EnemyLayer
+from render.game_view import EnemyShotFrame
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -152,6 +154,8 @@ class DevViewer:
         self._environment = environment
         self._index = 0
         self._toggle = False
+        # The view of the enemies and bosses (DEV-MENU-21): one of `DEV_VIEW_MODES`.
+        self._mode = DEV_VIEW_MODES[0]
         # The level the scene is built over, and the scene (None until built).
         self._host: str | None = None
         self._view: Any = None
@@ -173,6 +177,11 @@ class DevViewer:
         self._context: Any = None
         self._entered = False
         self._sim_left = 0.0
+        # The game view (DEV-MENU-21): the enemy world the enemy lives in, as in a level, the
+        # renderer of its shots, and whether the item shown was built for it.
+        self._world: EnemyWorld | None = None
+        self._shot_layer: Any = None
+        self._in_game = False
         # Enemies and bosses: the explosions' renderer, and the explosions to draw next.
         self._blasts: Any = None
         self._new_blasts: list[EnemyBlast] = []
@@ -206,10 +215,14 @@ class DevViewer:
             return clock_text(self._time) + " / " + clock_text(self._duration)
         return ""
 
-    def show(self, index: int, toggle: bool) -> None:
-        """Show the item the menu picked, and its toggle (close-up, or play for the levels)."""
+    def show(self, index: int, toggle: bool, mode: int = 0) -> None:
+        """Show the item the menu picked, its toggle (close-up, or play for the levels).
+
+        And its view, an index into `DEV_VIEW_MODES` (enemies and bosses, DEV-MENU-21).
+        """
         self._index = max(0, min(index, len(self._items) - 1))
         self._toggle = toggle
+        self._mode = DEV_VIEW_MODES[max(0, min(mode, len(DEV_VIEW_MODES) - 1))]
 
     def zoom(self, delta_y: float) -> None:
         """Zoom in or out as the wheel turns by `delta_y` pixels (D-208)."""
@@ -247,13 +260,19 @@ class DevViewer:
         if self.viewer == "levels":
             self._play(dt)
             return
-        if self._shown != self._index:
+        if self._shown != self._index or self._in_game != self._game_view():
             self._show_item(item)
+        # DEV-MENU-21: the wireframe view draws every material as a wireframe.
+        self._view.scene.forceWireframe = self._mode == "wireframe"
         self._animate(dt)
 
     def _groundless(self) -> bool:
         """Whether the viewer shows its models with no level's ground (enemies and bosses)."""
         return self.viewer in ("enemies", "bosses")
+
+    def _game_view(self) -> bool:
+        """Whether the enemy or boss is on the game's playfield, as in a level (DEV-MENU-21)."""
+        return self._groundless() and self._mode == "game"
 
     def _build_scene(self, level_id: str) -> None:
         level = level_of(self.game, level_id)
@@ -308,9 +327,14 @@ class DevViewer:
             self._layer.dispose()
         if self._blasts is not None:
             self._blasts.dispose()
+        if self._shot_layer is not None:
+            self._shot_layer.dispose()
         self._ship = None
         self._layer = None
         self._blasts = None
+        self._shot_layer = None
+        self._world = None
+        self._in_game = False
         self._new_blasts = []
         self._enemy = None
         self._shown = -1
@@ -337,35 +361,67 @@ class DevViewer:
             self._item = item
             self._middle_point = middle
             self._context = DevEnemyContext(self.game.playfield, create_rng(int(CFG.model_seed)))
-            self._enemy = self._spawn(item)
+            self._in_game = self._game_view()
+            if self._in_game:
+                self._start_world(item)
+            else:
+                self._enemy = self._spawn(item)
             models = self.game.view.enemies.models
             self._layer = view.playfield.run(lambda: EnemyLayer(view.scene, models, []))
             blasts = self.game.view.enemies.blasts
             self._blasts = view.playfield.run(lambda: blasts(view.scene))
+            if self._in_game:
+                shots = self.game.view.enemies.shots
+                self._shot_layer = view.playfield.run(lambda: shots(view.scene, None))
             self._sync(0)
         self._size = self._measure(view.playfield.root)
+
+    def _start_world(self, item: DevItem) -> None:
+        """Game view (DEV-MENU-21): a world as a level's, with the player at the bottom middle.
+
+        The enemy (or boss) comes in where its kind brings it in, and moves, fires and sends out
+        enemies as in a level; the player's ship is not drawn and nothing hits it.
+        """
+        screen = self.game.playfield
+        options = EnemyWorldOptions(
+            screen.width,
+            screen.height,
+            GAME_PLAY_CONFIG.cull_margin,
+            GAME_PLAY_CONFIG.max_enemy_age,
+        )
+        world = EnemyWorld(options, create_rng(int(CFG.model_seed)))
+        world.player_x = screen.width / 2
+        world.player_y = GAME_PLAY_CONFIG.ship_start_y
+        group = self._spawn_group(item)
+        world.add(*group)
+        self._world = world
+        self._enemy = group[0]
 
     def _spawn(self, item: DevItem) -> Any:
         """One enemy (or the boss) of `item`'s kind.
 
         Where its kind brings it in It then lives its own life (see `_live`).
         """
+        group = self._spawn_group(item)
+        self._entered = False
+        return group[0]
+
+    def _spawn_group(self, item: DevItem) -> list[Any]:
+        """Return the enemies (a boss alone) of `item`'s kind, where its kind brings them in."""
         screen = self.game.playfield
         area = EnemySpawnArea(screen.width, screen.height, create_rng(int(CFG.model_seed)))
-        enemy: Any = None
+        group: list[Any] = []
         if self.viewer == "bosses":
             for kind in self.game.boss_kinds:
                 if kind.id == item.id:
-                    enemy = kind.spawn(area)
+                    group = [kind.spawn(area)]
         else:
             for kind in self.game.enemy_kinds:
                 if kind.id == item.id:
-                    group = kind.spawn(area)
-                    enemy = group[0] if len(group) > 0 else None
-        if enemy is None:
+                    group = list(kind.spawn(area))
+        if len(group) == 0:
             raise ValueError('No enemy kind "' + item.id + '"')
-        self._entered = False
-        return enemy
+        return group
 
     def _show_prop(self, item: DevItem) -> None:
         """Props viewer (D-205): builds the stage once.
@@ -397,6 +453,9 @@ class DevViewer:
         if enemy is None or self._item is None:
             return
         step = 1 / GAME_PLAY_CONFIG.step_hz
+        if self._world is not None:
+            self._live_world(self._world, dt, step)
+            return
         self._sim_left += dt
         while self._sim_left >= step:
             self._sim_left -= step
@@ -405,6 +464,19 @@ class DevViewer:
             self._take_blasts(enemy)
         if self._ended(enemy):
             self._enemy = self._spawn(self._item)
+
+    def _live_world(self, world: EnemyWorld, dt: float, step: float) -> None:
+        """Game view: step the world as a level does; a new group comes once all are gone."""
+        self._sim_left += dt
+        while self._sim_left >= step:
+            self._sim_left -= step
+            world.step(step)
+            self._new_blasts.extend(world.blasts)
+        if len(world.enemies) == 0 and self._item is not None:
+            world.clear()
+            group = self._spawn_group(self._item)
+            world.add(*group)
+            self._enemy = group[0]
 
     def _take_blasts(self, enemy: Any) -> None:
         """Take the explosions of the last step, moved as the enemy is.
@@ -446,6 +518,9 @@ class DevViewer:
         enemy = self._enemy
         if layer is None or enemy is None:
             return
+        if self._world is not None:
+            self._sync_world(self._world, dt)
+            return
         x = enemy.x
         y = enemy.y
         enemy.x = self._middle_point[0]
@@ -458,17 +533,40 @@ class DevViewer:
             self._new_blasts = []
             self._view.playfield.run(lambda: self._blasts.sync(blasts, dt))
 
+    def _sync_world(self, world: EnemyWorld, dt: float) -> None:
+        """Game view: draw the enemies where they are, their shots and the explosions."""
+        layer = self._layer
+        enemies = [e for e in world.enemies if not e.gone]
+        shots = world.shots
+        frame = EnemyShotFrame(
+            [b for b in shots.bullets if b.alive],
+            [m for m in shots.missiles if m.alive],
+            shots.lasers,
+            dt,
+        )
+        blasts = self._new_blasts
+        self._new_blasts = []
+
+        def draw() -> None:
+            layer.sync(enemies, dt)
+            self._shot_layer.sync(frame)
+            self._blasts.sync(blasts, dt)
+
+        self._view.playfield.run(draw)
+
     def _animate(self, dt: float) -> None:
         """Step the model's animations and set the camera's field of view (the close-up's)."""
         if self._ship is not None:
             self._ship.update(dt)
         self._live(dt)
         self._sync(dt)
-        self._apply_turn()
+        if self._world is None:
+            self._apply_turn()
         self._view.update(self._at, dt)
         camera = self._view.stage.camera
         camera.fov = self._fov
-        if self._toggle:
+        # The game view is at game size: nothing to fill the screen with.
+        if self._toggle and self._world is None:
             camera.fov = close_up_fov(self._size, self._distance(), CFG.close_up_fill, self._fov)
         camera.fov = zoomed_fov(camera.fov, self._zoom)
 

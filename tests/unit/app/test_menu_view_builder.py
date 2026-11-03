@@ -299,3 +299,24 @@ def test_dev_menu_20_the_music_viewer_lists_the_tracks_under_their_groups() -> N
         ("boss-1", 2, True, False),
     ]
     assert "group" in view.hint
+
+
+def test_dev_menu_21_the_enemies_and_bosses_viewers_have_three_view_buttons() -> None:
+    for viewer in ("enemies", "bosses"):
+        view = build_menu_view(
+            state("dev-viewer", dev_viewer=viewer, dev_close_up=False, dev_mode=1), dev_ctx()
+        )
+        assert isinstance(view, DevViewerView)
+        assert view.modes is not None
+        assert [(c.label, c.index, c.selected) for c in view.modes] == [
+            ("Model", 0, False),
+            ("Wireframe", 1, True),
+            ("Game view", 2, False),
+        ]
+
+
+def test_dev_menu_21_the_other_viewers_have_no_view_buttons() -> None:
+    for viewer in ("ships", "props", "levels"):
+        view = build_menu_view(state("dev-viewer", dev_viewer=viewer), dev_ctx())
+        assert isinstance(view, DevViewerView)
+        assert view.modes is None

@@ -293,9 +293,12 @@ class DevViewerView(BackView):
         scrub: bool,
         menu: list[DevChoice] | None = None,
         columns: int = 3,
+        modes: list[DevChoice] | None = None,
     ) -> None:
         BackView.__init__(self, heading, hint, back, selected)
         self.item = item
+        # The view buttons (DEV-MENU-21), `index` the view each shows; None: no buttons.
+        self.modes = modes
         # How many buttons a row of the menu holds.
         self.columns = columns
         # E.g. `3 / 40`.

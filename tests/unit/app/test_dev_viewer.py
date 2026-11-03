@@ -598,3 +598,83 @@ def test_d199_a_game_without_an_explosion_renderer_shows_its_enemies_without_bla
     assert FakeBlasts.made == []
     v.dispose()
     assert v.scene is None
+
+
+class WorldEnemy(FakeEnemy):
+    """A `FakeEnemy` the game view's `EnemyWorld` can hold."""
+
+    def __init__(self, item_id: str, speed: float = 100.0) -> None:
+        super().__init__(item_id, True, speed)
+        self.max_health = 10.0
+        self.health = 10.0
+        self.shot_targets: list[Any] = []
+        self.points = 0.0
+        self.on_destroyed = None
+
+
+def _game_view(speed: float = 100.0) -> DevViewer:
+    v = viewer("enemies", [DevItem("gnat", "Gnat", "1-1")])
+    v.game.enemy_kinds = [
+        SimpleNamespace(id="gnat", spawn=lambda _area: [WorldEnemy("gnat", speed)])
+    ]
+    shots = SimpleNamespace(synced=[], disposed=False)
+    shots.sync = shots.synced.append
+    shots.dispose = lambda: setattr(shots, "disposed", True)
+    v.game.view.enemies.shots = lambda _scene, _style: shots
+    v.shots = shots  # type: ignore[attr-defined]
+    return v
+
+
+@pytest.mark.usefixtures("env")
+def test_dev_menu_21_the_game_view_draws_the_enemy_where_it_is_not_at_the_middle() -> None:
+    v = _game_view()
+    v.show(0, toggle=True, mode=2)
+    v.frame(0)
+    drawn = Drawn(v._layer)
+    v.frame(0.5)
+    enemy = v._enemy
+    assert drawn.at[-1][:2] == (240, pytest.approx(760 - 50))
+    assert enemy.y == pytest.approx(710)
+    assert v._world is not None
+    assert v.shots.synced
+    # Game size: the close-up does not narrow the view.
+    assert v._view.stage.camera.fov == pytest.approx(v._fov)
+
+
+@pytest.mark.usefixtures("env")
+def test_dev_menu_21_the_game_view_comes_back_to_the_model_view_and_a_wireframe() -> None:
+    v = _game_view()
+    v.show(0, toggle=False, mode=2)
+    v.frame(0)
+    v.show(0, toggle=False, mode=0)
+    v.frame(0.1)
+    assert v._world is None
+    assert v.shots.disposed
+    assert v._view.scene.forceWireframe is False
+    v.show(0, toggle=False, mode=1)
+    v.frame(0.1)
+    assert v._view.scene.forceWireframe is True
+    assert v._world is None
+    v.show(0, toggle=False, mode=0)
+    v.frame(0.1)
+    assert v._view.scene.forceWireframe is False
+
+
+@pytest.mark.usefixtures("env")
+def test_dev_menu_21_the_game_view_brings_a_new_enemy_once_the_world_is_empty() -> None:
+    v = _game_view(speed=1000.0)
+    v.show(0, toggle=False, mode=2)
+    v.frame(0)
+    first = v._enemy
+    for _ in range(60):
+        v.frame(0.1)
+    assert v._enemy is not first
+    assert len(v._world.enemies) >= 1
+
+
+@pytest.mark.usefixtures("env")
+def test_dev_menu_21_the_ships_have_no_views() -> None:
+    v = viewer("ships", [DevItem("alpha", "Alpha", "1-1")])
+    v.show(0, toggle=True, mode=2)
+    v.frame(0)
+    assert v._world is None

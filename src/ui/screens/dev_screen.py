@@ -59,6 +59,19 @@ def _menu(doc: Any, entries: list[DevChoice], handlers: ScreenHandlers, columns:
     return menu
 
 
+def _modes(doc: Any, modes: list[DevChoice], handlers: ScreenHandlers) -> Any:
+    """Return the row of view buttons (DEV-MENU-21): model, wireframe, game view.
+
+    A tap on a button reaches `on_tap` as `-1 - index`, the way the flow tells it from an item.
+    """
+    row = element(doc, "div", "dev-modes")
+    for choice in modes:
+        button = entry(doc, "dev-mode", -1 - choice.index, choice.selected, handlers.on_tap)
+        button.textContent = choice.label
+        row.append(button)
+    return row
+
+
 def _press_listener(handlers: ScreenHandlers, index: int) -> Any:
     """Return a pointer-down listener on an audio button: it picks the item at once and holds it."""
 
@@ -109,12 +122,12 @@ def _release_on(root: Any, handlers: ScreenHandlers) -> None:
 def _drag_to_turn(root: Any, handlers: ScreenHandlers) -> None:
     """Send drags on the screen to `on_turn`, by screen pixels, to turn the model (DEV-MENU-10).
 
-    Drags on its Back button or its menu are left alone.
+    Drags on its Back button, its view buttons or its menu are left alone.
     """
     last: list[Any] = [None]
 
     def on_down(event: Any) -> None:
-        if event.target is not None and event.target.closest(".menu-back, .dev-menu"):
+        if event.target is not None and event.target.closest(".menu-back, .dev-menu, .dev-modes"):
             return
         last[0] = [event.clientX, event.clientY]
         root.setPointerCapture(event.pointerId)
@@ -167,6 +180,8 @@ def render_dev_viewer_screen(doc: Any, view: DevViewerView, handlers: ScreenHand
         element(doc, "h2", "dev-heading", view.heading),
         caption,
     )
+    if view.modes is not None:
+        root.append(_modes(doc, view.modes, handlers))
     if view.menu is not None:
         root.append(_menu(doc, view.menu, handlers, view.columns))
     root.append(element(doc, "div", "menu-hint dev-hint", view.hint))

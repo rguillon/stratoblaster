@@ -11,6 +11,9 @@ from config.dev_viewer import (
     DEFAULT_DEV_MENU_COLUMNS,
     DEV_AUDIO_VIEWERS,
     DEV_MENU_COLUMNS,
+    DEV_MODE_LABELS,
+    DEV_MODE_VIEWERS,
+    DEV_VIEW_MODES,
     DEV_VIEWER_CONFIG,
     DEV_VIEWERS,
 )
@@ -247,8 +250,14 @@ def _dev_view(state: MenuState, ctx: MenuViewContext) -> Any:
         place = str(index - starts[g] + 1) + " / " + str(end - starts[g])
         position = groups[index] + " · " + place
     columns = DEV_MENU_COLUMNS.get(viewer, DEFAULT_DEV_MENU_COLUMNS)
+    modes = None
+    if viewer in DEV_MODE_VIEWERS:
+        modes = [
+            DevChoice(DEV_MODE_LABELS[mode], i, i == state.dev_mode)
+            for i, mode in enumerate(DEV_VIEW_MODES)
+        ]
     return DevViewerView(
-        texts.labels[viewer], hint, back, index, item, position, scrub, menu, columns
+        texts.labels[viewer], hint, back, index, item, position, scrub, menu, columns, modes
     )
 
 

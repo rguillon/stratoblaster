@@ -754,3 +754,21 @@
   the BOSS-55 "heat goes up" criterion is gone; a rage whose weapons are all destroyed is silent.
   The per-boss specs' angry sections and measured fight times need a new look.
 - **Status:** Proposed
+
+### D-257 — View buttons in the enemies and bosses viewers: model, wireframe, game view
+
+- **Date:** 2026-11-03
+- **Requirements:** DEV-MENU-21.
+- **Context:** the enemies and bosses viewers only showed the model pinned at the middle, dropping
+  what it fires; the reviewer asked for buttons to switch to a wireframe view and to a view where
+  its movements and actions can be seen.
+- **Decision:** `DEV_VIEW_MODES` (model, wireframe, game view) with a button row over the viewer's
+  menu. Wireframe sets the scene's `forceWireframe`. The game view runs a real `EnemyWorld` (the
+  player at the bottom middle) and draws its enemies, shots and blasts with the game's renderers,
+  at game size. A tap on a view button is the menu index `-1 - view`, so the pointer path and the
+  flow need no new command type; the dev screen's drag-to-turn leaves the buttons alone.
+- **Alternatives considered:** a new menu command type for view taps (more plumbing for one
+  button row); Enter cycling the views (no buttons, as asked).
+- **Consequences:** the game view does not draw the player's ship nor test hits on it; hit circles
+  are not drawn in the wireframe.
+- **Status:** Proposed
