@@ -157,6 +157,7 @@ class Env:
         )
         monkeypatch.setattr(dev_viewer, "get_hierarchy_bounding_vectors", lambda _root: bounds)
         monkeypatch.setattr(dev_viewer, "DevPropStage", FakePropStage)
+        monkeypatch.setattr(dev_viewer, "vector3", lambda x, y, z: SimpleNamespace(x=x, y=y, z=z))
         FakePropStage.made = []
 
     def _build_groundless(self, engine: Any, game: Any, _level: Any, options: Any) -> FakeView:
@@ -681,10 +682,36 @@ def test_dev_menu_21_the_ships_have_no_views() -> None:
 
 
 @pytest.mark.usefixtures("env")
+def test_dev_menu_21_the_game_view_keeps_the_enemy_in_the_middle_of_the_screen() -> None:
+    v = _game_view()
+    v.show(0, toggle=False, mode=2)
+    v.frame(0)
+    v.frame(0.5)
+    enemy = v._enemy
+    dx = enemy.x - v._middle_point[0]
+    dy = enemy.y - v._middle_point[1]
+    assert dy != 0
+    camera = v._view.stage.camera
+    framing = v._view.stage.framing
+    # The camera, then the point it looks at, moved by the enemy's offset from the middle.
+    assert camera.position.x == pytest.approx(dx)
+    assert camera.position.z == pytest.approx(framing.back + dy)
+    assert camera.target.z == pytest.approx(camera.position.z + framing.direction[1])
+    # Back in the model view: the camera is where it was.
+    v.show(0, toggle=False, mode=0)
+    v.frame(0.1)
+    assert camera.position.x == 0
+    assert camera.position.z == pytest.approx(framing.back)
+
+
+@pytest.mark.usefixtures("env")
 def test_dev_menu_21_the_game_view_shots_leave_from_where_the_camera_sees_the_barrels() -> None:
     v = _game_view()
     v.show(0, toggle=False, mode=2)
     v.frame(0)
+    v.frame(0.1)
     eye = v._world.options.eye
     framing = v._view.stage.framing
-    assert (eye.x, eye.y, eye.height) == (240, framing.back, framing.height)
+    # The eye moves with the camera that follows the enemy.
+    assert (eye.x, eye.y) == (240 + v._shift[0], framing.back + v._shift[1])
+    assert eye.height == framing.height

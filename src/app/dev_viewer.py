@@ -26,7 +26,7 @@ from core.entities.enemy import EnemySpawnArea
 from core.entities.muzzle import PlanePoint
 from core.math.rng import create_rng
 from core.systems.enemy_world import EnemyBlast, EnemyWorld, EnemyWorldOptions
-from render.babylon import dispose_node, get_hierarchy_bounding_vectors
+from render.babylon import dispose_node, get_hierarchy_bounding_vectors, vector3
 from render.enemy_layer import EnemyLayer
 from render.game_view import EnemyShotFrame
 from render.scenery.playfield_framing import playfield_eye
@@ -183,6 +183,9 @@ class DevViewer:
         self._world: EnemyWorld | None = None
         self._shot_layer: Any = None
         self._in_game = False
+        # Game view: how far the camera is moved off the middle of the playfield to keep the enemy
+        # in the middle of the screen (playfield X and Y; zero in the other views).
+        self._shift = [0.0, 0.0]
         # Enemies and bosses: the explosions' renderer, and the explosions to draw next.
         self._blasts: Any = None
         self._new_blasts: list[EnemyBlast] = []
@@ -318,7 +321,7 @@ class DevViewer:
         direction = stage.framing.direction
         altitude = self.game.view.scenery.camera.flightAltitude
         t = (altitude - camera.y) / direction[0] if direction[0] != 0 else 0
-        return [self.game.playfield.width / 2, camera.z + t * direction[1]]
+        return [self.game.playfield.width / 2, camera.z - self._shift[1] + t * direction[1]]
 
     def _drop_item(self) -> None:
         self._at = 0.0
@@ -567,11 +570,38 @@ class DevViewer:
             self._apply_turn()
         self._view.update(self._at, dt)
         camera = self._view.stage.camera
+        self._follow(camera)
         camera.fov = self._fov
         # The game view is at game size: nothing to fill the screen with.
         if self._toggle and self._world is None:
             camera.fov = close_up_fov(self._size, self._distance(), CFG.close_up_fill, self._fov)
         camera.fov = zoomed_fov(camera.fov, self._zoom)
+
+    def _follow(self, camera: Any) -> None:
+        """Game view: move the camera so the enemy (the boss) is in the middle of the screen.
+
+        The camera was just put where it looks at the middle of the playfield. The eye the enemies'
+        shots are projected from moves with it (GFX-SHOT-09). Nowhere else is the camera moved.
+        """
+        world = self._world
+        enemy = self._enemy
+        if world is None or enemy is None:
+            self._shift = [0.0, 0.0]
+            return
+        dx = enemy.x - self._middle_point[0]
+        dy = enemy.y - self._middle_point[1]
+        self._shift = [dx, dy]
+        camera.position.x += dx
+        camera.position.z += dy
+        # Looking the way the stage's camera does, from where it is now.
+        ahead = self._view.stage.framing.direction
+        position = camera.position
+        camera.setTarget(vector3(position.x, position.y + ahead[0], position.z + ahead[1]))
+        screen = self.game.playfield
+        eye = playfield_eye(screen, self._view.stage.framing)
+        eye.x += dx
+        eye.y += dy
+        world.options.eye = eye
 
     def _apply_turn(self) -> None:
         """Turn the model as dragged.

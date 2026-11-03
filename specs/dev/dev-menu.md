@@ -347,7 +347,8 @@ or boss is shown (the picked one is filled):
 - **Model**: as DEV-MENU-13 and DEV-MENU-14 describe it: pinned at the middle of the view, nothing
   it fires kept or shown, close-up or game size on Enter;
 - **Wireframe**: the same, every material drawn as a wireframe;
-- **Game view**: on the game's playfield as in a level, at game size (Enter's close-up and the drag
+- **Game view**: on the game's playfield as in a level, at game size, the camera following the enemy
+  (or boss) so it stays in the middle of the screen as it moves (Enter's close-up and the drag
   do not apply; the wheel still zooms): the enemy (or boss) comes in where its kind brings it in
   and moves where its moves take it, in a world as a level's with the player at the bottom middle
   (nothing hits the player, whose ship is not drawn), whose shots leave from where the camera sees
@@ -364,8 +365,8 @@ index `-1 - view` (the items' indices being 0 or more).
   `Model` picked (unit tests, e2e).
 - Given `Wireframe` picked, then the scene draws every material as a wireframe; given another view,
   then it does not (unit test).
-- Given `Game view` picked, then the enemy is drawn where it is, not at the middle, its shots are
-  drawn, and a new enemy comes in once the world has none (unit tests).
+- Given `Game view` picked, then the enemy is drawn where it is on the playfield, the camera
+  keeping it in the middle of the screen, its shots are drawn, and a new enemy comes in once the world has none (unit tests).
 - Given the ships, props or levels viewer, then it has no view buttons (unit test).
 
 *Sources: reviewer request 2026-11-03.*
