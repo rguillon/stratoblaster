@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Renaud Guillon
 """The Lancer (`specs/enemies/lancer.md`)."""
 
-from core.entities.enemy import Enemy
+from core.entities.enemy import Enemy, EnemyLaserSpec
 from core.entities.muzzle import RaisedPoint
 from game.config.enemies import ENEMY_CONFIG
 from game.sim.enemies.enemy_helpers import DOWN, leave_upward
@@ -83,7 +83,7 @@ class Lancer(Enemy):
         if self.y > self.stop_y:
             return
         self.state = "attack"
-        ctx.fire_laser(LancerBeam(self, CFG.muzzle), CFG.laser)
+        ctx.fire_laser(LancerBeam(self, CFG.muzzle), _laser_spec())
 
     def _attack(self, dt: float) -> None:
         warning_seconds = CFG.laser.warningSeconds
@@ -95,3 +95,9 @@ class Lancer(Enemy):
             return
         self.state = "exit"
         self.charge = 0
+
+
+def _laser_spec() -> EnemyLaserSpec:
+    """Return the Lancer's laser: a warning line first, then the beam (ENM-LANCER-06, ENM-19)."""
+    spec = CFG.laser
+    return EnemyLaserSpec(spec.warningSeconds, spec.firingSeconds, spec.width, spec.style)

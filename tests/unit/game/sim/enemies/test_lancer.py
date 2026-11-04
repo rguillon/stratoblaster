@@ -20,7 +20,11 @@ def test_enm_lancer_05_a_lancer_comes_in_stops_at_its_height_and_fires_its_laser
     assert len(ctx.lasers) == 1
     owner, spec = ctx.lasers[0]
     assert isinstance(owner, LancerBeam)
-    assert spec is CFG.laser
+    # A warning line first, then the beam (the core reads the snake-case fields).
+    assert spec.warning_seconds == CFG.laser.warningSeconds
+    assert spec.firing_seconds == CFG.laser.firingSeconds
+    assert spec.width == CFG.laser.width
+    assert spec.style == CFG.laser.style
 
 
 def test_enm_lancer_03_a_lancer_charges_during_its_warning_and_holds_still() -> None:
