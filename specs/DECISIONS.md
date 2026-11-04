@@ -905,3 +905,16 @@
   third of the playfield height (`side_height`, `SIDE_MIN_HEIGHT` in `enemy_helpers.py`): Hornets,
   Strafers and Wasp columns (the column is shifted up as a whole). Random side passes obey it too.
 - **Status:** Proposed
+
+### D-265 — Recorded explosions replace the vocal-sounding ones
+- **Date:** 2026-11-04
+- **Requirements:** AUD-SFX-01, AUD-SFX-08, AUD-SFX-09.
+- **Context:** owner: "replace all the explosion sounds, those sound mouth generated".
+- **Decision:** the six explosion variants, `boss-part-destroyed`, `boss-destroyed` and `life-lost` are
+  now CC0 recordings from OpenGameArt (Explosion, Chunky Explosion, Muffled Distant Explosion,
+  Explosion somewhere far, Battle at sea), processed as the others (mono, 44.1 kHz, trimmed to the
+  same lengths so the sound designs are unchanged, peak -1 dBFS). The Kenney `explosionCrunch` and
+  `lowFrequency_explosion` and compufox samples are gone.
+- **Consequences:** picked by name and duration, not listened to: the reviewer is to listen and swap
+  any that is still wrong (a candidate: 0.17 s `explosion_dull.flac`, too short as it is).
+- **Status:** Proposed
