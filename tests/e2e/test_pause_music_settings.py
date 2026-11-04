@@ -31,7 +31,7 @@ from playwright.sync_api import ConsoleMessage, Page, Request, Response, expect
 TOUCH_PHONE = {"has_touch": True, "viewport": {"width": 390, "height": 844}}
 AUDIO_FILE = re.compile(r"\.(ogg|mp3|wav|m4a|aac|flac|opus)$", re.IGNORECASE)
 # The sound effect samples (AUD-ENGINE-01): `sfx/<sound>.ogg`, or `.mp3` where Ogg is not played.
-SAMPLE_URL = re.compile(r"/sfx/[a-z-]+\.(ogg|mp3)$")
+SAMPLE_URL = re.compile(r"/sfx/[a-z0-9-]+\.(ogg|mp3)$")
 # How many sounds the game has (AUD-SFX-01).
 SAMPLE_COUNT = 29
 
