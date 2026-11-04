@@ -881,3 +881,18 @@
 - **Consequences:** 4 more samples, 35 more KB in `dist/`; the voice pool counts a variant sound at
   its longest recording; the picks are not chosen by ear (reviewer to listen).
 - **Status:** Proposed
+
+### D-263 — Back to the original 3:4 playfield, the HUD still outside it
+- **Date:** 2026-11-04
+- **Requirements:** GAME-SCREEN-01, GAME-SCREEN-04, GAME-SCREEN-06, GFX-CAM-01, GFX-CAM-05,
+  UI-HUD-01, GFX-ROAD-19, WLD-1-20, WLD-3-13, WLD-4-13, ENM-09.
+- **Context:** owner: "revert to the original screen ratio but keep the UI outside the playing
+  area". Asked how to lay out the side space, the owner chose D-252's 370 px columns.
+- **Decision:** undoes D-253: the playfield window is **540 × 720** (3:4) at x = 370 of the
+  1280 × 720 screen, the HUD columns 370 px (`--hud-side`). The extents that followed the wider
+  view go back as D-252 set them: `WAVE_DENSITY` 2 → 1.5, `offscreenX` 780 → 420 (Worlds 1–2) and
+  560 → 300 (Worlds 3–4), the bomb ring 900 → 820 px. The ship's reach is about x 120 … 420.
+- **Consequences:** the ship crosses its reach in about 1.3 s again. The wave counts recorded in
+  the level specs were not re-measured with the new density (open point). Column contents keep the
+  D-253 sizes.
+- **Status:** Proposed

@@ -27,7 +27,7 @@ from typing import Any
 # Enemy density (WLD-1-20): each beat brings this many times its groups, rounded. A beat of one
 # group gets its extra groups `DENSITY_GAP` seconds apart and, from the top, `DENSITY_SPREAD`
 # across the screen, so they do not come in on top of each other.
-WAVE_DENSITY = 2
+WAVE_DENSITY = 1.5
 DENSITY_GAP = 1.5
 DENSITY_SPREAD = 0.3
 

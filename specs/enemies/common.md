@@ -638,7 +638,7 @@ The waves of every level are composed from the kinds of the level (`src/game/con
 | `HITBOX` | 0.85 | hit radius = `HITBOX` × size × L / 2 (`radius()` in `enemies.py`) |
 | `ENEMY_SPAWN_MARGIN` | 60 px | `enemies.py`: how far outside the edge a group appears |
 | `ENTRY_INSET` | 0.08 | `src/game/sim/enemies/enemy_helpers.py`: entries kept off the corners |
-| `top_range` | the ship's reach at the bottom of its flight area (about 207–793 px in the 1000 × 720 playfield window, D-253; 120–420 in the 540 × 720 one, D-252; 107–373 px when measured on the 3:4 screen, D-048) | set by `LevelRun` |
+| `top_range` | the ship's reach at the bottom of its flight area (about 120–420 px in the 540 × 720 playfield window, D-252, D-263; 207–793 in the 1000 × 720 one, D-253; 107–373 px when measured on the 3:4 screen, D-048) | set by `LevelRun` |
 | `cull_margin` | 80 px | `src/config/game_play.py` `GAME_PLAY_CONFIG` |
 | `max_enemy_age` | 40 s | `GAME_PLAY_CONFIG` |
 | `bullet_radius` | 4 px | `bullet()` in `enemies.py` |
