@@ -65,23 +65,6 @@ def _entry_x(area: EnemySpawnArea, range_: tuple[float, float]) -> float:
     return pick_x(area.random, range_, area)
 
 
-def _mirror_for(area: EnemySpawnArea, start_x: float) -> bool:
-    """Whether to mirror a path that starts at `start_x` (a fraction of the width).
-
-    Towards the wave's entry when it has one, at random otherwise.
-    """
-    entry = area.entry
-    if entry is None:
-        return _coin(area)
-    if entry.side == "left":
-        at = 0.0
-    elif entry.side == "right":
-        at = 1.0
-    else:
-        at = entry.position
-    return abs(1 - start_x - at) < abs(start_x - at)
-
-
 def side_pass(area: EnemySpawnArea, height_fraction: float) -> tuple[bool, float]:
     """Return a side pass comes from the entry's side, at its height; at random otherwise.
 

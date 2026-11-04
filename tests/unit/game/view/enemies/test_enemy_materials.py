@@ -292,3 +292,12 @@ def test_enm_49_in_enemy_family_takes_the_tier_hues_when_given(monkeypatch: Any)
     geo.colors = [1, 0, 0, 1]
     em.in_enemy_family(geo, [135])
     assert hue_saturation(seen["c"][:3])[0] == pytest.approx(135, abs=1)
+
+
+@pytest.mark.usefixtures("babylon")
+def test_matte_material_has_no_specular_highlight_and_is_lit_as_the_hulls_are() -> None:
+    mat = em.matte_of("blades", Col(0.1, 0.1, 0.1), scene=object())
+    assert mat.metallic == 0
+    assert mat.roughness == 1
+    assert mat.directIntensity == READABILITY.hullLight.direct
+    assert mat.environmentIntensity == READABILITY.hullLight.environment

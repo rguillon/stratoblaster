@@ -5,7 +5,7 @@ from core.entities.enemy import EnemyKindDefinition
 from core.math.rng import random_in
 from game.config.enemies import ENEMY_SPAWN_MARGIN as MARGIN
 from game.config.enemies_veteran import VETERAN_CONFIG as C
-from game.sim.enemies.enemy_helpers import clamp_entry, coin, pick_x, top_bounds, top_x
+from game.sim.enemies.enemy_helpers import clamp_entry, pick_x, top_bounds, top_x
 from game.sim.enemies.mortar import Mortar
 from game.sim.enemies.phantom import Phantom
 from game.sim.enemies.wasp import Wasp
@@ -29,14 +29,6 @@ def _entry_x(area: EnemySpawnArea, range_: tuple[float, float]) -> float:
     if entry is not None and entry.side == "top":
         return top_x(area, clamp_entry(entry.position))
     return pick_x(area.random, range_, area)
-
-
-def _side_pass(area: EnemySpawnArea, height_fraction: float) -> tuple[bool, float]:
-    """Return a side pass comes from the entry's side, at its height; at random otherwise."""
-    entry = area.entry
-    if entry is not None and entry.side != "top":
-        return (entry.side == "left", clamp_entry(entry.position) * area.height)
-    return (coin(area.random), height_fraction * area.height)
 
 
 def _wasp_group(area: EnemySpawnArea) -> list[Enemy]:

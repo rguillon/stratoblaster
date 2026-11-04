@@ -458,3 +458,12 @@ def test_enm_49_a_model_with_no_tier_keeps_the_neon_s_own_body_tint(
     enemy_mesh.build_enemy_model("blob", "scene", neon, _hull_and_neon, "breath")
     tint = body_color(enemy_color(neon))
     assert "blob-hull:" + ",".join(str(c) for c in tint) in {m.name for m in scene.meshes}
+
+
+def test_enm_weaver_07_a_heading_wrapping_round_the_other_way_is_not_a_sharp_turn() -> None:
+    bank = {"gain": 0.5, "max": 0.3, "follow": 10}
+    turn: list[Any] = [None, 0.0]
+    enemy = SimpleNamespace(heading=-math.pi + 0.01)
+    enemy_mesh.bank_roll(turn, enemy, 0.1, bank)
+    enemy.heading = math.pi - 0.01
+    assert abs(enemy_mesh.bank_roll(turn, enemy, 0.1, bank)) == pytest.approx(0.1)

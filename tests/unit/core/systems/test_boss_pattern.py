@@ -523,3 +523,27 @@ def test_boss_29_rings_lasers_and_volleys_off_a_turret_never_wait() -> None:
     off = BossPattern([_volley(_aimed(), first=0.1)])
     off.step(ctx, 0.2, sources)
     assert len(ctx.bullets) == 5
+
+
+def test_boss_29_a_burst_under_way_holds_its_next_bullet_while_the_turret_swings_back() -> None:
+    ctx = _Ctx(player=(100, 0))
+    turret = _turret(90)
+    pattern = BossPattern([_volley(BossBurstShape(3, 0.1, BULLET), turret=True, first=0.1)])
+    sources = _sources({"core": _Src(turret=turret)})
+    pattern.turn_turrets(ctx, 1, sources)
+    pattern.step(ctx, 0.1, sources)
+    assert len(ctx.bullets) == 2
+    # The player moves to the other side: the last bullet waits, and the turret turns for the burst.
+    ctx.player_x, ctx.player_y = -100, 0
+    pattern.step(ctx, 0.2, sources)
+    assert len(ctx.bullets) == 2
+    pattern.turn_turrets(ctx, 2, sources)
+    pattern.step(ctx, 0.01, sources)
+    assert len(ctx.bullets) == 3
+
+
+def test_boss_29_a_turret_volley_from_a_piece_without_a_turret_never_waits() -> None:
+    ctx = _Ctx(player=(100, 0))
+    pattern = BossPattern([_volley(_aimed(), every=10, turret=True, first=0.1)])
+    pattern.step(ctx, 0.2, _sources({"core": _Src()}))
+    assert len(ctx.bullets) == 1
