@@ -216,31 +216,32 @@ level uses snow, falling ash, embers or an aurora. The levels' looks are in thei
 
 ### WLD-3-15 — Enemy roster · MUST
 
-World 3 uses the eleven basic enemy kinds and brings in the five veteran kinds, one more at each level;
-no elite kind comes in World 3 (see [enemies](../../enemies/common.md)):
+World 3 uses the five kinds of tier 3 and no other (ENM-50; see [enemies](../../enemies/common.md)):
+[Phantom](../../enemies/phantom.md) (diver), [Spinner](../../enemies/spinner.md) (shooter),
+[Prism](../../enemies/prism.md) (laser), [Mortar](../../enemies/mortar.md) (missile launcher) and
+[Broodmother](../../enemies/broodmother.md) (launches Phantoms). It starts with three kinds, adds the
+Mortar in 3-2 and the Broodmother in 3-3:
 
-| Level | Basic kinds | Veteran kinds |
-|-------|-------------|---------------|
-| 3-1 | Gnat, Hornet, Scout, Strafer, Weaver, Splitter | [Wasp](../../enemies/wasp.md) |
-| 3-2 | all eleven | Wasp, [Mortar](../../enemies/mortar.md) |
-| 3-3 | all eleven | Wasp, Mortar, [Minelayer](../../enemies/minelayer.md) |
-| 3-4 | all eleven | Wasp, Mortar, Minelayer, [Mantis](../../enemies/mantis.md) |
-| 3-5 | all eleven | all five, with the [Phantom](../../enemies/phantom.md) |
+| Level | Enemy kinds |
+|-------|-------------|
+| 3-1 | Phantom, Spinner, Prism |
+| 3-2 | Phantom, Spinner, Prism, Mortar |
+| 3-3 to 3-5 | all five |
 
 **Acceptance criteria**
 - Unit test: the kinds of each World 3 level's waves (plan and filler) are exactly those of its row.
-- Unit test: no World 3 level uses an elite kind.
+- Unit test: no World 3 level uses a kind of another tier.
 
-*Sources: P09-R07, P05-R24, D-080, D-090.*
+*Sources: P09-R07, P05-R24, D-080, D-090, ENM-50.*
 
 **Gap:** the unit tests check only that the kinds exist, not the table.
 
 ### WLD-3-16 — Wave plans · SHOULD
 
-Each World 3 level's waves are written as a wave plan, as in World 2: from 4 s to 292 s, a beat
+Each World 3 level's waves are composed from a wave plan, as in World 2: from 4 s to 292 s, a beat
 every gap seconds, the gap shrinking over the level, each beat the next phrase of the level's cycle
 (a kind, a number of groups, the seconds between groups, a side and a place on it, a spread), its
-groups growing over the level by the plan's growth. A filler of light kinds fills the lulls (its
+groups growing over the level by the plan's growth. A filler of the level's divers and shooters fills the lulls (its
 largest gap shrinking over the level), and nothing new comes in the quiet stretch before each boss
 (see [level flow](../../gameplay/level-flow.md)). The waves are deterministic. Each level's plan
 (lead kinds, gaps, growth) is in its file.
@@ -356,9 +357,9 @@ phrygian, minor or harmonic minor keys, at `music_tempo`. World 3's boss track i
 | water colour / flow | RGB 0.1, 0.13, 0.12; drift 0, 16 | WLD-3-10; `WATER`, `RIVER_FLOW`, `src/game/config/world_3/looks.py` (unused while World 3 has no water) |
 | enemy_bullet_speed_factor 3-1 → 3-5 | 1 / 1.05 / 1.1 / 1.2 / 1.25 | WLD-3-17; `WORLD_3_DIFFICULTY`, `src/game/config/world_3/difficulty.py` |
 | enemy_fire_rate_factor 3-1 → 3-5 | 1 / 1.05 / 1.1 / 1.2 / 1.25 | WLD-3-17; same |
-| enemies per minute 3-1 → 3-5 | 180.8 / 184.0 / 190.0 / 219.0 / 247.8 | WLD-3-17; last measured (D-090), seed 606, without shooting (2-3: 121.4, 2-5: 233.4, D-080) |
-| enemy HP per minute 3-1 → 3-5 | 4 384 / 5 494 / 6 452 / 7 744 / 8 952 | WLD-3-17; same (2-3: 3 666, 2-5: 7 360) |
-| peak_on_screen 3-1 → 3-5 | 37 / 38 / 45 / 50 / 53 | WLD-3-17; same (2-3: 36, 2-5: 51); the first target (13 … 19) was never met, the order is kept (D-080) |
+| enemies per minute 3-1 → 3-5 | 180.8 / 184.0 / 190.0 / 219.0 / 247.8 | WLD-3-17; last measured (D-090), seed 606, without shooting (2-3: 121.4, 2-5: 233.4, D-080); measured with the old eleven-kind roster, to be measured again (ENM-50) |
+| enemy HP per minute 3-1 → 3-5 | 4 384 / 5 494 / 6 452 / 7 744 / 8 952 | WLD-3-17; same (2-3: 3 666, 2-5: 7 360); measured with the old eleven-kind roster, to be measured again (ENM-50) |
+| peak_on_screen 3-1 → 3-5 | 37 / 38 / 45 / 50 / 53 | WLD-3-17; same (2-3: 36, 2-5: 51); the first target (13 … 19) was never met, the order is kept (D-080); measured with the old eleven-kind roster, to be measured again (ENM-50) |
 | boss full HP, mini 3-1 → 3-5 | 4 200 / 5 020 / 6 480 / 6 100 / 6 860 (core and first parts: 3 200 / 3 780 / 4 200 / 4 500 / 5 100) | WLD-3-20; `src/game/config/bosses/world_3/*.py`; World 2: 3 760 / 3 840 / 5 590 / 5 240 / 5 540 |
 | boss full HP, final 3-1 → 3-5 | 10 040 / 13 550 / 20 510 / 20 840 / 27 780 (core and first parts: 6 800 / 9 050 / 9 950 / 14 000 / 19 500) | WLD-3-20; World 2: 10 460 / 10 240 / 13 100 / 19 840 / 26 960 |
 | mini_fight_time 3-1 → 3-5 | 35–45 s → 50–60 s | WLD-3-20; last measured 41.6 / 44.4 / 47.3 / 51.4 / 54.7 s (phase 9, before D-221) |

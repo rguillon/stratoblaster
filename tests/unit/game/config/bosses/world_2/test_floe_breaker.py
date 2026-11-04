@@ -25,8 +25,6 @@ def test_mb_floe_breaker_13_boss_stats_are_in_the_range_the_sim_relies_on() -> N
     assert 0 < stats["coreRadius"] < stats["radius"]
 
 
-def test_mb_floe_breaker_11_boss_has_an_angry_pattern_and_its_stage_count() -> None:
-    """Its rage, and one stage pattern more than its parts (MB-FLOE-BREAKER-10)."""
-    assert isinstance(FLOE_BREAKER.rage, list)
-    assert FLOE_BREAKER.rage
+def test_mb_floe_breaker_11_boss_has_its_stage_count() -> None:
+    """One stage pattern more than its parts (MB-FLOE-BREAKER-10)."""
     assert len(FLOE_BREAKER.stages) == len(original_parts(FLOE_BREAKER)) + 1

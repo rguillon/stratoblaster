@@ -117,12 +117,17 @@ The pods' spirals go on in every stage while they stand. The core fires:
 
 #### MB-DUST-DEVIL-09 — Angry · MUST
 
-Its angry pattern is a **vortex** at heat 2 (a fast green spiral, purple bursts at the player).
+It is angry after its transformation, when the two orbs it revealed fire all out,
+for `boss_rage_seconds`, `boss_rage_rate` times as often, instead of its stage's
+pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it has no
+angry pattern of its own.
 
 **Acceptance criteria**
-- Given its design, then its rage is that pattern at that heat, fired from its core.
+- Given its transformation is over, then it is angry and fires only the two orbs it
+  revealed (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-063.*
+*Sources: D-063, D-256.*
 
 #### MB-DUST-DEVIL-10 — Transformation · MUST
 
@@ -165,7 +170,7 @@ All in `src/game/config/bosses/mini_bosses.py` (`_DUST_DEVIL`, `DUST_DEVIL`) unl
 | core stage 1 | aimed 3, 12° apart, every 2.6 s | |
 | core stage 2 | burst of 4, 0.14 s apart, every 2.4 s | |
 | core stage 3 | ring of 12 turning 15°, every 1.5 s | |
-| angry | vortex, heat 2 (36 bullets a second, 136 px/s), green and purple | |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation | 2 parts destroyed | default threshold |
 | shed region | back: two half-rings round the hub, 4.8..15.2 px out, mirrored, `shell`; cap 2–7.7 px | `armour_region` |
 | orbs | (∓12, 5), radius 8, health 500, pod 10.2 px; first 1.2 s / 2.0 s | |

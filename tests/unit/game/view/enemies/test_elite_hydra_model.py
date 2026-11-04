@@ -30,3 +30,14 @@ def test_enm_hydra_05_each_head_hangs_on_a_neck_joint_and_fires_from_its_mouth(
 def test_enm_hydra_04_body_has_two_reactors(monkeypatch: Any) -> None:
     capture = probe_builder(monkeypatch, module.build_hydra)
     assert len(drawings_of(capture)["body"]["reactors"]) == 2
+
+
+def test_enm_hydra_15_each_head_has_a_missile_tube_charge_light_at_its_eye(
+    monkeypatch: Any,
+) -> None:
+    capture = probe_builder(monkeypatch, module.build_hydra)
+    drawn = drawings_of(capture)
+    for head in ("head-left", "head-middle", "head-right"):
+        part = drawn["parts." + head]
+        assert len(part["muzzles"]) == 1
+        assert len(part["parts"].charge.geometry.positions) > 0

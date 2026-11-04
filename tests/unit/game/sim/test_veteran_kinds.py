@@ -9,18 +9,12 @@ from game.config.enemies_veteran import VETERAN_CONFIG
 from game.sim.veteran_kinds import VETERAN_KINDS
 
 
-def test_enm_01_the_five_veteran_kinds_are_listed_in_the_spec_order() -> None:
-    """The veteran tier (ENM-01) has five kinds.
+def test_enm_01_the_veteran_era_kinds_are_the_wasp_mortar_and_phantom() -> None:
+    """Their tiers (ENM-01): the Wasp in tier 2, the Phantom and the Mortar in tier 3.
 
-    ENM-WASP-12, ENM-MORTAR-11, ENM-MANTIS-14, ENM-PHANTOM-14, ENM-MINELAYER-11.
+    ENM-WASP-12, ENM-MORTAR-11, ENM-PHANTOM-14.
     """
-    assert [kind.id for kind in VETERAN_KINDS] == [
-        "wasp",
-        "mortar",
-        "mantis",
-        "phantom",
-        "minelayer",
-    ]
+    assert [kind.id for kind in VETERAN_KINDS] == ["wasp", "mortar", "phantom"]
 
 
 def test_enm_wasp_07_a_wasp_group_is_the_configured_number_of_wasps_side_by_side() -> None:

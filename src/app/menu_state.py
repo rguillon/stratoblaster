@@ -48,6 +48,7 @@ class MenuState:
         volumes: Volumes,
         dev_viewer: str | None = None,
         dev_close_up: bool = False,
+        dev_mode: int = 0,
     ) -> None:
         self.screen = screen
         # Index of the selected entry on the current screen.
@@ -82,6 +83,8 @@ class MenuState:
         self.dev_viewer = dev_viewer
         # The model viewers' close-up (or game size), the levels viewer's play (or stop).
         self.dev_close_up = dev_close_up
+        # The enemies and bosses viewers' view: an index into `DEV_VIEW_MODES` (DEV-MENU-21).
+        self.dev_mode = dev_mode
 
 
 class MenuFlowOptions:

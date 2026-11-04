@@ -9,10 +9,9 @@ A boss's design (`BossDesign` in the TS) is a record with: `id` (kind id and mod
 height), `sway` and `bob` (`amplitude` and `period`; once in place it sways left and right by up
 to `amplitude`, less when its parts would leave the ship's reach, BOSS-10, and bobs up and down),
 `spinRate` (radians a second its orbiting parts turn, optional), `stages` (one pattern per stage:
-`stages[k]` once `k` parts are destroyed, BOSS-20), `rage` (its angry pattern, optional, see
-`boss_rage.py`: a bullet hell it fires for `BOSS_TIMING.rageSeconds` after the pause that follows
-each destroyed part), `launches` (optional: enemies some parts launch in every stage while they
-stand, a hangar's Gnats, a bay's Hornets: `count` of `kind` every `every` seconds),
+`stages[k]` once `k` parts are destroyed, BOSS-20), `launches` (optional: enemies some parts
+launch in every stage while they stand, a hangar's and a bay's Hornets: `count` of `kind` every
+`every` seconds),
 `breakRings` (optional: a ring of bullets some parts burst into when destroyed, the Refinery
 Titan's tanks) and `guns` (the muzzles of the guns of its core and parts, by piece: a part id or
 `core`; where their shots leave from, phase 7 review; its model draws its barrels' tips there).
@@ -117,8 +116,17 @@ BOSS_TIMING = record({
     # review): about half as fast as the ship crosses its aim from 300 px away, so it can be
     # outrun.
     "laserTurnDeg": 20,
-    # Seconds a boss is angry after the pause that follows each destroyed part (BOSS-27).
-    "rageSeconds": 3,
+    # Seconds a boss is angry after each transformation (BOSS-27): only its newly revealed
+    # weapons fire, `rageRate` times as often (a missile rack `rageMissiles` times as many).
+    "rageSeconds": 8,
+    "rageRate": 4.5,
+    "rageMissiles": 3,
+    # Its first volley comes this long after it opens fire, each weapon `rageStagger` later than
+    # the one before.
+    "rageFirst": 0.15,
+    "rageStagger": 0.2,
+    # A laser fired this often keeps this many seconds between its beam's end and the next warning.
+    "rageLaserGap": 0.6,
     # Seconds a transformation lasts (its armour bursts off and its hidden weapons unfold,
     # BOSS-43): it neither fires nor takes damage meanwhile (BOSS-37).
     "transformSeconds": 2.0,
@@ -369,7 +377,4 @@ def with_own_lasers(design: Any) -> Any:
             for v in pattern
         ]
 
-    result = merge(design, {"stages": [own(p) for p in design.stages]})
-    if not _unset(design.rage):
-        result["rage"] = own(design.rage)
-    return result
+    return merge(design, {"stages": [own(p) for p in design.stages]})

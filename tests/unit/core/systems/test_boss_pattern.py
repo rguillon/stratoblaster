@@ -482,3 +482,68 @@ def test_boss_29_a_turret_for_a_launch_has_no_aim_of_its_own() -> None:
     pattern = BossPattern([_volley(BossLaunchShape(lambda _x, _y: []), turret=True, first=10)])
     pattern.turn_turrets(_Ctx(), 1, _sources({"core": _Src(turret=turret)}))
     assert turret.aim == pytest.approx(0)
+
+
+def test_boss_29_an_aimed_volley_waits_until_its_turret_points_at_the_player() -> None:
+    ctx = _Ctx(player=(100, 0))
+    turret = _turret(90)
+    pattern = BossPattern([_volley(_aimed(), every=10, turret=True, first=0.1)])
+    sources = _sources({"core": _Src(turret=turret)})
+    # Due, but the turret still points straight down: nothing fires.
+    pattern.step(ctx, 0.2, sources)
+    assert ctx.bullets == []
+    # It turns towards the player (a quarter turn at 90 deg/s) while the volley is held.
+    pattern.turn_turrets(ctx, 1, sources)
+    pattern.step(ctx, 0.01, sources)
+    assert len(ctx.bullets) == 1
+
+
+def test_boss_29_a_burst_waits_for_its_turret_between_its_bullets() -> None:
+    ctx = _Ctx(player=(100, 0))
+    turret = _turret(90)
+    pattern = BossPattern([_volley(BossBurstShape(2, 0.1, BULLET), turret=True, first=0.1)])
+    sources = _sources({"core": _Src(turret=turret)})
+    pattern.step(ctx, 0.2, sources)
+    assert ctx.bullets == []
+    pattern.turn_turrets(ctx, 1, sources)
+    pattern.step(ctx, 0.01, sources)
+    # Held bullets leave one at a time, `gap` apart, not all at once.
+    assert len(ctx.bullets) == 1
+    pattern.step(ctx, 0.1, sources)
+    assert len(ctx.bullets) == 2
+
+
+def test_boss_29_rings_lasers_and_volleys_off_a_turret_never_wait() -> None:
+    ctx = _Ctx(player=(100, 0))
+    turret = _turret(90)
+    sources = _sources({"core": _Src(turret=turret)})
+    ring = BossPattern([_volley(BossRingShape(4, 0, BULLET), turret=True, first=0.1)])
+    ring.step(ctx, 0.2, sources)
+    assert len(ctx.bullets) == 4
+    off = BossPattern([_volley(_aimed(), first=0.1)])
+    off.step(ctx, 0.2, sources)
+    assert len(ctx.bullets) == 5
+
+
+def test_boss_29_a_burst_under_way_holds_its_next_bullet_while_the_turret_swings_back() -> None:
+    ctx = _Ctx(player=(100, 0))
+    turret = _turret(90)
+    pattern = BossPattern([_volley(BossBurstShape(3, 0.1, BULLET), turret=True, first=0.1)])
+    sources = _sources({"core": _Src(turret=turret)})
+    pattern.turn_turrets(ctx, 1, sources)
+    pattern.step(ctx, 0.1, sources)
+    assert len(ctx.bullets) == 2
+    # The player moves to the other side: the last bullet waits, and the turret turns for the burst.
+    ctx.player_x, ctx.player_y = -100, 0
+    pattern.step(ctx, 0.2, sources)
+    assert len(ctx.bullets) == 2
+    pattern.turn_turrets(ctx, 2, sources)
+    pattern.step(ctx, 0.01, sources)
+    assert len(ctx.bullets) == 3
+
+
+def test_boss_29_a_turret_volley_from_a_piece_without_a_turret_never_waits() -> None:
+    ctx = _Ctx(player=(100, 0))
+    pattern = BossPattern([_volley(_aimed(), every=10, turret=True, first=0.1)])
+    pattern.step(ctx, 0.2, _sources({"core": _Src()}))
+    assert len(ctx.bullets) == 1

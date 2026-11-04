@@ -4,8 +4,8 @@
 
 The last and hardest level of World 2: night over the factory district, lit by the factories'
 windows, neon, streets and cars, from the factory district 2-4 ended on, through foundries, rail
-yards and heavy industry, to great works filling every block at the end. Paved to the end. Every
-basic kind comes in the heaviest mixes, Bulwarks and Carriers together. The Ice Queen waits at the
+yards and heavy industry, to great works filling every block at the end. Paved to the end. All five
+kinds of tier 2 come in the heaviest mixes, Hatcheries and Sweepers together. The Ice Queen waits at the
 middle and the Boreal Citadel at the end.
 
 ## Requirements
@@ -96,50 +96,48 @@ groups of the table above, WLD-2-13), the fullest level of World 2. It has World
 
 #### LVL-2-5-07 — Enemy kinds · MUST
 
-2-5 uses all eleven basic kinds, in the heaviest mixes: Bulwarks and Carriers together, in its
-beats and its fillers.
+2-5 uses the five kinds of tier 2, Wasp, Strafer, Sweeper, Harrier and Hatchery, in its beats and its fillers, and no other kind.
 
 **Acceptance criteria**
-- Given the 2-5 wave script, then it uses all eleven basic kinds and no other (unit test).
+- Given the 2-5 wave script, then it only uses Wasp, Strafer, Sweeper, Harrier and Hatchery, and it uses each of them (unit test).
 
-*Sources: P08-R08.*
+*Sources: P06-R07, ENM-50.*
 
 #### LVL-2-5-08 — Wave plan · MUST
 
 2-5's waves are composed from this plan (WLD-2-19; World 1's density and filler apply on top):
 
-Beats from 4 s to 292 s, one every 5 s at the start down to 3.6 s at the end, groups growing by 60 % over the level (68 beats, the last at 290.5 s). The phrases, in their cycle:
+Beats from 4 s to 292 s, one every 4.2 s at the start down to 3 s at the end, groups growing by 90 % over the level (81 beats, the last at 291.1 s). The phrases, in their cycle:
 
 | # | Kind | Groups | Between groups (s) | Side | Position | Spread |
 |---|------|--------|--------------------|------|----------|--------|
-| 1 | Bulwark | 1 | 0 | top | 0.35 | — |
-| 2 | Carrier | 1 | 0 | top | 0.65 | — |
-| 3 | Scout | 4 | 1 | top | 0.15 | 0.23 |
-| 4 | Rocketeer | 2 | 2 | top | 0.3 | 0.4 |
-| 5 | Lancer | 3 | 1.5 | top | 0.2 | 0.3 |
-| 6 | Spinner | 2 | 2.5 | top | 0.7 | -0.4 |
-| 7 | Bulwark | 2 | 3 | top | 0.3 | 0.4 |
-| 8 | Weaver | 4 | 1 | top | 0.2 | 0.2 |
-| 9 | Splitter | 3 | 1.5 | top | 0.2 | 0.3 |
-| 10 | Carrier | 1 | 0 | top | 0.4 | — |
-| 11 | Strafer | 3 | 1.5 | left | 0.8 | — |
-| 12 | Hornet | 5 | 0.6 | top | 0.1 | 0.2 |
-| 13 | Gnat | 3 | 1.5 | top | 0.2 | 0.3 |
+| 1 | Wasp | 2 | 1.6 | top | 0.4 | 0.3 |
+| 2 | Strafer | 2 | 1.5 | left | 0.8 | — |
+| 3 | Sweeper | 1 | 0 | top | 0.5 | — |
+| 4 | Wasp | 2 | 1.6 | top | 0.6 | -0.3 |
+| 5 | Harrier | 2 | 2 | top | 0.3 | 0.4 |
+| 6 | Strafer | 2 | 1.5 | right | 0.2 | — |
+| 7 | Wasp | 2 | 1.6 | top | 0.4 | 0.3 |
+| 8 | Hatchery | 1 | 0 | top | 0.5 | — |
+| 9 | Sweeper | 1 | 0 | top | 0.5 | — |
+| 10 | Strafer | 2 | 1.5 | left | 0.8 | — |
+| 11 | Harrier | 2 | 2 | top | 0.7 | -0.4 |
+
+No wave starts in the 10 s before each boss ([level-flow.md](../../gameplay/level-flow.md)).
 
 **Acceptance criteria**
 - Given the 2-5 plan, then it composes beats that name its kinds and sides in order of time (unit test).
 
-*Sources: P08-R08, D-067.*
+*Sources: P06-R07, D-067, ENM-50.*
 
 #### LVL-2-5-09 — Filler · MUST
 
-2-5's filler (WLD-1-21) brings Gnat, Weaver, Hornet, Scout, Splitter, Spinner, in turn, one group
-every `max_gap`, the tightest of World 2.
+2-5's filler (WLD-1-21) brings the level's divers and shooters, Wasp, Strafer, Wasp, Strafer, in turn, one group every `max_gap`.
 
 **Acceptance criteria**
-- Given the 2-5 filler, then its kinds are those six and its gap shrinks (unit test).
+- Given the 2-5 filler, then its kinds are the Wasp and the Strafer only and its gap shrinks (unit test).
 
-*Sources: D-051, D-067.*
+*Sources: D-051, ENM-50.*
 
 ### Difficulty
 
@@ -203,7 +201,7 @@ the ground that gets ahead of the level during the fights.
 | streets | rows 45–90, columns 50–110, links 0.6 | `STREETS` |
 | max_gap | 2.8 s → 1.6 s | `src/game/config/world_2/waves.py` `WORLD_2_FILLERS["2-5"]` |
 | bullet_speed_factor / fire_rate_factor | 1.15 / 1.15 | `src/game/config/world_2/difficulty.py` |
-| written | 68 beats; 130 waves and 566 groups after fill and density; 814 enemies, 37 400 HP (halves 14 900 / 22 500), Carrier launches not counted; 162.8 enemies and 7 480 HP a minute without them | measured from the configs; D-067, density 2 (D-249) |
+| written | 81 beats from the plan; waves, groups, enemies and HP after fill and density: to be measured again with the new kinds | `src/game/config/wave_plans.py` `level_plan(2, 5)`; density 2 (D-249) |
 | buildings | 33 934 (halves 16 196 / 17 738) | each level's seed, measured for this file |
 | mini boss / final boss | `ice-queen` / `boreal-citadel` | `src/game/config/world_2/bosses.py` |
 | runout | 80 s | same |

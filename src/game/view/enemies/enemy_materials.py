@@ -33,12 +33,13 @@ type Rgb = list[float]
 # __pragma__ ("noskip")
 
 
-def enemy_color(color: Rgb) -> Sequence[float]:
+def enemy_color(color: Rgb, hues: Sequence[float] | None = None) -> Sequence[float]:
     """`color` moved into the enemies' colour family (ENM-38, GFX-READ-06).
 
-    A boss's too (BOSS-50): to the nearest of its hues, bright yellow or bright green (D-231).
+    A boss's too (BOSS-50): to the nearest of its hues, bright yellow or bright green (D-231). An
+    enemy of a tier takes its tier's hue, `hues` (ENM-49).
     """
-    return snap_to_hues(color, READABILITY.enemyHues)
+    return snap_to_hues(color, hues if hues is not None else READABILITY.enemyHues)
 
 
 def body_color(color: Sequence[float]) -> Sequence[float]:
@@ -65,12 +66,15 @@ def _with_colors(geo: Any, colors: list[float]) -> Any:
     return None
 
 
-def in_enemy_family(geo: Any) -> Any:
-    """`geo` with its vertex colours moved into the enemies' colour family (ENM-38)."""
+def in_enemy_family(geo: Any, hues: Sequence[float] | None = None) -> Any:
+    """`geo` with its vertex colours moved into the enemies' colour family (ENM-38).
+
+    Into the `hues` of a tier when given (ENM-49).
+    """
     colors = list(geo.colors)
     i = 0
     while i + 3 < len(colors):
-        rgb = enemy_color([colors[i] or 0, colors[i + 1] or 0, colors[i + 2] or 0])
+        rgb = enemy_color([colors[i] or 0, colors[i + 1] or 0, colors[i + 2] or 0], hues)
         colors[i] = rgb[0]
         colors[i + 1] = rgb[1]
         colors[i + 2] = rgb[2]
@@ -174,6 +178,22 @@ def flesh_of(name: str, albedo: Any, scene: Any) -> Any:
     mat = metal(name, albedo, scene)
     mat.metallic = ENEMY_LOOK.flesh.metallic
     mat.roughness = ENEMY_LOOK.flesh.roughness
+    block_material_marks(scene, was)
+    return mat
+
+
+def matte_of(name: str, albedo: Any, scene: Any) -> Any:
+    """Return a matte dark material with no specular highlight, lit as the hulls are.
+
+    For parts that must not glint, such as a fan's blades.
+    """
+    was = block_material_marks(scene, True)
+    mat = new_pbr_material(name, scene)
+    mat.albedoColor = albedo
+    mat.metallic = 0
+    mat.roughness = 1
+    mat.directIntensity = READABILITY.hullLight.direct
+    mat.environmentIntensity = READABILITY.hullLight.environment
     block_material_marks(scene, was)
     return mat
 

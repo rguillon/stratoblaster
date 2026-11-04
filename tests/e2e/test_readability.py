@@ -51,7 +51,9 @@ def full_frame(page: Page) -> dict[str, Any]:
 # 90 s and 120 s the first shot probed flies over a lit tile of the garden town and reads at
 # 1.3 to 1.9, under the floor of 2; at 60 s it reads at 4.8).
 # 3-1 at 60 s likewise (at 40 s and 80 s the first shot probed reads at 1.8 and 1.3).
-LEVELS = [("1-2", 40), ("2-1", 40), ("3-1", 60), ("4-1", 60)]
+# 4-1 at 70 s since the enemies became the four tiers' (at 60 s only a Splitter, which never
+# shoots, was on screen with missiles; at 40, 50 and 80 s the shot probed read under the floor).
+LEVELS = [("1-2", 40), ("2-1", 40), ("3-1", 60), ("4-1", 70)]
 
 
 @pytest.mark.parametrize(("level_id", "time"), LEVELS)

@@ -21,9 +21,8 @@ from game.config.bosses.boss_kit import (
     twin,
     volley,
 )
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
-from game.config.record import concat, merge, record
+from game.config.record import merge, record
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -79,11 +78,6 @@ RY = VERDANT_PARTS.root[1]
 # (FB-VERDANT-CROWN-09), two root generators shield the core, which fires every kind of attack.
 _VERDANT_CROWN = record({
     "id": "verdant-crown",
-    # Angry after each destroyed part (phase 7 review, FB-VERDANT-CROWN-11): the hottest bullet
-    # hell so far.
-    "rage": concat(
-        rage.flower(9, "green", "magenta", 0.5), rage.spirals(9, "magenta", "purple", 0.5)
-    ),
     "stats": stats(
         record({
             "id": "verdant-crown",

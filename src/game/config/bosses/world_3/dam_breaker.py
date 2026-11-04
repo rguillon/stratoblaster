@@ -11,7 +11,6 @@ earlier stage. Health (FB-DAM-BREAKER-07) tuned for WLD-3-20.
 """
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
@@ -72,8 +71,6 @@ def waves(source: str, first: float) -> Any:
 
 _DAM_BREAKER = record({
     "id": "dam-breaker",
-    # Angry after each destroyed part (phase 7 review, D-063, FB-DAM-BREAKER-10).
-    "rage": rage.curtain(8, "green", "orange"),
     "stats": stats(
         record({
             "id": "dam-breaker",

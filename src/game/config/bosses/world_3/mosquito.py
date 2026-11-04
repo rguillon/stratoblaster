@@ -10,7 +10,6 @@ WLD-3-20.
 """
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import merge, record
 
@@ -71,8 +70,6 @@ POD_Y = MOSQUITO_WING.pod[1]
 # front of the core, so it can always be shot.
 _MOSQUITO = record({
     "id": "mosquito",
-    # Angry after each destroyed part (phase 7 review, D-063, MB-MOSQUITO-11).
-    "rage": rage.vortex(7.5, "magenta", "purple"),
     # Its core and parts, and its points (MB-MOSQUITO-13).
     "stats": stats(
         record({

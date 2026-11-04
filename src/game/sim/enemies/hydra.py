@@ -5,7 +5,7 @@ from core.entities.jointed_enemy import JointedEnemy
 from core.systems.enemy_motion import approach
 from core.systems.projectile_motion import heading_to
 from game.config.enemies_elite import ELITE_CONFIG
-from game.sim.enemies.enemy_helpers import DOWN, Cadence, on_playfield
+from game.sim.enemies.enemy_helpers import DOWN, Cadence, missile_spec, on_playfield
 from game.sim.joints import jointed_design
 
 # isort: split
@@ -22,10 +22,10 @@ class Hydra(JointedEnemy):
     """ENM-HYDRA-07: a broad hull with three long necks swaying out of step.
 
     Its necks are moving parts (ENM-HYDRA-08, ENM-27). It comes down to the upper third, stays 7 s,
-    then leaves downward. Its heads fire in turn, one every 0.5 s, each a bullet aimed at the player
-    from its eye (ENM-HYDRA-09); with every head gone it no longer fires, but its hull can still be
-    destroyed (ENM-HYDRA-10). Its necks and heads come from its config, as the engine's specs
-    (ENM-HYDRA-12).
+    then leaves downward. As tier 4's missile launcher its heads fire in turn, one every 0.8 s,
+    each a homing missile that can be shot down, from its eye (ENM-HYDRA-09, ENM-HYDRA-14); with
+    every head gone it no longer fires, but its hull can still be destroyed (ENM-HYDRA-10). Its
+    necks and heads come from its config, as the engine's specs (ENM-HYDRA-12).
     """
 
     def __init__(self, x: float, y: float, stop_y: float) -> None:
@@ -60,7 +60,7 @@ class Hydra(JointedEnemy):
         self.charge = self._heads.progress
 
     def _fire_next_head(self, ctx: EnemyContext) -> None:
-        """Fire a bullet at the player from the eye of the next living head in turn."""
+        """Launch a homing missile at the player from the eye of the next living head in turn."""
         heads = CFG.heads
         for k in range(len(heads)):
             index = (self._next + k) % len(heads)
@@ -71,5 +71,5 @@ class Hydra(JointedEnemy):
             self._next = index + 1
             point = ctx.seen(head.place(spec.muzzle))
             aim = heading_to(point.x, point.y, ctx.player_x, ctx.player_y)
-            ctx.fire_bullet(point.x, point.y, aim, CFG.bullet)
+            ctx.fire_missile(point.x, point.y, aim, missile_spec(CFG.missile))
             return

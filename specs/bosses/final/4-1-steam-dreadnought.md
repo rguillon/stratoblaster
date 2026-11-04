@@ -199,15 +199,18 @@ warning lines (see [shots](../../graphics/shots.md)).
 
 #### FB-STEAM-DREADNOUGHT-14 — Rage · MUST
 
-After the pause that follows each destroyed part, the Dreadnought is angry: it fires a flower (a
-dense, slowly turning ring and small aimed fans) at heat 10, in `red` and `orange`: about 100
-bullets a second at 200 px/s, World 4's coolest final boss rage.
+It is angry after each of its transformations, when the weapons that one revealed
+fire all out: the two gun batteries after the first, the two mortars and an orb after the second.
+For `boss_rage_seconds` it fires only those, `boss_rage_rate` times as often, instead of its
+stage's pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it
+has no angry pattern of its own.
 
 **Acceptance criteria**
-- Given a part is destroyed, when its pause is over, then the core fires the flower for the rage
-  time (unit: `test_boss_rage.py`, `test_steam_dreadnought.py`).
+- Given a transformation is over, then it is angry and fires only the weapons it revealed
+  (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-088, D-063.*
+*Sources: D-088, D-063, D-256.*
 
 #### FB-STEAM-DREADNOUGHT-15 — First transformation: the decks fan out · MUST
 
@@ -316,7 +319,7 @@ All in `src/game/config/bosses/world_4/steam_dreadnought.py` (`STEAM_DREADNOUGHT
 | rack | 2 missiles, 30°, every 6.5 s, first 3.5 s | `volley.missiles` |
 | bow laser | every 7 → 5 s, 1.5–1.6 s, 1 s warning, 12 px wide | core stages |
 | bullets | `red` 205, `orange` 195, `magenta` 210, `purple` 200, `blue` 200 px/s | radius 4 |
-| rage | flower, heat 10 (`red`, `orange`) | `rage.flower` |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformations | both turrets; then both stacks | `transformParts` |
 | decks (moving) | the sponson deck's shape (mirrored): from (20, -54) along the bow edge to (36, -40), (66, -32), (70, -20), (66, -8), (40, -2) and back along x 40 then x 20 to y 2; above -8; swing about up at (±20, -54), 0 → 25° out; deck 4.5–9 px | `moving_region("decks", …)`, `src/game/config/bosses/moving_regions.py`, `steam_dreadnought_armour.py` |
 | stern flanks | the stern deck's shape (mirrored): from (18, 17) out to (39.5, 17), along the edge to (39, 30), (32, 60), (20, 76) and back along the stern edge to (18, 76); `wing`; deck 4.5–9 px | `armour_region("flanks", …)` |

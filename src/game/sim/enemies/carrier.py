@@ -2,10 +2,9 @@
 """The Carrier (`specs/enemies/carrier.md`)."""
 
 from core.entities.enemy import Enemy
-from core.systems.enemy_motion import Path
 from game.config.enemies import ENEMY_CONFIG
 from game.sim.enemies.enemy_helpers import DOWN, Cadence, on_playfield
-from game.sim.enemies.gnat import Gnat
+from game.sim.enemies.hornet import Hornet, hornet_options
 
 # isort: split
 # __pragma__ ("skip")
@@ -15,14 +14,13 @@ from core.entities.enemy import EnemyContext
 
 
 CFG = ENEMY_CONFIG.carrier
-GROUP_DELAY = ENEMY_CONFIG.gnat.groupDelay
 
 
 class Carrier(Enemy):
     """ENM-CARRIER-05: a fat flying carrier.
 
-    It descends slowly and never shoots (ENM-CARRIER-06); every 3 s a Gnat comes out of each of its
-    side ports (two a side, ENM-CARRIER-07), flying out sideways and then down the screen
+    It descends slowly and never shoots (ENM-CARRIER-06); every 3 s a Hornet comes out of each of
+    its side ports (two a side, ENM-CARRIER-07); it pauses, turns to the player and dives
     (ENM-CARRIER-08). It stops launching in the lower part of the screen (ENM-CARRIER-09). Its
     `charge` is how close the next launch is (the ports glow).
     """
@@ -45,8 +43,7 @@ class Carrier(Enemy):
 
     def _launch(self, ctx: EnemyContext) -> None:
         for side in (-1, 1):
-            for i, port in enumerate(CFG.ports):
+            for port in CFG.ports:
                 x0 = self.x + side * port[0]
                 y0 = self.y + port[1]
-                controls = [[x0 + side * point[0], y0 + point[1]] for point in CFG.launchPath]
-                ctx.spawn(Gnat(Path(controls), i * GROUP_DELAY))
+                ctx.spawn(Hornet(x0, y0, hornet_options(ENEMY_CONFIG.hornet, None)))

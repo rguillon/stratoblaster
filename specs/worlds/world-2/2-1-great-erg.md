@@ -4,7 +4,7 @@
 
 The first level of World 2: a clear desert morning over the great erg, from an oasis edge across
 great dunes, caravan posts and a dune field to rocky desert and desert outposts, the first mines in
-the last 30 seconds. Open sand to the end, no sea. Gnats, Hornets, Scouts, Strafers and Weavers lead
+the last 30 seconds. Open sand to the end, no sea. Wasps, Strafers and Sweepers lead
 the waves. A breather after 1-5, about as hard as 1-3. The Floe Breaker waits at the middle and the
 Narwhal at the end.
 
@@ -94,44 +94,45 @@ industrial or heavy-industry group (WLD-2-09). It has World 1's roads (WLD-2-14)
 
 #### LVL-2-1-07 — Enemy kinds · MUST
 
-2-1's waves are led by Gnats, Hornets, Scouts, Strafers and Weavers over the dunes, and use no
-other kind, in its beats and its fillers.
+2-1 brings Wasp, Strafer and Sweeper (a diver, a shooter and a laser), in its beats and its fillers, and no other kind.
 
 **Acceptance criteria**
-- Given the 2-1 wave script, then it only uses these five kinds (unit test).
+- Given the 2-1 wave script, then it only uses Wasp, Strafer and Sweeper, and it uses each of them (unit test).
 
-*Sources: P08-R08.*
+*Sources: P06-R07, ENM-50.*
 
 #### LVL-2-1-08 — Wave plan · MUST
 
 2-1's waves are composed from this plan (WLD-2-19; World 1's density and filler apply on top):
 
-Beats from 4 s to 292 s, one every 6.5 s at the start down to 4.8 s at the end, groups growing by 60 % over the level (52 beats, the last at 291 s). The phrases, in their cycle:
+Beats from 4 s to 292 s, one every 5.8 s at the start down to 4.2 s at the end, groups growing by 70 % over the level (59 beats, the last at 291.6 s). The phrases, in their cycle:
 
 | # | Kind | Groups | Between groups (s) | Side | Position | Spread |
 |---|------|--------|--------------------|------|----------|--------|
-| 1 | Scout | 3 | 1.2 | top | 0.25 | 0.25 |
-| 2 | Weaver | 3 | 1.4 | top | 0.3 | 0.2 |
-| 3 | Strafer | 2 | 1.6 | left | 0.8 | — |
-| 4 | Hornet | 4 | 0.8 | top | 0.15 | 0.23 |
-| 5 | Gnat | 2 | 2 | top | 0.3 | 0.4 |
-| 6 | Scout | 4 | 1 | top | 0.2 | 0.2 |
-| 7 | Strafer | 2 | 1.6 | right | 0.78 | — |
-| 8 | Weaver | 3 | 1.2 | top | 0.6 | -0.2 |
+| 1 | Wasp | 2 | 1.6 | top | 0.4 | 0.3 |
+| 2 | Strafer | 2 | 1.5 | left | 0.8 | — |
+| 3 | Sweeper | 1 | 0 | top | 0.5 | — |
+| 4 | Wasp | 2 | 1.6 | top | 0.6 | -0.3 |
+| 5 | Strafer | 2 | 1.5 | right | 0.2 | — |
+| 6 | Wasp | 2 | 1.6 | top | 0.4 | 0.3 |
+| 7 | Sweeper | 1 | 0 | top | 0.5 | — |
+| 8 | Strafer | 2 | 1.5 | left | 0.8 | — |
+
+No wave starts in the 10 s before each boss ([level-flow.md](../../gameplay/level-flow.md)).
 
 **Acceptance criteria**
 - Given the 2-1 plan, then it composes beats that name its kinds and sides in order of time (unit test).
 
-*Sources: P08-R08, D-067.*
+*Sources: P06-R07, D-067, ENM-50.*
 
 #### LVL-2-1-09 — Filler · MUST
 
-2-1's filler (WLD-1-21) brings Hornet, Scout, Gnat, Weaver, in turn, one group every `max_gap`.
+2-1's filler (WLD-1-21) brings the level's divers and shooters, Wasp, Strafer, Wasp, Strafer, in turn, one group every `max_gap`.
 
 **Acceptance criteria**
-- Given the 2-1 filler, then its kinds are those four and its gap shrinks (unit test).
+- Given the 2-1 filler, then its kinds are the Wasp and the Strafer only and its gap shrinks (unit test).
 
-*Sources: D-051, D-067.*
+*Sources: D-051, ENM-50.*
 
 ### Difficulty
 
@@ -196,7 +197,7 @@ Narwhal's chase.
 | dune_field | crests 45 high every 240 units, at 70°, warp 0.6 | `dunes(45, 240, 70)` |
 | max_gap | 3.4 s → 2.3 s | `src/game/config/world_2/waves.py` `WORLD_2_FILLERS["2-1"]` |
 | bullet_speed_factor / fire_rate_factor | 0.9 / 0.9 | `src/game/config/world_2/difficulty.py` |
-| written | 52 beats; 98 waves and 462 groups after fill and density; 686 enemies, 14 780 HP (halves 6 160 / 8 620); 137.2 enemies and 2 956 HP a minute | measured from the configs; D-067, density 2 (D-249) |
+| written | 59 beats from the plan; waves, groups, enemies and HP after fill and density: to be measured again with the new kinds | `src/game/config/wave_plans.py` `level_plan(2, 1)`; density 2 (D-249) |
 | buildings | 1 384 (halves 525 / 859) | each level's seed, measured for this file |
 | mini boss / final boss | `floe-breaker` / `narwhal` | `src/game/config/world_2/bosses.py` `WORLD_2_BOSSES` |
 | runout | 160 s | same |

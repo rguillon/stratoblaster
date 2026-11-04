@@ -143,15 +143,17 @@ The core fires aimed bursts from the twin ember cannons under its nose, changing
 
 #### MB-EMBER-HERALD-10 — Rage · MUST
 
-After the pause that follows each destroyed part, the Herald is angry: it fires two spirals turning
-opposite ways from the core, crossing as they go, at heat 13.5, in `magenta` and `purple`: about 128
-bullets a second at 228 px/s, the hottest mini boss rage of the game.
+It is angry after its transformation, when the two ring emitters it revealed fire all out,
+for `boss_rage_seconds`, `boss_rage_rate` times as often, instead of its stage's
+pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it has no
+angry pattern of its own.
 
 **Acceptance criteria**
-- Given a part is destroyed, when its pause is over, then the core fires the spirals for the rage
-  time (unit: `test_boss_rage.py`, `test_ember_herald.py`).
+- Given its transformation is over, then it is angry and fires only the two ring emitters it
+  revealed (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-088, D-063.*
+*Sources: D-088, D-063, D-256.*
 
 #### MB-EMBER-HERALD-11 — Transformation: back plating bursts off · MUST
 
@@ -216,7 +218,7 @@ All in `src/game/config/bosses/world_4/ember_herald.py` (`EMBER_HERALD`) unless 
 | muzzles | nose cannons (±5, -57, 3), crown (0, 0, 24) | `EMBER_GUNS`, `EMBER_CROWN` |
 | lance spirals | rings of 3, every 0.85 s, turn 23°, first 0.4 / 0.68 / 0.96 s | stage volleys |
 | bullets | `magenta` 215, `purple` 190, `blue` 205 px/s | radius 4 |
-| rage | spirals, heat 13.5 (`magenta`, `purple`) | `rage.spirals` |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation | once, at 2 original parts destroyed | `src/game/sim/boss_build.py` `default_transforms` |
 | back region | the dome's footprint, not mirrored: y 6..56, x ±10.6 at y 6, ±12 at y 14..26, ±10.5 at y 40, ±6.5 at y 52, `shell`; dome 2.3–11 px over a 2.6 px deck | `armour_region("back", …)`; `src/game/view/bosses/world_4/ember_herald_armour.py` |
 | orbs | (±10, 37), radius 8, pod 14, 960 HP, `purple`, first 1.2 / 2.0 s | `hidden_weapon`; volleys in `src/game/config/bosses/weapon_kinds.py` |

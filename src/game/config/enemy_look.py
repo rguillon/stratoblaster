@@ -6,6 +6,7 @@ specs/graphics/shots.md and effects.md).
 Linear RGB, 0..1; sizes in logical pixels; durations in seconds.
 """
 
+from game.config.enemy_tiers import ENEMY_TIERS, all_kinds, tier_of
 from game.config.record import record
 
 # isort: split
@@ -115,31 +116,20 @@ ENEMY_LOOK = record({
         "flutter": {"hz": 6, "bigHz": 2, "bigSpan": 25, "angle": 0.16},
     },
     # Triangle budgets per tier (ENM-03, BOSS-53, PERF-33). The veteran and elite kinds
-    # restate theirs: ENM-WASP-06, ENM-MORTAR-06, ENM-MANTIS-07, ENM-PHANTOM-07,
-    # ENM-MINELAYER-06; ENM-HYDRA-06, ENM-ORBITER-06, ENM-SCISSOR-07, ENM-JUGGERNAUT-07,
+    # restate theirs: ENM-WASP-06, ENM-MORTAR-06, ENM-PHANTOM-07, ENM-HYDRA-06,
+    # ENM-SCISSOR-07, ENM-JUGGERNAUT-07,
     # ENM-HIVE-07.
     "budget": {
-        "basic": 400,
-        "veteran": 700,
-        "elite": 1200,
+        "tier1": 400,
+        "tier2": 600,
+        "tier3": 900,
+        "tier4": 1200,
         "miniBoss": 4000,
         "finalBoss": 10000,
     },
-    # Neon colours of each basic kind (its colour requirement in specs/enemies/<kind>.md),
-    # each moved to bright yellow or bright green where it is drawn (GFX-ART-05).
-    "neon": {
-        "gnat": [0.1, 0.95, 1],  # ENM-GNAT-03
-        "hornet": [1, 0.08, 0.1],  # ENM-HORNET-03
-        "scout": [0.05, 0.9, 1],  # ENM-SCOUT-04
-        "strafer": [1, 0.1, 0.85],  # ENM-STRAFER-04
-        "weaver": [0.2, 1, 0.3],  # ENM-WEAVER-03
-        "spinner": [1, 0.5, 0.05],  # ENM-SPINNER-03
-        "lancer": [1, 0.25, 0.35],  # ENM-LANCER-04
-        "rocketeer": [1, 0.12, 0.08],  # ENM-ROCKETEER-04
-        "bulwark": [0.15, 0.4, 1],  # ENM-BULWARK-04
-        "splitter": [0.65, 0.2, 1],  # ENM-SPLITTER-04
-        "carrier": [1, 0.7, 0.1],  # ENM-CARRIER-04
-    },
+    # Neon colour of each kind: its tier's (ENM-49, `ENEMY_TIERS`), the same for the five kinds
+    # of a tier; each is drawn in its tier's hue (GFX-ART-05).
+    "neon": record({kind: ENEMY_TIERS[str(tier_of(kind))].neon for kind in all_kinds()}),
     # Reactors (ENM-40; phase 5 review): a dark nozzle with a glowing core, and the player
     # ships' animated flame, in the enemy's neon colour (D-231; was the same light blue `color`
     # on every enemy). Sizes relative to the nozzle radius; the inner flame is `whiten` of the
@@ -239,6 +229,9 @@ ENEMY_LOOK = record({
         "tip": [1, 0.5, 0.04],
         "flame": glow([1, 0.95, 0.7], [1, 0.45, 0.1], [0.35, 0.12, 0]),
         "flameSize": [2.6, 6],
+        # The hit radius the model is drawn for (the Rocketeer's); a missile with a bigger one
+        # (the Mortar's, ENM-MORTAR-08) is drawn bigger in proportion.
+        "baseRadius": 5,
     },
     "laser": {
         # Colour of the lasers of a style (`EnemyLaserSpec.style`) that is not a boss's: the

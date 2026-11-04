@@ -5,7 +5,7 @@
 World 1 is the first world of the game: five levels of about four minutes, cut from one long journey
 that starts over the open sea, crosses green grassland and dries out into an American desert of red
 land, cracked dry lakes, mesas and buttes, with more and more buildings along the way. It teaches the
-eleven basic enemy kinds one level after the other, and each level is harder than the one before it.
+five kinds of enemy of tier 1 one level after the other, and each level is harder than the one before it.
 This file holds what the five levels share; each level's own content is in its level file. How a
 level runs (scroll, waves by distance, bosses, checkpoint, level end) is in
 [level-flow.md](../../gameplay/level-flow.md); the terrain, sky, road, building and prop engines are
@@ -275,51 +275,55 @@ level, and no World 1 level has weather. Each level's light is in its level file
 
 #### WLD-1-17 — A new kind or two in each level · MUST
 
-The eleven basic enemy kinds are brought in over the world, so each level teaches something new.
-Each level's waves, fillers included, use only these kinds:
+The five kinds of tier 1 (ENM-50) are brought in over the world, one role after the other, so each
+level teaches something new. Each level's waves, fillers included, use only these kinds:
 
 | Level | Enemy kinds |
 |-------|-------------|
-| 1-1 | Gnat, Hornet, Scout, Strafer |
-| 1-2 | the 1-1 kinds plus Weaver and Splitter |
-| 1-3 | the 1-2 kinds plus Carrier and Spinner |
-| 1-4 | the 1-3 kinds plus Lancer and Rocketeer |
-| 1-5 | every basic kind, Bulwark included |
+| 1-1 | Hornet (diver), Scout (shooter) |
+| 1-2 | the 1-1 kinds plus the Lancer (laser) |
+| 1-3 | the 1-2 kinds plus the Rocketeer (missile launcher) |
+| 1-4 | the 1-3 kinds plus the Carrier (launches Hornets) |
+| 1-5 | all five kinds |
 
 **Acceptance criteria**
 - Given each World 1 wave script, then it only uses the kinds listed for its level, and the kinds new in each level appear in it (unit test).
 
-*Sources: P06-R07.*
+*Sources: P06-R07, ENM-50.*
 
-#### WLD-1-18 — Basic kinds only · MUST
+#### WLD-1-18 — Tier 1 kinds only · MUST
 
-No veteran or elite enemy kind ever comes in World 1: they are for Worlds 3 and 4.
+No kind of tier 2, 3 or 4 ever comes in World 1: they are for Worlds 2 to 4.
 
 **Acceptance criteria**
-- Given the World 1 wave scripts, then they use none of the veteran or elite kinds (unit test).
+- Given the World 1 wave scripts, then they use none of the kinds of the other tiers (unit test).
 
-*Sources: P05-R24.*
+*Sources: P05-R24, ENM-50.*
 
-#### WLD-1-19 — Waves written as beats · MUST
+#### WLD-1-19 — Waves composed from a plan · MUST
 
-Each World 1 level's waves are a list of beats written in seconds from the start of the level, for
-readability: `[seconds, kind, groups, seconds between groups, side, position (0..1), spread]`. A
-beat's seconds are turned into a distance at the level's ground speed, as waves are triggered by
-distance ([level-flow.md](../../gameplay/level-flow.md)). A Gnat group is five Gnats; a group of any
-other kind is one enemy. The scripts are data, the same at every play.
+Each World 1 level's waves are composed from its plan (`src/game/config/wave_plans.py`, ENM-50): a
+cycle of phrases (`[kind, groups, seconds between groups, side, position (0..1), spread]`) over the
+level's kinds, one beat every `gap` seconds from `from` to `to`, the gap shrinking and the groups
+growing over the level, so the level fills up as it goes (World 2's WLD-2-19 gives the rule). The
+beats are `[seconds, kind, groups, seconds between groups, side, position (0..1), spread]`; a beat's
+seconds are turned into a distance at the level's ground speed, as waves are triggered by distance
+([level-flow.md](../../gameplay/level-flow.md)). A group of any kind is one enemy, except where a
+kind file says otherwise. The scripts are data, the same at every play. Each level's plan is in its
+level file.
 
 **Acceptance criteria**
 - Given a beat at `t` seconds, then its wave is at `t × ground speed` (unit test).
 - Given the same level played twice, then its waves come at the same distances with the same enemies (unit test).
 
-*Sources: P06-R07.*
+*Sources: P06-R07, ENM-50.*
 
 #### WLD-1-20 — Denser waves · MUST
 
 Every beat brings `wave_density` times its groups, rounded half up. When a beat of one group gets
 more, its extra groups come `density_gap` apart and, from the top, `density_spread` across the
 screen (from a side, a little lower each), so they do not come in on top of each other. The beats
-stay written as before (×1).
+of the plan stay as composed (×1).
 
 **Acceptance criteria**
 - Given a beat of 3 groups, then the script has 5 (rounded half up); given a beat of one group, then it gets 2 groups 1.5 s apart and a spread (unit test).
@@ -328,7 +332,7 @@ stay written as before (×1).
 
 #### WLD-1-21 — Filler groups in the lulls · MUST
 
-Light filler groups fill the lulls between the written beats, so the screen is seldom empty: after
+Light filler groups fill the lulls between the beats, so the screen is seldom empty: after
 each beat, one group from the top every `max_gap` seconds, the last at least half a gap before the
 next beat. The filler's kinds come in turn and its entry positions alternate (`fill_positions`).
 `max_gap` goes down from its start at the first beat to its end at the last, so each level fills up
@@ -345,7 +349,7 @@ are in its level file.
 
 From 1-1 to 1-5, these go up strictly, level after level: the number of enemies spawned in the
 level, their total HP, and the highest number of enemies on screen at the same time. They are
-measured by a play-through with a ship that never fires, counting every enemy added (the Gnats a
+measured by a play-through with a ship that never fires, counting every enemy added (the Hornets a
 Carrier launches included), and the most enemy centres over the playfield at once.
 
 **Acceptance criteria**
@@ -356,7 +360,7 @@ Carrier launches included), and the most enemy centres over the playfield at onc
 
 #### WLD-1-23 — Enemy bullet speed and fire rate · MUST
 
-Each level sets two factors on the basic enemy values: the enemy bullet speed and the enemy fire
+Each level sets two factors on the enemies' base values: the enemy bullet speed and the enemy fire
 rate (`bullet_speed_factor`, `fire_rate_factor`). Neither ever goes down from 1-1 to 1-5, and from
 level to level at least one goes up.
 
@@ -377,11 +381,11 @@ more total enemy HP than its first half.
 
 #### WLD-1-25 — 1-1 is easy, even for a kid · MUST
 
-1-1 is the gentlest level of the game: its filler groups are only Hornets and Gnats, which do not
+1-1 is the gentlest level of the game: its filler groups are only Hornets, which do not
 shoot, and its enemy factors the lowest (0.8). Its bosses stay beatable for a kid.
 
 **Acceptance criteria**
-- Given the 1-1 filler, then it brings only Hornets and Gnats (unit test).
+- Given the 1-1 filler, then it brings only Hornets (unit test).
 - Manual validation: 1-1 feels easy, even for a kid.
 
 *Sources: P06-R08, P07-R10, D-051.*
@@ -479,10 +483,8 @@ bosses share one boss track (`boss-1`), faster and tenser, in the same instrumen
 | density_gap / density_spread | 1.5 s / 0.3 (from a side: −0.15) | WLD-1-20; `DENSITY_GAP`, `DENSITY_SPREAD` |
 | fill_positions | 0.3, 0.7, 0.5, 0.2, 0.8 | WLD-1-21; `FILL_POSITIONS` |
 | max_gap 1-1 … 1-5 | 4.5 → 3 / 3.5 → 2.4 / 3.3 → 2.2 / 3.2 → 2 / 3 → 1.6 s | WLD-1-21; `WORLD_1_FILLERS` |
-| enemies written 1-1 … 1-5 | 278 / 342 / 374 / 414 / 448 (265 / 321 / 339 / 372 / 401 at density 1.5) | WLD-1-22; from the scripts, density and fillers in, Carrier launches and Splitter pods out |
-| enemy HP written 1-1 … 1-5 | 4 660 / 6 740 / 9 140 / 12 660 / 17 420 (halves 2 020 / 2 640 · 2 880 / 3 860 · 4 160 / 4 980 · 5 340 / 7 320 · 6 940 / 10 480; at density 1.5: 4 290 / 6 100 / 8 140 / 11 250 / 15 400) | WLD-1-22, WLD-1-24; same count |
-| measured with Carrier launches | 1-3: 104.8 enemies and 2 235 HP a minute; 1-5: 130.3 and 4 150 | D-067 (play-through without shooting, seed 606) |
-| peak_on_screen (last measured) | 16 / 20 / 24 / 30 / 32 | D-051, before the boss phase; the old tunables (6 … 15) and enemy counts (~60 … ~140) are superseded by the reviewer's denser waves (D-044, D-051) |
+| enemies and enemy HP written 1-1 … 1-5, halves, per minute with Carrier launches | to be measured again with the tier 1 kinds and the composed plans (the figures of the old eleven-kind scripts no longer hold) | WLD-1-22, WLD-1-24 |
+| peak_on_screen (last measured) | 16 / 20 / 24 / 30 / 32 | D-051, before the boss phase; the old tunables (6 … 15) and enemy counts (~60 … ~140) are superseded by the reviewer's denser waves (D-044, D-051); measured with the old eleven-kind roster, to be measured again (ENM-50) |
 | boss full health, mini 1-1 … 1-5 | 3 200 / 3 900 / 4 090 / 4 760 / 5 150 (core and original parts: 2 200 / 2 600 / 3 090 / 3 660 / 3 910) | WLD-1-27; `src/game/config/bosses/mini_bosses.py` |
 | boss full health, final 1-1 … 1-5 | 10 420 / 9 740 / 15 000 / 19 210 / 22 760 (core and original parts: 5 770 / 5 960 / 8 100 / 12 690 / 15 780) | WLD-1-27; `src/game/config/bosses/final_bosses.py` |
 | mini_fight_time 1-1 → 1-5 | 25–35 s → 40–50 s | WLD-1-29; measured 30 / 33 / 38 / 43 / 44 s (D-055, before the hidden weapons) |

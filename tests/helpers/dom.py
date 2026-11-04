@@ -25,6 +25,14 @@ class FakeStyle:
     def __setattr__(self, name: str, value: Any) -> None:
         self.__dict__["_values"][name] = value
 
+    def setProperty(self, name: str, value: Any) -> None:
+        """`style.setProperty`: a (custom) property by its CSS name."""
+        self.__dict__["_values"][name] = value
+
+    def getPropertyValue(self, name: str) -> Any:
+        """`style.getPropertyValue`: a (custom) property by its CSS name."""
+        return self.__dict__["_values"].get(name, "")
+
 
 class FakeClassList:
     """A `DOMTokenList` over the element's class names."""

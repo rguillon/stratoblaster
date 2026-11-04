@@ -2,10 +2,10 @@
 
 > **Area:** bosses · **Prefix:** `FB-GULL-MOTHERSHIP` · **Related:** [common](../common.md),
 > [1-2 Green Coast](../../worlds/world-1/1-2-green-coast.md), [Breakwater](../mini/1-2-breakwater.md),
-> [Gnat](../../enemies/gnat.md), [World 1](../../worlds/world-1/world.md)
+> [Hornet](../../enemies/hornet.md), [World 1](../../worlds/world-1/world.md)
 
 The Gull Mothership is the final boss of 1-2: a brood-mother of the sea, 5 L across (first designed
-as a wide carrier). Two brood pouches on its flanks launch groups of Gnats and two flak growths on
+as a wide carrier). Two brood pouches on its flanks launch groups of Hornets and two flak growths on
 its front fire at the player; all four shield its core, a huge laser eye at its nose. It sheds its
 flank armour for a pair of laser lances, then its wing armour for a pair of orbs. Shared rules are
 in [common](../common.md).
@@ -98,18 +98,18 @@ height, then sways and bobs. While it is fought the ground scrolls at ×0.6.
 #### FB-GULL-MOTHERSHIP-07 — Parts and core · MUST
 
 It has four parts as it comes in, all shielding its core: `hangar-left`, `hangar-right`,
-`flak-left` and `flak-right`. Each hangar launches a group of 3 Gnats, the two in turn, out to its
+`flak-left` and `flak-right`. Each hangar launches a group of 3 Hornets, the two in turn, out to its
 own side ([common](../common.md), BOSS-25); each flak turret fires aimed green pairs, in turn, and
 turns the way it fires. The laser eye fires the core's volleys, its lasers straight down.
 
 **Acceptance criteria**
-- Given its design, then each hangar launches 3 Gnats every 7 s while it stands.
+- Given its design, then each hangar launches 3 Hornets every 7 s while it stands.
 
 *Sources: P07-R01, P07-R05, D-055, D-058.*
 
 #### FB-GULL-MOTHERSHIP-08 — Stage patterns · MUST
 
-The Gnats and the flak pairs go on in every stage while their parts stand. The core fires a laser
+The Hornets and the flak pairs go on in every stage while their parts stand. The core fires a laser
 in every stage, more often from stage to stage, and:
 - stage 0: the laser alone;
 - stage 1: one orange bullet at the player;
@@ -125,12 +125,18 @@ in every stage, more often from stage to stage, and:
 
 #### FB-GULL-MOTHERSHIP-09 — Angry · MUST
 
-Its angry pattern is a **vortex** at heat 1.5 (a fast green spiral, orange bursts at the player).
+It is angry after each of its transformations, when the weapons that one revealed
+fire all out: the two lances after the first, the two orbs after the second.
+For `boss_rage_seconds` it fires only those, `boss_rage_rate` times as often, instead of its
+stage's pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it
+has no angry pattern of its own.
 
 **Acceptance criteria**
-- Given its design, then its rage is that pattern at that heat, fired from its core.
+- Given a transformation is over, then it is angry and fires only the weapons it revealed
+  (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-063.*
+*Sources: D-063, D-256.*
 
 #### FB-GULL-MOTHERSHIP-10 — First transformation: lances · MUST
 
@@ -168,7 +174,7 @@ orange beam round a white-hot core ([common](../common.md), BOSS-32).
 #### FB-GULL-MOTHERSHIP-13 — Death, drops and points · MUST
 
 Its parts drop a weapon bonus 60 % of the time, its hidden weapons 30 %, and its core always drops
-one ([common](../common.md), BOSS-57). The Gnats it launched count among the level's spawned
+one ([common](../common.md), BOSS-57). The Hornets it launched count among the level's spawned
 enemies. Destroying it ends 1-2 ([level flow](../../gameplay/level-flow.md)). It scores the points
 of Tunable values.
 
@@ -193,14 +199,14 @@ named.
 | ground speed | ×0.6 | |
 | stop height | 0.74 | |
 | sway / bob | 40 px over 9 s / 8 px over 4.5 s | |
-| Gnats | 3 a hangar every 7 s (first 2.5 s left, 6 s right) | `launches` |
+| Hornets | 3 a hangar every 7 s (first 2.5 s left, 6 s right) | `launches` |
 | flak pairs | aimed 2, 8° apart, green 180 px/s, every 1.9 s (first 0.9 s / 1.85 s) | |
 | core stage 0 | laser 1.5 s every 7 s (first 4 s) | |
 | core stage 1 | laser every 6 s; 1 aimed orange bullet, 175 px/s, every 2.6 s | |
 | core stage 2 | laser every 5.5 s; fan of 5, 14° apart, every 2.6 s | |
 | core stage 3 | laser every 5 s; ring of 8 every 2.2 s | |
 | core stage 4 | laser 1.6 s every 4.5 s; ring of 12 turning 9°, green, every 1.5 s | |
-| angry | vortex, heat 1.5 (32 bullets a second, 132 px/s), green and orange | |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformations | 2 and 3 parts destroyed | default thresholds |
 | flank region (shed) | the rear flank out to the rim: x 18..47 at y 6..30, then along the rim to (34, 48) and (18, 54.4), `wing`, mirrored; the plate 1.9-4 px, the bladders to 12.5 px | first |
 | wing region (shed) | the front flank out to the rim: x 22..47 at y 6..-20, then along the rim to (40, -32) and (33.1, -38), cut across at y -38, `wing`, mirrored; the plate 1.9-4 px | second |

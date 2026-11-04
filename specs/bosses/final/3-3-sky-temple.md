@@ -156,14 +156,18 @@ The core fires every bullet pattern, a new one at each stage, from its twin cann
 
 #### FB-SKY-TEMPLE-11 — Rage · MUST
 
-After the pause that follows each destroyed part, it fires a vortex inside a blooming flower, each at
-half the rate, at heat 7, in `orange` and `blue`.
+It is angry after each of its transformations, when the weapons that one revealed
+fire all out: the two gun batteries and a mortar after the first, the two heavy cannons after the second.
+For `boss_rage_seconds` it fires only those, `boss_rage_rate` times as often, instead of its
+stage's pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it
+has no angry pattern of its own.
 
 **Acceptance criteria**
-- Given a part is destroyed, when its pause is over, then the core fires the vortex and the flower
-  together (unit: rage patterns).
+- Given a transformation is over, then it is angry and fires only the weapons it revealed
+  (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-081, D-063.*
+*Sources: D-081, D-063, D-256.*
 
 #### FB-SKY-TEMPLE-12 — Transformations on named parts · MUST
 
@@ -251,7 +255,7 @@ boss's centre, X right, Y up the screen (its stair at -Y).
 | ground speed | ×0.3 | |
 | obelisk spirals | 4 × `orange` 200 px/s, every 1.6 s, turn ±23° / ±19° | |
 | beacon missiles | 2, 30° apart, every 5.5 s | |
-| rage | vortex + flower, heat 7, half share each | |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformations | on `transformParts`: back obelisks, then front ones | |
 | back wedges | the beast's corner, x 34..68, y 20..68 (mirrored), slide (±15, 15); `wing` frame; the tiers' corners 8.7–27 px | form 1 |
 | back terrace | x ±33, y 20..54, `shell`; the tiers' back steps 8.7–36 px | form 1 |

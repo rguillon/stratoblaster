@@ -25,8 +25,6 @@ def test_mb_ash_wraith_07_boss_stats_are_in_the_range_the_sim_relies_on() -> Non
     assert 0 < stats["coreRadius"] < stats["radius"]
 
 
-def test_mb_ash_wraith_11_boss_has_an_angry_pattern_and_its_stage_count() -> None:
-    """Its rage, and one stage pattern more than its parts (MB-ASH-WRAITH-10)."""
-    assert isinstance(ASH_WRAITH.rage, list)
-    assert ASH_WRAITH.rage
+def test_mb_ash_wraith_11_boss_has_its_stage_count() -> None:
+    """One stage pattern more than its parts (MB-ASH-WRAITH-10)."""
     assert len(ASH_WRAITH.stages) == len(original_parts(ASH_WRAITH)) + 1

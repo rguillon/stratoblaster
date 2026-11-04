@@ -22,9 +22,8 @@ from game.config.bosses.boss_kit import (
     twin,
     volley,
 )
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
-from game.config.record import concat, merge, record
+from game.config.record import merge, record
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -96,9 +95,6 @@ CY = ARK_PARTS.crucible[1]
 # the crucibles stand clear of the furnace, so every part can be shot.
 _FOUNDRY_ARK = record({
     "id": "foundry-ark",
-    # Angry after each destroyed part (phase 7 review, FB-FOUNDRY-ARK-15): heat 13, on from
-    # World 3.
-    "rage": concat(rage.curtain(13, "orange", "red", 0.5), rage.spirals(13, "red", "orange", 0.5)),
     # Its core and parts, their health, and its points (FB-FOUNDRY-ARK-09).
     "stats": stats(
         record({

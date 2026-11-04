@@ -105,15 +105,34 @@ def test_boss_22_no_attack_during_the_stage_pause(make_boss: Make, ctx: FakeCont
     assert boss.patterns == [0.5]
 
 
-def test_angry_pattern_follows_the_pause(make_boss: Make, ctx: FakeContext) -> None:
+def test_boss_27_a_lost_part_does_not_make_the_boss_angry(
+    make_boss: Make, ctx: FakeContext
+) -> None:
     rages: list[float] = []
     boss = make_boss(fighting=True, rage_seconds=2.0)
     boss.update_rage = lambda _ctx, dt: rages.append(dt)
     boss.parts[0].destroy()
     boss.update(ctx, 0.0)
-    assert boss.rage == pytest.approx(2.0)
+    assert boss.rage == 0
     boss.update(ctx, 1.5)  # The pause runs out first.
+    boss.update(ctx, 0.5)
     assert rages == []
+    assert boss.patterns == [0.5]
+
+
+def test_boss_27_the_angry_pattern_runs_after_a_transformation(
+    make_boss: Make, ctx: FakeContext
+) -> None:
+    rages: list[float] = []
+    parts = [_part("a"), _part("b"), _part("x1", 1, shields=True)]
+    boss = make_boss(
+        fighting=True, parts=parts, transforms=[1], transform_seconds=1.0, rage_seconds=2.0
+    )
+    boss.update_rage = lambda _ctx, dt: rages.append(dt)
+    _break(boss, ctx, "a")
+    boss.update(ctx, 1.0)  # The transformation ends: it is angry.
+    assert boss.rage == pytest.approx(2.0)
+    # No pause is left from the lost part: it fires at once.
     boss.update(ctx, 0.5)
     assert rages == [0.5]
     assert boss.rage == pytest.approx(1.5)

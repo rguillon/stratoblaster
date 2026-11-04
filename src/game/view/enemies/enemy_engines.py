@@ -80,7 +80,12 @@ def add_rotors(name: str, rotors: list[Reactor], material: Any, root: Any) -> No
 
 
 def add_reactors(
-    name: str, reactors: list[Reactor], parts: Any, root: Any, neon: Any = None
+    name: str,
+    reactors: list[Reactor],
+    parts: Any,
+    root: Any,
+    neon: Any = None,
+    hues: Any = None,
 ) -> None:
     """Nozzles in the hull, cores in the neon, and an animated flame per reactor (ENM-40).
 
@@ -90,7 +95,7 @@ def add_reactors(
     """
     look = ENEMY_LOOK.reactor
     flame = neon if neon != None else look.color
-    color = enemy_color(flame)
+    color = enemy_color(flame, hues)
     behind = -math.pi / 2
     for i, reactor in enumerate(reactors):
         x = reactor.at[0]

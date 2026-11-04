@@ -9,7 +9,6 @@ placeholders for the World 2 tuning (WLD-2-25, WLD-2-27).
 """
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import merge, record
 
@@ -55,8 +54,6 @@ NARWHAL_EMITTER = [[0, -10, 31]]
 # floes (x1.5).
 _NARWHAL = record({
     "id": "narwhal",
-    # Angry after each destroyed part (phase 7 review, FB-NARWHAL-12).
-    "rage": rage.vortex(3, "magenta", "blue"),
     "stats": stats({
         "id": "narwhal",
         "name": "Narwhal",

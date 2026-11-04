@@ -71,7 +71,7 @@ class DevSession:
         if self.viewer is None:
             items = self._catalog[name]
             self.viewer = DevViewer(self._engine, self._game, name, items, self._environment)
-        self.viewer.show(state.selection, state.dev_close_up)
+        self.viewer.show(state.selection, state.dev_close_up, state.dev_mode)
 
     def _sync_player(self, name: str, state: Any) -> None:
         """Open or change the audio viewer `name` (DEV-MENU-19, DEV-MENU-20)."""

@@ -25,8 +25,6 @@ def test_fb_caldera_throne_08_boss_stats_are_in_the_range_the_sim_relies_on() ->
     assert 0 < stats["coreRadius"] < stats["radius"]
 
 
-def test_fb_caldera_throne_13_boss_has_an_angry_pattern_and_its_stage_count() -> None:
-    """Its rage, and one stage pattern more than its parts (FB-CALDERA-THRONE-11)."""
-    assert isinstance(CALDERA_THRONE.rage, list)
-    assert CALDERA_THRONE.rage
+def test_fb_caldera_throne_13_boss_has_its_stage_count() -> None:
+    """One stage pattern more than its parts (FB-CALDERA-THRONE-11)."""
     assert len(CALDERA_THRONE.stages) == len(original_parts(CALDERA_THRONE)) + 1

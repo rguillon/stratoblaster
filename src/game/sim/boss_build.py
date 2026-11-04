@@ -125,12 +125,9 @@ def armed_pattern(design: ConfigRecord, volleys: list[ConfigRecord]) -> list[Bos
     return result
 
 
-def launch_volley(launch: ConfigRecord, side: int) -> BossVolley:
-    """Return the volley of a part's launch (BOSS-25: hangars, drone bays).
-
-    `side` is which side of the boss the part is on (-1 left, 1 right), for the Gnats' way out.
-    """
-    fire = launch_fire(launch.kind, launch.count, side)
+def launch_volley(launch: ConfigRecord) -> BossVolley:
+    """Return the volley of a part's launch (BOSS-25: hangars, drone bays)."""
+    fire = launch_fire(launch.count)
     return BossVolley(
         launch["from"],
         launch.every,
@@ -141,6 +138,50 @@ def launch_volley(launch: ConfigRecord, side: int) -> BossVolley:
         None,
         opt(launch.first),
     )
+
+
+def _angrier(volley: BossVolley, k: int) -> BossVolley:
+    """Return `volley` fired in anger (BOSS-27): `rageRate` times as often, missiles in more.
+
+    A laser keeps its warning, its beam and a gap between two (it cannot fire faster than that).
+    """
+    shape = volley.shape
+    every = volley.every / BOSS_TIMING.rageRate
+    if isinstance(shape, BossLaserShape):
+        laser = shape.laser
+        slowest = laser.warning_seconds + laser.firing_seconds + BOSS_TIMING.rageLaserGap
+        every = max(every, slowest)
+    if isinstance(shape, BossMissilesShape):
+        shape = BossMissilesShape(
+            shape.count * BOSS_TIMING.rageMissiles, shape.spacing_deg, shape.missile
+        )
+    # It opens fire at once, its weapons one after the other.
+    first = min(every, BOSS_TIMING.rageFirst + k * BOSS_TIMING.rageStagger)
+    return BossVolley(
+        volley.from_,
+        every,
+        shape,
+        volley.muzzles,
+        volley.turret,
+        volley.needs,
+        volley.after,
+        first,
+    )
+
+
+def angry_pattern(design: ConfigRecord, form: int) -> list[BossVolley]:
+    """Return what a boss of `design` fires when angry after transformation `form` (BOSS-27).
+
+    Only the hidden weapons that transformation revealed, whatever their kind (bullets, missiles,
+    lasers, a hangar's Hornets), each fired `rageRate` times as often (see `_angrier`).
+    """
+    revealed = [part.id for part in design.stats.parts if opt(part.reveal) == form]
+    stages = design.stages
+    volleys = [volley for volley in stages[len(stages) - 1] if volley["from"] in revealed]
+    armed = [armed_volley(design, volley) for volley in volleys]
+    launches = [launch for launch in opt(design.launches) or [] if launch["from"] in revealed]
+    armed.extend([launch_volley(launch) for launch in launches])
+    return [_angrier(volley, k) for k, volley in enumerate(armed)]
 
 
 def break_ring_ids(design: ConfigRecord) -> list[str]:
@@ -230,7 +271,8 @@ def boss_stats(design: ConfigRecord) -> BossStats:
     With the parts its design may name for each transformation (BOSS-36).
     """
     stats = design.stats
-    rage_seconds = BOSS_TIMING.rageSeconds if design.rage else opt(stats.rageSeconds)
+    transforms = default_transforms(design)
+    rage_seconds = BOSS_TIMING.rageSeconds if transforms is not None else opt(stats.rageSeconds)
     parts: list[BossPartSpec] = [_part_spec(part) for part in stats.parts]
     return BossStats(
         stats.model,
@@ -249,7 +291,7 @@ def boss_stats(design: ConfigRecord) -> BossStats:
         _maybe(stats.roll, _roll),
         _turret_specs(design),
         _maybe(stats.joints, joint_specs),
-        default_transforms(design),
+        transforms,
         BOSS_TIMING.transformSeconds,
         opt(design.transformParts),
         opt(design.turns),

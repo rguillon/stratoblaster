@@ -130,13 +130,18 @@ The lances' lasers and the silos' missiles go on in every stage while they stand
 
 #### FB-MESA-FORTRESS-09 — Angry · MUST
 
-Its angry pattern is a **curtain** at heat 2.5 (red fans sweeping across and back, an orange ring
-under them).
+It is angry after each of its transformations, when the weapons that one revealed
+fire all out: the two batteries after the first, the heavy cannon and two sweepers after the second.
+For `boss_rage_seconds` it fires only those, `boss_rage_rate` times as often, instead of its
+stage's pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it
+has no angry pattern of its own.
 
 **Acceptance criteria**
-- Given its design, then its rage is that pattern at that heat, fired from its core.
+- Given a transformation is over, then it is angry and fires only the weapons it revealed
+  (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-063.*
+*Sources: D-063, D-256.*
 
 #### FB-MESA-FORTRESS-10 — First transformation: batteries · MUST
 
@@ -207,7 +212,7 @@ All in `src/game/config/bosses/final_bosses.py` (`_MESA_FORTRESS`, `MESA_FORTRES
 | core stage 2 | fan of 5 every 2.6 s; 1 aimed orange bullet, 175 px/s, every 2.2 s | |
 | core stage 3 | fan of 7, 12° apart, every 2.2 s | |
 | core stage 4 | ring of 14 turning 12°, orange, every 1.5 s; fan of 5 red every 2.6 s | |
-| angry | curtain, heat 2.5 (40 bullets a second, 140 px/s), red and orange | |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation 1 | `lance-left` and `lance-right` destroyed | `transformParts` |
 | wing-front region (shed) | the skirt's front flank out to the rim: x 16..46 at y -3.5..-28, then along the rim to (38, -38), (22, -46) and (16, -46.5), `wing`, mirrored; the plate 5-7 px | |
 | batteries | (∓44, -26), radius 10, health 1 200, pod 14 px, red; first 1.2 s / 2.2 s | |

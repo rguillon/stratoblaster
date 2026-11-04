@@ -7,7 +7,7 @@ from game.config.enemies_elite import ELITE_CONFIG
 from game.config.enemy_look import ENEMY_LOOK
 from game.config.enemy_look_elite import ELITE_NEON
 from game.view.bosses.boss_limbs import boss_point
-from game.view.enemies.elite_shapes import QUARTER, H, ahead
+from game.view.enemies.elite_shapes import QUARTER, WHITE, H, ahead
 from game.view.enemies.enemy_shapes import SIDES
 from game.view.enemies.jointed_model import build_jointed_model
 from game.view.enemies.organic_parts import reactor_sac
@@ -53,8 +53,8 @@ NECK_Y = 1.5
 HEAD = SegmentedBody(-5, 6.5, 2, 4.8, -2.4, 3.2)
 # The right mandible, beside the skull (mirrored for the left).
 JAW = [[2.5, -1], [4.6, 1], [3.6, 6.5], [2.4, 3]]  # type: list[list[float]]
-# The armour cap on a head's brow (around its centre, along +Z).
-CAP = [[-2.6, -4], [2.6, -4], [2, 2], [-2, 2]]  # type: list[list[float]]
+# The missile tube on a head's brow (ENM-HYDRA-15): its radius and length, mouth at the eye.
+TUBE = [1.5, 6]  # type: list[float]
 
 
 def body(p: Any) -> None:
@@ -111,7 +111,10 @@ def neck(head: Any) -> Any:
 
 
 def head(spec: Any) -> Any:
-    """Return a head on its neck: a skull with bone mandibles, a metal brow and a glowing eye."""
+    """Return a head on its neck: a skull with bone mandibles and a missile tube on its brow.
+
+    The tube's mouth is the eye, where the missile leaves, with a charge light in it (ENM-HYDRA-15).
+    """
     at = boss_point(spec.head[0], spec.head[1], NECK_Y)
     aim = spec.aim
     eye = boss_point(spec.muzzle[0], spec.muzzle[1], spec.muzzle[2])
@@ -122,7 +125,11 @@ def head(spec: Any) -> Any:
         neon = p.neon
         muzzle = p.muzzle
         segmented_body(flesh, HEAD, F.teal, Placement(at, aim))
-        hull.bevel_slab(CAP, [2.6, 2.6, 3.4], [0, 0.5], H.panel, Placement(at, aim))
+        tube = Placement(ahead(eye, aim, -TUBE[1]), aim, QUARTER)
+        hull.cylinder(TUBE[0], TUBE[1], 5, H.dark, tube)
+        p.charge.cylinder(
+            TUBE[0] * 1.1, 0.6, 5, WHITE, Placement(ahead(eye, aim, -0.6), aim, QUARTER)
+        )
         for s in SIDES:
             jaw = [[s * pt[0], pt[1]] for pt in JAW]
             flesh.bevel_slab(jaw, [-1.2, 0, 1], [0.2, 0.4], F.bone, Placement(at, aim))

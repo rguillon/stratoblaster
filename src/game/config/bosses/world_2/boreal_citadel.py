@@ -9,7 +9,6 @@ always drops a bonus (FB-BOREAL-CITADEL-17).
 """
 
 from game.config.bosses.boss_kit import bullet, cells, mirror, part, stages, stats, twin, volley
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.bosses.moving_regions import moving_region, swing
 from game.config.record import concat, merge, record
@@ -71,11 +70,6 @@ dy = BOREAL_PARTS.dome[1]
 # batteries, and two heated dome generators shield the core, which fires every kind of attack.
 _BOREAL_CITADEL = record({
     "id": "boreal-citadel",
-    # Angry after each destroyed part (phase 7 review, FB-BOREAL-CITADEL-14): the hottest
-    # bullet hell so far.
-    "rage": concat(
-        rage.curtain(7, "green", "purple", 0.5), rage.spirals(7, "purple", "magenta", 0.5)
-    ),
     "stats": stats({
         "id": "boreal-citadel",
         "name": "Boreal Citadel",

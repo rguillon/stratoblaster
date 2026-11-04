@@ -176,15 +176,17 @@ destroyed):
 
 #### MB-MANGROVE-CROC-12 — Rage · MUST
 
-After the pause that follows each destroyed part, the Croc is angry: it fires a vortex (one
-fast-turning spiral and bursts at the player) at heat 4.5, in `green` and `orange`, the coolest
-rage of World 3.
+It is angry after its transformation, when the two gatlings it revealed fire all out,
+for `boss_rage_seconds`, `boss_rage_rate` times as often, instead of its stage's
+pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it has no
+angry pattern of its own.
 
 **Acceptance criteria**
-- Given a part is destroyed, when its pause is over, then the core fires the vortex for the rage
-  time (unit: rage patterns built from `boss_rage`).
+- Given its transformation is over, then it is angry and fires only the two gatlings it
+  revealed (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-081, D-063.*
+*Sources: D-081, D-063, D-256.*
 
 #### MB-MANGROVE-CROC-13 — Transformation: back plating bursts off · MUST
 
@@ -249,7 +251,7 @@ boss's centre, X right, Y up the screen (its nose at -Y).
 | jaw burst | 3 shots, 0.14 s apart, every 2.4 s, first 1.2 s | `BURST` |
 | pontoon fans | 3 × 14°, every 2.8 s, lean ±12° | stage volleys |
 | bullets | `green` 205, `orange` 195, `blue` 192, `purple` 200 px/s | radius 4 |
-| rage | vortex, heat 4.5 | `rage.vortex` |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation | once, at 2 parts destroyed | `boss_build.default_transforms` |
 | back region | the carapace's plan: x ±17 at y 8, ±15 at y -10, ±11 at y -22, ±7.5 at y -30, `shell`, not mirrored; plating 3.0–10.5 px over the keel (top 3.3) | `armour_region("back", …)`; `mangrove_croc_model.py` `KEEL`, `PLATING` |
 | gatlings | (±9, -15), radius 7, pod 13.1, 500 HP, `orange`, first 1.2 / 2.0 s | `hidden_weapon` |

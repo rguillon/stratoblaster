@@ -136,10 +136,17 @@ ahead of the centre. One pattern per stage (a stage more for each destroyed part
 
 #### MB-FJORD-LYNX-11 — Rage · MUST
 
-It is angry as every boss with a `vortex` at heat `rage_heat` (one fast blue spiral, magenta
-bursts at the player).
+It is angry after its transformation, when the two ring emitters (orbs) it revealed fire all out,
+for `boss_rage_seconds`, `boss_rage_rate` times as often, instead of its stage's
+pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it has no
+angry pattern of its own.
 
-*Sources: D-068.*
+**Acceptance criteria**
+- Given its transformation is over, then it is angry and fires only the two ring emitters (orbs) it
+  revealed (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
+
+*Sources: D-068, D-256.*
 
 #### MB-FJORD-LYNX-12 — Transformation · MUST
 
@@ -174,7 +181,7 @@ as every boss.
 | mast_radius / mast_hp | 11 px / 600 | `part(RADAR …)` |
 | paw fan heading | ±18° | `only_after(volley.fan(…, 18))` |
 | bullets | blue 185, magenta 190, purple 175 px/s | `BLUE`, `MAGENTA`, `PURPLE`; times the level's factors |
-| rage_heat | 3.5 (`vortex`, blue / magenta) | `rage` |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation | after 2 of 3 parts | `boss_build.default_transforms` |
 | weapon_radius / weapon_hp | 5 px / 480 | `hidden_weapon("orb-…")`, pod 7.2 px high |
 | region `back` | the crown and two lobes, not mirrored: x ±9 at y −3, ±10 at y −24…−34, lobes x 5.5…10 to 5.5…6.5 at y −40 round the channel x ±5.5 from y −25; crown 7–12.5 px, lobes 5–6 px; `shell` | `armour_region("back", 1, …)`; `src/game/view/bosses/world_2/fjord_lynx_armour.py` |

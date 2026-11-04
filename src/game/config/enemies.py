@@ -49,23 +49,6 @@ LANCER_NOSE = 0.62 * ENEMY_UNIT
 ROCKETEER_POD = 0.48 * ENEMY_UNIT
 
 ENEMY_CONFIG = record({
-    # ENM-GNAT-04 (a group of five on one S path), ENM-GNAT-06 (health and points).
-    "gnat": {
-        "stats": {"model": "gnat", "radius": radius(0.5), "health": 10, "points": 50},
-        "size": 0.5,
-        "groupSize": 5,
-        "groupDelay": 0.3,
-        "speed": 190,
-        # S-shaped path, as fractions of the playfield (x across, y up); mirrored at random.
-        "path": [
-            [0.75, 1.1],
-            [0.75, 0.85],
-            [0.25, 0.65],
-            [0.75, 0.4],
-            [0.25, 0.18],
-            [0.4, -0.15],
-        ],
-    },
     # ENM-HORNET-04 (entry and braking), ENM-HORNET-09 (health and points).
     "hornet": {
         "stats": {"model": "hornet", "radius": radius(0.7), "health": 20, "points": 100},
@@ -116,23 +99,6 @@ ENEMY_CONFIG = record({
             [9, -1.5, 1.5],
             [-9, -1.5, 1.5],
         ],
-    },
-    # ENM-WEAVER-06: health and points.
-    "weaver": {
-        "stats": {"model": "weaver", "radius": radius(0.9), "health": 30, "points": 120},
-        "size": 0.9,
-        "speed": 85,
-        "amplitude": 90,
-        # Distance travelled down for one full left-right sway.
-        "wavelength": 280,
-        "fireInterval": 2,
-        # A gun on the nose of each hull: a bullet from each (ENM-WEAVER-02).
-        "muzzles": [
-            [-10, -15.8, 1.9],
-            [10, -15.8, 1.9],
-        ],
-        "bullet": bullet("green", 200),
-        "xRange": [0.3, 0.7],
     },
     # ENM-SPINNER-07: health and points.
     "spinner": {
@@ -206,52 +172,22 @@ ENEMY_CONFIG = record({
         },
         "xRange": [0.2, 0.8],
     },
-    # ENM-BULWARK-08: health and points.
-    "bulwark": {
-        "stats": {
-            "model": "bulwark",
-            "radius": radius(1.6) * 0.8,
-            "health": 200,
-            "points": 500,
-        },
-        "size": 1.6,
-        "entrySpeed": 70,
-        "stopFraction": 0.74,
-        "drift": 70,
-        # Seconds for one left-right drift.
-        "driftPeriod": 4,
-        "stay": 8,
-        "exitSpeed": 90,
-        "fireInterval": 2,
-        "spreadCount": 5,
-        "spreadSpacing": 10,
-        "bullet": bullet("blue", 190),
-        # The twin cannon on the front of its tower (ENM-BULWARK-03).
-        "muzzles": [
-            [-3, -14, 4.2],
-            [3, -14, 4.2],
-        ],
-        "xRange": [0.3, 0.7],
-    },
-    # ENM-SPLITTER-09: health and points.
+    # ENM-SPLITTER-09: health and points. Tier 4's diver (ENM-SPLITTER-05): like a Hornet, but
+    # bigger and tougher, and it never shoots.
     "splitter": {
-        "stats": {"model": "splitter", "radius": radius(1), "health": 50, "points": 200},
+        "stats": {"model": "splitter", "radius": radius(1), "health": 200, "points": 450},
         "size": 1,
-        "speed": 95,
-        "fireInterval": 2.5,
-        "firstShot": 0.8,
-        "bullet": bullet("purple", 200),
-        # The eye on top of its core (ENM-SPLITTER-02).
-        "muzzles": [[0, 0, 5.4]],
-        # Curved path, fractions of the playfield; mirrored at random.
-        "path": [
-            [0.2, 1.1],
-            [0.3, 0.7],
-            [0.65, 0.45],
-            [0.8, -0.15],
-        ],
+        "entrySpeed": 150,
+        # Height where it stops before diving, in the upper half.
+        "stopFraction": 0.7,
+        # Deceleration into the stop.
+        "entryBrake": 300,
+        "pause": 0.7,
+        "diveAcceleration": 800,
+        "diveMaxSpeed": 480,
         # Distance of the three pods from the centre.
         "podOffset": 0.38 * ENEMY_UNIT,
+        "xRange": [0.2, 0.8],
     },
     # ENM-CARRIER-10: health and points.
     "carrier": {
@@ -263,7 +199,7 @@ ENEMY_CONFIG = record({
         },
         "size": 1.8,
         "speed": 30,
-        # A Gnat from each side port every `launchInterval`, the first after `firstLaunch`.
+        # A Hornet from each side port every `launchInterval`, the first after `firstLaunch`.
         "launchInterval": 3,
         "firstLaunch": 1.2,
         # The launch ports on its right side (mirrored on the left), from its centre: out to
@@ -274,16 +210,6 @@ ENEMY_CONFIG = record({
         ],
         # It stops launching below this height, too close to the player (ENM-CARRIER-09).
         "lastLaunchFraction": 0.3,
-        # The launched Gnats' path from a port, in px, for the right side (mirrored for the
-        # left): out sideways, then down past the bottom of the screen (ENM-CARRIER-08).
-        "launchPath": [
-            [0, 0],
-            [28, -4],
-            [55, -30],
-            [64, -110],
-            [40, -260],
-            [20, -800],
-        ],
         "xRange": [0.3, 0.7],
     },
     # The pods a destroyed Splitter breaks into: small Hornets (ENM-SPLITTER-08; health and

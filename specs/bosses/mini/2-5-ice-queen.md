@@ -134,10 +134,17 @@ The last stage's spiral is fired by no earlier stage.
 
 #### MB-ICE-QUEEN-11 — Rage · MUST
 
-It is angry as every boss with a `flower` at heat `rage_heat` (a dense, slowly turning purple ring,
-small blue fans at the player): the hottest mini boss rage of World 2.
+It is angry after its transformation, when the two gun batteries it revealed fire all out,
+for `boss_rage_seconds`, `boss_rage_rate` times as often, instead of its stage's
+pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it has no
+angry pattern of its own.
 
-*Sources: D-068.*
+**Acceptance criteria**
+- Given its transformation is over, then it is angry and fires only the two gun batteries it
+  revealed (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
+
+*Sources: D-068, D-256.*
 
 #### MB-ICE-QUEEN-12 — Transformation · MUST
 
@@ -172,7 +179,7 @@ dies as every boss.
 | shard_orbit | 42 px, muzzles 13 px either side, 13 px high | `ICE_QUEEN_SHARD`, `SHARD_TURNS` |
 | shard_radius / shard_hp | 13 px / 840 | `ice_queen_parts` |
 | bullets | purple 190, magenta 195, blue 185 px/s | `PURPLE`, `MAGENTA`, `BLUE`; times the level's factors (2-5: 1.15) |
-| rage_heat | 6.5 (`flower`, purple / blue) | `rage` |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation | after 2 of 3 parts | `boss_build.default_transforms` |
 | weapon_radius / weapon_hp | 10 px / 670 | `hidden_weapon("battery-…")`, pod 16.5 px high |
 | region `back` | a lozenge, not mirrored: x ±2 at y 6, ±13 at y 14, ±16 at y 26…44, ±12 at y 50, ±3 at y 57; plating 5–10 px on the deck at 5.5; `shell` | `armour_region("back", 1, …)`; `src/game/view/bosses/world_2/ice_queen_armour.py` |

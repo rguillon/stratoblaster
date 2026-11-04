@@ -136,12 +136,18 @@ fires:
 
 #### FB-REFINERY-TITAN-09 — Angry · MUST
 
-Its angry pattern is **spirals** at heat 3.5 (orange and green).
+It is angry after each of its transformations, when the weapons that one revealed
+fire all out: the two gatlings after the first, the two orbs after the second.
+For `boss_rage_seconds` it fires only those, `boss_rage_rate` times as often, instead of its
+stage's pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it
+has no angry pattern of its own.
 
 **Acceptance criteria**
-- Given its design, then its rage is that pattern at that heat, fired from its core.
+- Given a transformation is over, then it is angry and fires only the weapons it revealed
+  (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-063.*
+*Sources: D-063, D-256.*
 
 #### FB-REFINERY-TITAN-10 — First transformation: gatlings · MUST
 
@@ -201,7 +207,7 @@ All in `src/game/config/bosses/final_bosses.py` (`_REFINERY_TITAN`, `REFINERY_TI
 | core stage 3 | fan of 5, 14° apart, every 2.4 s | |
 | core stage 4 | fan of 7, 12° apart, every 2.2 s; 1 aimed orange every 2.6 s | |
 | core stage 5 | ring of 14 turning 9°, blue, every 1.3 s; orange burst of 3 every 2.8 s | |
-| angry | spirals, heat 3.5 (48 bullets a second, 148 px/s), orange and green | |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformations | 2 and 4 parts destroyed | default thresholds |
 | back region (shed) | the shell's middle length: y -24..20, x ±27 at its ends and ±32 at y -14..8, `shell`, not mirrored; the shell 4-18 px, the skull on it to 30 px | first |
 | spine region (shed) | the shell's front length: y -24 to its nose, x ±27 to y -36, narrowing through (±20, -47), (±17, -57) and (±6, -66), `shell`, not mirrored; the shell 5-17 px | second |

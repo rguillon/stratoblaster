@@ -9,9 +9,9 @@
 
 Every level has two bosses: a mini boss around its middle and a final boss at its end. A boss is
 one big code-generated creature made of a core and destroyable parts. The player shoots its parts
-off one by one, its shielding parts first; each lost part changes its attack, makes it angry for a
-few seconds and, at set points, makes it transform: it sheds armour or changes shape and reveals
-hidden weapons. This file holds every rule the bosses share. The boss files
+off one by one, its shielding parts first; each lost part changes its attack and, at set points, makes it
+transform: it sheds armour or changes shape and reveals hidden weapons, which it then fires all out
+for a few seconds (it is angry). This file holds every rule the bosses share. The boss files
 (`bosses/mini/<N-M>-<name>.md`, `bosses/final/<N-M>-<name>.md`) only give what is specific to one
 boss: its look, its parts and their numbers, its patterns and its transformations. Regular enemies
 are in [enemies/](../enemies/common.md); the health gauge on screen is in [ui/hud.md](../ui/hud.md).
@@ -311,7 +311,7 @@ ring or a spiral used in no earlier stage.
 
 When a part is destroyed, the boss fires nothing for `stage_change_pause` and its charge lights (its
 neon colour) strobe at `boss_stage_strobe`, so the player sees the change coming. It can still be
-damaged and still moves. Then it is angry (BOSS-27), then the new stage's pattern starts.
+damaged and still moves. Then the new stage's pattern starts.
 
 **Acceptance criteria**
 - Given a part is destroyed, then the boss fires nothing for 1 s (unit test).
@@ -357,12 +357,12 @@ into account.
 #### BOSS-25 — Launched enemies · MUST
 
 A part may launch regular enemies while it stands, in every stage, on its own timer: a hangar's
-Gnats fly out to the side of the boss it is on, then down the Carrier's launch path
-([Gnat](../enemies/gnat.md)); a bay's Hornets leave side by side and dive at the player
-([Hornet](../enemies/hornet.md)). They count among the level's spawned enemies.
+Hornets fly out to the side of the boss it is on, then down the Carrier's launch path; a bay's
+Hornets leave side by side and dive at the player ([Hornet](../enemies/hornet.md), whatever the
+world). They count among the level's spawned enemies.
 
 **Acceptance criteria**
-- Given a hangar launch, then the asked count of Gnats leaves towards the hangar's side (unit test).
+- Given a hangar launch, then the asked count of Hornets leaves towards the hangar's side (unit test).
 - Given a bay launch, then the Hornets leave side by side, centred on the bay (unit test).
 
 *Sources: P07-R04, D-055.*
@@ -380,41 +380,30 @@ regular enemies ([enemies common](../enemies/common.md)).
 
 ### Rage
 
-#### BOSS-27 — Angry after each lost part · MUST
+#### BOSS-27 — Angry when new weapons come out · MUST
 
-After the pause that follows each destroyed part (BOSS-22), and after each transformation
-(BOSS-37), the boss is **angry** for `boss_rage_seconds`: it fires its angry pattern, a bullet hell
-from its core, instead of its stage's; its charge lights flicker at `boss_rage_flicker` down to its
-dim level; its core's turret follows the angry pattern. It can be damaged meanwhile. A part
-destroyed while it is angry starts the pause and the rage again; its death stops it. Its angry
-pattern starts afresh each time.
-
-**Acceptance criteria**
-- Given a part is destroyed, then after the 1 s pause the boss fires its angry pattern for 3 s,
-  then its new stage's (unit test).
-- Given an angry boss, then it fires more than 5 times its stage's bullets a second.
-
-*Sources: D-063, D-221.*
-
-#### BOSS-28 — The angry patterns · MUST
-
-Each boss has one angry pattern of four shapes, all fired from its core in slow bullets that leave
-lanes between them, so a kid can still weave through in 1-1:
-- **spirals**: two rings turning opposite ways, crossing as they go;
-- **flower**: a dense, slowly turning ring and small aimed fans;
-- **curtain**: fans sweeping across the screen and back, a ring under them;
-- **vortex**: one fast-turning spiral and bursts at the player.
-
-Its **heat** sets how many bullets a second it fires (`boss_rage_rate`) and how fast they fly
-(`boss_rage_speed`, slower than the stage bullets); a ring has `boss_rage_arms` bullets. The heat
-goes up from each world's first mini boss to its last final boss (World 1: 0 to 4.5). A boss may
-fire two shapes at once, sharing its rate.
+A lost part makes the boss pause (BOSS-22) but no longer angry. It is **angry** only after a
+transformation (BOSS-37), when it has revealed hidden weapons: at once (any pause left from the
+part that called for the transformation is cancelled, and each weapon's first volley comes
+`boss_rage_first` after it opens fire, the weapons `boss_rage_stagger` apart) and for
+`boss_rage_seconds` it fires only
+those new weapons, `boss_rage_rate` times as often, instead of its stage's pattern, so its bullet hell
+comes from them, whatever their kind (bullets, rings, missiles, lasers, a hangar's Hornets). A missile
+rack fires `boss_rage_missiles` times as many missiles; a laser cannot fire faster than its warning,
+its beam and `boss_rage_laser_gap` allow. Its charge lights flicker at `boss_rage_flicker` down to its
+dim level. It can be damaged meanwhile. A part destroyed while it is angry pauses it (BOSS-22), and
+the rage goes on afterwards; a destroyed weapon stops firing; its death stops the rage. Its angry
+pattern starts afresh with each transformation.
 
 **Acceptance criteria**
-- Given each shape, then it fires from the core only, in angry bullets (unit test).
-- Given a hotter pattern, then it fires faster than a cooler one (unit test).
+- Given a part is destroyed (no transformation), then the boss is not angry (unit test).
+- Given a transformation is over, then the boss is angry for 8 s, with no pause, and fires only the
+  weapons that transformation revealed, the first volleys within 1 s (unit tests).
+- Given an angry boss, then each of those weapons fires 4.5 times as often, a missile rack three times
+  as many missiles, and a laser at most as often as its warning, beam and gap allow (unit tests, every
+  boss).
 
-*Sources: D-063, D-068.*
+*Sources: D-063, D-221, D-256.*
 
 ### Turrets, lasers and limbs
 
@@ -424,7 +413,10 @@ A piece's guns may be on a **turret** (a pivot of its own): the turret turns at 
 `boss_turret_turn` the way its next volley goes (a burst under way first, else the volley due
 soonest): at the player for aimed shots and bursts, along a fan's preset heading, and with a ring's
 turn, so a turret firing a spiral spins smoothly from one volley's turn to the next and never spins
-back. It keeps turning during pauses. Its muzzles turn with it, so shots leave the barrel tips and
+back. It keeps turning during pauses. Aimed shots, bursts, missiles and fans on a turret leave
+only once it points within `boss_turret_aim_tolerance` of where they go: a due volley is held until
+then (a burst, bullet by bullet), so shots never come out of barrels pointing elsewhere; rings,
+lasers (which have their warning line) and guns not on a turret never wait. Its muzzles turn with it, so shots leave the barrel tips and
 aimed shots are aimed from there. Guns built into hulls, blades, claws or pods, missile cells and
 launchers do not turn. In the model each turret is its own piece on its pivot; it flashes and hides
 with its part.
@@ -432,6 +424,8 @@ with its part.
 **Acceptance criteria**
 - Given a turret whose next volley is aimed, then it turns towards the player at most 150°/s (unit
   test).
+- Given a due aimed volley or burst on a turret that points elsewhere, then nothing is fired until
+  it points at the player within 6° (unit tests).
 - Given a turret firing rings, then it points at the barrel nearest the ring's next turn (unit test).
 - Manual validation: every boss turret visibly turns.
 
@@ -543,7 +537,7 @@ nor takes damage, its charge lights strobing as in a pause. A blast goes off whe
 weapon comes out, and each shed armour region bursts in up to `boss_region_blasts` blasts. At its
 end that transformation's weapons are revealed (they can be hit, they shield the core, they fire);
 the boss then holds its fire for what is left of the pause of the part that called for it
-(BOSS-22) and is angry (BOSS-27).
+(BOSS-22) and is angry (BOSS-27): its new weapons fire all out.
 
 **Acceptance criteria**
 - Given a boss transforming, then it fires nothing and loses no health (unit test).
@@ -595,7 +589,7 @@ box), and fires as its kind does (numbers in Tunable values):
   ring;
 - **battery**: a long, low deck with five barrels in a row, firing wide fans straight down;
 - **sweeper**: a turret with two prongs and a lens, firing a laser that sweeps after the player;
-- **hangar**: a box whose two doors slide apart, launching Gnats.
+- **hangar**: a box whose two doors slide apart, launching Hornets.
 
 Its muzzles are worked out from its size and pod height, and the model is drawn from the same
 numbers, so shots leave its barrels.
@@ -817,7 +811,7 @@ health leaves it. The gauge marks the share of each part ([HUD](../ui/hud.md)).
 In each world, the bosses get harder from its first level to its last, and every boss of 1-1 stays
 beatable for a kid: the full health of the mini bosses goes up strictly from level 1 to level 5, and
 so does that of the final bosses; each final boss has more full health than its level's mini boss;
-the angry heat goes up (BOSS-28); the level's fire-rate and bullet-speed factors apply (BOSS-26).
+the level's fire-rate and bullet-speed factors apply (BOSS-26).
 
 **Acceptance criteria**
 - Unit test: in each world, mini boss and final boss full health each go up strictly from level 1
@@ -881,12 +875,13 @@ same fight drops the same bonuses.
 | `boss_death` | a blast every 0.16 s for 2 s | BOSS-19; `BOSS_TIMING.death` |
 | `stage_change_pause` | 1 s | BOSS-22; `BOSS_TIMING.stagePause` |
 | `boss_stage_strobe` | 6 Hz | BOSS-22; `BOSS_LOOK.stageStrobeHz` |
-| `boss_rage_seconds` | 3 s | BOSS-27; `BOSS_TIMING.rageSeconds` |
+| `boss_turret_aim_tolerance` | 0.105 rad (6°) | BOSS-29; `boss_pattern.AIM_TOLERANCE` |
+| `boss_rage_seconds` | 8 s | BOSS-27; `BOSS_TIMING.rageSeconds` |
+| `boss_rage_rate` | 4.5 × the weapons' own fire rate | BOSS-27; `BOSS_TIMING.rageRate`, `boss_build.angry_pattern` |
+| `boss_rage_missiles` | 3 × the missiles of a volley | BOSS-27; `BOSS_TIMING.rageMissiles` |
+| `boss_rage_first`, `boss_rage_stagger` | 0.15 s, 0.2 s per weapon | BOSS-27; `BOSS_TIMING.rageFirst`, `rageStagger` |
+| `boss_rage_laser_gap` | 0.6 s between a beam's end and the next warning | BOSS-27; `BOSS_TIMING.rageLaserGap` |
 | `boss_rage_flicker` | 14 Hz, down to 0.35 | BOSS-27; `BOSS_LOOK.rageFlicker` |
-| `boss_rage_rate` | 20 + 8 × heat bullets a second (× its share) | BOSS-28; `src/game/config/bosses/boss_rage.py` `rate` |
-| `boss_rage_speed` | 120 + 8 × heat px/s, radius 4 | BOSS-28; `boss_rage.angry` |
-| `boss_rage_arms` | 5 + round(0.7 × heat) bullets a ring | BOSS-28; `boss_rage.arms` |
-| angry heat, World 1 | 0 (1-1 mini) → 4.5 (1-5 final) | BOSS-28; each design's `rage` |
 | `boss_turret_turn` | 150°/s | BOSS-29; `BOSS_TIMING.turretTurnDeg` |
 | boss laser | 1 s warning, 12 px wide, Lancer's style recoloured | BOSS-30; `boss_kit.laser_of` |
 | `boss_laser_turn` | 20°/s (warning line, sweeping beam) | BOSS-31; `BOSS_TIMING.laserTurnDeg` |
@@ -905,7 +900,7 @@ same fight drops the same bonuses.
 | mortar | 1 flak shell 110 px/s radius 8, bursting into 8 at 170 px/s after 1.1 s, every 3.2 s | BOSS-40; `WEAPON_FIRE.mortar` |
 | battery | fans of 7, 9° apart, straight down, 180 px/s, every 2 s | BOSS-40; `WEAPON_FIRE.battery` |
 | sweeper | sweeping laser 2 s every 8 s | BOSS-40; `WEAPON_FIRE.sweeper` |
-| hangar | 2 Gnats every 7 s | BOSS-40; `WEAPON_FIRE.hangar` |
+| hangar | 2 Hornets every 7 s | BOSS-40; `WEAPON_FIRE.hangar` |
 | `reveal` timeline | strain to 0.15, pieces gone by 0.6; weapons swing 0.4–0.75, slide 0.7–1.0 (overshoot 1.7); moving pieces 0.15–0.6; shudder 0.8 px, strobe 9 Hz | BOSS-43, BOSS-45; `BOSS_LOOK.reveal` |
 | `armour` | 12 pieces a region, 24 a boss, plates 2.5 px thick, hold 1.2 px | BOSS-43, BOSS-52; `BOSS_LOOK.armour` |
 | `frame` | floor 0.6 px over the armour's lowest point; ribs 1.6 px wide, 9 px apart, a neon seam every 3 | BOSS-44; `BOSS_LOOK.frame` |

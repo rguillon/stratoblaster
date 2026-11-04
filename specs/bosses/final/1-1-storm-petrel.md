@@ -133,12 +133,18 @@ The pods' fans and the rack's missiles go on in every stage while they stand. Th
 
 #### FB-STORM-PETREL-09 — Angry · MUST
 
-Its angry pattern is a **flower** at heat 0.5 (a dense magenta ring, red fans at the player).
+It is angry after each of its transformations, when the weapons that one revealed
+fire all out: the two batteries after the first, the heavy cannon and two sweepers after the second.
+For `boss_rage_seconds` it fires only those, `boss_rage_rate` times as often, instead of its
+stage's pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it
+has no angry pattern of its own.
 
 **Acceptance criteria**
-- Given its design, then its rage is that pattern at that heat, fired from its core.
+- Given a transformation is over, then it is angry and fires only the weapons it revealed
+  (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-063.*
+*Sources: D-063, D-256.*
 
 #### FB-STORM-PETREL-10 — First transformation: its wings swing forward · MUST
 
@@ -211,7 +217,7 @@ All in `src/game/config/bosses/final_bosses.py` (`_STORM_PETREL`, `STORM_PETREL`
 | core stage 2 | burst of 4, 0.14 s apart, every 2.4 s | |
 | core stage 3 | fan of 7, 12° apart, magenta, every 2.2 s | |
 | core stage 4 | ring of 12 turning 8°, red, every 1.5 s | |
-| angry | flower, heat 0.5 (24 bullets a second, 124 px/s), magenta and red | |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation 1 | `pod-left` and `pod-right` destroyed | `transformParts` |
 | outer wings (moving region) | the outer wing's own outline beyond the hinge: x 31..77, y -13.4..13.8 at the hinge narrowing to the squared tip, mirrored; the membrane 6–9.5 px; swing about the vertical at (±31, -13.4, 8) by 30° forward; no frame | `moving_region`, `swing`; `heights` 4 px tell the batteries ride it |
 | batteries | (∓52, -13), radius 8, health 810, pod 13 px, magenta; first 1.2 s / 2.0 s | ride the outer wings |

@@ -10,7 +10,6 @@ before, so a wave runs down the body from the head to the tail, as a swimming sn
 """
 
 from game.config.bosses.boss_kit import bullet, cells, part, stages, stats, twin, volley
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
@@ -122,8 +121,6 @@ def segment_guns() -> Any:
 # something new beside it. The ground slows (x0.5).
 _RIVER_LEVIATHAN = record({
     "id": "river-leviathan",
-    # Angry after each destroyed part (D-063), heat 5 (FB-RIVER-LEVIATHAN-12).
-    "rage": rage.spirals(5, "blue", "green"),
     # Its head (the core), segment turrets and tail rack (FB-RIVER-LEVIATHAN-09).
     "stats": stats(
         record({

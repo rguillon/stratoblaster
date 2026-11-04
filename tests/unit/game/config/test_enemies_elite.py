@@ -5,6 +5,7 @@ import math
 
 import pytest
 
+from game.config.enemies import ENEMY_CONFIG
 from game.config.enemies_elite import (
     ELITE_CONFIG,
     HYDRA_NECKS,
@@ -13,7 +14,6 @@ from game.config.enemies_elite import (
     around,
     fold_entries,
     hydra_heads,
-    orbiter_drones,
     radius,
     scissor_arms,
     swing,
@@ -29,7 +29,7 @@ def test_enm_28_along_aim_walks_back_from_a_point_along_the_heading() -> None:
     assert along_aim([0, 10], 0, 4) == pytest.approx([0, 6])
 
 
-def test_enm_orbiter_09_around_places_points_evenly_on_a_circle() -> None:
+def test_enm_hive_10_around_places_points_evenly_on_a_circle() -> None:
     """Also ENM-HIVE-10 (the Hive's ring)."""
     points = around(4, 10, 2)
     assert len(points) == 4
@@ -68,8 +68,13 @@ def test_enm_scissor_09_scissor_has_two_mirrored_arms() -> None:
     assert arms[0]["pivot"][0] == pytest.approx(-arms[1]["pivot"][0])
 
 
-def test_enm_orbiter_08_orbiter_has_three_drones_each_on_a_ring_round_its_centre() -> None:
-    drones = orbiter_drones()
-    assert [d["id"] for d in drones] == ["drone-0", "drone-1", "drone-2"]
-    radii = {round(math.hypot(*d["centre"]), 6) for d in drones}
-    assert len(radii) == 1
+def test_enm_hydra_14_hydra_launches_slower_homing_missiles_than_the_rocketeer() -> None:
+    hydra = ELITE_CONFIG.hydra
+    assert "bullet" not in hydra
+    assert hydra.missile.speed < ENEMY_CONFIG.rocketeer.missile.speed
+    assert hydra.missile.homingSeconds > 0
+    assert hydra.headFireInterval > 0.5
+
+
+def test_enm_hive_09_hive_launches_a_splitter_every_six_seconds() -> None:
+    assert ELITE_CONFIG.hive.launchInterval == 6

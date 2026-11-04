@@ -6,6 +6,18 @@ ships, the enemies, the bosses, the props and the levels, drawn as in game, and 
 the music, played as in game (DEV-MENU-19, DEV-MENU-20).
 """
 
+# How many buttons a row of a dev viewer's menu holds, by viewer (DEV-MENU-07): the enemies' five, a
+# tier's five kinds on one line (DEV-MENU-13); three for the others.
+DEV_MENU_COLUMNS = {"enemies": 5}
+DEFAULT_DEV_MENU_COLUMNS = 3
+
+# How the enemies and bosses viewers show their subject (DEV-MENU-21), one button each: the model
+# alone at the middle of the view, the same drawn as a wireframe, and on the game's playfield as
+# in a level, moving and firing. The viewers that have the buttons, and their labels.
+DEV_VIEW_MODES = ["model", "wireframe", "game"]
+DEV_MODE_VIEWERS = ["enemies", "bosses"]
+DEV_MODE_LABELS = {"model": "Model", "wireframe": "Wireframe", "game": "Game view"}
+
 
 class DevViewerTexts:
     """Texts of the dev menu and viewers (a developer tool: not the game's texts, DEV-MENU-04)."""

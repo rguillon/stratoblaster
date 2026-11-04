@@ -10,7 +10,9 @@ from helpers.fakes import FakeContext
 from game.config.enemy_look import ENEMY_LOOK
 from game.config.readability import READABILITY
 from game.sim.bosses.boss_launches import launch_fire
+from game.sim.enemies.broodmother import Broodmother
 from game.sim.enemies.carrier import Carrier
+from game.sim.enemies.hatchery import Hatchery
 from game.sim.enemies.hive import Hive
 from game.view.bosses.boss_models import BOSS_MODELS
 from game.view.enemies import enemy_bindings
@@ -82,8 +84,9 @@ def test_perf_21_the_child_models_cover_every_enemy_another_one_sends_out() -> N
     children = set(ENEMY_BINDINGS.child_models)
     assert _models_spawned(Carrier(200, 500)) <= children
     assert _models_spawned(Hive(200, 500)) <= children
-    for kind in ["gnats", "hornets"]:
-        assert {e.model for e in launch_fire(kind, 2, 1)(200, 500)} <= children
+    assert {e.model for e in launch_fire(2)(200, 500)} <= children
+    assert _models_spawned(Hatchery(200, 500)) <= children
+    assert _models_spawned(Broodmother(200, 500)) <= children
     for key in children:
         assert key in ENEMY_BINDINGS.models
-    assert {"gnat", "wasp", "hornet", "splitter-pod"} <= children
+    assert {"wasp", "hornet", "splitter", "splitter-pod", "phantom"} <= children

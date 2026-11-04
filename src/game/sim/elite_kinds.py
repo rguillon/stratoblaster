@@ -2,14 +2,12 @@
 """The elite enemy kinds (ENM-01)."""
 
 from core.entities.enemy import EnemyKindDefinition
-from core.math.rng import random_in
 from game.config.enemies import ENEMY_SPAWN_MARGIN as MARGIN
 from game.config.enemies_elite import ELITE_CONFIG as C
 from game.sim.enemies.enemy_helpers import clamp_entry, pick_x, top_x
 from game.sim.enemies.hive import Hive
 from game.sim.enemies.hydra import Hydra
 from game.sim.enemies.juggernaut import Juggernaut
-from game.sim.enemies.orbiter import Orbiter
 from game.sim.enemies.scissor import Scissor
 
 # isort: split
@@ -41,11 +39,6 @@ def _spawn_hydra(area: EnemySpawnArea) -> list[Enemy]:
     return [Hydra(x, _top(area), C.hydra.stopFraction * area.height)]
 
 
-def _spawn_orbiter(area: EnemySpawnArea) -> list[Enemy]:
-    stop_y = random_in(area.random, C.orbiter.stopRange[0], C.orbiter.stopRange[1]) * area.height
-    return [Orbiter(_entry_x(area, C.orbiter.xRange), _top(area), stop_y)]
-
-
 def _spawn_scissor(area: EnemySpawnArea) -> list[Enemy]:
     x = _entry_x(area, C.scissor.xRange)
     return [Scissor(x, _top(area), C.scissor.stopFraction * area.height)]
@@ -64,7 +57,6 @@ def _all_kinds() -> list[EnemyKindDefinition]:
     """Return the five elite kinds (ENM-01), in the order of the spec."""
     return [
         EnemyKindDefinition("hydra", "Hydra", _spawn_hydra),
-        EnemyKindDefinition("orbiter", "Orbiter", _spawn_orbiter),
         EnemyKindDefinition("scissor", "Scissor", _spawn_scissor),
         EnemyKindDefinition("juggernaut", "Juggernaut", _spawn_juggernaut),
         EnemyKindDefinition("hive", "Hive", _spawn_hive),

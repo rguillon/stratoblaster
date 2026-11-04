@@ -12,7 +12,6 @@ bot.
 """
 
 from game.config.bosses.boss_kit import bullet, cells, part, stages, stats, twin, volley
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.bosses.moving_regions import moving_region, slide
 from game.config.record import concat, merge, record
@@ -77,9 +76,6 @@ def tip(pos: Any) -> Any:
 # pattern.
 _SKY_TEMPLE = record({
     "id": "sky-temple",
-    # Angry after each destroyed part (phase 7 review, FB-SKY-TEMPLE-11): a vortex inside a
-    # blooming flower.
-    "rage": concat(rage.vortex(7, "orange", "blue", 0.5), rage.flower(7, "blue", "orange", 0.5)),
     "stats": stats(
         record({
             "id": "sky-temple",

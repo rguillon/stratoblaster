@@ -121,13 +121,17 @@ The mortars fire in every stage while they stand. The core fires:
 
 #### MB-BREAKWATER-09 — Angry · MUST
 
-Its angry pattern is a **curtain** at heat 1 (red fans sweeping across and back, an orange ring
-under them).
+It is angry after its transformation, when the two missile racks it revealed fire all out,
+for `boss_rage_seconds`, `boss_rage_rate` times as often, instead of its stage's
+pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it has no
+angry pattern of its own.
 
 **Acceptance criteria**
-- Given its design, then its rage is that pattern at that heat, fired from its core.
+- Given its transformation is over, then it is angry and fires only the two missile racks it
+  revealed (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-063.*
+*Sources: D-063, D-256.*
 
 #### MB-BREAKWATER-10 — Transformation · MUST
 
@@ -171,7 +175,7 @@ All in `src/game/config/bosses/mini_bosses.py` (`_BREAKWATER`, `BREAKWATER`) unl
 | core stage 1 | aimed 3, 12° apart, every 2.4 s | |
 | core stage 2 | burst of 4, 0.15 s apart, every 2.2 s | |
 | core stage 3 | ring of 10 turning 9°, every 1.7 s | |
-| angry | curtain, heat 1 (28 bullets a second, 128 px/s), red and orange | |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation | 2 parts destroyed | default threshold |
 | shed region | back: a lozenge the rear shell's shape, x ±23 at its widest, y 14..41, `shell`, not mirrored; plating 7.7–16 px | `armour_region` |
 | racks | (∓11, 33), radius 9, health 650, pod 17.7 px; first 1.2 s / 2.0 s | |

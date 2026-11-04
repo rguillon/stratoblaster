@@ -168,15 +168,17 @@ from the third on, its last pattern):
 
 #### MB-MAGMA-SALAMANDER-12 — Rage · MUST
 
-After the pause that follows each destroyed part, the Salamander is angry: it fires a curtain (fans
-sweeping across the screen and back over a ring) at heat 11, in `orange` and `red`: about 108
-bullets a second at 208 px/s.
+It is angry after its transformation, when the two sweepers it revealed fire all out,
+for `boss_rage_seconds`, `boss_rage_rate` times as often, instead of its stage's
+pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it has no
+angry pattern of its own.
 
 **Acceptance criteria**
-- Given a part is destroyed, when its pause is over, then the core fires the curtain for the rage
-  time (unit: `test_boss_rage.py`, `test_magma_salamander.py`).
+- Given its transformation is over, then it is angry and fires only the two sweepers it
+  revealed (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-088, D-063.*
+*Sources: D-088, D-063, D-256.*
 
 #### MB-MAGMA-SALAMANDER-13 — Transformation: back plating bursts off · MUST
 
@@ -252,7 +254,7 @@ All in `src/game/config/bosses/world_4/magma_salamander.py` (`MAGMA_SALAMANDER`)
 | fin fans | 3 × 13°, every 2.6 s, lean ±9° inwards, first 1.1 / 2.4 s | stage volleys |
 | tail sweep | 20 drops, 0.12 s apart, -45°..45° and back, every 5.2 s, first 2 s; 230 px/s, radius 3.5 | `SWEEP`, `SWEEP_GAP`, `SWEEP_EVERY`, `DROP` |
 | bullets | `red` 215, `orange` 210, `magenta` 205 px/s | radius 4 |
-| rage | curtain, heat 11 (`orange`, `red`) | `rage.curtain` |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation | once, at 2 original parts destroyed | `src/game/sim/boss_build.py` `default_transforms` |
 | back region | the three back plates' footprint, not mirrored: y -10..26, x ±14.5 at y -10..2, ±13.5 at y 4..17, ±7 at y 26, `shell`; shells 2.8–12 px over a 3.2 px belly | `armour_region("back", …)`; `src/game/view/bosses/world_4/magma_salamander_armour.py` |
 | sweepers | (±9, 13), radius 7, pod 12.4, 720 HP, first 1.2 / 2.0 s | `hidden_weapon`; volleys in `src/game/config/bosses/weapon_kinds.py` |

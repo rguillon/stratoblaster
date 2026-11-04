@@ -211,17 +211,9 @@ def test_boss_31_volley_on_turret_counts_lasers_only_when_the_turret_carries_the
 def test_boss_32_with_own_lasers_recolours_every_laser_volley_with_the_design_id() -> None:
     laser = volley.laser("core", 5, 1)
     aimed = volley.aimed("core", 1, 1, 0, bullet("x", 1))
-    design = record({"id": "boss-x", "guns": {}, "stages": [[laser, aimed]], "rage": [laser]})
+    design = record({"id": "boss-x", "guns": {}, "stages": [[laser, aimed]]})
     own = with_own_lasers(design)
     assert own["stages"][0][0]["shape"]["laser"]["style"] == "boss-x"
     assert own["stages"][0][1] == aimed
-    assert own["rage"][0]["shape"]["laser"]["style"] == "boss-x"
     assert own["id"] == "boss-x"
     assert laser["shape"]["laser"]["style"] == "lancer"
-
-
-def test_boss_32_with_own_lasers_leaves_a_design_without_rage_alone() -> None:
-    design = record({"id": "boss-y", "guns": {}, "stages": [[]], "rage": None})
-    own = with_own_lasers(design)
-    assert own["stages"] == [[]]
-    assert own["rage"] is None

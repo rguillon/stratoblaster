@@ -115,7 +115,7 @@ class BossStats(EnemyStats):
         - `core_radius`: hit radius of the core.
         - `ground_speed`: factor on the level's ground speed while it is fought (BOSS-03).
         - `stage_pause`: seconds it does not fire after one of its parts is destroyed (BOSS-22).
-        - `rage_seconds`: seconds it is angry after that pause (BOSS-27): it fires its
+        - `rage_seconds`: seconds it is angry after each transformation (BOSS-27): it fires its
           angry pattern (`Boss.update_rage`) instead of its stage's. Never angry when None.
         - `core_drop_chance`: chance its core drops a bonus when destroyed; the game's rule when
           None.
@@ -363,7 +363,6 @@ class Boss(Enemy):
             changed = True
             self.stage += 1
             self.pause = self.stats.stage_pause
-            self.rage = self.stats.rage_seconds if self.stats.rage_seconds is not None else 0
             ctx.break_part(part)
             if self.on_stage_change is not None:
                 self.on_stage_change(self.stage, ctx)
@@ -430,6 +429,8 @@ class Boss(Enemy):
         self.form += 1
         self.transform = 0
         self.state = "fighting"
+        # No pause left from the part that called for it: the new weapons open fire at once.
+        self.pause = 0
         self.rage = self.stats.rage_seconds if self.stats.rage_seconds is not None else 0
         self._rebuild_targets()
 

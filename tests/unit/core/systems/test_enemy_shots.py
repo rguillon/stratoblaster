@@ -158,3 +158,47 @@ def test_game_bomb_05_a_missile_removed_by_a_bomb_moves_no_more() -> None:
     shots.step(1, 0, 100)
     assert missile.alive is False
     assert (missile.x, missile.y, missile.homing) == (0, 0, 1)
+
+
+def _fused(after: float = 1.0, count: int = 4) -> EnemyMissileSpec:
+    return EnemyMissileSpec(
+        speed=10,
+        turn_rate_deg=0,
+        homing_seconds=0,
+        radius=2,
+        health=5,
+        style="rocket",
+        burst=EnemyBurstSpec(after, count, _bullet(speed=20)),
+    )
+
+
+def test_enm_mortar_09_a_missile_bursts_into_a_ring_when_its_fuse_is_out() -> None:
+    shots = _shots()
+    shots.fire_missile(50, 50, 0, _fused())
+    shots.step(0.5, 0, 0)
+    assert shots.missiles[0].alive is True
+    assert shots.bullets == []
+    shots.step(0.5, 0, 0)
+    missile = shots.missiles[0]
+    assert missile.alive is False
+    assert [b.alive for b in shots.bullets] == [True] * 4
+    headings = [b.heading for b in shots.bullets]
+    assert headings == pytest.approx([0, math.pi / 2, math.pi, 3 * math.pi / 2])
+    assert all(b.x == pytest.approx(50) and b.y == pytest.approx(60) for b in shots.bullets)
+
+
+def test_enm_mortar_09_a_missile_shot_down_before_its_fuse_is_out_does_not_burst() -> None:
+    shots = _shots()
+    shots.fire_missile(50, 50, 0, _fused())
+    shots.missiles[0].health = 0
+    shots.step(2, 0, 0)
+    assert shots.missiles[0].alive is False
+    assert shots.bullets == []
+
+
+def test_enm_mortar_09_a_missile_that_leaves_the_playfield_does_not_burst() -> None:
+    shots = _shots()
+    shots.fire_missile(50, 105, 0, _fused(after=5))
+    shots.step(2, 0, 0)
+    assert shots.missiles[0].alive is False
+    assert shots.bullets == []

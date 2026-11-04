@@ -6,7 +6,7 @@ parts) and the ones that left, and moves their shots. Its `targets` are what the
 can hit. Pure and deterministic.
 """
 
-from core.entities.enemy import EnemyBulletSpec, EnemyBurstSpec
+from core.entities.enemy import EnemyBulletSpec, EnemyBurstSpec, EnemyMissileSpec
 from core.entities.muzzle import PlanePoint, seen_on_playfield
 from core.entities.shot_target import is_alive
 from core.systems.enemy_shots import EnemyShots, EnemyShotsOptions
@@ -18,7 +18,6 @@ from core.entities.enemy import (
     DropSource,
     Enemy,
     EnemyLaserSpec,
-    EnemyMissileSpec,
     LaserOwner,
 )
 from core.entities.muzzle import PlayfieldEye, RaisedPoint
@@ -115,6 +114,21 @@ class _WorldContext:
         self._shots.fire_bullet(x, y, heading, _faster(spec, self._bullet_speed))
 
     def fire_missile(self, x: float, y: float, heading: float, spec: EnemyMissileSpec) -> None:
+        burst = spec.burst
+        if burst:
+            # The bullets it bursts into are as fast as the level makes bullets (ENM-22).
+            burst = EnemyBurstSpec(
+                burst.after, burst.count, _faster(burst.bullet, self._bullet_speed)
+            )
+            spec = EnemyMissileSpec(
+                spec.speed,
+                spec.turn_rate_deg,
+                spec.homing_seconds,
+                spec.radius,
+                spec.health,
+                spec.style,
+                burst,
+            )
         self._shots.fire_missile(x, y, heading, spec)
 
     def fire_laser(self, owner: LaserOwner, spec: EnemyLaserSpec) -> None:

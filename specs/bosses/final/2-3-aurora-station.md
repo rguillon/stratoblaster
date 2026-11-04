@@ -160,10 +160,18 @@ The last stage's spirals are fired by no earlier stage.
 
 #### FB-AURORA-STATION-13 — Rage · MUST
 
-It is angry as every boss with `spirals` at heat `rage_heat` (two crossing spirals, green and
-purple).
+It is angry after each of its transformations, when the weapons that one revealed
+fire all out: the two laser lances after the first, the two missile racks after the second.
+For `boss_rage_seconds` it fires only those, `boss_rage_rate` times as often, instead of its
+stage's pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it
+has no angry pattern of its own.
 
-*Sources: D-068.*
+**Acceptance criteria**
+- Given a transformation is over, then it is angry and fires only the weapons it revealed
+  (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
+
+*Sources: D-068, D-256.*
 
 #### FB-AURORA-STATION-14 — First transformation: laser lances · MUST
 
@@ -211,7 +219,7 @@ do, its hidden weapons as hidden weapons do. It dies as every boss, and its deat
 | hangar_radius / hangar_hp | 14 px / 800 | `fpart("hangar" …)` |
 | launches | 2 Hornets every 6.5 s, first at 3.5 s | `launches` |
 | bullets | red 190, magenta 185, green 180, purple 175 px/s | `RED`, `MAGENTA`, `GREEN`, `PURPLE`; times the level's factors |
-| rage_heat | 5 (`spirals`, green / purple) | `rage` |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformations | after 2 and 4 of 5 parts | `boss_build.default_transforms` |
 | t1_radius / t1_hp | 11 px / 1 000 | `hidden_weapon("lance-…")`, pod 6 px high |
 | t2_radius / t2_hp | 5 px / 1 250 | `hidden_weapon("rack-…")`, pod 9.6 px high |

@@ -3,8 +3,8 @@
 > **Area:** Worlds · **Prefix:** `LVL-1-1` · **Related:** [World 1](world.md), [1-2 Green coast](1-2-green-coast.md), [Reef Warden](../../bosses/mini/1-1-reef-warden.md), [Storm Petrel](../../bosses/final/1-1-storm-petrel.md), [level flow](../../gameplay/level-flow.md), [terrain](../../graphics/terrain.md), [water](../../graphics/water.md), [sky and light](../../graphics/sky-and-light.md)
 
 The first level of the game, and the easiest: midday over a clear turquoise sea, with small wooded
-islands and reefs, and the first green coast in the last 30 seconds. Gnats, Hornets, Scouts and
-Strafers come a few at a time; the Reef Warden waits at the middle and the Storm Petrel at the end.
+islands and reefs, and the first green coast in the last 30 seconds. Hornets and
+Scouts come a few at a time; the Reef Warden waits at the middle and the Storm Petrel at the end.
 It is meant to be easy, even for a kid.
 
 ## Requirements
@@ -105,58 +105,43 @@ WLD-1-14).
 
 #### LVL-1-1-08 — Enemy kinds · MUST
 
-1-1 brings only Gnats, Hornets, Scouts and Strafers, in its beats and its fillers.
+1-1 brings only Hornets and Scouts (a diver and a shooter), in its beats and its fillers.
 
 **Acceptance criteria**
-- Given the 1-1 wave script, then it only uses Gnat, Hornet, Scout and Strafer (unit test).
+- Given the 1-1 wave script, then it only uses Hornet and Scout, and it uses each of them (unit test).
 
-*Sources: P06-R07.*
+*Sources: P06-R07, ENM-50.*
 
-#### LVL-1-1-09 — Written beats · MUST
+#### LVL-1-1-09 — Wave plan · MUST
 
-1-1's waves are these beats, as written (WLD-1-19; the density of WLD-1-20 applies on top). They
-leave the stretch from 100 s to 133 s to the fillers, around the mini boss at 120 s, and no wave
-starts in the 10 s before each boss ([level-flow.md](../../gameplay/level-flow.md)).
+1-1's waves are composed from this plan (WLD-1-19; the density of WLD-1-20 applies on top):
 
-| s | Kind | Groups | Between groups (s) | Side | Position | Spread |
+Beats from 4 s to 226 s, one every 6.4 s at the start down to 4.6 s at the end, groups growing by 60 % over the level (41 beats, the last at 223.5 s). The phrases, in their cycle:
+
+| # | Kind | Groups | Between groups (s) | Side | Position | Spread |
 |---|------|--------|--------------------|------|----------|--------|
-| 4 | Scout | 1 | 0 | top | 0.5 | — |
-| 12 | Scout | 2 | 2.5 | top | 0.3 | 0.4 |
-| 22 | Gnat | 1 | 0 | top | 0.3 | — |
-| 33 | Hornet | 2 | 2 | top | 0.3 | 0.4 |
-| 42 | Strafer | 1 | 0 | left | 0.8 | — |
-| 50 | Scout | 3 | 1.5 | top | 0.2 | 0.3 |
-| 62 | Gnat | 1 | 0 | top | 0.7 | — |
-| 73 | Hornet | 3 | 1.5 | top | 0.25 | 0.25 |
-| 82 | Strafer | 1 | 0 | right | 0.75 | — |
-| 90 | Scout | 2 | 2 | top | 0.4 | 0.2 |
-| 100 | Gnat | 1 | 0 | top | 0.3 | — |
-| 133 | Strafer | 2 | 3 | left | 0.82 | — |
-| 142 | Hornet | 3 | 1.2 | top | 0.2 | 0.3 |
-| 152 | Scout | 3 | 1.2 | top | 0.25 | 0.25 |
-| 163 | Gnat | 1 | 0 | top | 0.7 | — |
-| 173 | Strafer | 2 | 2.5 | right | 0.78 | — |
-| 182 | Hornet | 3 | 1 | top | 0.2 | 0.3 |
-| 191 | Scout | 3 | 1.2 | top | 0.3 | 0.2 |
-| 201 | Gnat | 1 | 0 | top | 0.3 | — |
-| 211 | Strafer | 2 | 2 | left | 0.8 | — |
-| 219 | Hornet | 3 | 1 | top | 0.15 | 0.35 |
-| 226 | Gnat | 1 | 0 | top | 0.6 | — |
+| 1 | Hornet | 4 | 0.8 | top | 0.15 | 0.23 |
+| 2 | Scout | 3 | 1.2 | top | 0.25 | 0.25 |
+| 3 | Hornet | 4 | 0.8 | top | 0.85 | -0.23 |
+| 4 | Scout | 3 | 1.2 | top | 0.75 | -0.25 |
+| 5 | Hornet | 4 | 0.8 | top | 0.15 | 0.23 |
+| 6 | Scout | 3 | 1.2 | top | 0.25 | 0.25 |
+
+No wave starts in the 10 s before each boss ([level-flow.md](../../gameplay/level-flow.md)).
 
 **Acceptance criteria**
-- Given the 1-1 beats, then each names a kind and a side, in order of time (unit test).
+- Given the 1-1 plan, then it composes beats that name its kinds and sides in order of time (unit test).
 
-*Sources: P06-R07, D-044.*
+*Sources: P06-R07, D-067, ENM-50.*
 
 #### LVL-1-1-10 — Filler · MUST
 
-1-1's filler (WLD-1-21) brings only kinds that do not shoot: Hornet, Hornet, Gnat, Hornet, in turn,
-one group every `max_gap`.
+1-1's filler (WLD-1-21) brings only the Hornet, which does not shoot, one group every `max_gap`, the gentlest filler of the game.
 
 **Acceptance criteria**
-- Given the 1-1 filler, then its kinds are Hornets and Gnats only and its gap shrinks (unit test).
+- Given the 1-1 filler, then its kind is the Hornet only and its gap shrinks (unit test).
 
-*Sources: D-051.*
+*Sources: D-051, ENM-50.*
 
 ### Difficulty
 
@@ -223,7 +208,7 @@ Petrel's chase.
 | shore | x −40 ± 90, every 1 800 units; beach 240; sea bed −55 | `GREEN_COAST` |
 | max_gap | 4.5 s → 3 s | `src/game/config/world_1/waves.py` `WORLD_1_FILLERS["1-1"]` |
 | bullet_speed_factor / fire_rate_factor | 0.8 / 0.8 | `src/game/config/world_1/difficulty.py` |
-| written | 22 beats; 59 waves and 158 groups after fill and density; 278 enemies, 4 660 HP (halves 2 020 / 2 640) | measured from the configs (density 2, D-249) |
+| written | 41 beats from the plan; waves, groups, enemies and HP after fill and density: to be measured again with the new kinds | `src/game/config/wave_plans.py` `level_plan(1, 1)`; density 2 (D-249) |
 | mini boss / final boss | `reef-warden` / `storm-petrel` | `src/game/config/world_1/bosses.py` `WORLD_1_BOSSES` |
 | runout | 150 s | same |
 

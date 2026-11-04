@@ -176,14 +176,18 @@ its fang guns or its crest:
 
 #### FB-RIVER-LEVIATHAN-12 — Rage · MUST
 
-After the pause that follows each destroyed part, it fires two crossing spirals at heat 5, in `blue`
-and `green`.
+It is angry after each of its transformations, when the weapons that one revealed
+fire all out: the two sweepers after the first, the two orbs after the second.
+For `boss_rage_seconds` it fires only those, `boss_rage_rate` times as often, instead of its
+stage's pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it
+has no angry pattern of its own.
 
 **Acceptance criteria**
-- Given a part is destroyed, when its pause is over, then the core fires the spirals for the rage
-  time (unit: rage patterns).
+- Given a transformation is over, then it is angry and fires only the weapons it revealed
+  (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-081, D-063.*
+*Sources: D-081, D-063, D-256.*
 
 #### FB-RIVER-LEVIATHAN-13 — First transformation: back plating, two sweepers · MUST
 
@@ -254,7 +258,7 @@ the boss's centre, X right, Y up the screen (the tail at +Y).
 | segment rings | 8 × `green` 195 px/s, every 4.4 s, turn 11°, 1.1 s apart | |
 | tail missiles | 2, 30° apart, every 6 s | `MISSILE` |
 | core laser | 1.5–1.6 s, every 7 → 5 s | stage volleys |
-| rage | spirals, heat 5 | |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformations | at 2 and 4 parts destroyed | `default_transforms` |
 | back region | a half of the head's plan, x 1.6..17 at y -1 to 12.3 at y 24, mirrored, `shell`; plating 4.7 px to the head's top | form 1 |
 | spine region | a half of the head's plan, x 1.6..17 at y -1 to 5 at y -29, mirrored, `shell`; plating 4.7 px to the head's top | form 2 |

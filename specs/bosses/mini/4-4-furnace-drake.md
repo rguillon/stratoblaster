@@ -169,15 +169,17 @@ destroyed; from the third on, its last pattern):
 
 #### MB-FURNACE-DRAKE-12 — Rage · MUST
 
-After the pause that follows each destroyed part, the Drake is angry: it fires a flower (a dense,
-slowly turning ring and small aimed fans) at heat 12.5, in `orange` and `red`: about 120 bullets a
-second at 220 px/s.
+It is angry after its transformation, when the two heavy cannons it revealed fire all out,
+for `boss_rage_seconds`, `boss_rage_rate` times as often, instead of its stage's
+pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it has no
+angry pattern of its own.
 
 **Acceptance criteria**
-- Given a part is destroyed, when its pause is over, then the core fires the flower for the rage time
-  (unit: `test_boss_rage.py`, `test_furnace_drake.py`).
+- Given its transformation is over, then it is angry and fires only the two heavy cannons it
+  revealed (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-088, D-063.*
+*Sources: D-088, D-063, D-256.*
 
 #### MB-FURNACE-DRAKE-13 — Transformation: back plating bursts off · MUST
 
@@ -244,7 +246,7 @@ All in `src/game/config/bosses/world_4/furnace_drake.py` (`FURNACE_DRAKE`) unles
 | wing fans | 3 × 14°, every 2.4 s, lean ±12° outwards, first 0.9 / 2.1 s | stage volleys |
 | flame | burst 9 × 0.045 s (240 px/s) + spray 4 × 9° (215 px/s), radius 3, every 3.2 s, first 1.6 s | `flame`, `FLAME`, `FLAME_EDGE` |
 | bullets | `red` 215, `orange` 210, `purple` 205 px/s | radius 4 |
-| rage | flower, heat 12.5 (`orange`, `red`) | `rage.flower` |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation | once, at 2 original parts destroyed | `src/game/sim/boss_build.py` `default_transforms` |
 | back region | the torso's footprint, not mirrored: y -17..22, x ±7.5 at y -17, ±13.5 at y 0, ±6.5 at y 22, `shell`; carapace 1.9–12 px over a 2.2 px deck | `armour_region("back", …)`; `src/game/view/bosses/world_4/furnace_drake_armour.py` |
 | cannons | (±11, 7), radius 7, pod 13.2, 880 HP, `red`, first 1.2 / 2.0 s | `hidden_weapon`; volleys in `src/game/config/bosses/weapon_kinds.py` |

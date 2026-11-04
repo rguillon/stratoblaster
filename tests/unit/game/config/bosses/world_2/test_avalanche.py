@@ -28,8 +28,6 @@ def test_mb_avalanche_14_boss_stats_are_in_the_range_the_sim_relies_on() -> None
     assert 0 < stats["coreRadius"] < stats["radius"]
 
 
-def test_mb_avalanche_12_boss_has_an_angry_pattern_and_its_stage_count() -> None:
-    """Its rage, and one stage pattern more than its parts (MB-AVALANCHE-11)."""
-    assert isinstance(AVALANCHE.rage, list)
-    assert AVALANCHE.rage
+def test_mb_avalanche_12_boss_has_its_stage_count() -> None:
+    """One stage pattern more than its parts (MB-AVALANCHE-11)."""
     assert len(AVALANCHE.stages) == len(original_parts(AVALANCHE)) + 1

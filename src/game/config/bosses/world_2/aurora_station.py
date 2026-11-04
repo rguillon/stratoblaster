@@ -18,7 +18,6 @@ from game.config.bosses.boss_kit import (
     twin,
     volley,
 )
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import merge, record
 
@@ -65,8 +64,6 @@ AURORA_COLLAR = [[0, 0, 14]]
 # (FB-AURORA-STATION-11).
 _AURORA_STATION = record({
     "id": "aurora-station",
-    # Angry after each destroyed part (phase 7 review, FB-AURORA-STATION-13).
-    "rage": rage.spirals(5, "green", "purple"),
     # Its core, emitters, cryo cannons, hangar and points (FB-AURORA-STATION-16).
     "stats": stats({
         "id": "aurora-station",

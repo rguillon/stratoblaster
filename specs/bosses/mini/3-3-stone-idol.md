@@ -145,14 +145,17 @@ The core fires from its nostrils, and from its forehead jewel once alone:
 
 #### MB-STONE-IDOL-10 — Rage · MUST
 
-After the pause that follows each destroyed part, it fires a flower at heat 6.5, in `magenta` and
-`orange`.
+It is angry after its transformation, when the third eye and two mortars it revealed fire all out,
+for `boss_rage_seconds`, `boss_rage_rate` times as often, instead of its stage's
+pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it has no
+angry pattern of its own.
 
 **Acceptance criteria**
-- Given a part is destroyed, when its pause is over, then the core fires the flower (unit: rage
-  patterns).
+- Given its transformation is over, then it is angry and fires only the third eye and two mortars it
+  revealed (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-081, D-063.*
+*Sources: D-081, D-063, D-256.*
 
 #### MB-STONE-IDOL-11 — Transformation: the back of its head flips up · MUST
 
@@ -218,7 +221,7 @@ boss's centre, X right, Y up the screen (its chin at -Y).
 | ground speed | ×0 | |
 | eye lasers | 1.5 s every 6.5 s, first 2 / 5.25 s | on turrets |
 | boulders | ring of 9, `purple` 115 px/s, radius 9, every 3 s, turn 20° | `BOULDER` |
-| rage | flower, heat 6.5 | |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation | once, at 2 parts destroyed | `default_transforms` |
 | crown lid | the head's section at the skull cut behind the brows: x ±44.5 at y 4–11.8, ±41.6 at y 29.1, ±34.3 at y 40, ±21.4 at y 45.6, to y 47.5 on the centre line; from 7 px; swing `across` about (0, 50, 7), 0 → -75°; `ring` frame; lid 6.7–19 px | `moving_region("crown", …)`; `stone_idol_lid.py` |
 | third eye | sweeper (0, 24), radius 13, pod 12, 760 HP, first 1.6 s | |
