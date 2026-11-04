@@ -84,10 +84,15 @@ def test_enm_21_each_basic_model_marks_the_config_muzzles(probe: Any, model: Any
 
     A config muzzle is (X right, Y up
 
-        when facing down the screen, height); the model's nose is +Z, so it is (X, height, -Y).
+        when facing down the screen, height); the model's nose is +Z, so it is (X, height, -Y). A
+    barrel with an angle is drawn the way it truly turns on screen: the model's X is the config's
+    mirrored (a model turned to face down has its +X to the screen's left).
     """
     body = probe(ENEMY_MODELS[model])
-    expected = [[x, height, -y] for x, y, height, *_angle in _config_muzzles(BASIC_BY_MODEL[model])]
+    expected = [
+        [-x if angle else x, height, -y]
+        for x, y, height, *angle in _config_muzzles(BASIC_BY_MODEL[model])
+    ]
     marked = [list(at) for at, _kind in body["muzzles"]]
     assert len(marked) == len(expected), model
     # Each config muzzle is marked once, up to float noise.

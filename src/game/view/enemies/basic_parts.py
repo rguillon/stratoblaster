@@ -49,14 +49,18 @@ def gun_barrel(parts: Any, at: Vec3, length: float, yaw: float = 0) -> None:
 def recoil_barrel(parts: Any, tip: Vec3, angle_deg: float, length: float, index: int) -> None:
     """Add barrel number `index` of the enemy's guns, which recoils when it fires (WPN-03).
 
-    `tip` is its muzzle (`[x, y, z]` in model space: the config's `[x, -y, height]` reordered) and
-    `angle_deg` the way it points as the config gives it (from the nose, positive to the right). A
+    `tip` is its muzzle as the config gives it, reordered to model space (`[x, height, -y]`) and
+    `angle_deg` the way it points (from the nose, positive to the right). The config's X is right
+    of an enemy facing down the screen, which is the model's left (turning the model to face down
+    turns its +X to the screen's left), so the barrel is drawn mirrored: the one the simulation
+    fires from is the one that is drawn firing. A
     fixed housing holds a barrel `length` long that slides back along its axis, with a charge light
     at its tip (the muzzle marked there, ENM-21).
     """
-    yaw = -math.radians(angle_deg)
+    yaw = math.radians(angle_deg)
     sx, sz = math.sin(yaw), math.cos(yaw)
-    muzzle_at = tip
+    muzzle_at = [-tip[0], tip[1], tip[2]]
+    tip = muzzle_at
     end = [tip[0] - sx * 0.8, tip[1], tip[2] - sz * 0.8]
     base = [end[0] - sx * length, end[1], end[2] - sz * length]
     # The housing the barrel slides out of, fixed on the body.

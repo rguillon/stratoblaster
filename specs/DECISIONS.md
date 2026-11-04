@@ -963,3 +963,15 @@
 - **Consequences:** the other enemies and every boss still fire as before until their slice; the
   lasers (WPN-06) and missiles (WPN-07 to WPN-09) are the next slices of the engine work.
 - **Status:** Proposed
+
+### D-269 — Barrels are drawn mirrored, and held by a gun pod on each flank
+- **Date:** 2026-11-04
+- **Requirements:** WPN-01, WPN-03, WPN-04, ENM-21.
+- **Context:** owner: the Strafer's barrels floated and the wrong ones recoiled.
+- **Decision:** the config's X is right of an enemy facing down the screen, but a model turned to
+  face down has its +X on the screen's left, so a fixed barrel is drawn with its X and yaw mirrored
+  (`recoil_barrel`) and the one that fires is the one drawn firing. Each Strafer flank gets a hull
+  gun pod from the body out to the housings, so the barrels are held to it. The ENM-21 test expects
+  a barrel's marked muzzle at -X.
+- **Consequences:** other asymmetric models keep their (unchecked) X until they are converted.
+- **Status:** Proposed
