@@ -413,7 +413,10 @@ A piece's guns may be on a **turret** (a pivot of its own): the turret turns at 
 `boss_turret_turn` the way its next volley goes (a burst under way first, else the volley due
 soonest): at the player for aimed shots and bursts, along a fan's preset heading, and with a ring's
 turn, so a turret firing a spiral spins smoothly from one volley's turn to the next and never spins
-back. It keeps turning during pauses. Its muzzles turn with it, so shots leave the barrel tips and
+back. It keeps turning during pauses. Aimed shots, bursts, missiles and fans on a turret leave
+only once it points within `boss_turret_aim_tolerance` of where they go: a due volley is held until
+then (a burst, bullet by bullet), so shots never come out of barrels pointing elsewhere; rings,
+lasers (which have their warning line) and guns not on a turret never wait. Its muzzles turn with it, so shots leave the barrel tips and
 aimed shots are aimed from there. Guns built into hulls, blades, claws or pods, missile cells and
 launchers do not turn. In the model each turret is its own piece on its pivot; it flashes and hides
 with its part.
@@ -421,6 +424,8 @@ with its part.
 **Acceptance criteria**
 - Given a turret whose next volley is aimed, then it turns towards the player at most 150°/s (unit
   test).
+- Given a due aimed volley or burst on a turret that points elsewhere, then nothing is fired until
+  it points at the player within 6° (unit tests).
 - Given a turret firing rings, then it points at the barrel nearest the ring's next turn (unit test).
 - Manual validation: every boss turret visibly turns.
 
@@ -870,6 +875,7 @@ same fight drops the same bonuses.
 | `boss_death` | a blast every 0.16 s for 2 s | BOSS-19; `BOSS_TIMING.death` |
 | `stage_change_pause` | 1 s | BOSS-22; `BOSS_TIMING.stagePause` |
 | `boss_stage_strobe` | 6 Hz | BOSS-22; `BOSS_LOOK.stageStrobeHz` |
+| `boss_turret_aim_tolerance` | 0.105 rad (6°) | BOSS-29; `boss_pattern.AIM_TOLERANCE` |
 | `boss_rage_seconds` | 8 s | BOSS-27; `BOSS_TIMING.rageSeconds` |
 | `boss_rage_rate` | 4.5 × the weapons' own fire rate | BOSS-27; `BOSS_TIMING.rageRate`, `boss_build.angry_pattern` |
 | `boss_rage_missiles` | 3 × the missiles of a volley | BOSS-27; `BOSS_TIMING.rageMissiles` |

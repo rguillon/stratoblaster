@@ -788,3 +788,21 @@
 - **Consequences:** a rage is about twice as dense as D-256's; the lasers stay bounded by their
   warning and beam. Not yet judged by play.
 - **Status:** Proposed
+
+### D-259 — A turret's volley waits until the turret points the way the shots go
+
+- **Date:** 2026-11-04
+- **Requirements:** BOSS-29.
+- **Context:** the reviewer saw bullets leave a boss's twin gatlings away from their barrels, now
+  and then. Aimed shots were aimed from the muzzle at the player at once, while the turret chases
+  the player at 150°/s, so a volley due while the turret was still turning (a weapon just
+  revealed, a player who moved fast) left barrels pointing elsewhere. The angry opening fire
+  (D-258) made it much more frequent.
+- **Decision:** `BossPattern.step` holds a due aimed, burst, missile or fan volley on a turret until
+  the turret is within `AIM_TOLERANCE` (6°) of its aim, a burst checking before each bullet. Rings,
+  lasers and guns off a turret never wait.
+- **Alternatives considered:** aiming the shots along the barrels (the player could be missed for
+  seconds); a turret that turns instantly (loses the readable swing).
+- **Consequences:** a volley can come up to a turret's swing (a fraction of a second) late; its timer
+  does not catch up. Only checked against bullets, not on the real game by eye.
+- **Status:** Proposed
