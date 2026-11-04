@@ -194,6 +194,12 @@ def test_enm_08_an_alternating_wave_swaps_the_side_of_every_other_group() -> Non
     assert [e.position for _, e in spawned] == pytest.approx([0.7] * 4)
 
 
+def test_enm_08_an_alternating_wave_from_the_right_swaps_to_the_left_and_back() -> None:
+    runner, spawned = _runner([Wave(0, "scout", 3, 0, EnemyEntry("right", 0.4), None, True)])
+    runner.step(1, 0)
+    assert [e.side for _, e in spawned] == ["right", "left", "right"]
+
+
 def test_enm_08_an_alternating_wave_from_the_top_mirrors_every_other_position() -> None:
     runner, spawned = _runner([Wave(0, "scout", 4, 0, EnemyEntry("top", 0.2), 0.1, True)])
     runner.step(1, 0)
