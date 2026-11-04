@@ -187,6 +187,20 @@ def test_enm_08_a_wave_without_a_spread_enters_at_one_point() -> None:
     assert [e.position for _, e in spawned] == [0.5, 0.5]
 
 
+def test_enm_08_an_alternating_wave_swaps_the_side_of_every_other_group() -> None:
+    runner, spawned = _runner([Wave(0, "scout", 4, 0, EnemyEntry("left", 0.7), None, True)])
+    runner.step(1, 0)
+    assert [e.side for _, e in spawned] == ["left", "right", "left", "right"]
+    assert [e.position for _, e in spawned] == pytest.approx([0.7] * 4)
+
+
+def test_enm_08_an_alternating_wave_from_the_top_mirrors_every_other_position() -> None:
+    runner, spawned = _runner([Wave(0, "scout", 4, 0, EnemyEntry("top", 0.2), 0.1, True)])
+    runner.step(1, 0)
+    assert all(e.side == "top" for _, e in spawned)
+    assert [e.position for _, e in spawned] == pytest.approx([0.2, 0.7, 0.4, 0.5])
+
+
 def test_game_level_10_stopping_drops_the_groups_waiting_and_the_rest_of_the_script() -> None:
     runner, spawned = _runner([Wave(0, "scout", 3, 1, TOP), Wave(5, "drone", 1, 0, TOP)])
     runner.step(1, 0)

@@ -69,31 +69,52 @@ def test_game_level_05_quiet_before_drops_the_waves_that_start_just_before_a_bos
     assert [w["at"] for w in kept] == [90, 110]
 
 
-def test_wld_1_21_fill_adds_filler_groups_into_the_lulls_between_beats() -> None:
-    beats = [[0, "gnat", 1, 0, "top", 0.5], [20, "gnat", 1, 0, "top", 0.5]]
+def test_wld_1_21_fill_adds_filler_groups_of_the_beats_kind_into_the_lulls() -> None:
+    beats = [[0, "scout", 1, 0, "top", 0.5], [20, "scout", 1, 0, "top", 0.5]]
     filler = record({"kinds": ["scout"], "maxGap": [5, 5]})
     filled = fill(beats, filler)
     assert len(filled) > len(beats)
     assert all(b[0] >= 0 for b in filled)
+    assert all(b[1] == "scout" for b in filled)
     assert filled == sorted(filled, key=lambda b: b[0])
 
 
-def test_wld_1_21_fill_puts_the_beats_in_time_order_first() -> None:
-    beats = [[20, "gnat", 1, 0, "top", 0.5], [0, "hornet", 1, 0, "top", 0.5]]
+def test_wld_1_21_fill_never_brings_in_a_kind_the_wave_before_it_was_not() -> None:
+    beats = [[0, "hornet", 1, 0, "top", 0.5], [30, "scout", 1, 0, "top", 0.5]]
+    filled = fill(beats, record({"kinds": ["hornet", "scout"], "maxGap": [5, 5]}))
+    assert {b[1] for b in filled if 0 < b[0] < 30} == {"hornet"}
+
+
+def test_wld_1_21_the_heavy_kinds_are_left_alone_in_their_lull() -> None:
+    beats = [[0, "carrier", 1, 0, "top", 0.5], [30, "carrier", 1, 0, "top", 0.5]]
+    assert fill(beats, record({"kinds": ["hornet"], "maxGap": [5, 5]})) == beats
+
+
+def test_wld_1_21_the_filler_starts_once_the_wave_has_come_in() -> None:
+    beats = [[0, "scout", 4, 2, "top", 0.5], [40, "scout", 1, 0, "top", 0.5]]
     filled = fill(beats, record({"kinds": ["scout"], "maxGap": [5, 5]}))
-    assert filled[0][:2] == [0, "hornet"]
-    assert [b[1] for b in filled if b[0] == 20] == ["gnat"]
+    assert min(b[0] for b in filled if b[0] > 0 and b[0] < 40) >= 6 + 5
+
+
+def test_wld_1_21_fill_puts_the_beats_in_time_order_first() -> None:
+    beats = [[20, "scout", 1, 0, "top", 0.5], [0, "scout", 1, 0, "top", 0.5]]
+    filled = fill(beats, record({"kinds": ["scout"], "maxGap": [5, 5]}))
+    assert filled[0][:2] == [0, "scout"]
     assert filled == sorted(filled, key=lambda b: b[0])
 
 
 def test_wld_1_21_a_single_beat_has_no_lull_to_fill() -> None:
-    beat = [10, "gnat", 1, 0, "top", 0.5]
+    beat = [10, "scout", 1, 0, "top", 0.5]
     assert fill([beat], record({"kinds": ["scout"], "maxGap": [5, 2]})) == [beat]
 
 
-def test_wld_1_21_a_filler_kind_left_empty_leaves_its_slot_quiet() -> None:
-    beats = [[0, "gnat", 1, 0, "top", 0.5], [20, "gnat", 1, 0, "top", 0.5]]
-    filled = fill(beats, record({"kinds": ["scout", ""], "maxGap": [5, 5]}))
-    fillers = [b for b in filled if b not in beats]
-    # Every 5 s from 5 to 15: scout, nothing, scout.
-    assert [(b[0], b[1]) for b in fillers] == [(5, "scout"), (15, "scout")]
+def test_wld_1_20_a_pincer_beat_keeps_its_alternate_flag_when_made_denser() -> None:
+    assert denser([4, "wasp", 3, 1, "left", 0.7, 0, 1], 2) == [4, "wasp", 6, 1, "left", 0.7, 0, 1]
+    single = denser([4, "carrier", 1, 0, "top", 0.3, 0.5, 1], 2)
+    assert single == [4, "carrier", 2, 1.5, "top", 0.3, 0.5, 1]
+
+
+def test_wave_script_passes_the_alternate_flag_on() -> None:
+    script = wave_script(10, [[1, "wasp", 3, 1, "left", 0.7, 0, 1]], density=1)
+    assert script[0]["alternate"] is True
+    assert "alternate" not in wave_script(10, [[1, "wasp", 3, 1, "left", 0.7]], density=1)[0]

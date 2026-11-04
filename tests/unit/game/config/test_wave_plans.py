@@ -9,13 +9,13 @@ from helpers.config_checks import assert_beats_well_formed, enemy_kind_ids
 from game.config.enemy_tiers import tier_kinds
 from game.config.wave_plans import (
     KIND_ENTRY,
-    PHRASE_LENGTH,
+    SETTLE,
     compose_beats,
     kinds_of,
     level_filler,
-    level_phrases,
     level_plan,
     roles_of,
+    wave_duration,
     world_fillers,
 )
 
@@ -60,28 +60,59 @@ def test_wld_2_19_the_filler_gap_shrinks_and_every_level_has_one() -> None:
             assert start >= end > 0
 
 
-def test_a_kind_met_twice_in_a_cycle_comes_mirrored_the_second_time() -> None:
-    phrases = level_phrases(1, 4)
-    divers = [phrase for phrase in phrases if phrase[0] == "hornet"]
-    assert len(divers) == 3
-    assert divers[0][4] == pytest.approx(0.15)
-    assert divers[1][4] == pytest.approx(0.85)
-    assert divers[0][5] == pytest.approx(0.23)
-    assert divers[1][5] == pytest.approx(-0.23)
+def test_a_kind_met_again_comes_in_another_way_then_mirrored() -> None:
+    plan = {**level_plan(1, 4), "to": 700}
+    beats = [beat for beat in compose_beats(plan) if beat[1] == "hornet"]
+    ways = len(KIND_ENTRY["hornet"])
+    assert len(beats) > ways
+    # Four ways in turn: a line across the top, a column down a side, two pincers.
+    assert [beat[4] for beat in beats[:ways]] == ["top", "left", "top", "left"]
+    assert len({(beat[4], beat[5]) for beat in beats[:ways]}) == ways
+    # The second time round the list is mirrored: the side column comes from the right.
+    assert beats[ways][4] == "top"
+    assert beats[ways][5] == pytest.approx(1 - beats[0][5])
+    assert beats[ways + 1][4] == "right"
+
+
+def test_a_diver_comes_in_from_the_sides_too() -> None:
+    for world in range(1, 5):
+        diver = tier_kinds(world)[0]
+        if diver not in ("hornet", "wasp"):
+            continue
+        long_plan = {**level_plan(world, 5), "to": 900}
+        sides = {beat[4] for beat in compose_beats(long_plan) if beat[1] == diver}
+        assert {"top", "left", "right"} <= sides, diver
+
+
+def test_a_pincer_beat_carries_its_alternate_flag() -> None:
+    pincers = [beat for beat in compose_beats(level_plan(1, 1)) if len(beat) == 8]
+    assert pincers
+    assert all(beat[7] == 1 for beat in pincers)
+
+
+@pytest.mark.parametrize(("world", "level"), LEVELS)
+def test_a_wave_is_over_before_the_next_kind_comes_in(world: int, level: int) -> None:
+    beats = compose_beats(level_plan(world, level))
+    for current, following in itertools.pairwise(beats):
+        over = current[0] + wave_duration(current[2], current[3]) + SETTLE
+        assert following[0] >= over - 0.1, (current, following)
 
 
 def test_a_side_kind_comes_from_the_other_side_when_mirrored() -> None:
-    phrases = level_phrases(2, 5)
-    strafers = [phrase for phrase in phrases if phrase[0] == "strafer"]
-    assert [phrase[3] for phrase in strafers[:2]] == ["left", "right"]
-    assert len(strafers[0]) == PHRASE_LENGTH
+    long_plan = {**level_plan(2, 5), "to": 900}
+    beats = [beat for beat in compose_beats(long_plan) if beat[1] == "strafer"]
+    assert [beat[4] for beat in beats[:2]] == ["left", "left"]
+    assert beats[2][4] == "right"
 
 
 def test_wld_2_22_a_plan_fills_up_and_its_groups_grow() -> None:
     plan = level_plan(2, 3)
     beats = compose_beats(plan)
-    gaps = [b[0] - a[0] for a, b in itertools.pairwise(beats)]
-    assert gaps[0] > gaps[-1]
+    # The breather between a wave's end and the next beat shrinks over the level.
+    breathers = [
+        b[0] - a[0] - wave_duration(a[2], a[3]) - SETTLE for a, b in itertools.pairwise(beats)
+    ]
+    assert breathers[0] > breathers[-1]
     assert beats[0][0] >= plan["from"]
     assert beats[-1][0] <= plan["to"]
     firsts = [beat[2] for beat in beats if beat[1] == "wasp"]

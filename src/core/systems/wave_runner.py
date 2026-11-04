@@ -31,6 +31,9 @@ class Wave:
 
     `spread`: added to the entry position for each group after the first (e.g. a line of Scouts
     coming in across the screen), wrapped back into 0..1.
+
+    `alternate`: every other group comes in from the opposite edge (left and right swap; from the
+    top the position is mirrored), so the wave closes in from both sides like a pincer.
     """
 
     def __init__(
@@ -41,6 +44,7 @@ class Wave:
         interval: float,
         entry: EnemyEntry,
         spread: float | None = None,
+        alternate: bool | None = None,
     ) -> None:
         self.at = at
         self.kind = kind
@@ -48,6 +52,7 @@ class Wave:
         self.interval = interval
         self.entry = entry
         self.spread = spread
+        self.alternate = alternate
 
 
 class _QueuedGroup:
@@ -86,7 +91,17 @@ def _group_entry(wave: Wave, index: int) -> EnemyEntry:
     # a value (the strafers then entered at NaN, clamped to the bottom of the playfield).
     spread = wave.spread if wave.spread != None else 0
     shifted = wave.entry.position + spread * index
-    return EnemyEntry(wave.entry.side, shifted - math.floor(shifted))
+    position = shifted - math.floor(shifted)
+    side = wave.entry.side
+    # `!= None` again: an absent `alternate` is undefined in a config record.
+    if wave.alternate != None and wave.alternate and index % 2 == 1:
+        if side == "left":
+            side = "right"
+        elif side == "right":
+            side = "left"
+        else:
+            position = 1 - position
+    return EnemyEntry(side, position)
 
 
 class WaveRunner:
