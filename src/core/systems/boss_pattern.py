@@ -300,7 +300,7 @@ class BossPattern:
             )
             rate = spec.turn_rate_deg if laser is None else laser_rate
             # Entities start `aim` at the int 0; it is a float from here on.
-            turret.aim = turn_towards(turret.aim, aim, rate * DEG * dt)  # type: ignore[assignment]  # the value assigned is wider than the field type
+            turret.aim = turn_towards(turret.aim, aim, rate * DEG * dt)
 
     def _laser_aim(
         self,

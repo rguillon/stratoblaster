@@ -19,6 +19,7 @@ from collections.abc import Callable
 from typing import Literal, Protocol
 
 from core.entities.barrel import Barrel  # noqa: TC001
+from core.entities.boss_turret import BossTurret  # noqa: TC001
 from core.entities.muzzle import Muzzle, RaisedPoint
 from core.entities.shot_target import ShotTarget
 from core.math.rng import Random
@@ -276,6 +277,8 @@ class Enemy:
         self.charge: float = 0
         # The barrels of its guns, for the model to slide back as they fire (WPN-03).
         self.barrels: list[Barrel] = []
+        # A turret its guns turn on, if it has one (WPN-02): see `BossTurret`.
+        self.turret: BossTurret | None = None
         # Set when the enemy is done (left for good); the world then removes it.
         self.gone = False
         # Its own chance of dropping a bonus when destroyed; the game's rule when None.
@@ -285,9 +288,10 @@ class Enemy:
     def place(self, muzzle: Muzzle, on_turret: bool = False) -> RaisedPoint:
         """Where `muzzle`, one of its guns' (see `muzzle.py`), is now: it turns with its nose.
 
-        `on_turret` is accepted for `MuzzleSource` but ignored: an enemy has no turret.
+        With `on_turret`, it is first turned with the enemy's turret, if it has one.
         """
-        _ = on_turret
+        if on_turret and self.turret is not None:
+            muzzle = self.turret.turned(muzzle)
         return muzzle_point(self, muzzle)
 
     @property

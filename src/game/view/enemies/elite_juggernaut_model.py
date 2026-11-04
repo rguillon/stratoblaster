@@ -10,6 +10,7 @@ from game.config.enemies_elite import ELITE_CONFIG
 from game.config.enemy_look import ENEMY_LOOK
 from game.config.enemy_look_elite import ELITE_NEON
 from game.view.bosses.boss_limbs import boss_point
+from game.view.enemies.basic_parts import config_barrels
 from game.view.enemies.elite_shapes import QUARTER, H, barrel
 from game.view.enemies.enemy_shapes import SIDES, angry_eyes
 from game.view.enemies.jointed_model import build_jointed_model
@@ -84,8 +85,8 @@ def body(p: Any) -> None:
     hull.cylinder(
         TURRET["radius"], TURRET["height"], 8, H.panel, Placement([0, TURRET["y"], TURRET["z"]])
     )
-    for m in CFG.muzzles:
-        barrel(p, boss_point(m[0], m[1], m[2]), 0, [1.1, 7])
+    # A bank of seven fixed barrels on the back turret, fanned (WPN-01, WPN-03).
+    config_barrels(p, CFG.muzzles, 7, 0.6)
     for x in [-10, 10]:
         reactor_sac(p, [x, 0.5, -24.5], 2.4, NEON, None, 4)
     p.reactor([0, 0.5, -24.5], 2.4)

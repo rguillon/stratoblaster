@@ -20,7 +20,7 @@ def test_enm_scout_05_a_scout_flies_straight_down_at_its_speed() -> None:
 
 def test_enm_scout_06_a_scout_fires_an_aimed_bullet_each_fire_interval_on_the_playfield() -> None:
     ctx = FakeContext()
-    scout = Scout(200, 300)
+    scout = Scout(200, 560)
     run(scout, ctx, 6.0)
     assert len(ctx.bullets) >= 3
     assert all(spec is CFG.bullet for *_, spec in ctx.bullets)

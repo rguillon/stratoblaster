@@ -10,7 +10,8 @@ from game.config.enemies_elite import ELITE_CONFIG
 from game.config.enemy_look import ENEMY_LOOK
 from game.config.enemy_look_elite import ELITE_NEON
 from game.view.bosses.boss_limbs import boss_point
-from game.view.enemies.elite_shapes import WHITE, H, barrel
+from game.view.enemies.basic_parts import config_barrels
+from game.view.enemies.elite_shapes import WHITE, H
 from game.view.enemies.enemy_shapes import around, radial
 from game.view.enemies.jointed_model import build_jointed_model
 from game.view.enemies.organic_parts import reactor_sac
@@ -76,15 +77,8 @@ def body(p: Any) -> None:
         hull.bevel_slab(
             ARMOUR, [8.4, 8.4, 9.4], [0, 0.8], H.panel, Placement(None, a + math.pi / 3)
         )
-    # The vents its rings of bullets leave from, pointing out.
-    for k, m in enumerate(CFG.ringMuzzles):
-        barrel(
-            p,
-            boss_point(m[0], m[1], m[2]),
-            (-2 * math.pi * k) / CFG.ringCount,
-            [1.2, 2.5],
-            "ring",
-        )
+    # The vents its rings of bullets leave from, pointing out: barrels that recoil (WPN-03).
+    config_barrels(p, CFG.ringMuzzles, 2.5, 1.0)
     for x in [-9, 9]:
         reactor_sac(p, [x, 0, -31], 2.4, NEON, F.slate)
 

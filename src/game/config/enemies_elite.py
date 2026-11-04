@@ -10,7 +10,7 @@ centre (X right, Y up); `aim` is in radians, clockwise on screen from the nose. 
 
 import math
 
-from game.config.enemies import ENEMY_UNIT
+from game.config.enemies import ENEMY_UNIT, fan_barrels
 from game.config.record import concat, merge, record
 
 # isort: split
@@ -53,10 +53,17 @@ def aim_from(frm: Any, to: Any) -> float:
 def around(count: int, r: float, height: float) -> list[list[float]]:
     """`count` points `r` from the centre, evenly all around, the first one ahead of the nose.
 
-    Where the Hive's rings leave from (ENM-HIVE-10).
+    Where the Hive's rings leave from (ENM-HIVE-10): fixed barrels (`[x, y, height, angle]`, the
+    angle in degrees from the nose, positive to the right as headings are, so negative for a point
+    on the screen's right when it faces down).
     """
     return [
-        [r * math.sin((2 * math.pi * k) / count), -r * math.cos((2 * math.pi * k) / count), height]
+        [
+            r * math.sin((2 * math.pi * k) / count),
+            -r * math.cos((2 * math.pi * k) / count),
+            height,
+            -360 * k / count,
+        ]
         for k in range(count)
     ]
 
@@ -274,10 +281,7 @@ ELITE_CONFIG = record({
         "spreadSpacing": 9,
         "bullet": bullet("blue", 185),
         # The twin cannon on its back turret.
-        "muzzles": [
-            [-3, -9, 7],
-            [3, -9, 7],
-        ],
+        "muzzles": fan_barrels(7, 9, 1.6, -9, 7),
         # Each shoulder cannon fires a burst of `burstCount` along its barrel every interval.
         "cannonInterval": 1.6,
         "firstBurst": 0.8,

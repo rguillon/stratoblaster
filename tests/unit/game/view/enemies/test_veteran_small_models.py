@@ -26,20 +26,24 @@ def probe(monkeypatch: Any) -> Any:
     return run
 
 
-def test_enm_wasp_05_wasp_has_two_pairs_of_wings_two_reactors_and_a_nose_gun(probe: Any) -> None:
+def test_enm_wasp_05_wasp_has_two_pairs_of_wings_two_reactors_and_a_bank_of_three_nose_guns(
+    probe: Any,
+) -> None:
     capture, body = probe(module.build_wasp)
     assert capture.name == "wasp"
     # Two membrane pairs of wings: four flaps in all.
     assert len(body["wings"]) == 4
     assert len(body["reactors"]) == 2
-    assert len(body["muzzles"]) == 1
+    assert len(body["muzzles"]) == 3
 
 
-def test_enm_phantom_05_phantom_is_a_flying_wing_with_two_reactors_and_one_gun(probe: Any) -> None:
+def test_enm_phantom_05_phantom_is_a_flying_wing_with_two_reactors_and_a_bank_of_five_guns(
+    probe: Any,
+) -> None:
     capture, body = probe(module.build_phantom)
     assert capture.name == "phantom"
     assert len(body["reactors"]) == 2
-    assert len(body["muzzles"]) == 1
+    assert len(body["muzzles"]) == 5
     assert len(body["parts"].flesh.geometry.positions) > 0
 
 

@@ -6,14 +6,16 @@ Logical pixels, nose +Z, Y up (to the camera).
 
 import math
 
+from game.config.enemies_veteran import VETERAN_CONFIG
 from game.config.enemies_veteran import VETERAN_NEON as N
 from game.config.enemy_look import ENEMY_LOOK
 from game.sim.enemies.phantom import Phantom
+from game.view.enemies.basic_parts import config_barrels
 from game.view.enemies.enemy_mesh import BuiltEnemyModel, build_enemy_model
 from game.view.enemies.enemy_shapes import POD_SECTION, SIDES, flip_x
 from game.view.enemies.organic_parts import eyes
 from game.view.enemies.vetelite_organic import LEAN_SECTION, mandibles, membrane_pair, sinew
-from game.view.enemies.veteran_shapes import back_band, edge_strip, nose_gun
+from game.view.enemies.veteran_shapes import back_band, edge_strip
 from render.babylon import child_meshes
 from render.geometry.organic import (
     SegmentedBody,
@@ -95,7 +97,7 @@ def build_wasp(scene: Any) -> Any:
         mandibles(flesh, [0, 0.5, 8.2], [2.4, 2.6, 0.35])
         for s in SIDES:
             p.reactor([s * 2.6, 0.2, 0.6], 0.6)
-        nose_gun(p, [0, 0.8, 7.6], 2, 0.45)
+        config_barrels(p, VETERAN_CONFIG.wasp.muzzles, 2, 0.45)
 
     return build_enemy_model("wasp", scene, N.wasp, draw)
 
@@ -179,7 +181,7 @@ def build_phantom(scene: Any) -> Any:
             p.reactor([s * 2.4, 0.2, -10], 1.2)
         eyes(p, [0, 1.6, 9], {"count": 2, "size": 0.5, "spacing": 1.6}, N.phantom)
         hull.loft(POD_SECTION, PHANTOM_NOSE, H.panel, None, None)
-        nose_gun(p, [0, 0.6, 8], 5.8)
+        config_barrels(p, VETERAN_CONFIG.phantom.muzzles, 5.8, 0.4)
 
     model = build_enemy_model("phantom", scene, N.phantom, draw)
 

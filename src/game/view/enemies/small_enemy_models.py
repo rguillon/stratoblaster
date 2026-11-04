@@ -13,8 +13,8 @@ import math
 from game.config.enemies import ENEMY_CONFIG
 from game.config.enemy_look import ENEMY_LOOK
 from game.view.enemies.basic_parts import (
+    config_barrels,
     eye_pair,
-    gun_barrel,
     recoil_barrel,
     wing_pair,
 )
@@ -119,7 +119,8 @@ def build_scout(scene: Any) -> Any:
             neon.slab(SCOUT_STRIP, [1.3, 1.7], N.scout, Placement([s * 7, 0, 0]))
             reactor([s * 7, 0.3, -15], 1.1)
         # Its nose gun (phase 7 review).
-        gun_barrel(p, [0, 1.3, 6], 6.5)
+        # It turns on a pivot at the barrel's root to face the player and recoils (WPN-02, WPN-03).
+        config_barrels(p, ENEMY_CONFIG.scout.muzzles, 6.5, 0.55, True)
 
     return build_enemy_model("scout", scene, N.scout, draw)
 

@@ -6,7 +6,7 @@ fractions of the playfield height from its bottom. `muzzles` as in `enemies.py` 
 centre facing down the screen, X right, Y up, and heights).
 """
 
-from game.config.enemies import ENEMY_UNIT
+from game.config.enemies import ENEMY_UNIT, fan_barrels
 from game.config.enemy_look import ENEMY_LOOK
 from game.config.record import record
 
@@ -49,7 +49,7 @@ VETERAN_CONFIG = record({
         "fanSpacing": 12,
         "bullet": bullet("orange", 220),
         # The gun between its mandibles.
-        "muzzles": [[0, -10.4, 0.8]],
+        "muzzles": fan_barrels(3, 12, 1.2, -10.4, 0.8),
         # Range of X of the group's middle Wasp, as fractions of the width.
         "xRange": [0.25, 0.75],
     },
@@ -106,7 +106,7 @@ VETERAN_CONFIG = record({
         "spreadSpacing": 12,
         "bullet": bullet("purple", 200),
         # The gun under its nose.
-        "muzzles": [[0, -14.6, 0.6]],
+        "muzzles": fan_barrels(5, 12, 1.0, -14.6, 0.6),
         "xRange": [0.25, 0.75],
     },
 })

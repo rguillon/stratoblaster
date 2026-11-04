@@ -53,6 +53,7 @@ class Phantom(Enemy):
         # Direction of the dive, fixed at the end of the aim; None before.
         self.dive_heading: float | None = None
         self._muzzles = GunMuzzles(CFG.muzzles)
+        self.barrels = self._muzzles.barrels
         self._timer = 0.0
         self._speed = 0.0
         self.heading = DOWN

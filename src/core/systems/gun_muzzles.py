@@ -18,6 +18,7 @@ from core.systems.projectile_motion import heading_to, wrap_angle
 from collections.abc import Callable, Sequence
 from typing import Protocol
 
+from core.entities.boss_turret import BossTurret
 from core.entities.enemy import EnemyContext, LaserOwner
 from core.entities.muzzle import Muzzle, RaisedPoint
 
@@ -121,9 +122,12 @@ class GunMuzzles:
         its tip along the way the barrel itself points; the shot is held (False) when none does. A
         gun without fixed barrels fires from the muzzle furthest along `heading`.
         """
+        swivel = self._swivel_of(source)
+        if swivel is not None:
+            return self._shoot_swivel(ctx, source, heading, fire, swivel)
         fixed = self._fixed_towards(source, heading)
         if fixed is None:
-            if self._has_fixed():
+            if self.has_fixed():
                 return False
             point = self.along(ctx, source, heading)
             fire(point.x, point.y, heading)
@@ -134,7 +138,48 @@ class GunMuzzles:
         fire(tip.x, tip.y, own)
         return True
 
-    def _has_fixed(self) -> bool:
+    def fire_all(
+        self,
+        ctx: EnemyContext,
+        source: MuzzleSource,
+        fire: Callable[[float, float, float], None],
+    ) -> None:
+        """Fire one shot from every fixed barrel, along it (a ring, a pod ring): WPN-01, WPN-02."""
+        for barrel in self.barrels:
+            if barrel.angle is None:
+                continue
+            tip = ctx.seen(source.place(barrel.muzzle, self._on_turret))
+            barrel.kick(_now(source))
+            fire(tip.x, tip.y, source.heading + barrel.angle)
+
+    def _swivel_of(self, source: MuzzleSource) -> BossTurret | None:
+        """Return the turning turret these barrels are on, if the source has one (WPN-02)."""
+        if not self._on_turret or not hasattr(source, "turret"):
+            return None
+        turret: BossTurret | None = source.turret
+        return turret
+
+    def _shoot_swivel(
+        self,
+        ctx: EnemyContext,
+        source: MuzzleSource,
+        heading: float,
+        fire: Callable[[float, float, float], None],
+        turret: BossTurret,
+    ) -> bool:
+        """Fire from the barrel of a turret, once it points towards `heading`, along it."""
+        own = source.heading + turret.aim
+        if abs(wrap_angle(own - heading)) > BARREL_TOLERANCE or len(self.barrels) == 0:
+            return False
+        barrel = self.barrels[self._next % len(self.barrels)]
+        self._next += 1
+        tip = ctx.seen(source.place(barrel.muzzle, True))
+        barrel.kick(_now(source))
+        fire(tip.x, tip.y, own)
+        return True
+
+    def has_fixed(self) -> bool:
+        """Whether any of its barrels is fixed (has an angle)."""
         return any(barrel.angle is not None for barrel in self.barrels)
 
     def _fixed_towards(self, source: MuzzleSource, heading: float) -> tuple[Barrel, float] | None:
@@ -199,6 +244,11 @@ def fire_aimed(
     """
     count, spacing_deg = count_and_spacing
     aim = heading_to(source.x, source.y, ctx.player_x, ctx.player_y)
+    if guns.has_fixed():
+        # Fixed barrels: each shot leaves the barrel pointing nearest its way, along it (WPN-01).
+        for turn in fan_headings(0, count, spacing_deg * DEG):
+            guns.shoot(ctx, source, aim + turn, fire)
+        return
     for turn in fan_headings(0, count, spacing_deg * DEG):
         point = guns.along(ctx, source, aim + turn)
         fire(point.x, point.y, heading_to(point.x, point.y, ctx.player_x, ctx.player_y) + turn)

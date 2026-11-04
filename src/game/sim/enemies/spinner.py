@@ -39,8 +39,10 @@ class Spinner(Enemy):
         super().__init__(x, y, CFG.stats)
         self.stop_y = stop_y
         self.state = "enter"
+        self._ctx: EnemyContext | None = None
         self._guns = Cadence(CFG.fireInterval, 0)
         self._muzzles = GunMuzzles(CFG.muzzles)
+        self.barrels = self._muzzles.barrels
         self._fired_for = 0.0
 
     def pods(self) -> list[SpinnerPod]:
@@ -70,14 +72,18 @@ class Spinner(Enemy):
         else:
             self.y += CFG.exitSpeed * dt
 
+    def _fire_bullet(self, x: float, y: float, heading: float) -> None:
+        if self._ctx is not None:
+            self._ctx.fire_bullet(x, y, heading, CFG.bullet)
+
     def _fire(self, ctx: EnemyContext, dt: float) -> None:
+        self._ctx = ctx
         self._fired_for += dt
         self.charge = 1
         _count = self._guns.tick(dt * ctx.fire_rate)
         for _i in range(_count):
-            for pod in self.pods():
-                point = self._muzzles.along(ctx, self, pod.heading)
-                ctx.fire_bullet(point.x, point.y, pod.heading, CFG.bullet)
+            # One bullet from each pod's barrel, along it (WPN-01): the barrels turn with the body.
+            self._muzzles.fire_all(ctx, self, self._fire_bullet)
         if self._fired_for >= CFG.fireDuration:
             self.state = "exit"
             self.charge = 0

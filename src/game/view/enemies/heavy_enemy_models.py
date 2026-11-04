@@ -9,7 +9,7 @@ import math
 
 from game.config.enemies import ENEMY_CONFIG
 from game.config.enemy_look import ENEMY_LOOK
-from game.view.enemies.basic_parts import eye_pair, sinew
+from game.view.enemies.basic_parts import config_barrels, eye_pair, sinew
 from game.view.enemies.enemy_mesh import build_enemy_model
 from game.view.enemies.enemy_shapes import (
     LOBE_SECTION,
@@ -61,7 +61,6 @@ def build_spinner(scene: Any) -> Any:
         hull = p.hull
         neon = p.neon
         charge = p.charge
-        muzzle = p.muzzle
         organ(flesh, 5, 6, F.graphite, Placement([0, -1.6, 0]), 0.35)
         for a in around(4):
             # Each arm leaves the core a quarter turn behind its pod: a spiral.
@@ -82,7 +81,8 @@ def build_spinner(scene: Any) -> Any:
             hull.ring(1.6, 1, 5, H.panel, Placement(radial(a, pod_radius + 1.2, 0), a, QUARTER))
             # The pods' muzzles light up while it fires.
             charge.slab(SPINNER_MUZZLE, [-0.7, 0.7], WHITE, Placement(radial(a, pod_radius, 0), a))
-            muzzle(radial(a, pod_radius + 3.1, 0), "gun")
+        # Each pod's barrel recoils (WPN-03).
+        config_barrels(p, ENEMY_CONFIG.spinner.muzzles, 2.2, 0.7)
         core = [[0, -1.5], [3.2, -0.6], [0, 2.6]]
         neon.lathe(core, 6, N.spinner, None)
 

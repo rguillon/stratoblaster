@@ -46,7 +46,24 @@ def gun_barrel(parts: Any, at: Vec3, length: float, yaw: float = 0) -> None:
     parts.muzzle(along(length + 0.8), "gun")
 
 
-def recoil_barrel(parts: Any, tip: Vec3, angle_deg: float, length: float, index: int) -> None:
+def config_barrels(
+    parts: Any, muzzles: Any, length: float, radius: float = 0.55, swivel: bool = False
+) -> None:
+    """Add a recoiling barrel at each of an enemy's config `muzzles`, in their order (WPN-03)."""
+    for i, m in enumerate(muzzles):
+        angle = m[3] if len(m) > 3 else 0
+        recoil_barrel(parts, [m[0], m[2], -m[1]], angle, length, i, radius, swivel)
+
+
+def recoil_barrel(
+    parts: Any,
+    tip: Vec3,
+    angle_deg: float,
+    length: float,
+    index: int,
+    radius: float = 0.55,
+    swivel: bool = False,
+) -> None:
     """Add barrel number `index` of the enemy's guns, which recoils when it fires (WPN-03).
 
     `tip` is its muzzle as the config gives it, reordered to model space (`[x, height, -y]`) and
@@ -65,7 +82,7 @@ def recoil_barrel(parts: Any, tip: Vec3, angle_deg: float, length: float, index:
     base = [end[0] - sx * length, end[1], end[2] - sz * length]
     # The housing the barrel slides out of, fixed on the body.
     parts.hull.cylinder(
-        0.8,
+        radius * 1.45,
         length * 0.45,
         6,
         H.dark,
@@ -75,11 +92,16 @@ def recoil_barrel(parts: Any, tip: Vec3, angle_deg: float, length: float, index:
 
     def draw(piece: Any) -> None:
         piece.hull.cylinder(
-            0.55, length, 5, H.dark, Placement([base[0], base[1], base[2]], yaw, QUARTER), 0.45
+            radius,
+            length,
+            5,
+            H.dark,
+            Placement([base[0], base[1], base[2]], yaw, QUARTER),
+            radius * 0.82,
         )
-        piece.neon.cylinder(0.6, 0.8, 5, WHITE, Placement(end, yaw, QUARTER))
+        piece.neon.cylinder(radius * 1.1, 0.8, 5, WHITE, Placement(end, yaw, QUARTER))
 
-    parts.slide(base, [-sx, -sz], length * ENEMY_LOOK.barrelRecoil, index, draw)
+    parts.slide(base, [-sx, -sz], length * ENEMY_LOOK.barrelRecoil, index, draw, swivel)
     parts.muzzle(muzzle_at, "gun")
 
 

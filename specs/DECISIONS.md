@@ -975,3 +975,21 @@
   a barrel's marked muzzle at -X.
 - **Consequences:** other asymmetric models keep their (unchecked) X until they are converted.
 - **Status:** Proposed
+
+### D-270 — Slice 2: every enemy that fires bullets has barrels
+- **Date:** 2026-11-04
+- **Requirements:** WPN-01 to WPN-04.
+- **Context:** owner: "do the same for all the other enemies and bosses".
+- **Decision:** fixed banks of barrels, one per shot, for the Wasp (3 fanned 12°), the Phantom (5),
+  the Juggernaut's back turret (7, fanned 9°), the Spinner (one per pod, which spins with the body)
+  and the Hive (12 rim vents, which now fire along themselves: the old vents were drawn mirrored).
+  `fire_aimed` fires each fan shot from the barrel pointing nearest its way, and holds it if none
+  does (the Wasp and Phantom already point at the player when they fire). `GunMuzzles.fire_all`
+  fires every barrel (rings). The Scout, which flies nose-down, has a gun on a swivel
+  (`Enemy.turret`, the bosses' `BossTurret`) turning at 150°/s to the player; a due shot waits until
+  it points within 6°, and the model barrel turns and recoils. The Harrier, Hydra, Mortar and
+  Rocketeer (missiles) and the lasers (Lancer, Prism, Sweeper, Scissor) are WPN-06 to WPN-09's
+  slice; the Juggernaut's shoulder cannons already fire along their barrels.
+- **Consequences:** a Scout over the player's own height cannot turn fast enough to fire; its shots
+  wait while it flies past. Bosses (BOSS-29 turrets) are the next slice.
+- **Status:** Proposed

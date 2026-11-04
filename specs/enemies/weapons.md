@@ -76,7 +76,7 @@ muzzles are its barrels' tips and directions (ENM-21 becomes WPN-01 for them).
 - Given each enemy kind that fires bullets, then its model draws a barrel at each muzzle (unit
   test).
 
-*Sources: owner request 2026-11-04. Slice: enemies.*
+*Sources: owner request 2026-11-04. Slice: enemies (bullets: done, D-270; missiles and lasers: with WPN-06 to WPN-09).*
 
 #### WPN-05 — Every boss shot comes from a gun · MUST
 

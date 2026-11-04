@@ -119,8 +119,16 @@ class Slide:
     """A piece that slides back with a barrel's recoil: its place, its way back and its parts."""
 
     def __init__(
-        self, pivot: Vec3, back: list[float], distance: float, index: int, parts: WingParts
+        self,
+        pivot: Vec3,
+        back: list[float],
+        distance: float,
+        index: int,
+        parts: WingParts,
+        swivel: bool = False,
     ) -> None:
+        # `swivel`: it also turns about its pivot with the enemy's turret (`Enemy.turret`).
+        self.swivel = swivel
         self.pivot = pivot
         self.back = back
         self.distance = distance
@@ -227,11 +235,19 @@ def add_slides(name: str, slides: list[Slide], mats: SurfaceMaterials, neon: Any
     return nodes
 
 
-def slide_back(node: Any, piece: Slide, recoil: float) -> None:
-    """Put `node` back along its slide by `recoil` (0 at rest, 1 thrown fully back)."""
+def slide_back(node: Any, piece: Slide, recoil: float, aim: float = 0) -> None:
+    """Put `node` back along its slide by `recoil` (0 at rest, 1 thrown fully back).
+
+    Turned about its pivot by `aim` (radians, as a barrel's yaw) when it swivels.
+    """
     k = recoil * piece.distance
+    c = math.cos(aim)
+    s = math.sin(aim)
+    bx = piece.back[0] * k
+    bz = piece.back[1] * k
+    node.rotation.y = aim
     node.position.set(
-        piece.pivot[0] + piece.back[0] * k, piece.pivot[1], piece.pivot[2] + piece.back[1] * k
+        piece.pivot[0] + bx * c + bz * s, piece.pivot[1], piece.pivot[2] - bx * s + bz * c
     )
 
 
@@ -246,8 +262,15 @@ def collect_parts(build: Any) -> dict[str, Any]:
     muzzles: list[list[Any]] = []
     slides: list[Slide] = []
 
-    def slide(pivot: Vec3, back: list[float], distance: float, index: int, draw: Any) -> None:
-        piece = Slide(pivot, back, distance, index, wing_parts_new())
+    def slide(
+        pivot: Vec3,
+        back: list[float],
+        distance: float,
+        index: int,
+        draw: Any,
+        swivel: Any = False,
+    ) -> None:
+        piece = Slide(pivot, back, distance, index, wing_parts_new(), bool(swivel))
         draw(piece.parts)
         slides.append(piece)
 
@@ -386,7 +409,10 @@ def build_enemy_model(
         # WPN-03: each barrel slides back as the enemy's barrel of its number fires.
         for i, piece in enumerate(slides):
             if piece.index < len(enemy.barrels):
-                slide_back(slide_nodes[i], piece, enemy.barrels[piece.index].recoil_at(enemy.age))
+                aim = enemy.turret.aim if piece.swivel and enemy.turret is not None else 0
+                slide_back(
+                    slide_nodes[i], piece, enemy.barrels[piece.index].recoil_at(enemy.age), aim
+                )
         step_model_animations(root, dt)
         k = ENEMY_LOOK.chargeIdle + (1 - ENEMY_LOOK.chargeIdle) * enemy.charge
         charge_mat.emissiveColor.set(charge_color[0] * k, charge_color[1] * k, charge_color[2] * k)

@@ -67,6 +67,21 @@ def strafer_barrels() -> list[list[float]]:
     return barrels
 
 
+def fan_barrels(
+    count: int, spacing: float, gap: float, y: float, height: float
+) -> list[list[float]]:
+    """Return `count` fixed barrels side by side, fanned `spacing` degrees apart (WPN-01).
+
+    Their tips `gap` apart at `y` and `height`; the barrel turned `k` fans to the right (a positive
+    angle) is on the left of the nose (screen X is negative), so they diverge.
+    """
+    barrels: list[list[float]] = []
+    for i in range(count):
+        k = i - (count - 1) / 2
+        barrels.append([-k * gap, y, height, k * spacing])
+    return barrels
+
+
 # The Spinner's pods' muzzles, out from its centre.
 SPINNER_MUZZLE = 0.45 * ENEMY_UNIT + 3.1
 # The Lancer's emitter, ahead of its centre.
@@ -101,6 +116,8 @@ ENEMY_CONFIG = record({
         "bullet": bullet("red", 210),
         # The nose gun (ENM-SCOUT-03).
         "muzzles": [[0, -13.3, 1.3]],
+        # Its gun turns on a pivot at the barrel's root to face the player before it fires (WPN-02).
+        "turret": {"x": 0, "y": -6, "turnDeg": 150},
         "xRange": [0.15, 0.85],
     },
     # ENM-STRAFER-07: health and points.
@@ -142,10 +159,10 @@ ENEMY_CONFIG = record({
         "bullet": bullet("orange", 160),
         # The pods' muzzles: each bullet leaves outwards from the pod facing its way.
         "muzzles": [
-            [0, -SPINNER_MUZZLE, 0],
-            [-SPINNER_MUZZLE, 0, 0],
-            [0, SPINNER_MUZZLE, 0],
-            [SPINNER_MUZZLE, 0, 0],
+            [0, -SPINNER_MUZZLE, 0, 0],
+            [-SPINNER_MUZZLE, 0, 0, 90],
+            [0, SPINNER_MUZZLE, 0, 180],
+            [SPINNER_MUZZLE, 0, 0, -90],
         ],
         "xRange": [0.25, 0.75],
     },

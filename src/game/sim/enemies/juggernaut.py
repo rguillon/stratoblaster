@@ -39,6 +39,7 @@ class Juggernaut(JointedEnemy):
         self.state = "enter"
         self._gun = Cadence(CFG.fireInterval, CFG.firstShot)
         self._muzzles = GunMuzzles(CFG.muzzles)
+        self.barrels = self._muzzles.barrels
         self._cannons = Cadence(CFG.cannonInterval, CFG.firstBurst)
         # Bullets left in the cannons' burst, and seconds until the next one.
         self._burst_left = 0

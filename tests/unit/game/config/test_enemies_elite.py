@@ -33,7 +33,7 @@ def test_enm_hive_10_around_places_points_evenly_on_a_circle() -> None:
     """Also ENM-HIVE-10 (the Hive's ring)."""
     points = around(4, 10, 2)
     assert len(points) == 4
-    for x, y, height in points:
+    for x, y, height, _angle in points:
         assert math.hypot(x, y) == pytest.approx(10)
         assert height == 2
 
