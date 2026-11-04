@@ -53,3 +53,24 @@ def test_enm_hornet_07_a_hornet_does_not_shoot() -> None:
     run(Hornet(100, 300, _options(stop_y=None, pause=0.2)), ctx, 3.0)
     assert ctx.bullets == []
     assert ctx.missiles == []
+
+
+def test_enm_hornet_04_a_hornet_with_a_stop_x_flies_in_level_from_a_side_and_stops() -> None:
+    hornet = Hornet(
+        -30, 400, HornetOptions(CFG.stats, 400.0, 200.0, 50.0, 1.0, 100.0, 400.0, 120.0)
+    )
+    run_until(hornet, FakeContext(), lambda: hornet.state != "enter", limit=10.0)
+    assert hornet.state == "aim"
+    assert hornet.x == pytest.approx(120.0)
+    assert hornet.y == pytest.approx(400.0)
+
+
+def test_enm_hornet_04_a_hornet_from_a_side_never_leaves_its_height_while_entering() -> None:
+    hornet = Hornet(
+        430, 350, HornetOptions(CFG.stats, 350.0, 200.0, 50.0, 1.0, 100.0, 400.0, 280.0)
+    )
+    ctx = FakeContext()
+    while hornet.state == "enter":
+        run(hornet, ctx, 0.05, 0.05)
+        assert hornet.y == pytest.approx(350.0)
+    assert hornet.x == pytest.approx(280.0)

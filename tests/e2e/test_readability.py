@@ -53,7 +53,9 @@ def full_frame(page: Page) -> dict[str, Any]:
 # 3-1 at 60 s likewise (at 40 s and 80 s the first shot probed reads at 1.8 and 1.3).
 # 4-1 at 70 s since the enemies became the four tiers' (at 60 s only a Splitter, which never
 # shoots, was on screen with missiles; at 40, 50 and 80 s the shot probed read under the floor).
-LEVELS = [("1-2", 40), ("2-1", 40), ("3-1", 60), ("4-1", 70)]
+# The waves rework (D-260: one big wave of one kind at a time) moved what is on screen at each
+# time, so the times were swept again: 1-2 at 120 s, 2-1 at 60 s, 3-1 at 70 s, 4-1 at 75 s.
+LEVELS = [("1-2", 120), ("2-1", 60), ("3-1", 70), ("4-1", 75)]
 
 
 @pytest.mark.parametrize(("level_id", "time"), LEVELS)

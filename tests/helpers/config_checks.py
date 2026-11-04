@@ -111,14 +111,14 @@ SIDES = ("top", "left", "right")
 def assert_beats_well_formed(beats: Any, kinds: set[str]) -> None:
     """Assert that a wave script's beats are in time order.
 
-    Each beat (`[seconds, kind, groups, seconds between groups, side, position, spread?]`) names an
-    enemy kind of the game, has at least one group, and comes from a side with its position across
-    that side.
+    Each beat (`[seconds, kind, groups, seconds between groups, side, position, spread?,
+    alternate?]`) names an enemy kind of the game, has at least one group, and comes from a side
+    with its position across that side.
     """
     times = [beat[0] for beat in beats]
     assert times == sorted(times)
     for beat in beats:
-        assert len(beat) in (6, 7), beat
+        assert len(beat) in (6, 7, 8), beat
         assert beat[0] >= 0
         assert beat[1] in kinds, beat[1]
         assert isinstance(beat[2], int), beat

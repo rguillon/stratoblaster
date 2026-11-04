@@ -57,6 +57,8 @@ class HornetOptions:
     """How a `Hornet` moves.
 
     `stop_y` is the height where it stops before the dive; None means it starts with the pause.
+    `stop_x` is where it stops across (None: straight below where it starts, as from the top); set,
+    the Hornet flies in a straight line to (`stop_x`, `stop_y`), as from a side of the screen.
     `entry_brake` is the deceleration into the stop, so it slows down instead of halting at once.
     The dive starts from rest and gathers speed at `dive_acceleration` (phase 5 review: no jolt).
     """
@@ -70,8 +72,10 @@ class HornetOptions:
         pause: float,
         dive_acceleration: float,
         dive_max_speed: float,
+        stop_x: float | None = None,
     ) -> None:
         self.stats = stats
+        self.stop_x = stop_x
         self.stop_y = stop_y
         self.entry_speed = entry_speed
         self.entry_brake = entry_brake
@@ -80,7 +84,9 @@ class HornetOptions:
         self.dive_max_speed = dive_max_speed
 
 
-def hornet_options(cfg: HornetConfig, stop_y: float | None) -> HornetOptions:
+def hornet_options(
+    cfg: HornetConfig, stop_y: float | None, stop_x: float | None = None
+) -> HornetOptions:
     """Return the options of a Hornet built from a config entry.
 
     Its `stats`, `pause`, dive and entry values, with `stop_y` (None: it starts with the pause, as a
@@ -94,6 +100,7 @@ def hornet_options(cfg: HornetConfig, stop_y: float | None) -> HornetOptions:
         cfg.pause,
         cfg.diveAcceleration,
         cfg.diveMaxSpeed,
+        stop_x,
     )
 
 
@@ -129,13 +136,22 @@ class Hornet(Enemy):
     def _enter(self, ctx: EnemyContext, dt: float) -> None:
         options = self._options
         stop_y = self.y if options.stop_y is None else options.stop_y
+        stop_x = self.x if options.stop_x is None else options.stop_x
+        dx = stop_x - self.x
+        dy = stop_y - self.y
+        left = math.sqrt(dx * dx + dy * dy)
         # Full speed until the braking distance, then a constant deceleration down to 0 at the stop.
-        speed = min(options.entry_speed, math.sqrt(2 * options.entry_brake * (self.y - stop_y)))
-        self.y -= speed * dt
+        speed = min(options.entry_speed, math.sqrt(2 * options.entry_brake * left))
+        step = speed * dt
+        arrived = step >= left
+        if not arrived:
+            self.x += dx / left * step
+            self.y += dy / left * step
         # The nose starts coming round as it slows down.
         if speed < options.entry_speed:
             self._turn_to_player(ctx, dt)
-        if self.y <= stop_y:
+        if arrived:
+            self.x = stop_x
             self.y = stop_y
             self.state = "aim"
 

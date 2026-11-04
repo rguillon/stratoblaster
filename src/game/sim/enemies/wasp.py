@@ -24,13 +24,15 @@ class Wasp(Hornet):
     was at that moment, like a Hornet (ENM-WASP-10).
     """
 
-    def __init__(self, x: float, y: float, stop_y: float) -> None:
+    def __init__(self, x: float, y: float, stop_y: float, stop_x: float | None = None) -> None:
         """Comes in from (x, y) flying down to `stop_y`, pauses turning to the player.
+
+        With `stop_x` it flies in a straight line to (`stop_x`, `stop_y`), as from a side.
 
         Fires its aimed fan of 3, then dives. Already at or below `stop_y`, it starts with the
         pause.
         """
-        super().__init__(x, y, hornet_options(CFG, min(stop_y, y)))
+        super().__init__(x, y, hornet_options(CFG, min(stop_y, y), stop_x))
         self._muzzles = GunMuzzles(CFG.muzzles)
 
     def update(self, ctx: EnemyContext, dt: float) -> None:

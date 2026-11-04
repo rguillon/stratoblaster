@@ -84,6 +84,15 @@ def clamp_entry(position: float) -> float:
     return min(1 - ENTRY_INSET, max(ENTRY_INSET, position))
 
 
+def side_dive_stop_x(area: EnemySpawnArea, left: bool) -> float:
+    """X where a diver coming in from a side stops, in that side's half of the range (ENM-08).
+
+    A little random, so the divers of one wave do not stop on top of each other.
+    """
+    fraction = 0.2 + 0.3 * area.random()
+    return top_x(area, fraction if left else 1 - fraction)
+
+
 def coin(random: Random) -> bool:
     """Return a coin toss, from a random number."""
     return random() < HALF

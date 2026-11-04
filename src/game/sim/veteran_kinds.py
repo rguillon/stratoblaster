@@ -5,7 +5,13 @@ from core.entities.enemy import EnemyKindDefinition
 from core.math.rng import random_in
 from game.config.enemies import ENEMY_SPAWN_MARGIN as MARGIN
 from game.config.enemies_veteran import VETERAN_CONFIG as C
-from game.sim.enemies.enemy_helpers import clamp_entry, pick_x, top_bounds, top_x
+from game.sim.enemies.enemy_helpers import (
+    clamp_entry,
+    pick_x,
+    side_dive_stop_x,
+    top_bounds,
+    top_x,
+)
 from game.sim.enemies.mortar import Mortar
 from game.sim.enemies.phantom import Phantom
 from game.sim.enemies.wasp import Wasp
@@ -38,6 +44,15 @@ def _wasp_group(area: EnemySpawnArea) -> list[Enemy]:
     """
     group_size = C.wasp.groupSize
     group_spacing = C.wasp.groupSpacing
+    entry = area.entry
+    if entry is not None and entry.side != "top":
+        # From a side (ENM-WASP-11): the group enters in a column, flying in level to a stop.
+        left = entry.side == "left"
+        y = clamp_entry(entry.position) * area.height
+        stop_x = side_dive_stop_x(area, left)
+        x = -MARGIN if left else area.width + MARGIN
+        heights = [y + (i - (group_size - 1) / 2) * group_spacing for i in range(group_size)]
+        return [Wasp(x, height, height, stop_x) for height in heights]
     stop_y = C.wasp.stopFraction * area.height
     low, high = top_bounds(area)
     half = ((group_size - 1) * group_spacing) / 2

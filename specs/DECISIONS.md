@@ -806,3 +806,26 @@
 - **Consequences:** a volley can come up to a turret's swing (a fraction of a second) late; its timer
   does not catch up. Only checked against bullets, not on the real game by eye.
 - **Status:** Proposed
+
+### D-260 — Waves are one big wave of one kind at a time, and divers come in from the sides
+
+- **Date:** 2026-11-04
+- **Requirements:** WLD-1-19, WLD-1-20, WLD-1-21, WLD-2-19, ENM-08 (the specs still describe the
+  old phrases and filler; to be updated by the human).
+- **Context:** the plans cycled through kinds with a beat every 6 s or so, while one wave of 8
+  groups lasts as long, and the filler mixed divers and shooters into every lull, so several kinds
+  were on screen together. Every kind but the Strafer came in from the top.
+- **Decision:** `compose_beats` starts the next beat only when the previous wave has come in
+  (`wave_duration`) plus `SETTLE` (2 s) plus a breather that shrinks over the level (`gap`), so
+  kinds do not overlap. Waves of several groups are bigger and tighter (`size` grows with level and
+  world). A kind comes in another way each time it comes round (`KIND_ENTRY` lists its ways: line,
+  mirrored line, side column, pincer), mirrored every other round. `Wave.alternate` makes every
+  other group come from the opposite edge. The Hornet and the Wasp accept a side entry: they fly in
+  level from the edge to a stop in that side's half (`HornetOptions.stop_x`), then aim and dive as
+  usual. The filler repeats the kind of the beat before it, after its wave, and only for kinds in
+  the level's filler (heavy kinds get none).
+- **Alternatives considered:** dropping the filler (spec'd MUST); side entries for the Phantom and
+  Splitter (their movement is built on a top entry, left for later).
+- **Consequences:** about 20 waves per level instead of about 50 beats, 300 groups instead of 400 to
+  500; the difficulty ramp (WLD-1-22) and density are tuned by numbers, not yet judged by play.
+- **Status:** Proposed
