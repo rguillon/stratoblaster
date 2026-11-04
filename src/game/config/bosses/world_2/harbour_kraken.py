@@ -6,7 +6,6 @@ Offsets in px from the boss's centre, X right and Y up (its nose points down, at
 """
 
 from game.config.bosses.boss_kit import bullet, part, stages, stats, twin, volley
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
@@ -134,8 +133,6 @@ def sided(m: list[Any], side: float) -> list[list[Any]]:
 # stern launches Gnats (FB-HARBOUR-KRAKEN-10). The ground stops: the fight is over the harbour.
 _HARBOUR_KRAKEN = record({
     "id": "harbour-kraken",
-    # Angry after each destroyed part (phase 7 review, FB-HARBOUR-KRAKEN-12).
-    "rage": rage.vortex(4, "orange", "magenta"),
     # Its core, grab cannons, container bay and points (FB-HARBOUR-KRAKEN-15).
     "stats": stats({
         "id": "harbour-kraken",
@@ -156,7 +153,7 @@ _HARBOUR_KRAKEN = record({
     "stopFraction": 0.75,
     "sway": {"amplitude": 35, "period": 10},
     "bob": {"amplitude": 6, "period": 5},
-    "launches": [{"from": "container-bay", "kind": "gnats", "count": 3, "every": 7, "first": 3}],
+    "launches": [{"from": "container-bay", "kind": "hornets", "count": 3, "every": 7, "first": 3}],
     "guns": {
         "core": {"gun": BOW_GUNS, "laser": [BOW_LASER]},
         "crane-fore-left": {"gun": sided(GRAB_FORE, 1)},

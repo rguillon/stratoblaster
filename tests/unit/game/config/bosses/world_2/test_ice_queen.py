@@ -25,8 +25,6 @@ def test_mb_ice_queen_13_boss_stats_are_in_the_range_the_sim_relies_on() -> None
     assert 0 < stats["coreRadius"] < stats["radius"]
 
 
-def test_mb_ice_queen_11_boss_has_an_angry_pattern_and_its_stage_count() -> None:
-    """Its rage, and one stage pattern more than its parts (MB-ICE-QUEEN-10)."""
-    assert isinstance(ICE_QUEEN.rage, list)
-    assert ICE_QUEEN.rage
+def test_mb_ice_queen_11_boss_has_its_stage_count() -> None:
+    """One stage pattern more than its parts (MB-ICE-QUEEN-10)."""
     assert len(ICE_QUEEN.stages) == len(original_parts(ICE_QUEEN)) + 1

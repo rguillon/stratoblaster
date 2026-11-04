@@ -4,8 +4,8 @@
 
 The fourth level of World 3. From the suburb edge 3-3 ended on, the player flies over garden suburbs,
 houses along the river, a town park and leafy avenues to the first garden villages, on gently rolling
-ground, at a rainy dusk with the windows and streets lit. No industry is left. Carriers lead the
-waves and the Mantis comes in. Its checkpoint is its mini boss (see
+ground, at a rainy dusk with the windows and streets lit. No industry is left. Broodmothers and Prisms lead
+the waves, all five kinds of tier 3 in the mix. Its checkpoint is its mini boss (see
 [level flow](../../gameplay/level-flow.md)).
 
 ## Requirements
@@ -59,18 +59,15 @@ streets.
 
 ### LVL-3-4-04 — Enemy waves · MUST
 
-3-4's waves follow its wave plan (WLD-3-16) from 4 s to 292 s, with a beat every `wave_gap` seconds and
-groups growing by `wave_growth`. The cycle: Carrier 1, Scout 4, Rocketeer 2, Rocketeer 2, Lancer 3,
-Spinner 2, Bulwark 1, Weaver 4, Carrier 1, Splitter 3, Strafer 3 (from the left), Hornet 6, Gnat 3,
-Wasp 2, Mortar 1, Minelayer 1 (from the left), Mantis 1. Carriers, two a cycle, lead the waves over
-the suburbs. The filler draws Gnats, Weavers, Hornets, Scouts, Splitters and Spinners, at most
-`filler_gap` apart. 3-4 uses every basic kind, the Wasp, the Mortar, the Minelayer and the Mantis.
+3-4 uses all five kinds of tier 3, Phantom, Spinner, Prism, Mortar and Broodmother, and no other. 3-4's waves follow its wave plan (WLD-3-16) from 4 s to 292 s, with a beat every `wave_gap` seconds (4 s to 2.9 s) and
+groups growing by `wave_growth` (95 %) over the level (85 beats). The cycle of phrases, each a kind with its number of
+groups at the start: Phantom 1, Spinner 2, Prism 1, Phantom 1, Mortar 1, Spinner 2, Phantom 1, Broodmother 1, Prism 1, Spinner 2, Mortar 1. The filler draws Phantoms and Spinners, at most `filler_gap` apart.
 
 **Acceptance criteria**
-- Unit test: 3-4's waves use the eleven basic kinds, the Wasp, the Mortar, the Minelayer and the Mantis, and no other kind.
+- Unit test: 3-4's waves use exactly Phantom, Spinner, Prism, Mortar and Broodmother, and each of them.
 - Unit test: 3-4's waves are the same each time the level is built.
 
-*Sources: P09-R07, P05-R24, D-080, D-090.*
+*Sources: P09-R07, P05-R24, D-080, D-090, ENM-50.*
 
 ### LVL-3-4-05 — Difficulty · MUST
 
@@ -123,9 +120,9 @@ the two fights.
 | streets | suburb 40–70 × 50–95; garden suburb 36–62 × 46–88; streets 45–90 × 50–110; avenue 36–62 × 40–78 (rows × columns) | `SUBURB_STREETS`, `GARDEN_SUBURB_STREETS`, `STREETS`, `AVENUE_STREETS` |
 | clouds | 0.6 / 0.4 | `LEVEL_3_4_LOOK`, `src/game/config/world_3/looks.py` |
 | rain | 0.3 | same |
-| wave_gap | 3.6 s → 2.6 s | `PLAN_3_4.gap`, `src/game/config/world_3/waves.py` |
-| wave_growth | 0.6 | `PLAN_3_4.growth` |
-| filler_gap | 2.7 s → 1.7 s | `WORLD_3_FILLERS["3-4"].maxGap` |
+| wave_gap | 4 s → 2.9 s | `PLAN_3_4.gap`, `src/game/config/world_3/waves.py` |
+| wave_growth | 0.95 | `PLAN_3_4.growth` |
+| filler_gap | 2.9 s → 1.8 s | `WORLD_3_FILLERS["3-4"].maxGap` |
 | bullet speed / fire rate factors | 1.2 / 1.2 | `WORLD_3_DIFFICULTY["3-4"]` |
 | measured | 219.0 enemies/min, 7 744 HP/min, peak 50 | D-090 |
 | runout | 100 s | `WORLD_3_BOSSES["3-4"].runout` |

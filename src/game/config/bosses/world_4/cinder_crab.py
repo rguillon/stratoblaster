@@ -9,7 +9,6 @@ every stage (D-055).
 """
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, volley
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import merge, record
 
@@ -85,9 +84,6 @@ CRAB_MORTAR_AT = [0, 24]
 # slows (x0.5).
 _CINDER_CRAB = record({
     "id": "cinder-crab",
-    # Angry after each destroyed part (D-063, MB-CINDER-CRAB-12), heat 9.5: World 4 goes on
-    # from World 3's 9, up to 14.
-    "rage": rage.curtain(9.5, "orange", "red"),
     # Its core and parts, their health, and its points (MB-CINDER-CRAB-08, MB-CINDER-CRAB-15).
     "stats": stats(
         record({

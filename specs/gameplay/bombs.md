@@ -54,12 +54,12 @@ flies off, nor once the game is over. A bomb lasts `bomb_duration` (1 s).
 When a bomb goes off, every target on screen at that moment ([screen.md](screen.md)
 GAME-SCREEN-04) takes `bomb_damage` (100) once: every enemy, every boss part, and the boss core
 unless a part shields it ([bosses/common.md](../bosses/common.md)). That is enough to destroy most
-low-level enemies: every World 1 basic kind up to the Rocketeer (100 health); a Bulwark or a
-Carrier is only hurt. Enemies destroyed by a bomb score and drop bonuses as usual.
+low-level enemies: every World 1 kind up to the Rocketeer (100 health); a Carrier (300 health) is
+only hurt. Enemies destroyed by a bomb score and drop bonuses as usual.
 
 **Acceptance criteria**
-- Given 5 Gnats and 1 Bulwark on screen, when a bomb goes off, then every Gnat is destroyed and the
-  Bulwark loses 100 health (unit test).
+- Given 5 Hornets and 1 Carrier on screen, when a bomb goes off, then every Hornet is destroyed and
+  the Carrier loses 100 health (unit test).
 - Given a boss whose core is shielded by a part, when a bomb goes off, then the part takes the
   damage and the core does not (unit test).
 - Given an enemy above the top edge, then the bomb does not hurt it.

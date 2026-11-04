@@ -11,7 +11,7 @@ from app.dev_groups import group_jump, group_starts
 from app.menu_state import MenuFlowOptions, MenuState
 from app.pause_menu import PauseMenu
 from app.settings_menu import SettingsMenu, Volumes
-from config.dev_viewer import DEV_AUDIO_VIEWERS, DEV_VIEWERS
+from config.dev_viewer import DEV_AUDIO_VIEWERS, DEV_MODE_VIEWERS, DEV_VIEW_MODES, DEV_VIEWERS
 from core.content.level_catalog import first_unlocked_level
 from core.menu.grid_cursor import GridShape, move_cursor
 from core.menu.menu_screen import can_transition
@@ -120,6 +120,8 @@ class MenuFlow:
         self._dev_index = 0
         self._dev_items = [0 for _ in DEV_VIEWERS]
         self._dev_toggles = [viewer != "levels" for viewer in DEV_VIEWERS]
+        # Each viewer's view (DEV-MENU-21): an index into `DEV_VIEW_MODES`.
+        self._dev_modes = [0 for _ in DEV_VIEWERS]
 
     @property
     def revision(self) -> int:
@@ -147,6 +149,7 @@ class MenuFlow:
             self._settings.volumes,
             self._dev_viewer(),
             self._screen == "dev-viewer" and self._dev_toggles[self._dev_index],
+            self._dev_modes[self._dev_index] if self._screen == "dev-viewer" else 0,
         )
 
     def _dev_viewer(self) -> str | None:
@@ -357,13 +360,30 @@ class MenuFlow:
         """Show item `index`: the dev viewer's menu item was tapped (DEV-MENU-07, D-204)."""
         counts = self._dev_counts
         count = counts[self._dev_index] if self._dev_index < len(counts) else 0
-        if not _is_integer(index) or index < 0 or index >= count:
+        if _is_integer(index) and index < 0:
+            return self._select_dev_mode(-1 - index)
+        if not _is_integer(index) or index >= count:
             return "none"
         if index == self._dev_items[self._dev_index]:
             return "none"
         self._dev_items[self._dev_index] = index
         self._changed()
         return self._dev_feedback("moved")
+
+    def _select_dev_mode(self, mode: int) -> str:
+        """Show the view `mode` (an index into `DEV_VIEW_MODES`): a view button was tapped.
+
+        A tap on a view button reaches the flow as the index `-1 - mode` (DEV-MENU-21). Only the
+        viewers in `DEV_MODE_VIEWERS` have the buttons.
+        """
+        viewer = DEV_VIEWERS[self._dev_index]
+        if viewer not in DEV_MODE_VIEWERS or mode >= len(DEV_VIEW_MODES):
+            return "none"
+        if mode == self._dev_modes[self._dev_index]:
+            return "none"
+        self._dev_modes[self._dev_index] = mode
+        self._changed()
+        return "adjusted"
 
     def _dev_feedback(self, feedback: str) -> str:
         """Return `feedback`, or `played` on an audio viewer, whose item picked plays."""

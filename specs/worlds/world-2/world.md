@@ -6,7 +6,7 @@ World 2, the Industrial Desert, has five levels of about five minutes, cut from 
 starts in the deep desert where World 1 ended, and the desert is slowly taken over by industry,
 mines first, then oil fields, refineries, an industrial belt and dense factories at the end. The
 changes are slow. There is no sea in World 2. Each level has its own time of day, three day levels,
-then dusk, then night. World 2 uses the eleven basic enemy kinds in harder mixes, and as a whole it
+then dusk, then night. World 2 uses the five kinds of tier 2 in harder mixes, and as a whole it
 is harder than World 1. This file holds what the five levels share; each level's own content is in
 its level file. World 2 is built with World 1's rules where nothing else is said: its beats,
 density and fillers ([World 1](../world-1/world.md)), its roads.
@@ -225,30 +225,31 @@ belonged to the Frozen North World 2 was first drafted as).
 
 #### WLD-2-17 — The kinds that lead the waves · MUST
 
-World 2 uses the eleven basic enemy kinds. Each level puts its weight on some of them, and its waves,
-fillers included, use only these kinds:
+World 2 uses the five kinds of tier 2 (ENM-50): Wasp (diver), Strafer (shooter), Sweeper (laser),
+Harrier (missile launcher) and Hatchery (launches Wasps). Its first level has three, the second four,
+the others all five, and its waves, fillers included, use only these kinds:
 
 | Level | Enemy kinds |
 |-------|-------------|
-| 2-1 | Gnat, Hornet, Scout, Strafer, Weaver, over the dunes |
-| 2-2 | the 2-1 kinds plus Splitter and Lancer, over the mines |
-| 2-3 | every basic kind, with Carrier and Spinner groups over the oil fields |
-| 2-4 | every basic kind, with Rocketeers and Bulwarks over the industrial belt |
-| 2-5 | every basic kind, the heaviest mixes: Bulwarks and Carriers together |
+| 2-1 | Wasp, Strafer, Sweeper, over the dunes |
+| 2-2 | the 2-1 kinds plus the Harrier, over the mines |
+| 2-3 | all five kinds, the Hatchery new, over the oil fields |
+| 2-4 | all five kinds, over the industrial belt |
+| 2-5 | all five kinds, in the heaviest mixes |
 
 **Acceptance criteria**
-- Given each World 2 wave script, then it only uses the kinds listed for its level, and 2-3 to 2-5 use all eleven (unit test).
+- Given each World 2 wave script, then it only uses the kinds listed for its level, and 2-3 to 2-5 use all five (unit test).
 
-*Sources: P08-R08.*
+*Sources: P08-R08, ENM-50.*
 
-#### WLD-2-18 — Basic kinds only · MUST
+#### WLD-2-18 — Tier 2 kinds only · MUST
 
-No veteran or elite enemy kind ever comes in World 2: they are for Worlds 3 and 4.
+No kind of tier 1, 3 or 4 ever comes in World 2.
 
 **Acceptance criteria**
-- Given the World 2 wave scripts, then they use none of the veteran or elite kinds (unit test).
+- Given the World 2 wave scripts, then they use none of the kinds of the other tiers (unit test).
 
-*Sources: P05-R24.*
+*Sources: P05-R24, ENM-50.*
 
 #### WLD-2-19 — Waves composed from a plan · MUST
 
@@ -406,10 +407,10 @@ bosses share one boss track (`boss-2`), faster and tenser, in the same instrumen
 | bullet_speed_factor 2-1 … 2-5 | 0.9 / 0.95 / 1.0 / 1.1 / 1.15 | WLD-2-21; `src/game/config/world_2/difficulty.py` `WORLD_2_DIFFICULTY` |
 | fire_rate_factor 2-1 … 2-5 | 0.9 / 0.95 / 1.0 / 1.1 / 1.15 | WLD-2-21; same |
 | plan growth | 0.6 (groups 60 % bigger at the end) | WLD-2-19; every plan of `src/game/config/world_2/waves.py` |
-| enemies per minute 2-1 … 2-5 | 116.8 / 120.4 / 121.4 / 172.0 / 233.4 | WLD-2-20; D-067, play-through without shooting, seed 606 (World 1: 1-3 104.8, 1-5 130.3) |
-| HP per minute 2-1 … 2-5 | 2 466 / 3 384 / 3 666 / 6 016 / 7 360 | WLD-2-20; D-067 (World 1: 1-3 2 235, 1-5 4 150) |
-| peak_on_screen 2-1 … 2-5 | 22 / 23 / 36 / 37 / 51 measured (the old tunable 10 / 11 / 13 / 15 / 17, superseded as in World 1) | WLD-2-20; D-067 |
-| enemy HP written, halves 2-1 … 2-5 | 5 140 / 7 190 · 6 520 / 10 400 · 6 620 / 9 910 · 10 980 / 16 900 · 13 000 / 19 000 | WLD-2-22; from the scripts, Carrier launches out |
+| enemies per minute 2-1 … 2-5 | 116.8 / 120.4 / 121.4 / 172.0 / 233.4 | WLD-2-20; D-067, play-through without shooting, seed 606 (World 1: 1-3 104.8, 1-5 130.3); measured with the old eleven-kind roster, to be measured again (ENM-50) |
+| HP per minute 2-1 … 2-5 | 2 466 / 3 384 / 3 666 / 6 016 / 7 360 | WLD-2-20; D-067 (World 1: 1-3 2 235, 1-5 4 150); measured with the old eleven-kind roster, to be measured again (ENM-50) |
+| peak_on_screen 2-1 … 2-5 | 22 / 23 / 36 / 37 / 51 measured (the old tunable 10 / 11 / 13 / 15 / 17, superseded as in World 1) | WLD-2-20; D-067; measured with the old eleven-kind roster, to be measured again (ENM-50) |
+| enemy HP written, halves 2-1 … 2-5 | to be measured again with the tier 2 kinds | WLD-2-22; from the scripts, Hatchery launches out |
 | boss full health, mini 2-1 … 2-5 | 3 760 / 3 840 / 5 590 / 5 240 / 5 540 (core and original parts: 2 720 / 2 880 / 3 550 / 3 800 / 4 200) | WLD-2-25; `src/game/config/bosses/world_2/*.py` |
 | boss full health, final 2-1 … 2-5 | 10 460 / 10 240 / 13 100 / 19 840 / 26 960 (core and original parts: 6 500 / 7 000 / 8 600 / 13 000 / 17 500) | WLD-2-25; same |
 | mini_fight_time 2-1 → 2-5 | 30–40 s → 45–55 s | WLD-2-27; measured 32.8 / 40.3 / 41.1 / 45.4 / 51.3 s (D-068, before the hidden weapons) |

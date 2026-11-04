@@ -29,8 +29,6 @@ def test_fb_boreal_citadel_17_boss_stats_are_in_the_range_the_sim_relies_on() ->
     assert 0 < stats["coreRadius"] < stats["radius"]
 
 
-def test_fb_boreal_citadel_14_boss_has_an_angry_pattern_and_its_stage_count() -> None:
-    """Its rage, and one stage pattern more than its parts (FB-BOREAL-CITADEL-13)."""
-    assert isinstance(BOREAL_CITADEL.rage, list)
-    assert BOREAL_CITADEL.rage
+def test_fb_boreal_citadel_14_boss_has_its_stage_count() -> None:
+    """One stage pattern more than its parts (FB-BOREAL-CITADEL-13)."""
     assert len(BOREAL_CITADEL.stages) == len(original_parts(BOREAL_CITADEL)) + 1

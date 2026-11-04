@@ -23,10 +23,3 @@ def test_enm_mortar_05_mortar_has_two_reactors_and_one_mortar_mouth(probe: Any) 
     assert capture.name == "mortar"
     assert len(body["reactors"]) == 2
     assert len(body["muzzles"]) == 1
-
-
-def test_enm_minelayer_05_minelayer_has_two_reactors_and_three_mine_chutes(probe: Any) -> None:
-    capture, body = probe(module.build_minelayer)
-    assert capture.name == "minelayer"
-    assert len(body["reactors"]) == 2
-    assert len(body["muzzles"]) == 3

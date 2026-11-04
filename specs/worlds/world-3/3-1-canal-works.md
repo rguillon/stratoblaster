@@ -4,8 +4,8 @@
 
 The first level of World 3. The player flies on from the great works 2-5 ended on, past foundries,
 rail yards, the canal docks and factory yards, to the first workshops, under a morning mist that
-lifts over the first half. The waves are a fresh start after World 2, with the first veteran kind,
-the Wasp. Its checkpoint is its mini boss, as in every level (see [level flow](../../gameplay/level-flow.md)).
+lifts over the first half. The waves are a fresh start after World 2, with tier 3's diver, shooter
+and laser, the Phantom, the Spinner and the Prism. Its checkpoint is its mini boss, as in every level (see [level flow](../../gameplay/level-flow.md)).
 
 ## Requirements
 
@@ -59,19 +59,15 @@ over the first 150 s (the first half), back to the plain morning.
 
 ### LVL-3-1-04 — Enemy waves · MUST
 
-3-1's waves follow its wave plan (WLD-3-16) from 4 s to 292 s, with a beat every `wave_gap` seconds and
-groups growing by `wave_growth` over the level. The cycle of phrases, each a kind with its number of
-groups at the start: Scout 4, Splitter 2, Weaver 4, Strafer 3 (from the left), Hornet 5, Gnat 3,
-Splitter 2, Scout 4, Strafer 3 (from the right), Weaver 4, Wasp 2. The filler draws Hornets, Scouts,
-Gnats, Weavers and Splitters, at most `filler_gap` apart. The waves skim the canal works with the
-light basic kinds only: Gnat, Hornet, Scout, Strafer, Weaver, Splitter, and the Wasp, World 3's first
-veteran kind.
+3-1 brings Phantom, Spinner and Prism (a diver, a shooter and a laser) and no other kind. 3-1's waves follow its wave plan (WLD-3-16) from 4 s to 292 s, with a beat every `wave_gap` seconds (5.2 s to 3.7 s) and
+groups growing by `wave_growth` (80 %) over the level (65 beats). The cycle of phrases, each a kind with its number of
+groups at the start: Phantom 1, Spinner 2, Prism 1, Phantom 1, Spinner 2, Phantom 1, Prism 1, Spinner 2. The filler draws Phantoms and Spinners, at most `filler_gap` apart.
 
 **Acceptance criteria**
-- Unit test: 3-1's waves use exactly the Gnat, Hornet, Scout, Strafer, Weaver, Splitter and Wasp.
+- Unit test: 3-1's waves use exactly Phantom, Spinner and Prism, and each of them.
 - Unit test: 3-1's waves are the same each time the level is built.
 
-*Sources: P09-R07, P05-R24, D-080, D-090.*
+*Sources: P09-R07, P05-R24, D-080, D-090, ENM-50.*
 
 ### LVL-3-1-05 — Difficulty · MUST
 
@@ -127,9 +123,9 @@ end, so the ground never runs out during the two fights.
 | streets | rows 45–90, columns 50–110 | `STREETS` |
 | morning_mist_fog / morning_mist_white | 0.4 / 0.8 | `MORNING_MIST`, `src/game/config/world_3/looks.py` |
 | clouds | 0.3 / 0.2 | `MORNING` |
-| wave_gap | 4.9 s → 3.5 s | `PLAN_3_1.gap`, `src/game/config/world_3/waves.py` |
-| wave_growth | 0.7 (groups +70 % by the end) | `PLAN_3_1.growth` |
-| filler_gap | 3 s → 2 s | `WORLD_3_FILLERS["3-1"].maxGap` |
+| wave_gap | 5.2 s → 3.7 s | `PLAN_3_1.gap`, `src/game/config/world_3/waves.py` |
+| wave_growth | 0.8 | `PLAN_3_1.growth` |
+| filler_gap | 3.4 s → 2.3 s | `WORLD_3_FILLERS["3-1"].maxGap` |
 | bullet speed / fire rate factors | 1 / 1 | `WORLD_3_DIFFICULTY["3-1"]` |
 | measured | 180.8 enemies/min, 4 384 HP/min, peak 37 on screen | D-090 (seed 606, without shooting) |
 | mini boss at | 0.5 of the length | `MINI_BOSS_AT`, `src/game/config/world_1/bosses.py` |

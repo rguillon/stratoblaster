@@ -3,11 +3,7 @@
 
 import math
 
-from core.entities.enemy import Enemy
-from core.systems.enemy_motion import Path
-from core.systems.gun_muzzles import GunMuzzles, fire_aimed
 from game.config.enemies import ENEMY_CONFIG
-from game.sim.enemies.enemy_helpers import Cadence, bullet_shot, on_playfield
 from game.sim.enemies.hornet import Hornet, hornet_options
 
 # isort: split
@@ -21,37 +17,18 @@ CFG = ENEMY_CONFIG.splitter
 POD = ENEMY_CONFIG.splitterPod
 
 
-class Splitter(Enemy):
-    """ENM-SPLITTER-05: flies down a predefined curved path.
+class Splitter(Hornet):
+    """ENM-SPLITTER-05: tier 4's diver, a bigger and tougher Hornet that never shoots.
 
-    It fires one aimed bullet every 2.5 s (ENM-SPLITTER-06). When it is destroyed its three pods
-    break off (ENM-SPLITTER-07), and each dives at the player like a small Hornet (ENM-SPLITTER-08).
+    It comes in from the top, brakes in the upper half, turns its nose to the player and dives at
+    where the player was (ENM-SPLITTER-06). It has the Hornet's stats of its own (ENM-SPLITTER-09).
+    When it is destroyed its three pods break off (ENM-SPLITTER-07), and each dives at the player
+    like a small Hornet (ENM-SPLITTER-08). The Hive launches them mid-screen (ENM-HIVE-09).
     """
 
-    def __init__(self, path: Path) -> None:
-        start = path.at(0)
-        super().__init__(start.x, start.y, CFG.stats)
-        self.path = path
-        self._gun = Cadence(CFG.fireInterval, CFG.firstShot)
-        self._muzzles = GunMuzzles(CFG.muzzles)
-        self._travelled = 0.0
-        self.heading = start.heading
-
-    def update(self, ctx: EnemyContext, dt: float) -> None:
-        """Advance the enemy by `dt` seconds."""
-        self._travelled += CFG.speed * dt
-        pose = self.path.at(self._travelled)
-        self.x = pose.x
-        self.y = pose.y
-        self.heading = pose.heading
-        if self._travelled >= self.path.length:
-            self.gone = True
-        if not on_playfield(self, ctx):
-            return
-        _count = self._gun.tick(dt * ctx.fire_rate)
-        for _i in range(_count):
-            fire_aimed(ctx, self._muzzles, self, (1, 0), bullet_shot(ctx, CFG.bullet))
-        self.charge = self._gun.progress
+    def __init__(self, x: float, y: float, stop_y: float) -> None:
+        """Comes in from (x, y) flying down to `stop_y`; at or below it, it starts aiming."""
+        super().__init__(x, y, hornet_options(CFG, min(stop_y, y)))
 
     def on_destroyed(self, ctx: EnemyContext) -> None:
         """Spawn the three pods, 120° apart around the core, each facing outwards."""

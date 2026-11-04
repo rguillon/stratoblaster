@@ -2,12 +2,12 @@
 
 > **Area:** bosses · **Prefix:** `FB-CANOPY-SPIDER` · **Related:** [common boss rules](../common.md),
 > [3-2 Docklands](../../worlds/world-3/3-2-docklands.md), [World 3](../../worlds/world-3/world.md),
-> [Toucan](../mini/3-2-toucan.md), [Gnat](../../enemies/gnat.md),
+> [Toucan](../mini/3-2-toucan.md), [Hornet](../../enemies/hornet.md),
 > [readability](../../graphics/readability.md)
 
 The Canopy Spider is the final boss of level 3-2, met at the level's end. It is a four-legged
 walker-ship 5 L across: an armoured cephalothorax carrying its head, a big abdomen behind with an egg
-sac at its tip that launches Gnats, and four legs stepping in turn, a gun pod at each foot. It was
+sac at its tip that launches Hornets, and four legs stepping in turn, a gun pod at each foot. It was
 designed to hang over the old Jungle world's canopy and, since World 3 became the
 factories-to-garden-villages world (D-111), it keeps its name and look and walks over the docklands.
 It transforms twice. Shared rules are in [bosses/common.md](../common.md); this file only gives what
@@ -67,7 +67,7 @@ destroyed.
   claws, a gland and a neon ring round it, and a grafted metal gun pointing forward.
 - The **egg sac** (a part) is a cocoon of pale grey-green silk hanging from the abdomen's tip, tied
   to it by silk threads, wrapped in metal bands ringed with neon and veined, its eggs glowing through
-  the silk as the next brood charges, and a hatch on top that the Gnats leave from.
+  the silk as the next brood charges, and a hatch on top that the Hornets leave from.
 
 A destroyed part is hidden and leaves nothing in its place.
 
@@ -124,16 +124,16 @@ that a ship's spread can reach their pods. Its full health is 9 050 HP with the 
 
 *Sources: P09-R09, P09-R10, D-081, D-221.*
 
-#### FB-CANOPY-SPIDER-09 — Part weapons and Gnats · MUST
+#### FB-CANOPY-SPIDER-09 — Part weapons and Hornets · MUST
 
 While they stand, in every stage:
 - each leg gun fires 3 aimed `red` bullets (205 px/s, 12° apart) every 3.4 s, the four 0.85 s apart
   (fore-left, fore-right, aft-left, aft-right);
-- the egg sac launches a group of 3 [Gnats](../../enemies/gnat.md) every 7 s, the first 3 s into a
+- the egg sac launches a group of 3 [Hornets](../../enemies/hornet.md) every 7 s, the first 3 s into a
   stage.
 
 **Acceptance criteria**
-- Given the egg sac stands, then 3 Gnats leave it every 7 s; once it is destroyed, no more come
+- Given the egg sac stands, then 3 Hornets leave it every 7 s; once it is destroyed, no more come
   (unit: launches; `test_boss_launches.py` for the rule).
 
 *Sources: P09-R09, D-081.*
@@ -157,14 +157,18 @@ The core fires from the crown emitter on its back (21 px high), a new ring patte
 
 #### FB-CANOPY-SPIDER-11 — Rage · MUST
 
-After the pause that follows each destroyed part, it fires a flower (a dense, slowly turning ring and
-small fans at the player) at heat 6, in `red` and `purple`.
+It is angry after each of its transformations, when the weapons that one revealed
+fire all out: the two gatlings after the first, the two lances after the second.
+For `boss_rage_seconds` it fires only those, `boss_rage_rate` times as often, instead of its
+stage's pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it
+has no angry pattern of its own.
 
 **Acceptance criteria**
-- Given a part is destroyed, when its pause is over, then the core fires the flower (unit: rage
-  patterns).
+- Given a transformation is over, then it is angry and fires only the weapons it revealed
+  (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-081, D-063.*
+*Sources: D-081, D-063, D-256.*
 
 #### FB-CANOPY-SPIDER-12 — First transformation: back plating, two gatlings · MUST
 
@@ -234,8 +238,8 @@ boss's centre, X right, Y up the screen (its head at -Y).
 | ground speed | ×0.4 | |
 | stepping | hip 11°, knee 15°, 3.2 s; phases 0 / 0.25 / 0.5 / 0.75 | `STEP`, `PHASE` |
 | leg guns | 3 aimed × 12°, every 3.4 s, 0.85 s apart | |
-| Gnats | 3 every 7 s, first 3 s into a stage | `launches` |
-| rage | flower, heat 6 | |
+| Hornets | 3 every 7 s, first 3 s into a stage | `launches` |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformations | at 2 and 4 parts destroyed | `default_transforms` |
 | back region | the abdomen's plan, y 8..47, x ±15.3 at its widest, `shell`; plating 6.7–21 px over a belly flat at 7 | form 1 |
 | spine region | the cephalothorax's plan, y -30..8, x ±15 at its widest, `shell`; plating 4.3–15 px over a shell flat at 4.6 | form 2 |

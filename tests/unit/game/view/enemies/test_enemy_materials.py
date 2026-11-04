@@ -275,3 +275,29 @@ def test_mesh_of_is_a_flat_shaded_vertex_coloured_mesh_in_its_material(monkeypat
     ]
     assert mesh.material is material
     assert mesh.isPickable is False
+
+
+def test_enm_49_an_enemy_of_a_tier_takes_its_tier_s_hue() -> None:
+    """The hue given in place of the two of the bosses; brightness and greys kept."""
+    rgb = em.enemy_color([1, 0.1, 0.1], [110])
+    assert hue_saturation(rgb)[0] == pytest.approx(110, abs=1)
+    assert max(rgb) == pytest.approx(1)
+    assert list(em.enemy_color([0.5, 0.5, 0.5], [110])) == pytest.approx([0.5, 0.5, 0.5])
+
+
+def test_enm_49_in_enemy_family_takes_the_tier_hues_when_given(monkeypatch: Any) -> None:
+    seen = {}
+    monkeypatch.setattr(em, "_with_colors", lambda _geo, colors: seen.setdefault("c", colors))
+    geo = MagicMock()
+    geo.colors = [1, 0, 0, 1]
+    em.in_enemy_family(geo, [135])
+    assert hue_saturation(seen["c"][:3])[0] == pytest.approx(135, abs=1)
+
+
+@pytest.mark.usefixtures("babylon")
+def test_matte_material_has_no_specular_highlight_and_is_lit_as_the_hulls_are() -> None:
+    mat = em.matte_of("blades", Col(0.1, 0.1, 0.1), scene=object())
+    assert mat.metallic == 0
+    assert mat.roughness == 1
+    assert mat.directIntensity == READABILITY.hullLight.direct
+    assert mat.environmentIntensity == READABILITY.hullLight.environment

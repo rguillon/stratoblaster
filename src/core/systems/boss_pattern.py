@@ -35,6 +35,9 @@ from core.systems.gun_muzzles import MuzzleSource
 
 
 DEG = math.pi / 180
+# How far (radians) a turret may be from where its next aimed volley goes for it to fire (BOSS-29):
+# about 6 degrees, so the shots leave the way the barrels point.
+AIM_TOLERANCE = 0.105
 # Straight down the screen.
 DOWN = math.pi
 INFINITY = float("Infinity")
@@ -258,6 +261,10 @@ class BossPattern:
                 continue
             state.left -= time
             while state.left <= 0:
+                if not _on_aim(ctx, volley, state, source):
+                    # Held until its turret points the way the shots go.
+                    state.left = 0
+                    break
                 state.left += volley.every
                 self._fire(ctx, volley, state, source)
             self._step_burst(ctx, volley, state, source, time)
@@ -408,6 +415,9 @@ class BossPattern:
             return
         state.burst_left -= time
         while state.burst > 0 and state.burst_left <= 0:
+            if not _on_aim(ctx, volley, state, source):
+                state.burst_left = 0
+                break
             fire_aimed(
                 ctx,
                 state.guns,
@@ -457,6 +467,25 @@ def _turret_aim(
         steps = math.floor(wrap_angle(turret.aim - turn) / spacing + 0.5)
         return wrap_angle(turn + spacing * steps)
     return 0
+
+
+def _on_aim(
+    ctx: EnemyContext, volley: BossVolley, state: _VolleyState, source: VolleySource
+) -> bool:
+    """Whether the turret of `volley`'s guns points the way its shots go, within `AIM_TOLERANCE`.
+
+    Aimed shots, bursts, missiles and fans leave only once it does (BOSS-29), so they never come
+    out of barrels pointing elsewhere. True for the others: a ring's bullets go all round, a laser
+    has its warning line, and a volley not on a turret has none to wait for.
+    """
+    shape = volley.shape
+    if not volley.turret or isinstance(shape, (BossRingShape, BossLaserShape, BossLaunchShape)):
+        return True
+    turret = source.turret if hasattr(source, "turret") else None
+    if not turret:
+        return True
+    aim = _turret_aim(ctx, volley, state, source, turret)
+    return abs(wrap_angle(aim - turret.aim)) <= AIM_TOLERANCE
 
 
 class _TurnedLaserOwner:

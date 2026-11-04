@@ -17,7 +17,6 @@ from game.config.bosses.boss_kit import (
     stats,
     volley,
 )
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import record
 
@@ -47,8 +46,6 @@ CHIN = [[0, -41.64, 6.68]]
 # cyan neon. Both paw cannons (MB-FJORD-LYNX-08) and the radar mast shield the core.
 _FJORD_LYNX = record({
     "id": "fjord-lynx",
-    # Angry after each destroyed part (phase 7 review, MB-FJORD-LYNX-11).
-    "rage": rage.vortex(3.5, "blue", "magenta"),
     # Its core, paws, radar mast and points (MB-FJORD-LYNX-13).
     "stats": stats({
         "id": "fjord-lynx",

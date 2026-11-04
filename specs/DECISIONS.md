@@ -706,3 +706,103 @@
   before, as its armour is now a piece lying on the core rather than the core's own skin. D-224,
   D-227 and D-230 are superseded where they describe the cut, the chunks, the stems and pylons.
 - **Status:** Proposed
+
+### D-255 — Four enemy tiers of five roles, one world each, one colour theme each
+- **Date:** 2026-11-03
+- **Requirements:** ENM-01, ENM-02, ENM-03, ENM-38, ENM-49, ENM-50.
+- **Context:** the enemies were 21 kinds in three tiers (basic, veteran, elite) that joined the
+  waves world by world, each kind with its own neon colour snapped to yellow or green. The reviewer
+  asked for four tiers, each with one diver, one shooter, one missile launcher, one laser and one
+  carrier (launching divers), tier N assigned to world N, redesigning kinds where needed, with a
+  colour theme per tier picked against its world's ground.
+- **Decision:** 20 kinds in `src/game/config/enemy_tiers.py` (ENM-01): tier 1 Hornet, Scout,
+  Rocketeer, Lancer, Carrier; tier 2 Wasp, Strafer, Harrier, Sweeper, Hatchery; tier 3 Phantom,
+  Spinner, Mortar, Prism, Broodmother; tier 4 Splitter, Juggernaut, Hydra, Scissor, Hive. Gnat,
+  Weaver, Bulwark, Mantis, Minelayer and Orbiter are removed; Harrier, Sweeper, Hatchery, Prism and
+  Broodmother are new; Mortar, Phantom, Splitter, Hydra and Hive are redesigned to their role, and
+  the Carrier and the bosses' hangars launch Hornets. World N uses only tier N's kinds (ENM-50),
+  its waves composed from them in `src/game/config/wave_plans.py`. Each tier has a neon hue on the
+  yellow-green ladder (60° / 110° / 85° / 135°) and a hull tint (steel blue / teal / indigo /
+  graphite) (ENM-49): the model builder takes both from the tier of its model key, so a kind's
+  models need no colour of their own; the readability enemy family (60°–140°) is unchanged and the
+  bosses keep the two `enemyHues`.
+- **Alternatives considered:** widening the enemy hue family to give the tiers more separate hues
+  (changes the readability rules for bosses and shots); keeping older tiers in later worlds (the
+  reviewer asked for one tier a world); keeping the removed kinds as fillers.
+- **Consequences:** the triangle budgets are per tier (400 / 600 / 900 / 1200); World 1 has no
+  Gnat swarms and its waves are composed like the others instead of written by hand; contrast of
+  tier 3's chartreuse on the grass of 3-4 and 3-5 relies on brightness more than hue.
+- **Status:** Proposed
+
+### D-256 — Bosses are angry only when new weapons come out, and their weapons are the bullet hell
+
+- **Date:** 2026-11-03
+- **Requirements:** BOSS-27 (BOSS-28 removed), BOSS-37; every boss file's angry requirement.
+- **Context:** a boss was angry for 3 s after each lost part, firing a bullet hell of four shapes
+  from its core (`boss_rage.py`, a heat per boss). The reviewer asked for it only when the boss
+  reveals a hidden weapon, the bullet hell coming from the new weapons, whatever their kind.
+- **Decision:** a lost part only pauses the boss. At the end of a transformation it is angry for 6 s
+  (`BOSS_TIMING.rageSeconds`): `boss_build.angry_pattern` takes the volleys and launches of the
+  weapons that transformation revealed, fired `rageRate` (3) times as often, a missile rack with
+  `rageMissiles` (2) times as many missiles, a laser no oftener than warning + beam +
+  `rageLaserGap` (0.6 s). Nothing else fires meanwhile. `boss_rage.py` and every design's `rage`
+  record are removed; no boss needed a new weapon since every boss transforms (BOSS-35).
+- **Alternatives considered:** keeping the core patterns beside the weapons (the hell would not come
+  from the new weapons); a per-boss angry pattern in data (more to author and keep in step with
+  each boss's weapons).
+- **Consequences:** how hot a rage is now depends on the weapon kinds revealed, not a heat number;
+  the BOSS-55 "heat goes up" criterion is gone; a rage whose weapons are all destroyed is silent.
+  The per-boss specs' angry sections and measured fight times need a new look.
+- **Status:** Proposed
+
+### D-257 — View buttons in the enemies and bosses viewers: model, wireframe, game view
+
+- **Date:** 2026-11-03
+- **Requirements:** DEV-MENU-21.
+- **Context:** the enemies and bosses viewers only showed the model pinned at the middle, dropping
+  what it fires; the reviewer asked for buttons to switch to a wireframe view and to a view where
+  its movements and actions can be seen.
+- **Decision:** `DEV_VIEW_MODES` (model, wireframe, game view) with a button row over the viewer's
+  menu. Wireframe sets the scene's `forceWireframe`. The game view runs a real `EnemyWorld` (the
+  player at the bottom middle) and draws its enemies, shots and blasts with the game's renderers,
+  at game size. A tap on a view button is the menu index `-1 - view`, so the pointer path and the
+  flow need no new command type; the dev screen's drag-to-turn leaves the buttons alone.
+- **Alternatives considered:** a new menu command type for view taps (more plumbing for one
+  button row); Enter cycling the views (no buttons, as asked).
+- **Consequences:** the game view does not draw the player's ship nor test hits on it; hit circles
+  are not drawn in the wireframe.
+- **Status:** Proposed
+
+### D-258 — A harder, immediate rage
+
+- **Date:** 2026-11-03
+- **Requirements:** BOSS-27.
+- **Context:** after a transformation the new weapons often took several seconds to open fire: the
+  stage pause of the part that called for it was still running, and each volley waited its whole
+  (shortened) interval for its first shot. The reviewer asked for a stronger rage that starts at once.
+- **Decision:** the end of a transformation cancels the pause; each angry volley's first shot comes
+  `rageFirst` (0.15 s) + `rageStagger` (0.2 s) × its place after the rage starts (never later than
+  its interval). The rage lasts 8 s (was 6), fires 4.5× as often (was 3×) and a rack launches 3×
+  the missiles (was 2×).
+- **Alternatives considered:** only shortening `first` (the pause would still delay it).
+- **Consequences:** a rage is about twice as dense as D-256's; the lasers stay bounded by their
+  warning and beam. Not yet judged by play.
+- **Status:** Proposed
+
+### D-259 — A turret's volley waits until the turret points the way the shots go
+
+- **Date:** 2026-11-04
+- **Requirements:** BOSS-29.
+- **Context:** the reviewer saw bullets leave a boss's twin gatlings away from their barrels, now
+  and then. Aimed shots were aimed from the muzzle at the player at once, while the turret chases
+  the player at 150°/s, so a volley due while the turret was still turning (a weapon just
+  revealed, a player who moved fast) left barrels pointing elsewhere. The angry opening fire
+  (D-258) made it much more frequent.
+- **Decision:** `BossPattern.step` holds a due aimed, burst, missile or fan volley on a turret until
+  the turret is within `AIM_TOLERANCE` (6°) of its aim, a burst checking before each bullet. Rings,
+  lasers and guns off a turret never wait.
+- **Alternatives considered:** aiming the shots along the barrels (the player could be missed for
+  seconds); a turret that turns instantly (loses the readable swing).
+- **Consequences:** a volley can come up to a turret's swing (a fraction of a second) late; its timer
+  does not catch up. Only checked against bullets, not on the real game by eye.
+- **Status:** Proposed

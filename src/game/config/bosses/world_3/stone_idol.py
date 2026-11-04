@@ -12,7 +12,6 @@ used by no earlier stage. Health (MB-STONE-IDOL-07) tuned for WLD-3-20 with the 
 from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import hidden_weapon, with_weapons
 from game.config.bosses.moving_regions import moving_region, swing
 from game.config.record import record
@@ -51,8 +50,6 @@ EY = IDOL_PARTS.eye[1]
 # stops over the temple while it fights (x0).
 _STONE_IDOL = record({
     "id": "stone-idol",
-    # Angry after each destroyed part (phase 7 review, MB-STONE-IDOL-10).
-    "rage": rage.flower(6.5, "magenta", "orange"),
     # Its core and parts, and its points (MB-STONE-IDOL-13).
     "stats": stats(
         record({

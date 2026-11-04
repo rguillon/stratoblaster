@@ -7,7 +7,16 @@ every text from the game (UI-LOOK-10).
 
 from app.dev_groups import group_of, group_starts
 from app.settings_menu import SETTINGS_SLIDERS
-from config.dev_viewer import DEV_AUDIO_VIEWERS, DEV_VIEWER_CONFIG, DEV_VIEWERS
+from config.dev_viewer import (
+    DEFAULT_DEV_MENU_COLUMNS,
+    DEV_AUDIO_VIEWERS,
+    DEV_MENU_COLUMNS,
+    DEV_MODE_LABELS,
+    DEV_MODE_VIEWERS,
+    DEV_VIEW_MODES,
+    DEV_VIEWER_CONFIG,
+    DEV_VIEWERS,
+)
 from ui.menu_view import (
     DevAudioView,
     DevChoice,
@@ -240,7 +249,16 @@ def _dev_view(state: MenuState, ctx: MenuViewContext) -> Any:
         end = starts[g + 1] if g + 1 < len(starts) else len(groups)
         place = str(index - starts[g] + 1) + " / " + str(end - starts[g])
         position = groups[index] + " · " + place
-    return DevViewerView(texts.labels[viewer], hint, back, index, item, position, scrub, menu)
+    columns = DEV_MENU_COLUMNS.get(viewer, DEFAULT_DEV_MENU_COLUMNS)
+    modes = None
+    if viewer in DEV_MODE_VIEWERS:
+        modes = [
+            DevChoice(DEV_MODE_LABELS[mode], i, i == state.dev_mode)
+            for i, mode in enumerate(DEV_VIEW_MODES)
+        ]
+    return DevViewerView(
+        texts.labels[viewer], hint, back, index, item, position, scrub, menu, columns, modes
+    )
 
 
 def _fullscreen_label(texts: Any, fullscreen: bool | None) -> str | None:

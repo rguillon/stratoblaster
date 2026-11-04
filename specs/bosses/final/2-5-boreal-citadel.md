@@ -1,6 +1,6 @@
 # Boreal Citadel — 2-5 final boss
 
-> **Area:** bosses · **Prefix:** `FB-BOREAL-CITADEL` · **Related:** [common.md](../common.md), [2-5 Factory district](../../worlds/world-2/2-5-factory-district.md), [World 2](../../worlds/world-2/world.md), [Ice Queen (2-5 mini)](../mini/2-5-ice-queen.md), [Gnat](../../enemies/gnat.md)
+> **Area:** bosses · **Prefix:** `FB-BOREAL-CITADEL` · **Related:** [common.md](../common.md), [2-5 Factory district](../../worlds/world-2/2-5-factory-district.md), [World 2](../../worlds/world-2/world.md), [Ice Queen (2-5 mini)](../mini/2-5-ice-queen.md), [Hornet](../../enemies/hornet.md)
 
 The Boreal Citadel is the final boss of 2-5 and World 2's last boss, the hardest so far. It is a
 6 L colossal living beast carrying a city on its back: rimed flesh, a spine of bone down its middle,
@@ -177,11 +177,18 @@ homing missiles from the hatches: every kind of attack. One pattern per stage, e
 
 #### FB-BOREAL-CITADEL-14 — Rage · MUST
 
-It is angry as every boss with the hottest rage of World 2: a `curtain` and `spirals` at heat
-`rage_heat`, each at half the rate (green and purple fans over a purple ring, purple and magenta
-spirals).
+It is angry after each of its transformations, when the weapons that one revealed
+fire all out: the hangar and two mortars after the first, the two heavy cannons after the second.
+For `boss_rage_seconds` it fires only those, `boss_rage_rate` times as often, instead of its
+stage's pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it
+has no angry pattern of its own.
 
-*Sources: D-068.*
+**Acceptance criteria**
+- Given a transformation is over, then it is angry and fires only the weapons it revealed
+  (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
+
+*Sources: D-068, D-256.*
 
 #### FB-BOREAL-CITADEL-15 — First transformation: the bow opens · MUST
 
@@ -189,7 +196,7 @@ It transforms a first time when both dome generators are destroyed (named parts,
 lost). The transformation opens its bow doors (FB-BOREAL-CITADEL-08) and reveals, `t1_hp` each (0.8
 of a dome's), all shielding the core:
 - `hangar`, on the centre line 68 px ahead of the centre (`hangar_radius`), its two doors sliding
-  apart, launching 2 Gnats every 7 s (first 3 s into a stage) ([common.md](../common.md));
+  apart, launching 2 Hornets every 7 s (first 3 s into a stage) ([common.md](../common.md));
 - `mortar-left` and `mortar-right`, at ±20 px across and 48 px ahead of the centre
   (`mortar_radius`), firing green flak shells that burst into rings, first 1.2 s and 2.8 s into each
   stage.
@@ -231,7 +238,7 @@ completes 2-5 and World 2.
 | battery_radius / battery_hp | 14 px / 1 700 | `BOREAL_PARTS.battery` |
 | dome_radius / dome_hp | 13 px / 2 150 | `BOREAL_PARTS.dome` |
 | bullets | green 185, purple 195, magenta 190 px/s | `GREEN`, `PURPLE`, `MAGENTA`; times the level's factors (2-5: 1.15) |
-| rage_heat | 7 (`curtain` green / purple + `spirals` purple / magenta, 0.5 share each) | `rage` |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformations | both domes; both batteries | `transformParts` |
 | door_swing | 0° → 75° about the `up` axis, hinge (±32, −40, 10) | `moving_region("bow-doors", 1, …, swing(…))` |
 | moving region `bow-doors` | the bow's panels: x 0…32 (mirrored), from y −40 to the deck's bow edge and nose (y −83.7 on the centre line), `shell` | `moving_region("bow-doors", 1, …)`; drawn in `src/game/view/bosses/world_2/boreal_citadel_armour.py` |

@@ -10,7 +10,6 @@ spirals of its own, used by no earlier stage, once it stands alone.
 from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import record
 
@@ -48,9 +47,6 @@ TY = JAGUAR_PARTS.tail[1]
 # shield the core, a tail cannon aims a laser (MB-JAGUAR-08), and the core fires spirals.
 _JAGUAR = record({
     "id": "jaguar",
-    # Angry after each destroyed part (phase 7 review, MB-JAGUAR-10): the hottest mini boss so
-    # far.
-    "rage": rage.curtain(8.5, "orange", "red"),
     # Its core and parts, and its points (MB-JAGUAR-13).
     "stats": stats(
         record({

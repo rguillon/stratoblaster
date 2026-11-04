@@ -25,8 +25,6 @@ def test_fb_sky_temple_08_boss_stats_are_in_the_range_the_sim_relies_on() -> Non
     assert 0 < stats["coreRadius"] < stats["radius"]
 
 
-def test_fb_sky_temple_11_boss_has_an_angry_pattern_and_its_stage_count() -> None:
-    """Its rage, and one stage pattern more than its parts (FB-SKY-TEMPLE-10)."""
-    assert isinstance(SKY_TEMPLE.rage, list)
-    assert SKY_TEMPLE.rage
+def test_fb_sky_temple_11_boss_has_its_stage_count() -> None:
+    """One stage pattern more than its parts (FB-SKY-TEMPLE-10)."""
     assert len(SKY_TEMPLE.stages) == len(original_parts(SKY_TEMPLE)) + 1

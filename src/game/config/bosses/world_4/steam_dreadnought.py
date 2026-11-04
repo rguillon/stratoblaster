@@ -11,7 +11,6 @@ with the D-055 bot for WLD-4-22.
 """
 
 from game.config.bosses.boss_kit import bullet, cells, mirror, part, stages, stats, twin, volley
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.bosses.moving_regions import moving_region, swing
 from game.config.record import concat, merge, record
@@ -71,9 +70,6 @@ TURRET_Y = DREAD_PARTS.turret[1]
 # fires homing missiles; the bow fires its laser after a warning line. The ground slows (x0.6).
 _STEAM_DREADNOUGHT = record({
     "id": "steam-dreadnought",
-    # Angry after each destroyed part (D-063, FB-STEAM-DREADNOUGHT-14), heat 10: World 4 goes
-    # on from World 3's 9, up to 14.
-    "rage": rage.flower(10, "red", "orange"),
     # Its core and parts, their health, and its points (FB-STEAM-DREADNOUGHT-08).
     "stats": stats(
         record({

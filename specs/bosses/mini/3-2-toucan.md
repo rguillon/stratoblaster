@@ -154,14 +154,17 @@ The core fires from its cheek guns, and from its crest once alone:
 
 #### MB-TOUCAN-11 — Rage · MUST
 
-After the pause that follows each destroyed part, it fires a curtain (fans sweeping across and back
-over a ring) at heat 5.5, in `orange` and `red`.
+It is angry after its transformation, when the two missile racks it revealed fire all out,
+for `boss_rage_seconds`, `boss_rage_rate` times as often, instead of its stage's
+pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it has no
+angry pattern of its own.
 
 **Acceptance criteria**
-- Given a part is destroyed, when its pause is over, then the core fires the curtain (unit: rage
-  patterns).
+- Given its transformation is over, then it is angry and fires only the two missile racks it
+  revealed (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-081, D-063.*
+*Sources: D-081, D-063, D-256.*
 
 #### MB-TOUCAN-12 — Transformation: back plating, two missile racks · MUST
 
@@ -213,7 +216,7 @@ X right, Y up the screen (its beak at -Y).
 | ground speed | ×0.6 | |
 | pod fans | 3 × 14°, every 2.4 s, lean ±10° | |
 | beak laser | 1.4 s every 6 s | |
-| rage | curtain, heat 5.5 | |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation | once, at 2 parts destroyed | `default_transforms` |
 | back region | two plates either side of the ridge: right one x 2.1–10.6 at y -21, to 17 at y -6, 16 at y 10, 2.2–11 at y 26 (mirrored), `shell`; plates 4.0–15 px over the body (top 4.3) | `armour_region("back", …)`; `toucan_model.py` `KEEL`, `PLATES` |
 | missile racks | (±12, -9), radius 10, pod 18, 620 HP, first 1.2 / 2.0 s | |

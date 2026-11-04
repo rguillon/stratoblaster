@@ -2,10 +2,12 @@
 
 > **Area:** enemies · **Prefix:** `ENM-PHANTOM` · **Related:** [common.md](common.md), [World 3](../worlds/world-3/world.md), [World 4](../worlds/world-4/world.md), [graphics/edge-trim.md](../graphics/edge-trim.md)
 
-The Phantom is a veteran kind ([common.md](common.md)): a cloaker. It fades out, moves unseen and
-fades in somewhere else in the upper half, three times, firing an aimed spread each time it comes
-back, then leaves upward. While it is faded out it cannot be hit and cannot ram the player. It has
-no moving parts.
+The Phantom is a veteran kind ([common.md](common.md)) and **tier 3's diver**
+(`src/game/config/enemy_tiers.py`): a cloaker. It fades out, moves unseen and fades in somewhere
+else in the upper half, twice, firing an aimed spread when it comes back the first time. After the
+second time it turns its nose to the player and dives at where the player was, leaving at the
+bottom. While it is faded out it cannot be hit and cannot ram the player. It has no moving parts. A
+Broodmother launches Phantoms from its hatches with the same constructor.
 
 ## Requirements
 
@@ -52,10 +54,11 @@ brightness and paleness.
 #### ENM-PHANTOM-04 — Charge light · SHOULD
 
 A charge light at the gun's mouth brightens as the Phantom fades in and is at full brightness when
-its spread leaves ([common.md](common.md)).
+its spread leaves ([common.md](common.md)); it also brightens during the pause before the dive.
 
 **Acceptance criteria**
-- Given a Phantom fading in, then its charge follows its opacity; after the spread it is 0.
+- Given a Phantom fading in, then its charge follows its opacity; after the fade-in it is 0.
+- Given a Phantom aiming for its dive, then its charge rises, and is 0 once it dives.
 
 *Sources: P05-R17, P16-R04.*
 
@@ -101,23 +104,28 @@ The Phantom's model, reactors included, stays within the veteran triangle budget
 A Phantom comes in alone from just above the top edge, at the wave's entry position or at a random
 X between 25 % and 75 % of the width. It flies down at 150 px/s, slowing over the last 60 px (never
 below 25 px/s), to a random height between 60 % and 82 % of the playfield (the upper half), then
-holds there 0.6 s.
+holds there 0.6 s. Its constructor takes where it starts and the height where it first stops, so a
+Phantom launched from a Broodmother's hatch, anywhere on the screen (above or below that height),
+flies to its stop the same way.
 
 **Acceptance criteria**
 - Given a Phantom comes in, then it stops at a height between 60 % and 82 % of the playfield.
+- Given a Phantom starts below its stop height, then it rises to it and holds there.
 
 *Sources: P05-R17.*
 
-#### ENM-PHANTOM-09 — Three jumps · MUST
+#### ENM-PHANTOM-09 — Two jumps · MUST
 
-Then, three times, the Phantom fades out over 0.4 s, stays invisible for 0.8 s, and reappears at
+Then, twice, the Phantom fades out over 0.4 s, stays invisible for 0.8 s, and reappears at
 another place in the upper half: a random X between 15 % and 85 % of the width and a random height
 between 60 % and 82 %, at least 110 px from where it was (it tries up to 8 places). It reappears
-nose to the player, fades in over 0.4 s, fires (ENM-PHANTOM-10) and holds 0.6 s. Its holds get
-shorter with the level's fire rate factor ([common.md](common.md)).
+nose to the player and fades in over 0.4 s; after the first jump it fires (ENM-PHANTOM-10) and
+holds 0.6 s, after the second it dives (ENM-PHANTOM-11). Its holds get shorter with the level's
+fire rate factor ([common.md](common.md)).
 
 **Acceptance criteria**
-- Given a Phantom, then it runs its fade cycle three times with its opacity always between 0 and 1.
+- Given a Phantom, then it runs its fade cycle twice, then aims and dives, with its opacity always
+  between 0 and 1.
 - Given it reappears, then its new place is in the upper half and, but for bad luck after 8 tries,
   at least 110 px from the old one.
 
@@ -125,21 +133,28 @@ shorter with the level's fire rate factor ([common.md](common.md)).
 
 #### ENM-PHANTOM-10 — Aimed spread · MUST
 
-Each time it has faded back in, the Phantom fires a spread of 5 bullets (200 px/s) 12° apart,
+The first time it has faded back in (and only then), the Phantom fires a spread of 5 bullets (200 px/s) 12° apart,
 centred on the player, from the gun at its nose, from its new place.
 
 **Acceptance criteria**
-- Given a Phantom reappears, then it fires its aimed spread of 5 from its new place, once its
-  fade-in ends.
+- Given a Phantom reappears the first time, then it fires its aimed spread of 5 from its new place,
+  once its fade-in ends.
+- Given it reappears the second time, then it fires nothing.
 
 *Sources: P05-R17.*
 
-#### ENM-PHANTOM-11 — Exit · MUST
+#### ENM-PHANTOM-11 — Dive · MUST
 
-After its third spread and hold, the Phantom leaves upward at 170 px/s, off the top of the screen.
+Once it has faded in the second time, the Phantom turns its nose to the player for 0.5 s (easing
+in, as the Hornet's, [hornet.md](hornet.md)), then dives in a straight line at where the player was
+at the end of that pause, accelerating from rest at 900 px/s² up to 560 px/s, until it is off the
+bottom of the screen. It fires nothing during the dive, and is fully visible (it can be hit and can
+ram the player).
 
 **Acceptance criteria**
-- Given a Phantom has fired its third spread, then it moves up and off the screen.
+- Given a Phantom has faded in the second time, then it turns to the player, locks the player's
+  position at the end of 0.5 s, and moves along that line, faster each step up to 560 px/s.
+- Given it dives, then it leaves the screen at the bottom.
 
 *Sources: P05-R17.*
 
@@ -189,9 +204,9 @@ the last veteran kind, and every level of World 4 uses it.
 | placeX / placeY | 15 % – 85 % / 60 % – 82 % | its first stop's height and every place it reappears at |
 | jumpDistance | 110 px | at least this far from the last place; `TRIES` 8 in `phantom.py` |
 | fade / hidden / hold | 0.4 s / 0.8 s / 0.6 s | the hold is divided by the level's fire rate factor |
-| jumps | 3 | |
+| jumps / spreadJump | 2 / 1 | it fires after jump 1 only |
 | solidOpacity | 0.5 | below it, shots pass through and it cannot ram |
-| exitSpeed | 170 px/s | upward |
+| pause / diveAcceleration / diveMaxSpeed | 0.5 s / 900 px/s² / 560 px/s | the dive; `TURN_EASE` 14 in `phantom.py` |
 | spreadCount / spreadSpacing | 5 / 12° | style `purple`, 200 px/s |
 | muzzles | `[0, -14.6, 0.6]` | the gun under its nose cap |
 | neon | `[0.75, 0.6, 1]`, drawn `[0.6, 1, 0.63]` | `VETERAN_NEON.phantom` |

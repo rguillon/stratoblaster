@@ -13,7 +13,7 @@ sizes, muzzles and volleys.
 - `mortar`: a short, wide tube tilted up on a round base (flak shells that burst into rings);
 - `battery`: a long, low gun deck, five barrels in a row (wide fans straight down);
 - `sweeper`: a turret with a two-pronged emitter (a laser that sweeps after the player);
-- `hangar`: a box bay whose doors slide open (it launches Gnats).
+- `hangar`: a box bay whose doors slide open (it launches Hornets).
 
 Muzzles are worked out here from a weapon's size; the boss view draws its model with the same
 numbers (`game/view/bosses/hidden_weapon_shapes.py`). Offsets in px from the boss's centre, X right,
@@ -112,7 +112,7 @@ WEAPON_FIRE = record({
     "mortar": {"every": 3.2, "speed": 110, "radius": 8, "after": 1.1, "count": 8, "small": 170},
     "battery": {"every": 2.0, "count": 7, "spacingDeg": 9, "speed": 180},
     "sweeper": {"every": 8, "firing": 2.0},
-    "hangar": {"kind": "gnats", "count": 2, "every": 7},
+    "hangar": {"kind": "hornets", "count": 2, "every": 7},
 })
 
 
@@ -327,7 +327,7 @@ def weapon_volleys(kind: str, part_id: str, style: str, first: float) -> list[An
 
 
 def weapon_launches(kind: str, part_id: str, first: float) -> list[Any]:
-    """Return what a weapon of `kind` launches (see `BossDesign.launches`): a hangar's Gnats."""
+    """Return what a weapon of `kind` launches (see `BossDesign.launches`): a hangar's Hornets."""
     if kind != "hangar":
         return []
     h = WEAPON_FIRE.hangar

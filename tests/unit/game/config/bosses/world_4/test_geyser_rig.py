@@ -25,8 +25,6 @@ def test_fb_geyser_rig_09_boss_stats_are_in_the_range_the_sim_relies_on() -> Non
     assert 0 < stats["coreRadius"] < stats["radius"]
 
 
-def test_fb_geyser_rig_14_boss_has_an_angry_pattern_and_its_stage_count() -> None:
-    """Its rage, and one stage pattern more than its parts (FB-GEYSER-RIG-13)."""
-    assert isinstance(GEYSER_RIG.rage, list)
-    assert GEYSER_RIG.rage
+def test_fb_geyser_rig_14_boss_has_its_stage_count() -> None:
+    """One stage pattern more than its parts (FB-GEYSER-RIG-13)."""
     assert len(GEYSER_RIG.stages) == len(original_parts(GEYSER_RIG)) + 1

@@ -12,7 +12,7 @@ from helpers.view_probes import drawings_of, probe_builder
 from game.config.enemies import ENEMY_CONFIG, ENEMY_UNIT
 from game.view.enemies.enemy_models import ENEMY_MODELS
 
-# The basic kinds: the twelve of `ENEMY_CONFIG`, each with its model key (`stats.model`).
+# The basic kinds: the nine of `ENEMY_CONFIG`, each with its model key (`stats.model`).
 BASIC_BY_MODEL = {kind["stats"]["model"]: kind for kind in ENEMY_CONFIG.values()}
 
 # ENM-12 (`hitbox_footprint_tolerance`, specs/enemies/common.md: 15 %); checked here at 10 %.
@@ -62,8 +62,8 @@ def _config_muzzles(kind: dict) -> list[list[float]]:
     return []
 
 
-def test_enm_12_the_basic_kinds_are_the_twelve_of_the_config() -> None:
-    assert len(BASIC_BY_MODEL) == 12
+def test_enm_12_the_basic_kinds_are_the_nine_of_the_config() -> None:
+    assert len(BASIC_BY_MODEL) == 9
     assert set(BASIC_BY_MODEL) <= set(ENEMY_MODELS)
 
 

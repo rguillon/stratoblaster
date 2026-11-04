@@ -9,7 +9,6 @@ last stage (only the core left) a ring used by no earlier stage. Health values
 """
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import record
 
@@ -32,8 +31,6 @@ FLOE_BEACON = [[0, 18, 24.6]]
 # sponsons fire aimed bursts and shield the core (MB-FLOE-BREAKER-09).
 _FLOE_BREAKER = record({
     "id": "floe-breaker",
-    # Angry after each destroyed part (phase 7 review, MB-FLOE-BREAKER-11).
-    "rage": rage.curtain(2.5, "blue", "magenta"),
     # Its core, harpoon guns and points (MB-FLOE-BREAKER-13).
     "stats": stats({
         "id": "floe-breaker",

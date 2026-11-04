@@ -5,8 +5,11 @@ The model is a node tree: a root, a body (hull, flesh, lights and wings) and, ou
 reactors, rotors and muzzles (so shots leave from the same points, GFX-ART-18).
 """
 
+import math
+
 from core.entities.enemy import Enemy
 from game.config.enemy_look import ENEMY_LOOK
+from game.config.enemy_tiers import tier_look
 from game.view.enemies.enemy_engines import Reactor, add_reactors, add_rotors
 from game.view.enemies.enemy_materials import (
     body_color,
@@ -14,6 +17,7 @@ from game.view.enemies.enemy_materials import (
     enemy_materials,
     in_body_shades,
     in_enemy_family,
+    matte_of,
     mesh_of,
     rim_of,
     tinted_hull,
@@ -26,6 +30,7 @@ from game.view.enemies.living_motion import (
     new_breath,
 )
 from render.babylon import (
+    color3,
     new_transform_node,
     node_name,
 )
@@ -106,13 +111,14 @@ class Wing:
 
 
 class SurfaceMaterials:
-    """The materials of a model's surfaces."""
+    """The materials of a model's surfaces, and the hues its lights are drawn in (a tier's)."""
 
-    def __init__(self, hull: Any, flesh: Any, neon: Any, vein: Any) -> None:
+    def __init__(self, hull: Any, flesh: Any, neon: Any, vein: Any, hues: Any = None) -> None:
         self.hull = hull
         self.flesh = flesh
         self.neon = neon
         self.vein = vein
+        self.hues = hues
 
 
 class BuiltEnemyModel:
@@ -146,7 +152,9 @@ def add_surfaces(
     for geo, mat in [(parts.neon.geometry, mats.neon), (parts.vein.geometry, mats.vein)]:
         if len(geo.positions) == 0:
             continue
-        mesh_of(name + "-" + node_name(mat), in_enemy_family(geo), mat, scene).parent = root
+        mesh_of(
+            name + "-" + node_name(mat), in_enemy_family(geo, mats.hues), mat, scene
+        ).parent = root
 
 
 def flutter_animation(node: Any, side: float, span: float, clock: list[float]) -> Any:
@@ -228,8 +236,29 @@ def collect_parts(build: Any) -> dict[str, Any]:
     }
 
 
+def bank_roll(turn: list[Any], enemy: Any, dt: float, bank: Any) -> float:
+    """Return the roll of an enemy's body after `dt` seconds, rolling into its turn.
+
+    `turn` is `[last heading, roll so far]`, updated; `bank` is `gain`, `max` and `follow` (see
+    `build_enemy_model`), or None for an enemy that never rolls.
+    """
+    if bank is None or dt <= 0:
+        return float(turn[1])
+    heading = enemy.heading
+    if turn[0] is not None:
+        diff = heading - turn[0]
+        while diff > math.pi:
+            diff -= 2 * math.pi
+        while diff < -math.pi:
+            diff += 2 * math.pi
+        target = max(-bank["max"], min(bank["max"], -(diff / dt) * bank["gain"]))
+        turn[1] = turn[1] + (target - turn[1]) * min(1, dt * bank["follow"])
+    turn[0] = heading
+    return float(turn[1])
+
+
 def build_enemy_model(
-    name: str, scene: Any, neon_color: Rgb, build: Any, breath: Any = None
+    name: str, scene: Any, neon_color: Rgb, build: Any, breath: Any = None, bank: Any = None
 ) -> BuiltEnemyModel:
     """Build an enemy model from the parts `build` draws (logical pixels, nose +Z, Y up).
 
@@ -237,11 +266,17 @@ def build_enemy_model(
     hull is tinted towards `chargeColor`, the enemy's neon colour. Its body (hull, flesh, lights,
     wings) is on a node of its own, `<name>-body`, its veins pulsing (ENM-42; it never swells,
     ENM-43); its reactors and muzzles are not, so shots leave from the same points (ENM-45).
+
+    With `bank` (`gain`, `max`, `follow`), the body rolls around its nose axis as the enemy turns:
+    `gain` radians per radian/s of turn, at most `max`, following at `follow` per second.
     """
     if breath is None:
         breath = new_breath()
+    # ENM-49: an enemy of a tier is lit in its tier's hue, on a hull tinted in its tier's colour.
+    theme = tier_look(name)
+    hues = [theme.hue] if theme is not None else None
     # GFX-ART-05: every enemy's lights in the enemies' colour family.
-    charge_color = enemy_color(neon_color)
+    charge_color = enemy_color(neon_color, hues)
     collected = collect_parts(build)
     parts = collected["parts"]
     reactors = collected["reactors"]
@@ -251,19 +286,23 @@ def build_enemy_model(
     vein = unlit(name + "-vein", scene)
     # D-231: the body tinted and lit by the neon in the body shades (a green enemy's metal faintly
     # green, a yellow one's neutral: dark metal lit yellow turns khaki).
-    body_tint = body_color(charge_color)
+    body_tint = theme.hull if theme is not None else body_color(charge_color)
     mats = SurfaceMaterials(
         tinted_hull(scene, body_tint, False),
         tinted_hull(scene, body_tint, True),
         enemy_materials(scene).neon,
         vein,
+        hues,
     )
     root = new_transform_node(name, scene)
     body = new_transform_node(name + "-body", scene)
     body.parent = root
     clock = [0.0]
-    add_reactors(name, reactors, parts, root, neon_color)
-    add_rotors(name, rotors, mats.hull, body)
+    add_reactors(name, reactors, parts, root, neon_color, hues)
+    # The blades are matte (no highlight on the fan), not the shiny metal of the hull.
+    dark = ENEMY_LOOK.hull.dark
+    blades = matte_of(name + "-blades", color3(dark[0], dark[1], dark[2]), scene)
+    add_rotors(name, rotors, blades, body)
     for i, entry in enumerate(muzzles):
         at = entry[0]
         node = new_transform_node(name + "-muzzle-" + entry[1] + "-" + str(i), scene)
@@ -275,7 +314,11 @@ def build_enemy_model(
     if len(parts.charge.geometry.positions) > 0:
         mesh_of(name + "-charge", parts.charge.geometry, charge_mat, scene).parent = body
 
+    # The last heading and the roll so far, for `bank`.
+    turn: list[Any] = [None, 0.0]
+
     def sync(enemy: Enemy, dt: float) -> None:
+        body.rotation.z = bank_roll(turn, enemy, dt, bank)
         # ENM-42: driven by the frames' sim time, so a paused game holds still.
         if is_living_motion():
             clock[0] += dt

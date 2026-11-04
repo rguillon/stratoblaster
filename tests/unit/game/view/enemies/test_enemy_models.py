@@ -8,15 +8,12 @@ from game.view.enemies.heavy_beetle_models import build_splitter_pod
 
 def test_p05_every_basic_kind_has_its_model_builder() -> None:
     basic = {
-        "gnat": "build_gnat",
         "hornet": "build_hornet",
         "scout": "build_scout",
         "strafer": "build_strafer",
-        "weaver": "build_weaver",
         "spinner": "build_spinner",
         "lancer": "build_lancer",
         "rocketeer": "build_rocketeer",
-        "bulwark": "build_bulwark",
         "splitter": "build_splitter",
         "splitter-pod": "build_splitter_pod",
         "carrier": "build_carrier",
@@ -32,11 +29,12 @@ def test_p05_the_splitter_pod_is_its_own_model_not_the_splitter() -> None:
 
 
 def test_p05_the_veteran_and_elite_models_follow_the_basic_ones() -> None:
-    veteran_keys = {"wasp", "mortar", "mantis", "phantom", "minelayer"}
-    elite_keys = {"hydra", "orbiter", "scissor", "juggernaut", "hive"}
+    veteran_keys = {"wasp", "mortar", "phantom"}
+    elite_keys = {"hydra", "scissor", "juggernaut", "hive"}
     assert veteran_keys <= set(ENEMY_MODELS)
     assert elite_keys <= set(ENEMY_MODELS)
-    assert len(ENEMY_MODELS) == 12 + len(veteran_keys) + len(elite_keys)
+    # The 20 kinds of the four tiers, and the Splitter's pod.
+    assert len(ENEMY_MODELS) == 21
 
 
 def test_every_model_key_is_a_builder_of_a_scene() -> None:

@@ -25,8 +25,6 @@ def test_mb_furnace_drake_08_boss_stats_are_in_the_range_the_sim_relies_on() -> 
     assert 0 < stats["coreRadius"] < stats["radius"]
 
 
-def test_mb_furnace_drake_12_boss_has_an_angry_pattern_and_its_stage_count() -> None:
-    """Its rage, and one stage pattern more than its parts (MB-FURNACE-DRAKE-11)."""
-    assert isinstance(FURNACE_DRAKE.rage, list)
-    assert FURNACE_DRAKE.rage
+def test_mb_furnace_drake_12_boss_has_its_stage_count() -> None:
+    """One stage pattern more than its parts (MB-FURNACE-DRAKE-11)."""
     assert len(FURNACE_DRAKE.stages) == len(original_parts(FURNACE_DRAKE)) + 1

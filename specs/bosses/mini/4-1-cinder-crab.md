@@ -173,15 +173,17 @@ destroyed; from the third on, its last pattern):
 
 #### MB-CINDER-CRAB-12 — Rage · MUST
 
-After the pause that follows each destroyed part, the Crab is angry: it fires a curtain (fans
-sweeping across the screen and back over a ring) at heat 9.5, in `orange` and `red`: about 96
-bullets a second at 196 px/s, World 4's coolest rage, going on from World 3's hottest (9).
+It is angry after its transformation, when the two gatlings it revealed fire all out,
+for `boss_rage_seconds`, `boss_rage_rate` times as often, instead of its stage's
+pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it has no
+angry pattern of its own.
 
 **Acceptance criteria**
-- Given a part is destroyed, when its pause is over, then the core fires the curtain for the rage
-  time (unit: `test_boss_rage.py`, `test_cinder_crab.py`).
+- Given its transformation is over, then it is angry and fires only the two gatlings it
+  revealed (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-088, D-063.*
+*Sources: D-088, D-063, D-256.*
 
 #### MB-CINDER-CRAB-13 — Transformation: flank armour bursts off · MUST
 
@@ -246,7 +248,7 @@ All in `src/game/config/bosses/world_4/cinder_crab.py` (`CINDER_CRAB`) unless no
 | claw spreads | 3 × 13°, every 2.6 s, first 0.8 / 2.1 s | stage volleys |
 | mortar slag | 1, every 3.2 s, first 1.6 s; 120 px/s, radius 7 | `SLAG` |
 | bullets | `orange` 205, `red` 200, `purple` 195, `magenta` 210 px/s | radius 4 |
-| rage | curtain, heat 9.5 (`orange`, `red`) | `rage.curtain`; `src/game/config/bosses/boss_rage.py` |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation | once, at 2 original parts destroyed | `src/game/sim/boss_build.py` `default_transforms` |
 | flank regions | the carapace's flanks (mirrored) from 0.6 of its half width to its chine, station by station (x 7.2..12 at y -24, 28.8..48 at y -2, 8.4..14 at y 32), `wing`; plating from the chine (2.2–3.6 px) to the top (4–12 px) | `armour_region("flanks", …)`; `src/game/view/bosses/world_4/cinder_crab_armour.py` |
 | gatlings | (±28, 21), radius 8, pod 11.7, 400 HP, `red`, first 1.2 / 2.0 s | `hidden_weapon`; volleys in `src/game/config/bosses/weapon_kinds.py` |

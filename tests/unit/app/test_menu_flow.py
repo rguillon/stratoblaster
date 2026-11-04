@@ -811,3 +811,40 @@ def test_dev_menu_20_the_music_viewer_is_the_last_entry_and_up_down_jump_its_gro
     settle(flow)
     assert flow.dispatch("down") == "played"
     assert flow.state.selection == 1
+
+
+def at_enemies_viewer() -> MenuFlow:
+    flow = at_dev_menu()
+    flow.dispatch("down")
+    flow.dispatch("confirm")
+    settle(flow)
+    assert flow.state.dev_viewer == "enemies"
+    return flow
+
+
+def test_dev_menu_21_a_tap_on_a_view_button_picks_the_view_of_the_enemies_viewer() -> None:
+    flow = at_enemies_viewer()
+    assert flow.state.dev_mode == 0
+    assert flow.dispatch(MenuSelect(-2)) == "adjusted"
+    assert flow.state.dev_mode == 1
+    assert flow.dispatch(MenuSelect(-3)) == "adjusted"
+    assert flow.state.dev_mode == 2
+    # The same view again, or one that does not exist: nothing.
+    assert flow.dispatch(MenuSelect(-3)) == "none"
+    assert flow.dispatch(MenuSelect(-4)) == "none"
+    assert flow.state.dev_mode == 2
+    # The view is the viewer's own, kept when it is left and opened again.
+    flow.dispatch("back")
+    settle(flow)
+    flow.dispatch("confirm")
+    settle(flow)
+    assert flow.state.dev_mode == 2
+
+
+def test_dev_menu_21_the_ships_viewer_has_no_views() -> None:
+    flow = at_dev_menu()
+    flow.dispatch("confirm")
+    settle(flow)
+    assert flow.state.dev_viewer == "ships"
+    assert flow.dispatch(MenuSelect(-2)) == "none"
+    assert flow.state.dev_mode == 0

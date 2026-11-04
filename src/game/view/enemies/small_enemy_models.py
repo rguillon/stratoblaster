@@ -14,21 +14,17 @@ from game.config.enemy_look import ENEMY_LOOK
 from game.view.enemies.basic_parts import (
     eye_pair,
     gun_barrel,
-    sinew,
     wing_pair,
 )
 from game.view.enemies.enemy_mesh import build_enemy_model
 from game.view.enemies.enemy_shapes import (
     LOBE_SECTION,
     SIDES,
-    around,
-    radial,
 )
 from game.view.enemies.organic_parts import reactor_sac
 from render.geometry.organic import (
     SegmentedBody,
     curve,
-    organ,
     segmented_body,
     tendril,
 )
@@ -48,39 +44,6 @@ H = ENEMY_LOOK.hull
 F = ENEMY_LOOK.flesh
 N = ENEMY_LOOK.neon
 QUARTER = math.pi / 2
-
-# ENM-GNAT-02: the duct around each of the Gnat's fans (a metal graft, lathe profile).
-GNAT_DUCT = [[2.3, -0.6], [3, 0], [2.3, 0.6], [2.3, -0.6]]  # type: list[list[float]]
-
-
-def build_gnat(scene: Any) -> Any:
-    """ENM-GNAT-01: a small insect drone, a swollen flesh bulb with a head and two eyes.
-
-    Three metal-ducted fans on sinews at 120 degrees (ENM-GNAT-02), a neon ring around its middle
-    and a feeler on its back, green with one reactor (ENM-GNAT-03).
-    """
-
-    def draw(p: Any) -> None:
-        flesh = p.flesh
-        hull = p.hull
-        neon = p.neon
-        reactor = p.reactor
-        rotor = p.rotor
-        organ(flesh, 3.6, 6, F.graphite, Placement([0, -1.2, -0.4]), 0.42)
-        organ(flesh, 1.5, 4, F.sinew, Placement([0, -0.2, 3.3]), 0.55)
-        eye_pair(p, [0, 0.6, 4.2], 0.6, 0.45, N.gnat)
-        neon.ring(3.5, 0.5, 6, N.gnat, Placement([0, -0.4, -0.4]))
-        for a in around(3):
-            duct = radial(a, 6, 0)
-            sinew(p, radial(a, 2.6, 0), radial(a, 4, 0), [0, 0.4, 0], 0.6)
-            hull.lathe(GNAT_DUCT, 5, H.panel, Placement(duct), False)
-            rotor([duct[0], 0, duct[2]], 2.1)
-        tendril(
-            flesh, curve([-0.8, 1, -1.6], [-1.6, 2.6, -3], [0, 0.4, 0], 2), [0.25, 0], 3, F.bone
-        )
-        reactor([0, 0, -4.4], 0.9)
-
-    return build_enemy_model("gnat", scene, N.gnat, draw)
 
 
 def build_hornet(scene: Any) -> Any:
@@ -226,48 +189,3 @@ def build_strafer(scene: Any) -> Any:
             gun_barrel(p, [s * 4.6, 1.5, 1.5], 3.6, s * QUARTER)
 
     return build_enemy_model("strafer", scene, N.strafer, draw)
-
-
-# ENM-WEAVER-01: the Weaver's web of sinew between its two serpents, under the neon bar.
-WEAVER_WEB = [  # type: list[list[float]]
-    [-9, 0.5],
-    [0, 2.5],
-    [9, 0.5],
-    [9, -3],
-    [0, -1.5],
-    [-9, -3],
-]
-
-
-def build_weaver(scene: Any) -> Any:
-    """ENM-WEAVER-01: a sine flyer, two serpents side by side.
-
-    Each has a swollen head and a wavy tail, joined by a web of flesh under a glowing neon bar, a
-    gun grafted on each snout and a reactor at each tail (ENM-WEAVER-02); green (ENM-WEAVER-03).
-    """
-
-    def draw(p: Any) -> None:
-        flesh = p.flesh
-        neon = p.neon
-        reactor = p.reactor
-        flesh.bevel_slab(WEAVER_WEB, [-1, -0.4, 0.2], [0.3, 0.6], F.membrane)
-        for s in SIDES:
-            at: list[float] = [s * 10, 0, 0]
-            head = SegmentedBody(-6, 15.5, 2, 2.6, -1.5, 2.6)
-            segmented_body(flesh, head, F.teal, Placement(at), LOBE_SECTION)
-            tail = [
-                [s * 10 + s * math.sin(i * 1.8) * 1.4, 0.4, z]
-                for i, z in enumerate([-6, -9, -12, -15])
-            ]
-            tendril(flesh, tail, [2, 1.2], 4, F.sinew)
-            eye_pair(p, [s * 10, 2, 11], 0.9, 0.4, N.weaver)
-            reactor([s * 10, 0, -15], 1.5)
-            # A gun along each serpent's snout (phase 7 review).
-            gun_barrel(p, [s * 10, 1.9, 8], 7)
-        neon.slab(
-            [[pt[0] * 0.88, pt[1] * 0.4 - 0.3] for pt in WEAVER_WEB],
-            [0.2, 0.7],
-            N.weaver,
-        )
-
-    return build_enemy_model("weaver", scene, N.weaver, draw)

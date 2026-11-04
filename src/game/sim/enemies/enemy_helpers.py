@@ -3,13 +3,14 @@
 
 import math
 
-from core.entities.enemy import Enemy
+from core.entities.enemy import Enemy, EnemyMissileSpec
 from core.systems.enemy_motion import Path
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 # __pragma__ ("skip")
 from collections.abc import Callable
+from typing import Any
 
 from core.entities.enemy import EnemyBulletSpec, EnemyContext, EnemySpawnArea
 from core.math.rng import Random
@@ -29,6 +30,22 @@ HALF = 0.5
 
 # Entries keep enemies this far (a fraction of the edge) from the corners.
 ENTRY_INSET = 0.08
+
+
+def missile_spec(missile: Any) -> EnemyMissileSpec:
+    """Return the engine's missile spec of a config's `missile` record.
+
+    The core reads `turn_rate_deg` and `homing_seconds`, which the config writes in camel case, so
+    a config record cannot be handed over as it is.
+    """
+    return EnemyMissileSpec(
+        missile.speed,
+        missile.turnRateDeg,
+        missile.homingSeconds,
+        missile.radius,
+        missile.health,
+        missile.style,
+    )
 
 
 class Cadence:

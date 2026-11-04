@@ -139,9 +139,17 @@ The last stage's ring is fired by no earlier stage.
 
 #### MB-AVALANCHE-12 — Rage · MUST
 
-It is angry as every boss with `spirals` at heat `rage_heat` (two crossing spirals, orange and red).
+It is angry after its transformation, when the two heavy cannons it revealed fire all out,
+for `boss_rage_seconds`, `boss_rage_rate` times as often, instead of its stage's
+pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it has no
+angry pattern of its own.
 
-*Sources: D-068.*
+**Acceptance criteria**
+- Given its transformation is over, then it is angry and fires only the two heavy cannons it
+  revealed (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
+
+*Sources: D-068, D-256.*
 
 #### MB-AVALANCHE-13 — Transformation · MUST
 
@@ -180,7 +188,7 @@ dies as every boss.
 | hopper_radius / hopper_hp | 14 px / 600 | `part("hopper" …)` |
 | rocks | violet, 110 px/s, radius 7 | `ROCK` |
 | bullets | orange 180, red 190 px/s | `ORANGE`, `RED`; times the level's factors |
-| rage_heat | 5.5 (`spirals`, orange / red) | `rage` |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation | after 2 of 3 parts | `boss_build.default_transforms` |
 | weapon_radius / weapon_hp | 11 px / 720 | `hidden_weapon("cannon-…")`, pod 12.2 px high |
 | region `flanks` | x 6…32 (mirrored), y −6…36; the shell's flanks 6.5–13.6 px either side of a 12 px ridge; `wing` | `armour_region("flanks", 1, …)`; `src/game/view/bosses/world_2/avalanche_armour.py` |

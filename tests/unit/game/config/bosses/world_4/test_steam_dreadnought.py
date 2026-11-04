@@ -28,8 +28,6 @@ def test_fb_steam_dreadnought_08_boss_stats_are_in_the_range_the_sim_relies_on()
     assert 0 < stats["coreRadius"] < stats["radius"]
 
 
-def test_fb_steam_dreadnought_14_boss_has_an_angry_pattern_and_its_stage_count() -> None:
-    """Its rage, and one stage pattern more than its parts (FB-STEAM-DREADNOUGHT-12)."""
-    assert isinstance(STEAM_DREADNOUGHT.rage, list)
-    assert STEAM_DREADNOUGHT.rage
+def test_fb_steam_dreadnought_14_boss_has_its_stage_count() -> None:
+    """One stage pattern more than its parts (FB-STEAM-DREADNOUGHT-12)."""
     assert len(STEAM_DREADNOUGHT.stages) == len(original_parts(STEAM_DREADNOUGHT)) + 1

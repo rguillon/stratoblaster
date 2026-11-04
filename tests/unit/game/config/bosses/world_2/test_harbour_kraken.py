@@ -29,8 +29,6 @@ def test_fb_harbour_kraken_15_boss_stats_are_in_the_range_the_sim_relies_on() ->
     assert 0 < stats["coreRadius"] < stats["radius"]
 
 
-def test_fb_harbour_kraken_12_boss_has_an_angry_pattern_and_its_stage_count() -> None:
-    """Its rage, and one stage pattern more than its parts (FB-HARBOUR-KRAKEN-11)."""
-    assert isinstance(HARBOUR_KRAKEN.rage, list)
-    assert HARBOUR_KRAKEN.rage
+def test_fb_harbour_kraken_12_boss_has_its_stage_count() -> None:
+    """One stage pattern more than its parts (FB-HARBOUR-KRAKEN-11)."""
     assert len(HARBOUR_KRAKEN.stages) == len(original_parts(HARBOUR_KRAKEN)) + 1

@@ -57,8 +57,9 @@ class FakeViewer:
         self.scene: Any = None
         FakeViewer.made.append(self)
 
-    def show(self, index: int, toggle: bool) -> None:
+    def show(self, index: int, toggle: bool, mode: int = 0) -> None:
         self.shown = (index, toggle)
+        self.mode = mode
 
     def turn(self, dx: float, dy: float) -> None:
         self.turned = (dx, dy)
@@ -87,8 +88,12 @@ def fake_viewer(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(dev_session, "DevAudioViewer", FakePlayer)
 
 
-def state(viewer: str | None, selection: int = 0, toggle: bool = True) -> SimpleNamespace:
-    return SimpleNamespace(dev_viewer=viewer, selection=selection, dev_close_up=toggle)
+def state(
+    viewer: str | None, selection: int = 0, toggle: bool = True, mode: int = 0
+) -> SimpleNamespace:
+    return SimpleNamespace(
+        dev_viewer=viewer, selection=selection, dev_close_up=toggle, dev_mode=mode
+    )
 
 
 def session(root: Any = None) -> DevSession:
@@ -100,6 +105,12 @@ def session(root: Any = None) -> DevSession:
         "music": ["menu"],
     }
     return DevSession("engine", "game", catalog, True, root, "audio")
+
+
+def test_dev_menu_21_the_viewer_is_shown_the_view_the_menu_picked() -> None:
+    s = session()
+    s.sync(state("ships", 0, mode=2))
+    assert FakeViewer.made[0].mode == 2
 
 
 def test_d199_the_viewer_opens_follows_the_menu_and_closes() -> None:

@@ -11,7 +11,6 @@ full health 3 550-3 900).
 from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import record
 
@@ -42,8 +41,6 @@ TOUCAN_CREST = [[0, -6, 17]]
 # hangs in front of the core, so it can always be shot.
 _TOUCAN = record({
     "id": "toucan",
-    # Angry after each destroyed part (phase 7 review, MB-TOUCAN-11).
-    "rage": rage.curtain(5.5, "orange", "red"),
     # Its core and parts, and its points (MB-TOUCAN-13).
     "stats": stats(
         record({

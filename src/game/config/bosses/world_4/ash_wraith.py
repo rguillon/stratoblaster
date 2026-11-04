@@ -14,7 +14,6 @@ by no earlier stage. Health (MB-ASH-WRAITH-07) tuned with the D-055 bot for WLD-
 from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import record
 
@@ -52,8 +51,6 @@ EY = WRAITH_EYE[1]
 # core, so it can always be shot.
 _ASH_WRAITH = record({
     "id": "ash-wraith",
-    # Angry after each destroyed part (phase 7 review, D-063, MB-ASH-WRAITH-11): heat 10.5.
-    "rage": rage.vortex(10.5, "blue", "purple"),
     # Its core and parts, their health, and its points (MB-ASH-WRAITH-07, MB-ASH-WRAITH-14).
     "stats": stats(
         record({

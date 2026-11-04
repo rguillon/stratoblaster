@@ -118,12 +118,17 @@ The side cannons' bursts go on in every stage while they stand. The core fires:
 
 #### MB-REEF-WARDEN-09 — Angry · MUST
 
-Its angry pattern is **spirals** at heat 0 (orange and red), the lightest of the game.
+It is angry after its transformation, when the two gatlings it revealed fire all out,
+for `boss_rage_seconds`, `boss_rage_rate` times as often, instead of its stage's
+pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it has no
+angry pattern of its own.
 
 **Acceptance criteria**
-- Given its design, then its rage is two rings turning opposite ways, from its core (unit test).
+- Given its transformation is over, then it is angry and fires only the two gatlings it
+  revealed (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-063.*
+*Sources: D-063, D-256.*
 
 #### MB-REEF-WARDEN-10 — Transformation · MUST
 
@@ -166,7 +171,7 @@ All in `src/game/config/bosses/mini_bosses.py` (`_REEF_WARDEN`, `REEF_WARDEN`) u
 | core stage 0 | fan of 3, 18° apart, orange 170 px/s, every 3.2 s | prow turret pivot (0, -27) |
 | core stage 1 | fan of 5, 14° apart, every 2.2 s | |
 | core stage 2 | ring of 8 turning 11°, every 1.8 s | |
-| angry | spirals, heat 0 (20 bullets a second, 120 px/s), orange and red | `rage` |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation | 1 part destroyed | default threshold |
 | shed region | back: a horseshoe round the shelled back, y -33..-2, its arms x 15..23 at the rear narrowing towards the snout, joined by a bar y -33..-27 at the centre line; `shell`, not mirrored; plating 2.7–4.5 px | `armour_region` |
 | gatlings | (∓13, -25), radius 11, health 500, pod 8 px; red bursts, first 1.2 s / 2.0 s | `hidden_weapon` |

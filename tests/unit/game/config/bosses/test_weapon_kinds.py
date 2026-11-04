@@ -86,12 +86,12 @@ def test_the_sweeper_fires_a_sweeping_laser_from_its_turret() -> None:
     assert shot.shape.laser.sweeps is True
 
 
-def test_a_hangar_fires_nothing_but_launches_gnats() -> None:
+def test_a_hangar_fires_nothing_but_launches_hornets() -> None:
     assert weapon_volleys("hangar", "hangar", "red", 1) == []
     assert weapon_launches("gatling", "gatling", 1) == []
     [launch] = weapon_launches("hangar", "bay", 3)
     assert launch["from"] == "bay"
-    assert launch["kind"] == "gnats"
+    assert launch["kind"] == "hornets"
     assert launch["count"] == 2
     assert launch["first"] == 3
 

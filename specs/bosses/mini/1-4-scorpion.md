@@ -126,12 +126,17 @@ The claws' fans and the stinger's laser go on in every stage while they stand. T
 
 #### MB-SCORPION-10 — Angry · MUST
 
-Its angry pattern is a **flower** at heat 3 (a dense purple ring, blue fans at the player).
+It is angry after its transformation, when the tail cannon (its giant laser) it revealed fire all out,
+for `boss_rage_seconds`, `boss_rage_rate` times as often, instead of its stage's
+pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it has no
+angry pattern of its own.
 
 **Acceptance criteria**
-- Given its design, then its rage is that pattern at that heat, fired from its core.
+- Given its transformation is over, then it is angry and fires only the tail cannon (its giant laser) it
+  revealed (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-063.*
+*Sources: D-063, D-256.*
 
 #### MB-SCORPION-11 — It turns round and its tail becomes a giant laser · MUST
 
@@ -208,7 +213,7 @@ named.
 | core stage 1 | ring of 6, every 2.4 s | |
 | core stage 2 | ring of 8 turning 10°, every 2 s | |
 | core stage 3 | ring of 12 turning 8° every 1.4 s, and 1 aimed blue every 2.4 s | |
-| angry | flower, heat 3 (44 bullets a second, 144 px/s), purple and blue | |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation | when `claw-left` and `claw-right` are destroyed; turns by pi | `transformParts`, `turns` |
 | shed region | back: a lozenge the shell's shape, x ±16 at its widest, y 0..31.5, `shell`, not mirrored; shell 1.33–8 px | `armour_region` |
 | `tail-cannon` | ends at (0, 108), radius 15, health 1 100, shield, drop 0.3; first shot 1.5 s | `SCORPION_TAIL_CANNON`, `tail_cannon` |

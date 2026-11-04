@@ -6,7 +6,7 @@ from typing import Any
 import pytest
 from helpers.config_checks import assert_beats_well_formed, enemy_kind_ids
 
-from game.config.world_2.waves import compose_beats
+from game.config.wave_plans import compose_beats
 from game.config.world_3.waves import (
     PLAN_3_1,
     PLAN_3_2,

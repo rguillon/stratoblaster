@@ -4,8 +4,8 @@
 
 The last and hardest level of World 1: dusk over the deep desert, from the desert outskirts 1-4
 ended on, past buttes, oasis villages and a rocky pass, into desert towns ever bigger and denser, to
-a great oasis town on the red land at the end, its lights on. No sea, no factory, no city. Every
-basic kind comes, Bulwarks included. The Sentinel waits at the middle and the Overlord at the end.
+a great oasis town on the red land at the end, its lights on. No sea, no factory, no city. All five
+kinds of tier 1 come. The Sentinel waits at the middle and the Overlord at the end.
 
 ## Requirements
 
@@ -112,71 +112,48 @@ WLD-1-14); almost none in the towns, whose buildings take the ground. 1-5 grows 
 
 #### LVL-1-5-08 — Enemy kinds · MUST
 
-1-5 brings every basic kind, the Bulwark for the first time: Gnat, Hornet, Scout, Strafer, Weaver,
-Splitter, Carrier, Spinner, Lancer, Rocketeer, Bulwark, in its beats and its fillers.
+1-5 uses the five kinds of tier 1, Hornet, Scout, Lancer, Rocketeer and Carrier, in its beats and its fillers, and no other kind.
 
 **Acceptance criteria**
-- Given the 1-5 wave script, then it uses all eleven basic kinds and no other (unit test).
+- Given the 1-5 wave script, then it only uses Hornet, Scout, Lancer, Rocketeer and Carrier, and it uses each of them (unit test).
 
-*Sources: P06-R07.*
+*Sources: P06-R07, ENM-50.*
 
-#### LVL-1-5-09 — Written beats · MUST
+#### LVL-1-5-09 — Wave plan · MUST
 
-1-5's waves are these beats, as written (WLD-1-19; the density of WLD-1-20 applies on top). They
-leave the stretch from 104 s to 130 s to the fillers, around the mini boss at 120 s, and no wave
-starts in the 10 s before each boss ([level-flow.md](../../gameplay/level-flow.md)).
+1-5's waves are composed from this plan (WLD-1-19; the density of WLD-1-20 applies on top):
 
-| s | Kind | Groups | Between groups (s) | Side | Position | Spread |
+Beats from 4 s to 226 s, one every 4.8 s at the start down to 3.5 s at the end, groups growing by 80 % over the level (55 beats, the last at 225.7 s). The phrases, in their cycle:
+
+| # | Kind | Groups | Between groups (s) | Side | Position | Spread |
 |---|------|--------|--------------------|------|----------|--------|
-| 4 | Scout | 4 | 1 | top | 0.15 | 0.23 |
-| 10 | Gnat | 2 | 2 | top | 0.3 | 0.4 |
-| 16 | Bulwark | 1 | 0 | top | 0.5 | — |
-| 24 | Hornet | 5 | 0.7 | top | 0.1 | 0.2 |
-| 30 | Weaver | 3 | 1.2 | top | 0.3 | 0.2 |
-| 36 | Lancer | 2 | 2 | top | 0.25 | 0.5 |
-| 44 | Rocketeer | 2 | 2.5 | top | 0.3 | 0.4 |
-| 50 | Strafer | 3 | 1.5 | left | 0.8 | — |
-| 56 | Splitter | 3 | 2 | top | 0.2 | 0.3 |
-| 64 | Spinner | 2 | 2.5 | top | 0.3 | 0.4 |
-| 70 | Carrier | 1 | 0 | top | 0.5 | — |
-| 78 | Bulwark | 1 | 0 | top | 0.35 | — |
-| 84 | Scout | 4 | 0.8 | top | 0.15 | 0.23 |
-| 92 | Lancer | 3 | 1.5 | top | 0.2 | 0.3 |
-| 98 | Gnat | 3 | 1.5 | top | 0.2 | 0.3 |
-| 104 | Rocketeer | 2 | 2 | top | 0.3 | 0.4 |
-| 130 | Bulwark | 2 | 4 | top | 0.3 | 0.4 |
-| 134 | Hornet | 5 | 0.6 | top | 0.1 | 0.2 |
-| 140 | Spinner | 2 | 2.5 | top | 0.7 | -0.4 |
-| 146 | Carrier | 1 | 0 | top | 0.4 | — |
-| 152 | Weaver | 4 | 1 | top | 0.2 | 0.2 |
-| 158 | Strafer | 3 | 1.5 | right | 0.8 | — |
-| 164 | Lancer | 3 | 1.5 | top | 0.2 | 0.3 |
-| 170 | Rocketeer | 3 | 2 | top | 0.2 | 0.3 |
-| 176 | Splitter | 3 | 1.5 | top | 0.2 | 0.3 |
-| 182 | Bulwark | 2 | 3 | top | 0.3 | 0.4 |
-| 188 | Gnat | 3 | 1.5 | top | 0.2 | 0.3 |
-| 194 | Carrier | 1 | 0 | top | 0.6 | — |
-| 200 | Scout | 5 | 0.6 | top | 0.1 | 0.2 |
-| 206 | Spinner | 3 | 2 | top | 0.2 | 0.3 |
-| 212 | Hornet | 5 | 0.5 | top | 0.1 | 0.2 |
-| 218 | Lancer | 3 | 1.2 | top | 0.2 | 0.3 |
-| 222 | Rocketeer | 2 | 1.5 | top | 0.3 | 0.4 |
-| 226 | Bulwark | 1 | 0 | top | 0.5 | — |
+| 1 | Hornet | 4 | 0.8 | top | 0.15 | 0.23 |
+| 2 | Scout | 3 | 1.2 | top | 0.25 | 0.25 |
+| 3 | Lancer | 2 | 2.5 | top | 0.25 | 0.5 |
+| 4 | Hornet | 4 | 0.8 | top | 0.85 | -0.23 |
+| 5 | Rocketeer | 1 | 0 | top | 0.5 | — |
+| 6 | Scout | 3 | 1.2 | top | 0.75 | -0.25 |
+| 7 | Hornet | 4 | 0.8 | top | 0.15 | 0.23 |
+| 8 | Carrier | 1 | 0 | top | 0.5 | — |
+| 9 | Lancer | 2 | 2.5 | top | 0.75 | -0.5 |
+| 10 | Scout | 3 | 1.2 | top | 0.25 | 0.25 |
+| 11 | Rocketeer | 1 | 0 | top | 0.5 | — |
+
+No wave starts in the 10 s before each boss ([level-flow.md](../../gameplay/level-flow.md)).
 
 **Acceptance criteria**
-- Given the 1-5 beats, then each names a kind and a side, in order of time (unit test).
+- Given the 1-5 plan, then it composes beats that name its kinds and sides in order of time (unit test).
 
-*Sources: P06-R07, D-044.*
+*Sources: P06-R07, D-067, ENM-50.*
 
 #### LVL-1-5-10 — Filler · MUST
 
-1-5's filler (WLD-1-21) brings Gnat, Weaver, Hornet, Scout, Splitter, Spinner, in turn, one group
-every `max_gap`, the tightest of World 1.
+1-5's filler (WLD-1-21) brings the level's divers and shooters, Hornet, Scout, Hornet, Scout, in turn, one group every `max_gap`.
 
 **Acceptance criteria**
-- Given the 1-5 filler, then its kinds are those six and its gap shrinks (unit test).
+- Given the 1-5 filler, then its kinds are the Hornet and the Scout only and its gap shrinks (unit test).
 
-*Sources: D-051.*
+*Sources: D-051, ENM-50.*
 
 ### Difficulty
 
@@ -247,7 +224,7 @@ end, for the ground that gets ahead of the level during the fights.
 | desert_woods | cover 0.55, keep 0.15, scatter 0.01 | `src/game/config/trees.py` |
 | max_gap | 3 s → 1.6 s | `src/game/config/world_1/waves.py` `WORLD_1_FILLERS["1-5"]` |
 | bullet_speed_factor / fire_rate_factor | 1.1 / 1.1 | `src/game/config/world_1/difficulty.py` |
-| written | 34 beats; 94 waves and 304 groups after fill and density; 448 enemies, 17 420 HP (halves 6 940 / 10 480), Carrier launches not counted | measured from the configs (density 2, D-249) |
+| written | 55 beats from the plan; waves, groups, enemies and HP after fill and density: to be measured again with the new kinds | `src/game/config/wave_plans.py` `level_plan(1, 5)`; density 2 (D-249) |
 | buildings | 35 919 (halves 8 618 / 27 301) | each level's seed, measured for this file |
 | mini boss / final boss | `sentinel` / `overlord` | `src/game/config/world_1/bosses.py` |
 | runout | 75 s | same |

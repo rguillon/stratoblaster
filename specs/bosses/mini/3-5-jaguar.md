@@ -138,14 +138,17 @@ The core fires spirals from the lit eye on its back, a new one at each stage:
 
 #### MB-JAGUAR-10 — Rage · MUST
 
-After the pause that follows each destroyed part, it fires a curtain at heat 8.5, in `orange` and
-`red`: the hottest mini boss rage of World 3.
+It is angry after its transformation, when the two laser lances it revealed fire all out,
+for `boss_rage_seconds`, `boss_rage_rate` times as often, instead of its stage's
+pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it has no
+angry pattern of its own.
 
 **Acceptance criteria**
-- Given a part is destroyed, when its pause is over, then the core fires the curtain (unit: rage
-  patterns).
+- Given its transformation is over, then it is angry and fires only the two laser lances it
+  revealed (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-081, D-063.*
+*Sources: D-081, D-063, D-256.*
 
 #### MB-JAGUAR-11 — Transformation: the wings' pelt pops off · MUST
 
@@ -207,7 +210,7 @@ X right, Y up the screen (its nose at -Y).
 | ground speed | ×0.6 | |
 | claw spreads | 3 × 11°, every 2.1 s | on turrets |
 | tail laser | 1.4 s every 6 s | on a turret |
-| rage | curtain, heat 8.5 | |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation | once, at 2 parts destroyed | `default_transforms` |
 | wing pelt | `JAGUAR_WING` outline (mirrored), `wing` frame; the pelt a plate 2.7–4.5 px high on the wing's top face (3 px), inset 2 px | `armour_region("wings", …)`; `src/game/view/bosses/world_3/jaguar_pelt.py` |
 | lances | (±38, 4), radius 10, pod 5, 880 HP, first 1.2 / 4.9 s | |

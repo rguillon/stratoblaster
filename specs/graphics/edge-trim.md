@@ -159,11 +159,12 @@ All in `src/game/config/readability.py` `READABILITY`, sizes in logical pixels.
 
 ## Notes
 
-- With 0.5 / 1 for `whiten` / `strength`, the World 1-1 gnats measured 2.1 to 2.4:1 against the
+- With 0.5 / 1 for `whiten` / `strength`, the World 1-1 Hornets measured 2.1 to 2.4:1 against the
   clouds (3:1 needed); with 0.25 / 2.6 all four worlds pass.
-- Cost: the trim adds 16 to 180 triangles to a basic or veteran enemy (Gnat 390 → 486, Spinner 336 →
-  516, Hornet 296 → 375). D-220 left open for the reviewer whether the P16 basic budget of 400
-  counts the trim (8 of the 11 basic kinds go over with it, up to the Spinner's 516). The rim
+- Cost: the trim adds 16 to 180 triangles to an enemy (measured on the old roster: Gnat 390 → 486,
+  Spinner 336 → 516, Hornet 296 → 375). D-220 left open for the reviewer whether the tier budgets
+  of ENM-03 (400 for tier 1) count the trim (8 of the 11 old basic kinds went over with it, up to
+  the Spinner's 516; to be measured again with the four tiers). The rim
   outline it replaced cost more on the GPU but was not geometry. No unit test checks the budgets
   since the Python port.
 - D-220's status is "Proposed"; it records a reviewer request.

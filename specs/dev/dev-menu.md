@@ -202,8 +202,11 @@ the game's playfield camera and the playfield layer, over a plain dark backdrop.
 - Given the enemies viewer, then the first enemy shows at once, moving as in game, at the middle of
   the view.
 - Given an enemy that leaves the playfield, then a new one of its kind comes in.
+- Given the enemies viewer's menu, then the kinds are grouped by tier (`Tier 1 (5)` … `Tier 4 (5)`,
+  ENM-01) and each tier's five buttons are on one line (`DEV_MENU_COLUMNS`); ▲ ▼ jump from tier to
+  tier, the caption gives the tier and the place in it (`Tier 2 · 3 / 5`) (unit test).
 
-*Sources: D-199, D-222, P05-R11, P16-R10.*
+*Sources: D-199, D-222, P05-R11, P16-R10; the tiers' lines, reviewer request 2026-11-03.*
 
 ### DEV-MENU-14 — The bosses viewer · MUST
 
@@ -337,6 +340,37 @@ Esc: back`.
 
 *Sources: D-238.*
 
+### DEV-MENU-21 — The enemies and bosses viewers' views · MUST
+
+The enemies and bosses viewers have a row of three buttons over their menu, to pick how the enemy
+or boss is shown (the picked one is filled):
+- **Model**: as DEV-MENU-13 and DEV-MENU-14 describe it: pinned at the middle of the view, nothing
+  it fires kept or shown, close-up or game size on Enter;
+- **Wireframe**: the same, every material drawn as a wireframe;
+- **Game view**: on the game's playfield as in a level, at game size, the camera following the enemy
+  (or boss) so it stays in the middle of the screen as it moves (Enter's close-up and the drag
+  do not apply; the wheel still zooms): the enemy (or boss) comes in where its kind brings it in
+  and moves where its moves take it, in a world as a level's with the player at the bottom middle
+  (nothing hits the player, whose ship is not drawn), whose shots leave from where the camera sees
+  each barrel, raised or not, as in a level (GFX-SHOT-09). What it fires (bullets, missiles, lasers),
+  sends out (an enemy's carried or launched enemies) and what blows up are drawn. Once no enemy of
+  the world is left, a new one of the kind comes in. K (bosses) breaks the boss's next part.
+
+The view is each viewer's own, kept from one item to the next and while the page is open, and starts
+on Model. The other viewers have no such buttons. A tap on a button reaches the menu flow as the
+index `-1 - view` (the items' indices being 0 or more).
+
+**Acceptance criteria**
+- Given the enemies or bosses viewer, then it has the buttons `Model`, `Wireframe` and `Game view`,
+  `Model` picked (unit tests, e2e).
+- Given `Wireframe` picked, then the scene draws every material as a wireframe; given another view,
+  then it does not (unit test).
+- Given `Game view` picked, then the enemy is drawn where it is on the playfield, the camera
+  keeping it in the middle of the screen, its shots are drawn, and a new enemy comes in once the world has none (unit tests).
+- Given the ships, props or levels viewer, then it has no view buttons (unit test).
+
+*Sources: reviewer request 2026-11-03.*
+
 ## Tunable values
 
 All in `src/config/dev_viewer.py` `DEV_VIEWER_CONFIG` unless said otherwise.
@@ -353,6 +387,7 @@ All in `src/config/dev_viewer.py` `DEV_VIEWER_CONFIG` unless said otherwise.
 | `model_seed` | 7 | Random numbers the enemies and bosses are spawned with |
 | `break_key` | `KeyK` | Bosses viewer |
 | `hold_delay`, `hold_interval` | 0.4 s, 0.25 s | Sounds viewer: a button held repeats its sound after `hold_delay`, then every `hold_interval` |
+| views | model, wireframe, game view | `DEV_VIEW_MODES`, `DEV_MODE_VIEWERS` (enemies, bosses), `DEV_MODE_LABELS` in `src/config/dev_viewer.py` |
 | `max_enemy_age` | 40 s | `src/config/game_play.py` `GAME_PLAY_CONFIG.max_enemy_age`; with `cull_margin` 80 px for leaving the playfield |
 | player position | bottom middle, y = 90 px | `GAME_PLAY_CONFIG.ship_start_y` |
 | `block` | 10 ground units | The game's tile (`propTiles.tile.size`); 10 when the game names none (`src/app/dev_prop_stage.py` `DEFAULT_BLOCK`) |
@@ -366,7 +401,8 @@ All in `src/config/dev_viewer.py` `DEV_VIEWER_CONFIG` unless said otherwise.
 
 ## Notes
 
-- The old debug pages had more tools: a wireframe view with hit circles, a player ship that could
+- The old debug pages had more tools: a wireframe view with hit circles (the enemies and bosses
+  viewers have a plain wireframe view again, DEV-MENU-21), a player ship that could
   fly and shoot and could not die, toggles for the living motion and the hitbox, the FPS / polygons
   tile, the boss's stage shown, and the props page's road kit with its sample layout and footprint
   labels. They went with the pages (D-187) and are not in the Dev menu.

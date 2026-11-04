@@ -140,13 +140,18 @@ The wing lasers and the batteries' missiles go on in every stage while they stan
 
 #### FB-OVERLORD-09 — Angry · MUST
 
-Its angry pattern is two at once, the hottest of World 1 (heat 4.5): **spirals** (purple and blue)
-on 0.6 of its rate and a **flower** (magenta and purple) on 0.4.
+It is angry after each of its transformations, when the weapons that one revealed
+fire all out: the two lances after the first, the two mortars after the second.
+For `boss_rage_seconds` it fires only those, `boss_rage_rate` times as often, instead of its
+stage's pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it
+has no angry pattern of its own.
 
 **Acceptance criteria**
-- Given its design, then its rage is that pattern at that heat, fired from its core.
+- Given a transformation is over, then it is angry and fires only the weapons it revealed
+  (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-063.*
+*Sources: D-063, D-256.*
 
 #### FB-OVERLORD-10 — First transformation: lances · MUST
 
@@ -217,7 +222,7 @@ All in `src/game/config/bosses/final_bosses.py` (`_OVERLORD`, `OVERLORD`) unless
 | core stage 4 | ring of 10 turning 6°, every 2 s | |
 | core stage 5 | fan of 7, 12° apart, every 2.2 s; red burst of 3 every 2.6 s | |
 | core stage 6 | ring of 14 turning 9° every 1.2 s; laser 1.4 s every 5 s; 2 missiles, 30° apart, every 6 s | |
-| angry | spirals × 0.6 and flower × 0.4, heat 4.5 (56 bullets a second in all, 156 px/s) | |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformations | 2 and 4 parts destroyed | default thresholds |
 | flank region (shed) | the deck's flank plate, x 32..64 at y -18..30, its edge to (52, -42) and (62.8, 32), back to x 32 at y -42..32, `wing`, mirrored; the plate 3-6 px, the city on it | first |
 | spine region (shed) | the deck's front plate: x -32..32 from y -34, out to (±52, -42) along y -42, then along the deck's edge to (±26, -60) and its nose (0, -64), `shell`, not mirrored; the plate 3-6 px, the boulevard's front to 10 px | second |

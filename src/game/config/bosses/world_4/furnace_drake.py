@@ -10,7 +10,6 @@ earlier stage, once it stands alone. Health (MB-FURNACE-DRAKE-08) tuned for WLD-
 """
 
 from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.record import concat, merge, record
 
@@ -89,9 +88,6 @@ def flame(first: float) -> Any:
 # breathes flame, its core spirals. The head hangs in front of the core, so it can always be shot.
 _FURNACE_DRAKE = record({
     "id": "furnace-drake",
-    # Angry after each destroyed part (phase 7 review, D-063, MB-FURNACE-DRAKE-12): heat 12.5,
-    # on from World 3.
-    "rage": rage.flower(12.5, "orange", "red"),
     # Its core and parts, their health, and its points (MB-FURNACE-DRAKE-08,
     # MB-FURNACE-DRAKE-15).
     "stats": stats(

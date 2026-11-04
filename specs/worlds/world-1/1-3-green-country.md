@@ -4,7 +4,7 @@
 
 The third level of World 1: a golden late afternoon over the green country, from the farmland 1-2
 ended on, through woods, green hills and a market town, to where the grass turns yellow and dry.
-No sea. Carriers and Spinners join the 1-2 kinds. The Dust Devil waits at the middle and the Mesa
+No sea. The Rocketeer joins the 1-2 kinds. The Dust Devil waits at the middle and the Mesa
 Fortress at the end.
 
 ## Requirements
@@ -107,63 +107,47 @@ yellowing grass and the dry grassland grow dying woods, living and dead trees mi
 
 #### LVL-1-3-08 — Enemy kinds · MUST
 
-1-3 brings the 1-2 kinds plus Carriers and Spinners: Gnat, Hornet, Scout, Strafer, Weaver,
-Splitter, Carrier, Spinner, in its beats and its fillers. Each Carrier launches Gnats.
+1-3 adds the Rocketeer to the 1-2 kinds (Hornet, Scout, Lancer and Rocketeer), in its beats and its fillers, and uses no other kind.
 
 **Acceptance criteria**
-- Given the 1-3 wave script, then it only uses these eight kinds and uses Carriers and Spinners (unit test).
+- Given the 1-3 wave script, then it only uses Hornet, Scout, Lancer and Rocketeer, and it uses each of them (unit test).
 
-*Sources: P06-R07.*
+*Sources: P06-R07, ENM-50.*
 
-#### LVL-1-3-09 — Written beats · MUST
+#### LVL-1-3-09 — Wave plan · MUST
 
-1-3's waves are these beats, as written (WLD-1-19; the density of WLD-1-20 applies on top). They
-leave the stretch from 104 s to 130 s to the fillers, around the mini boss at 120 s, and no wave
-starts in the 10 s before each boss ([level-flow.md](../../gameplay/level-flow.md)).
+1-3's waves are composed from this plan (WLD-1-19; the density of WLD-1-20 applies on top):
 
-| s | Kind | Groups | Between groups (s) | Side | Position | Spread |
+Beats from 4 s to 226 s, one every 5.6 s at the start down to 4 s at the end, groups growing by 70 % over the level (47 beats, the last at 224.6 s). The phrases, in their cycle:
+
+| # | Kind | Groups | Between groups (s) | Side | Position | Spread |
 |---|------|--------|--------------------|------|----------|--------|
-| 4 | Scout | 3 | 1.5 | top | 0.25 | 0.25 |
-| 12 | Gnat | 1 | 0 | top | 0.3 | — |
-| 18 | Weaver | 2 | 2 | top | 0.3 | 0.4 |
-| 26 | Spinner | 1 | 0 | top | 0.5 | — |
-| 34 | Hornet | 4 | 1 | top | 0.15 | 0.23 |
-| 42 | Strafer | 2 | 2 | left | 0.8 | — |
-| 50 | Splitter | 2 | 2.5 | top | 0.3 | 0.4 |
-| 58 | Carrier | 1 | 0 | top | 0.5 | — |
-| 70 | Scout | 3 | 1 | top | 0.2 | 0.3 |
-| 78 | Spinner | 2 | 4 | top | 0.3 | 0.4 |
-| 88 | Weaver | 3 | 1.5 | top | 0.25 | 0.25 |
-| 96 | Gnat | 2 | 2.5 | top | 0.3 | 0.4 |
-| 104 | Strafer | 2 | 2 | right | 0.78 | — |
-| 130 | Spinner | 2 | 3 | top | 0.3 | 0.4 |
-| 136 | Hornet | 4 | 0.8 | top | 0.15 | 0.23 |
-| 144 | Carrier | 1 | 0 | top | 0.35 | — |
-| 150 | Weaver | 3 | 1.5 | top | 0.6 | 0.15 |
-| 160 | Splitter | 3 | 2 | top | 0.2 | 0.3 |
-| 168 | Strafer | 2 | 2 | left | 0.8 | — |
-| 176 | Spinner | 2 | 3 | top | 0.7 | -0.4 |
-| 182 | Gnat | 2 | 2 | top | 0.3 | 0.4 |
-| 190 | Weaver | 2 | 2 | top | 0.3 | 0.4 |
-| 198 | Scout | 4 | 1 | top | 0.15 | 0.23 |
-| 206 | Hornet | 4 | 0.8 | top | 0.2 | 0.2 |
-| 212 | Weaver | 3 | 1.2 | top | 0.3 | 0.2 |
-| 218 | Spinner | 2 | 2 | top | 0.3 | 0.4 |
-| 224 | Splitter | 2 | 2 | top | 0.3 | 0.4 |
+| 1 | Hornet | 4 | 0.8 | top | 0.15 | 0.23 |
+| 2 | Scout | 3 | 1.2 | top | 0.25 | 0.25 |
+| 3 | Lancer | 2 | 2.5 | top | 0.25 | 0.5 |
+| 4 | Hornet | 4 | 0.8 | top | 0.85 | -0.23 |
+| 5 | Rocketeer | 1 | 0 | top | 0.5 | — |
+| 6 | Scout | 3 | 1.2 | top | 0.75 | -0.25 |
+| 7 | Hornet | 4 | 0.8 | top | 0.15 | 0.23 |
+| 8 | Lancer | 2 | 2.5 | top | 0.75 | -0.5 |
+| 9 | Scout | 3 | 1.2 | top | 0.25 | 0.25 |
+| 10 | Rocketeer | 1 | 0 | top | 0.5 | — |
+
+No wave starts in the 10 s before each boss ([level-flow.md](../../gameplay/level-flow.md)).
 
 **Acceptance criteria**
-- Given the 1-3 beats, then each names a kind and a side, in order of time (unit test).
+- Given the 1-3 plan, then it composes beats that name its kinds and sides in order of time (unit test).
 
-*Sources: P06-R07, D-044.*
+*Sources: P06-R07, D-067, ENM-50.*
 
 #### LVL-1-3-10 — Filler · MUST
 
-1-3's filler (WLD-1-21) brings Hornet, Gnat, Weaver, Scout, in turn, one group every `max_gap`.
+1-3's filler (WLD-1-21) brings the level's divers and shooters, Hornet, Scout, Hornet, Scout, in turn, one group every `max_gap`.
 
 **Acceptance criteria**
-- Given the 1-3 filler, then its kinds are those four and its gap shrinks (unit test).
+- Given the 1-3 filler, then its kinds are the Hornet and the Scout only and its gap shrinks (unit test).
 
-*Sources: D-051.*
+*Sources: D-051, ENM-50.*
 
 ### Difficulty
 
@@ -228,7 +212,7 @@ the shortest of World 1: its final fight stops the ground.
 | town_streets | rows 60–110, columns 70–130, links 0.55 | `TOWN_STREETS` (also 1-4's towns and 1-5's oasis villages and towns) |
 | max_gap | 3.3 s → 2.2 s | `src/game/config/world_1/waves.py` `WORLD_1_FILLERS["1-3"]` |
 | bullet_speed_factor / fire_rate_factor | 0.9 / 0.9 | `src/game/config/world_1/difficulty.py` |
-| written | 27 beats; 78 waves and 230 groups after fill and density; 374 enemies, 9 140 HP (halves 4 160 / 4 980), Carrier launches not counted | measured from the configs (density 2, D-249) |
+| written | 47 beats from the plan; waves, groups, enemies and HP after fill and density: to be measured again with the new kinds | `src/game/config/wave_plans.py` `level_plan(1, 3)`; density 2 (D-249) |
 | buildings | 8 034 (halves 598 / 7 436) | each level's seed, measured for this file |
 | mini boss / final boss | `dust-devil` / `mesa-fortress` | `src/game/config/world_1/bosses.py` |
 | runout | 30 s | same |

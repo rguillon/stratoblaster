@@ -6,11 +6,13 @@ from helpers.enemy_steps import area
 from helpers.fakes import FakeContext
 
 from core.math.rng import create_rng
+from game.config.record import record
 from game.sim.enemies.enemy_helpers import (
     Cadence,
     bullet_shot,
     clamp_entry,
     coin,
+    missile_spec,
     on_playfield,
     pick_x,
     playfield_path,
@@ -97,3 +99,18 @@ def test_bullet_shot_fires_the_bullet_of_the_enemy_at_each_shot() -> None:
     spec = object()
     bullet_shot(ctx, spec)(1.0, 2.0, 0.5)
     assert ctx.bullets == [(1.0, 2.0, 0.5, spec)]
+
+
+def test_enm_18_a_missile_spec_is_built_from_the_config_s_missile_record() -> None:
+    spec = missile_spec(
+        record({
+            "speed": 150,
+            "turnRateDeg": 90,
+            "homingSeconds": 3.5,
+            "radius": 5,
+            "health": 10,
+            "style": "rocketeer",
+        })
+    )
+    assert (spec.speed, spec.turn_rate_deg, spec.homing_seconds) == (150, 90, 3.5)
+    assert (spec.radius, spec.health, spec.style) == (5, 10, "rocketeer")

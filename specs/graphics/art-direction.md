@@ -71,7 +71,8 @@ veins, eyes, charge lights, reactor cores and flames, edge trim) is bright yello
 bright green (hue 125°), keeping its brightness: the hue of the colour its table gives is moved to
 the nearer of the two. Warm neon (red, orange, magenta) turns yellow; cool neon (green, cyan, blue)
 turns green. There is no shade in between (no khaki) and no pink, magenta, violet or red light on
-an enemy or a boss.
+an enemy or a boss. An enemy's lights take the hue of its tier instead (60° to 135°, on the same
+yellow to green ladder, [ENM-49](../enemies/common.md)); the two hues above are the bosses'.
 
 **Acceptance criteria**
 - Given any enemy or boss model, then the hue of each of its coloured lights is 60° or 125° (greys
@@ -225,8 +226,9 @@ and both flash white when a boss part is hit.
 
 ### GFX-ART-16 — The tier reads from the look · MUST
 
-The look grows with the tier: a basic kind is one body with a few grafts; a veteran has more armour
-plates and more limbs; an elite is heavily armoured, with plated shells and more organs and veins;
+The look grows with the tier: a tier 1 kind is one body with a few grafts; each higher tier has more
+armour plates, limbs, organs and veins than the one below; a tier 4 kind is heavily armoured, with
+plated shells;
 a boss is one creature whose destroyable parts are organs, limbs or armoured growths.
 
 **Acceptance criteria**
@@ -266,7 +268,7 @@ the simulation and its tests are untouched by a visual change.
 
 | Name | Value | Notes |
 |------|-------|-------|
-| Enemy light hues | 60°, 125° | `src/game/config/readability.py` `READABILITY["enemyHues"]` (GFX-ART-05) |
+| Enemy light hues | 60°, 125° (bosses; an enemy's is its tier's, ENM-49) | `src/game/config/readability.py` `READABILITY["enemyHues"]` (GFX-ART-05) |
 | Enemy body hue window | 100°–250°, else saturation ≤ 0.1 | `READABILITY["enemyBody"]` (GFX-ART-06) |
 | Hull tint / self-light | 0.3 / 0.04 | `src/game/config/enemy_look.py` `ENEMY_LOOK["hull"]` |
 | Hull metallic / roughness | 0.85 / 0.38 | `ENEMY_LOOK["hull"]` |

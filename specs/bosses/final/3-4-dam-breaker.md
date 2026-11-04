@@ -148,14 +148,18 @@ each stage:
 
 #### FB-DAM-BREAKER-10 — Rage · MUST
 
-After the pause that follows each destroyed part, it fires a curtain at heat 8, in `green` and
-`orange`.
+It is angry after each of its transformations, when the weapons that one revealed
+fire all out: the two batteries after the first, the two missile racks after the second.
+For `boss_rage_seconds` it fires only those, `boss_rage_rate` times as often, instead of its
+stage's pattern ([common](../common.md), BOSS-27). A lost part no longer angers it, and it
+has no angry pattern of its own.
 
 **Acceptance criteria**
-- Given a part is destroyed, when its pause is over, then the core fires the curtain (unit: rage
-  patterns).
+- Given a transformation is over, then it is angry and fires only the weapons it revealed
+  (unit: `test_boss_build.py` angry_pattern).
+- Given a part is destroyed without a transformation, then it is not angry (unit test).
 
-*Sources: D-081, D-063.*
+*Sources: D-081, D-063, D-256.*
 
 #### FB-DAM-BREAKER-11 — First transformation: flank armour, two batteries · MUST
 
@@ -222,7 +226,7 @@ boss's centre, X right, Y up the screen (its bow at -Y).
 | stop / sway / bob | 0.74 / 32 px, 11 s / 5 px, 5.5 s | |
 | ground speed | ×0.3 | |
 | sludge | `green` 125 px/s, radius 7; 5 then 4 globs × 15°, every 4 s | `SLUDGE`, `waves` |
-| rage | curtain, heat 8 | |
+| angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformations | at 2 and 4 parts destroyed | `default_transforms` |
 | flank regions | the flank deck's plan, x 30..56, y 7..70 (mirrored), `wing`; plating 3.7–5.2 px | form 1 |
 | wing regions | the bow deck's plan, x 14..56, y -71..-21 (mirrored), `wing`; plating 3.7–5.2 px | form 2 |

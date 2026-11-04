@@ -4,8 +4,8 @@
 
 The fourth level of World 2: dusk through the smog over the industrial belt, from the industrial
 edge 2-3 ended on, through workers' suburbs, warehouses and yards, a power plant and factory yards,
-to the factory district, the window, street and car lights coming on. Mostly paved ground. Every
-basic kind comes, Rocketeers and Bulwarks leading. The Avalanche waits at the middle and the Glacier
+to the factory district, the window, street and car lights coming on. Mostly paved ground. All five
+kinds of tier 2 come, Harriers and Sweepers leading. The Avalanche waits at the middle and the Glacier
 Colossus at the end.
 
 ## Requirements
@@ -96,50 +96,48 @@ and the factory district (the groups of the table above, WLD-2-13). It has World
 
 #### LVL-2-4-07 — Enemy kinds · MUST
 
-2-4 uses all eleven basic kinds, with Rocketeers and Bulwarks leading its waves over the industrial
-belt, in its beats and its fillers.
+2-4 uses the five kinds of tier 2, Wasp, Strafer, Sweeper, Harrier and Hatchery, in its beats and its fillers, and no other kind.
 
 **Acceptance criteria**
-- Given the 2-4 wave script, then it uses all eleven basic kinds and no other (unit test).
+- Given the 2-4 wave script, then it only uses Wasp, Strafer, Sweeper, Harrier and Hatchery, and it uses each of them (unit test).
 
-*Sources: P08-R08.*
+*Sources: P06-R07, ENM-50.*
 
 #### LVL-2-4-08 — Wave plan · MUST
 
 2-4's waves are composed from this plan (WLD-2-19; World 1's density and filler apply on top):
 
-Beats from 4 s to 292 s, one every 4.8 s at the start down to 3.4 s at the end, groups growing by 60 % over the level (71 beats, the last at 289.4 s). The phrases, in their cycle:
+Beats from 4 s to 292 s, one every 4.6 s at the start down to 3.3 s at the end, groups growing by 85 % over the level (74 beats, the last at 291 s). The phrases, in their cycle:
 
 | # | Kind | Groups | Between groups (s) | Side | Position | Spread |
 |---|------|--------|--------------------|------|----------|--------|
-| 1 | Rocketeer | 2 | 2.5 | top | 0.3 | 0.4 |
-| 2 | Scout | 4 | 1 | top | 0.15 | 0.23 |
-| 3 | Bulwark | 1 | 0 | top | 0.5 | — |
-| 4 | Weaver | 3 | 1.2 | top | 0.3 | 0.2 |
-| 5 | Rocketeer | 2 | 2 | top | 0.7 | -0.4 |
-| 6 | Spinner | 2 | 2.5 | top | 0.3 | 0.4 |
-| 7 | Bulwark | 1 | 0 | top | 0.35 | — |
-| 8 | Lancer | 2 | 2 | top | 0.25 | 0.5 |
-| 9 | Splitter | 2 | 2 | top | 0.3 | 0.4 |
-| 10 | Carrier | 1 | 0 | top | 0.5 | — |
-| 11 | Strafer | 3 | 1.5 | right | 0.8 | — |
-| 12 | Hornet | 5 | 0.7 | top | 0.1 | 0.2 |
-| 13 | Gnat | 2 | 2 | top | 0.3 | 0.4 |
+| 1 | Wasp | 2 | 1.6 | top | 0.4 | 0.3 |
+| 2 | Strafer | 2 | 1.5 | left | 0.8 | — |
+| 3 | Sweeper | 1 | 0 | top | 0.5 | — |
+| 4 | Wasp | 2 | 1.6 | top | 0.6 | -0.3 |
+| 5 | Harrier | 2 | 2 | top | 0.3 | 0.4 |
+| 6 | Strafer | 2 | 1.5 | right | 0.2 | — |
+| 7 | Wasp | 2 | 1.6 | top | 0.4 | 0.3 |
+| 8 | Hatchery | 1 | 0 | top | 0.5 | — |
+| 9 | Sweeper | 1 | 0 | top | 0.5 | — |
+| 10 | Strafer | 2 | 1.5 | left | 0.8 | — |
+| 11 | Harrier | 2 | 2 | top | 0.7 | -0.4 |
+
+No wave starts in the 10 s before each boss ([level-flow.md](../../gameplay/level-flow.md)).
 
 **Acceptance criteria**
 - Given the 2-4 plan, then it composes beats that name its kinds and sides in order of time (unit test).
 
-*Sources: P08-R08, D-067.*
+*Sources: P06-R07, D-067, ENM-50.*
 
 #### LVL-2-4-09 — Filler · MUST
 
-2-4's filler (WLD-1-21) brings Gnat, Weaver, Hornet, Scout, Splitter, Spinner, in turn, one group
-every `max_gap`.
+2-4's filler (WLD-1-21) brings the level's divers and shooters, Wasp, Strafer, Wasp, Strafer, in turn, one group every `max_gap`.
 
 **Acceptance criteria**
-- Given the 2-4 filler, then its kinds are those six and its gap shrinks (unit test).
+- Given the 2-4 filler, then its kinds are the Wasp and the Strafer only and its gap shrinks (unit test).
 
-*Sources: D-051, D-067.*
+*Sources: D-051, ENM-50.*
 
 ### Difficulty
 
@@ -202,7 +200,7 @@ end: the ground gets ahead of the level during the fights, the most in the Avala
 | streets | rows 45–90, columns 50–110, links 0.6 (the suburbs: `suburb_streets`, 2-2) | `STREETS` |
 | max_gap | 2.9 s → 1.8 s | `src/game/config/world_2/waves.py` `WORLD_2_FILLERS["2-4"]` |
 | bullet_speed_factor / fire_rate_factor | 1.1 / 1.1 | `src/game/config/world_2/difficulty.py` |
-| written | 71 beats; 136 waves and 552 groups after fill and density; 744 enemies, 32 380 HP (halves 12 600 / 19 780), Carrier launches not counted; 148.8 enemies and 6 476 HP a minute without them | measured from the configs; D-067, density 2 (D-249) |
+| written | 74 beats from the plan; waves, groups, enemies and HP after fill and density: to be measured again with the new kinds | `src/game/config/wave_plans.py` `level_plan(2, 4)`; density 2 (D-249) |
 | buildings | 33 137 (halves 13 499 / 19 638) | each level's seed, measured for this file |
 | mini boss / final boss | `avalanche` / `glacier-colossus` | `src/game/config/world_2/bosses.py` |
 | runout | 120 s | same |

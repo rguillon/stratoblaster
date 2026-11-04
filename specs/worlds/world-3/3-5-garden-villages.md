@@ -4,8 +4,8 @@
 
 The last level of World 3. From the village edge 3-4 ended on, the player flies over a village green,
 allotments and cottages to garden villages of small houses, which last to the end, on gently rolling
-ground, on a rainy night whose clouds open on a moonlit sky before the final boss. Bulwarks escort
-Carriers in the heaviest mixes of World 3, and the Phantom comes in. World 4 begins where 3-5 ends.
+ground, on a rainy night whose clouds open on a moonlit sky before the final boss. Broodmothers and Prisms
+come in the heaviest mixes of World 3. World 4 begins where 3-5 ends.
 Its checkpoint is its mini boss (see [level flow](../../gameplay/level-flow.md)).
 
 ## Requirements
@@ -60,19 +60,15 @@ of the villages lit and glowing in the rain. Over 250–275 s the rain stops and
 
 ### LVL-3-5-04 — Enemy waves · MUST
 
-3-5's waves follow its wave plan (WLD-3-16) from 4 s to 292 s, with a beat every `wave_gap` seconds and
-groups growing by `wave_growth`. The cycle opens with a Carrier between two Bulwarks: Bulwark 1,
-Carrier 1, Bulwark 1, Scout 5, Rocketeer 3, Lancer 3, Spinner 3, Bulwark 2, Carrier 1, Weaver 5,
-Splitter 3, Strafer 3 (from the right), Hornet 6, Gnat 3, Wasp 2, Mortar 1, Minelayer 1 (from the
-right), Mantis 1, Phantom 1. These are World 3's heaviest mixes. The filler draws Gnats, Weavers,
-Hornets, Scouts, Splitters and Spinners, at most `filler_gap` apart. 3-5 uses every basic kind and all
-five veteran kinds.
+3-5 uses all five kinds of tier 3, Phantom, Spinner, Prism, Mortar and Broodmother, and no other. 3-5's waves follow its wave plan (WLD-3-16) from 4 s to 292 s, with a beat every `wave_gap` seconds (3.6 s to 2.6 s) and
+groups growing by `wave_growth` (100 %) over the level (94 beats). The cycle of phrases, each a kind with its number of
+groups at the start: Phantom 1, Spinner 2, Prism 1, Phantom 1, Mortar 1, Spinner 2, Phantom 1, Broodmother 1, Prism 1, Spinner 2, Mortar 1. The filler draws Phantoms and Spinners, at most `filler_gap` apart.
 
 **Acceptance criteria**
-- Unit test: 3-5's waves use the eleven basic kinds and the five veteran kinds, and no elite kind.
+- Unit test: 3-5's waves use exactly Phantom, Spinner, Prism, Mortar and Broodmother, and each of them.
 - Unit test: 3-5's waves are the same each time the level is built.
 
-*Sources: P09-R07, P05-R24, D-080, D-090.*
+*Sources: P09-R07, P05-R24, D-080, D-090, ENM-50.*
 
 ### LVL-3-5-05 — Difficulty · MUST
 
@@ -127,9 +123,9 @@ for the two fights.
 | streets | suburb 40–70 × 50–95; village 40–70 × 45–90; lanes 35–60 × 40–80 (rows × columns) | `SUBURB_STREETS`, `VILLAGE_STREETS`, `LANES` |
 | clouds | 0.6 / 0.4, opening to 0.2 / 0.1 over 250–275 s | `LEVEL_3_5_LOOK`, `src/game/config/world_3/looks.py` |
 | rain | 0.5, stopping over 250–275 s | same |
-| wave_gap | 3.6 s → 2.8 s | `PLAN_3_5.gap`, `src/game/config/world_3/waves.py` |
-| wave_growth | 0.6 | `PLAN_3_5.growth` |
-| filler_gap | 2.6 s → 1.5 s | `WORLD_3_FILLERS["3-5"].maxGap` |
+| wave_gap | 3.6 s → 2.6 s | `PLAN_3_5.gap`, `src/game/config/world_3/waves.py` |
+| wave_growth | 1 | `PLAN_3_5.growth` |
+| filler_gap | 2.8 s → 1.6 s | `WORLD_3_FILLERS["3-5"].maxGap` |
 | bullet speed / fire rate factors | 1.25 / 1.25 | `WORLD_3_DIFFICULTY["3-5"]` |
 | measured | 247.8 enemies/min, 8 952 HP/min, peak 53 | D-090 (2-5: 233.4, 7 360, 51) |
 | runout | 100 s | `WORLD_3_BOSSES["3-5"].runout` |

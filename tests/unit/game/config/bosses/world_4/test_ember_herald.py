@@ -25,8 +25,6 @@ def test_mb_ember_herald_07_boss_stats_are_in_the_range_the_sim_relies_on() -> N
     assert 0 < stats["coreRadius"] < stats["radius"]
 
 
-def test_mb_ember_herald_10_boss_has_an_angry_pattern_and_its_stage_count() -> None:
-    """Its rage, and one stage pattern more than its parts (MB-EMBER-HERALD-09)."""
-    assert isinstance(EMBER_HERALD.rage, list)
-    assert EMBER_HERALD.rage
+def test_mb_ember_herald_10_boss_has_its_stage_count() -> None:
+    """One stage pattern more than its parts (MB-EMBER-HERALD-09)."""
     assert len(EMBER_HERALD.stages) == len(original_parts(EMBER_HERALD)) + 1

@@ -7,7 +7,6 @@ core of a final boss always drops a bonus (BOSS-57).
 """
 
 from game.config.bosses.boss_kit import bullet, cells, mirror, part, stages, stats, twin, volley
-from game.config.bosses.boss_rage import rage
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.bosses.moving_regions import moving_region, slide, swing
 from game.config.record import concat, merge, record
@@ -47,8 +46,6 @@ ROTARY = [
 # (FB-STORM-PETREL-07).
 _STORM_PETREL = record({
     "id": "storm-petrel",
-    # Angry after each destroyed part (phase 7 review, FB-STORM-PETREL-09).
-    "rage": rage.flower(0.5, "magenta", "red"),
     # Its points, its core's drop and its parts' drops (FB-STORM-PETREL-13).
     "stats": stats({
         "id": "storm-petrel",
@@ -98,8 +95,6 @@ _STORM_PETREL = record({
 # (FB-GULL-MOTHERSHIP-07).
 _GULL_MOTHERSHIP = record({
     "id": "gull-mothership",
-    # Angry after each destroyed part (phase 7 review, FB-GULL-MOTHERSHIP-09).
-    "rage": rage.vortex(1.5, "green", "orange"),
     # Its points, its core's drop and its parts' drops (FB-GULL-MOTHERSHIP-13).
     "stats": stats({
         "id": "gull-mothership",
@@ -122,8 +117,8 @@ _GULL_MOTHERSHIP = record({
     "sway": {"amplitude": 40, "period": 9},
     "bob": {"amplitude": 8, "period": 4.5},
     "launches": [
-        {"from": "hangar-left", "kind": "gnats", "count": 3, "every": 7, "first": 2.5},
-        {"from": "hangar-right", "kind": "gnats", "count": 3, "every": 7, "first": 6},
+        {"from": "hangar-left", "kind": "hornets", "count": 3, "every": 7, "first": 2.5},
+        {"from": "hangar-right", "kind": "hornets", "count": 3, "every": 7, "first": 6},
     ],
     # Its guns' muzzles (FB-GULL-MOTHERSHIP-03).
     "guns": {
@@ -151,8 +146,6 @@ _GULL_MOTHERSHIP = record({
 # (FB-MESA-FORTRESS-07).
 _MESA_FORTRESS = record({
     "id": "mesa-fortress",
-    # Angry after each destroyed part (phase 7 review, FB-MESA-FORTRESS-09).
-    "rage": rage.curtain(2.5, "red", "orange"),
     # Its points, its core's drop and its parts' drops (FB-MESA-FORTRESS-13).
     "stats": stats({
         "id": "mesa-fortress",
@@ -219,8 +212,6 @@ _MESA_FORTRESS = record({
 # (FB-REFINERY-TITAN-07).
 _REFINERY_TITAN = record({
     "id": "refinery-titan",
-    # Angry after each destroyed part (phase 7 review, FB-REFINERY-TITAN-09).
-    "rage": rage.spirals(3.5, "orange", "green"),
     # Its points, its core's drop and its parts' drops (FB-REFINERY-TITAN-12).
     "stats": stats({
         "id": "refinery-titan",
@@ -282,10 +273,6 @@ _REFINERY_TITAN = record({
 # (FB-OVERLORD-07).
 _OVERLORD = record({
     "id": "overlord",
-    # Angry after each destroyed part (phase 7 review, FB-OVERLORD-09).
-    "rage": concat(
-        rage.spirals(4.5, "purple", "blue", 0.6), rage.flower(4.5, "magenta", "purple", 0.4)
-    ),
     # Its points, its core's drop and its parts' drops (FB-OVERLORD-13).
     "stats": stats({
         "id": "overlord",

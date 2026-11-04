@@ -2,7 +2,7 @@
 """World 3."""
 
 from core.content.game_level import GameLevel
-from game.config.world_2.waves import compose_beats
+from game.config.wave_plans import compose_beats
 from game.config.world_3.bosses import WORLD_3_BOSSES
 from game.config.world_3.difficulty import WORLD_3_DIFFICULTY
 from game.config.world_3.scenery import LEVEL_3_1, LEVEL_3_2, LEVEL_3_3, LEVEL_3_4, LEVEL_3_5

@@ -25,8 +25,6 @@ def test_fb_foundry_ark_09_boss_stats_are_in_the_range_the_sim_relies_on() -> No
     assert 0 < stats["coreRadius"] < stats["radius"]
 
 
-def test_fb_foundry_ark_15_boss_has_an_angry_pattern_and_its_stage_count() -> None:
-    """Its rage, and one stage pattern more than its parts (FB-FOUNDRY-ARK-13)."""
-    assert isinstance(FOUNDRY_ARK.rage, list)
-    assert FOUNDRY_ARK.rage
+def test_fb_foundry_ark_15_boss_has_its_stage_count() -> None:
+    """One stage pattern more than its parts (FB-FOUNDRY-ARK-13)."""
     assert len(FOUNDRY_ARK.stages) == len(original_parts(FOUNDRY_ARK)) + 1

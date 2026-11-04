@@ -6,43 +6,46 @@ from typing import Any
 import pytest
 from helpers.enemy_steps import area
 
-from game.config.enemies import ENEMY_CONFIG, ENEMY_SPAWN_MARGIN
-from game.sim.enemies.gnat import Gnat
+from game.config.enemies import ENEMY_SPAWN_MARGIN
+from game.config.enemy_tiers import all_kinds
 from game.sim.enemies.strafer import Strafer
-from game.sim.enemy_kinds import ENEMY_KINDS, FIRST_KINDS, side_pass
+from game.sim.enemy_kinds import ENEMY_KINDS, side_pass
 
-FIRST_IDS = [
-    "gnat",
+TIER_IDS = [
     "hornet",
     "scout",
-    "strafer",
-    "weaver",
-    "spinner",
-    "lancer",
     "rocketeer",
-    "bulwark",
-    "splitter",
+    "lancer",
     "carrier",
+    "wasp",
+    "strafer",
+    "harrier",
+    "sweeper",
+    "hatchery",
+    "phantom",
+    "spinner",
+    "mortar",
+    "prism",
+    "broodmother",
+    "splitter",
+    "juggernaut",
+    "hydra",
+    "scissor",
+    "hive",
 ]
 
 
 def test_enm_01_every_kind_of_the_game_is_listed_once_with_a_unique_id() -> None:
+    """Twenty kinds, tier 1 first, each tier in the order of its roles."""
     ids = [kind.id for kind in ENEMY_KINDS]
-    assert len(ids) == len(set(ids)) == 21
-    assert [kind.id for kind in FIRST_KINDS] == FIRST_IDS
+    assert ids == TIER_IDS
+    assert ids == all_kinds()
 
 
 def test_enm_04_each_kind_has_a_name_and_a_spawn_function() -> None:
     for kind in ENEMY_KINDS:
         assert kind.name
         assert callable(kind.spawn)
-
-
-def test_enm_gnat_04_a_gnat_group_comes_in_as_its_configured_number_of_gnats() -> None:
-    kind = next(k for k in ENEMY_KINDS if k.id == "gnat")
-    group = kind.spawn(area())
-    assert len(group) == ENEMY_CONFIG.gnat.groupSize
-    assert all(isinstance(g, Gnat) for g in group)
 
 
 def test_enm_08_a_strafer_from_a_left_entry_starts_just_left_of_the_playfield() -> None:
