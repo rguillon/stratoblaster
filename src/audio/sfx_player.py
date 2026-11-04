@@ -1,12 +1,14 @@
 # Copyright (c) 2026 Renaud Guillon
-"""Plays the sound effects: each through the `VoicePool`'s limits (AUD-ENGINE-07).
+"""Plays the sound effects (recorded samples), each through the `VoicePool`'s limits.
 
-Panned with its position (AUD-ENGINE-08), on the sound effect bus. Without a context the pool still
-decides, so the game's logic (and the e2e test API) does not depend on audio being available.
+The limits are those of AUD-ENGINE-07. Panned with its position (AUD-ENGINE-08), on the sound
+effect bus. Without a context the pool still decides, so the game's logic (and the e2e test API)
+does not depend on audio being available.
 """
 
-from audio.audio_types import INFINITY, SoundDesign, sound_seconds
-from audio.synth import Voice, VoiceOptions, play_voice
+from audio.audio_types import SoundDesign, sound_seconds
+from audio.sample_bank import SampleBank
+from audio.synth import Voice, play_sample
 from audio.voice_pool import VoicePool
 
 # isort: split
@@ -60,8 +62,9 @@ class _Playing:
 class SfxPlayer:
     """The sound effects player (see the module doc)."""
 
-    def __init__(self, bus: Any, clock: Any, settings: SfxSettings) -> None:
+    def __init__(self, bus: Any, clock: Any, settings: SfxSettings, samples: SampleBank) -> None:
         self._bus = bus
+        self._samples = samples
         self._clock = clock
         self._settings = settings
         self._pool = VoicePool(settings.max_voices, settings.retrigger_seconds)
@@ -140,7 +143,9 @@ class SfxPlayer:
 
     def _start(self, sound: SoundDesign, pan: float) -> tuple[Voice | None, Any | None]:
         bus = self._bus()
-        if bus is None:
+        buffer = self._samples.get(sound.sample)
+        if bus is None or buffer is None:
+            # No context, or the sample is not ready (or failed to load): silent.
             return None, None
         context = bus.context
         gain = context.createGain()
@@ -152,9 +157,7 @@ class SfxPlayer:
             gain.connect(panner)
             out = panner
         out.connect(bus.sfx)
-        hold = INFINITY if sound.loop else sound.hold
-        options = VoiceOptions(context.currentTime, None, hold, sound.gain)
-        voice = play_voice(context, gain, sound.layers, options)
+        voice = play_sample(context, gain, buffer, sound.loop is True, sound.gain)
         return voice, gain
 
     def _boost(self, name: str) -> None:

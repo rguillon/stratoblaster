@@ -15,6 +15,7 @@ from audio import music_player, sfx_player
 from audio.audio_bindings import AudioBindings, AudioMix, MusicRequest
 from audio.audio_types import INFINITY, Envelope, SoundDesign, ToneLayer, Track
 from audio.level_cues import SoundCue
+from audio.sample_bank import SampleBank
 from config.audio import AUDIO_CONFIG
 from core.systems.level_run_types import LevelResult
 
@@ -24,8 +25,7 @@ def layer() -> ToneLayer:
 
 
 def sound(name: str, **flags: bool) -> SoundDesign:
-    hold = INFINITY if flags.get("loop") else 0.2
-    return SoundDesign(name, [layer()], 0.8, 1, hold, **flags)
+    return SoundDesign(name, name, 0.8, 1, 0.2, **flags)
 
 
 class FakeMusic:
@@ -54,8 +54,17 @@ def voices(monkeypatch: pytest.MonkeyPatch) -> list[FakeVoice]:
         made.append(voice)
         return voice
 
+    def fake_play_sample(
+        context: Any, _destination: Any, _buffer: Any, loop: bool, _gain: float
+    ) -> FakeVoice:
+        voice = FakeVoice(INFINITY if loop else context.currentTime + 0.2)
+        made.append(voice)
+        return voice
+
     monkeypatch.setattr(music_player, "play_voice", fake_play_voice)
-    monkeypatch.setattr(sfx_player, "play_voice", fake_play_voice)
+    monkeypatch.setattr(sfx_player, "play_sample", fake_play_sample)
+    # Every sample is decoded and ready.
+    monkeypatch.setattr(SampleBank, "get", lambda _self, _name: object())
     return made
 
 
@@ -523,3 +532,31 @@ def test_dev_menu_19_the_sounds_viewer_keeps_the_menu_music() -> None:
     audio.unlock()
     audio.menu_changed(menu_state("dev-viewer", dev_viewer="sounds"))
     assert audio.state.music == "menu"
+
+
+def test_aud_engine_01_the_samples_are_fetched_at_once_and_decoded_when_the_audio_is_unlocked() -> (
+    None
+):
+    from helpers.audio_fakes import FakePromise  # noqa: PLC0415
+
+    ctx = FakeContext()
+    fetched: dict[str, FakePromise] = {}
+
+    def fetch_sample(name: str) -> FakePromise:
+        fetched[name] = FakePromise()
+        return fetched[name]
+
+    sounds = {"hit": sound("hit"), "menu-move": sound("menu-move")}
+    bindings = AudioBindings(FakeMusic(), {}, sounds, 40, AudioMix(0.6, 0.8), None)
+    options = GameAudioOptions(lambda: ctx, None, lambda: 0.0, 300, fetch_sample)
+    audio = GameAudio(bindings, options)
+    assert sorted(fetched) == ["hit", "menu-move"]
+    assert audio.state.samples == 0
+    for name, promise in fetched.items():
+        promise.resolve(name + "-bytes")
+    assert ctx.decodes == []  # before a gesture: no context, nothing decoded
+    audio.unlock()
+    assert sorted(d.data for d in ctx.decodes) == ["hit-bytes", "menu-move-bytes"]
+    for decode in ctx.decodes:
+        decode.resolve(object())
+    assert audio.state.samples == 2

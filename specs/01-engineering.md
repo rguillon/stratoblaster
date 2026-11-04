@@ -91,7 +91,7 @@ reason. Values are defaults the owner may change; the main ones are listed under
 │   │   └── loop/            # fixed-step clock
 │   ├── render/              # Babylon plumbing: babylon.py, geometry/, environment/, scenery/, pools, layers
 │   ├── ui/                  # DOM HUD, menus and screens
-│   ├── audio/               # Web Audio engine: synth, sequencer, music and SFX players, cues
+│   ├── audio/               # Web Audio engine: synth, sequencer, sample bank, music and SFX players, cues
 │   ├── input/               # keyboard / gamepad / touch → menu actions and controls
 │   ├── assets/              # the start-up loading tasks
 │   ├── config/              # engine tunables (ENGINE_CONFIG, menus, controls, scenery stage, weather…)
@@ -122,8 +122,8 @@ named `platform` shadows the standard library module.
 
 **Discrepancy:** the layout of the phase-based spec listed folders that were never built: `fx/`
 (effects are drawn by `render/` and `game/view/`), `core/events/` (there is no event bus, ENG-11),
-`core/world.py`, `public/assets/` (there is no asset file, ENG-126), `src/assets/manifest.py`
-(ENG-123) and `tests/fixtures/` (ENG-145).
+`core/world.py`, `public/assets/` (the only asset files are the sound samples in `public/sfx/`,
+ENG-126), `src/assets/manifest.py` (ENG-123) and `tests/fixtures/` (ENG-145).
 
 *Sources: ENG-10, D-172, D-176, D-187, D-188, D-189, D-190.*
 
@@ -151,7 +151,7 @@ replacing `src/game/` only.
 | ENG-140 | MUST | **Engine is game-agnostic.** Code outside `src/game/` contains no content specific to this game: no concrete enemy, boss, weapon, bonus or level; no game-specific names, numbers or texts. It provides abstractions (`Enemy`, `Boss`, `ShotTarget`, weapon definitions, `GameLevel`, `GameDefinition`), generic systems and generic presentation plumbing. | ENG-140 |
 | ENG-141 | MUST | **Content lives in `src/game/`.** Concrete classes (e.g. `class Hornet(Enemy)` in `game/sim/enemies/hornet.py`) and the levels, waves and bosses live in `game/sim/` and `game/config/`; their models, effects and sounds in `game/view/`. | ENG-141 |
 | ENG-142 | MUST | **Dependency direction**, enforced by lint (the mechanism of ENG-11):<br>• No module outside `src/game/` imports `src/game/`, except `src/main.py`, which imports only `game/index.py`.<br>• `game/sim/` follows the purity rules of `core/` (ENG-11, ENG-18) and imports only `core/`, `config/`, `game/sim/` and `game/config/`.<br>• `game/config/` imports only `game/config/`.<br>• `game/view/` may import `render/`, `audio/`, `ui/`, `assets/`, `config/`, `core/`, `game/sim/` and `game/config/`.<br>**Discrepancy:** no import-linter contract checks these rules; they hold in the code today (see ENG-11). | ENG-142, P18-R05, D-003 |
-| ENG-143 | MUST | Game-specific tunables live in `src/game/config/`. If the game ever has file assets (ENG-126), they are declared in a game manifest under `src/game/` that the engine's typed manifest (ENG-123) loads without knowing its contents. | ENG-143 |
+| ENG-143 | MUST | Game-specific tunables live in `src/game/config/`. The game's file assets (the sound samples, ENG-126) are declared in a game manifest under `src/game/` (the sound designs) that the engine loads by name without knowing their contents (ENG-123). | ENG-143 |
 | ENG-144 | MUST | **Single entry point.** `src/game/index.py` exports one `GameDefinition` (`GAME`; the type is in `core/content/game_definition.py`) that registers all the content: id and title, logical screen, player ships and weapons, the level catalog and the playable levels, enemy and boss kinds, the rules of boss fights, bonuses, bombs and hull, the menu texts, and the view bindings (ship models, shot renderers, title backdrop, scenery, enemy, bonus and bomb renderers, audio, outline). `main.py` passes it to `app/` (`start_app`). The engine finds content only through this object (registries and factories), never by importing `src/game/`. | ENG-144, D-015, D-036 |
 | ENG-145 | MUST | **Engine tested on its own.** Engine unit tests (all of `tests/unit/` except `tests/unit/game/`) build their content by hand with the small helpers of `tests/helpers/` (a sample scenery level, a menu game, level builders, fakes), not from `src/game/`. A minimal sample game (a `GameDefinition` of its own) in `tests/fixtures/` proves the engine works with another game. Content in `src/game/` has its own tests in `tests/unit/game/`. | ENG-145 |
 | ENG-146 | MUST | Coverage: `src/game/sim/**` has the same threshold as `src/core/**` (ENG-43): both are held to the 100 % of the whole of `src/`. | ENG-146 |
@@ -291,13 +291,13 @@ The frame rate, loading times and freezes players feel are in [performance.md](p
 
 | ID | Priority | Requirement | Sources |
 |----|----------|-------------|---------|
-| ENG-120 | MUST | Formats, if a file asset is ever added (ENG-126): models **glTF binary (`.glb`)**; textures **KTX2 (Basis)** or WebP; environment maps Babylon `.env`; audio **OGG** with an MP3 fallback. | ENG-120 |
+| ENG-120 | MUST | Formats of file assets (ENG-126): sound effects **OGG (Vorbis)** with an **MP3** fallback, both shipped; if other assets are ever added: models **glTF binary (`.glb`)**; textures **KTX2 (Basis)** or WebP; environment maps Babylon `.env`. | ENG-120 |
 | ENG-121 | MUST | Allowed sources: generated in code; CC0 packs (e.g. Kenney, Quaternius, Poly Haven); CC-BY only with attribution. No unclear licenses. | ENG-121 |
-| ENG-122 | MUST | Every third-party asset is listed in `CREDITS.md` (name, author, source URL, license). Today the table is empty: there is none. | ENG-122 |
-| ENG-123 | MUST | File assets, if any, are referenced through a typed manifest (`src/assets/manifest.py`), never by string paths scattered in code. Today there is none (ENG-126) and `src/assets/` holds the start-up loading tasks; the only files the code fetches are named once each: `vendor/babylon.js` and `js/game.js` in `index.html`, `ground_worker.js` in `render/scenery/background_loader.py`. | ENG-123 |
-| ENG-124 | SHOULD | Asset size budget: at most 2 MB per model and 1 MB per texture (no file asset today). | ENG-124 |
+| ENG-122 | MUST | Every third-party asset is listed in `CREDITS.md` (name, author, source URL, license). Today the table lists the sound effect samples (29 sounds from two CC0 packs); the README repeats the packs and their authors. | ENG-122, D-261 |
+| ENG-123 | MUST | File assets, if any, are referenced through a typed manifest (`src/assets/manifest.py`), never by string paths scattered in code. The only file assets are the sound samples: they are named once each by the sound designs of the game (`src/game/view/audio/sound_designs.py`, the game manifest of ENG-143), and the engine fetches them by name through one function (`fetch_sample` in `main.py`); there is no model or texture file, and `src/assets/` holds the start-up loading tasks. The other files the code fetches are named once each: `vendor/babylon.js` and `js/game.js` in `index.html`, `ground_worker.js` in `render/scenery/background_loader.py`. | ENG-123, D-261 |
+| ENG-124 | SHOULD | Asset size budget: at most 2 MB per model and 1 MB per texture and 100 KB per sound effect sample (`public/sfx/` is about 630 KB today, no model or texture file). | ENG-124 |
 | ENG-125 | MUST | Project license: **MIT** (`LICENSE`, `pyproject.toml` `license`). | ENG-125 |
-| ENG-126 | SHOULD | The game ships no model, texture, environment-map or sound file: models are built in code, textures and the lighting environment are generated at run time (a procedural cube map, atlases), and the music and sounds are synthesised with Web Audio. `public/` holds only the vendored Babylon.js. | GD-60, D-005, D-097 |
+| ENG-126 | SHOULD | The game ships no model, texture, environment-map or music file: models are built in code, textures and the lighting environment are generated at run time (a procedural cube map, atlases), and the music is synthesised with Web Audio. The sound effects are CC0 samples (AUD-ENGINE-01). `public/` holds the vendored Babylon.js and `sfx/`. | GD-60, D-005, D-097, D-261 |
 
 ### 12. Documentation
 

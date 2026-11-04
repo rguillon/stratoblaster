@@ -57,6 +57,7 @@ seed call, it only moves when stepped, and the game's own pause is sent with `se
 | `music` | The id of the music playing (`menu`, `level-2-3`, `boss-2`), or null |
 | `sounds` | The names of the last sound effects played, most recent last |
 | `audio` | The audio context's state (`none` before the first user gesture) |
+| `samples` | How many sound effect samples are decoded and ready (0 before the first user gesture) |
 | `highScore` | The high score |
 | `loadingProgress` | Every progress value the start-up loading screen showed, in order |
 | `game` | The level being played (DEV-API-03), or null (in the menus, or while it loads) |

@@ -5,7 +5,14 @@ import pytest
 from helpers.audio_fakes import FakeContext, FakeNode
 
 from audio.audio_types import INFINITY, Envelope, FilterSpec, ToneLayer
-from audio.synth import NOISE_SECONDS, STOP_MARGIN, VoiceOptions, noise_buffer, play_voice
+from audio.synth import (
+    NOISE_SECONDS,
+    STOP_MARGIN,
+    VoiceOptions,
+    noise_buffer,
+    play_sample,
+    play_voice,
+)
 
 
 def layer(
@@ -169,3 +176,33 @@ def test_aud_engine_01_the_layer_gain_is_its_own_times_the_voice_gain() -> None:
     play_voice(ctx, FakeNode("bus"), [layer(gain=0.5)], VoiceOptions(0, 440, 0.2, 0.8))
     gain = ctx.of_kind("gain")[0]
     assert ("linearRampToValueAtTime", (0.4, 0.1)) in gain.gain.events
+
+
+def test_aud_engine_01_a_sample_plays_once_at_its_level_and_ends_with_its_length() -> None:
+    ctx = FakeContext()
+    ctx.currentTime = 2.0
+    destination = FakeNode("destination")
+    buffer = type("Buffer", (), {"duration": 0.5})()
+    voice = play_sample(ctx, destination, buffer, False, 0.4)
+    (source,) = ctx.of_kind("source")
+    (level,) = ctx.of_kind("gain")
+    assert source.buffer is buffer
+    assert source.loop is False
+    assert source.started == [2.0]
+    assert level.gain.value == 0.4
+    assert source.connections == [level]
+    assert level.connections == [destination]
+    assert voice.end == pytest.approx(2.5)
+
+
+def test_aud_engine_01_a_looping_sample_holds_until_stopped_with_a_fade() -> None:
+    ctx = FakeContext()
+    buffer = type("Buffer", (), {"duration": 4.7})()
+    voice = play_sample(ctx, FakeNode("destination"), buffer, True, 0.1)
+    (source,) = ctx.of_kind("source")
+    (level,) = ctx.of_kind("gain")
+    assert source.loop is True
+    assert voice.end == INFINITY
+    voice.stop(1.0, 0.04)
+    assert level.gain.names() == ["cancelScheduledValues", "setTargetAtTime"]
+    assert source.stops == [pytest.approx(1.0 + 0.04 + STOP_MARGIN)]

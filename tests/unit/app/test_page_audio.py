@@ -174,3 +174,15 @@ def test_aud_engine_07_the_audio_clock_counts_the_game_s_frames() -> None:
     wrapped.simulate(-1.0)
     wrapped.simulate(0.5)
     assert clock() == 0.75
+
+
+def test_aud_engine_01_the_fetch_function_of_the_samples_reaches_the_audio() -> None:
+    game = MagicMock()
+    game.playfield.width = 320
+
+    def fetch_sample(_name: str) -> object:
+        return MagicMock()
+
+    app_audio = create_app_audio(game, page(audio=AudioOptions(None, None, fetch_sample)))
+    assert app_audio.audio._options.fetch_sample is fetch_sample
+    assert create_app_audio(game, page()).audio._options.fetch_sample is None

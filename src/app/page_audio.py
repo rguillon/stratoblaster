@@ -33,11 +33,19 @@ class AudioOptions:
     The `GameAudioOptions` without the screen width and clock, which the app supplies.
     """
 
-    def __init__(self, create_context: Any | None, can_start: Any | None) -> None:
+    def __init__(
+        self,
+        create_context: Any | None,
+        can_start: Any | None,
+        fetch_sample: Any | None = None,
+    ) -> None:
         # Creates the Web Audio context. Silent when None.
         self.create_context = create_context
         # Whether the page may start audio now. Always when None.
         self.can_start = can_start
+        # Fetches a sound effect's file by name: a promise of its bytes. The sound effects are
+        # silent when None.
+        self.fetch_sample = fetch_sample
 
 
 class PageVisibility:
@@ -183,9 +191,12 @@ def create_app_audio(game: Any, options: PageOptions) -> "AppAudio":
     audio_options = options.audio
     create_context = audio_options.create_context if audio_options is not None else None
     can_start = audio_options.can_start if audio_options is not None else None
+    fetch_sample = audio_options.fetch_sample if audio_options is not None else None
     audio = GameAudio(
         game.view.audio,
-        GameAudioOptions(create_context, can_start, _clock_of(elapsed), game.playfield.width),
+        GameAudioOptions(
+            create_context, can_start, _clock_of(elapsed), game.playfield.width, fetch_sample
+        ),
     )
     return AppAudio(audio, _frame_wrapper(audio, options, elapsed))
 

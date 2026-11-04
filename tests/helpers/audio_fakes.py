@@ -37,14 +37,33 @@ class FakeParam:
 
 
 class FakePromise:
-    """A promise that ignores its handlers: `catch` returns the promise, as the DOM's does."""
+    """A promise the test settles by hand: `then` and `catch` return it, as the DOM's do.
 
-    def __init__(self) -> None:
+    `resolve(value)` calls the `then` handlers, `reject(error)` the `catch` ones. Unsettled, it
+    ignores its handlers.
+    """
+
+    def __init__(self, data: Any = None) -> None:
+        # What the promise was made for: the bytes a decode was asked for.
+        self.data = data
         self.caught: list[Any] = []
+        self.handlers: list[Any] = []
+
+    def then(self, handler: Any) -> "FakePromise":
+        self.handlers.append(handler)
+        return self
 
     def catch(self, handler: Any) -> "FakePromise":
         self.caught.append(handler)
         return self
+
+    def resolve(self, value: Any) -> None:
+        for handler in self.handlers:
+            handler(value)
+
+    def reject(self, error: Any) -> None:
+        for handler in self.caught:
+            handler(error)
 
 
 class FakeNode:
@@ -108,6 +127,7 @@ class FakeContext:
         self.resumed = 0
         self.suspended = 0
         self.promises: list[FakePromise] = []
+        self.decodes: list[FakePromise] = []
 
     def _make(self, kind: str) -> FakeNode:
         node = FakeNode(kind)
@@ -142,6 +162,10 @@ class FakeContext:
         buffer = FakeBuffer(channels, length)
         self.buffers.append(buffer)
         return buffer
+
+    def decodeAudioData(self, data: Any) -> FakePromise:
+        self.decodes.append(FakePromise(data))
+        return self.decodes[-1]
 
     def resume(self) -> FakePromise:
         self.resumed += 1

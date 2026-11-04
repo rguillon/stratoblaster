@@ -14,7 +14,6 @@ from audio.audio_types import (
     Track,
     beat_seconds,
     is_finite,
-    layer_seconds,
     midi_to_hz,
     sound_seconds,
     track_seconds,
@@ -58,27 +57,13 @@ def test_aud_engine_01_midi_pitch_69_is_concert_a() -> None:
     assert midi_to_hz(57) == pytest.approx(220)
 
 
-def test_aud_engine_07_a_layer_lasts_its_delay_plus_hold_or_attack_decay_plus_release() -> None:
-    env = Envelope(0.01, 0.2, 0.5, 0.3)
-    assert layer_seconds(layer(env), 0.1) == pytest.approx(0 + 0.21 + 0.3)
-    assert layer_seconds(layer(env), 1.0) == pytest.approx(1.0 + 0.3)
-    assert layer_seconds(layer(env, delay=0.5), 1.0) == pytest.approx(0.5 + 1.0 + 0.3)
-
-
 def test_aud_engine_07_a_looping_sound_lasts_forever() -> None:
-    sound = SoundDesign("hum", [layer(Envelope(0, 0, 1, 0))], 1, 1, 0.1, loop=True)
+    sound = SoundDesign("hum", "hum", 1, 1, 4.7, loop=True)
     assert sound_seconds(sound) == INFINITY
 
 
-def test_aud_engine_07_a_sound_lasts_as_long_as_its_longest_layer() -> None:
-    short = layer(Envelope(0, 0, 1, 0.1))
-    long = layer(Envelope(0, 0, 1, 0.1), delay=0.4)
-    sound = SoundDesign("chime", [short, long], 1, 1, 0.2)
-    assert sound_seconds(sound) == pytest.approx(0.4 + 0.2 + 0.1)
-
-
-def test_aud_engine_07_a_sound_without_layers_lasts_no_time() -> None:
-    assert sound_seconds(SoundDesign("silence", [], 1, 1, 0.2)) == 0
+def test_aud_engine_07_a_sound_lasts_as_long_as_its_sample() -> None:
+    assert sound_seconds(SoundDesign("boom", "boom", 1, 1, 1.26)) == pytest.approx(1.26)
 
 
 def test_aud_engine_13_notes_keep_their_fields() -> None:
