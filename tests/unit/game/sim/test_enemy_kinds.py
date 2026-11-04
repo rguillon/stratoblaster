@@ -87,3 +87,26 @@ def test_enm_07_every_kind_spawns_a_group_from_any_wave_entry(kind: Any, side: A
     assert group
     for enemy in group:
         assert enemy.health > 0
+
+
+@pytest.mark.parametrize("kind_id", ["hornet", "wasp"])
+@pytest.mark.parametrize("side", ["left", "right"])
+def test_enm_08_a_diver_from_a_side_entry_starts_outside_that_side_at_the_entry_height(
+    kind_id: str, side: str
+) -> None:
+    kind = next(k for k in ENEMY_KINDS if k.id == kind_id)
+    group = kind.spawn(area(width=400, height=600, side=side, position=0.5))
+    assert group
+    for enemy in group:
+        if side == "left":
+            assert enemy.x == pytest.approx(-ENEMY_SPAWN_MARGIN)
+        else:
+            assert enemy.x == pytest.approx(400 + ENEMY_SPAWN_MARGIN)
+        assert 200 < enemy.y < 400
+
+
+@pytest.mark.parametrize("kind_id", ["hornet", "wasp"])
+def test_enm_08_a_diver_from_the_top_still_starts_above_the_playfield(kind_id: str) -> None:
+    kind = next(k for k in ENEMY_KINDS if k.id == kind_id)
+    for enemy in kind.spawn(area(width=400, height=600, side="top", position=0.5)):
+        assert enemy.y > 600

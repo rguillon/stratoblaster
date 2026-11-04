@@ -22,6 +22,7 @@ from game.sim.enemies.enemy_helpers import (
     clamp_entry,
     coin,
     pick_x,
+    side_dive_stop_x,
     top_x,
 )
 from game.sim.enemies.harrier import Harrier
@@ -77,6 +78,13 @@ def side_pass(area: EnemySpawnArea, height_fraction: float) -> tuple[bool, float
 
 
 def _spawn_hornet(area: EnemySpawnArea) -> list[Enemy]:
+    entry = area.entry
+    if entry is not None and entry.side != "top":
+        # From a side (ENM-HORNET-10): flies in level to a stop in that side's half.
+        left, y = side_pass(area, 0)
+        stop_x = side_dive_stop_x(area, left)
+        options = hornet_options(C.hornet, y, stop_x)
+        return [Hornet(-MARGIN if left else area.width + MARGIN, y, options)]
     x = _entry_x(area, C.hornet.xRange)
     return [Hornet(x, _top(area), hornet_options(C.hornet, C.hornet.stopFraction * area.height))]
 

@@ -9,7 +9,15 @@ beat is `[seconds, kind, groups, seconds between groups, side, position (0..1), 
 import math
 
 from game.config.record import concat
-from game.config.wave_plans import compose_beats, level_plan, world_fillers
+from game.config.wave_plans import (
+    DENSITY_GAP,
+    DENSITY_SPREAD,
+    WAVE_DENSITY,
+    compose_beats,
+    level_plan,
+    wave_duration,
+    world_fillers,
+)
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -19,19 +27,12 @@ from typing import Any
 # __pragma__ ("noskip")
 
 
-# Enemy density (WLD-1-20; phase 6 review: +50 %; D-249 raised it from 1.5 to 2 on the wide
-# screen, D-252 put it back in the 540 px playfield window, D-253 raised it again in the 1000 px
-# one): each beat brings this many times its groups, rounded. A beat of one group gets its extra
-# groups `DENSITY_GAP` seconds apart and, from the top, `DENSITY_SPREAD` across the screen, so
-# they do not come in on top of each other.
-WAVE_DENSITY = 2
-DENSITY_GAP = 1.5
-DENSITY_SPREAD = 0.3
-
 # Where the filler groups come in from the top, in turn.
 FILL_POSITIONS = [0.3, 0.7, 0.5, 0.2, 0.8]
-# A beat is `[seconds, kind, groups, interval, side, position]`, with an optional spread.
+# A beat is `[seconds, kind, groups, interval, side, position]`, with an optional spread and, after
+# it, an optional alternate flag (1: the groups come in from both edges in turn).
 BEAT_LENGTH = 6
+ALTERNATE_AT = 7
 
 
 def denser(beat: list[Any], density: float) -> list[Any]:
@@ -44,14 +45,16 @@ def denser(beat: list[Any], density: float) -> list[Any]:
     position = beat[5]
     has_spread = len(beat) > BEAT_LENGTH
     more = max(1, math.floor(count * density + 0.5))
+    # What follows the six first items: the spread, then the alternate flag, when there are any.
     if more == count or count > 1:
         head = [seconds, kind, more, interval, side, position]
         if not has_spread:
             return head
-        return concat(head, [beat[6]])
+        return concat(head, beat[BEAT_LENGTH:])
     across = DENSITY_SPREAD if side == "top" else -DENSITY_SPREAD / 2
     spread = beat[6] if has_spread else across
-    return [seconds, kind, more, DENSITY_GAP, side, position, spread]
+    head = [seconds, kind, more, DENSITY_GAP, side, position]
+    return concat(head, [spread], beat[ALTERNATE_AT:])
 
 
 def wave_script(speed: float, beats: list[Any], density: float = WAVE_DENSITY) -> Any:
@@ -71,6 +74,8 @@ def wave_script(speed: float, beats: list[Any], density: float = WAVE_DENSITY) -
         }
         if len(d) > BEAT_LENGTH:
             wave["spread"] = d[6]
+        if len(d) > ALTERNATE_AT:
+            wave["alternate"] = d[ALTERNATE_AT] == 1
         waves.append(wave)
     return waves
 
@@ -93,10 +98,12 @@ def quiet_before(script: list[Any], bosses: list[float], quiet: float) -> Any:
 
 
 def fill(beats: list[Any], filler: Any) -> list[Any]:
-    """`beats` with filler groups in their lulls (WLD-1-21, phase 6 review): after each beat.
+    """`beats` with filler groups in their lulls (WLD-1-21, phase 6 review).
 
-    A group of the filler's kinds in turn every `maxGap` seconds, as long as the next beat is more
-    than one and a half gaps away.
+    After each beat's wave has come in: a group of the beat's own kind every `maxGap` seconds, as
+    long as the next beat is more than one and a half gaps away. Only a kind that is one of the
+    filler's brings any (the heavy kinds are left to themselves), so a lull stretches the wave
+    before it and never mixes in another kind.
     """
     # A stable insertion sort by seconds: Transcrypt's sort is not stable and takes no comparator.
     ordered = list(beats)
@@ -118,7 +125,9 @@ def fill(beats: list[Any], filler: Any) -> list[Any]:
         span = 1
 
     def gap_at(t: float) -> float:
-        gap: float = start + ((end - start) * (t - first)) / span
+        # Progress through the level, kept within it: past the last beat the gap is the last one.
+        progress = min(1, max(0, (t - first) / span))
+        gap: float = start + (end - start) * progress
         return gap
 
     out: list[Any] = []
@@ -127,11 +136,11 @@ def fill(beats: list[Any], filler: Any) -> list[Any]:
         beat = ordered[position_index]
         out.append(beat)
         next_t = ordered[position_index + 1][0] if position_index + 1 < len(ordered) else beat[0]
-        t = beat[0] + gap_at(beat[0])
+        t = beat[0] + wave_duration(beat[2], beat[3]) + gap_at(beat[0])
+        kind = beat[1]
         while next_t - t > gap_at(t) / 2:
-            kind = filler.kinds[n % len(filler.kinds)]
             position = FILL_POSITIONS[n % len(FILL_POSITIONS)]
-            if kind:
+            if kind in filler.kinds:
                 out.append([t, kind, 1, 0, "top", position])
             t = t + gap_at(t)
             n = n + 1
