@@ -1,9 +1,9 @@
 # Copyright (c) 2026 Renaud Guillon
 """Plays one voice's layers into a destination: each layer is an oscillator or looped noise.
 
-Through its filter and envelope, so every sound is generated in code and no sound file is shipped
-(AUD-ENGINE-01, ENG-126). The Web Audio context is passed in (a fake one in the tests); nothing here
-reads a browser global.
+Through its filter and envelope: the music is generated in code (AUD-MUSIC-01), and the sound
+effects play recorded samples (`play_sample`, AUD-ENGINE-01). The Web Audio context is passed in (a
+fake one in the tests); nothing here reads a browser global.
 
 Gain values ramp from and to 0.0001 instead of 0, which exponential ramps cannot reach.
 """
@@ -74,6 +74,34 @@ class Voice:
             except:
                 # Already stopped earlier than that: nothing to do.
                 pass
+
+
+def play_sample(
+    ctx: Any,
+    destination: Any,
+    buffer: Any,
+    loop: bool,
+    gain: float,
+    rate: float = 1,
+    delay: float = 0,
+) -> Voice:
+    """Plays a decoded sample into `destination` at level `gain`, looping if asked.
+
+    At playback speed `rate` (its pitch), `delay` seconds from now. Returns a handle to stop it
+    early (AUD-ENGINE-01).
+    """
+    source = ctx.createBufferSource()
+    source.buffer = buffer
+    source.loop = loop
+    source.playbackRate.value = rate
+    level = ctx.createGain()
+    level.gain.value = gain
+    source.connect(level)
+    level.connect(destination)
+    when = ctx.currentTime + delay
+    source.start(when)
+    end = INFINITY if loop else when + buffer.duration / rate
+    return Voice(end, [_Part(source, level)])
 
 
 def noise_buffer(ctx: Any) -> Any:

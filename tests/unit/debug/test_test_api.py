@@ -49,7 +49,7 @@ class FakeApp:
         )
         self.menu = SimpleNamespace(flow=SimpleNamespace(state=flow), high_score=1200)
         self.audio = SimpleNamespace(
-            state=SimpleNamespace(music="menu", sounds=["menu-move"], context="running")
+            state=SimpleNamespace(music="menu", sounds=["menu-move"], context="running", samples=29)
         )
         self.perf = SimpleNamespace(
             numbers=SimpleNamespace(
@@ -90,6 +90,7 @@ def test_eng_52_the_state_has_the_menus_audio_high_score_loading_and_perf_in_cam
     assert state["music"] == "menu"
     assert state["sounds"] == ["menu-move"]
     assert state["audio"] == "running"
+    assert state["samples"] == 29
     assert state["highScore"] == 1200
     assert state["loadingProgress"] == [0, 0.5, 1]
     assert state["game"] is None

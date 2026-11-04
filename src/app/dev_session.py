@@ -140,6 +140,8 @@ class DevSession:
         player = self.player
         if viewer is not None:
             viewer.frame(dt)
+            cues = viewer.take_cues()
+            self._audio.play_blasts(cues.blasts, cues.parts, cues.boss)
             self._write_status(viewer.status)
         elif player is not None:
             player.frame(dt)

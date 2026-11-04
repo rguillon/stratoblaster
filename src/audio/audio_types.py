@@ -123,33 +123,51 @@ class MusicEffects:
         self.reverb_seconds = reverb_seconds
 
 
+class SoundJitter:
+    """How much each play of a sound is varied at random (AUD-SFX-10), so repeats differ.
+
+    `pitch`: its speed (and pitch) changes by up to this share either way (0.2: 0.8 to 1.2);
+    `gain`: it is up to this share quieter; `delay`: it starts up to this many seconds late.
+    """
+
+    def __init__(self, pitch: float, gain: float, delay: float) -> None:
+        self.pitch = pitch
+        self.gain = gain
+        self.delay = delay
+
+
 class SoundDesign:
-    """A sound effect (AUD-SFX-01)."""
+    """A sound effect (AUD-SFX-01): a recorded sample and how it is mixed."""
 
     def __init__(
         self,
         name: str,
-        layers: list[ToneLayer],
+        samples: list[str],
         gain: float,
         priority: float,
-        hold: float,
+        seconds: float,
         positional: bool | None = None,
         loop: bool | None = None,
+        jitter: SoundJitter | None = None,
     ) -> None:
         # Its name, as the e2e test API lists it (DEV-API-02).
         self.name = name
-        self.layers = layers
-        # Level in the sound effect mix.
+        # The samples it plays (`sfx/<sample>.ogg`, with an `.mp3` fallback), AUD-ENGINE-01: one
+        # of them each time, picked at random (AUD-SFX-09).
+        self.samples = samples
+        # Level in the sound effect mix (the sample's peak is -1 dBFS).
         self.gain = gain
         # When the voices are all taken, a sound replaces one of lower or equal priority
         # (AUD-SFX-05).
         self.priority = priority
-        # Seconds the layers hold before their release; a looping sound holds until stopped.
-        self.hold = hold
+        # Length of its longest sample in seconds, for the voice limits (AUD-ENGINE-07).
+        self.seconds = seconds
         # Panned left or right with its x on the playfield.
         self.positional = positional
         # Plays until stopped (a laser hum).
         self.loop = loop
+        # Varied at random on each play; played the same each time when None.
+        self.jitter = jitter
 
 
 class Note:
@@ -197,18 +215,6 @@ def midi_to_hz(pitch: float) -> float:
     return 440 * 2 ** ((pitch - 69) / 12)
 
 
-def layer_seconds(layer: ToneLayer, hold: float) -> float:
-    """Seconds a layer sounds for once started and held for `hold` seconds."""
-    envelope = layer.envelope
-    delay = layer.delay if layer.delay is not None else 0
-    return delay + max(hold, envelope.attack + envelope.decay) + envelope.release
-
-
 def sound_seconds(sound: SoundDesign) -> float:
     """Seconds a sound effect lasts (Infinity for a looping one)."""
-    if sound.loop:
-        return INFINITY
-    best = 0.0
-    for layer in sound.layers:
-        best = max(best, layer_seconds(layer, sound.hold))
-    return best
+    return INFINITY if sound.loop else sound.seconds

@@ -91,6 +91,19 @@ def _within(enemy: Any, screen: Any, margin: float) -> bool:
     return inside_x and y >= -margin and y <= screen.height + margin
 
 
+class DevCues:
+    """What blew up in the viewer since the last time its sounds were asked for (D-262).
+
+    The radii of the explosions, how many parts broke, and whether a boss was destroyed: the
+    events a level would sound (`LevelCues`), for the dev session to play.
+    """
+
+    def __init__(self, blasts: list[float], parts: int, boss: bool) -> None:
+        self.blasts = blasts
+        self.parts = parts
+        self.boss = boss
+
+
 class DevEnemyContext:
     """The world an enemy of the enemies viewer (DEV-MENU-13) lives in (`EnemyContext`).
 
@@ -107,6 +120,8 @@ class DevEnemyContext:
         self.fire_rate = 1.0
         # What blew up since the viewer last drew it (a boss's parts, its death).
         self.blasts: list[EnemyBlast] = []
+        # How many parts of an enemy broke since the viewer last took them (they blow up too).
+        self.broken = 0
 
     def seen(self, point: Any) -> PlanePoint:
         """Return the plane position of `point`, as the viewer shows it."""
@@ -130,6 +145,7 @@ class DevEnemyContext:
 
     def break_part(self, part: Any) -> None:
         """Add a blast where a part of an enemy broke."""
+        self.broken += 1
         self.blasts.append(EnemyBlast("enemy", part.x, part.y, part.radius))
 
 
@@ -189,6 +205,10 @@ class DevViewer:
         # Enemies and bosses: the explosions' renderer, and the explosions to draw next.
         self._blasts: Any = None
         self._new_blasts: list[EnemyBlast] = []
+        # What to sound: the radii of the explosions, the parts broken, a boss destroyed (D-262).
+        self._cue_blasts: list[float] = []
+        self._cue_parts = 0
+        self._cue_boss = False
         # How far the reviewer has turned the model with the mouse (radians): around its nose
         # and nose up or down (props: the camera, round the prop and up or down). Kept from one
         # item to the next.
@@ -207,6 +227,14 @@ class DevViewer:
         if self._props is not None:
             return self._props.scene
         return self._view.scene if self._view is not None else None
+
+    def take_cues(self) -> DevCues:
+        """Return what blew up since the last call, for its sounds (D-262), and forget it."""
+        cues = DevCues(self._cue_blasts, self._cue_parts, self._cue_boss)
+        self._cue_blasts = []
+        self._cue_parts = 0
+        self._cue_boss = False
+        return cues
 
     @property
     def status(self) -> str:
@@ -469,6 +497,7 @@ class DevViewer:
             enemy.update(self._context, step)
             self._take_blasts(enemy)
         if self._ended(enemy):
+            self._cue_boss = self._cue_boss or (self.viewer == "bosses" and enemy.gone)
             self._enemy = self._spawn(self._item)
 
     def _live_world(self, world: EnemyWorld, dt: float, step: float) -> None:
@@ -478,7 +507,12 @@ class DevViewer:
             self._sim_left -= step
             world.step(step)
             self._new_blasts.extend(world.blasts)
+            self._cue_blasts.extend([
+                blast.radius for blast in world.blasts if blast.kind == "enemy"
+            ])
+            self._cue_parts += len(world.broken_parts)
         if len(world.enemies) == 0 and self._item is not None:
+            self._cue_boss = self._cue_boss or self.viewer == "bosses"
             world.clear()
             group = self._spawn_group(self._item)
             world.add(*group)
@@ -495,7 +529,10 @@ class DevViewer:
             self._new_blasts.append(
                 EnemyBlast(blast.kind, blast.x + dx, blast.y + dy, blast.radius)
             )
+            self._cue_blasts.append(blast.radius)
+        self._cue_parts += self._context.broken
         self._context.blasts = []
+        self._context.broken = 0
 
     def break_part(self) -> None:
         """Bosses viewer (DEV-MENU-14): destroys the boss's next part.

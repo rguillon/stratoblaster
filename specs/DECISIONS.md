@@ -829,3 +829,55 @@
 - **Consequences:** about 20 waves per level instead of about 50 beats, 300 groups instead of 400 to
   500; the difficulty ramp (WLD-1-22) and density are tuned by numbers, not yet judged by play.
 - **Status:** Proposed
+
+### D-261 — The sound effects are CC0 samples, not synthesised
+- **Date:** 2026-11-04
+- **Requirements:** AUD-ENGINE-01 (changed), AUD-ENGINE-04, AUD-SFX-01, AUD-SFX-02, AUD-SFX-04,
+  AUD-SFX-08 (changed), ENG-120, ENG-122, ENG-123, ENG-124, ENG-126, ENG-143, DEV-API-02 (`samples`)
+- **Context:** requested by the human: use open-source sounds instead of the synthesised ones. The
+  specs forbade any audio file (AUD-ENGINE-01, ENG-126); ENG-120 to ENG-123 already allowed CC0 file
+  assets with credits and a manifest.
+- **Decision:** the 29 sound effects are samples from Kenney's CC0 "Sci-Fi Sounds" and "Interface
+  Sounds" packs (downloaded from OpenGameArt: kenney.nl refuses scripted downloads), each made mono,
+  44.1 kHz, cut where long, peak-normalised to −1 dBFS and shipped as `public/sfx/<name>.ogg` and
+  `.mp3` (MP3 for browsers without Ogg Vorbis, picked with `canPlayType`). `SoundDesign` now names a
+  sample, its level, priority, length and flags instead of synth layers; `SampleBank` fetches every
+  file at start-up and decodes it when the context is created (it only exists after a gesture,
+  AUD-ENGINE-03); `SfxPlayer` plays a decoded sample through the same voice pool, panner and bus as
+  before (`play_sample`). A sample not ready or failed is silent. The sound recipes
+  (`sound_recipes.py`) and the synthesised designs were removed; `flatten_layers` moved to
+  `instruments.py`. The music stays synthesised. `make build` now checks that audio files are only in
+  `sfx/` and that every `.ogg` has its `.mp3`; the e2e test checks the files fetched, found, and
+  decoded (test API `samples`). The player gun first used a Kenney laser shot; at the human's request it became a minigun burst built from single shots of the CC0 AK-47 recording of the Free Firearm Sound Library (six shots 21 ms apart, AUD-SFX-02). The laser hum is the one loop: its tail is cross-faded into its head.
+- **Alternatives considered:** keeping the synthesised sounds as a fallback when a sample is missing
+  (more code, hides a load failure); decoding before the gesture with an `OfflineAudioContext` (a
+  second context, different sample rate); a typed manifest in `src/assets/` (the sound designs
+  already name each file once); `<audio>` elements (no panning or looping without gaps).
+- **Consequences:** about 630 KB more in `dist/`; sounds asked for in the first fraction of a second
+  after the first key press may be silent if the decode is not over; the samples were picked by file
+  name and duration and not listened to, so the reviewer may want to swap some (AUD-SFX-08 notes);
+  the loudness was set from the old gains, not measured against the music beyond the AUD-SFX-06 check.
+- **Status:** Proposed
+
+### D-262 — Three variants of the small and large explosions, and sounds for K in the bosses viewer
+- **Date:** 2026-11-04
+- **Requirements:** AUD-SFX-01, AUD-SFX-09 and AUD-SFX-10 (new), DEV-MENU-14
+- **Context:** requested by the human: three different `explosion-small` and `explosion-large`, played
+  at random; and in the dev bosses viewer, K should sound the explosions too.
+- **Decision:** `SoundDesign.sample` became `samples` (a list). `SfxPlayer` picks one at random for
+  each play with the seeded generator of `core/math/rng.py` (`VARIANT_SEED`), never the one played
+  last for that sound. The six recordings: Kenney `explosionCrunch_000`, `_002`, `_001`; compufox's
+  `explosion2`, `explosion1_0` and `explosion3` (CC0 on OpenGameArt; `explosion-small-3` first came from number99's `explosion`, 4 LU louder than the others, and was replaced on the human's request), processed as the
+  others. The viewer collects what blew up (`DevViewer.take_cues`: the radii of the explosions, the
+  parts broken, a boss gone) and `DevSession` has `GameAudio.play_blasts` play them as `LevelCues`
+  would: large or small by radius, `part-destroyed`, then `boss-destroyed`.
+- **Follow-up (same day):** the boss's death blasts were still too regular (a blast every
+  `BossDeath.every`, the same few recordings). Each play of `explosion-small`, `explosion-large` and
+  `boss-part-destroyed` is now varied by a `SoundJitter` (pitch, level, start delay, AUD-SFX-10),
+  from the same seeded generator; `play_sample` takes a `rate` and a `delay`. The simulation's blast
+  timing is unchanged.
+- **Alternatives considered:** `Math.random` (not reproducible); variants as separate cues picked by
+  `LevelCues` (the core would then choose sounds); cycling in order (predictable).
+- **Consequences:** 4 more samples, 35 more KB in `dist/`; the voice pool counts a variant sound at
+  its longest recording; the picks are not chosen by ear (reviewer to listen).
+- **Status:** Proposed

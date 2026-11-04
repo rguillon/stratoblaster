@@ -2,42 +2,43 @@
 
 > **Area:** Audio · **Prefix:** `AUD-SFX` · **Related:** [engine.md](engine.md), [music.md](music.md), [../gameplay/weapons.md](../gameplay/weapons.md), [../gameplay/bombs.md](../gameplay/bombs.md), [../gameplay/bonuses.md](../gameplay/bonuses.md), [../ui/menu-input.md](../ui/menu-input.md)
 
-Every gameplay and menu event has its own generated sound effect, designed so the player can tell
-them apart and so a busy screen stays pleasant: the guns rattle like a minigun, explosions are
-layered like real blasts, and the player's own guns are mixed under the hits and explosions. This
-file lists the sounds, their design rules, their priorities and their mix. How they are played
-(voices, limits, panning) is in [engine.md](engine.md).
+Every gameplay and menu event has its own sound effect, a recorded CC0 sample (D-261), chosen so the
+player can tell them apart and so a busy screen stays pleasant: the guns are short and quiet,
+explosions are big and low, and the player's own guns are mixed under the hits and explosions. This
+file lists the sounds, their samples, their priorities and their mix. How they are loaded and
+played (voices, limits, panning) is in [engine.md](engine.md).
 
 ## Requirements
 
 ### AUD-SFX-01 — A sound for every event · MUST
 
-Every event below plays its own generated sound, distinct from the others:
+Every event below plays its own sound, a sample distinct from the others (the sound's name is the
+sample's file name, `public/sfx/<name>.ogg`, [engine.md](engine.md) AUD-ENGINE-01):
 
 | Group | Event (cue) | Sound |
 |-------|-------------|-------|
-| Player weapons | a volley of the guns (`fire:bullet`) | `gun-shot`, a minigun burst |
-| | the laser starts (`beam-start:laser`) | `laser-start`, a relay click, a swelling air sweep and a low surge |
-| | the laser fires (`beam:laser`) | `laser-hum`, a looping electric hum (two low partials beating) under a hiss of air |
-| | a volley of missiles (`fire:missile`) | `missile-launch`, an ignition pop, the exhaust whoosh and a rumble |
-| | weapon switched (`weapon-switch`) | `weapon-switch`, a weapon racked: two clacks and a thud |
-| | weapon level up (`weapon-up`) | `weapon-level-up`, a part locking in, a whoosh and two bells rising |
-| Enemy weapons | enemy bullet fired (`enemy-bullet`) | `enemy-shot`, a dull crack with a low body |
-| | enemy missile launched (`enemy-missile`) | `enemy-missile`, a rocket's whoosh and rumble |
-| | laser warning line (`laser-warning`) | `laser-warning`, two relay clicks over a rising air sweep |
-| | enemy laser fires (`laser-fire`) | `enemy-laser`, a blast of air falling in pitch, a sub thump and a held rumble |
-| Hits | player shot hits (`hit`) | `hit`, a crack, a short metallic clank and a thud |
-| | player shot hits a shielded part (`hit-blocked`) | `hit-shield`, a click and two inharmonic metallic rings |
-| | the player ship is hit (`player-hit`) | `player-hit`, a crack, a body of noise closing down, a sub thump and a rattle of metal |
-| Destruction | small enemy blows up (`blast-small`) | `explosion-small` |
-| | large enemy blows up (`blast-large`) | `explosion-large` |
-| | boss part destroyed (`part-destroyed`) | `boss-part-destroyed`, a large explosion, then metal tearing away and ringing |
-| | boss destroyed (`boss-destroyed`) | `boss-destroyed`, a chain of three explosions over the hull's groan and a deep rumble |
-| Player | life lost (`life-lost`) | `life-lost`, the engine winding down (a falling air sweep and a falling low tone) over a large explosion |
-| | extra life (`extra-life`) | `extra-life`, four bells rising |
-| | bomb (`bomb`) | `bomb`, a huge explosion, the pressure wave washing over and a sub-bass drop |
-| | bonuses picked up (`bonus:weapon`, `bonus:life`, `bonus:bomb`) | `weapon-bonus` (a whoosh up into two bells), `life-bonus` (three bells rising), `bomb-bonus` (a thud and two low bells) |
-| Menus | move, confirm, back, pause, resume, slider step | `menu-move` (a click), `menu-confirm` and `menu-back` (a click and a bell tap, high and low), `pause` and `resume` (a switch thrown, its tone falling then rising), `slider-step` (a tick) |
+| Player weapons | a volley of the guns (`fire:bullet`) | `gun-shot`, a minigun burst ("BRRRT") |
+| | the laser starts (`beam-start:laser`) | `laser-start`, a large laser charging |
+| | the laser fires (`beam:laser`) | `laser-hum`, a looping engine hum (its tail cross-faded into its head, so the loop has no seam) |
+| | a volley of missiles (`fire:missile`) | `missile-launch`, a thruster firing |
+| | weapon switched (`weapon-switch`) | `weapon-switch`, a heavy latch closing |
+| | weapon level up (`weapon-up`) | `weapon-level-up`, a rising interface chirp |
+| Enemy weapons | enemy bullet fired (`enemy-bullet`) | `enemy-shot`, a small laser shot, different from the player's |
+| | enemy missile launched (`enemy-missile`) | `enemy-missile`, a thruster firing, shorter |
+| | laser warning line (`laser-warning`) | `laser-warning`, a force field powering up |
+| | enemy laser fires (`laser-fire`) | `enemy-laser`, a large laser blast |
+| Hits | player shot hits (`hit`) | `hit`, a short metal impact |
+| | player shot hits a shielded part (`hit-blocked`) | `hit-shield`, a metal impact, ringing |
+| | the player ship is hit (`player-hit`) | `player-hit`, a heavy metal impact |
+| Destruction | small enemy blows up (`blast-small`) | `explosion-small`, a short crunching blast, one of 3 recordings (AUD-SFX-09) |
+| | large enemy blows up (`blast-large`) | `explosion-large`, a longer crunching blast, one of 3 recordings (AUD-SFX-09) |
+| | boss part destroyed (`part-destroyed`) | `boss-part-destroyed`, a long crunching blast |
+| | boss destroyed (`boss-destroyed`) | `boss-destroyed`, a deep, low-frequency explosion |
+| Player | life lost (`life-lost`) | `life-lost`, a short low-frequency explosion |
+| | extra life (`extra-life`) | `extra-life`, a rising confirmation chime |
+| | bomb (`bomb`) | `bomb`, the longest crunching blast |
+| | bonuses picked up (`bonus:weapon`, `bonus:life`, `bonus:bomb`) | `weapon-bonus` (a select blip), `life-bonus` (a confirmation chime), `bomb-bonus` (a glass ring) |
+| Menus | move, confirm, back, pause, resume, slider step | `menu-move` (a tick), `menu-confirm` (a select click), `menu-back` (a back click), `pause` and `resume` (a switch thrown, two different ones), `slider-step` (a tick) |
 
 A blast is large when the enemy's hit radius is at least `large_blast_radius` (18 px); an enemy
 missile shot down blows up small. A slider step plays at the new sound volume.
@@ -45,23 +46,25 @@ missile shot down blows up small. A slider step plays at the new sound volume.
 **Acceptance criteria**
 - Given each event of the table, then its sound plays when the event happens (unit test with a
   fake audio context, one case per event).
-- Given the sound designs, then every event of the table has its own sound (unit test on the data).
+- Given the sound designs, then every event of the table has its own sound and its own sample name
+  (unit test on the data), and each sample exists as `.ogg` and `.mp3` (`make build`).
 
-*Sources: GD-71, P12-R09, D-095, D-097.*
+*Sources: GD-71, P12-R09, D-095, D-097, D-261.*
 
 ### AUD-SFX-02 — The minigun · MUST
 
-The guns sound like a minigun ("BRRRT"): each volley plays one burst of `minigun_rounds` (6) short
-rounds `minigun_gap` (21 ms) apart, each a gritty band-passed noise crack over a short falling
-thump, every other round quieter. A burst lasts until the next volley (the guns fire 8 volleys a
-second), so holding fire rattles on without a gap, and it stops within one volley of letting go.
-If the guns' rate changes, the burst follows it.
+The guns sound like a minigun ("BRRRT"): each volley plays one burst sample (`gun-shot`) of
+`minigun_rounds` (6) short AK-47 shots `minigun_gap` (21 ms) apart, each cut from a different real
+recording (five in turn), every other round quieter. The burst is 0.165 s long (at most 0.25 s), as
+long as the volley is short: the guns fire 8 volleys a second, so holding fire rattles on without a
+gap, and it stops within one volley of letting go. If the guns' rate changes, the sound follows it,
+as it plays once per volley.
 
 **Acceptance criteria**
-- Given the gun sound and the guns' rate, then one burst covers one volley with at least 5 rounds
-  (unit test).
+- Given the gun sound, then it is at most 0.25 s long (unit test on the data).
+- Given the guns held, then the reviewer hears a continuous minigun "BRRRT" (manual check).
 
-*Sources: P12-R09, D-101.*
+*Sources: P12-R09, D-101, D-261.*
 
 ### AUD-SFX-03 — One fire sound per volley · MUST
 
@@ -75,22 +78,21 @@ voices. The laser sounds its start once, then its hum loops while it fires and s
 
 *Sources: P03-R11, D-102, D-097.*
 
-### AUD-SFX-04 — Layered explosions · MUST
+### AUD-SFX-04 — Explosions in sizes · MUST
 
-Every explosion uses one layered recipe, in three sizes (small, large, huge): a 12 ms high-passed
-noise crack (the shock front), a low-passed noise body closing from a few kHz to 180 Hz over the
-blast (the fireball), a sub-bass thump gliding down by half, a low-passed rumble tail for the large
-and huge sizes, and 3 to 8 short band-passed debris crackles at fixed, uneven delays, so a sound is
-the same every time. Most of its energy is low, so a busy wave does not turn into a hiss. Small
-enemies blow up small, large enemies and boss parts large, bosses and bombs huge; a boss dies in a
-chain of three (huge, then two large).
+Explosions come in sizes, each its own sample, longer and lower as it grows: `explosion-small` for
+small enemies, `explosion-large` for large enemies, `boss-part-destroyed` for boss parts,
+`boss-destroyed` for bosses, and `bomb` for bombs. Most of the energy of each is low, so a busy wave
+does not turn into a hiss. Small enemies blow up small, large enemies large, boss parts as parts,
+bosses and bombs with their own, longer sounds.
 
 **Acceptance criteria**
-- Given each explosion size, then its layers are those of the recipe (unit test on the data).
+- Given the explosion sounds, then they grow in length from small to large to the boss's (unit test
+  on the data).
 - Given a busy wave, then the reviewer finds the explosions realistic and not tiring (manual
   check).
 
-*Sources: P12-R09, D-108.*
+*Sources: P12-R09, D-108, D-261.*
 
 ### AUD-SFX-05 — Priorities · MUST
 
@@ -140,43 +142,91 @@ bright hiss.
 
 *Sources: P12-R09, D-100, D-107.*
 
-### AUD-SFX-08 — Realistic, not chip sounds · MUST
+### AUD-SFX-08 — Real recordings, free to use · MUST
 
-The sounds are made to sound like real things, not like a chip of the nineties: cracks, thumps,
-whooshes and rumbles of filtered noise and sines, metallic rings of noise through very narrow
-band-pass filters, struck bells (a sine fundamental under a quieter, shorter inharmonic partial)
-for the rewards, and clicks of filtered noise for the menus. No sound uses a bare square or
-sawtooth wave, nor a pitch sweep of one (a "pew"); a triangle wave is only used low-passed, for the
-minigun's thump. The recipes are in `sound_recipes.py` (`click`, `thump`, `whoosh`, `rumble`,
-`ring`, `bell`, `minigun`, `explosion`).
+The sounds are real sample recordings, not chip sounds, from packs whose license is **CC0**
+(public domain), which is compatible with the project's MIT license (ENG-121). Today they come
+from two packs by Kenney (Sci-Fi Sounds, Interface Sounds), the Free Firearm Sound Library (the
+player gun) and the CC0 Explosions by compufox (`explosion-small-2` and `-3`, `explosion-large-2`). Each sample is made from one file
+of a pack (`gun-shot` from several shots of one recording, AUD-SFX-02): mono, 44.1 kHz, cut to its length where the file was longer (with a 20 ms fade), peak
+normalised to −1 dBFS, encoded as Ogg Vorbis (quality 3) and MP3 (quality 5). The laser hum's tail
+is cross-faded into its head over 0.3 s so that it loops without a click. `CREDITS.md` and the
+README list the packs and which file each sound comes from.
 
 **Acceptance criteria**
-- Given the sound designs, then no layer is a square or a sawtooth wave, and every triangle layer
-  is low-passed (unit test on the data).
+- Given the sound files in `public/sfx/`, then each sound has an `.ogg` and an `.mp3` and is listed
+  in `CREDITS.md` with its source file and its license (review).
 - Given each sound, then the reviewer finds it sounds like a real thing rather than a chip (manual
   check, in the Dev menu's sounds viewer).
 
-*Sources: D-239.*
+*Sources: D-239, D-261.*
+
+### AUD-SFX-09 — Variants of the common explosions · MUST
+
+The two explosions heard most, `explosion-small` and `explosion-large`, each have three different
+recordings (`explosion-small-1` to `-3`, `explosion-large-1` to `-3`). Each time one plays, one of
+its three is picked at random, never the one played last for that sound, so a busy wave does not
+repeat the same blast. The pick comes from a seeded generator (`VARIANT_SEED`), so the same game
+sounds the same (ENG-18, ENG-46). A sound's gain, priority and the voice limits are the sound's, not
+the recording's; its length for the voice pool is that of its longest recording.
+
+**Acceptance criteria**
+- Given a sound with variants played many times, then each variant plays and none plays twice in a
+  row (unit test).
+- Given the same seed, then the same variants play in the same order (unit test).
+- Given the sound designs, then `explosion-small` and `explosion-large` have three samples each
+  and every other sound one (unit test on the data).
+
+*Sources: reviewer request 2026-11-04, D-262.*
+
+### AUD-SFX-10 — Blasts varied at random · MUST
+
+A boss dying blows up at a regular pace (BOSS-19, a blast every `every` seconds), and a wave of
+enemies dying together stacks blasts: the same few recordings at the same pitch and level, at a fixed
+rhythm, sound like a machine. So each play of `explosion-small`, `explosion-large` and
+`boss-part-destroyed` is varied at random (the seeded generator of AUD-SFX-09): its speed, so its
+pitch, by up to ±`pitch` of 1 (small and large ±20 %, part ±12 %); its level, up to `gain` quieter
+(30 %, 20 %); and its start, up to `delay` late (80 ms, 50 ms), which also breaks the pace. Nothing
+else is varied: a sound that tells the player something (a hit, a pickup, a menu click) must sound the
+same each time, and the simulation's own blast timing is untouched.
+
+**Acceptance criteria**
+- Given such a sound played many times, then its speed, level and delay stay within the spread and
+  differ from one play to the next (unit test).
+- Given a sound without a spread, then it plays the same each time (unit test).
+- Given the sound designs, then only the small and large explosions and the boss part's have a
+  spread (unit test on the data).
+- Given a boss dying, then the reviewer finds its explosions irregular and not repetitive (manual
+  check, K in the bosses viewer).
+
+*Sources: reviewer request 2026-11-04, D-262.*
 
 ## Tunable values
 
 | Name | Value | Notes |
 |------|-------|-------|
-| sound designs | per cue: layers, gain, priority, positional, loop, hold | `src/game/view/audio/sound_designs.py` `SOUND_DESIGNS` |
+| sound designs | per cue: sample (the sound's name), gain, priority, length, positional, loop | `src/game/view/audio/sound_designs.py` `SOUND_DESIGNS` |
 | priorities | 0 (enemy shots) … 7 (top) | `sound_designs.py` `PRIORITY` |
-| gains | `gun-shot` 0.14, `laser-hum` 0.1, `hit` 0.3, `explosion-small` 0.32, `explosion-large` 0.42, `bomb` 0.5, `boss-destroyed` 0.5, `player-hit` 0.36 | `SOUND_DESIGNS` |
-| bell partial | 2.76 × the fundamental | `sound_recipes.py` `BELL_PARTIAL` |
-| ring Q | 30 | `sound_recipes.py` `ring` |
-| minigun_rounds / minigun_gap | 6 / 21 ms | `src/game/view/audio/sound_recipes.py` `MINIGUN` |
-| explosion sizes | small 0.3 s, large 0.6 s (0.9 s tail), huge 1.1 s (2 s tail); 3 / 5 / 8 debris | `sound_designs.py` `BLAST_SMALL`, `BLAST_LARGE`, `BLAST_HUGE` |
+| gains | `gun-shot` 0.14, `laser-hum` 0.1, `hit` 0.3, `explosion-small` 0.32, `explosion-large` 0.42, `bomb` 0.5, `boss-destroyed` 0.5, `player-hit` 0.36 | `SOUND_DESIGNS` (a gain is the sound's peak in the mix: the samples peak at −1 dBFS) |
+| sample files | `public/sfx/<name>.ogg` and `.mp3`, mono, 44.1 kHz, 29 sounds from 33 samples, about 700 KB in all | `CREDITS.md` |
+| minigun_rounds / minigun_gap | 6 / 21 ms (the burst is 0.165 s) | the `gun-shot` sample (`CREDITS.md`) |
+| gun shot length | at most 0.25 s | `sound_designs.py` |
+| explosion lengths | small 0.64 to 0.8 s, large 1.26 to 1.5 s, boss part 1.55 s, bomb 1.98 s, boss 2 s | `sound_designs.py` |
+| explosion variants | 3 each for small and large | `sound_designs.py` `_variants` |
+| blast spread | small and large: pitch ±20 %, level −30 %, delay 80 ms; boss part: ±12 %, −20 %, 50 ms | `sound_designs.py` `BLAST_JITTER`, `PART_JITTER` |
 | large_blast_radius | 18 px | `src/game/view/audio/game_audio.py` `LARGE_BLAST_RADIUS` |
 | loudest_sfx | +6 dB over the music | checked on the data |
 
 ## Notes
 
-- The enemy explosions were first long low-pass hisses, then short muffled booms (D-107), then the
-  layered recipe of AUD-SFX-04 for every blast (D-108, which replaced the booms).
-- Measured offline (D-108): a busy wave peaks at −5.8 dBFS at the default volume.
-- The sounds were first chip-like (square and sawtooth sweeps, chimes), then made realistic
-  (D-239): each sound's peak and loudness were measured offline against the old one and kept
-  within the same range, the narrow-band clicks and rings boosted to match the beeps they replace.
+- The sounds were first synthesised: long low-pass hisses, then short muffled booms (D-107), then
+  layered explosions (D-108), then filtered noise, sines and bells instead of chip sweeps (D-239).
+  They were replaced by CC0 samples (D-261); the recipes (`sound_recipes.py`) and the synthesised
+  designs are gone from the code, and the music is still synthesised.
+- Measured offline for the synthesised sounds (D-108): a busy wave peaked at −5.8 dBFS at the default
+  volume. The samples have not been measured the same way: the loudest sound (`bomb`, `boss-destroyed`)
+  is kept within +6 dB of the music by the check of AUD-SFX-06.
+- The sounds were picked by file name and duration, not by ear (no listening in the implementation
+  session): the reviewer is expected to listen to each in the Dev menu's sounds viewer and ask for
+  other files of the packs where one does not fit. Changing a sound means a new file in
+  `public/sfx/` (both formats) and a new `CREDITS.md` line.

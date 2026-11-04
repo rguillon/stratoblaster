@@ -1,6 +1,7 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/audio/sfx_player.py`."""
 
+import itertools
 from types import SimpleNamespace
 from typing import Any
 
@@ -8,31 +9,52 @@ import pytest
 from helpers.audio_fakes import FakeContext, FakeVoice
 
 from audio import sfx_player
-from audio.audio_types import INFINITY, Envelope, SoundDesign, ToneLayer
+from audio.audio_types import INFINITY, SoundDesign, SoundJitter
 from audio.sfx_player import SfxPlayer, SfxSettings, pan_at
 
 
-def sound(name: str, hold: float = 0.2, *, priority: float = 1, **flags: bool) -> SoundDesign:
-    layer = ToneLayer("square", 1, 440, None, None, None, Envelope(0, 0, 1, 0.1), None, None)
-    return SoundDesign(name, [layer], 0.8, priority, hold, **flags)
+def sound(name: str, seconds: float = 0.2, *, priority: float = 1, **flags: bool) -> SoundDesign:
+    return SoundDesign(name, [name], 0.8, priority, seconds, **flags)
+
+
+class FakeSamples:
+    """A `SampleBank` stand-in: every sample is ready, except the names listed as missing."""
+
+    def __init__(self, missing: list[str] | None = None) -> None:
+        self.missing = missing or []
+
+    def get(self, name: str) -> Any | None:
+        return None if name in self.missing else object()
 
 
 @pytest.fixture
 def voices(monkeypatch: pytest.MonkeyPatch) -> list[FakeVoice]:
-    """Every voice the player starts, recorded (the synth is not run)."""
+    """Every voice the player starts, recorded (no sample is played)."""
     made: list[FakeVoice] = []
 
-    def fake_play_voice(_context: Any, _destination: Any, _layers: Any, options: Any) -> FakeVoice:
-        voice = FakeVoice(options.when + options.hold, "")
+    def fake_play_sample(
+        context: Any,
+        _destination: Any,
+        _buffer: Any,
+        loop: bool,
+        gain: float,
+        rate: float = 1,
+        delay: float = 0,
+    ) -> FakeVoice:
+        voice = FakeVoice(INFINITY if loop else context.currentTime + 0.2, "")
+        voice.played = (gain, rate, delay)  # type: ignore[attr-defined]
         made.append(voice)
         return voice
 
-    monkeypatch.setattr(sfx_player, "play_voice", fake_play_voice)
+    monkeypatch.setattr(sfx_player, "play_sample", fake_play_sample)
     return made
 
 
 def make_player(
-    context: FakeContext | None, clock: list[float] | None = None, **settings: float
+    context: FakeContext | None,
+    clock: list[float] | None = None,
+    samples: FakeSamples | None = None,
+    **settings: float,
 ) -> tuple[SfxPlayer, FakeContext | None, list[float]]:
     now = clock if clock is not None else [0.0]
     base = {
@@ -45,7 +67,12 @@ def make_player(
     base.update(settings)
     # Where the sound effects go: the audio context and its sound effect bus.
     bus = SimpleNamespace(context=context, sfx=object()) if context is not None else None
-    player = SfxPlayer(lambda: bus, lambda: now[0], SfxSettings(**base))
+    player = SfxPlayer(
+        lambda: bus,
+        lambda: now[0],
+        SfxSettings(**base),
+        samples or FakeSamples(),  # type: ignore[arg-type]
+    )
     return player, context, now
 
 
@@ -119,7 +146,7 @@ def test_aud_engine_07_a_looping_sound_plays_once_until_it_is_stopped(
     voices: list[FakeVoice],
 ) -> None:
     player, _, clock = make_player(FakeContext())
-    laser = sound("laser", hold=INFINITY, loop=True)
+    laser = sound("laser", loop=True)
     assert player.play(laser) is True
     clock[0] = 1.0
     assert player.play(laser) is False
@@ -161,7 +188,7 @@ def test_aud_engine_10_stop_all_stops_every_sound_and_forgets_the_loops(
 ) -> None:
     player, _, _ = make_player(FakeContext())
     player.play(sound("shot"))
-    player.play(sound("laser", hold=INFINITY, loop=True))
+    player.play(sound("laser", loop=True))
     player.stop_all()
     assert player.voices == 0
     assert player.looping("laser") is False
@@ -171,7 +198,7 @@ def test_aud_engine_10_stop_all_stops_every_sound_and_forgets_the_loops(
 @pytest.mark.usefixtures("voices")
 def test_aud_engine_07_a_sound_that_is_over_is_forgotten_so_its_name_can_play_again() -> None:
     player, _, clock = make_player(FakeContext())
-    player.play(sound("shot", hold=0.1))
+    player.play(sound("shot", seconds=0.1))
     clock[0] = 5.0
     assert player.play(sound("shot")) is True
     assert player.voices == 1
@@ -180,8 +207,8 @@ def test_aud_engine_07_a_sound_that_is_over_is_forgotten_so_its_name_can_play_ag
 @pytest.mark.usefixtures("voices")
 def test_aud_engine_07_each_looping_sound_is_kept_by_its_name() -> None:
     player, _, _ = make_player(FakeContext())
-    player.play(sound("laser", hold=INFINITY, loop=True))
-    player.play(sound("engine", hold=INFINITY, loop=True))
+    player.play(sound("laser", loop=True))
+    player.play(sound("engine", loop=True))
     assert player.looping("engine") is True
     player.stop_loop("engine")
     assert player.looping("engine") is False
@@ -193,7 +220,7 @@ def test_aud_engine_07_a_loop_let_go_and_started_again_too_soon_is_neither_playe
 ) -> None:
     context = FakeContext()
     player, _, clock = make_player(context)
-    laser = sound("laser", hold=INFINITY, loop=True)
+    laser = sound("laser", loop=True)
     player.play(laser)
     gain = context.of_kind("gain")[0]
     player.stop_loop("laser")
@@ -209,8 +236,90 @@ def test_aud_engine_10_stop_all_without_a_context_forgets_every_sound(
 ) -> None:
     player, _, _ = make_player(None)
     player.play(sound("shot"))
-    player.play(sound("laser", hold=INFINITY, loop=True))
+    player.play(sound("laser", loop=True))
     player.stop_all()
     assert player.voices == 0
     assert player.looping("laser") is False
     assert voices == []
+
+
+def test_aud_engine_04_a_sample_that_is_not_ready_is_silent_but_the_pool_still_decides(
+    voices: list[FakeVoice],
+) -> None:
+    """The sample failed to load or is still decoding: nothing plays, nothing throws."""
+    player, _, _ = make_player(FakeContext(), samples=FakeSamples(["shot"]))
+    assert player.play(sound("shot")) is True
+    assert player.voices == 1
+    assert voices == []
+    player.stop_all()
+    assert player.voices == 0
+
+
+@pytest.mark.usefixtures("voices")
+def test_aud_sfx_09_variants_all_play_and_never_the_same_twice_in_a_row() -> None:
+    names: list[str] = []
+
+    class Recording(FakeSamples):
+        def get(self, name: str) -> Any | None:
+            names.append(name)
+            return super().get(name)
+
+    context = FakeContext()
+    player, _, clock = make_player(context, samples=Recording(), max_voices=100)
+    boom = SoundDesign("boom", ["boom-1", "boom-2", "boom-3"], 0.8, 1, 0.2)
+    for step in range(60):
+        clock[0] = step
+        player.play(boom)
+    assert set(names) == {"boom-1", "boom-2", "boom-3"}
+    assert all(a != b for a, b in itertools.pairwise(names))
+
+
+@pytest.mark.usefixtures("voices")
+def test_aud_sfx_09_the_same_game_picks_the_same_variants() -> None:
+    def picks() -> list[str]:
+        names: list[str] = []
+
+        class Recording(FakeSamples):
+            def get(self, name: str) -> Any | None:
+                names.append(name)
+                return super().get(name)
+
+        player, _, clock = make_player(FakeContext(), samples=Recording(), max_voices=100)
+        boom = SoundDesign("boom", ["a", "b", "c"], 0.8, 1, 0.2)
+        for step in range(10):
+            clock[0] = step
+            player.play(boom)
+        return names
+
+    assert picks() == picks()
+
+
+def test_aud_sfx_10_a_sound_with_jitter_varies_its_pitch_level_and_start_within_its_spread(
+    voices: list[FakeVoice],
+) -> None:
+    player, _, clock = make_player(FakeContext(), max_voices=100)
+    boom = SoundDesign("boom", ["boom"], 0.5, 1, 0.2, jitter=SoundJitter(0.2, 0.3, 0.08))
+    for step in range(40):
+        clock[0] = step
+        player.play(boom)
+    plays = [voice.played for voice in voices]  # type: ignore[attr-defined]
+    gains = [g for g, _, _ in plays]
+    rates = [r for _, r, _ in plays]
+    delays = [d for _, _, d in plays]
+    assert all(0.35 - 1e-9 <= g <= 0.5 for g in gains)
+    assert all(0.8 <= r <= 1.2 for r in rates)
+    assert all(0 <= d <= 0.08 for d in delays)
+    # Not the same twice: the plays differ from one another.
+    assert len(set(rates)) > 30
+    assert len(set(gains)) > 30
+    assert len(set(delays)) > 30
+
+
+def test_aud_sfx_10_a_sound_without_jitter_is_played_the_same_each_time(
+    voices: list[FakeVoice],
+) -> None:
+    player, _, clock = make_player(FakeContext(), max_voices=100)
+    for step in range(5):
+        clock[0] = step
+        player.play(sound("click"))
+    assert {voice.played for voice in voices} == {(0.8, 1, 0)}  # type: ignore[attr-defined]
