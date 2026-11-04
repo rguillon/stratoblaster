@@ -36,13 +36,15 @@ def test_enm_scout_01_scout_has_two_reactors_two_wings_and_one_gun(probe: Any) -
     assert len(body["muzzles"]) == 1
 
 
-def test_enm_strafer_03_strafer_has_four_reactors_and_two_guns_on_two_wings(probe: Any) -> None:
+def test_enm_strafer_03_strafer_has_four_reactors_and_six_guns_on_two_wings(probe: Any) -> None:
     """Also ENM-STRAFER-01: its wide pair of wings."""
     capture, body = probe(module.build_strafer)
     assert capture.name == "strafer"
     assert len(body["reactors"]) == 4
     assert len(body["wings"]) == 2
-    assert len(body["muzzles"]) == 2
+    # WPN-04: three barrels on each side, each its own piece that slides back (WPN-03).
+    assert len(body["muzzles"]) == 6
+    assert len(body["slides"]) == 6
 
 
 def test_enm_35_every_small_kind_is_a_flesh_body_with_its_own_neon(probe: Any) -> None:

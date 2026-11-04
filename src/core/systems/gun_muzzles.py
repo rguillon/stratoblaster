@@ -7,9 +7,10 @@ turn, as the camera sees them.
 
 import math
 
+from core.entities.barrel import Barrel
 from core.entities.muzzle import PlanePoint
 from core.systems.enemy_motion import fan_headings
-from core.systems.projectile_motion import heading_to
+from core.systems.projectile_motion import heading_to, wrap_angle
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -51,6 +52,13 @@ DEG = math.pi / 180
 TIE = 0.5
 # A gun with fewer muzzles than this has no choice to make.
 MIN_MUZZLES = 2
+# A fixed barrel fires a volley's shot only if it points within this of its heading (WPN-02).
+BARREL_TOLERANCE = 6 * DEG
+
+
+def _now(source: MuzzleSource) -> float:
+    """Return the age of `source`, the clock a barrel's recoil follows (0 when it has none)."""
+    return source.age if hasattr(source, "age") else 0
 
 
 class _TurnedLaserOwner:
@@ -85,7 +93,11 @@ class GunMuzzles:
         self, muzzles: Sequence[Muzzle] | None = None, on_turret: bool | None = False
     ) -> None:
         """`on_turret`: the muzzles turn with the source's turret."""
-        self._muzzles: list[Muzzle] = list(muzzles) if muzzles is not None else []
+        entries = list(muzzles) if muzzles is not None else []
+        # Each muzzle is `[x, y, height]`, with the barrel's angle in degrees after them when the
+        # barrel is fixed (WPN-01): see `Barrel`.
+        self.barrels: list[Barrel] = [Barrel(list(m)) for m in entries]
+        self._muzzles: list[Muzzle] = [barrel.muzzle for barrel in self.barrels]
         self._on_turret = bool(on_turret)
         self._next = 0
 
@@ -95,6 +107,49 @@ class GunMuzzles:
         if point:
             return ctx.seen(point)
         return PlanePoint(source.x, source.y)
+
+    def shoot(
+        self,
+        ctx: EnemyContext,
+        source: MuzzleSource,
+        heading: float,
+        fire: Callable[[float, float, float], None],
+    ) -> bool:
+        """Fire one shot towards `heading` and return whether it was fired (WPN-01, WPN-02).
+
+        A fixed barrel (one with an angle) that points that way, within the tolerance, fires it from
+        its tip along the way the barrel itself points; the shot is held (False) when none does. A
+        gun without fixed barrels fires from the muzzle furthest along `heading`.
+        """
+        fixed = self._fixed_towards(source, heading)
+        if fixed is None:
+            if self._has_fixed():
+                return False
+            point = self.along(ctx, source, heading)
+            fire(point.x, point.y, heading)
+            return True
+        barrel, own = fixed
+        tip = ctx.seen(source.place(barrel.muzzle, self._on_turret))
+        barrel.kick(_now(source))
+        fire(tip.x, tip.y, own)
+        return True
+
+    def _has_fixed(self) -> bool:
+        return any(barrel.angle is not None for barrel in self.barrels)
+
+    def _fixed_towards(self, source: MuzzleSource, heading: float) -> tuple[Barrel, float] | None:
+        """Return the fixed barrel pointing nearest `heading` and its heading, within tolerance."""
+        best: tuple[Barrel, float] | None = None
+        gap = BARREL_TOLERANCE
+        for barrel in self.barrels:
+            if barrel.angle is None:
+                continue
+            own = source.heading + barrel.angle
+            off = abs(wrap_angle(own - heading))
+            if off <= gap:
+                gap = off
+                best = (barrel, own)
+        return best
 
     def laser(self, source: MuzzleSource) -> LaserOwner:
         """Return the laser owner a laser fired along `source`'s heading follows.
@@ -110,6 +165,9 @@ class GunMuzzles:
         muzzle = self._choose(source, heading)
         if muzzle is None or not hasattr(source, "place"):
             return None
+        for barrel in self.barrels:
+            if barrel.muzzle == muzzle:
+                barrel.kick(_now(source))
         return source.place(muzzle, self._on_turret)
 
     def _choose(self, source: MuzzleSource, heading: float) -> Muzzle | None:

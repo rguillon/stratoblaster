@@ -467,3 +467,12 @@ def test_enm_weaver_07_a_heading_wrapping_round_the_other_way_is_not_a_sharp_tur
     enemy_mesh.bank_roll(turn, enemy, 0.1, bank)
     enemy.heading = math.pi - 0.01
     assert abs(enemy_mesh.bank_roll(turn, enemy, 0.1, bank)) == pytest.approx(0.1)
+
+
+def test_wpn_03_a_slide_goes_back_along_its_way_by_the_recoil() -> None:
+    piece = enemy_mesh.Slide([4, 1.5, 2], [-1, 0], 1.2, 0, enemy_mesh.wing_parts_new())
+    node = _Node("slide")
+    enemy_mesh.slide_back(node, piece, 0)
+    assert node.at == [4, 1.5, 2]
+    enemy_mesh.slide_back(node, piece, 1)
+    assert node.at == pytest.approx([2.8, 1.5, 2])

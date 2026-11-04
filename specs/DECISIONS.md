@@ -942,3 +942,24 @@
   about 1.8 s). The eased turn to the player starts as soon as the Prism is below `entrySpeed`; the
   first burst starts when it reaches its stop point. The `aim` state remains only between bursts.
 - **Status:** Proposed
+
+### D-268 — Barrels: one shot, one barrel, with its own pose and recoil (slice 1: the Strafer)
+- **Date:** 2026-11-04
+- **Requirements:** WPN-01, WPN-02, WPN-03, WPN-04, ENM-STRAFER-03, ENM-STRAFER-06.
+- **Context:** owner: every weapon of every enemy and boss must be recognised at once: every bullet
+  from a Reef-Warden-style barrel that recoils, the bullet starting exactly at the barrel's tip along
+  its direction; lasers like the Overlord's; missiles out of hexagonal ports; three guns on each side
+  of the Strafer for its fan. Delivered in slices (engine, enemies, mini bosses, final bosses);
+  owner chose rotating multi-barrel turrets for fans and rings, and kept each boss's laser tint.
+- **Decision:** a muzzle config entry `[x, y, height, angleDeg]` is a fixed `Barrel` (angle optional:
+  without it the gun is not converted yet and fires as before). `GunMuzzles.shoot(ctx, source,
+  heading, fire)` fires one shot from the fixed barrel pointing nearest `heading` (within 6°), from
+  its tip along the barrel's own heading; a shot no barrel can take is held. The recoil is a pure
+  function of the source's `age` and the barrel's firing age (`Barrel.recoil_at`, eased 1 to 0 over
+  0.18 s), so the sim needs no per-frame step. Enemies list their barrels in `Enemy.barrels`; the
+  model draws each as a fixed housing and a sliding barrel (`EnemyParts.slide`) and `sync` slides it
+  back by `barrelRecoil` (0.35) of its length times the recoil. The Strafer is the pilot: six
+  barrels, fanned ±15°.
+- **Consequences:** the other enemies and every boss still fire as before until their slice; the
+  lasers (WPN-06) and missiles (WPN-07 to WPN-09) are the next slices of the engine work.
+- **Status:** Proposed

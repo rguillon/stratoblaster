@@ -6,6 +6,8 @@ Distances in logical pixels, speeds in px/s, times in seconds, angles in degrees
 `...Fraction` are fractions of the playfield height from its bottom (1 = top edge).
 """
 
+import math
+
 from game.config.record import record
 
 # isort: split
@@ -40,6 +42,30 @@ def bullet(style: str, speed: float) -> Any:
 # `muzzles` (phase 7 review): where the shots leave from, the tips of the barrels the models draw
 # there: offsets from the centre as seen when the enemy faces down the screen (X right, Y up), and
 # heights above the playfield (see `core/entities/muzzle.py`).
+
+# The Strafer's fixed barrels (WPN-04): three on each side of its body, fanned `STRAFER_FAN` degrees
+# apart, each `STRAFER_BARREL` long (plus its muzzle's charge light) from a base on the flank, one
+# above the other along it. Each muzzle is `[x, y, height, angle]`: its tip, and the angle the
+# barrel points at from the nose, in degrees (positive to the right), as `Barrel` reads it.
+STRAFER_FAN = 15
+STRAFER_FLANK = 4.6
+STRAFER_BARREL = 4.4
+STRAFER_ROWS = [3.0, 1.5, 0.0]
+
+
+def strafer_barrels() -> list[list[float]]:
+    """Return the Strafer's six barrels: each side's fan of three, as `[x, y, height, angle]`."""
+    barrels: list[list[float]] = []
+    for side in [1, -1]:
+        for k, fan in enumerate([STRAFER_FAN, 0, -STRAFER_FAN]):
+            # Pointing out sideways, turned `fan` towards the nose; the sim angle is the model's
+            # yaw negated.
+            yaw = math.radians(90 - fan)
+            tip_x = side * (STRAFER_FLANK + math.sin(yaw) * STRAFER_BARREL)
+            tip_y = -(STRAFER_ROWS[k] + math.cos(yaw) * STRAFER_BARREL)
+            barrels.append([tip_x, tip_y, 1.5, -side * (90 - fan)])
+    return barrels
+
 
 # The Spinner's pods' muzzles, out from its centre.
 SPINNER_MUZZLE = 0.45 * ENEMY_UNIT + 3.1
@@ -93,12 +119,9 @@ ENEMY_CONFIG = record({
         "fanCount": 3,
         "fanSpacing": 15,
         "bullet": bullet("magenta", 200),
-        # A gun on each side of its body (ENM-STRAFER-03): it fires from the one facing down the
-        # screen.
-        "muzzles": [
-            [9, -1.5, 1.5],
-            [-9, -1.5, 1.5],
-        ],
+        # Three guns on each side of its body (ENM-STRAFER-03, WPN-04): the three of the side facing
+        # down the screen fire, one shot each.
+        "muzzles": strafer_barrels(),
     },
     # ENM-SPINNER-07: health and points.
     "spinner": {

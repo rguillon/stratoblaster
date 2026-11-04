@@ -299,7 +299,8 @@ A gun fires from its muzzles: points of the model (offsets from the enemy's cent
 down the screen, and a height above the playfield). A shot leaves from the muzzle furthest along
 its way, side-by-side muzzles taking turns, turned with the enemy's heading (and its part's swing
 or orbit), and is seen through the tilted camera onto the playfield, so it starts where the barrel
-tip is drawn. The model marks its barrel tips, and the config's muzzles are the same points.
+tip is drawn. The model marks its barrel tips, and the config's muzzles are the same points. A muzzle with an
+angle is a fixed barrel, and its shots leave along it ([weapons.md](weapons.md) WPN-01).
 
 **Acceptance criteria**
 - Given a kind's model, then its marked muzzles are at the config's muzzle offsets.

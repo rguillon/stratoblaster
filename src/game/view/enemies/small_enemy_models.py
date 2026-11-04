@@ -10,10 +10,12 @@ As every basic model (here, in `heavy_enemy_models.py`, `heavy_beetle_models.py`
 
 import math
 
+from game.config.enemies import ENEMY_CONFIG
 from game.config.enemy_look import ENEMY_LOOK
 from game.view.enemies.basic_parts import (
     eye_pair,
     gun_barrel,
+    recoil_barrel,
     wing_pair,
 )
 from game.view.enemies.enemy_mesh import build_enemy_model
@@ -183,9 +185,10 @@ def build_strafer(scene: Any) -> Any:
         )
         for x in [-12, -4, 4, 12]:
             reactor([x, 0, -4.3 if abs(x) == STRAFER_INNER_X else -4.1], 1)
-        for s in SIDES:
-            # A gun on each side of the body, pointing out sideways: it flies across the screen
-            # and fires down it from the one facing down (phase 7 review).
-            gun_barrel(p, [s * 4.6, 1.5, 1.5], 3.6, s * QUARTER)
+        # Three guns on each side of the body, pointing out sideways, fanned: it flies across the
+        # screen and fires down it from the side facing down (phase 7 review, WPN-04). They are the
+        # config's barrels, tip and angle.
+        for i, (x, y, height, angle) in enumerate(ENEMY_CONFIG.strafer.muzzles):
+            recoil_barrel(p, [x, height, -y], angle, 3.6, i)
 
     return build_enemy_model("strafer", scene, N.strafer, draw)

@@ -18,6 +18,7 @@ from core.entities.muzzle import PlanePoint, muzzle_point
 from collections.abc import Callable
 from typing import Literal, Protocol
 
+from core.entities.barrel import Barrel  # noqa: TC001
 from core.entities.muzzle import Muzzle, RaisedPoint
 from core.entities.shot_target import ShotTarget
 from core.math.rng import Random
@@ -273,6 +274,8 @@ class Enemy:
         self.age = 0
         # How ready the next attack is, 0..1, for the visuals (e.g. a charging light, ENM-23).
         self.charge: float = 0
+        # The barrels of its guns, for the model to slide back as they fire (WPN-03).
+        self.barrels: list[Barrel] = []
         # Set when the enemy is done (left for good); the world then removes it.
         self.gone = False
         # Its own chance of dropping a bonus when destroyed; the game's rule when None.

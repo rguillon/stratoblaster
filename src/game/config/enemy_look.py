@@ -162,6 +162,8 @@ ENEMY_LOOK = record({
     },
     # A charging light (`Enemy.charge`) goes from `idle` to full brightness.
     "chargeIdle": 0.18,
+    # WPN-03: how far a barrel is thrown back by a shot, as a share of its length.
+    "barrelRecoil": 0.35,
     # Glow layer over the playfield (enemies' neon, shots).
     "glow": {"intensity": 0.6, "blurKernelSize": 24},
     "bullets": {

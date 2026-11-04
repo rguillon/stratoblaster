@@ -66,6 +66,7 @@ class EnemyParts:
         reactor: Any,
         rotor: Any,
         muzzle: Any,
+        slide: Any = None,
     ) -> None:
         # Dark metal (use the `ENEMY_LOOK.hull` shades): the cyber parts grafted on (GFX-ART-12).
         self.hull = hull
@@ -88,6 +89,10 @@ class EnemyParts:
         # Marks the tip of a gun's barrel at `at` (phase 7 review: the game's muzzles must match,
         # GFX-SHOT-09): an empty node `<name>-muzzle-<kind>-<i>`.
         self.muzzle = muzzle
+        # Adds a piece that slides back along the direction `[x, z]` by `distance` model units at
+        # the full recoil of the enemy's barrel number `index` (WPN-03; `Enemy.barrels`): `draw`
+        # draws it in model space, as at rest, on a `WingParts`.
+        self.slide = slide
 
 
 class WingParts:
@@ -107,6 +112,19 @@ class Wing:
         self.pivot = pivot
         self.side = side
         self.span = span
+        self.parts = parts
+
+
+class Slide:
+    """A piece that slides back with a barrel's recoil: its place, its way back and its parts."""
+
+    def __init__(
+        self, pivot: Vec3, back: list[float], distance: float, index: int, parts: WingParts
+    ) -> None:
+        self.pivot = pivot
+        self.back = back
+        self.distance = distance
+        self.index = index
         self.parts = parts
 
 
@@ -189,6 +207,34 @@ def add_wings(
         add_model_animation(node, flutter_animation(node, wing.side, wing.span, clock))
 
 
+def add_slides(name: str, slides: list[Slide], mats: SurfaceMaterials, neon: Any, body: Any) -> Any:
+    """Add the pieces that slide back with a recoil, each on a node at its pivot (WPN-03).
+
+    Returns the nodes, in the order of the slides.
+    """
+    scene = body.getScene()
+    nodes: list[Any] = []
+    for i, piece in enumerate(slides):
+        pivot = piece.pivot
+        node = new_transform_node(name + "-slide-" + str(i), scene)
+        node.position.set(pivot[0], pivot[1], pivot[2])
+        node.parent = body
+        inner = new_transform_node(node_name(node) + "-skin", scene)
+        inner.position.set(-pivot[0], -pivot[1], -pivot[2])
+        inner.parent = node
+        add_surfaces(node_name(node), piece.parts, mats, neon, inner)
+        nodes.append(node)
+    return nodes
+
+
+def slide_back(node: Any, piece: Slide, recoil: float) -> None:
+    """Put `node` back along its slide by `recoil` (0 at rest, 1 thrown fully back)."""
+    k = recoil * piece.distance
+    node.position.set(
+        piece.pivot[0] + piece.back[0] * k, piece.pivot[1], piece.pivot[2] + piece.back[1] * k
+    )
+
+
 def collect_parts(build: Any) -> dict[str, Any]:
     """Return the parts `build` draws, and the reactors, rotors, wings and muzzles it adds.
 
@@ -198,6 +244,12 @@ def collect_parts(build: Any) -> dict[str, Any]:
     rotors: list[Reactor] = []
     wings: list[Wing] = []
     muzzles: list[list[Any]] = []
+    slides: list[Slide] = []
+
+    def slide(pivot: Vec3, back: list[float], distance: float, index: int, draw: Any) -> None:
+        piece = Slide(pivot, back, distance, index, wing_parts_new())
+        draw(piece.parts)
+        slides.append(piece)
 
     def reactor(at: Vec3, radius: float) -> None:
         reactors.append(Reactor(at, radius))
@@ -225,6 +277,7 @@ def collect_parts(build: Any) -> dict[str, Any]:
         reactor,
         rotor,
         muzzle,
+        slide,
     )
     build(parts)
     return {
@@ -233,6 +286,7 @@ def collect_parts(build: Any) -> dict[str, Any]:
         "rotors": rotors,
         "wings": wings,
         "muzzles": muzzles,
+        "slides": slides,
     }
 
 
@@ -283,6 +337,7 @@ def build_enemy_model(
     rotors = collected["rotors"]
     wings = collected["wings"]
     muzzles = collected["muzzles"]
+    slides = collected["slides"]
     vein = unlit(name + "-vein", scene)
     # D-231: the body tinted and lit by the neon in the body shades (a green enemy's metal faintly
     # green, a yellow one's neutral: dark metal lit yellow turns khaki).
@@ -310,6 +365,7 @@ def build_enemy_model(
         node.parent = root
     add_surfaces(name, parts, mats, charge_color, body)
     add_wings(name, wings, mats, charge_color, body, clock)
+    slide_nodes = add_slides(name, slides, mats, charge_color, body)
     charge_mat = unlit(name + "-charge", scene)
     if len(parts.charge.geometry.positions) > 0:
         mesh_of(name + "-charge", parts.charge.geometry, charge_mat, scene).parent = body
@@ -327,6 +383,10 @@ def build_enemy_model(
         living = is_living_motion()
         glow = glow_level(breath, clock[0]) if living else 1
         vein.emissiveColor.set(glow, glow, glow)
+        # WPN-03: each barrel slides back as the enemy's barrel of its number fires.
+        for i, piece in enumerate(slides):
+            if piece.index < len(enemy.barrels):
+                slide_back(slide_nodes[i], piece, enemy.barrels[piece.index].recoil_at(enemy.age))
         step_model_animations(root, dt)
         k = ENEMY_LOOK.chargeIdle + (1 - ENEMY_LOOK.chargeIdle) * enemy.charge
         charge_mat.emissiveColor.set(charge_color[0] * k, charge_color[1] * k, charge_color[2] * k)

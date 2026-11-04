@@ -46,6 +46,39 @@ def gun_barrel(parts: Any, at: Vec3, length: float, yaw: float = 0) -> None:
     parts.muzzle(along(length + 0.8), "gun")
 
 
+def recoil_barrel(parts: Any, tip: Vec3, angle_deg: float, length: float, index: int) -> None:
+    """Add barrel number `index` of the enemy's guns, which recoils when it fires (WPN-03).
+
+    `tip` is its muzzle (`[x, y, z]` in model space: the config's `[x, -y, height]` reordered) and
+    `angle_deg` the way it points as the config gives it (from the nose, positive to the right). A
+    fixed housing holds a barrel `length` long that slides back along its axis, with a charge light
+    at its tip (the muzzle marked there, ENM-21).
+    """
+    yaw = -math.radians(angle_deg)
+    sx, sz = math.sin(yaw), math.cos(yaw)
+    muzzle_at = tip
+    end = [tip[0] - sx * 0.8, tip[1], tip[2] - sz * 0.8]
+    base = [end[0] - sx * length, end[1], end[2] - sz * length]
+    # The housing the barrel slides out of, fixed on the body.
+    parts.hull.cylinder(
+        0.8,
+        length * 0.45,
+        6,
+        H.dark,
+        Placement([base[0], base[1], base[2]], yaw, QUARTER),
+        0.45,
+    )
+
+    def draw(piece: Any) -> None:
+        piece.hull.cylinder(
+            0.55, length, 5, H.dark, Placement([base[0], base[1], base[2]], yaw, QUARTER), 0.45
+        )
+        piece.neon.cylinder(0.6, 0.8, 5, WHITE, Placement(end, yaw, QUARTER))
+
+    parts.slide(base, [-sx, -sz], length * ENEMY_LOOK.barrelRecoil, index, draw)
+    parts.muzzle(muzzle_at, "gun")
+
+
 def mirror(outline: Any, s: float) -> list[list[float]]:
     """Return the outline mirrored by `s` across (x times `s`)."""
     return [[s * p[0], p[1]] for p in outline]

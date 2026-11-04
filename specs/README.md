@@ -21,6 +21,7 @@ requirements that now carry it.
 | [`audio/`](audio/) | `AUD-<FILE>` | Audio engine, music, sound effects |
 | [`graphics/`](graphics/) | `GFX-<FILE>` | Art direction, readability, edge trim, player ships, shots, effects, camera, terrain, water, sky and light, weather, roads, buildings, props, traffic |
 | [`enemies/common.md`](enemies/common.md) | `ENM` | Rules shared by every enemy kind |
+| [`enemies/weapons.md`](enemies/weapons.md) | `WPN` | Guns that recoil, the Overlord's lasers and hexagonal missile ports, for every enemy and boss |
 | `enemies/<kind>.md` | `ENM-<KIND>` | One file per enemy kind: its look and its behaviour |
 | [`bosses/common.md`](bosses/common.md) | `BOSS` | Rules shared by every boss (mini and final) |
 | `bosses/mini/<N-M>-<name>.md` | `MB-<NAME>` | One file per mini boss |

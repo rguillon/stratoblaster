@@ -87,7 +87,7 @@ def test_enm_21_each_basic_model_marks_the_config_muzzles(probe: Any, model: Any
         when facing down the screen, height); the model's nose is +Z, so it is (X, height, -Y).
     """
     body = probe(ENEMY_MODELS[model])
-    expected = [[x, height, -y] for x, y, height in _config_muzzles(BASIC_BY_MODEL[model])]
+    expected = [[x, height, -y] for x, y, height, *_angle in _config_muzzles(BASIC_BY_MODEL[model])]
     marked = [list(at) for at, _kind in body["muzzles"]]
     assert len(marked) == len(expected), model
     # Each config muzzle is marked once, up to float noise.

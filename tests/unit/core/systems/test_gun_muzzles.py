@@ -140,3 +140,32 @@ def test_enm_20_fire_aimed_leaves_from_the_muzzle_and_aims_from_there() -> None:
     x, y, heading = shots[0]
     assert (x, y) == (5, 0)
     assert heading == pytest.approx(math.atan2(-5, 100))
+
+
+class _AgedSource(_Source):
+    age = 3.0
+
+
+def test_wpn_01_a_fixed_barrel_fires_from_its_tip_along_its_own_heading() -> None:
+    source = _AgedSource(heading=math.pi)
+    guns = GunMuzzles([[5, 0, 0, -90]])
+    fired: list[tuple[float, float, float]] = []
+    ok = guns.shoot(_Ctx(), source, math.pi / 2 + 0.05, lambda x, y, h: fired.append((x, y, h)))
+    assert ok
+    # The barrel points right (heading pi - 90 deg), not where the shot was wanted.
+    assert fired == [(5, 0, pytest.approx(math.pi / 2))]
+
+
+def test_wpn_02_a_shot_is_held_when_no_fixed_barrel_points_that_way() -> None:
+    guns = GunMuzzles([[5, 0, 0, -90]])
+    fired: list[tuple[float, float, float]] = []
+    assert not guns.shoot(_Ctx(), _AgedSource(), math.pi, lambda x, y, h: fired.append((x, y, h)))
+    assert fired == []
+
+
+def test_wpn_03_the_barrel_that_fired_recoils_at_the_source_age() -> None:
+    source = _AgedSource()
+    guns = GunMuzzles([[5, 0, 0, -90], [-5, 0, 0, 90]])
+    guns.shoot(_Ctx(), source, math.pi / 2, lambda _x, _y, _h: None)
+    assert guns.barrels[0].recoil_at(3.0) == 1
+    assert guns.barrels[1].recoil_at(3.0) == 0
