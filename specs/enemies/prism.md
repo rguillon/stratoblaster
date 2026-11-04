@@ -59,8 +59,8 @@ root of each wing.
 #### ENM-PRISM-05 — It stops in the upper third · MUST
 
 The Prism comes in from above the top of the screen (X in `xRange` of the ship's reach, or the
-wave's entry) at `entrySpeed`, slows down over its last `brakeDistance` (never below `creep`), and
-stops at `stopFraction` of the playfield height (above two thirds), nose down. It holds still (it
+wave's entry) fast, at `entrySpeed`, slows down over its last `brakeDistance` (never below `creep`),
+and stops at `stopFraction` of the playfield height (above two thirds), nose down. It holds still (it
 only turns, ENM-PRISM-07) while it aims and fires.
 
 **Acceptance criteria**
@@ -83,13 +83,15 @@ After it has aimed (ENM-PRISM-07), a thin warning line shows from each emitter, 
 #### ENM-PRISM-07 — It aims at the player, then fires straight ahead · MUST
 
 Both beams always point straight ahead of the Prism, parallel, one per wing (a beam never turns
-relative to the hull). Before each burst the Prism spends `aimSeconds` turning its nose to the
-player, easing in as it gets there. It stops turning when the warning lines show and does not turn
+relative to the hull). It starts turning its nose to the player, easing in as it gets there,
+while it is still slowing down on its way in, and fires its first burst the moment it stops. Before
+each later burst it spends `aimSeconds` turning to the player again, stopped. It stops turning when the warning lines show and does not turn
 again until the burst is over: the beams keep the direction it had then, whatever the player does.
-It fires `bursts` bursts, aiming again before each one.
+It fires `bursts` bursts.
 
 **Acceptance criteria**
-- Given a Prism that has stopped, then it turns its nose to the player before the lasers start.
+- Given a Prism coming in, then it turns to the player while it slows down and no laser starts
+  before it has stopped.
 - Given the lasers have started, then both beams point along the Prism's heading and the heading
   does not change until the burst is over, even if the player moves.
 - Given the first burst ends, then it aims again and fires a second burst.

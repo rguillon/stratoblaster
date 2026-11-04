@@ -19,9 +19,9 @@ PRISM_CONFIG = record({
     # ENM-PRISM-12: health, points and hit circle.
     "stats": {"model": "prism", "radius": radius(1.5) * 0.8, "health": 150, "points": 380},
     "size": 1.5,
-    "entrySpeed": 150,
-    # It slows down over this distance before its stop point.
-    "brakeDistance": 60,
+    "entrySpeed": 320,
+    # It slows down over this distance before its stop point, turning to the player as it does.
+    "brakeDistance": 220,
     # It stops in the upper third.
     "stopFraction": 0.78,
     "exitSpeed": 180,

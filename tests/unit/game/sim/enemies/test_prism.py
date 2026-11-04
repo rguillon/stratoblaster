@@ -1,6 +1,7 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/sim/enemies/prism.py`."""
 
+import itertools
 import math
 
 import pytest
@@ -21,7 +22,7 @@ FIRING = CFG.laser.firingSeconds
 
 
 def _stopped(ctx: FakeContext) -> Prism:
-    prism = Prism(200, 300, 300)
+    prism = Prism(200, 600, 300)
     run_until(prism, ctx, lambda: prism.state == "attack", limit=10.0)
     return prism
 
@@ -36,10 +37,10 @@ def test_enm_prism_05_the_kind_spawns_one_prism_just_above_the_playfield() -> No
 
 def test_enm_prism_05_a_prism_comes_in_and_stops_in_the_upper_third() -> None:
     ctx = FakeContext()
-    prism = Prism(200, 500, 470)
+    prism = Prism(200, 700, 470)
     run_until(prism, ctx, lambda: prism.state != "enter", limit=10.0)
     assert prism.y == pytest.approx(470)
-    assert prism.state == "aim"
+    assert prism.state == "attack"
     assert CFG.stopFraction * 600 > 600 * 2 / 3
 
 
@@ -63,17 +64,41 @@ def test_enm_prism_04_its_emitters_charge_during_the_warning_and_it_holds_still(
     assert prism.charge == pytest.approx(0.5, abs=0.02)
 
 
-def test_enm_prism_07_it_turns_its_nose_to_the_player_before_shooting() -> None:
+def test_enm_prism_05_it_comes_in_fast_and_slows_down_to_a_stop() -> None:
+    ctx = FakeContext()
+    prism = Prism(200, 900, 470)
+    speeds = []
+    while prism.state == "enter":
+        before = prism.y
+        run(prism, ctx, 0.05)
+        speeds.append((before - prism.y) / 0.05)
+    assert max(speeds) == pytest.approx(CFG.entrySpeed, rel=0.02)
+    # It is slower and slower on the way in, never speeding up again.
+    peak = speeds.index(max(speeds))
+    tail = speeds[peak:]
+    assert all(b <= a + 1e-6 for a, b in itertools.pairwise(tail))
+    assert tail[-2] < CFG.entrySpeed / 4
+
+
+def test_enm_prism_07_it_turns_to_the_player_while_slowing_down_and_fires_only_when_stopped() -> (
+    None
+):
     ctx = FakeContext()
     ctx.player_x = 400
     ctx.player_y = 0
-    prism = Prism(200, 300, 300)
-    run_until(prism, ctx, lambda: prism.state == "aim", limit=10.0)
-    assert prism.heading == pytest.approx(DOWN)
-    run_until(prism, ctx, lambda: prism.state == "attack", limit=10.0)
-    expected = math.atan2(400 - 200, 0 - 300)
-    assert prism.heading == pytest.approx(expected, abs=0.05)
-    assert ctx.lasers == [] or len(ctx.lasers) == 2
+    prism = Prism(200, 900, 470)
+    turned_while_moving = False
+    while prism.state == "enter":
+        assert ctx.lasers == []
+        run(prism, ctx, 0.05)
+        if prism.state == "enter" and prism.y > prism.stop_y and prism.heading != DOWN:
+            turned_while_moving = True
+    assert turned_while_moving
+    # Stopped: it fires at once, aimed at the player.
+    assert prism.state == "attack"
+    assert len(ctx.lasers) == 2
+    expected = math.atan2(400 - 200, 0 - 470)
+    assert prism.heading == pytest.approx(expected, abs=0.1)
 
 
 def test_enm_prism_07_both_beams_point_straight_ahead_and_it_stops_turning_once_firing() -> None:

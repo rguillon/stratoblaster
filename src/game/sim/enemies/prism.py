@@ -68,17 +68,19 @@ def _laser() -> EnemyLaserSpec:
 class Prism(Enemy):
     """ENM-PRISM-05: a crystalline laser platform with two fixed emitters on its wings.
 
-    It moves to the upper third of the screen and stops (ENM-PRISM-05). It turns its nose to the
-    player (ENM-PRISM-07), then each emitter shows a warning line for 1 s (ENM-PRISM-06, ENM-19),
+    It comes in fast and slows down to a stop in the upper third of the screen (ENM-PRISM-05),
+    turning its nose to the player while it slows down (ENM-PRISM-07). Once it has stopped each
+    emitter shows a warning line for 1 s (ENM-PRISM-06, ENM-19),
     its lights charging (ENM-PRISM-04), and fires a laser for 2 s, both straight ahead; it does not
-    turn any more once the warning lines show. It does that `bursts` times, then leaves upward
+    turn any more once the warning lines show. For its next bursts it aims again, stopped. After
+    the last it leaves upward
     (ENM-PRISM-08).
     """
 
     def __init__(self, x: float, y: float, stop_y: float) -> None:
         super().__init__(x, y, CFG.stats)
         self.stop_y = stop_y
-        # What it is doing: enter, aim (turning to the player), attack (a burst) or exit.
+        # What it is doing: enter, aim (stopped, between bursts), attack (a burst) or exit.
         self.state = "enter"
         self.heading = DOWN
         # The burst it is on, and the seconds it has lasted in this state.
@@ -88,7 +90,7 @@ class Prism(Enemy):
     def update(self, ctx: EnemyContext, dt: float) -> None:
         """Advance the enemy by `dt` seconds."""
         if self.state == "enter":
-            self._enter(dt)
+            self._enter(ctx, dt)
         elif self.state == "aim":
             self._aim(ctx, dt)
         elif self.state == "attack":
@@ -96,25 +98,33 @@ class Prism(Enemy):
         else:
             leave_upward(self, CFG.exitSpeed, dt)
 
-    def _enter(self, dt: float) -> None:
+    def _enter(self, ctx: EnemyContext, dt: float) -> None:
         left = self.y - self.stop_y
         speed = max(CREEP, CFG.entrySpeed * min(1, left / CFG.brakeDistance))
         self.y = max(self.stop_y, self.y - speed * dt)
+        # It starts turning to the player while it is still slowing down...
+        if speed < CFG.entrySpeed:
+            self._turn_to_player(ctx, dt)
         if self.y > self.stop_y:
             return
-        self._go("aim")
+        # ...and fires only once it has stopped.
+        self._start_burst(ctx)
 
     def _go(self, state: str) -> None:
         self.state = state
         self._for = 0.0
 
-    def _aim(self, ctx: EnemyContext, dt: float) -> None:
-        """Turn the nose to the player, easing in as it gets there, then fire."""
+    def _turn_to_player(self, ctx: EnemyContext, dt: float) -> None:
+        """Turn the nose to the player, easing in as it gets there."""
         target = heading_to(self.x, self.y, ctx.player_x, ctx.player_y)
         left = abs(wrap_angle(target - self.heading))
-        # Fast enough to turn all the way round during the aim, slowing down near the end.
+        # Fast enough to turn all the way round in `aimSeconds`, slowing down near the end.
         rate = min(math.pi / CFG.aimSeconds, TURN_EASE * left)
         self.heading = turn_towards(self.heading, target, rate * dt)
+
+    def _aim(self, ctx: EnemyContext, dt: float) -> None:
+        """Turn the nose to the player again, stopped, for the next burst, then fire."""
+        self._turn_to_player(ctx, dt)
         self._for += dt
         if self._for >= CFG.aimSeconds:
             self._start_burst(ctx)

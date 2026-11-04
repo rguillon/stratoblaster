@@ -932,3 +932,13 @@
   at the lock instant, not by outrunning a sweep. The tunables (`aimSeconds` 1 s) are for the
   owner to tune after playing.
 - **Status:** Proposed
+
+### D-267 — The Prism arrives fast, aims while it brakes and fires when it stops
+- **Date:** 2026-11-04
+- **Requirements:** ENM-PRISM-05, ENM-PRISM-07.
+- **Context:** owner: "rework the movements of Prism, I want it to arrive quickly and slow down to a
+  stop, start targeting while it's still slowing down and only fire when it stops."
+- **Decision:** `entrySpeed` 150 -> 320 px/s and `brakeDistance` 60 -> 220 px (the slowdown lasts
+  about 1.8 s). The eased turn to the player starts as soon as the Prism is below `entrySpeed`; the
+  first burst starts when it reaches its stop point. The `aim` state remains only between bursts.
+- **Status:** Proposed
