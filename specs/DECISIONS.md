@@ -858,3 +858,26 @@
   name and duration and not listened to, so the reviewer may want to swap some (AUD-SFX-08 notes);
   the loudness was set from the old gains, not measured against the music beyond the AUD-SFX-06 check.
 - **Status:** Proposed
+
+### D-262 — Three variants of the small and large explosions, and sounds for K in the bosses viewer
+- **Date:** 2026-11-04
+- **Requirements:** AUD-SFX-01, AUD-SFX-09 and AUD-SFX-10 (new), DEV-MENU-14
+- **Context:** requested by the human: three different `explosion-small` and `explosion-large`, played
+  at random; and in the dev bosses viewer, K should sound the explosions too.
+- **Decision:** `SoundDesign.sample` became `samples` (a list). `SfxPlayer` picks one at random for
+  each play with the seeded generator of `core/math/rng.py` (`VARIANT_SEED`), never the one played
+  last for that sound. The six recordings: Kenney `explosionCrunch_000`, `_002`, `_001`; compufox's
+  `explosion2`, `explosion1_0` and `explosion3` (CC0 on OpenGameArt; `explosion-small-3` first came from number99's `explosion`, 4 LU louder than the others, and was replaced on the human's request), processed as the
+  others. The viewer collects what blew up (`DevViewer.take_cues`: the radii of the explosions, the
+  parts broken, a boss gone) and `DevSession` has `GameAudio.play_blasts` play them as `LevelCues`
+  would: large or small by radius, `part-destroyed`, then `boss-destroyed`.
+- **Follow-up (same day):** the boss's death blasts were still too regular (a blast every
+  `BossDeath.every`, the same few recordings). Each play of `explosion-small`, `explosion-large` and
+  `boss-part-destroyed` is now varied by a `SoundJitter` (pitch, level, start delay, AUD-SFX-10),
+  from the same seeded generator; `play_sample` takes a `rate` and a `delay`. The simulation's blast
+  timing is unchanged.
+- **Alternatives considered:** `Math.random` (not reproducible); variants as separate cues picked by
+  `LevelCues` (the core would then choose sounds); cycling in order (predictable).
+- **Consequences:** 4 more samples, 35 more KB in `dist/`; the voice pool counts a variant sound at
+  its longest recording; the picks are not chosen by ear (reviewer to listen).
+- **Status:** Proposed

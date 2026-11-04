@@ -89,6 +89,8 @@ project's MIT license):
   rewards
 - [The Free Firearm Sound Library](https://opengameart.org/content/the-free-firearm-sound-library)
   (Ben Jaszczak, et al., CC0): the player gun's minigun burst, made of single AK-47 shots
+- [Explosions](https://opengameart.org/content/explosions-4) (compufox, CC0): two of the small and
+  large explosion variants
 
 The samples are trimmed, normalised and re-encoded (Ogg Vorbis and MP3) in `public/sfx/`. Which file
 each sound comes from is listed in [`CREDITS.md`](CREDITS.md). The 3D engine is

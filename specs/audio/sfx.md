@@ -30,8 +30,8 @@ sample's file name, `public/sfx/<name>.ogg`, [engine.md](engine.md) AUD-ENGINE-0
 | Hits | player shot hits (`hit`) | `hit`, a short metal impact |
 | | player shot hits a shielded part (`hit-blocked`) | `hit-shield`, a metal impact, ringing |
 | | the player ship is hit (`player-hit`) | `player-hit`, a heavy metal impact |
-| Destruction | small enemy blows up (`blast-small`) | `explosion-small`, a short crunching blast |
-| | large enemy blows up (`blast-large`) | `explosion-large`, a longer crunching blast |
+| Destruction | small enemy blows up (`blast-small`) | `explosion-small`, a short crunching blast, one of 3 recordings (AUD-SFX-09) |
+| | large enemy blows up (`blast-large`) | `explosion-large`, a longer crunching blast, one of 3 recordings (AUD-SFX-09) |
 | | boss part destroyed (`part-destroyed`) | `boss-part-destroyed`, a long crunching blast |
 | | boss destroyed (`boss-destroyed`) | `boss-destroyed`, a deep, low-frequency explosion |
 | Player | life lost (`life-lost`) | `life-lost`, a short low-frequency explosion |
@@ -146,8 +146,8 @@ bright hiss.
 
 The sounds are real sample recordings, not chip sounds, from packs whose license is **CC0**
 (public domain), which is compatible with the project's MIT license (ENG-121). Today they come
-from two packs by Kenney (Sci-Fi Sounds, Interface Sounds) and, for the player gun, from the Free
-Firearm Sound Library. Each sample is made from one file
+from two packs by Kenney (Sci-Fi Sounds, Interface Sounds), the Free Firearm Sound Library (the
+player gun) and the CC0 Explosions by compufox (`explosion-small-2` and `-3`, `explosion-large-2`). Each sample is made from one file
 of a pack (`gun-shot` from several shots of one recording, AUD-SFX-02): mono, 44.1 kHz, cut to its length where the file was longer (with a 20 ms fade), peak
 normalised to −1 dBFS, encoded as Ogg Vorbis (quality 3) and MP3 (quality 5). The laser hum's tail
 is cross-faded into its head over 0.3 s so that it loops without a click. `CREDITS.md` and the
@@ -161,6 +161,46 @@ README list the packs and which file each sound comes from.
 
 *Sources: D-239, D-261.*
 
+### AUD-SFX-09 — Variants of the common explosions · MUST
+
+The two explosions heard most, `explosion-small` and `explosion-large`, each have three different
+recordings (`explosion-small-1` to `-3`, `explosion-large-1` to `-3`). Each time one plays, one of
+its three is picked at random, never the one played last for that sound, so a busy wave does not
+repeat the same blast. The pick comes from a seeded generator (`VARIANT_SEED`), so the same game
+sounds the same (ENG-18, ENG-46). A sound's gain, priority and the voice limits are the sound's, not
+the recording's; its length for the voice pool is that of its longest recording.
+
+**Acceptance criteria**
+- Given a sound with variants played many times, then each variant plays and none plays twice in a
+  row (unit test).
+- Given the same seed, then the same variants play in the same order (unit test).
+- Given the sound designs, then `explosion-small` and `explosion-large` have three samples each
+  and every other sound one (unit test on the data).
+
+*Sources: reviewer request 2026-11-04, D-262.*
+
+### AUD-SFX-10 — Blasts varied at random · MUST
+
+A boss dying blows up at a regular pace (BOSS-19, a blast every `every` seconds), and a wave of
+enemies dying together stacks blasts: the same few recordings at the same pitch and level, at a fixed
+rhythm, sound like a machine. So each play of `explosion-small`, `explosion-large` and
+`boss-part-destroyed` is varied at random (the seeded generator of AUD-SFX-09): its speed, so its
+pitch, by up to ±`pitch` of 1 (small and large ±20 %, part ±12 %); its level, up to `gain` quieter
+(30 %, 20 %); and its start, up to `delay` late (80 ms, 50 ms), which also breaks the pace. Nothing
+else is varied: a sound that tells the player something (a hit, a pickup, a menu click) must sound the
+same each time, and the simulation's own blast timing is untouched.
+
+**Acceptance criteria**
+- Given such a sound played many times, then its speed, level and delay stay within the spread and
+  differ from one play to the next (unit test).
+- Given a sound without a spread, then it plays the same each time (unit test).
+- Given the sound designs, then only the small and large explosions and the boss part's have a
+  spread (unit test on the data).
+- Given a boss dying, then the reviewer finds its explosions irregular and not repetitive (manual
+  check, K in the bosses viewer).
+
+*Sources: reviewer request 2026-11-04, D-262.*
+
 ## Tunable values
 
 | Name | Value | Notes |
@@ -168,10 +208,12 @@ README list the packs and which file each sound comes from.
 | sound designs | per cue: sample (the sound's name), gain, priority, length, positional, loop | `src/game/view/audio/sound_designs.py` `SOUND_DESIGNS` |
 | priorities | 0 (enemy shots) … 7 (top) | `sound_designs.py` `PRIORITY` |
 | gains | `gun-shot` 0.14, `laser-hum` 0.1, `hit` 0.3, `explosion-small` 0.32, `explosion-large` 0.42, `bomb` 0.5, `boss-destroyed` 0.5, `player-hit` 0.36 | `SOUND_DESIGNS` (a gain is the sound's peak in the mix: the samples peak at −1 dBFS) |
-| sample files | `public/sfx/<name>.ogg` and `.mp3`, mono, 44.1 kHz, 29 sounds, about 630 KB in all | `CREDITS.md` |
+| sample files | `public/sfx/<name>.ogg` and `.mp3`, mono, 44.1 kHz, 29 sounds from 33 samples, about 700 KB in all | `CREDITS.md` |
 | minigun_rounds / minigun_gap | 6 / 21 ms (the burst is 0.165 s) | the `gun-shot` sample (`CREDITS.md`) |
 | gun shot length | at most 0.25 s | `sound_designs.py` |
-| explosion lengths | small 0.78 s, large 1.26 s, boss part 1.55 s, bomb 1.98 s, boss 2 s | `sound_designs.py` |
+| explosion lengths | small 0.64 to 0.8 s, large 1.26 to 1.5 s, boss part 1.55 s, bomb 1.98 s, boss 2 s | `sound_designs.py` |
+| explosion variants | 3 each for small and large | `sound_designs.py` `_variants` |
+| blast spread | small and large: pitch ±20 %, level −30 %, delay 80 ms; boss part: ±12 %, −20 %, 50 ms | `sound_designs.py` `BLAST_JITTER`, `PART_JITTER` |
 | large_blast_radius | 18 px | `src/game/view/audio/game_audio.py` `LARGE_BLAST_RADIUS` |
 | loudest_sfx | +6 dB over the music | checked on the data |
 

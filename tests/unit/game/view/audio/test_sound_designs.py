@@ -31,10 +31,24 @@ def test_aud_sfx_05_priorities_put_the_player_top_and_enemy_shots_lowest() -> No
 def test_aud_engine_01_sound_builds_a_design_playing_the_sample_of_its_name() -> None:
     design = sound("cue", 3, 0.5, 1.5, {"positional": True, "loop": True})
     assert isinstance(design, SoundDesign)
-    assert (design.name, design.sample) == ("cue", "cue")
+    assert (design.name, design.samples) == ("cue", ["cue"])
     assert (design.gain, design.priority, design.seconds) == (0.5, 3, 1.5)
     assert design.positional is True
     assert design.loop is True
+
+
+def test_aud_sfx_09_a_sound_can_name_several_samples() -> None:
+    design = sound("cue", 1, 1, 1, {"samples": ["a", "b"]})
+    assert design.samples == ["a", "b"]
+
+
+def test_aud_sfx_09_the_small_and_large_explosions_have_three_variants_each() -> None:
+    for cue, name in [("blast-small", "explosion-small"), ("blast-large", "explosion-large")]:
+        design = DESTRUCTION[cue]
+        assert design.name == name
+        assert design.samples == [name + "-1", name + "-2", name + "-3"]
+    others = [d for cue, d in SOUND_DESIGNS.items() if cue not in ("blast-small", "blast-large")]
+    assert all(len(d.samples) == 1 for d in others)
 
 
 def test_sound_defaults_its_optional_flags() -> None:
@@ -74,8 +88,11 @@ def test_aud_sfx_01_every_event_has_its_own_sound_and_sample() -> None:
     names = [design.name for design in SOUND_DESIGNS.values()]
     assert len(names) == len(set(names))
     assert len(names) == 29
+    samples = [sample for design in SOUND_DESIGNS.values() for sample in design.samples]
+    assert len(samples) == len(set(samples)) == 33
     for cue, design in SOUND_DESIGNS.items():
-        assert design.sample == design.name, cue
+        assert design.samples
+        assert all(sample.startswith(design.name) for sample in design.samples), cue
         assert design.seconds > 0, cue
         assert 0 < design.gain <= 1, cue
 
@@ -124,3 +141,14 @@ def test_aud_sfx_01_the_menu_sounds_are_short_and_play_at_top_priority() -> None
         assert design.priority == PRIORITY["top"], cue
         assert design.loop is None, cue
     assert max(MENUS[cue].seconds for cue in ["menu-move", "menu-confirm", "menu-back"]) < 0.1
+
+
+def test_aud_sfx_10_the_blasts_and_the_parts_are_varied_at_random_and_nothing_else_is() -> None:
+    varied = {cue for cue, design in SOUND_DESIGNS.items() if design.jitter is not None}
+    assert varied == {"blast-small", "blast-large", "part-destroyed"}
+    for cue in varied:
+        jitter = SOUND_DESIGNS[cue].jitter
+        assert 0 < jitter.pitch < 0.5
+        assert 0 < jitter.gain < 1
+        # Late by less than a blast of a boss dying is apart (BossDeath.every, 0.25 s).
+        assert 0 < jitter.delay < 0.25

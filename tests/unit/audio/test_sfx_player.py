@@ -1,6 +1,7 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/audio/sfx_player.py`."""
 
+import itertools
 from types import SimpleNamespace
 from typing import Any
 
@@ -8,12 +9,12 @@ import pytest
 from helpers.audio_fakes import FakeContext, FakeVoice
 
 from audio import sfx_player
-from audio.audio_types import INFINITY, SoundDesign
+from audio.audio_types import INFINITY, SoundDesign, SoundJitter
 from audio.sfx_player import SfxPlayer, SfxSettings, pan_at
 
 
 def sound(name: str, seconds: float = 0.2, *, priority: float = 1, **flags: bool) -> SoundDesign:
-    return SoundDesign(name, name, 0.8, priority, seconds, **flags)
+    return SoundDesign(name, [name], 0.8, priority, seconds, **flags)
 
 
 class FakeSamples:
@@ -32,9 +33,16 @@ def voices(monkeypatch: pytest.MonkeyPatch) -> list[FakeVoice]:
     made: list[FakeVoice] = []
 
     def fake_play_sample(
-        context: Any, _destination: Any, _buffer: Any, loop: bool, _gain: float
+        context: Any,
+        _destination: Any,
+        _buffer: Any,
+        loop: bool,
+        gain: float,
+        rate: float = 1,
+        delay: float = 0,
     ) -> FakeVoice:
         voice = FakeVoice(INFINITY if loop else context.currentTime + 0.2, "")
+        voice.played = (gain, rate, delay)  # type: ignore[attr-defined]
         made.append(voice)
         return voice
 
@@ -245,3 +253,73 @@ def test_aud_engine_04_a_sample_that_is_not_ready_is_silent_but_the_pool_still_d
     assert voices == []
     player.stop_all()
     assert player.voices == 0
+
+
+@pytest.mark.usefixtures("voices")
+def test_aud_sfx_09_variants_all_play_and_never_the_same_twice_in_a_row() -> None:
+    names: list[str] = []
+
+    class Recording(FakeSamples):
+        def get(self, name: str) -> Any | None:
+            names.append(name)
+            return super().get(name)
+
+    context = FakeContext()
+    player, _, clock = make_player(context, samples=Recording(), max_voices=100)
+    boom = SoundDesign("boom", ["boom-1", "boom-2", "boom-3"], 0.8, 1, 0.2)
+    for step in range(60):
+        clock[0] = step
+        player.play(boom)
+    assert set(names) == {"boom-1", "boom-2", "boom-3"}
+    assert all(a != b for a, b in itertools.pairwise(names))
+
+
+@pytest.mark.usefixtures("voices")
+def test_aud_sfx_09_the_same_game_picks_the_same_variants() -> None:
+    def picks() -> list[str]:
+        names: list[str] = []
+
+        class Recording(FakeSamples):
+            def get(self, name: str) -> Any | None:
+                names.append(name)
+                return super().get(name)
+
+        player, _, clock = make_player(FakeContext(), samples=Recording(), max_voices=100)
+        boom = SoundDesign("boom", ["a", "b", "c"], 0.8, 1, 0.2)
+        for step in range(10):
+            clock[0] = step
+            player.play(boom)
+        return names
+
+    assert picks() == picks()
+
+
+def test_aud_sfx_10_a_sound_with_jitter_varies_its_pitch_level_and_start_within_its_spread(
+    voices: list[FakeVoice],
+) -> None:
+    player, _, clock = make_player(FakeContext(), max_voices=100)
+    boom = SoundDesign("boom", ["boom"], 0.5, 1, 0.2, jitter=SoundJitter(0.2, 0.3, 0.08))
+    for step in range(40):
+        clock[0] = step
+        player.play(boom)
+    plays = [voice.played for voice in voices]  # type: ignore[attr-defined]
+    gains = [g for g, _, _ in plays]
+    rates = [r for _, r, _ in plays]
+    delays = [d for _, _, d in plays]
+    assert all(0.35 - 1e-9 <= g <= 0.5 for g in gains)
+    assert all(0.8 <= r <= 1.2 for r in rates)
+    assert all(0 <= d <= 0.08 for d in delays)
+    # Not the same twice: the plays differ from one another.
+    assert len(set(rates)) > 30
+    assert len(set(gains)) > 30
+    assert len(set(delays)) > 30
+
+
+def test_aud_sfx_10_a_sound_without_jitter_is_played_the_same_each_time(
+    voices: list[FakeVoice],
+) -> None:
+    player, _, clock = make_player(FakeContext(), max_voices=100)
+    for step in range(5):
+        clock[0] = step
+        player.play(sound("click"))
+    assert {voice.played for voice in voices} == {(0.8, 1, 0)}  # type: ignore[attr-defined]

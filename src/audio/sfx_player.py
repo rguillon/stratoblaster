@@ -10,12 +10,17 @@ from audio.audio_types import SoundDesign, sound_seconds
 from audio.sample_bank import SampleBank
 from audio.synth import Voice, play_sample
 from audio.voice_pool import VoicePool
+from core.math.rng import create_rng
 
 # isort: split
 # __pragma__ ("skip")
 from typing import Any
 
 # __pragma__ ("noskip")
+
+
+# The seed of the pick between a sound's samples (AUD-SFX-09).
+VARIANT_SEED = 0x5EED5
 
 
 class SfxSettings:
@@ -65,6 +70,10 @@ class SfxPlayer:
     def __init__(self, bus: Any, clock: Any, settings: SfxSettings, samples: SampleBank) -> None:
         self._bus = bus
         self._samples = samples
+        # Picks which of a sound's samples plays: seeded, so the same game sounds the same.
+        self._random = create_rng(VARIANT_SEED)
+        # The sample each sound played last, by name, so it is not played twice in a row.
+        self._last: dict[str, int] = {}
         self._clock = clock
         self._settings = settings
         self._pool = VoicePool(settings.max_voices, settings.retrigger_seconds)
@@ -143,7 +152,7 @@ class SfxPlayer:
 
     def _start(self, sound: SoundDesign, pan: float) -> tuple[Voice | None, Any | None]:
         bus = self._bus()
-        buffer = self._samples.get(sound.sample)
+        buffer = self._samples.get(self._pick(sound))
         if bus is None or buffer is None:
             # No context, or the sample is not ready (or failed to load): silent.
             return None, None
@@ -157,8 +166,26 @@ class SfxPlayer:
             gain.connect(panner)
             out = panner
         out.connect(bus.sfx)
-        voice = play_sample(context, gain, buffer, sound.loop is True, sound.gain)
+        rate = 1.0
+        level = sound.gain
+        delay = 0.0
+        jitter = sound.jitter
+        if jitter is not None:
+            rate = 1 + (self._random() * 2 - 1) * jitter.pitch
+            level = sound.gain * (1 - self._random() * jitter.gain)
+            delay = self._random() * jitter.delay
+        voice = play_sample(context, gain, buffer, sound.loop is True, level, rate, delay)
         return voice, gain
+
+    def _pick(self, sound: SoundDesign) -> str:
+        """Return the sample to play: one of the sound's, at random, never the last one again."""
+        count = len(sound.samples)
+        index = int(self._random() * count)
+        last = self._last.get(sound.name)
+        if count > 1 and index == last:
+            index = (index + 1) % count
+        self._last[sound.name] = index
+        return sound.samples[index]
 
     def _boost(self, name: str) -> None:
         """Boost the playing sound when the same one comes again too soon (AUD-ENGINE-07).

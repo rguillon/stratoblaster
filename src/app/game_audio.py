@@ -12,7 +12,7 @@ arguments). `create_context` and `can_start` are None when omitted.
 
 from audio.audio_bindings import AudioBindings, AudioMix, MusicRequest
 from audio.audio_output import AudioOutput, AudioOutputOptions, volume_gain
-from audio.audio_types import INFINITY
+from audio.audio_types import INFINITY, SoundDesign
 from audio.level_cues import LevelCues
 from audio.music_player import MusicPlayer, MusicTimings
 from audio.sample_bank import SampleBank
@@ -88,6 +88,16 @@ def _menu_cue(command: MenuCommand, feedback: MenuFeedback) -> str | None:
     return _MENU_CUES.get(feedback)
 
 
+def _sample_names(sounds: dict[str, SoundDesign]) -> list[str]:
+    """Return the names of every sample the sounds play, each once."""
+    names: list[str] = []
+    for sound in sounds.values():
+        for sample in sound.samples:
+            if sample not in names:
+                names.append(sample)
+    return names
+
+
 class GameAudio:
     """The game's audio (see the module doc)."""
 
@@ -124,9 +134,7 @@ class GameAudio:
             effects,
         )
         sounds = bindings.sounds if bindings is not None else {}
-        self._samples = SampleBank(
-            options.fetch_sample, [sound.sample for sound in sounds.values()]
-        )
+        self._samples = SampleBank(options.fetch_sample, _sample_names(sounds))
         # The files are fetched at once and decoded when the context exists (AUD-ENGINE-01).
         self._samples.prefetch()
         self._sfx = SfxPlayer(
@@ -222,6 +230,26 @@ class GameAudio:
         if sound.loop:
             self._dev_loop = sound.name
         return sound.name
+
+    def play_blasts(self, radii: list[float], parts: int, boss: bool) -> None:
+        """Sound what blew up in a dev viewer as a level would (D-262).
+
+        The explosions (large when their radius says so, AUD-SFX-04), the parts broken and a boss
+        destroyed: one sound of each kind.
+        """
+        bindings = self._bindings
+        if bindings is None:
+            return
+        large = bindings.large_blast_radius
+        bigs = [radius for radius in radii if radius >= large]
+        if len(bigs) > 0:
+            self._cue("blast-large", None)
+        if len(bigs) < len(radii):
+            self._cue("blast-small", None)
+        if parts > 0:
+            self._cue("part-destroyed", None)
+        if boss:
+            self._cue("boss-destroyed", None)
 
     def stop_cue(self) -> None:
         """Stop the looping sound `play_cue` started, if any."""

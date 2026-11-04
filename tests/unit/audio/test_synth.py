@@ -206,3 +206,15 @@ def test_aud_engine_01_a_looping_sample_holds_until_stopped_with_a_fade() -> Non
     voice.stop(1.0, 0.04)
     assert level.gain.names() == ["cancelScheduledValues", "setTargetAtTime"]
     assert source.stops == [pytest.approx(1.0 + 0.04 + STOP_MARGIN)]
+
+
+def test_aud_sfx_10_a_sample_plays_at_its_rate_and_delay() -> None:
+    ctx = FakeContext()
+    ctx.currentTime = 1.0
+    buffer = type("Buffer", (), {"duration": 1.0})()
+    voice = play_sample(ctx, FakeNode("destination"), buffer, False, 0.5, 2, 0.25)
+    (source,) = ctx.of_kind("source")
+    assert source.playbackRate.value == 2
+    assert source.started == [1.25]
+    # Twice as fast: half as long, from when it starts.
+    assert voice.end == pytest.approx(1.25 + 0.5)

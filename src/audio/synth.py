@@ -76,20 +76,31 @@ class Voice:
                 pass
 
 
-def play_sample(ctx: Any, destination: Any, buffer: Any, loop: bool, gain: float) -> Voice:
+def play_sample(
+    ctx: Any,
+    destination: Any,
+    buffer: Any,
+    loop: bool,
+    gain: float,
+    rate: float = 1,
+    delay: float = 0,
+) -> Voice:
     """Plays a decoded sample into `destination` at level `gain`, looping if asked.
 
-    Returns a handle to stop it early (AUD-ENGINE-01).
+    At playback speed `rate` (its pitch), `delay` seconds from now. Returns a handle to stop it
+    early (AUD-ENGINE-01).
     """
     source = ctx.createBufferSource()
     source.buffer = buffer
     source.loop = loop
+    source.playbackRate.value = rate
     level = ctx.createGain()
     level.gain.value = gain
     source.connect(level)
     level.connect(destination)
-    source.start(ctx.currentTime)
-    end = INFINITY if loop else ctx.currentTime + buffer.duration
+    when = ctx.currentTime + delay
+    source.start(when)
+    end = INFINITY if loop else when + buffer.duration / rate
     return Voice(end, [_Part(source, level)])
 
 

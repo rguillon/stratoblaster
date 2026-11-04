@@ -3,16 +3,16 @@
 
 Each one is a recorded sample (CC0, `public/sfx/<name>.ogg` and `.mp3`, credited in `CREDITS.md`,
 AUD-ENGINE-01), loaded at start-up and played through the sound effect bus. The sample of a sound
-has the sound's name. Samples are normalised to -1 dBFS, so a sound's `gain` is its peak level in
-the mix. Priorities (AUD-SFX-05): the player's and the bombs' sounds highest, the enemy shots
-lowest. The player's gun shots and the laser hum are mixed quieter than hits and explosions
-(AUD-SFX-06).
+has the sound's name (or, for a sound with variants, that name and `-1` to `-3`). Samples are
+normalised to -1 dBFS, so a sound's `gain` is its peak level in the mix. Priorities (AUD-SFX-05):
+the player's and the bombs' sounds highest, the enemy shots lowest. The player's gun shots and the
+laser hum are mixed quieter than hits and explosions (AUD-SFX-06).
 
-`seconds` is the length of the sample (checked against the file in the e2e test); the voice pool
-counts it (AUD-ENGINE-07).
+`seconds` is the length of the sample (of the longest, with variants); the voice pool counts it
+(AUD-ENGINE-07).
 """
 
-from audio.audio_types import SoundDesign
+from audio.audio_types import SoundDesign, SoundJitter
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -42,16 +42,31 @@ def sound(
     seconds: float,
     rest: dict[str, Any],
 ) -> SoundDesign:
-    """Return a sound effect whose sample is `name`; `rest` holds `positional` or `loop`."""
+    """Return a sound effect; `rest` holds `samples` (default: the one named `name`).
+
+    And `positional`, `loop` or `jitter`.
+    """
     return SoundDesign(
         name,
-        name,
+        rest.get("samples", [name]),
         gain,
         priority,
         seconds,
         rest.get("positional"),
         rest.get("loop"),
+        rest.get("jitter"),
     )
+
+
+# Each blast is varied at random (AUD-SFX-10): a boss dying blows up at a regular pace, and the same
+# few recordings at the same pitch would sound like a machine.
+BLAST_JITTER = SoundJitter(0.2, 0.3, 0.08)
+PART_JITTER = SoundJitter(0.12, 0.2, 0.05)
+
+
+def _variants(name: str) -> list[str]:
+    """Return the names of the three samples of the sound `name`: `name-1`, `name-2`, `name-3`."""
+    return [name + "-1", name + "-2", name + "-3"]
 
 
 PLAYER_WEAPONS = {
@@ -79,10 +94,27 @@ HITS = {
 }
 
 DESTRUCTION = {
-    "blast-small": sound("explosion-small", PRIORITY["blast"], 0.32, 0.78, {"positional": True}),
-    "blast-large": sound("explosion-large", PRIORITY["blast"], 0.42, 1.26, {"positional": True}),
+    # Three recordings each, one at random every time (AUD-SFX-09).
+    "blast-small": sound(
+        "explosion-small",
+        PRIORITY["blast"],
+        0.32,
+        0.8,
+        {"positional": True, "samples": _variants("explosion-small"), "jitter": BLAST_JITTER},
+    ),
+    "blast-large": sound(
+        "explosion-large",
+        PRIORITY["blast"],
+        0.42,
+        1.5,
+        {"positional": True, "samples": _variants("explosion-large"), "jitter": BLAST_JITTER},
+    ),
     "part-destroyed": sound(
-        "boss-part-destroyed", PRIORITY["part"], 0.55, 1.55, {"positional": True}
+        "boss-part-destroyed",
+        PRIORITY["part"],
+        0.55,
+        1.55,
+        {"positional": True, "jitter": PART_JITTER},
     ),
     "boss-destroyed": sound("boss-destroyed", PRIORITY["top"], 0.5, 2, {}),
 }

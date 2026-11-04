@@ -8,7 +8,7 @@ from typing import Any
 import pytest
 from helpers.audio_fakes import FakeContext, FakeVoice
 
-from app.game_audio import GameAudio, GameAudioOptions
+from app.game_audio import GameAudio, GameAudioOptions, _sample_names
 from app.menu_state import MenuState
 from app.settings_menu import Volumes
 from audio import music_player, sfx_player
@@ -25,7 +25,7 @@ def layer() -> ToneLayer:
 
 
 def sound(name: str, **flags: bool) -> SoundDesign:
-    return SoundDesign(name, name, 0.8, 1, 0.2, **flags)
+    return SoundDesign(name, [name], 0.8, 1, 0.2, **flags)
 
 
 class FakeMusic:
@@ -55,7 +55,13 @@ def voices(monkeypatch: pytest.MonkeyPatch) -> list[FakeVoice]:
         return voice
 
     def fake_play_sample(
-        context: Any, _destination: Any, _buffer: Any, loop: bool, _gain: float
+        context: Any,
+        _destination: Any,
+        _buffer: Any,
+        loop: bool,
+        _gain: float,
+        _rate: float = 1,
+        _delay: float = 0,
     ) -> FakeVoice:
         voice = FakeVoice(INFINITY if loop else context.currentTime + 0.2)
         made.append(voice)
@@ -560,3 +566,38 @@ def test_aud_engine_01_the_samples_are_fetched_at_once_and_decoded_when_the_audi
     for decode in ctx.decodes:
         decode.resolve(object())
     assert audio.state.samples == 2
+
+
+def test_aud_engine_01_a_sample_shared_by_two_sounds_is_fetched_once() -> None:
+    sounds = {
+        "a": SoundDesign("a", ["x", "y"], 1, 1, 1),
+        "b": SoundDesign("b", ["y", "z"], 1, 1, 1),
+    }
+    assert _sample_names(sounds) == ["x", "y", "z"]
+
+
+def test_d262_the_blasts_of_a_dev_viewer_are_sounded_as_a_level_would(
+    voices: list[FakeVoice],  # noqa: ARG001
+) -> None:
+    audio, _, _ = make()
+    audio.unlock()
+    bindings_sounds = audio._bindings.sounds  # type: ignore[union-attr]
+    for cue in ["blast-small", "blast-large", "part-destroyed", "boss-destroyed"]:
+        bindings_sounds[cue] = sound(cue)
+    audio.play_blasts([10.0, 50.0], 1, True)
+    assert audio.state.sounds[-4:] == [
+        "blast-large",
+        "blast-small",
+        "part-destroyed",
+        "boss-destroyed",
+    ]
+
+
+def test_d262_nothing_is_sounded_without_blasts_or_without_bindings() -> None:
+    audio, _, _ = make()
+    audio.unlock()
+    audio.play_blasts([], 0, False)
+    assert audio.state.sounds == []
+    silent, _, _ = make(with_bindings=False)
+    silent.play_blasts([10.0], 1, True)
+    assert silent.state.sounds == []

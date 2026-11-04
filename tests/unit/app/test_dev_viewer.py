@@ -715,3 +715,71 @@ def test_dev_menu_21_the_game_view_shots_leave_from_where_the_camera_sees_the_ba
     # The eye moves with the camera that follows the enemy.
     assert (eye.x, eye.y) == (240 + v._shift[0], framing.back + v._shift[1])
     assert eye.height == framing.height
+
+
+@pytest.mark.usefixtures("env")
+def test_d262_k_on_a_boss_part_asks_for_its_explosion_and_part_sounds_once() -> None:
+    v = viewer("bosses", [DevItem("warden", "Warden", "1-1")])
+    boss = _probe_boss()
+    v.game.boss_kinds[0].spawn = lambda _area: boss
+    v.frame(0)
+    assert v.take_cues().blasts == []
+    v.break_part()
+    v.frame(0.1)
+    cues = v.take_cues()
+    assert cues.blasts == [boss.parts[0].radius]
+    assert (cues.parts, cues.boss) == (1, False)
+    again = v.take_cues()
+    assert (again.blasts, again.parts, again.boss) == ([], 0, False)
+
+
+@pytest.mark.usefixtures("env")
+def test_d262_a_boss_destroyed_is_asked_for_but_an_enemy_gone_is_not() -> None:
+    v = viewer("bosses", [DevItem("warden", "Warden", "1-1")])
+    boss = _probe_boss()
+    v.game.boss_kinds[0].spawn = lambda _area: boss
+    v.frame(0)
+    boss.gone = True
+    v.frame(0.1)
+    assert v.take_cues().boss is True
+    enemies = viewer("enemies", [DevItem("gnat", "Gnat", "1-1")])
+    enemies.frame(0)
+    enemies._enemy.gone = True
+    enemies.frame(0.1)
+    assert enemies.take_cues().boss is False
+
+
+@pytest.mark.usefixtures("env")
+def test_d262_in_the_game_view_the_worlds_enemy_blasts_and_broken_parts_are_asked_for() -> None:
+    v = _game_view()
+    v.show(0, toggle=False, mode=2)
+    v.frame(0)
+    world = v._world
+
+    def step(_dt: float) -> None:
+        world.blasts = [
+            dev_viewer.EnemyBlast("enemy", 1, 2, 25),
+            dev_viewer.EnemyBlast("missile", 3, 4, 9),
+        ]
+        world.broken_parts = [object()]
+
+    world.step = step  # type: ignore[method-assign]
+    v.frame(0.1)
+    cues = v.take_cues()
+    # A missile's blast is not an enemy's.
+    assert cues.parts >= 1
+    assert cues.blasts == [25] * cues.parts
+    assert cues.boss is False
+
+
+@pytest.mark.usefixtures("env")
+def test_d262_in_the_game_view_an_empty_world_is_a_boss_destroyed_in_the_bosses_viewer() -> None:
+    v = viewer("bosses", [DevItem("warden", "Warden", "1-1")])
+    v.game.boss_kinds[0].spawn = lambda _area: WorldEnemy("warden")
+    shots = SimpleNamespace(sync=lambda _frame: None, dispose=lambda: None)
+    v.game.view.enemies.shots = lambda _scene, _style: shots
+    v.show(0, toggle=False, mode=2)
+    v.frame(0)
+    v._world.enemies = []
+    v.frame(0.1)
+    assert v.take_cues().boss is True

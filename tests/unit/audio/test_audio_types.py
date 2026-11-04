@@ -58,12 +58,12 @@ def test_aud_engine_01_midi_pitch_69_is_concert_a() -> None:
 
 
 def test_aud_engine_07_a_looping_sound_lasts_forever() -> None:
-    sound = SoundDesign("hum", "hum", 1, 1, 4.7, loop=True)
+    sound = SoundDesign("hum", ["hum"], 1, 1, 4.7, loop=True)
     assert sound_seconds(sound) == INFINITY
 
 
 def test_aud_engine_07_a_sound_lasts_as_long_as_its_sample() -> None:
-    assert sound_seconds(SoundDesign("boom", "boom", 1, 1, 1.26)) == pytest.approx(1.26)
+    assert sound_seconds(SoundDesign("boom", ["boom"], 1, 1, 1.26)) == pytest.approx(1.26)
 
 
 def test_aud_engine_13_notes_keep_their_fields() -> None:

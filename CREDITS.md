@@ -6,7 +6,7 @@ packs (AUD-ENGINE-01, AUD-SFX-08).
 
 ## Sound effects
 
-The packs below, two of them by [Kenney](https://www.kenney.nl), are released under
+The packs and files below, two of them by [Kenney](https://www.kenney.nl), are released under
 [Creative Commons Zero (CC0 1.0)](https://creativecommons.org/publicdomain/zero/1.0/): public domain,
 free for any use without attribution, which is compatible with this project's MIT license. They are
 credited anyway.
@@ -15,6 +15,7 @@ credited anyway.
   <https://kenney.nl/assets/sci-fi-sounds>)
 - **The Free Firearm Sound Library**, Ben Jaszczak, et al., <https://opengameart.org/content/the-free-firearm-sound-library>
   (CC0): only for the player gun
+- **Explosions**, compufox, <https://opengameart.org/content/explosions-4> (CC0)
 - **Interface Sounds** 1.0, Kenney, <https://opengameart.org/content/interface-sounds> (also on
   <https://kenney.nl/assets/interface-sounds>)
 
@@ -37,8 +38,12 @@ quality 3, MP3 quality 5).
 | `hit` | Kenney | Sci-Fi Sounds 1.0 | `impactMetal_004.ogg` | CC0 1.0 | – |
 | `hit-shield` | Kenney | Sci-Fi Sounds 1.0 | `impactMetal_001.ogg` | CC0 1.0 | trimmed to 0.45 s |
 | `player-hit` | Kenney | Sci-Fi Sounds 1.0 | `impactMetal_003.ogg` | CC0 1.0 | – |
-| `explosion-small` | Kenney | Sci-Fi Sounds 1.0 | `explosionCrunch_000.ogg` | CC0 1.0 | – |
-| `explosion-large` | Kenney | Sci-Fi Sounds 1.0 | `explosionCrunch_002.ogg` | CC0 1.0 | – |
+| `explosion-small-1` | Kenney | Sci-Fi Sounds 1.0 | `explosionCrunch_000.ogg` | CC0 1.0 | – |
+| `explosion-small-2` | compufox | Explosions | `explosion2.ogg` | CC0 | leading silence removed |
+| `explosion-small-3` | compufox | Explosions | `explosion1_0.ogg` | CC0 | leading silence removed, cut to 0.8 s |
+| `explosion-large-1` | Kenney | Sci-Fi Sounds 1.0 | `explosionCrunch_002.ogg` | CC0 1.0 | – |
+| `explosion-large-2` | compufox | Explosions | `explosion3.ogg` | CC0 | cut to 1.5 s |
+| `explosion-large-3` | Kenney | Sci-Fi Sounds 1.0 | `explosionCrunch_001.ogg` | CC0 1.0 | – |
 | `boss-part-destroyed` | Kenney | Sci-Fi Sounds 1.0 | `explosionCrunch_003.ogg` | CC0 1.0 | – |
 | `boss-destroyed` | Kenney | Sci-Fi Sounds 1.0 | `lowFrequency_explosion_000.ogg` | CC0 1.0 | – |
 | `life-lost` | Kenney | Sci-Fi Sounds 1.0 | `lowFrequency_explosion_001.ogg` | CC0 1.0 | – |

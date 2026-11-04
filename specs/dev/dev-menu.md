@@ -215,15 +215,17 @@ The bosses viewer shows each boss, in the game's order, as the enemies viewer sh
 and runs its first-stage patterns; it does not expire. K (`break_key`) breaks its next part, as K does
 in a level in debug mode ([debug-options.md](debug-options.md) DEV-OPT-09): the part's blast, the
 transformations and, once only the core is left, the boss's death, drawn with the game's explosions
-where the boss is shown. A new boss then comes in. The bosses viewer's hint names K. K does nothing in
+where the boss is shown, with their sounds as a level plays them (D-262, [../audio/sfx.md](../audio/sfx.md)): each explosion's (small or large by its radius, AUD-SFX-04), the part's (`part-destroyed`) and, once the core is gone, the boss's (`boss-destroyed`). A new boss then comes in. The bosses viewer's hint names K. K does nothing in
 the other viewers.
 
 **Acceptance criteria**
 - Given the bosses viewer, when K is pressed, then the boss's next part blows up where the boss is
   shown.
 - Given K pressed until the boss dies, then a new boss of the same kind comes in.
+- Given K pressed, then the sounds of the explosions, of the part and, last, of the boss's death
+  are played (unit test on the viewer's cues; manual check).
 
-*Sources: D-199, D-222, P07-R09, P16-R10.*
+*Sources: D-199, D-222, P07-R09, P16-R10; the sounds, reviewer request 2026-11-04, D-262.*
 
 ### DEV-MENU-15 — What the props viewer lists · MUST
 
