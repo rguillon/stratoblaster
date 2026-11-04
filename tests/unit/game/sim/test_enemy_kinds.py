@@ -72,8 +72,23 @@ def test_enm_08_a_side_pass_follows_the_entry_side_and_height() -> None:
 
 
 def test_enm_08_a_side_pass_without_an_entry_takes_its_own_height() -> None:
-    _, y = side_pass(area(width=400, height=600), 0.25)
-    assert y == pytest.approx(150)
+    _, y = side_pass(area(width=400, height=600), 0.5)
+    assert y == pytest.approx(300)
+
+
+def test_enm_08_no_side_pass_comes_in_the_bottom_third() -> None:
+    _, y = side_pass(area(width=400, height=600), 0.1)
+    assert y == pytest.approx(200)
+    _, y = side_pass(area(width=400, height=600, side="left", position=0.1), 0.8)
+    assert y == pytest.approx(200)
+
+
+@pytest.mark.parametrize("kind_id", ["hornet", "strafer", "wasp"])
+def test_enm_08_side_entries_keep_out_of_the_bottom_third(kind_id: str) -> None:
+    kind = next(k for k in ENEMY_KINDS if k.id == kind_id)
+    for side in ("left", "right"):
+        for enemy in kind.spawn(area(width=400, height=600, side=side, position=0.0)):
+            assert enemy.y >= 200 - 1e-6
 
 
 @pytest.mark.parametrize(

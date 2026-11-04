@@ -896,3 +896,12 @@
   the level specs were not re-measured with the new density (open point). Column contents keep the
   D-253 sizes.
 - **Status:** Proposed
+
+### D-264 — Nothing enters laterally in the bottom third
+- **Date:** 2026-11-04
+- **Requirements:** ENM-08, ENM-HORNET-10, ENM-WASP-11.
+- **Context:** owner: "make sure no enemy spawn laterally in the first bottom 1/3 of the screen".
+- **Decision:** a side entry's height is its position (kept off the corners) but never below a
+  third of the playfield height (`side_height`, `SIDE_MIN_HEIGHT` in `enemy_helpers.py`): Hornets,
+  Strafers and Wasp columns (the column is shifted up as a whole). Random side passes obey it too.
+- **Status:** Proposed

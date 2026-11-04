@@ -32,6 +32,10 @@ UP = 0.0
 # How fast an enemy turns its nose to the way it leaves, rad/s.
 LEAVE_TURN = 4.0
 
+# Enemies coming in from a side keep above this fraction of the playfield height, so none appears
+# laterally in the bottom third, next to the player's ship.
+SIDE_MIN_HEIGHT = 1 / 3
+
 # A coin toss: a random number below one half.
 HALF = 0.5
 
@@ -95,6 +99,14 @@ def on_playfield(enemy: Enemy, ctx: EnemyContext) -> bool:
 def clamp_entry(position: float) -> float:
     """Return a wave's entry position (ENM-08), kept away from the corners of the playfield."""
     return min(1 - ENTRY_INSET, max(ENTRY_INSET, position))
+
+
+def side_height(position: float) -> float:
+    """Return the height fraction (0..1 from the bottom) a side entry at `position` comes in at.
+
+    Kept away from the corners and out of the bottom third of the playfield.
+    """
+    return max(SIDE_MIN_HEIGHT, clamp_entry(position))
 
 
 def side_dive_stop_x(area: EnemySpawnArea, left: bool) -> float:
