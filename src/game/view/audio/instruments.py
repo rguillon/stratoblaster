@@ -11,7 +11,6 @@ Partial layer objects are plain dicts with snake_case keys
 """
 
 from audio.audio_types import Envelope, FilterSpec, Instrument, ToneLayer
-from game.view.audio.sound_recipes import flatten_layers
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -52,6 +51,21 @@ def saws(cents: list[float], gain: float, rest: dict[str, Any]) -> list[ToneLaye
         options: dict[str, Any] = {"detune_cents": detune}
         options.update(rest)
         layers.append(layer("sawtooth", gain, options))
+    return layers
+
+
+def flatten_layers(items: list[Any]) -> list[ToneLayer]:
+    """Return the layers of `items`, where an item is a layer or a list of layers.
+
+    A list of layers is a recipe such as `saws(...)`. Transcrypt drops the `*` spread in a list
+    literal, so recipes are flattened here instead (ENG-155).
+    """
+    layers: list[ToneLayer] = []
+    for item in items:
+        if isinstance(item, ToneLayer):
+            layers.append(item)
+        else:
+            layers.extend(item)
     return layers
 
 

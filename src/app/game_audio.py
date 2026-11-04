@@ -12,9 +12,10 @@ arguments). `create_context` and `can_start` are None when omitted.
 
 from audio.audio_bindings import AudioBindings, AudioMix, MusicRequest
 from audio.audio_output import AudioOutput, AudioOutputOptions, volume_gain
-from audio.audio_types import INFINITY
+from audio.audio_types import INFINITY, SoundDesign
 from audio.level_cues import LevelCues
 from audio.music_player import MusicPlayer, MusicTimings
+from audio.sample_bank import SampleBank
 from audio.sfx_player import SfxPlayer, SfxSettings, pan_at
 from config.audio import AUDIO_CONFIG
 from config.dev_viewer import DEV_MUSIC_VIEWER
@@ -41,6 +42,7 @@ class GameAudioOptions:
         can_start: Any | None,
         clock: Any,
         screen_width: float,
+        fetch_sample: Any | None = None,
     ) -> None:
         # Creates the Web Audio context; None without Web Audio (the game is silent).
         self.create_context = create_context
@@ -50,18 +52,23 @@ class GameAudioOptions:
         self.clock = clock
         # Width of the playfield, to pan sounds with their position (AUD-ENGINE-08).
         self.screen_width = screen_width
+        # Fetches the file of a sound effect by name, returning a promise of its bytes
+        # (AUD-ENGINE-01); None without: the sound effects are silent.
+        self.fetch_sample = fetch_sample
 
 
 class GameAudioState:
     """What the e2e test API reports about the audio (DEV-API-02)."""
 
-    def __init__(self, music: str | None, sounds: list[str], context: str) -> None:
+    def __init__(self, music: str | None, sounds: list[str], context: str, samples: int) -> None:
         # Id of the music playing (`menu`, `level-2-3`, `boss-2`), or None.
         self.music = music
         # Names of the last sound effects played, most recent last.
         self.sounds = sounds
         # The audio context's state: `none` before the first user gesture.
         self.context = context
+        # How many sound effect samples are decoded and ready.
+        self.samples = samples
 
 
 # The sound of a menu feedback (AUD-SFX-01); `screen` depends on the command, see `_menu_cue`.
@@ -79,6 +86,16 @@ def _menu_cue(command: MenuCommand, feedback: MenuFeedback) -> str | None:
     if feedback == "screen":
         return "menu-back" if command in ["back", "cancel"] else "menu-confirm"
     return _MENU_CUES.get(feedback)
+
+
+def _sample_names(sounds: dict[str, SoundDesign]) -> list[str]:
+    """Return the names of every sample the sounds play, each once."""
+    names: list[str] = []
+    for sound in sounds.values():
+        for sample in sound.samples:
+            if sample not in names:
+                names.append(sample)
+    return names
 
 
 class GameAudio:
@@ -116,6 +133,10 @@ class GameAudio:
             MusicTimings(AUDIO_CONFIG.lookahead_seconds, AUDIO_CONFIG.pause_fade_seconds),
             effects,
         )
+        sounds = bindings.sounds if bindings is not None else {}
+        self._samples = SampleBank(options.fetch_sample, _sample_names(sounds))
+        # The files are fetched at once and decoded when the context exists (AUD-ENGINE-01).
+        self._samples.prefetch()
         self._sfx = SfxPlayer(
             lambda: self._output.buses,
             options.clock,
@@ -126,6 +147,7 @@ class GameAudio:
                 AUDIO_CONFIG.pan_max,
                 AUDIO_CONFIG.pause_fade_seconds,
             ),
+            self._samples,
         )
 
     @property
@@ -133,7 +155,7 @@ class GameAudio:
         """The audio state: the id of the music track that plays, if any."""
         track = self._music.track
         music = track.id if track is not None else None
-        return GameAudioState(music, self._recent[:], self._output.state)
+        return GameAudioState(music, self._recent[:], self._output.state, self._samples.ready)
 
     @property
     def music(self) -> MusicPlayer:
@@ -145,7 +167,9 @@ class GameAudio:
         can_start = self._options.can_start
         if can_start is not None and not can_start():
             return
-        self._output.unlock()
+        buses = self._output.unlock()
+        if buses is not None:
+            self._samples.decode_with(buses.context)
 
     def set_hidden(self, hidden: bool) -> None:
         """Pause or resume the audio as the page is hidden or shown again (AUD-ENGINE-11)."""
@@ -206,6 +230,26 @@ class GameAudio:
         if sound.loop:
             self._dev_loop = sound.name
         return sound.name
+
+    def play_blasts(self, radii: list[float], parts: int, boss: bool) -> None:
+        """Sound what blew up in a dev viewer as a level would (D-262).
+
+        The explosions (large when their radius says so, AUD-SFX-04), the parts broken and a boss
+        destroyed: one sound of each kind.
+        """
+        bindings = self._bindings
+        if bindings is None:
+            return
+        large = bindings.large_blast_radius
+        bigs = [radius for radius in radii if radius >= large]
+        if len(bigs) > 0:
+            self._cue("blast-large", None)
+        if len(bigs) < len(radii):
+            self._cue("blast-small", None)
+        if parts > 0:
+            self._cue("part-destroyed", None)
+        if boss:
+            self._cue("boss-destroyed", None)
 
     def stop_cue(self) -> None:
         """Stop the looping sound `play_cue` started, if any."""

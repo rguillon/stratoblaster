@@ -4,7 +4,15 @@
 import pytest
 
 from audio.audio_types import Instrument, ToneLayer
-from game.view.audio.instruments import DRUM_PITCH, INSTRUMENTS, _instrument, env, layer, saws
+from game.view.audio.instruments import (
+    DRUM_PITCH,
+    INSTRUMENTS,
+    _instrument,
+    env,
+    flatten_layers,
+    layer,
+    saws,
+)
 from game.view.audio.jingles import JINGLES
 from game.view.audio.music_styles import MENU_STYLE, WORLD_STYLES
 
@@ -70,3 +78,11 @@ def test_aud_engine_06_instrument_shares_its_echo_and_reverb() -> None:
     sent = _instrument(0.5, [layer("sine", 1, {})], {"echo": 0.4, "reverb": 0.2})
     assert (sent.echo, sent.reverb) == (0.4, 0.2)
     assert len(sent.layers) == 1
+
+
+def test_eng_155_flatten_layers_spreads_recipes_and_keeps_single_layers() -> None:
+    a = layer("sine", 1, {})
+    b = layer("sawtooth", 1, {})
+    c = layer("square", 1, {})
+    assert flatten_layers([a, [b, c]]) == [a, b, c]
+    assert flatten_layers([]) == []

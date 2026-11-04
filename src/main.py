@@ -110,6 +110,22 @@ def audio_can_start() -> bool:
     return True
 
 
+def fetch_sample(sample_name: str) -> object:
+    """Return a promise of the bytes of the sound `sample_name` (`sfx/<name>.ogg`, AUD-ENGINE-01).
+
+    `.mp3` where the browser cannot play Ogg Vorbis. A failed request rejects the promise.
+    """
+    __pragma__(
+        "js",
+        "{}",
+        "var ogg = new Audio().canPlayType('audio/ogg; codecs=vorbis') !== '';"
+        "return fetch('sfx/' + sample_name + (ogg ? '.ogg' : '.mp3')).then(function (r) {"
+        "if (!r.ok) { throw new Error('sfx ' + sample_name + ': ' + r.status); }"
+        "return r.arrayBuffer(); });",
+    )
+    return None
+
+
 def browser_audio() -> AudioOptions:
     """Web Audio, if the browser has it (AUD-ENGINE-04).
 
@@ -118,7 +134,7 @@ def browser_audio() -> AudioOptions:
     """
     if not audio_context_available():
         return AudioOptions(None, None)
-    return AudioOptions(new_audio_context, audio_can_start)
+    return AudioOptions(new_audio_context, audio_can_start, fetch_sample)
 
 
 def start_interval(tick: Any, seconds: float) -> Any:

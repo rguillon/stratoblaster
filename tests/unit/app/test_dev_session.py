@@ -9,6 +9,7 @@ from helpers.dom import FakeDocument
 
 from app import dev_session
 from app.dev_session import DevSession
+from app.dev_viewer import DevCues
 
 
 class FakePlayer:
@@ -38,6 +39,19 @@ class FakePlayer:
 
     def dispose(self) -> None:
         self.disposed = True
+
+
+class FakeAudio:
+    """The game's audio: records the blasts the viewer asked to sound (D-262)."""
+
+    def __init__(self) -> None:
+        self.blasts: list[tuple[list[float], int, bool]] = []
+
+    def play_blasts(self, radii: list[float], parts: int, boss: bool) -> None:
+        self.blasts.append((radii, parts, boss))
+
+
+AUDIO = FakeAudio()
 
 
 class FakeViewer:
@@ -76,6 +90,9 @@ class FakeViewer:
     def break_part(self) -> None:
         self.broken = getattr(self, "broken", 0) + 1
 
+    def take_cues(self) -> DevCues:
+        return DevCues([20.0], 1, False)
+
     def dispose(self) -> None:
         self.disposed = True
 
@@ -104,7 +121,7 @@ def session(root: Any = None) -> DevSession:
         "sounds": ["hit"],
         "music": ["menu"],
     }
-    return DevSession("engine", "game", catalog, True, root, "audio")
+    return DevSession("engine", "game", catalog, True, root, AUDIO)
 
 
 def test_dev_menu_21_the_viewer_is_shown_the_view_the_menu_picked() -> None:
@@ -162,6 +179,15 @@ def test_d199_each_frame_moves_the_viewer_and_writes_its_status_line() -> None:
     s.frame(0.1)
     assert FakeViewer.made[0].frames == [0.1]
     assert line.textContent == "1:00 / 4:00"
+
+
+def test_d262_each_frame_sounds_what_blew_up_in_the_viewer() -> None:
+    """The explosions, the parts broken and a boss destroyed are sounded as a level would."""
+    AUDIO.blasts = []
+    s = session()
+    s.sync(state("bosses"))
+    s.frame(0.1)
+    assert AUDIO.blasts == [([20.0], 1, False)]
 
 
 def test_d199_the_viewer_is_drawn_once_its_scene_is_built() -> None:
@@ -289,7 +315,7 @@ def test_dev_menu_19_an_audio_viewer_opens_follows_the_menu_and_closes() -> None
     s = session()
     s.sync(state("sounds", 0, toggle=True))
     player = FakePlayer.made[0]
-    assert (player.audio, player.viewer, player.items) == ("audio", "sounds", ["hit"])
+    assert (player.audio, player.viewer, player.items) == (AUDIO, "sounds", ["hit"])
     assert not s.active
     assert not s.render()
     s.sync(state("sounds", 0, toggle=False))

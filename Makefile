@@ -79,10 +79,11 @@ build: src/build_info.py
 	sed -e 's|\./ground_worker\.js|./ground_worker.js?v=$(GIT_COMMIT)|g' $(DIST)/js/game.js > $(DIST)/js/game.js.tmp && mv $(DIST)/js/game.js.tmp $(DIST)/js/game.js
 	@if grep -qE '__pragma__ *\(' $(DIST)/js/game.js; then \
 		echo 'ENG-52: compiler pragmas leaked into the bundle' >&2; exit 1; fi
-	# AUD-ENGINE-01: the game ships no audio file; they are synthesized (Web Audio).
-	@if find $(DIST) \( -iname '*.ogg' -o -iname '*.mp3' -o -iname '*.wav' -o -iname '*.m4a' -o -iname '*.flac' \) | grep -q .; then \
-		echo 'AUD-ENGINE-01: audio files in $(DIST)/:' >&2; \
-		find $(DIST) \( -iname '*.ogg' -o -iname '*.mp3' -o -iname '*.wav' -o -iname '*.m4a' -o -iname '*.flac' \) >&2; exit 1; fi
+	# AUD-ENGINE-01: the only audio files are the sound effect samples, in sfx/, each as .ogg and .mp3.
+	@if find $(DIST) \( -iname '*.ogg' -o -iname '*.mp3' -o -iname '*.wav' -o -iname '*.m4a' -o -iname '*.flac' \) -not -path '$(DIST)/sfx/*' | grep -q .; then \
+		echo 'AUD-ENGINE-01: audio files outside $(DIST)/sfx/:' >&2; \
+		find $(DIST) \( -iname '*.ogg' -o -iname '*.mp3' -o -iname '*.wav' -o -iname '*.m4a' -o -iname '*.flac' \) -not -path '$(DIST)/sfx/*' >&2; exit 1; fi
+	@for f in $(DIST)/sfx/*.ogg; do [ -f "$${f%.ogg}.mp3" ] || { echo "AUD-ENGINE-01: $$f has no .mp3 fallback" >&2; exit 1; }; done
 	@if grep -q '__GAME_TEST__' $(DIST)/js/game.js; then \
 		echo 'ENG-52: the e2e test API leaked into the production bundle' >&2; exit 1; fi
 

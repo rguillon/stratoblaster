@@ -26,10 +26,14 @@ from e2e.menu_helpers import (
     step,
     step_until,
 )
-from playwright.sync_api import ConsoleMessage, Page, Request, expect
+from playwright.sync_api import ConsoleMessage, Page, Request, Response, expect
 
 TOUCH_PHONE = {"has_touch": True, "viewport": {"width": 390, "height": 844}}
 AUDIO_FILE = re.compile(r"\.(ogg|mp3|wav|m4a|aac|flac|opus)$", re.IGNORECASE)
+# The sound effect samples (AUD-ENGINE-01): `sfx/<sound>.ogg`, or `.mp3` where Ogg is not played.
+SAMPLE_URL = re.compile(r"/sfx/[a-z0-9-]+\.(ogg|mp3)$")
+# How many sounds the game has (AUD-SFX-01).
+SAMPLE_COUNT = 29
 
 
 def audio_state(page: Page) -> str:
@@ -227,9 +231,13 @@ def test_ui_set_03_taps_set_the_sliders_every_target_is_at_least_44_px(page: Pag
 def test_aud_engine_03_no_audio_before_the_first_input_and_no_autoplay_warning(
     page: Page, base_url: str
 ) -> None:
-    """Also AUD-ENGINE-01: no audio file is fetched."""
+    """Also AUD-ENGINE-01: the only audio files fetched are the sound effect samples, all found.
+
+    And all decoded once the audio is unlocked.
+    """
     warnings: list[str] = []
     media: list[str] = []
+    failed: list[str] = []
 
     def on_console(message: ConsoleMessage) -> None:
         if message.type == "warning":
@@ -239,16 +247,25 @@ def test_aud_engine_03_no_audio_before_the_first_input_and_no_autoplay_warning(
         if request.resource_type == "media" or AUDIO_FILE.search(request.url):
             media.append(request.url)
 
+    def on_response(response: Response) -> None:
+        if AUDIO_FILE.search(response.url) and not response.ok:
+            failed.append(response.url)
+
     page.on("console", on_console)
     page.on("request", on_request)
+    page.on("response", on_response)
     open_game(page)
     assert game_state(page)["audio"] == "none"
     assert game_state(page)["music"] == "menu"
+    assert game_state(page)["samples"] == 0
     page.keyboard.press("ArrowDown")
     step(page)
     poll(lambda: audio_state(page), lambda a: a == "running")
+    poll(lambda: game_state(page)["samples"], lambda n: n >= SAMPLE_COUNT)
     assert [w for w in warnings if "audio" in w.lower()] == []
-    assert media == [], f"audio files fetched from {base_url}"
+    assert failed == []
+    assert len(media) >= SAMPLE_COUNT, f"samples fetched from {base_url}"
+    assert all(SAMPLE_URL.search(url) for url in media), media
 
 
 def test_aud_music_11_the_menu_theme_plays_in_the_menus_the_level_track_in_the_level(

@@ -104,6 +104,7 @@ def game_test_state(app: Any) -> Any:
     js_set(state, "music", audio.music)
     js_set(state, "sounds", list(audio.sounds))
     js_set(state, "audio", audio.context)
+    js_set(state, "samples", audio.samples)
     js_set(state, "highScore", menu.high_score)
     js_set(state, "loadingProgress", list(app.loading_progress))
     js_set(state, "game", play.state if play is not None else None)
