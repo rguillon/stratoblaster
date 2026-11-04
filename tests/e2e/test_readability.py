@@ -55,7 +55,9 @@ def full_frame(page: Page) -> dict[str, Any]:
 # shoots, was on screen with missiles; at 40, 50 and 80 s the shot probed read under the floor).
 # The waves rework (D-260: one big wave of one kind at a time) moved what is on screen at each
 # time, so the times were swept again: 1-2 at 120 s, 2-1 at 60 s, 3-1 at 70 s, 4-1 at 75 s.
-LEVELS = [("1-2", 120), ("2-1", 60), ("3-1", 70), ("4-1", 75)]
+# Swept again for the 540 x 720 window and its wave density (D-263): 2-1 at 65 s, 3-1 at 75 s and
+# 4-1 at 70 s.
+LEVELS = [("1-2", 120), ("2-1", 65), ("3-1", 75), ("4-1", 70)]
 
 
 @pytest.mark.parametrize(("level_id", "time"), LEVELS)
