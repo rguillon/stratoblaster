@@ -1,17 +1,22 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/sim/enemies/enemy_helpers.py`."""
 
+import math
+
 import pytest
 from helpers.enemy_steps import area
 from helpers.fakes import FakeContext
 
+from core.entities.enemy import Enemy
 from core.math.rng import create_rng
+from game.config.enemies import ENEMY_CONFIG
 from game.config.record import record
 from game.sim.enemies.enemy_helpers import (
     Cadence,
     bullet_shot,
     clamp_entry,
     coin,
+    leave_upward,
     missile_spec,
     on_playfield,
     pick_x,
@@ -114,3 +119,14 @@ def test_enm_18_a_missile_spec_is_built_from_the_config_s_missile_record() -> No
     )
     assert (spec.speed, spec.turn_rate_deg, spec.homing_seconds) == (150, 90, 3.5)
     assert (spec.radius, spec.health, spec.style) == (5, 10, "rocketeer")
+
+
+def test_leave_upward_turns_the_nose_to_the_way_it_flies() -> None:
+    enemy = Enemy(100, 200, ENEMY_CONFIG.scout.stats)
+    enemy.heading = math.pi
+    leave_upward(enemy, 50, 0.1)
+    assert enemy.y == pytest.approx(205)
+    assert 0 < abs(enemy.heading) < math.pi
+    for _ in range(30):
+        leave_upward(enemy, 50, 0.1)
+    assert enemy.heading == pytest.approx(0)

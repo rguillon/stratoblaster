@@ -4,7 +4,7 @@
 from core.entities.enemy import Enemy
 from core.entities.muzzle import RaisedPoint
 from game.config.enemies import ENEMY_CONFIG
-from game.sim.enemies.enemy_helpers import DOWN
+from game.sim.enemies.enemy_helpers import DOWN, leave_upward
 
 # isort: split
 # __pragma__ ("skip")
@@ -74,7 +74,7 @@ class Lancer(Enemy):
         elif self.state == "attack":
             self._attack(dt)
         else:
-            self.y += CFG.exitSpeed * dt
+            leave_upward(self, CFG.exitSpeed, dt)
 
     def _enter(self, ctx: EnemyContext, dt: float) -> None:
         left = self.y - self.stop_y

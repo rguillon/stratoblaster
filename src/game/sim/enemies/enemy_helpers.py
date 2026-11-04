@@ -5,6 +5,7 @@ import math
 
 from core.entities.enemy import Enemy, EnemyMissileSpec
 from core.systems.enemy_motion import Path
+from core.systems.projectile_motion import turn_towards
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -25,11 +26,23 @@ DEG = math.pi / 180
 # Straight down the screen, towards the player's side.
 DOWN = math.pi
 
+# Straight up the screen, away from the player's side.
+UP = 0.0
+
+# How fast an enemy turns its nose to the way it leaves, rad/s.
+LEAVE_TURN = 4.0
+
 # A coin toss: a random number below one half.
 HALF = 0.5
 
 # Entries keep enemies this far (a fraction of the edge) from the corners.
 ENTRY_INSET = 0.08
+
+
+def leave_upward(enemy: Enemy, speed: float, dt: float) -> None:
+    """Fly `enemy` up the screen at `speed`, its nose turning round to point the way it goes."""
+    enemy.heading = turn_towards(enemy.heading, UP, LEAVE_TURN * dt)
+    enemy.y += speed * dt
 
 
 def missile_spec(missile: Any) -> EnemyMissileSpec:

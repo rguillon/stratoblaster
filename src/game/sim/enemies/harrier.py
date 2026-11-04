@@ -4,7 +4,7 @@
 from core.entities.enemy import Enemy
 from core.systems.gun_muzzles import GunMuzzles
 from game.config.enemy_harrier import HARRIER_CONFIG
-from game.sim.enemies.enemy_helpers import DOWN, Cadence
+from game.sim.enemies.enemy_helpers import DOWN, Cadence, leave_upward
 
 # isort: split
 # __pragma__ ("skip")
@@ -47,7 +47,7 @@ class Harrier(Enemy):
         elif self.state == "hold":
             self._hold(ctx, dt)
         else:
-            self.y += CFG.exitSpeed * dt
+            leave_upward(self, CFG.exitSpeed, dt)
 
     def _enter(self, ctx: EnemyContext, dt: float) -> None:
         left = self.y - self.stop_y
