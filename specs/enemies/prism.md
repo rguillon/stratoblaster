@@ -60,18 +60,18 @@ root of each wing.
 
 The Prism comes in from above the top of the screen (X in `xRange` of the ship's reach, or the
 wave's entry) at `entrySpeed`, slows down over its last `brakeDistance` (never below `creep`), and
-stops at `stopFraction` of the playfield height (above two thirds), nose down. It holds still while
-it fires.
+stops at `stopFraction` of the playfield height (above two thirds), nose down. It holds still (it
+only turns, ENM-PRISM-07) while it aims and fires.
 
 **Acceptance criteria**
-- Given a Prism that reaches its stop height, then it stops and does not move until its second
+- Given a Prism that reaches its stop height, then it stops and does not move until its last
   burst is over.
 
 *Sources: tier 3 rework.*
 
 #### ENM-PRISM-06 — Two warning lines, then two lasers · MUST
 
-As it stops, a thin warning line shows from each emitter, along the beam's first direction, for
+After it has aimed (ENM-PRISM-07), a thin warning line shows from each emitter, straight ahead, for
 `warningSeconds`; then each emitter fires a laser `width` wide for `firingSeconds`.
 
 **Acceptance criteria**
@@ -80,24 +80,25 @@ As it stops, a thin warning line shows from each emitter, along the beam's first
 
 *Sources: tier 3 rework, ENM-19.*
 
-#### ENM-PRISM-07 — The beams cross, then open again · MUST
+#### ENM-PRISM-07 — It aims at the player, then fires straight ahead · MUST
 
-The beams turn together, symmetric about the screen's vertical. During the first burst each beam
-turns from `start` (50° outward, away from the other beam) to `end` (35° inward, past the other
-one): they point apart, run parallel, then cross, the crossing point rising from far down the screen
-up to the Prism, an X cutting the screen. After `gapSeconds` a second burst, with its own warning
-lines, turns them back from the crossed state to 50° outward: the crossing slides down the screen
-and off it. The beams keep turning while they fire (the lasers `sweep`, ENM-32).
+Both beams always point straight ahead of the Prism, parallel, one per wing (a beam never turns
+relative to the hull). Before each burst the Prism spends `aimSeconds` turning its nose to the
+player, easing in as it gets there. It stops turning when the warning lines show and does not turn
+again until the burst is over: the beams keep the direction it had then, whatever the player does.
+It fires `bursts` bursts, aiming again before each one.
 
 **Acceptance criteria**
-- Given the first burst, then the beams start pointing outward and end pointing inward, crossed.
-- Given the first burst ends, then after `gapSeconds` two new lasers start and turn the other way.
+- Given a Prism that has stopped, then it turns its nose to the player before the lasers start.
+- Given the lasers have started, then both beams point along the Prism's heading and the heading
+  does not change until the burst is over, even if the player moves.
+- Given the first burst ends, then it aims again and fires a second burst.
 
-*Sources: tier 3 rework, ENM-32.*
+*Sources: tier 3 rework, D-266.*
 
 #### ENM-PRISM-08 — It leaves upward · MUST
 
-Once its second burst is over, the Prism leaves upward at `exitSpeed`, its `charge` back at 0.
+Once its last burst is over, the Prism leaves upward at `exitSpeed`, its nose turning round to the way it flies, its `charge` back at 0.
 
 *Sources: tier 3 rework.*
 

@@ -918,3 +918,17 @@
 - **Consequences:** picked by name and duration, not listened to: the reviewer is to listen and swap
   any that is still wrong (a candidate: 0.17 s `explosion_dull.flac`, too short as it is).
 - **Status:** Proposed
+
+### D-266 — The Prism aims at the player and fires two parallel beams straight ahead
+- **Date:** 2026-11-04
+- **Requirements:** ENM-PRISM-05, ENM-PRISM-06, ENM-PRISM-07, ENM-PRISM-08.
+- **Context:** owner: "rework Prism, his two laser always shoot straight forward but the ship orient
+  itself pointing to the player before shooting, but stops rotating once it starts shooting".
+- **Decision:** the sweeping X of beams is gone. The Prism has an `aim` state (`aimSeconds`, eased
+  turn as the Hornet's) before each of its `bursts`; the nose freezes when the warning lines show
+  (the warning belongs to the shooting) and the beams follow the Prism's heading, not a sweep angle.
+  `bursts` is now a count and `gapSeconds` is replaced by `aimSeconds`; `Prism.sweep` is gone.
+- **Consequences:** the two beams are parallel, 42 px apart; the player is hit by dodging sideways
+  at the lock instant, not by outrunning a sweep. The tunables (`aimSeconds` 1 s) are for the
+  owner to tune after playing.
+- **Status:** Proposed

@@ -10,7 +10,7 @@ from helpers.fakes import FakeContext
 from game.config.enemy_look import ENEMY_LOOK
 from game.config.enemy_prism import PRISM_CONFIG
 from game.config.enemy_tiers import ENEMY_TIERS, tier_of
-from game.sim.enemies.enemy_helpers import DEG, DOWN
+from game.sim.enemies.enemy_helpers import DOWN
 from game.sim.enemies.prism import Prism, PrismBeam
 from game.sim.enemy_kinds import ENEMY_KINDS
 
@@ -39,11 +39,11 @@ def test_enm_prism_05_a_prism_comes_in_and_stops_in_the_upper_third() -> None:
     prism = Prism(200, 500, 470)
     run_until(prism, ctx, lambda: prism.state != "enter", limit=10.0)
     assert prism.y == pytest.approx(470)
-    assert prism.state == "attack"
+    assert prism.state == "aim"
     assert CFG.stopFraction * 600 > 600 * 2 / 3
 
 
-def test_enm_prism_06_it_shows_two_warning_lines_then_fires_two_sweeping_lasers() -> None:
+def test_enm_prism_06_it_shows_two_warning_lines_then_fires_two_straight_lasers() -> None:
     ctx = FakeContext()
     _stopped(ctx)
     assert len(ctx.lasers) == 2
@@ -52,7 +52,7 @@ def test_enm_prism_06_it_shows_two_warning_lines_then_fires_two_sweeping_lasers(
         assert spec.warning_seconds == WARNING
         assert spec.firing_seconds == FIRING
         assert spec.width == CFG.laser.width
-        assert spec.sweeps is True
+        assert spec.sweeps is False
 
 
 def test_enm_prism_04_its_emitters_charge_during_the_warning_and_it_holds_still() -> None:
@@ -63,65 +63,59 @@ def test_enm_prism_04_its_emitters_charge_during_the_warning_and_it_holds_still(
     assert prism.charge == pytest.approx(0.5, abs=0.02)
 
 
-def test_enm_prism_07_the_beams_start_outward_apart_and_close_into_a_cross() -> None:
+def test_enm_prism_07_it_turns_its_nose_to_the_player_before_shooting() -> None:
     ctx = FakeContext()
-    prism = _stopped(ctx)
+    ctx.player_x = 400
+    ctx.player_y = 0
+    prism = Prism(200, 300, 300)
+    run_until(prism, ctx, lambda: prism.state == "aim", limit=10.0)
+    assert prism.heading == pytest.approx(DOWN)
+    run_until(prism, ctx, lambda: prism.state == "attack", limit=10.0)
+    expected = math.atan2(400 - 200, 0 - 300)
+    assert prism.heading == pytest.approx(expected, abs=0.05)
+    assert ctx.lasers == [] or len(ctx.lasers) == 2
+
+
+def test_enm_prism_07_both_beams_point_straight_ahead_and_it_stops_turning_once_firing() -> None:
+    ctx = FakeContext()
+    ctx.player_x = 400
+    ctx.player_y = 0
+    prism = Prism(200, 300, 300)
+    run_until(prism, ctx, lambda: prism.state == "attack", limit=10.0)
+    locked = prism.heading
     left = ctx.lasers[0][0]
     right = ctx.lasers[1][0]
-    # The warning lines point outward: left of down for the left emitter, right for the right one.
-    assert math.sin(left.heading) < 0
-    assert math.sin(right.heading) > 0
-    run(prism, ctx, WARNING + FIRING / 2)
-    assert prism.sweep == pytest.approx(
-        (CFG.bursts[0].start + CFG.bursts[0].end) / 2 * DEG, abs=0.02
-    )
-    run(prism, ctx, FIRING / 2 - 0.05)
-    # At the end of the burst they point inward, past each other: the beams cross.
-    assert math.sin(left.heading) > 0
-    assert math.sin(right.heading) < 0
+    assert left.heading == pytest.approx(locked)
+    assert right.heading == pytest.approx(locked)
+    # The player moves to the other side: the nose does not follow while it shoots.
+    ctx.player_x = 0
+    run(prism, ctx, WARNING + FIRING - 0.1)
+    assert prism.heading == pytest.approx(locked)
+    assert left.heading == pytest.approx(locked)
 
 
-def test_enm_prism_07_the_beams_cross_below_the_prism_and_the_crossing_slides_up_to_it() -> None:
+def test_enm_prism_08_it_aims_again_for_a_second_burst_then_leaves_upward() -> None:
     ctx = FakeContext()
-    prism = _stopped(ctx)
-    left = ctx.lasers[0][0]
-    right = ctx.lasers[1][0]
-
-    def crossing() -> float:
-        # Where the two beams meet below the emitters (heading from +Y, DOWN = pi).
-        a = left.emitter
-        b = right.emitter
-        angle = abs(left.heading - DOWN)
-        return float((b.x - a.x) / 2 / math.tan(angle))
-
-    run(prism, ctx, WARNING + FIRING * 0.8)
-    first = crossing()
-    run(prism, ctx, FIRING * 0.15)
-    # Both beams point inward at both sample times; the crossing comes closer to the Prism.
-    assert math.sin(left.heading) > 0
-    assert crossing() < first
-
-
-def test_enm_prism_08_a_second_burst_opens_the_beams_again_then_it_leaves_upward() -> None:
-    ctx = FakeContext()
-    prism = _stopped(ctx)
-    run_until(prism, ctx, lambda: prism.state == "gap", limit=10.0)
+    ctx.player_x = 400
+    ctx.player_y = 0
+    prism = Prism(200, 300, 300)
+    run_until(prism, ctx, lambda: prism.state == "attack", limit=10.0)
+    ctx.player_x = 0
+    run_until(prism, ctx, lambda: prism.state == "aim", limit=10.0)
     assert prism.charge == 0
     assert prism.burst == 1
-    assert prism.sweep == pytest.approx(CFG.bursts[0].end * DEG)
     assert len(ctx.lasers) == 2
-    # The gap is still: no new laser until it is over.
-    run(prism, ctx, CFG.gapSeconds / 2)
-    assert len(ctx.lasers) == 2
-    run_until(prism, ctx, lambda: len(ctx.lasers) == 4, limit=5.0)
-    assert prism.state == "attack"
-    assert prism.sweep == pytest.approx(CFG.bursts[1].start * DEG)
+    run_until(prism, ctx, lambda: prism.state == "attack", limit=5.0)
+    assert len(ctx.lasers) == 4
+    assert math.sin(prism.heading) < 0.5
     run_until(prism, ctx, lambda: prism.state == "exit", limit=10.0)
     assert prism.charge == 0
-    assert prism.sweep == pytest.approx(CFG.bursts[1].end * DEG)
     y = prism.y
     run(prism, ctx, 0.5)
     assert prism.y == pytest.approx(y + CFG.exitSpeed * 0.5, rel=1e-2)
+    # Its nose turns round to the way it flies.
+    run(prism, ctx, 2.0)
+    assert prism.heading == pytest.approx(0)
 
 
 def test_enm_prism_07_the_beam_follows_the_prisms_wing_emitters_and_heading() -> None:
@@ -131,14 +125,9 @@ def test_enm_prism_07_the_beam_follows_the_prisms_wing_emitters_and_heading() ->
     assert left.emitter.x < prism.x < right.emitter.x
     assert left.gone is False
     assert left.health == prism.health
-    # A turn outward points the left beam left of down and the right one right of it.
-    prism.sweep = 30 * DEG
-    assert left.heading == pytest.approx(DOWN + 30 * DEG)
-    assert right.heading == pytest.approx(DOWN - 30 * DEG)
-    # Inward, they swap.
-    prism.sweep = -30 * DEG
-    assert left.heading == pytest.approx(DOWN - 30 * DEG)
-    assert right.heading == pytest.approx(DOWN + 30 * DEG)
+    prism.heading = 0.4
+    assert left.heading == pytest.approx(0.4)
+    assert right.heading == pytest.approx(0.4)
 
 
 def test_enm_prism_12_prism_has_150_health_and_scores_380_points() -> None:
