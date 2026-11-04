@@ -848,7 +848,7 @@
   (`sound_recipes.py`) and the synthesised designs were removed; `flatten_layers` moved to
   `instruments.py`. The music stays synthesised. `make build` now checks that audio files are only in
   `sfx/` and that every `.ogg` has its `.mp3`; the e2e test checks the files fetched, found, and
-  decoded (test API `samples`). The laser hum is the one loop: its tail is cross-faded into its head.
+  decoded (test API `samples`). The player gun first used a Kenney laser shot; at the human's request it became a minigun burst built from single shots of the CC0 AK-47 recording of the Free Firearm Sound Library (six shots 21 ms apart, AUD-SFX-02). The laser hum is the one loop: its tail is cross-faded into its head.
 - **Alternatives considered:** keeping the synthesised sounds as a fallback when a sample is missing
   (more code, hides a load failure); decoding before the gesture with an `OfflineAudioContext` (a
   second context, different sample rate); a typed manifest in `src/assets/` (the sound designs

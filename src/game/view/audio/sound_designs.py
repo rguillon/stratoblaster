@@ -56,7 +56,7 @@ def sound(
 
 PLAYER_WEAPONS = {
     # One burst per volley (AUD-SFX-02), 8 volleys a second: the sample is short.
-    "fire:bullet": sound("gun-shot", PRIORITY["weapon"], 0.14, 0.16, {"positional": True}),
+    "fire:bullet": sound("gun-shot", PRIORITY["weapon"], 0.14, 0.165, {"positional": True}),
     "fire:missile": sound("missile-launch", PRIORITY["weapon"], 0.3, 0.7, {"positional": True}),
     "beam-start:laser": sound("laser-start", PRIORITY["weapon"], 0.3, 0.68, {"positional": True}),
     # Loops while the laser fires (AUD-SFX-03).

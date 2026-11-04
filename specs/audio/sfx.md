@@ -17,7 +17,7 @@ sample's file name, `public/sfx/<name>.ogg`, [engine.md](engine.md) AUD-ENGINE-0
 
 | Group | Event (cue) | Sound |
 |-------|-------------|-------|
-| Player weapons | a volley of the guns (`fire:bullet`) | `gun-shot`, a short laser shot |
+| Player weapons | a volley of the guns (`fire:bullet`) | `gun-shot`, a minigun burst ("BRRRT") |
 | | the laser starts (`beam-start:laser`) | `laser-start`, a large laser charging |
 | | the laser fires (`beam:laser`) | `laser-hum`, a looping engine hum (its tail cross-faded into its head, so the loop has no seam) |
 | | a volley of missiles (`fire:missile`) | `missile-launch`, a thruster firing |
@@ -51,15 +51,18 @@ missile shot down blows up small. A slider step plays at the new sound volume.
 
 *Sources: GD-71, P12-R09, D-095, D-097, D-261.*
 
-### AUD-SFX-02 — The gun shot · MUST
+### AUD-SFX-02 — The minigun · MUST
 
-The guns sound like a quick rattle: each volley plays one short shot sample (`gun-shot`, at most
-0.25 s, so it is over before the next but one: the guns fire 8 volleys a second). Holding fire
-rattles on without a gap, and it stops within one volley of letting go. If the guns' rate changes,
-the sound follows it, as it plays once per volley.
+The guns sound like a minigun ("BRRRT"): each volley plays one burst sample (`gun-shot`) of
+`minigun_rounds` (6) short AK-47 shots `minigun_gap` (21 ms) apart, each cut from a different real
+recording (five in turn), every other round quieter. The burst is 0.165 s long (at most 0.25 s), as
+long as the volley is short: the guns fire 8 volleys a second, so holding fire rattles on without a
+gap, and it stops within one volley of letting go. If the guns' rate changes, the sound follows it,
+as it plays once per volley.
 
 **Acceptance criteria**
 - Given the gun sound, then it is at most 0.25 s long (unit test on the data).
+- Given the guns held, then the reviewer hears a continuous minigun "BRRRT" (manual check).
 
 *Sources: P12-R09, D-101, D-261.*
 
@@ -142,9 +145,10 @@ bright hiss.
 ### AUD-SFX-08 — Real recordings, free to use · MUST
 
 The sounds are real sample recordings, not chip sounds, from packs whose license is **CC0**
-(public domain), which is compatible with the project's MIT license (ENG-121). Today all of them
-come from two packs by Kenney (Sci-Fi Sounds, Interface Sounds). Each sample is made from one file
-of a pack: mono, 44.1 kHz, cut to its length where the file was longer (with a 20 ms fade), peak
+(public domain), which is compatible with the project's MIT license (ENG-121). Today they come
+from two packs by Kenney (Sci-Fi Sounds, Interface Sounds) and, for the player gun, from the Free
+Firearm Sound Library. Each sample is made from one file
+of a pack (`gun-shot` from several shots of one recording, AUD-SFX-02): mono, 44.1 kHz, cut to its length where the file was longer (with a 20 ms fade), peak
 normalised to −1 dBFS, encoded as Ogg Vorbis (quality 3) and MP3 (quality 5). The laser hum's tail
 is cross-faded into its head over 0.3 s so that it loops without a click. `CREDITS.md` and the
 README list the packs and which file each sound comes from.
@@ -165,6 +169,7 @@ README list the packs and which file each sound comes from.
 | priorities | 0 (enemy shots) … 7 (top) | `sound_designs.py` `PRIORITY` |
 | gains | `gun-shot` 0.14, `laser-hum` 0.1, `hit` 0.3, `explosion-small` 0.32, `explosion-large` 0.42, `bomb` 0.5, `boss-destroyed` 0.5, `player-hit` 0.36 | `SOUND_DESIGNS` (a gain is the sound's peak in the mix: the samples peak at −1 dBFS) |
 | sample files | `public/sfx/<name>.ogg` and `.mp3`, mono, 44.1 kHz, 29 sounds, about 630 KB in all | `CREDITS.md` |
+| minigun_rounds / minigun_gap | 6 / 21 ms (the burst is 0.165 s) | the `gun-shot` sample (`CREDITS.md`) |
 | gun shot length | at most 0.25 s | `sound_designs.py` |
 | explosion lengths | small 0.78 s, large 1.26 s, boss part 1.55 s, bomb 1.98 s, boss 2 s | `sound_designs.py` |
 | large_blast_radius | 18 px | `src/game/view/audio/game_audio.py` `LARGE_BLAST_RADIUS` |

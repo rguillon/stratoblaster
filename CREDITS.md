@@ -6,13 +6,15 @@ packs (AUD-ENGINE-01, AUD-SFX-08).
 
 ## Sound effects
 
-Both packs are by [Kenney](https://www.kenney.nl) and released under
+The packs below, two of them by [Kenney](https://www.kenney.nl), are released under
 [Creative Commons Zero (CC0 1.0)](https://creativecommons.org/publicdomain/zero/1.0/): public domain,
 free for any use without attribution, which is compatible with this project's MIT license. They are
 credited anyway.
 
 - **Sci-Fi Sounds** 1.0, Kenney, <https://opengameart.org/content/sci-fi-sounds> (also on
   <https://kenney.nl/assets/sci-fi-sounds>)
+- **The Free Firearm Sound Library**, Ben Jaszczak, et al., <https://opengameart.org/content/the-free-firearm-sound-library>
+  (CC0): only for the player gun
 - **Interface Sounds** 1.0, Kenney, <https://opengameart.org/content/interface-sounds> (also on
   <https://kenney.nl/assets/interface-sounds>)
 
@@ -22,7 +24,7 @@ quality 3, MP3 quality 5).
 
 | Sound | Author | Source pack | Source file | License | Changes |
 | ----- | ------ | ----------- | ----------- | ------- | ------- |
-| `gun-shot` | Kenney | Sci-Fi Sounds 1.0 | `laserSmall_000.ogg` | CC0 1.0 | trimmed to 0.16 s |
+| `gun-shot` | Ben Jaszczak, et al. | The Free Firearm Sound Library | `ak47.ogg` | CC0 | six single AK-47 shots (five different ones) cut out and laid 21 ms apart, every other one quieter, into one 0.165 s minigun burst |
 | `missile-launch` | Kenney | Sci-Fi Sounds 1.0 | `thrusterFire_000.ogg` | CC0 1.0 | trimmed to 0.7 s |
 | `laser-start` | Kenney | Sci-Fi Sounds 1.0 | `laserLarge_000.ogg` | CC0 1.0 | – |
 | `laser-hum` | Kenney | Sci-Fi Sounds 1.0 | `engineCircular_000.ogg` | CC0 1.0 | tail cross-faded into the head for a seamless loop (4.7 s) |
