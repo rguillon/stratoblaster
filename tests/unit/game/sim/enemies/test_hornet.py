@@ -1,6 +1,8 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/sim/enemies/hornet.py`."""
 
+import math
+
 import pytest
 from helpers.enemy_steps import run, run_until
 from helpers.fakes import FakeContext
@@ -74,3 +76,12 @@ def test_enm_hornet_04_a_hornet_from_a_side_never_leaves_its_height_while_enteri
         run(hornet, ctx, 0.05, 0.05)
         assert hornet.y == pytest.approx(350.0)
     assert hornet.x == pytest.approx(280.0)
+
+
+def test_enm_hornet_04_a_hornet_from_a_side_points_its_nose_along_its_flight() -> None:
+    hornet = Hornet(
+        -430, 400, HornetOptions(CFG.stats, 400.0, 200.0, 50.0, 1.0, 100.0, 400.0, 120.0)
+    )
+    hornet.update(FakeContext(), 0.1)
+    # Flying right (+X): the nose points right, not down.
+    assert hornet.heading == pytest.approx(math.pi / 2)
