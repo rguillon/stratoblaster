@@ -142,7 +142,6 @@ def build_rocketeer(scene: Any) -> Any:
         flesh = p.flesh
         hull = p.hull
         neon = p.neon
-        charge = p.charge
         reactor = p.reactor
         body = SegmentedBody(-15, 14, 3, 9, -2.2, 3.4)
         segmented_body(flesh, body, F.slate, None, LOBE_SECTION)
@@ -160,8 +159,9 @@ def build_rocketeer(scene: Any) -> Any:
                 0.9,
                 N.rocketeer,
             )
-            charge.cylinder(2.4, 3.5, 6, WHITE, Placement([s * pod, 0, 11], 0, QUARTER), 0)
-            p.muzzle([s * pod, 0, 14.5], "missile", "forward")
+            # The launcher: a hexagonal tube out of the sac, as wide as its port (WPN-07).
+            hull.cylinder(2.6, 5, 6, H.dark, Placement([s * pod, 0, 9.5], 0, QUARTER))
+            p.muzzle([s * pod, 0, 14.5], "missile", "forward", 2.6)
             reactor([s * 2.4, 0, -15], 1.6)
 
     return build_enemy_model("rocketeer", scene, N.rocketeer, draw)

@@ -45,18 +45,23 @@ def axis_of(at: Vec3, direction: str, back: float) -> Placement:
     return Placement([at[0], at[1], at[2] - back], 0, QUARTER)
 
 
-def hex_port(parts: Any, at: Vec3, direction: str = "up") -> None:
-    """WPN-07: add a hexagonal missile port at `at`: a hex barrel, a dark hole, a glowing rim."""
-    place = axis_of(at, direction, PORT_LENGTH)
-    length = PORT_LENGTH
-    parts.hull.lathe([[PORT_RADIUS, 0], [PORT_RADIUS, length]], 6, H.dark, place)
-    parts.hull.lathe([[PORT_HOLE, length + 0.04], [0, length + 0.04]], 6, HOLE, place)
+def hex_port(parts: Any, at: Vec3, direction: str = "up", radius: float = PORT_RADIUS) -> None:
+    """WPN-07: add a hexagonal missile port at `at`: a hex barrel, a dark hole, a glowing rim.
+
+    The barrel is `radius` wide: the launcher it ends is never thinner than it.
+    """
+    k = radius / PORT_RADIUS
+    length = PORT_LENGTH * k
+    hole = PORT_HOLE * k
+    place = axis_of(at, direction, length)
+    parts.hull.lathe([[radius, 0], [radius, length]], 6, H.dark, place)
+    parts.hull.lathe([[hole, length + 0.04], [0, length + 0.04]], 6, HOLE, place)
     # The glowing rim of the hole, and the nose of the missile waiting in it.
     parts.charge.lathe(
-        [[PORT_HOLE + 0.5, length + 0.06], [PORT_HOLE, length + 0.06]], 6, WHITE, place, False
+        [[hole + 0.5 * k, length + 0.06], [hole, length + 0.06]], 6, WHITE, place, False
     )
     parts.charge.lathe(
-        [[0.9, length - 0.5], [0.45, length + 0.1], [0, length + 0.3]], 6, WHITE, place
+        [[0.9 * k, length - 0.5], [0.45 * k, length + 0.1], [0, length + 0.3]], 6, WHITE, place
     )
 
 

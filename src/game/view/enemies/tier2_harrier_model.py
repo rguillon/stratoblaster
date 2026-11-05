@@ -46,6 +46,8 @@ HARRIER_WING_LIGHT = [[3.6, 3.2], [13, -9.4], [12.5, -10.2], [3, 2.4]]  # type: 
 RAIL_LENGTH = 12
 RAIL_BACK = -3
 RAIL_HEIGHT = -1.4
+# A rail is a hexagonal tube this wide, its port as wide.
+RAIL_RADIUS = 1.6
 
 
 def build_harrier(scene: Any) -> Any:
@@ -61,7 +63,6 @@ def build_harrier(scene: Any) -> Any:
         flesh = p.flesh
         hull = p.hull
         neon = p.neon
-        charge = p.charge
         body = SegmentedBody(-12, 15, 2, 2.6, -1.2, 2.3)
         segmented_body(flesh, body, F.slate, None, LOBE_SECTION)
         hull.cylinder(1, 4, 5, H.panel, Placement([0, 0.4, 12.6], 0, QUARTER), 0)
@@ -80,20 +81,17 @@ def build_harrier(scene: Any) -> Any:
                 3,
                 F.sinew,
             )
+            # The launcher: a hexagonal tube as wide as its port (WPN-07), its hole at the tip,
+            # glowing as the next missile is ready.
             hull.cylinder(
-                0.9,
+                RAIL_RADIUS,
                 RAIL_LENGTH,
-                5,
+                6,
                 H.dark,
                 Placement([s * rail_x, RAIL_HEIGHT, RAIL_BACK], 0, QUARTER),
-                0.55,
             )
-            # The charge light at the rail's tip brightens as the next missile is ready.
             tip = RAIL_BACK + RAIL_LENGTH
-            charge.cylinder(
-                0.6, 1.2, 5, WHITE, Placement([s * rail_x, RAIL_HEIGHT, tip - 0.4], 0, QUARTER), 0.4
-            )
-            p.muzzle([s * rail_x, RAIL_HEIGHT, tip + 0.6], "missile", "forward")
+            p.muzzle([s * rail_x, RAIL_HEIGHT, tip + 0.6], "missile", "forward", RAIL_RADIUS)
         reactor_sac(p, [0, 0.1, -12], 1.4, N.harrier, F.sinew, 3)
 
     return build_enemy_model("harrier", scene, N.harrier, draw)
