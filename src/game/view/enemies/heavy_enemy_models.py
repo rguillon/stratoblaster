@@ -92,38 +92,40 @@ def build_spinner(scene: Any) -> Any:
 
 
 # ENM-LANCER-02: the Lancer's right fin, a flesh blade at its tail.
-LANCER_FIN = [[2.5, -6], [10, -17], [9.5, -20], [2.5, -15]]  # type: list[list[float]]
+LANCER_FIN = [[4, -6], [12, -17], [11.5, -20], [4, -15]]  # type: list[list[float]]
+# ENM-LANCER-01: its body's half width, and the Z of its eyes; the gun starts just in front of them.
+LANCER_WIDTH = 5.2
+LANCER_EYES_Z = 6
+LANCER_GUN_BASE = 7
+LANCER_GUN_RADIUS = 3
 
 
 def build_lancer(scene: Any) -> Any:
-    """ENM-LANCER-01: a laser lance, a long body of swollen segments.
+    """ENM-LANCER-01: a laser lance, a wide body of swollen segments.
 
-    A metal lance is grafted on its head, ending in the glowing emitter; two flesh fins and three
-    reactors (ENM-LANCER-02); veins run along its back (yellow, ENM-LANCER-04).
+    The laser gun is its whole head, from just in front of its eyes to the glowing emitter; two
+    flesh fins and three reactors (ENM-LANCER-02); veins run along its back (yellow, ENM-LANCER-04).
     """
-    nose = ENEMY_CONFIG.lancer.emitterOffset
+    mouth = ENEMY_CONFIG.lancer.emitterOffset + 1.8
 
     def draw(p: Any) -> None:
         flesh = p.flesh
-        hull = p.hull
         neon = p.neon
-        charge = p.charge
         reactor = p.reactor
-        muzzle = p.muzzle
-        body = SegmentedBody(-21, 9, 4, 3.2, -1.5, 2.4)
+        body = SegmentedBody(-21, 10, 4, LANCER_WIDTH, -1.8, 2.6)
         segmented_body(flesh, body, F.graphite, None, LOBE_SECTION)
-        hull.cylinder(1.5, nose - 6, 5, H.panel, Placement([0, 0, 5], 0, QUARTER), 0.6)
-        eye_pair(p, [0, 1.6, 6], 1, 0.5, N.lancer)
+        eye_pair(p, [0, 1.8, LANCER_EYES_Z], 1.8, 0.7, N.lancer)
         reactor([0, 0, -21], 1.6)
         for s in SIDES:
-            neon.box([0.5, 0.4, 14], N.lancer, Placement([s * 1.6, 2.1, -6]))
+            neon.box([0.5, 0.4, 14], N.lancer, Placement([s * 2.6, 2.2, -6]))
             fin = [[s * pt[0], pt[1]] for pt in LANCER_FIN]
             flesh.bevel_slab(fin, [-0.5, 0, 0.5], [0.3, 0.5], F.membrane, None, F.sinew)
-            reactor([s * 6.5, 0, -17.8], 0.9)
-        emitter = [[0, -1.4], [1.8, 0], [0, 1.4]]
-        # Brightens through the warning (its `charge`), full while the laser fires (ENM-LANCER-03).
-        charge.lathe(emitter, 6, WHITE, Placement([0, 0, nose]))
-        muzzle([0, 0, nose + 1.8], "laser")
+            reactor([s * 8, 0, -17.8], 0.9)
+        # The gun is the whole tip of the ship: a wide barrel from the eyes to the mouth, its coils
+        # and lens brightening through the warning (its `charge`), full while it fires
+        # (ENM-LANCER-03).
+        gun = mouth - LANCER_GUN_BASE
+        p.muzzle([0, 0, mouth], "laser", "forward", LANCER_GUN_RADIUS, None, True, gun)
 
     return build_enemy_model("lancer", scene, N.lancer, draw)
 

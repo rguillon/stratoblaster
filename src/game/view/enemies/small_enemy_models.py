@@ -28,7 +28,6 @@ from game.view.enemies.enemy_shapes import (
     decal,
     flip_x,
 )
-from game.view.enemies.organic_parts import reactor_sac
 from render.geometry.organic import (
     SegmentedBody,
     curve,
@@ -52,6 +51,24 @@ N = ENEMY_LOOK.neon
 QUARTER = math.pi / 2
 
 
+# The Hornet's abdomen, hidden under its wings: a plain low section (`[x, y]`, counter-clockwise
+# seen from the nose) and its stations (`[z, half width, bottom, top]`), tail to where the head's
+# lobe covers it. Its head is the one detailed lobe, in front of the wings.
+HORNET_ABDOMEN_SECTION = [[0, 0], [1, 0.4], [0, 1], [-1, 0.4]]  # type: list[list[float]]
+HORNET_ABDOMEN = [  # type: list[list[float]]
+    [-9, 0, 0.55, 0.55],
+    [-4, 2.6, -1.3, 2.4],
+    [4, 1.8, -0.8, 2],
+]
+
+
+def hornet_body(flesh: Any, place: Placement | None = None) -> None:
+    """Add a Hornet's body: a plain abdomen under its wings and a swollen head lobe."""
+    flesh.loft(HORNET_ABDOMEN_SECTION, HORNET_ABDOMEN, F.slate, place)
+    head = SegmentedBody(3, 10.5, 1, 2.6, -1.3, 2.4)
+    segmented_body(flesh, head, F.slate, place, LOBE_SECTION)
+
+
 def build_hornet(scene: Any) -> Any:
     """ENM-HORNET-01: a stinger diver, a wasp of three swollen segments.
 
@@ -63,8 +80,7 @@ def build_hornet(scene: Any) -> Any:
         flesh = p.flesh
         hull = p.hull
         neon = p.neon
-        body = SegmentedBody(-9, 10.5, 3, 2.6, -1.3, 2.4)
-        segmented_body(flesh, body, F.slate, None, LOBE_SECTION)
+        hornet_body(flesh)
         hull.cylinder(0.9, 3.2, 4, H.panel, Placement([0, 0.4, 9.3], 0, QUARTER), 0)
         vein_tube(p.vein, curve([0, 2.3, -7], [0, 2.4, 6], [0, 0.6, 0], 3), 0.6, N.hornet)
         wing_pair(
@@ -77,7 +93,8 @@ def build_hornet(scene: Any) -> Any:
             },
             N.hornet,
         )
-        reactor_sac(p, [0, 0.1, -9], 1.2, N.hornet, F.sinew, 3)
+        # Its reactor alone: the sac it sat in was hidden under the wings.
+        p.reactor([0, 0.1, -9], 1.2)
         eye = [[0, -0.5], [0.9, 0], [0, 0.6]]
         neon.lathe(eye, 5, N.hornet, Placement([0, 1.4, 7.4]))
 

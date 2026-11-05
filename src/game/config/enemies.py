@@ -171,15 +171,23 @@ ENEMY_CONFIG = record({
     "lancer": {
         "stats": {"model": "lancer", "radius": radius(1.3) * 0.55, "health": 80, "points": 250},
         "size": 1.3,
+        # It comes in at `entrySpeed`, then flies at `cruiseSpeed` between its stops, speeding
+        # up at `acceleration` and braking at `brake` (px/s, px/s²).
         "entrySpeed": 170,
-        # It slows down over this distance before its stop point.
-        "brakeDistance": 60,
+        "cruiseSpeed": 140,
+        "acceleration": 120,
+        "brake": 150,
+        # Its first stop, as a fraction of the height; each next stop is `stepFraction` of the
+        # height lower, none under `lastStopFraction` (it leaves through the bottom instead).
         "stopFraction": 0.8,
+        "stepFraction": 0.25,
+        "lastStopFraction": 0.25,
         "laser": {"warningSeconds": 1, "firingSeconds": 1.5, "width": 10, "style": "lancer"},
         # Distance from the centre to the emitter at the nose.
         "emitterOffset": LANCER_NOSE,
         # The front of the emitter, where the laser leaves from.
         "muzzle": [0, -(LANCER_NOSE + 1.8), 0],
+        # Its top speed down and out of the bottom of the screen after its last shot.
         "exitSpeed": 200,
         "xRange": [0.15, 0.85],
     },
@@ -240,15 +248,19 @@ ENEMY_CONFIG = record({
         },
         "size": 1.8,
         "speed": 30,
-        # A Hornet from each side port every `launchInterval`, the first after `firstLaunch`.
+        # Each bay launches its Hornet every `launchInterval`, the bays one by one in turn (one
+        # Hornet every `launchInterval` / 4); the first after `firstLaunch`.
         "launchInterval": 3,
         "firstLaunch": 1.2,
-        # The launch ports on its right side (mirrored on the left), from its centre: out to
-        # the side and up the screen, in px. The model puts its ports there (ENM-CARRIER-02).
+        # The landing bays on its right side (mirrored on the left), from its centre: out to the
+        # side and up the screen, in px; a docked Hornet's centre, nose out. The model digs its
+        # bays there (ENM-CARRIER-02).
         "ports": [
-            [21, 9],
-            [21, -1],
+            [13, 12],
+            [13, -4],
         ],
+        # How far out to the side a Hornet flies from its bay before its pause, in px.
+        "launchExit": 30,
         # It stops launching below this height, too close to the player (ENM-CARRIER-09).
         "lastLaunchFraction": 0.3,
         "xRange": [0.3, 0.7],

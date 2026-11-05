@@ -138,14 +138,26 @@ def _rocket(parts: Any, at: Vec3, direction: str, missile: float, depth: float, 
         parts.slide(base, [0, -1], depth + nose, index, draw, False, None, "rocket", 0)
 
 
-def laser_lens(parts: Any, at: Vec3, direction: str = "forward") -> None:
-    """WPN-06: add a laser's emitter at `at`: a hex barrel, two coils and a white-hot lens."""
-    place = axis_of(at, direction, LENS_LENGTH)
-    length = LENS_LENGTH
-    parts.hull.lathe([[LENS_RADIUS, 0], [LENS_RADIUS, length]], 6, H.dark, place)
+def laser_lens(
+    parts: Any,
+    at: Vec3,
+    direction: str = "forward",
+    length: float = LENS_LENGTH,
+    radius: float = LENS_RADIUS,
+) -> None:
+    """WPN-06: add a laser's emitter at `at`: a hex barrel, two coils and a white-hot lens.
+
+    The barrel is `length` long behind `at` and `radius` wide; its coils and lens scale with its
+    radius and stay at its mouth, so a long barrel is a gun the length of a whole nose.
+    """
+    place = axis_of(at, direction, length)
+    k = radius / LENS_RADIUS
+    parts.hull.lathe([[radius, 0], [radius, length]], 6, H.dark, place)
     for y in [0.7, 1.9]:
-        parts.charge.ring(LENS_RADIUS * 1.2, 0.5, 6, WHITE, axis_of_shift(place, y))
-    parts.charge.lathe(shift_profile(LENS_PROFILE, length), 6, WHITE, place)
+        coil = length - (LENS_LENGTH - y) * k
+        parts.charge.ring(radius * 1.2, 0.5 * k, 6, WHITE, axis_of_shift(place, coil))
+    lens = [[p[0] * k, p[1] * k] for p in LENS_PROFILE]
+    parts.charge.lathe(shift_profile(lens, length), 6, WHITE, place)
 
 
 def axis_of_shift(place: Placement, along: float) -> Placement:

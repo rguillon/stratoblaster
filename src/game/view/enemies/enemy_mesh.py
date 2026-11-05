@@ -30,7 +30,13 @@ from game.view.enemies.living_motion import (
     is_living_motion,
     new_breath,
 )
-from game.view.enemies.weapon_ports import DEFAULT_MISSILE, hex_port, laser_lens
+from game.view.enemies.weapon_ports import (
+    DEFAULT_MISSILE,
+    LENS_LENGTH,
+    LENS_RADIUS,
+    hex_port,
+    laser_lens,
+)
 from render.babylon import (
     color3,
     new_transform_node,
@@ -374,7 +380,15 @@ def collect_parts(build: Any) -> dict[str, Any]:
             )
             ports[0] += 1
         elif name == "laser":
-            laser_lens(parts, at, direction if direction != None else "forward")
+            # A laser's `size` is its barrel's radius and `well` its length (the default lens's
+            # when left out).
+            laser_lens(
+                parts,
+                at,
+                direction if direction != None else "forward",
+                well if well != None else LENS_LENGTH,
+                size if size != None else LENS_RADIUS,
+            )
 
     def flap(pivot: Vec3, side: float, span: float, draw: Any) -> None:
         wing = Wing(pivot, side, span, wing_parts_new())
