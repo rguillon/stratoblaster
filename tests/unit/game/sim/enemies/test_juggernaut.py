@@ -101,3 +101,14 @@ def test_enm_juggernaut_11_the_turret_sweeps_the_spread_one_parallel_barrel_afte
     headings = [s[3] for s in shots]
     for a, b in itertools.pairwise(headings):
         assert abs(b - a) == pytest.approx(math.radians(CFG.spreadSpacing))
+
+
+def test_enm_juggernaut_11_without_its_turret_it_sweeps_no_spread() -> None:
+    """WPN-02: the spread's barrels turn with the turret; with none, they never fire."""
+    ctx = FakeContext()
+    jug = Juggernaut(200, 300, 300)
+    jug.turret = None
+    run(jug, ctx, 3.0)
+    assert ctx.bullets == []
+    # Its shoulder launchers still launch (ENM-JUGGERNAUT-10).
+    assert len(ctx.missiles) >= 2

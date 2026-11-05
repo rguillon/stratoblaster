@@ -106,3 +106,18 @@ def test_enm_hydra_10_with_every_head_gone_it_no_longer_fires() -> None:
     assert ctx.bullets == []
     assert len(ctx.broken) == len(CFG.heads)
     assert hydra.health > 0
+
+
+def test_enm_hydra_10_a_head_shot_off_mid_burst_fires_the_rest_of_it_no_more() -> None:
+    """WPN-01: the burst's bullets leave from the head's gun; with the head gone, none leaves."""
+    ctx = FakeContext()
+    hydra = Hydra(200, 450, 450)
+    while not ctx.bullets:
+        run(hydra, ctx, 1 / 60)
+    assert len(ctx.bullets) == 1
+    fired = next(i for i, b in enumerate(hydra.barrels) if b.fired_at is not None)
+    hydra.part(CFG.heads[fired].id).health = 0
+    # The rest of the burst is due within this time, the next head's burst after it.
+    run(hydra, ctx, CFG.burstGap * CFG.burstCount)
+    assert len(ctx.bullets) == 1
+    assert len(ctx.broken) == 1

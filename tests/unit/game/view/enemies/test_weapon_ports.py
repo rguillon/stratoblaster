@@ -1,6 +1,8 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/enemies/weapon_ports.py`: the missile ports and the laser lenses."""
 
+import math
+from types import SimpleNamespace
 from typing import Any
 
 import pytest
@@ -11,7 +13,16 @@ from game.config.enemy_look import ENEMY_LOOK
 from game.config.weapons import WEAPONS
 from game.view.enemies.enemy_mesh import rocket_sunk
 from game.view.enemies.enemy_models import ENEMY_MODELS
-from game.view.enemies.weapon_ports import HEX_INNER, port_bore, port_radius, rocket_radius
+from game.view.enemies.weapon_ports import (
+    HEX_INNER,
+    LENS_LENGTH,
+    LENS_RADIUS,
+    laser_lens,
+    port_bore,
+    port_radius,
+    rocket_radius,
+)
+from render.geometry.solids import SolidBuilder
 
 
 def _box(builder: Any) -> tuple[list[float], list[float]]:
@@ -146,3 +157,34 @@ def test_wpn_07_nothing_closes_a_launcher_s_well(model: str) -> None:
                 crosses, z = _crosses_axis(tri, at[0], at[1])
                 # Nothing across the bore from the floor of the shallowest well up to the mouth.
                 assert not (crosses and at[2] - 2 < z < at[2] + 0.01), (model, at, z)
+
+
+def _lens(**kw: Any) -> Any:
+    parts = SimpleNamespace(hull=SolidBuilder(), charge=SolidBuilder())
+    laser_lens(parts, [1, 2, 10], **kw)
+    return parts
+
+
+def test_wpn_06_a_laser_lens_turned_by_its_yaw_points_that_way() -> None:
+    """A forward emitter `yaw` radians from the nose: a quarter turn points it along +X."""
+    parts = _lens(yaw=math.pi / 2)
+    low, high = _box(parts.charge)
+    # Its lens is past the mouth along +X, its barrel behind it, and it stays across Z about it.
+    assert high[0] > 1
+    assert _box(parts.hull)[0][0] < 1 - LENS_LENGTH + 1e-6
+    assert low[2] > 10 - LENS_RADIUS * 1.2 - 1e-6
+    assert high[2] < 10 + LENS_RADIUS * 1.2 + 1e-6
+    # Straight ahead, it points along +Z.
+    ahead = _box(_lens().charge)
+    assert ahead[1][2] > 10
+    assert ahead[1][0] < 1 + LENS_RADIUS * 1.2 + 1e-6
+
+
+def test_wpn_06_a_laser_lens_with_no_length_has_no_barrel_of_its_own() -> None:
+    """Length 0: the lens and coils sit on the mouth of a barrel the model draws itself."""
+    bare = _lens(length=0)
+    assert bare.hull.geometry.positions == []
+    # Its lens and coils are where the default lens's are.
+    default = _lens()
+    assert len(default.hull.geometry.positions) > 0
+    assert bare.charge.geometry.positions == pytest.approx(default.charge.geometry.positions)

@@ -6,7 +6,15 @@ from typing import Any
 
 import pytest
 
-from game.view.enemies.basic_parts import eye_pair, gun_barrel, mirror, sinew, wing_pair
+from game.view.enemies.basic_parts import (
+    config_barrels,
+    eye_pair,
+    gun_barrel,
+    mirror,
+    sinew,
+    wing_pair,
+)
+from game.view.enemies.enemy_mesh import collect_parts
 from game.view.enemies.enemy_shapes import SIDES
 from render.geometry.solids import SolidBuilder
 
@@ -118,3 +126,60 @@ def test_wing_draw_without_lights_runs_a_vein_along_its_leading_strut() -> None:
     draw(wing)
     assert len(wing.vein.geometry.positions) > 0
     assert len(wing.neon.geometry.positions) == 0
+
+
+# A config muzzle (`[x, y, height, angle]`): right of an enemy facing down, ahead, up, angled.
+CONFIG_MUZZLE = [2.0, -6.0, 1.0, 30.0]
+
+
+def _barrels(**kw: Any) -> dict[str, Any]:
+    return collect_parts(lambda p: config_barrels(p, [CONFIG_MUZZLE], 4, 0.5, **kw))
+
+
+def test_wpn_03_config_barrels_marks_each_muzzle_in_model_space() -> None:
+    got = _barrels()
+    x, y, height, _angle = CONFIG_MUZZLE
+    assert got["muzzles"] == [[[-x, height, -y], "gun"]]
+    assert [piece.index for piece in got["slides"]] == [0]
+
+
+def test_wpn_03_a_lit_barrel_is_trimmed_with_a_charge_light_in_a_housing() -> None:
+    got = _barrels()
+    body = got["parts"]
+    barrel = got["slides"][0].parts
+    # The housing on the body, trimmed metal.
+    assert len(body.hull.geometry.positions) > 0
+    assert body.bare.geometry.positions == []
+    assert len(barrel.hull.geometry.positions) > 0
+    assert len(barrel.neon.geometry.positions) > 0
+
+
+def test_wpn_03_an_unlit_barrel_has_no_charge_light_and_no_trim() -> None:
+    got = _barrels(lit=False)
+    body = got["parts"]
+    barrel = got["slides"][0].parts
+    # Its housing and barrel are bare metal; nothing glows on it.
+    assert body.hull.geometry.positions == []
+    assert len(body.bare.geometry.positions) > 0
+    assert barrel.hull.geometry.positions == []
+    assert barrel.neon.geometry.positions == []
+    assert len(barrel.bare.geometry.positions) > 0
+
+
+def test_wpn_03_a_barrel_without_housing_draws_only_its_sliding_barrel() -> None:
+    for lit in (True, False):
+        got = _barrels(housing=False, lit=lit)
+        body = got["parts"]
+        assert body.hull.geometry.positions == []
+        assert body.bare.geometry.positions == []
+        barrel = got["slides"][0].parts
+        assert len((barrel.hull if lit else barrel.bare).geometry.positions) > 0
+        assert got["muzzles"] == _barrels(lit=lit)["muzzles"]
+
+
+def test_wpn_03_a_swivelling_barrel_has_no_housing_and_turns_about_its_centre() -> None:
+    got = _barrels(swivel=True, centre=[0, 0, 0])
+    assert got["parts"].hull.geometry.positions == []
+    piece = got["slides"][0]
+    assert piece.swivel
+    assert piece.centre == [0, 0, 0]

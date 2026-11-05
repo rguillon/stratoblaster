@@ -28,15 +28,20 @@ def _first_volley(enemy: Any, ctx: FakeContext, limit: float = 30) -> None:
 
 
 def _tips(enemy: Any) -> list[tuple[float, float, float]]:
-    """Each barrel's tip and heading now, with the enemy's turret if its guns are on it."""
+    """Each barrel's tip and heading now, with the enemy's turret if its guns are on it.
+
+    A barrel on a turret points the way the turret has turned (a Scout's swivel gun), plus its own
+    angle when it is fixed on it (the pods on a Spinner's turning ring).
+    """
     on_turret = enemy.turret is not None
     tips = []
     for barrel in enemy.barrels:
         if barrel.angle is None and not on_turret:
             continue
         tip = enemy.place(barrel.muzzle, on_turret)
-        own = enemy.heading + (enemy.turret.aim if on_turret else barrel.angle)
-        tips.append((tip.x, tip.y, own))
+        turn = enemy.turret.aim if on_turret else 0
+        fixed = barrel.angle if barrel.angle is not None else 0
+        tips.append((tip.x, tip.y, enemy.heading + turn + fixed))
     return tips
 
 

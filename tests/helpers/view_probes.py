@@ -139,8 +139,10 @@ class _Parts:
         index: int | None = None,
         rim: bool = True,
         well: float | None = None,
+        yaw: float | None = None,
     ) -> None:
-        self._parts.muzzle(at, "gun" if kind is None else kind, direction, size, index, rim, well)
+        kind = "gun" if kind is None else kind
+        self._parts.muzzle(at, kind, direction, size, index, rim, well, yaw)
 
 
 def drawn(draw: Callable[[Any], None]) -> dict[str, Any]:
