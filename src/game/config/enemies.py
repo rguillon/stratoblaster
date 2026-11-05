@@ -49,8 +49,8 @@ def bullet(style: str, speed: float) -> Any:
 # barrel points at from the nose, in degrees (positive to the right), as `Barrel` reads it.
 STRAFER_FAN = 15
 STRAFER_FLANK = 4.6
-STRAFER_BARREL = 4.4
-STRAFER_ROWS = [3.0, 1.5, 0.0]
+STRAFER_BARREL = 6.2
+STRAFER_ROWS = [3.8, 1.6, -0.6]
 
 
 def strafer_barrels() -> list[list[float]]:
@@ -131,8 +131,10 @@ ENEMY_CONFIG = record({
         },
         "size": 1.2,
         "speed": 150,
-        # Height of its pass, in the top third.
+        # Height of its side pass, in the top third.
         "heightFraction": 0.8,
+        # Range of X of its vertical pass from the top, as fractions of the width.
+        "xRange": [0.12, 0.88],
         "fireInterval": 1,
         "fanCount": 3,
         "fanSpacing": 15,

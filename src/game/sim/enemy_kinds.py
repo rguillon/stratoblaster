@@ -95,6 +95,11 @@ def _spawn_scout(area: EnemySpawnArea) -> list[Enemy]:
 
 
 def _spawn_strafer(area: EnemySpawnArea) -> list[Enemy]:
+    entry = area.entry
+    # From the top, a vertical pass firing level (its wave's entry says so, or half the time).
+    top = entry.side == "top" if entry is not None else _coin(area)
+    if top:
+        return [Strafer(_entry_x(area, C.strafer.xRange), _top(area), "top")]
     left, y = side_pass(area, C.strafer.heightFraction)
     x = -MARGIN if left else area.width + MARGIN
     return [Strafer(x, y, "left" if left else "right")]

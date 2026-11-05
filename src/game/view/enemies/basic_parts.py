@@ -166,7 +166,7 @@ def wing_draw(
 
 
 def wing_pair(parts: Any, shape: Any, glow: Rgb) -> None:
-    """GFX-ART-13, ENM-42: a pair of membrane wings, each fluttering from its root.
+    """GFX-ART-13, ENM-42: a pair of membrane wings, each fluttering from its root (unless fixed).
 
     A `membrane` skin spread from the root to its tips, a lean `bone` strut out to each tip, and
     either a steady neon light on it or a vein along its leading strut.
@@ -176,11 +176,17 @@ def wing_pair(parts: Any, shape: Any, glow: Rgb) -> None:
     y = shape["y"]
     strut = shape["strut"]
     lights = opt(shape, "lights", None)
+    # A `fixed` pair is drawn on the body: it does not flutter.
+    fixed = opt(shape, "fixed", False)
     for s in SIDES:
         r = [s * root[0], root[1]]
         ts = mirror(tips, s)
+        draw = wing_draw(r, ts, y, strut, lights, glow, s)
+        if fixed:
+            draw(parts)
+            continue
         span = max([abs(p[0] - root[0]) for p in tips])
-        parts.flap([r[0], y, r[1]], s, span, wing_draw(r, ts, y, strut, lights, glow, s))
+        parts.flap([r[0], y, r[1]], s, span, draw)
 
 
 def sinew(parts: Any, start: Vec3, end: Vec3, bow: Vec3, radius: float) -> None:

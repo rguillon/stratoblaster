@@ -141,16 +141,21 @@ class Slide:
         centre: Vec3 | None = None,
         kind: str = "barrel",
         down: float = 0,
+        turret: int | None = None,
     ) -> None:
         # `swivel`: it also turns with the enemy's turret (`Enemy.turret`), about its own pivot, or
         # about `centre` (the turret's, in model space) when given.
         self.swivel = swivel
         self.centre = centre
         # "barrel": it recoils with `Enemy.barrels[index]`; "rocket": a rocket in a port, sunk
-        # out of sight down its well while launcher `Enemy.launchers[index]` reloads (WPN-07).
+        # out of sight down its well while launcher `Enemy.launchers[index]` reloads (WPN-07);
+        # "track": as far along as the enemy's own `tracks[index]` says (doors, lifts).
         # `down` is how far it moves along Y per unit of `distance` (an upward port's sinks).
         self.kind = kind
         self.down = down
+        # A swivelling piece of an enemy with several turrets (`Enemy.turrets`) turns with this
+        # one; with the enemy's only `turret` when None.
+        self.turret = turret
         self.pivot = pivot
         self.back = back
         self.distance = distance
@@ -283,14 +288,45 @@ def sync_slides(slides: list[Slide], nodes: list[Any], enemy: Any) -> None:
     """Move the sliding pieces: the barrels and the rockets.
 
     Each barrel back by its recoil (WPN-03), each rocket down its well as its launcher reloads
-    (WPN-07).
+    (WPN-07), each track as far along as the enemy says (`Enemy.tracks`).
     """
     for i, piece in enumerate(slides):
         if piece.kind == "rocket":
             show_rocket(nodes[i], piece, enemy)
+        elif piece.kind == "track":
+            show_track(nodes[i], piece, enemy)
         elif piece.index < len(enemy.barrels):
-            aim = enemy.turret.aim if piece.swivel and enemy.turret is not None else 0
-            slide_back(nodes[i], piece, enemy.barrels[piece.index].recoil_at(enemy.age), aim)
+            slide_back(
+                nodes[i],
+                piece,
+                enemy.barrels[piece.index].recoil_at(enemy.age),
+                swivel_aim(piece, enemy),
+            )
+
+
+def swivel_aim(piece: Slide, enemy: Any) -> float:
+    """Return how far a piece has turned with its turret.
+
+    Its own of the enemy's `turrets`, or the enemy's `turret`; 0 for a piece that does not swivel.
+    """
+    if not piece.swivel:
+        return 0
+    if piece.turret is not None:
+        turrets = enemy.turrets if hasattr(enemy, "turrets") else []
+        return turrets[piece.turret].aim if piece.turret < len(turrets) else 0
+    return enemy.turret.aim if enemy.turret is not None else 0
+
+
+def show_track(node: Any, piece: Slide, enemy: Any) -> None:
+    """Move a piece the enemy drives itself along its slide: `enemy.tracks[index]` of the way.
+
+    0 at rest, 1 its whole `distance` along; hidden while it is below 0 (a part gone for now). A
+    track the enemy does not report stays at rest.
+    """
+    tracks = enemy.tracks if hasattr(enemy, "tracks") else []
+    value: float = tracks[piece.index] if piece.index < len(tracks) else 0
+    node.setEnabled(value >= 0)
+    slide_back(node, piece, max(0, value))
 
 
 def rocket_sunk(enemy: Any, index: int) -> float:
@@ -339,9 +375,10 @@ def collect_parts(build: Any) -> dict[str, Any]:
         centre: Any = None,
         kind: Any = "barrel",
         down: Any = 0,
+        turret: Any = None,
     ) -> None:
         piece = Slide(
-            pivot, back, distance, index, wing_parts_new(), bool(swivel), centre, kind, down
+            pivot, back, distance, index, wing_parts_new(), bool(swivel), centre, kind, down, turret
         )
         draw(piece.parts)
         slides.append(piece)

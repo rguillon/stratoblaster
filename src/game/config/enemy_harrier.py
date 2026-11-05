@@ -6,11 +6,11 @@ fractions of the playfield height from its bottom; `muzzles` are offsets from th
 down the screen (X right, Y up, and a height).
 """
 
-from game.config.enemies import ENEMY_UNIT, radius
+from game.config.enemies import radius
 from game.config.record import record
 
-# Distance of each missile rail from its centre.
-HARRIER_RAIL = 0.2 * ENEMY_UNIT
+# Distance of each launcher from its centre, out on its shoulder pod.
+HARRIER_RAIL = 8
 
 HARRIER_CONFIG = record({
     # ENM-HARRIER-09: health, points and hit circle.
@@ -29,11 +29,11 @@ HARRIER_CONFIG = record({
     "firstShot": 0.8,
     "missiles": 4,
     "exitSpeed": 280,
-    # The tips of its two missile rails under the wings: the missiles leave from each in turn
+    # The mouths of its two launchers on its shoulder pods: the missiles leave from each in turn
     # (ENM-HARRIER-02).
     "muzzles": [
-        [-HARRIER_RAIL, -9.6, -1.4],
-        [HARRIER_RAIL, -9.6, -1.4],
+        [-HARRIER_RAIL, -12, 0],
+        [HARRIER_RAIL, -12, 0],
     ],
     # A fast, tight homing missile (ENM-HARRIER-07), faster and tighter than the Rocketeer's.
     "missile": {

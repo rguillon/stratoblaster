@@ -33,9 +33,10 @@ VETERAN_CONFIG = record({
     "wasp": {
         "stats": {"model": "wasp", "radius": radius(0.6), "health": 30, "points": 150},
         "size": 0.6,
-        "groupSize": 3,
+        # A swarm of drones.
+        "groupSize": 5,
         # Distance between two Wasps of a group, side by side.
-        "groupSpacing": 42,
+        "groupSpacing": 34,
         "entrySpeed": 240,
         # Height where they stop before the dive.
         "stopFraction": 0.72,
@@ -48,7 +49,7 @@ VETERAN_CONFIG = record({
         "fanCount": 3,
         "fanSpacing": 12,
         "bullet": bullet("orange", 220),
-        # The gun between its mandibles.
+        # The guns of the sensor pod at its nose.
         "muzzles": fan_barrels(3, 12, 1.2, -10.4, 0.8),
         # Range of X of the group's middle Wasp, as fractions of the width.
         "xRange": [0.25, 0.75],

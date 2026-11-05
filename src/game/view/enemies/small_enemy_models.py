@@ -238,6 +238,9 @@ def edge_light(
 
 # The strafer's reactors at this distance out sit a little further back (ENM-STRAFER-03).
 STRAFER_INNER_X = 4
+# Its guns' barrels (length, radius) and the pod on each flank that holds them (`[w, h, d]`).
+STRAFER_GUN = [5, 0.8]  # type: list[float]
+STRAFER_POD = [4.2, 3, 8]  # type: list[float]
 
 
 def build_strafer(scene: Any) -> Any:
@@ -262,6 +265,8 @@ def build_strafer(scene: Any) -> Any:
                 "y": 0.2,
                 "strut": 0.6,
                 "lights": lights,
+                # Its wings are held still.
+                "fixed": True,
             },
             N.strafer,
         )
@@ -269,11 +274,11 @@ def build_strafer(scene: Any) -> Any:
             reactor([x, 0, -4.3 if abs(x) == STRAFER_INNER_X else -4.1], 1)
         # A gun pod on each flank, out of the body to the barrels' housings, so they are held to it.
         for s in SIDES:
-            p.hull.box([3.6, 2.4, 6.2], H.dark, Placement([s * 3.8, 0.3, 1.5]), H.panel)
+            p.hull.box(STRAFER_POD, H.dark, Placement([s * 4.2, 0, 1.6]), H.panel)
         # Three guns on each side of the body, pointing out sideways, fanned: it flies across the
         # screen and fires down it from the side facing down (phase 7 review, WPN-04). They are the
         # config's barrels, tip and angle.
         for i, (x, y, height, angle) in enumerate(ENEMY_CONFIG.strafer.muzzles):
-            recoil_barrel(p, [x, height, -y], angle, 3.6, i)
+            recoil_barrel(p, [x, height, -y], angle, STRAFER_GUN[0], i, STRAFER_GUN[1])
 
     return build_enemy_model("strafer", scene, N.strafer, draw)
