@@ -1073,3 +1073,13 @@
   loaded (their volleys' guns become per-port with WPN-05).
 - **Consequences:** the Mortar's barrel is now a thick hexagonal tube.
 - **Status:** Proposed
+
+### D-276 — The Scout's turret further back, a bigger gun
+- **Date:** 2026-11-05
+- **Requirements:** ENM-SCOUT-03, WPN-02.
+- **Context:** owner: "move the scout turret further to the back and make the canon bigger".
+- **Decision:** the turret's pivot moves from 6 px ahead of the centre to 2 px behind it (config
+  `turret.y` 2), its ring 3.6 px wide; the barrel is 9 px long and 1 px thick (was 6.5 and 0.6),
+  so its tip is at `[0, -7.8, 4.9]`. Owner: the reactors were floating; each now ends a tapered
+  nacelle (8.5 px, 1.9 px round its nozzle) that grows out of the fuselage's flank.
+- **Status:** Proposed

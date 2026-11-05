@@ -115,9 +115,10 @@ ENEMY_CONFIG = record({
         "firstShot": 0.6,
         "bullet": bullet("red", 210),
         # The nose gun (ENM-SCOUT-03).
-        "muzzles": [[0, -13.3, 4.6]],
+        # Its gun's tip: a 9 px barrel from the turret's pivot, behind the wings' roots (D-276).
+        "muzzles": [[0, -7.8, 4.9]],
         # Its gun turns on a pivot at the barrel's root to face the player before it fires (WPN-02).
-        "turret": {"x": 0, "y": -6, "turnDeg": 150},
+        "turret": {"x": 0, "y": 2, "turnDeg": 150},
         "xRange": [0.15, 0.85],
     },
     # ENM-STRAFER-07: health and points.

@@ -87,7 +87,12 @@ SCOUT_WING = [[3.5, 4], [14, -4], [14, -7.5], [3.5, -6.5]]  # type: list[list[fl
 SCOUT_WING_LIGHT = [[4.6, 3], [13, -3.6], [12.6, -4.4], [4.2, 2.2]]  # type: list[list[float]]
 SCOUT_TAILPLANE = [[2.5, -9], [7.5, -13], [7.5, -14.5], [2.5, -12.5]]  # type: list[list[float]]
 # The gun turret: a ring on the fuselage's back at the gun's pivot (`ENEMY_CONFIG.scout.turret`).
-SCOUT_TURRET = {"radius": 3, "height": 1.3, "y": 3.1, "z": 6}
+SCOUT_TURRET = {"radius": 3.6, "height": 1.4, "y": 3.1, "z": -ENEMY_CONFIG.scout.turret.y}
+# A reactor's nacelle: across from the centre, where its nozzle opens (Z), its length forward into
+# the fuselage, and its radius at the back (round the 1.5 nozzle) and at the front.
+SCOUT_NACELLE = {"x": 2.6, "back": -12.8, "length": 8.5, "radius": 1.9, "front": 1.3}
+# The gun's barrel: its length (from the pivot to its tip light) and radius.
+SCOUT_GUN = {"length": 9, "radius": 1}
 
 
 def build_scout(scene: Any) -> Any:
@@ -114,7 +119,24 @@ def build_scout(scene: Any) -> Any:
             hull.bevel_slab(wing, [-0.5, 0, 0.6], [0.2, 0.3], H.base, None, H.panel)
             decal(neon, light, 0.65, N.scout)
             hull.bevel_slab(tail, [-0.3, 0, 0.4], [0.2, 0.2], H.base, None, H.panel)
-            reactor([s * 2.6, 0.3, -12.8], 1.5)
+            # ENM-SCOUT-02: each reactor's nacelle grows out of the fuselage's flank and runs back
+            # to the nozzle, which opens in its end (not hanging behind the tail on its own).
+            hull.cylinder(
+                SCOUT_NACELLE["radius"],
+                SCOUT_NACELLE["length"],
+                8,
+                H.panel,
+                Placement([s * SCOUT_NACELLE["x"], 0.3, SCOUT_NACELLE["back"]], 0, QUARTER),
+                SCOUT_NACELLE["front"],
+            )
+            neon.ring(
+                SCOUT_NACELLE["radius"] + 0.08,
+                0.4,
+                8,
+                N.scout,
+                Placement([s * SCOUT_NACELLE["x"], 0.3, SCOUT_NACELLE["back"] + 1.2], 0, QUARTER),
+            )
+            reactor([s * SCOUT_NACELLE["x"], 0.3, SCOUT_NACELLE["back"]], 1.5)
         # A fin on its back, behind the turret.
         hull.box([0.6, 4, 5], H.panel, Placement([0, 4.2, -10]))
         # The turret: a metal ring the gun pivots on (WPN-02), its barrel recoiling (WPN-03).
@@ -126,7 +148,9 @@ def build_scout(scene: Any) -> Any:
             Placement([0, SCOUT_TURRET["y"], SCOUT_TURRET["z"]]),
             SCOUT_TURRET["radius"] * 0.8,
         )
-        config_barrels(p, ENEMY_CONFIG.scout.muzzles, 6.5, 0.6, True)
+        config_barrels(
+            p, ENEMY_CONFIG.scout.muzzles, SCOUT_GUN["length"], SCOUT_GUN["radius"], True
+        )
 
     return build_enemy_model("scout", scene, N.scout, draw)
 

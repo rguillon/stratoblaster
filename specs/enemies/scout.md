@@ -20,7 +20,8 @@ nothing flaps), a small tailplane and a fin.
 
 #### ENM-SCOUT-02 — Twin reactors under the wings · MUST
 
-A reactor sits at the trailing root of each wing.
+A reactor sits at the trailing root of each wing, its nozzle opening in the end of a nacelle that
+grows out of the fuselage's flank (not hanging behind the tail on its own).
 
 **Acceptance criteria**
 - Unit test: the model has two reactors, no flapping wing and one gun.
