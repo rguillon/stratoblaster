@@ -15,6 +15,7 @@ from game.view.enemies.elite_shapes import QUARTER, H
 from game.view.enemies.enemy_shapes import SIDES, angry_eyes
 from game.view.enemies.jointed_model import build_jointed_model
 from game.view.enemies.organic_parts import reactor_sac
+from game.view.enemies.weapon_ports import port_radius
 from render.geometry.organic import (
     SegmentedBody,
     carapace,
@@ -61,7 +62,7 @@ MANTLET = [  # type: list[list[float]]
 ]
 MANTLET_HEIGHTS = [6.4, 7, 10.8]  # type: list[float]
 # A shoulder launcher's hexagonal tube, its port as wide (WPN-07).
-LAUNCHER = {"radius": 2.2, "length": 9}
+LAUNCHER = {"radius": port_radius(CFG.missile.radius), "length": 9}
 # A launcher's flesh pod around its centre, along +Z.
 POD = SegmentedBody(-6, 5, 2, 5.2, -2.5, 4.2)
 # A front plate around its centre: a thick, chamfered slab.
@@ -125,7 +126,7 @@ def shoulder(cannon: Any) -> Any:
     return draw
 
 
-def cannon(spec: Any) -> Any:
+def cannon(spec: Any, index: int) -> Any:
     """Return a shoulder rocket launcher (ENM-JUGGERNAUT-06): a flesh pod in a metal band.
 
     It has a steel-blue gland and a long hexagonal launcher tube ending in its missile port, as wide
@@ -147,7 +148,7 @@ def cannon(spec: Any) -> Any:
             H.dark,
             Placement([tip[0], tip[1], tip[2] - back], 0, QUARTER),
         )
-        p.muzzle(tip, "missile", "forward", LAUNCHER["radius"])
+        p.muzzle(tip, "missile", "forward", CFG.missile.radius, index)
 
     return draw
 
@@ -175,9 +176,10 @@ def build_juggernaut(scene: Any) -> Any:
     """
     limbs = {}
     parts = {}
-    for c in CFG.cannons:
+    for i, c in enumerate(CFG.cannons):
         limbs[c.joint] = shoulder(c)
-        parts[c.id] = cannon(c)
+        # Launcher number `i` of the Juggernaut's (`Enemy.launchers`).
+        parts[c.id] = cannon(c, i)
     for pl in CFG.plates:
         parts[pl.id] = front_plate(pl)
     return build_jointed_model(

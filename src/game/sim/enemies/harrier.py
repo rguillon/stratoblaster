@@ -37,6 +37,8 @@ class Harrier(Enemy):
         self.missiles_left = CFG.missiles
         self._launcher = Cadence(CFG.fireInterval, CFG.firstShot)
         self._rails = [GunMuzzles([muzzle]) for muzzle in CFG.muzzles]
+        # Each rail's port, kicked as its missile leaves (WPN-07).
+        self.launchers = [rail.barrels[0] for rail in self._rails]
         # Which way it strafes: 1 to the right, -1 to the left.
         self._strafe = 1
 

@@ -3,7 +3,14 @@
 
 from typing import Any
 
+import pytest
 from helpers.view_probes import drawn
+
+from core.entities.barrel import Barrel
+from game.config.enemy_look import ENEMY_LOOK
+from game.config.weapons import WEAPONS
+from game.view.enemies.enemy_mesh import rocket_sunk
+from game.view.enemies.weapon_ports import HEX_INNER, port_bore, port_radius, rocket_radius
 
 
 def _box(builder: Any) -> tuple[list[float], list[float]]:
@@ -27,7 +34,7 @@ def test_wpn_07_a_missile_muzzle_draws_a_hexagonal_port_standing_up_from_its_poi
 def test_wpn_07_a_forward_port_ends_at_its_point() -> None:
     got = drawn(lambda p: p.muzzle([0, 3, 20], "missile", "forward"))
     low, high = _box(got["parts"].hull)
-    assert high[2] > 20
+    assert high[2] == pytest.approx(20)
     assert low[2] < 20 - 2
 
 
@@ -42,3 +49,52 @@ def test_wpn_06_a_laser_muzzle_draws_a_lens_at_the_end_of_a_barrel() -> None:
 def test_a_gun_muzzle_draws_nothing_of_its_own() -> None:
     got = drawn(lambda p: p.muzzle([0, 3, 20]))
     assert len(got["parts"].hull.geometry.positions) == 0
+
+
+@pytest.mark.parametrize("missile", [4, 5, 8])
+def test_wpn_07_the_bore_is_wider_than_the_rocket_and_the_tube_than_the_bore(
+    missile: float,
+) -> None:
+    drawn_radius = ENEMY_LOOK.missile.radius * missile / ENEMY_LOOK.missile.baseRadius
+    assert rocket_radius(missile) == pytest.approx(drawn_radius)
+    # The hexagon's inner radius clears the round rocket.
+    assert port_bore(missile) * HEX_INNER > rocket_radius(missile)
+    assert port_radius(missile) > port_bore(missile)
+
+
+def test_wpn_07_the_port_is_hollow_and_its_rocket_is_a_piece_of_its_own() -> None:
+    got = drawn(lambda p: p.muzzle([0, 3, 20], "missile", "up", 5, 1))
+    # Nothing of the port's hull covers its mouth: no face at the top inside the bore.
+    hull = got["parts"].hull.geometry.positions
+    top = max(hull[1::3])
+    inside = [
+        (hull[i], hull[i + 2])
+        for i in range(0, len(hull), 3)
+        if hull[i + 1] == pytest.approx(top)
+        and (hull[i] ** 2 + (hull[i + 2] - 20) ** 2) ** 0.5 < port_bore(5) * HEX_INNER - 1e-6
+    ]
+    assert inside == []
+    rockets = [s for s in got["slides"] if s.kind == "rocket"]
+    assert len(rockets) == 1
+    assert rockets[0].index == 1
+    # A port pointing up sinks its rocket down.
+    assert rockets[0].down == -1
+
+
+class _Launching:
+    def __init__(self, fired_at: float | None, age: float) -> None:
+        self.launchers = [Barrel([0, 0, 0])]
+        self.launchers[0].fired_at = fired_at
+        self.age = age
+
+
+def test_wpn_07_the_rocket_is_gone_after_a_launch_then_rises_back_as_it_reloads() -> None:
+    reload = WEAPONS.missileReloadSeconds
+    assert rocket_sunk(_Launching(None, 3), 0) == 0
+    assert rocket_sunk(_Launching(2, 2), 0) == 1
+    assert rocket_sunk(_Launching(2, 2 + reload * WEAPONS.missileReloadShow * 0.9), 0) == 1
+    halfway = rocket_sunk(_Launching(2, 2 + reload * 0.7), 0)
+    assert 0 < halfway < 1
+    assert rocket_sunk(_Launching(2, 2 + reload), 0) == 0
+    # An enemy that reports no launcher (a boss's piece) is always loaded.
+    assert rocket_sunk(object(), 0) == 0

@@ -3,6 +3,7 @@
 
 import math
 
+from core.entities.barrel import Barrel
 from core.entities.boss_turret import BossTurret, BossTurretSpec
 from core.entities.jointed_enemy import JointedEnemy
 from core.systems.enemy_motion import approach
@@ -54,6 +55,8 @@ class Juggernaut(JointedEnemy):
         self.barrels = self._muzzles.barrels
         self._cannons = Cadence(CFG.cannonInterval, CFG.firstBurst)
         self._missile = missile_spec(CFG.missile)
+        # Each shoulder launcher's port, kicked as its missile leaves (WPN-07).
+        self.launchers = [Barrel(list(c.muzzle)) for c in CFG.cannons]
         self._drift_for = 0.0
         self.heading = DOWN
 
@@ -123,11 +126,12 @@ class Juggernaut(JointedEnemy):
 
     def _launch(self, ctx: EnemyContext) -> None:
         """Each standing shoulder launcher launches a missile from its port, along it (WPN-08)."""
-        for spec in CFG.cannons:
+        for k, spec in enumerate(CFG.cannons):
             launcher = self.part(spec.id)
             if launcher is None:
                 continue
             point = ctx.seen(launcher.place(spec.muzzle))
             # Along the launcher as its joint is turned now (the part's heading is set after `act`).
             heading = self.heading + self.joints.angle(spec.joint)
+            self.launchers[k].kick(self.age)
             ctx.fire_missile(point.x, point.y, heading, self._missile)

@@ -48,6 +48,8 @@ class Mortar(Enemy):
         super().__init__(x, y, CFG.stats)
         self._gun = Cadence(CFG.fireInterval, CFG.firstShot)
         self._muzzles = GunMuzzles(CFG.muzzles)
+        # Its tube's port, kicked as its missile leaves (WPN-07).
+        self.launchers = self._muzzles.barrels
         self._missile = mortar_missile()
         self.heading = DOWN
 

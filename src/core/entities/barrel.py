@@ -11,6 +11,7 @@ from core.entities.muzzle import Muzzle  # noqa: TC001
 # __pragma__ ("noskip")
 
 DEG = math.pi / 180
+INFINITY = float("Infinity")
 
 # How long a barrel takes to slide back out after a shot (WPN-03), seconds.
 RECOIL_SECONDS = 0.18
@@ -36,6 +37,12 @@ class Barrel:
     def kick(self, now: float) -> None:
         """Record a shot fired at `now`: the barrel is thrown back (recoil 1) and slides out."""
         self.fired_at = now
+
+    def since_fired(self, now: float) -> float:
+        """Return the seconds since it last fired at `now`, Infinity before its first shot."""
+        if self.fired_at is None:
+            return INFINITY
+        return now - self.fired_at
 
     def recoil_at(self, now: float) -> float:
         """Return the recoil at `now`: 1 as it fires, easing down to 0 after `recoil_seconds`."""

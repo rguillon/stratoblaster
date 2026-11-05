@@ -1057,3 +1057,19 @@
   4-2, and the filler draws Splitters and Hydras; the world specs are updated to match.
 - **Consequences:** the Juggernaut, the heavier kind, comes less often; the Hydra more.
 - **Status:** Proposed
+
+### D-275 — Hollow missile ports wider than their rockets, reloading
+- **Date:** 2026-11-05
+- **Requirements:** WPN-07.
+- **Context:** owner: "for every rocket launcher, make the cannon bigger than the rocket, and the top
+  shall be hollow until a rocket is here".
+- **Decision:** a port's size comes from its missile's hit radius: the hexagonal bore's inner radius
+  is 1.15 times the drawn rocket's (`ENEMY_LOOK.missile`), the wall 0.6 px; each launcher tube
+  (Harrier rails, Rocketeer pods, Mortar barrel, Juggernaut arms) is as wide as its port all along.
+  The port is a hollow well (one revolved profile: outer wall, rim, inner wall) with a dark floor.
+  Each port's rocket is a sliding piece (`Slide.kind` "rocket") tied to `Enemy.launchers[index]`,
+  a `Barrel` kicked as its missile leaves: hidden for the first 35 % of the 1.2 s reload, then
+  rising up the well, eased out. Boss pieces report no launchers yet, so their ports are always
+  loaded (their volleys' guns become per-port with WPN-05).
+- **Consequences:** the Mortar's barrel is now a thick hexagonal tube.
+- **Status:** Proposed

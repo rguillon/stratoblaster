@@ -19,6 +19,7 @@ from game.view.enemies.enemy_shapes import (
     decal,
     radial,
 )
+from game.view.enemies.weapon_ports import port_radius
 from render.geometry.organic import (
     SegmentedBody,
     curve,
@@ -160,8 +161,12 @@ def build_rocketeer(scene: Any) -> Any:
                 N.rocketeer,
             )
             # The launcher: a hexagonal tube out of the sac, as wide as its port (WPN-07).
-            hull.cylinder(2.6, 5, 6, H.dark, Placement([s * pod, 0, 9.5], 0, QUARTER))
-            p.muzzle([s * pod, 0, 14.5], "missile", "forward", 2.6)
+            missile = ENEMY_CONFIG.rocketeer.missile.radius
+            hull.cylinder(
+                port_radius(missile), 5, 6, H.dark, Placement([s * pod, 0, 9.5], 0, QUARTER)
+            )
+            # The model's +X is the screen's left: the config's first pod (launcher 0).
+            p.muzzle([s * pod, 0, 14.5], "missile", "forward", missile, 0 if s > 0 else 1)
             reactor([s * 2.4, 0, -15], 1.6)
 
     return build_enemy_model("rocketeer", scene, N.rocketeer, draw)

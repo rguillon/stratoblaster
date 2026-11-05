@@ -8,9 +8,12 @@ import pytest
 from helpers.enemy_steps import STEP, run
 from helpers.fakes import FakeContext
 
+from game.sim.enemies.harrier import Harrier
 from game.sim.enemies.hive import Hive
 from game.sim.enemies.juggernaut import Juggernaut
+from game.sim.enemies.mortar import Mortar
 from game.sim.enemies.phantom import Phantom
+from game.sim.enemies.rocketeer import Rocketeer
 from game.sim.enemies.scout import Scout
 from game.sim.enemies.spinner import Spinner
 from game.sim.enemies.wasp import Wasp
@@ -78,3 +81,26 @@ def test_wpn_02_a_scouts_gun_turns_to_the_player_before_it_fires() -> None:
     _, _, heading, _ = ctx.bullets[0]
     want = math.atan2(ctx.player_x - scout.x, ctx.player_y - scout.y)
     assert abs(math.remainder(heading - want, math.tau)) < math.radians(8)
+
+
+@pytest.mark.parametrize(
+    ("build", "count"),
+    [
+        (lambda: Rocketeer(200, 560), 2),
+        (lambda: Harrier(200, 470, 470), 2),
+        (lambda: Mortar(200, 560), 1),
+        (lambda: Juggernaut(200, 300, 300), 2),
+    ],
+    ids=["rocketeer", "harrier", "mortar", "juggernaut"],
+)
+def test_wpn_07_a_launcher_is_emptied_as_its_missile_leaves(build: Any, count: int) -> None:
+    enemy = build()
+    ctx = FakeContext()
+    assert len(enemy.launchers) == count
+    assert all(launcher.fired_at is None for launcher in enemy.launchers)
+    for _ in range(int(10 / STEP)):
+        run(enemy, ctx, STEP)
+        if ctx.missiles:
+            break
+    assert ctx.missiles
+    assert any(launcher.since_fired(enemy.age) < STEP for launcher in enemy.launchers)

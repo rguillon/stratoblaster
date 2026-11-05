@@ -22,12 +22,20 @@ type Vec3 = list[float]
 H = ENEMY_LOOK.hull
 WHITE = [1, 1, 1]  # type: list[float]
 HOLE = [0.01, 0.01, 0.015]  # type: list[float]
+ROCKET_BODY = ENEMY_LOOK.hull.panel
 QUARTER = 1.5707963267948966
 
-# A port's barrel: its outer radius, the hole's, its length.
-PORT_RADIUS = 2.3
-PORT_HOLE = 1.6
-PORT_LENGTH = 2.4
+# A missile's drawn radius and length per unit of hit radius (`ENEMY_LOOK.missile`).
+ROCKET = ENEMY_LOOK.missile
+# The boss missiles' hit radius, the default port's rocket (BOSS-23).
+DEFAULT_MISSILE = 5
+# The bore's clearance around its rocket, and the wall around the bore.
+BORE_CLEARANCE = 1.15
+PORT_WALL = 0.6
+# cos 30°: a hexagon's inner radius per unit of its corner radius.
+HEX_INNER = 0.8660254037844386
+
+
 # A laser lens's barrel and lens.
 LENS_RADIUS = 2.0
 LENS_LENGTH = 3.0
@@ -45,24 +53,74 @@ def axis_of(at: Vec3, direction: str, back: float) -> Placement:
     return Placement([at[0], at[1], at[2] - back], 0, QUARTER)
 
 
-def hex_port(parts: Any, at: Vec3, direction: str = "up", radius: float = PORT_RADIUS) -> None:
-    """WPN-07: add a hexagonal missile port at `at`: a hex barrel, a dark hole, a glowing rim.
+def rocket_radius(missile: float) -> float:
+    """Return the drawn radius of a missile of hit radius `missile` (the shot renderer's scale)."""
+    radius: float = ROCKET.radius
+    base: float = ROCKET.baseRadius
+    return radius * missile / base
 
-    The barrel is `radius` wide: the launcher it ends is never thinner than it.
+
+def port_bore(missile: float) -> float:
+    """Return the corner radius of the hexagonal bore a missile of hit radius `missile` fits in."""
+    return rocket_radius(missile) / HEX_INNER * BORE_CLEARANCE
+
+
+def port_radius(missile: float) -> float:
+    """Return the outer radius of the port of a missile of hit radius `missile`.
+
+    The tube a port ends is at least this wide (WPN-07: the launcher is wider than its rocket).
     """
-    k = radius / PORT_RADIUS
-    length = PORT_LENGTH * k
-    hole = PORT_HOLE * k
-    place = axis_of(at, direction, length)
-    parts.hull.lathe([[radius, 0], [radius, length]], 6, H.dark, place)
-    parts.hull.lathe([[hole, length + 0.04], [0, length + 0.04]], 6, HOLE, place)
-    # The glowing rim of the hole, and the nose of the missile waiting in it.
-    parts.charge.lathe(
-        [[hole + 0.5 * k, length + 0.06], [hole, length + 0.06]], 6, WHITE, place, False
+    return port_bore(missile) + PORT_WALL
+
+
+def hex_port(
+    parts: Any,
+    at: Vec3,
+    direction: str = "up",
+    missile: float = DEFAULT_MISSILE,
+    index: int = 0,
+) -> None:
+    """WPN-07: add a hexagonal missile port at `at` for missiles of hit radius `missile`.
+
+    A hex barrel with a hollow hexagonal bore wider than the rocket, a dark floor down the well and
+    a glowing rim; the rocket of launcher number `index` waits in it, and is gone from the moment
+    it is launched until the next one has risen into the well (`Enemy.launchers`).
+    """
+    bore = port_bore(missile)
+    outer = bore + PORT_WALL
+    depth = max(2.4, bore * 1.8)
+    place = axis_of(at, direction, depth)
+    # One revolved profile: the outer wall up, the rim in, the inner wall down the well.
+    parts.hull.lathe(
+        [[outer, 0], [outer, depth], [bore, depth], [bore, 0.3]], 6, H.dark, place, False
     )
+    parts.hull.lathe([[bore, 0.3], [0, 0.3]], 6, HOLE, place)
     parts.charge.lathe(
-        [[0.9 * k, length - 0.5], [0.45 * k, length + 0.1], [0, length + 0.3]], 6, WHITE, place
+        [[outer - 0.05, depth + 0.03], [bore + 0.05, depth + 0.03]], 6, WHITE, place, False
     )
+    _rocket(parts, at, direction, missile, depth, index)
+
+
+def _rocket(parts: Any, at: Vec3, direction: str, missile: float, depth: float, index: int) -> None:
+    """Add the rocket loaded in a port: a piece sliding out of sight down the well (WPN-07)."""
+    radius = rocket_radius(missile)
+    length = ROCKET.length * missile / ROCKET.baseRadius
+    nose = 1.6 * missile / ROCKET.baseRadius
+    # Its nose just under the mouth, its body down the well and the tube behind.
+    tip = depth - 0.1
+    place = axis_of(at, direction, depth)
+
+    def draw(piece: Any) -> None:
+        piece.hull.cylinder(
+            radius, length - nose, 6, ROCKET_BODY, axis_of_shift(place, tip - length)
+        )
+        piece.neon.cylinder(radius, nose, 6, ROCKET.tip, axis_of_shift(place, tip - nose), 0)
+
+    base = axis_of_shift(place, 0).at or [0, 0, 0]
+    if direction == "up":
+        parts.slide(base, [0, 0], depth + nose, index, draw, False, None, "rocket", -1)
+    else:
+        parts.slide(base, [0, -1], depth + nose, index, draw, False, None, "rocket", 0)
 
 
 def laser_lens(parts: Any, at: Vec3, direction: str = "forward") -> None:

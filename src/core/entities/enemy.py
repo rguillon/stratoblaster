@@ -306,6 +306,9 @@ class Enemy:
         self.charge: float = 0
         # The barrels of its guns, for the model to slide back as they fire (WPN-03).
         self.barrels: list[Barrel] = []
+        # Its missile launchers, in the order of its config's muzzles: each `kick`ed as it
+        # launches, for the model to show its port empty, then a rocket reloading (WPN-07).
+        self.launchers: list[Barrel] = []
         # A turret its guns turn on, if it has one (WPN-02): see `BossTurret`.
         self.turret: BossTurret | None = None
         # Set when the enemy is done (left for good); the world then removes it.

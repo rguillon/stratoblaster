@@ -13,4 +13,8 @@ WEAPONS = record({
     # along a half loop of this radius.
     "missileClimbSeconds": 0.3,
     "missileArcRadius": 40,
+    # WPN-07: a port is empty when its missile has left; the next rocket is seen rising into it
+    # over this long after the launch (from `missileReloadShow` of it on, hidden before).
+    "missileReloadSeconds": 1.2,
+    "missileReloadShow": 0.35,
 })

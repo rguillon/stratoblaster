@@ -13,6 +13,7 @@ from game.view.enemies.basic_parts import eye_pair
 from game.view.enemies.enemy_mesh import build_enemy_model
 from game.view.enemies.enemy_shapes import LOBE_SECTION, SIDES, decal, flip_x
 from game.view.enemies.organic_parts import reactor_sac
+from game.view.enemies.weapon_ports import port_radius
 from render.geometry.organic import (
     SegmentedBody,
     curve,
@@ -46,8 +47,8 @@ HARRIER_WING_LIGHT = [[3.6, 3.2], [13, -9.4], [12.5, -10.2], [3, 2.4]]  # type: 
 RAIL_LENGTH = 12
 RAIL_BACK = -3
 RAIL_HEIGHT = -1.4
-# A rail is a hexagonal tube this wide, its port as wide.
-RAIL_RADIUS = 1.6
+# A rail is a hexagonal tube as wide as its port, which is wider than its rocket (WPN-07).
+RAIL_RADIUS = port_radius(HARRIER_CONFIG.missile.radius)
 
 
 def build_harrier(scene: Any) -> Any:
@@ -91,7 +92,14 @@ def build_harrier(scene: Any) -> Any:
                 Placement([s * rail_x, RAIL_HEIGHT, RAIL_BACK], 0, QUARTER),
             )
             tip = RAIL_BACK + RAIL_LENGTH
-            p.muzzle([s * rail_x, RAIL_HEIGHT, tip + 0.6], "missile", "forward", RAIL_RADIUS)
+            # The model's +X is the screen's left: the config's first rail (WPN-07's launcher 0).
+            p.muzzle(
+                [s * rail_x, RAIL_HEIGHT, tip + 0.6],
+                "missile",
+                "forward",
+                HARRIER_CONFIG.missile.radius,
+                0 if s > 0 else 1,
+            )
         reactor_sac(p, [0, 0.1, -12], 1.4, N.harrier, F.sinew, 3)
 
     return build_enemy_model("harrier", scene, N.harrier, draw)

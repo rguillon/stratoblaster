@@ -111,11 +111,20 @@ A laser leaves a **lens at the end of a barrel**, which does not recoil.
 #### WPN-07 — A hexagonal hole in a barrel · MUST
 
 Every missile is launched from a **hexagonal port**: a hexagon-bored hole in the end of a barrel (a
-short thick one for a rack, a long one for a mortar). It is drawn dark with a glowing rim, and a
-missile is drawn inside it before it leaves.
+short thick one for a rack, a long one for a mortar). The bore is **wider than the rocket** (its
+inner radius clears the drawn missile) and the tube is wider than the bore, all along the launcher.
+The port is **hollow**: a dark well with a glowing rim, open at the top. Its rocket waits in the well
+while it is loaded; from the moment it is launched the port is empty, and the next rocket rises
+back into the well over `missile_reload_seconds` (seen from `missile_reload_show` of that time on).
 
 **Acceptance criteria**
 - Given each missile launcher, then its model has a hexagonal port at its muzzle (unit test).
+- Given the missiles of every launcher, then the bore's inner radius exceeds the drawn missile's
+  radius and the tube's exceeds the bore's (unit test).
+- Given a port, then nothing covers its mouth, and its rocket is a piece of its own (unit test).
+- Given a launcher that has just launched, then its port's rocket is hidden, then rises back and is
+  in place after `missile_reload_seconds`; a launcher the simulation does not report (a boss's, until
+  WPN-05) is always loaded (unit test).
 - Given a missile fired, then it starts at the port's centre with the port's direction (unit test).
 
 *Sources: owner request 2026-11-04. Slice: missiles (done, D-271).*
@@ -160,6 +169,8 @@ shrinks with its height as the camera sees it.
 | `missile_launch_seconds` | 0.25 s | WPN-08 |
 | `missile_climb_seconds` | 0.3 s | WPN-09 |
 | `missile_arc_radius` | 40 px | WPN-09 |
+| `missile_reload_seconds` | 1.2 s | WPN-07; the port is empty, then the rocket rises back |
+| `missile_reload_show` | 0.35 of it | WPN-07; the rocket is hidden before |
 
 ## Notes
 

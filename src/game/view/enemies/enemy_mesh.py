@@ -10,6 +10,7 @@ import math
 from core.entities.enemy import Enemy
 from game.config.enemy_look import ENEMY_LOOK
 from game.config.enemy_tiers import tier_look
+from game.config.weapons import WEAPONS
 from game.view.enemies.enemy_engines import Reactor, add_reactors, add_rotors
 from game.view.enemies.enemy_materials import (
     body_color,
@@ -29,7 +30,7 @@ from game.view.enemies.living_motion import (
     is_living_motion,
     new_breath,
 )
-from game.view.enemies.weapon_ports import PORT_RADIUS, hex_port, laser_lens
+from game.view.enemies.weapon_ports import DEFAULT_MISSILE, hex_port, laser_lens
 from render.babylon import (
     color3,
     new_transform_node,
@@ -128,11 +129,18 @@ class Slide:
         parts: WingParts,
         swivel: bool = False,
         centre: Vec3 | None = None,
+        kind: str = "barrel",
+        down: float = 0,
     ) -> None:
         # `swivel`: it also turns with the enemy's turret (`Enemy.turret`), about its own pivot, or
         # about `centre` (the turret's, in model space) when given.
         self.swivel = swivel
         self.centre = centre
+        # "barrel": it recoils with `Enemy.barrels[index]`; "rocket": a rocket in a port, sunk
+        # out of sight down its well while launcher `Enemy.launchers[index]` reloads (WPN-07).
+        # `down` is how far it moves along Y per unit of `distance` (an upward port's sinks).
+        self.kind = kind
+        self.down = down
         self.pivot = pivot
         self.back = back
         self.distance = distance
@@ -252,7 +260,48 @@ def slide_back(node: Any, piece: Slide, recoil: float, aim: float = 0) -> None:
     bx = piece.pivot[0] - centre[0] + piece.back[0] * k
     bz = piece.pivot[2] - centre[2] + piece.back[1] * k
     node.rotation.y = aim
-    node.position.set(centre[0] + bx * c + bz * s, piece.pivot[1], centre[2] - bx * s + bz * c)
+    node.position.set(
+        centre[0] + bx * c + bz * s, piece.pivot[1] + piece.down * k, centre[2] - bx * s + bz * c
+    )
+
+
+def sync_slides(slides: list[Slide], nodes: list[Any], enemy: Any) -> None:
+    """Move the sliding pieces: the barrels and the rockets.
+
+    Each barrel back by its recoil (WPN-03), each rocket down its well as its launcher reloads
+    (WPN-07).
+    """
+    for i, piece in enumerate(slides):
+        if piece.kind == "rocket":
+            show_rocket(nodes[i], piece, enemy)
+        elif piece.index < len(enemy.barrels):
+            aim = enemy.turret.aim if piece.swivel and enemy.turret is not None else 0
+            slide_back(nodes[i], piece, enemy.barrels[piece.index].recoil_at(enemy.age), aim)
+
+
+def rocket_sunk(enemy: Any, index: int) -> float:
+    """Return how far down its well a port's rocket is: 0 loaded, 1 out of sight (WPN-07).
+
+    Gone as its launcher (`Enemy.launchers[index]`) launches, it rises back over the reload, eased
+    out; a launcher the enemy does not report is always loaded.
+    """
+    if not hasattr(enemy, "launchers") or index >= len(enemy.launchers):
+        return 0
+    since: float = enemy.launchers[index].since_fired(enemy.age)
+    reload: float = WEAPONS.missileReloadSeconds
+    show: float = WEAPONS.missileReloadShow
+    loaded = since / reload
+    if loaded < show:
+        return 1
+    u = min(1, (loaded - show) / (1 - show))
+    return (1 - u) * (1 - u)
+
+
+def show_rocket(node: Any, piece: Slide, enemy: Any) -> None:
+    """Place a port's rocket down its well as its launcher reloads; hidden while it is empty."""
+    sunk = rocket_sunk(enemy, piece.index)
+    node.setEnabled(sunk < 1)
+    slide_back(node, piece, sunk)
 
 
 def collect_parts(build: Any) -> dict[str, Any]:
@@ -274,8 +323,12 @@ def collect_parts(build: Any) -> dict[str, Any]:
         draw: Any,
         swivel: Any = False,
         centre: Any = None,
+        kind: Any = "barrel",
+        down: Any = 0,
     ) -> None:
-        piece = Slide(pivot, back, distance, index, wing_parts_new(), bool(swivel), centre)
+        piece = Slide(
+            pivot, back, distance, index, wing_parts_new(), bool(swivel), centre, kind, down
+        )
         draw(piece.parts)
         slides.append(piece)
 
@@ -285,7 +338,12 @@ def collect_parts(build: Any) -> dict[str, Any]:
     def rotor(at: Vec3, radius: float) -> None:
         rotors.append(Reactor(at, radius))
 
-    def muzzle(at: Vec3, kind: Any = None, direction: Any = None, size: Any = None) -> None:
+    # The missile ports drawn so far: a port's launcher number, unless the model gives it.
+    ports = [0]
+
+    def muzzle(
+        at: Vec3, kind: Any = None, direction: Any = None, size: Any = None, index: Any = None
+    ) -> None:
         # `kind` is 'gun' when the caller leaves it out. A missile muzzle is drawn as a hexagonal
         # port (up unless `direction` says "forward"), a laser's as a lens (forward unless "up").
         name = kind if kind != None else "gun"
@@ -295,8 +353,10 @@ def collect_parts(build: Any) -> dict[str, Any]:
                 parts,
                 at,
                 direction if direction != None else "up",
-                size if size != None else PORT_RADIUS,
+                size if size != None else DEFAULT_MISSILE,
+                index if index != None else ports[0],
             )
+            ports[0] += 1
         elif name == "laser":
             laser_lens(parts, at, direction if direction != None else "forward")
 
@@ -422,13 +482,7 @@ def build_enemy_model(
         living = is_living_motion()
         glow = glow_level(breath, clock[0]) if living else 1
         vein.emissiveColor.set(glow, glow, glow)
-        # WPN-03: each barrel slides back as the enemy's barrel of its number fires.
-        for i, piece in enumerate(slides):
-            if piece.index < len(enemy.barrels):
-                aim = enemy.turret.aim if piece.swivel and enemy.turret is not None else 0
-                slide_back(
-                    slide_nodes[i], piece, enemy.barrels[piece.index].recoil_at(enemy.age), aim
-                )
+        sync_slides(slides, slide_nodes, enemy)
         step_model_animations(root, dt)
         k = ENEMY_LOOK.chargeIdle + (1 - ENEMY_LOOK.chargeIdle) * enemy.charge
         charge_mat.emissiveColor.set(charge_color[0] * k, charge_color[1] * k, charge_color[2] * k)
