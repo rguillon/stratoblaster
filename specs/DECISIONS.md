@@ -1015,3 +1015,15 @@
 - **Consequences:** boss models that drew their own hatch or lens keep it under the new port; a
   boss's laser/missile muzzles are not yet barrels that recoil (WPN-05 slice).
 - **Status:** Proposed
+
+### D-272 — Scout redesigned as an airplane with a turret gun
+- **Date:** 2026-11-05
+- **Requirements:** ENM-SCOUT-01 to ENM-SCOUT-03, WPN-02.
+- **Context:** owner: "redesign the scout, put his gun on a turret, no more insect wings, air plane
+  wings and a bigger body".
+- **Decision:** a fatter fuselage (4.2 wide, 5.2 tall), fixed metal swept wings with a neon leading
+  edge and a tailplane (no `flap`), one reactor under each wing root, a fin, and a turret ring under
+  the gun's pivot. The gun is raised to height 4.6 to sit on the ring. The footprint stays within
+  ENM-12 (about 28 px).
+- **Consequences:** the Scout has no fluttering wings; ENM-SCOUT-02's tail booms are gone.
+- **Status:** Proposed

@@ -22,13 +22,14 @@ from game.view.enemies.enemy_mesh import build_enemy_model
 from game.view.enemies.enemy_shapes import (
     LOBE_SECTION,
     SIDES,
+    decal,
+    flip_x,
 )
 from game.view.enemies.organic_parts import reactor_sac
 from render.geometry.organic import (
     SegmentedBody,
     curve,
     segmented_body,
-    tendril,
 )
 from render.geometry.organic import (
     vein as vein_tube,
@@ -80,47 +81,52 @@ def build_hornet(scene: Any) -> Any:
     return build_enemy_model("hornet", scene, N.hornet, draw)
 
 
-# ENM-SCOUT-02: the Scout's neon strip along each tail boom.
-SCOUT_STRIP = [[-0.35, -14], [0.35, -14], [0.35, -5], [-0.35, -5]]  # type: list[list[float]]
+# ENM-SCOUT-02: the Scout's airplane wing (right side, `[x, z]`), tailplane and the neon edge light
+# along the wing's leading edge.
+SCOUT_WING = [[3.5, 4], [14, -4], [14, -7.5], [3.5, -6.5]]  # type: list[list[float]]
+SCOUT_WING_LIGHT = [[4.6, 3], [13, -3.6], [12.6, -4.4], [4.2, 2.2]]  # type: list[list[float]]
+SCOUT_TAILPLANE = [[2.5, -9], [7.5, -13], [7.5, -14.5], [2.5, -12.5]]  # type: list[list[float]]
+# The gun turret: a ring on the fuselage's back at the gun's pivot (`ENEMY_CONFIG.scout.turret`).
+SCOUT_TURRET = {"radius": 3, "height": 1.3, "y": 3.1, "z": 6}
 
 
 def build_scout(scene: Any) -> Any:
-    """ENM-SCOUT-01: a light winged scout with a slim flesh body.
+    """ENM-SCOUT-01: a light airplane scout with a fat flesh fuselage.
 
-    Broad membrane wings that flutter, two bone tail booms with a neon strip and a reactor each
-    (ENM-SCOUT-02), and a nose gun grafted on (ENM-SCOUT-03); green (ENM-SCOUT-04).
+    Fixed swept airplane wings and a tailplane in metal with a neon edge, a reactor under each
+    wing's trailing root (ENM-SCOUT-02), and a gun turret on its back (ENM-SCOUT-03); green
+    (ENM-SCOUT-04).
     """
 
     def draw(p: Any) -> None:
         flesh = p.flesh
+        hull = p.hull
         neon = p.neon
         reactor = p.reactor
-        body = SegmentedBody(-9, 12.5, 2, 2.5, -1, 2.3)
+        body = SegmentedBody(-12, 11.5, 3, 4.2, -2, 3.2)
         segmented_body(flesh, body, F.teal, None, LOBE_SECTION)
-        eye_pair(p, [0, 1.6, 8], 0.8, 0.4, N.scout)
-        wing_pair(
-            p,
-            {
-                "root": [1.8, 6],
-                "tips": [[13, -8], [10, -9], [5, -6]],
-                "y": 0.6,
-                "strut": 0.5,
-            },
-            N.scout,
-        )
+        eye_pair(p, [0, 2.6, 9], 1.3, 0.55, N.scout)
+        vein_tube(p.vein, curve([0, 3.1, -9], [0, 3.2, 3], [0, 0.6, 0], 3), 0.6, N.scout)
         for s in SIDES:
-            tendril(
-                flesh,
-                curve([s * 2, 0.4, 2], [s * 7, 0.6, -15], [s * 1.5, 0, 0], 3),
-                [1.3, 1],
-                4,
-                F.bone,
-            )
-            neon.slab(SCOUT_STRIP, [1.3, 1.7], N.scout, Placement([s * 7, 0, 0]))
-            reactor([s * 7, 0.3, -15], 1.1)
-        # Its nose gun (phase 7 review).
-        # It turns on a pivot at the barrel's root to face the player and recoils (WPN-02, WPN-03).
-        config_barrels(p, ENEMY_CONFIG.scout.muzzles, 6.5, 0.55, True)
+            wing = SCOUT_WING if s > 0 else flip_x(SCOUT_WING)
+            light = SCOUT_WING_LIGHT if s > 0 else flip_x(SCOUT_WING_LIGHT)
+            tail = SCOUT_TAILPLANE if s > 0 else flip_x(SCOUT_TAILPLANE)
+            hull.bevel_slab(wing, [-0.5, 0, 0.6], [0.2, 0.3], H.base, None, H.panel)
+            decal(neon, light, 0.65, N.scout)
+            hull.bevel_slab(tail, [-0.3, 0, 0.4], [0.2, 0.2], H.base, None, H.panel)
+            reactor([s * 2.6, 0.3, -12.8], 1.5)
+        # A fin on its back, behind the turret.
+        hull.box([0.6, 4, 5], H.panel, Placement([0, 4.2, -10]))
+        # The turret: a metal ring the gun pivots on (WPN-02), its barrel recoiling (WPN-03).
+        hull.cylinder(
+            SCOUT_TURRET["radius"],
+            SCOUT_TURRET["height"],
+            8,
+            H.panel,
+            Placement([0, SCOUT_TURRET["y"], SCOUT_TURRET["z"]]),
+            SCOUT_TURRET["radius"] * 0.8,
+        )
+        config_barrels(p, ENEMY_CONFIG.scout.muzzles, 6.5, 0.6, True)
 
     return build_enemy_model("scout", scene, N.scout, draw)
 

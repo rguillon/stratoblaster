@@ -27,13 +27,15 @@ def test_enm_hornet_01_hornet_is_a_stinger_with_two_wings_and_a_gun_free_nose(pr
     assert len(body["parts"].neon.geometry.positions) > 0
 
 
-def test_enm_scout_01_scout_has_two_reactors_two_wings_and_one_gun(probe: Any) -> None:
-    """Also ENM-SCOUT-02 (a reactor on each boom) and ENM-SCOUT-03 (the nose gun)."""
+def test_enm_scout_01_scout_has_two_reactors_fixed_wings_and_one_turret_gun(probe: Any) -> None:
+    """Also ENM-SCOUT-02 (fixed airplane wings, no flapping) and ENM-SCOUT-03 (the turret gun)."""
     capture, body = probe(module.build_scout)
     assert capture.name == "scout"
     assert len(body["reactors"]) == 2
-    assert len(body["wings"]) == 2
+    assert body["wings"] == []
     assert len(body["muzzles"]) == 1
+    assert len(body["slides"]) == 1
+    assert body["slides"][0].swivel
 
 
 def test_enm_strafer_03_strafer_has_four_reactors_and_six_guns_on_two_wings(probe: Any) -> None:
