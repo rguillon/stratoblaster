@@ -14,7 +14,7 @@ screen, firing one bullet aimed at the player at a steady beat.
 
 The Scout is a light flyer about `size` L long: a fat flesh fuselage of three swollen segments, two
 eyes at the front, and fixed swept airplane wings in metal with a neon leading edge (no insect wings,
-nothing flaps), a small tailplane and a fin.
+nothing flaps) and a small tailplane; no fin (owner request 2026-11-05).
 
 *Sources: P05-R03, P16-R03, P16-R07, owner request 2026-11-05 (D-272).*
 

@@ -137,8 +137,6 @@ def build_scout(scene: Any) -> Any:
                 Placement([s * SCOUT_NACELLE["x"], 0.3, SCOUT_NACELLE["back"] + 1.2], 0, QUARTER),
             )
             reactor([s * SCOUT_NACELLE["x"], 0.3, SCOUT_NACELLE["back"]], 1.5)
-        # A fin on its back, behind the turret.
-        hull.box([0.6, 4, 5], H.panel, Placement([0, 4.2, -10]))
         # The turret: a metal ring the gun pivots on (WPN-02), its barrel recoiling (WPN-03).
         hull.cylinder(
             SCOUT_TURRET["radius"],
