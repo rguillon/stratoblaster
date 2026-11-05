@@ -1095,3 +1095,15 @@
   fuselage's flanks, swelling round their nozzles; the fin is gone. The cyber-organic touch is a
   flesh canopy ahead of the turret, with a neon visor (ENM-35 still finds flesh on it).
 - **Status:** Proposed
+
+### D-278 — The Rocketeer's pods on one wing each, lit on their flanks
+- **Date:** 2026-11-05
+- **Requirements:** ENM-ROCKETEER-02.
+- **Context:** owner: "don't highlight the barrel of the guns but their sides, make the pieces
+  connecting the body to the guns a single wing, and make the wings cross the guns and show to the
+  outer side of the ship".
+- **Decision:** the two sinews per side become one swept metal wing from the body's flank (x 5)
+  through the pod's middle to 7 px past its centre (3 px past the sac), with a neon light behind its
+  leading edge on the part out past the pod. The vein along the top of each pod becomes two veins
+  along its flanks. The model stays within ENM-12's footprint (about 47 px across, size 1.3 L).
+- **Status:** Proposed

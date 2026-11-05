@@ -9,7 +9,7 @@ import math
 
 from game.config.enemies import ENEMY_CONFIG
 from game.config.enemy_look import ENEMY_LOOK
-from game.view.enemies.basic_parts import config_barrels, eye_pair, sinew
+from game.view.enemies.basic_parts import config_barrels, eye_pair
 from game.view.enemies.enemy_mesh import build_enemy_model
 from game.view.enemies.enemy_shapes import (
     LOBE_SECTION,
@@ -17,6 +17,7 @@ from game.view.enemies.enemy_shapes import (
     angry_eyes,
     around,
     decal,
+    flip_x,
     radial,
 )
 from game.view.enemies.weapon_ports import port_radius
@@ -127,6 +128,38 @@ def build_lancer(scene: Any) -> Any:
     return build_enemy_model("lancer", scene, N.lancer, draw)
 
 
+# ENM-ROCKETEER-02: the radius of a missile sac, and how far a wing reaches past the pod's centre.
+SAC_RADIUS = 4
+WING_PAST_POD = 7
+
+
+# The right wing's leading edge, from the body's flank (`[x, z]`) out to its tip's Z.
+WING_ROOT = [5, 7]  # type: list[float]
+WING_TIP_Z = -1
+
+
+def rocketeer_wing(pod: float) -> list[list[float]]:
+    """Return the right wing (`[x, z]`): from the body's flank, through the pod, out past it."""
+    tip = pod + WING_PAST_POD
+    return [WING_ROOT, [tip, WING_TIP_Z], [tip, -5], [pod + 2, -6.5], [WING_ROOT[0], -9]]
+
+
+def leading_edge_z(pod: float, x: float) -> float:
+    """Return the Z of the right wing's leading edge at `x`."""
+    tip = pod + WING_PAST_POD
+    t = (x - WING_ROOT[0]) / (tip - WING_ROOT[0])
+    return WING_ROOT[1] + (WING_TIP_Z - WING_ROOT[1]) * t
+
+
+def rocketeer_wing_light(pod: float) -> list[list[float]]:
+    """Return the neon light just behind the right wing's leading edge, out past the pod."""
+    a = pod + SAC_RADIUS + 0.3
+    b = pod + WING_PAST_POD - 0.4
+    za = leading_edge_z(pod, a)
+    zb = leading_edge_z(pod, b)
+    return [[a, za - 0.3], [b, zb - 0.3], [b, zb - 1.1], [a, za - 1.1]]
+
+
 # ENM-ROCKETEER-01: the Rocketeer's armour plate, grafted on its back.
 ROCKETEER_ARMOUR = [[0, 9], [4.5, 5], [4.5, -8], [-4.5, -8], [-4.5, 5]]  # type: list[list[float]]
 
@@ -150,16 +183,23 @@ def build_rocketeer(scene: Any) -> Any:
         for eye in angry_eyes([0, 6.2], 0.8, [2.4, 0.6], 0.4):
             decal(neon, eye, 3.62, N.rocketeer)
         for s in SIDES:
-            sinew(p, [s * 7, 0.5, 6], [s * (pod - 3), 0.5, 4], [0, 1, 1], 1.4)
-            sinew(p, [s * 7, 0.5, -8], [s * (pod - 3), 0.5, -6], [0, 1, -1], 1.4)
+            # One swept wing joins the body to the pod, runs through it and comes out past its
+            # outer side, a neon light along its leading edge.
+            wing = rocketeer_wing(pod) if s > 0 else flip_x(rocketeer_wing(pod))
+            light = rocketeer_wing_light(pod) if s > 0 else flip_x(rocketeer_wing_light(pod))
+            hull.bevel_slab(wing, [-0.5, 0, 0.6], [0.2, 0.3], H.base, None, H.panel)
+            decal(neon, light, 0.65, N.rocketeer)
             # The egg sac: a long organ lying along Z, its missile tip at the front.
-            organ(flesh, 4, 6, F.membrane, Placement([s * pod, 0, -11], 0, QUARTER), 2.75)
-            vein_tube(
-                p.vein,
-                curve([s * pod, 3.6, -8], [s * pod, 3.6, 6], [0, 0.8, 0], 3),
-                0.9,
-                N.rocketeer,
-            )
+            organ(flesh, SAC_RADIUS, 6, F.membrane, Placement([s * pod, 0, -11], 0, QUARTER), 2.75)
+            # Its lights run along its flanks, not along the top of the launcher.
+            for side in [-1, 1]:
+                x = s * pod + side * (SAC_RADIUS - 0.5)
+                vein_tube(
+                    p.vein,
+                    curve([x, 0.9, -7], [x, 0.9, 6], [side * 0.9, 0, 0], 3),
+                    0.6,
+                    N.rocketeer,
+                )
             # The launcher: a hexagonal tube out of the sac, as wide as its port (WPN-07).
             missile = ENEMY_CONFIG.rocketeer.missile.radius
             hull.cylinder(
