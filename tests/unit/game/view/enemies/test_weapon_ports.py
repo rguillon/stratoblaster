@@ -98,3 +98,13 @@ def test_wpn_07_the_rocket_is_gone_after_a_launch_then_rises_back_as_it_reloads(
     assert rocket_sunk(_Launching(2, 2 + reload), 0) == 0
     # An enemy that reports no launcher (a boss's piece) is always loaded.
     assert rocket_sunk(object(), 0) == 0
+
+
+def test_wpn_07_a_port_lit_on_its_sides_has_no_glowing_rim_at_its_mouth() -> None:
+    lit = drawn(lambda p: p.muzzle([0, 3, 20], "missile", "up", 5, 0))
+    plain = drawn(lambda p: p.muzzle([0, 3, 20], "missile", "up", 5, 0, False))
+    assert len(lit["parts"].charge.geometry.positions) > 0
+    assert len(plain["parts"].charge.geometry.positions) == 0
+    # Not even the edge trim: it is drawn on the bare metal, which is not trimmed.
+    assert len(plain["parts"].hull.geometry.positions) == 0
+    assert len(plain["parts"].bare.geometry.positions) > 0

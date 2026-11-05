@@ -135,13 +135,13 @@ WING_PAST_POD = 7
 
 # The right wing's leading edge, from the body's flank (`[x, z]`) out to its tip's Z.
 WING_ROOT = [5, 7]  # type: list[float]
-WING_TIP_Z = -1
+WING_TIP_Z = 4
 
 
 def rocketeer_wing(pod: float) -> list[list[float]]:
     """Return the right wing (`[x, z]`): from the body's flank, through the pod, out past it."""
     tip = pod + WING_PAST_POD
-    return [WING_ROOT, [tip, WING_TIP_Z], [tip, -5], [pod + 2, -6.5], [WING_ROOT[0], -9]]
+    return [WING_ROOT, [tip, WING_TIP_Z], [tip, 0], [pod + 2, -3.5], [WING_ROOT[0], -9]]
 
 
 def leading_edge_z(pod: float, x: float) -> float:
@@ -200,13 +200,16 @@ def build_rocketeer(scene: Any) -> Any:
                     0.6,
                     N.rocketeer,
                 )
-            # The launcher: a hexagonal tube out of the sac, as wide as its port (WPN-07).
+            # The launcher: a hexagonal tube out of the sac, as wide as its port (WPN-07). It has
+            # no edge trim (drawn bare), so nothing glows at its mouth; a highlight line runs
+            # along each of its two side edges instead.
             missile = ENEMY_CONFIG.rocketeer.missile.radius
-            hull.cylinder(
-                port_radius(missile), 5, 6, H.dark, Placement([s * pod, 0, 9.5], 0, QUARTER)
-            )
+            tube = port_radius(missile)
+            p.bare.cylinder(tube, 5, 6, H.dark, Placement([s * pod, 0, 9.5], 0, QUARTER))
+            for side in [-1, 1]:
+                neon.box([0.3, 0.3, 4.6], N.rocketeer, Placement([s * pod + side * tube, 0, 12.1]))
             # The model's +X is the screen's left: the config's first pod (launcher 0).
-            p.muzzle([s * pod, 0, 14.5], "missile", "forward", missile, 0 if s > 0 else 1)
+            p.muzzle([s * pod, 0, 14.5], "missile", "forward", missile, 0 if s > 0 else 1, False)
             reactor([s * 2.4, 0, -15], 1.6)
 
     return build_enemy_model("rocketeer", scene, N.rocketeer, draw)

@@ -1106,4 +1106,13 @@
   through the pod's middle to 7 px past its centre (3 px past the sac), with a neon light behind its
   leading edge on the part out past the pod. The vein along the top of each pod becomes two veins
   along its flanks. The model stays within ENM-12's footprint (about 47 px across, size 1.3 L).
+  Then (owner: "there is still a glow line at the front of the barrel, I only want the sides of the
+  barrel to be highlighted. Also move the tip of the wings more to the front"): the Rocketeer's
+  ports have no glowing rim (`muzzle(..., rim=False)`), its launchers' charge lights are two strips
+  along their left and right edges, and the wing tips run from z 4 to 0 (were -1 to -5). Then
+  (owner: "there is still a glowing line at the tip of the cannon, I want it gone, and replace the
+  side yellow lines with highlight lines"): the line was the edge trim along the launcher's front
+  edge (GFX-TRIM). Models get `EnemyParts.bare`, dark metal with no trim; the Rocketeer's launcher
+  tubes and rimless ports are drawn on it, and its side lines are thin neon lines like the wings'
+  (no longer the yellow charge strips).
 - **Status:** Proposed

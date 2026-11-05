@@ -79,6 +79,7 @@ def hex_port(
     direction: str = "up",
     missile: float = DEFAULT_MISSILE,
     index: int = 0,
+    rim: bool = True,
 ) -> None:
     """WPN-07: add a hexagonal missile port at `at` for missiles of hit radius `missile`.
 
@@ -90,14 +91,17 @@ def hex_port(
     outer = bore + PORT_WALL
     depth = max(2.4, bore * 1.8)
     place = axis_of(at, direction, depth)
-    # One revolved profile: the outer wall up, the rim in, the inner wall down the well.
-    parts.hull.lathe(
-        [[outer, 0], [outer, depth], [bore, depth], [bore, 0.3]], 6, H.dark, place, False
-    )
-    parts.hull.lathe([[bore, 0.3], [0, 0.3]], 6, HOLE, place)
-    parts.charge.lathe(
-        [[outer - 0.05, depth + 0.03], [bore + 0.05, depth + 0.03]], 6, WHITE, place, False
-    )
+    # One revolved profile: the outer wall up, the rim in, the inner wall down the well. A port
+    # with no rim is lit along its launcher's sides: nothing glows at its mouth, not even the
+    # edge trim (it is drawn bare).
+    metal = parts.hull if rim or not hasattr(parts, "bare") else parts.bare
+    metal.lathe([[outer, 0], [outer, depth], [bore, depth], [bore, 0.3]], 6, H.dark, place, False)
+    metal.lathe([[bore, 0.3], [0, 0.3]], 6, HOLE, place)
+    # Its glowing rim, unless the launcher is lit along its sides instead.
+    if rim:
+        parts.charge.lathe(
+            [[outer - 0.05, depth + 0.03], [bore + 0.05, depth + 0.03]], 6, WHITE, place, False
+        )
     _rocket(parts, at, direction, missile, depth, index)
 
 

@@ -69,6 +69,7 @@ class EnemyParts:
         rotor: Any,
         muzzle: Any,
         slide: Any = None,
+        bare: Any = None,
     ) -> None:
         # Dark metal (use the `ENEMY_LOOK.hull` shades): the cyber parts grafted on (GFX-ART-12).
         self.hull = hull
@@ -95,6 +96,9 @@ class EnemyParts:
         # the full recoil of the enemy's barrel number `index` (WPN-03; `Enemy.barrels`): `draw`
         # draws it in model space, as at rest, on a `WingParts`.
         self.slide = slide
+        # Dark metal as `hull`, but with no edge trim (GFX-TRIM-06): a part that must not glow
+        # where it ends, e.g. a launcher's mouth lit along its sides instead (WPN-07).
+        self.bare = bare if bare is not None else SolidBuilder()
 
 
 class WingParts:
@@ -187,6 +191,10 @@ def add_surfaces(
         mesh = mesh_of(name + "-" + node_name(mat), in_body_shades(geo), mat, scene)
         mesh.parent = root
         set_trim(mesh, rim_of(neon_color))
+    # The bare metal: the hull's, with no trim (`EnemyParts.bare`).
+    if hasattr(parts, "bare") and len(parts.bare.geometry.positions) > 0:
+        bare = in_body_shades(parts.bare.geometry)
+        mesh_of(name + "-bare", bare, mats.hull, scene).parent = root
     for geo, mat in [(parts.neon.geometry, mats.neon), (parts.vein.geometry, mats.vein)]:
         if len(geo.positions) == 0:
             continue
@@ -342,7 +350,12 @@ def collect_parts(build: Any) -> dict[str, Any]:
     ports = [0]
 
     def muzzle(
-        at: Vec3, kind: Any = None, direction: Any = None, size: Any = None, index: Any = None
+        at: Vec3,
+        kind: Any = None,
+        direction: Any = None,
+        size: Any = None,
+        index: Any = None,
+        rim: Any = True,
     ) -> None:
         # `kind` is 'gun' when the caller leaves it out. A missile muzzle is drawn as a hexagonal
         # port (up unless `direction` says "forward"), a laser's as a lens (forward unless "up").
@@ -355,6 +368,7 @@ def collect_parts(build: Any) -> dict[str, Any]:
                 direction if direction != None else "up",
                 size if size != None else DEFAULT_MISSILE,
                 index if index != None else ports[0],
+                rim is not False,
             )
             ports[0] += 1
         elif name == "laser":
@@ -377,6 +391,7 @@ def collect_parts(build: Any) -> dict[str, Any]:
         rotor,
         muzzle,
         slide,
+        SolidBuilder(),
     )
     build(parts)
     return {

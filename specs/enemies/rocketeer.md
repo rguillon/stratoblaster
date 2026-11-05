@@ -21,9 +21,11 @@ metal armour plate grafted on its back, two slanted neon eye slits on the plate.
 
 On each side lies a long egg sac (its missile pod) ending in a hexagonal launcher port (WPN-07). One
 swept metal wing on each side joins the body to the pod, runs through it and comes out past its
-outer side, a neon light along its leading edge there. The sac's lights are two glowing veins along
-its flanks, not along the top of the launcher. The port's rim is the charge light: it glows brighter
-as the missiles reload, fully when they are loaded (owner request 2026-11-05, D-278).
+outer side, a neon light along its leading edge there; the wing's tip is swept forward to the
+pod's front half. The sac's lights are two glowing veins along its flanks, and the launcher has a
+highlight line along each of its left and right edges: nothing glows on top of it or at its mouth
+(no rim on its port, and no edge trim on the launcher). The missiles' reload shows in the port
+(WPN-07) (owner requests 2026-11-05, D-278).
 
 **Acceptance criteria**
 - Unit test: the model has two missile mouths and two reactors.

@@ -113,7 +113,8 @@ A laser leaves a **lens at the end of a barrel**, which does not recoil.
 Every missile is launched from a **hexagonal port**: a hexagon-bored hole in the end of a barrel (a
 short thick one for a rack, a long one for a mortar). The bore is **wider than the rocket** (its
 inner radius clears the drawn missile) and the tube is wider than the bore, all along the launcher.
-The port is **hollow**: a dark well with a glowing rim, open at the top. Its rocket waits in the well
+The port is **hollow**: a dark well with a glowing rim (or none, when its launcher is lit along its
+sides instead, as the Rocketeer's), open at the top. Its rocket waits in the well
 while it is loaded; from the moment it is launched the port is empty, and the next rocket rises
 back into the well over `missile_reload_seconds` (seen from `missile_reload_show` of that time on).
 
