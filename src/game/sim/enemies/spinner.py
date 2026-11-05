@@ -3,10 +3,11 @@
 
 import math
 
+from core.entities.boss_turret import BossTurret, BossTurretSpec
 from core.entities.enemy import Enemy
 from core.systems.gun_muzzles import GunMuzzles
 from game.config.enemies import ENEMY_CONFIG
-from game.sim.enemies.enemy_helpers import DEG, Cadence
+from game.sim.enemies.enemy_helpers import DEG, DOWN, Cadence
 
 # isort: split
 # __pragma__ ("skip")
@@ -32,7 +33,8 @@ class Spinner(Enemy):
 
     Then spins for 3 s firing a spiral of bullets from its four pods (ENM-SPINNER-05; each bullet
     leaves outwards, so the directions turn with the ring), then leaves upward (ENM-SPINNER-06). Its
-    heading is the ring's rotation.
+    body keeps facing down the screen; its ring, with the pods, turns about its centre: the ring's
+    rotation is its `turret`'s aim.
     """
 
     def __init__(self, x: float, y: float, stop_y: float) -> None:
@@ -41,7 +43,10 @@ class Spinner(Enemy):
         self.state = "enter"
         self._ctx: EnemyContext | None = None
         self._guns = Cadence(CFG.fireInterval, 0)
-        self._muzzles = GunMuzzles(CFG.muzzles)
+        self.heading = DOWN
+        self._ring = BossTurret(BossTurretSpec(0, 0, 0))
+        self.turret = self._ring
+        self._muzzles = GunMuzzles(CFG.muzzles, True)
         self.barrels = self._muzzles.barrels
         self._fired_for = 0.0
 
@@ -49,7 +54,7 @@ class Spinner(Enemy):
         """Where each pod is, and the direction it fires to."""
         result: list[SpinnerPod] = []
         for i in range(CFG.pods):
-            heading = self.heading + (2 * math.pi * i) / CFG.pods
+            heading = self.heading + self._ring.aim + (2 * math.pi * i) / CFG.pods
             result.append(
                 SpinnerPod(
                     self.x + math.sin(heading) * CFG.podRadius,
@@ -62,7 +67,7 @@ class Spinner(Enemy):
     def update(self, ctx: EnemyContext, dt: float) -> None:
         """Advance the enemy by `dt` seconds."""
         spin = CFG.firingSpin if self.state == "fire" else CFG.idleSpin
-        self.heading += spin * DEG * dt
+        self._ring.aim = (self._ring.aim + spin * DEG * dt) % (2 * math.pi)
         if self.state == "enter":
             self.y = max(self.stop_y, self.y - CFG.entrySpeed * dt)
             if self.y == self.stop_y:
@@ -82,7 +87,7 @@ class Spinner(Enemy):
         self.charge = 1
         _count = self._guns.tick(dt * ctx.fire_rate)
         for _i in range(_count):
-            # One bullet from each pod's barrel, along it (WPN-01): the barrels turn with the body.
+            # One bullet from each pod's barrel, along it (WPN-01): the barrels turn with the ring.
             self._muzzles.fire_all(ctx, self, self._fire_bullet)
         if self._fired_for >= CFG.fireDuration:
             self.state = "exit"

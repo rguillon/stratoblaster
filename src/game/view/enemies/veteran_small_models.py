@@ -9,14 +9,12 @@ import math
 from game.config.enemies_veteran import VETERAN_CONFIG
 from game.config.enemies_veteran import VETERAN_NEON as N
 from game.config.enemy_look import ENEMY_LOOK
-from game.sim.enemies.phantom import Phantom
 from game.view.enemies.basic_parts import config_barrels
-from game.view.enemies.enemy_mesh import BuiltEnemyModel, build_enemy_model
+from game.view.enemies.enemy_mesh import build_enemy_model
 from game.view.enemies.enemy_shapes import POD_SECTION, SIDES, flip_x
 from game.view.enemies.organic_parts import eyes
 from game.view.enemies.vetelite_organic import sinew
 from game.view.enemies.veteran_shapes import edge_strip
-from render.babylon import child_meshes
 from render.geometry.organic import (
     SegmentedBody,
     carapace,
@@ -136,6 +134,9 @@ def build_wasp(scene: Any) -> Any:
     return build_enemy_model("wasp", scene, N.wasp, draw)
 
 
+# ENM-PHANTOM-03: its guns' barrels (length, radius).
+PHANTOM_GUN = [7, 0.75]  # type: list[float]
+
 # ENM-PHANTOM-01: the Phantom's flying wing, seen from above (nose +Z).
 PHANTOM_WING = [
     [0, 14],
@@ -182,12 +183,34 @@ def mirror_point(s: float, q: list[float]) -> list[float]:
     return [s * q[0], q[1], q[2]]
 
 
+def docked_phantom(parts: Any, at: list[float]) -> None:
+    """Draw a Phantom waiting in a bay at `at`, nose +Z (a carrier's piece: no reactors, no recoil).
+
+    Its wing and body, the lit wing edges, the nose cap and its five guns, as `build_phantom` does.
+    """
+    place = Placement(at)
+    flesh = parts.flesh
+    flesh.bevel_slab(PHANTOM_WING, [-0.6, 0, 0.6], [0.5, 1.2], F.membrane, place, F.graphite)
+    carapace(flesh, PHANTOM_BODY, [F.graphite, F.membrane], place)
+    for strip in phantom_edges():
+        parts.neon.slab(strip, [-0.15, 0.3], N.phantom, place)
+    parts.hull.loft(POD_SECTION, PHANTOM_NOSE, H.panel, place, None)
+    length = PHANTOM_GUN[0]
+    for m in VETERAN_CONFIG.phantom.muzzles:
+        yaw = math.radians(m[3] if len(m) > 3 else 0)
+        sx = math.sin(yaw)
+        sz = math.cos(yaw)
+        tip = [at[0] - m[0], at[1] + m[2], at[2] - m[1]]
+        base = [tip[0] - sx * (length + 0.8), tip[1], tip[2] - sz * (length + 0.8)]
+        gun = Placement(base, yaw, QUARTER)
+        parts.hull.cylinder(PHANTOM_GUN[1], length, 5, H.dark, gun, PHANTOM_GUN[1] * 0.82)
+
+
 def build_phantom(scene: Any) -> Any:
     """ENM-PHANTOM-01: a sleek flying wing with a faceted hull and pale violet neon edges.
 
-    Two reactors sit at the back of its body (ENM-PHANTOM-05), within the veteran triangle budget
-    (ENM-PHANTOM-07). It fades out and in with the Phantom (ENM-PHANTOM-06): every mesh is as
-    visible as the Phantom is (`Phantom.opacity`).
+    Five big guns spread along the front of its wing; two reactors sit at the back of its body
+    (ENM-PHANTOM-05), within the veteran triangle budget (ENM-PHANTOM-07). It no longer cloaks.
     """
 
     def draw(p: Any) -> None:
@@ -215,17 +238,8 @@ def build_phantom(scene: Any) -> Any:
             p.reactor([s * 2.4, 0.2, -10], 1.2)
         eyes(p, [0, 1.6, 9], {"count": 2, "size": 0.5, "spacing": 1.6}, N.phantom)
         hull.loft(POD_SECTION, PHANTOM_NOSE, H.panel, None, None)
-        config_barrels(p, VETERAN_CONFIG.phantom.muzzles, 5.8, 0.4)
+        # Its five guns spread along the front of the wing, sunk in it: only their tips show past
+        # the leading edge.
+        config_barrels(p, VETERAN_CONFIG.phantom.muzzles, PHANTOM_GUN[0], PHANTOM_GUN[1])
 
-    model = build_enemy_model("phantom", scene, N.phantom, draw)
-
-    def sync(enemy: Any, dt: float) -> None:
-        model.sync(enemy, dt)
-        opacity = enemy.opacity if isinstance(enemy, Phantom) else 1
-        # Listed on each sync, not at build: the edge trim meshes (ENM-PHANTOM-06, GFX-TRIM-06) are
-        # added to the model after this builder returns, and they fade with it too.
-        for mesh in child_meshes(model.root, False):
-            mesh.visibility = opacity
-            mesh.isVisible = opacity > 0
-
-    return BuiltEnemyModel(model.root, sync)
+    return build_enemy_model("phantom", scene, N.phantom, draw)

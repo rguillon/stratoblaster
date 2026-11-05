@@ -77,8 +77,9 @@ def body(p: Any) -> None:
         hull.bevel_slab(
             ARMOUR, [8.4, 8.4, 9.4], [0, 0.8], H.panel, Placement(None, a + math.pi / 3)
         )
-    # The vents its rings of bullets leave from, pointing out: barrels that recoil (WPN-03).
-    config_barrels(p, CFG.ringMuzzles, 2.5, 1.0)
+    # The vents its rings of bullets leave from, pointing out: barrels that recoil (WPN-03), long
+    # enough to reach from inside the rim to well out of it.
+    config_barrels(p, CFG.ringMuzzles, 7, 1.1)
     for x in [-9, 9]:
         reactor_sac(p, [x, 0, -31], 2.4, NEON, F.slate)
 

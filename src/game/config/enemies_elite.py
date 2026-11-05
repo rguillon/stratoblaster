@@ -350,7 +350,8 @@ ELITE_CONFIG = record({
         "ringCount": 12,
         "ringBullet": bullet("orange", 150),
         # Twelve vents around its rim: each bullet of a ring leaves from the one facing its way.
-        "ringMuzzles": around(12, 32, 1),
+        # Their tips stand well out of the hull (its rim is 32 out).
+        "ringMuzzles": around(12, 38.5, 1),
         # It stops launching and firing below this height, too close to the player.
         "lastFraction": 0.3,
         "design": {"parts": []},

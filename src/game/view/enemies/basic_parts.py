@@ -53,14 +53,17 @@ def config_barrels(
     radius: float = 0.55,
     swivel: bool = False,
     centre: Any = None,
+    lit: bool = True,
 ) -> None:
     """Add a recoiling barrel at each of an enemy's config `muzzles`, in their order (WPN-03).
 
     Swivelling ones turn about `centre` (model space) when given, each about its root otherwise.
+    Unlit ones have no charge light at their tips and no edge trim (see `model_barrel`).
     """
     for i, m in enumerate(muzzles):
         angle = m[3] if len(m) > 3 else 0
-        recoil_barrel(parts, [m[0], m[2], -m[1]], angle, length, i, radius, swivel, centre)
+        tip = [-m[0], m[2], -m[1]]
+        model_barrel(parts, tip, math.radians(angle), length, i, radius, swivel, centre, lit)
 
 
 def recoil_barrel(
@@ -104,10 +107,12 @@ def model_barrel(
     radius: float = 0.55,
     swivel: bool = False,
     centre: Any = None,
+    lit: bool = True,
 ) -> None:
     """Add barrel number `index`, which recoils, with its tip at `muzzle_at` (model space).
 
-    It points `yaw` radians from the nose (the model's own, no mirroring).
+    It points `yaw` radians from the nose (the model's own, no mirroring). A `lit` barrel has a
+    charge light at its tip and an edge trim; an unlit one has neither: no glow at all.
     """
     sx, sz = math.sin(yaw), math.cos(yaw)
     tip = muzzle_at
@@ -116,7 +121,7 @@ def model_barrel(
     # The housing the barrel slides out of, fixed on the body. A swivelling barrel has none: it
     # turns on its turret, and a fixed housing would be left pointing ahead.
     if not swivel:
-        parts.hull.cylinder(
+        (parts.hull if lit else parts.bare).cylinder(
             radius * 1.45,
             length * 0.45,
             6,
@@ -126,7 +131,7 @@ def model_barrel(
         )
 
     def draw(piece: Any) -> None:
-        piece.hull.cylinder(
+        (piece.hull if lit else piece.bare).cylinder(
             radius,
             length,
             5,
@@ -134,7 +139,8 @@ def model_barrel(
             Placement([base[0], base[1], base[2]], yaw, QUARTER),
             radius * 0.82,
         )
-        piece.neon.cylinder(radius * 1.1, 0.8, 5, WHITE, Placement(end, yaw, QUARTER))
+        if lit:
+            piece.neon.cylinder(radius * 1.1, 0.8, 5, WHITE, Placement(end, yaw, QUARTER))
 
     parts.slide(base, [-sx, -sz], length * ENEMY_LOOK.barrelRecoil, index, draw, swivel, centre)
     parts.muzzle(muzzle_at, "gun")

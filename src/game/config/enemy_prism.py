@@ -12,7 +12,7 @@ from game.config.record import record
 # Where each wing's emitter is: out from the centre, ahead of it (a muzzle's Y is negative ahead),
 # and its height above the playfield.
 EMITTER_X = 21
-EMITTER_AHEAD = 4
+EMITTER_AHEAD = 21
 EMITTER_HEIGHT = 2.5
 
 PRISM_CONFIG = record({

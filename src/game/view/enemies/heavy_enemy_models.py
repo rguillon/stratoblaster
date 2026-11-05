@@ -12,6 +12,7 @@ from game.config.enemy_look import ENEMY_LOOK
 from game.view.enemies.basic_parts import config_barrels, eye_pair
 from game.view.enemies.enemy_mesh import build_enemy_model
 from game.view.enemies.enemy_shapes import (
+    CANOPY_SECTION,
     LOBE_SECTION,
     SIDES,
     angry_eyes,
@@ -26,12 +27,11 @@ from render.geometry.organic import (
     curve,
     organ,
     segmented_body,
-    tendril,
 )
 from render.geometry.organic import (
     vein as vein_tube,
 )
-from render.geometry.solids import Placement
+from render.geometry.solids import LoftOptions, Placement
 
 # isort: split
 # __pragma__ ("skip")
@@ -43,50 +43,104 @@ from typing import Any
 H = ENEMY_LOOK.hull
 F = ENEMY_LOOK.flesh
 N = ENEMY_LOOK.neon
-WHITE = [1, 1, 1]  # type: list[float]
 QUARTER = math.pi / 2
 
-# ENM-SPINNER-02: the Spinner's pod muzzles, lit while it fires.
-SPINNER_MUZZLE = [[-1.5, 2.2], [1.5, 2.2], [1.3, 3.1], [-1.3, 3.1]]  # type: list[list[float]]
+
+# ENM-SPINNER-01: its outer ring, kept low. A lathe profile faces outwards when it runs from the
+# outside in: outer wall up, lip in, inner wall down.
+SPINNER_RING = [  # type: list[list[float]]
+    [15, -1.6],
+    [15, 0.2],
+    [14.4, 0.8],
+    [12.6, 0.8],
+    [12, 0.2],
+    [12, -1.6],
+]
+SPINNER_SIDES = 16
+# A gun's mount on the ring (`[w, h, d]`, standing on its base) and how far out its centre is.
+SPINNER_MOUNT = [3.4, 2.2, 3.6]  # type: list[float]
+SPINNER_MOUNT_AT = 15
+# The guns' barrels (length, radius), and the collar each comes out of at the mount's face.
+SPINNER_GUN = [3.6, 0.8]  # type: list[float]
+SPINNER_COLLAR = [1.25, 0.9]  # type: list[float]
+# The hub under the body the ring's spokes turn on, and the spokes' height.
+SPINNER_HUB = 3.2
+SPINNER_SPOKE_Y = -1.2
+# The inner body, raised over the ring so its reactors' flames pass over it, not through it.
+SPINNER_LIFT = 2.4
+SPINNER_BODY = SegmentedBody(-8, 9.5, 3, 4.6, -1.6, 1.8)
+# Its cockpit: a canopy on its back, ahead of the middle (loft stations `[z, w, bottom, top]`).
+SPINNER_CANOPY = [  # type: list[list[float]]
+    [0, 0.6, 1.4, 1.8],
+    [2.2, 2.1, 1.3, 2.9],
+    [5.2, 1.8, 1.0, 2.6],
+    [7.4, 0.4, 0.6, 0.9],
+]
+# Its two engines either side of the tail: across, where their nozzles open (Z), their length
+# forward and their radius; the reactor's in them.
+SPINNER_ENGINE = {"x": 3.4, "back": -9.6, "length": 7, "radius": 1.8}
+SPINNER_REACTOR = 1.4
+
+
+def spinner_body(p: Any) -> None:
+    """Draw the Spinner's inner body (ENM-SPINNER-01): it faces the player, the ring turns round it.
+
+    A swollen flesh body raised over the ring, a dark cockpit canopy with a lit visor, a metal
+    armour plate, and two engine pods at its tail, each with a reactor (ENM-SPINNER-03).
+    """
+    lift = Placement([0, SPINNER_LIFT, 0])
+    segmented_body(p.flesh, SPINNER_BODY, F.graphite, lift, LOBE_SECTION)
+    p.hull.loft(CANOPY_SECTION, SPINNER_CANOPY, H.dark, lift, LoftOptions(True))
+    p.neon.box([2.6, 0.3, 0.4], N.spinner, Placement([0, SPINNER_LIFT + 2.3, 6.3]))
+    p.hull.box([3.6, 0.6, 5], H.base, Placement([0, SPINNER_LIFT + 1.3, -4]), H.panel)
+    engine = SPINNER_ENGINE
+    for s in SIDES:
+        x = s * engine["x"]
+        at = Placement([x, SPINNER_LIFT, engine["back"]], 0, QUARTER)
+        p.hull.cylinder(engine["radius"], engine["length"], 6, H.base, at, engine["radius"] * 0.7)
+        p.neon.box(
+            [0.3, 0.3, engine["length"] - 1.5],
+            N.spinner,
+            Placement([x + s * 1.2, SPINNER_LIFT + 1.2, engine["back"] + 3.6]),
+        )
+        p.reactor([x, SPINNER_LIFT, engine["back"]], SPINNER_REACTOR)
+
+
+def spinner_ring(piece: Any) -> None:
+    """Draw the Spinner's outer ring (ENM-SPINNER-02), all of which turns with its spin.
+
+    The ring, its edges glowing with the highlight (ENM-SPINNER-03), four spokes under the body to
+    the hub it turns on, and four gun mounts on its outside, each with a collar its barrel comes
+    out of.
+    """
+    metal = piece.bare
+    # The ring itself is the trimmed metal: its edges glow with the highlight (GFX-TRIM-06).
+    piece.hull.lathe(SPINNER_RING, SPINNER_SIDES, H.panel, None, False)
+    metal.cylinder(SPINNER_HUB, 0.8, 8, H.dark, Placement([0, SPINNER_SPOKE_Y - 0.4, 0]))
+    outer = SPINNER_MOUNT_AT + SPINNER_MOUNT[2] / 2
+    for a in around(4):
+        spoke = Placement(radial(a, (SPINNER_HUB + 12) / 2, SPINNER_SPOKE_Y - 0.3), a)
+        metal.box([1.2, 0.6, 12 - SPINNER_HUB + 0.4], H.dark, spoke)
+        mount = Placement(radial(a, SPINNER_MOUNT_AT, -1.6), a)
+        metal.box(SPINNER_MOUNT, H.base, mount, H.panel)
+        collar = Placement(radial(a, outer - 0.1, 0), a, QUARTER)
+        metal.cylinder(SPINNER_COLLAR[0], SPINNER_COLLAR[1], 6, H.dark, collar)
 
 
 def build_spinner(scene: Any) -> Any:
-    """ENM-SPINNER-01: a spiral turret, an organic core spinning four sinew arms.
+    """ENM-SPINNER-01: an inner body inside an outer gun ring that spins round it.
 
-    The arms are curled the same way round, with a flesh pod at the end of each with a metal muzzle
-    collar, and a neon heart (yellow, ENM-SPINNER-03).
+    The body (cockpit, two reactors) faces the player; the ring, its spokes, its four gun mounts and
+    their barrels turn with the Spinner's spin (`Spinner.turret`), the barrels recoiling as they
+    fire (ENM-SPINNER-02, WPN-03).
     """
-    pod_radius = ENEMY_CONFIG.spinner.podRadius
 
     def draw(p: Any) -> None:
-        flesh = p.flesh
-        hull = p.hull
-        neon = p.neon
-        charge = p.charge
-        organ(flesh, 5, 6, F.graphite, Placement([0, -1.6, 0]), 0.35)
-        for a in around(4):
-            # Each arm leaves the core a quarter turn behind its pod: a spiral.
-            arm = curve(radial(a - 0.9, 4.2, 0), radial(a, pod_radius - 3.4, 0), [0, 0.5, 0], 3)
-            bowed = []
-            for i, q in enumerate(arm):
-                k = math.sin((math.pi * i) / 3) * 2.2
-                bowed.append([q[0] + math.cos(a) * k, q[1], q[2] - math.sin(a) * k])
-            tendril(flesh, bowed, [1.3, 1], 3, F.sinew)
-            organ(
-                flesh,
-                2.4,
-                5,
-                F.slate,
-                Placement(radial(a, pod_radius - 3.6, -0.2), a, QUARTER),
-                1.1,
-            )
-            hull.ring(1.6, 1, 5, H.panel, Placement(radial(a, pod_radius + 1.2, 0), a, QUARTER))
-            # The pods' muzzles light up while it fires.
-            charge.slab(SPINNER_MUZZLE, [-0.7, 0.7], WHITE, Placement(radial(a, pod_radius, 0), a))
-        # Each pod's barrel recoils (WPN-03).
-        config_barrels(p, ENEMY_CONFIG.spinner.muzzles, 2.2, 0.7)
-        core = [[0, -1.5], [3.2, -0.6], [0, 2.6]]
-        neon.lathe(core, 6, N.spinner, None)
+        spinner_body(p)
+        # The ring turns about the centre with the spin, as the barrels do (its own recoil: none).
+        p.slide([0, 0, 0], [0, -1], 0, 0, spinner_ring, True)
+        gun = SPINNER_GUN
+        config_barrels(p, ENEMY_CONFIG.spinner.muzzles, gun[0], gun[1], True, [0, 0, 0], False)
 
     return build_enemy_model("spinner", scene, N.spinner, draw)
 

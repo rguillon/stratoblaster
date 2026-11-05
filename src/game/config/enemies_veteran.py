@@ -28,6 +28,24 @@ def bullet(style: str, speed: float, size: float = 4) -> Any:
     return record({"speed": speed, "radius": size, "style": style})
 
 
+# The Phantom's five guns (ENM-PHANTOM-03), fanned 12 degrees apart, `PHANTOM_GUN_GAP` apart
+# across: each tip about 5 px ahead of the wing's swept leading edge there (middle, then further
+# out), at a height inside the wing.
+PHANTOM_GUN_GAP = 3.2
+PHANTOM_GUN_TIPS = [18.4, 15.2, 11.9]
+PHANTOM_GUN_HEIGHT = -0.6
+
+
+def phantom_barrels() -> list[list[float]]:
+    """Return the Phantom's barrels, `[x, y, height, angle]` (see `fan_barrels`)."""
+    barrels: list[list[float]] = []
+    for i in range(5):
+        k = i - 2
+        tip = PHANTOM_GUN_TIPS[abs(k)]
+        barrels.append([-k * PHANTOM_GUN_GAP, -tip, PHANTOM_GUN_HEIGHT, k * 12])
+    return barrels
+
+
 VETERAN_CONFIG = record({
     # ENM-WASP-11: health, points and hit circle.
     "wasp": {
@@ -81,33 +99,34 @@ VETERAN_CONFIG = record({
         "stats": {"model": "phantom", "radius": radius(1) * 0.8, "health": 90, "points": 450},
         "size": 1,
         "entrySpeed": 150,
-        "brakeDistance": 60,
-        # Where it moves to and reappears: X across the width, heights in the upper half.
+        # Between its places it speeds up to `cruiseSpeed` at `acceleration`, its nose turning
+        # along its way at up to `turnDeg` per second, and brakes into each place at `brake`.
+        "cruiseSpeed": 170,
+        "acceleration": 260,
+        "brake": 300,
+        "turnDeg": 240,
+        # Where it flies to and fires from: X across the width, heights in the upper half.
         "placeX": [0.15, 0.85],
         "placeY": [0.6, 0.82],
         # Each place at least this far from the one before.
-        "jumpDistance": 110,
-        "fade": 0.4,
-        "hidden": 0.8,
-        # It cloaks twice (ENM-PHANTOM-09) and fires its spread after the first jump only
-        # (ENM-PHANTOM-10); after the last it dives.
-        "jumps": 2,
-        "spreadJump": 1,
-        # How long it stays in view before it fades out again.
-        "hold": 0.6,
-        # Shots go through it while it is less visible than this (ENM-PHANTOM-12).
-        "solidOpacity": 0.5,
+        "moveDistance": 110,
+        # It fires from this many places (ENM-PHANTOM-09); after the last it dives.
+        "stops": 2,
+        # How long it takes to point at the player before it fires, and how long it holds after.
+        "aimTime": 0.5,
+        "hold": 0.4,
         # The dive (ENM-PHANTOM-11): the pause turning its nose to the player, then the
         # acceleration and the top speed.
         "pause": 0.5,
         "diveAcceleration": 900,
         "diveMaxSpeed": 560,
-        # The spread fired as it reappears: 5 bullets 12 degrees apart, centred on the player.
+        # The spread fired at each place: 5 bullets 12 degrees apart, centred on the player.
         "spreadCount": 5,
         "spreadSpacing": 12,
         "bullet": bullet("purple", 200),
-        # The gun under its nose.
-        "muzzles": fan_barrels(5, 12, 1.0, -14.6, 0.6),
+        # The guns along the front of its wing, spread wide, sunk in it: their ends stick out
+        # past the nose and the leading edges.
+        "muzzles": phantom_barrels(),
         "xRange": [0.25, 0.75],
     },
 })

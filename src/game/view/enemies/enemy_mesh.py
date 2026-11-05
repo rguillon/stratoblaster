@@ -76,6 +76,7 @@ class EnemyParts:
         muzzle: Any,
         slide: Any = None,
         bare: Any = None,
+        bare_flesh: Any = None,
     ) -> None:
         # Dark metal (use the `ENEMY_LOOK.hull` shades): the cyber parts grafted on (GFX-ART-12).
         self.hull = hull
@@ -105,16 +106,29 @@ class EnemyParts:
         # Dark metal as `hull`, but with no edge trim (GFX-TRIM-06): a part that must not glow
         # where it ends, e.g. a launcher's mouth lit along its sides instead (WPN-07).
         self.bare = bare if bare is not None else SolidBuilder()
+        # Flesh as `flesh`, with no edge trim: a model that must show no highlight at all.
+        self.bare_flesh = bare_flesh if bare_flesh is not None else SolidBuilder()
 
 
 class WingParts:
     """The builders a fluttering wing is drawn with."""
 
-    def __init__(self, hull: Any, flesh: Any, neon: Any, vein: Any) -> None:
+    def __init__(
+        self,
+        hull: Any,
+        flesh: Any,
+        neon: Any,
+        vein: Any,
+        bare: Any = None,
+        bare_flesh: Any = None,
+    ) -> None:
         self.hull = hull
         self.flesh = flesh
         self.neon = neon
         self.vein = vein
+        # Metal and flesh with no edge trim (`EnemyParts.bare`, `EnemyParts.bare_flesh`).
+        self.bare = bare if bare is not None else SolidBuilder()
+        self.bare_flesh = bare_flesh if bare_flesh is not None else SolidBuilder()
 
 
 class Wing:
@@ -202,10 +216,14 @@ def add_surfaces(
         mesh = mesh_of(name + "-" + node_name(mat), in_body_shades(geo), mat, scene)
         mesh.parent = root
         set_trim(mesh, rim_of(neon_color))
-    # The bare metal: the hull's, with no trim (`EnemyParts.bare`).
+    # The bare metal and flesh: the hull's and the flesh's, with no trim (`EnemyParts.bare`,
+    # `EnemyParts.bare_flesh`).
     if hasattr(parts, "bare") and len(parts.bare.geometry.positions) > 0:
         bare = in_body_shades(parts.bare.geometry)
         mesh_of(name + "-bare", bare, mats.hull, scene).parent = root
+    if hasattr(parts, "bare_flesh") and len(parts.bare_flesh.geometry.positions) > 0:
+        bare_flesh = in_body_shades(parts.bare_flesh.geometry)
+        mesh_of(name + "-bare-flesh", bare_flesh, mats.flesh, scene).parent = root
     for geo, mat in [(parts.neon.geometry, mats.neon), (parts.vein.geometry, mats.vein)]:
         if len(geo.positions) == 0:
             continue
@@ -400,6 +418,7 @@ def collect_parts(build: Any) -> dict[str, Any]:
         index: Any = None,
         rim: Any = True,
         well: Any = None,
+        yaw: Any = None,
     ) -> None:
         # `kind` is 'gun' when the caller leaves it out. A missile muzzle is drawn as a hexagonal
         # port (up unless `direction` says "forward"), a laser's as a lens (forward unless "up").
@@ -417,14 +436,15 @@ def collect_parts(build: Any) -> dict[str, Any]:
             )
             ports[0] += 1
         elif name == "laser":
-            # A laser's `size` is its barrel's radius and `well` its length (the default lens's
-            # when left out).
+            # A laser's `size` is its barrel's radius, `well` its length (the default lens's
+            # when left out) and `yaw` the way it points from the nose (straight ahead by default).
             laser_lens(
                 parts,
                 at,
                 direction if direction != None else "forward",
                 well if well != None else LENS_LENGTH,
                 size if size != None else LENS_RADIUS,
+                yaw if yaw != None else 0,
             )
 
     def flap(pivot: Vec3, side: float, span: float, draw: Any) -> None:

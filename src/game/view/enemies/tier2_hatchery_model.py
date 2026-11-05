@@ -143,52 +143,70 @@ def bay(p: Any, c: float, k: int, bays: int) -> None:
     p.slide(lift, [0, 0], -LIFT_LOW, bays + k, wasp_draw(c), False, None, "track", 1)
 
 
-def dome_draw(centre: list[float]) -> Any:
-    """Return what a turret's turning dome at `centre` draws (factory): its gun's housing too."""
+def scaled(profile: list[list[float]], size: list[float]) -> list[list[float]]:
+    """Return a lathe profile scaled by `size[0]`, then lifted by `size[1]`."""
+    return [[q[0] * size[0], q[1] * size[0] + size[1]] for q in profile]
+
+
+def dome_draw(centre: list[float], height: float, glow: Any, size: list[float]) -> Any:
+    """Return what a turret's turning dome at `centre` draws (factory): its gun's housing too.
+
+    Its gun at `height`, its sensor lit in `glow`; `size` is its scale and lift (see `turret`).
+    """
+    k = size[0]
+    lift = size[1]
 
     def draw(piece: Any) -> None:
-        piece.hull.lathe(TURRET_DOME, 8, H.panel, Placement(centre))
-        housing = Placement(
-            [centre[0], HATCHERY_CONFIG.turrets.height, centre[2] + 2.4], 0, QUARTER
-        )
-        piece.hull.cylinder(1.1, 2.2, 6, H.dark, housing, 0.5)
-        # Its sensor, a lime slit on the dome's front.
-        eye = Placement([centre[0], 1.1, centre[2] + 2.1])
-        piece.neon.box([1.8, 0.25, 0.4], N.hatchery, eye)
+        piece.hull.lathe(scaled(TURRET_DOME, size), 8, H.panel, Placement(centre))
+        housing = Placement([centre[0], height, centre[2] + 2.4 * k], 0, QUARTER)
+        piece.hull.cylinder(1.1 * k, 2.2 * k, 6, H.dark, housing, 0.5 * k)
+        # Its sensor, a lit slit on the dome's front.
+        eye = Placement([centre[0], lift + 1.1 * k, centre[2] + 2.1 * k])
+        piece.neon.box([1.8 * k, 0.25 * k, 0.4 * k], glow, eye)
 
     return draw
 
 
-def barrel_draw(base: list[float], end: list[float]) -> Any:
-    """Return what a turret's barrel from `base` to its charge light at `end` draws (factory)."""
-    length = TURRET_BARREL[0]
-    radius = TURRET_BARREL[1]
+def barrel_draw(base: list[float], end: list[float], k: float) -> Any:
+    """Return what a turret's barrel from `base` to its charge light at `end` draws (factory).
+
+    `k` times as big as the Hatchery's.
+    """
+    length = TURRET_BARREL[0] * k
+    radius = TURRET_BARREL[1] * k
 
     def draw(piece: Any) -> None:
         place = Placement(base, 0, QUARTER)
         piece.hull.cylinder(radius, length, 6, H.dark, place, radius * 0.82)
-        piece.neon.cylinder(radius * 1.1, 0.8, 5, WHITE, Placement(end, 0, QUARTER))
+        piece.neon.cylinder(radius * 1.1, 0.8 * k, 5, WHITE, Placement(end, 0, QUARTER))
 
     return draw
 
 
-def turret(p: Any, k: int) -> None:
-    """Add side gun turret number `k`: a fixed pedestal, a dome and a barrel turning with it.
+def turret(p: Any, k: int, guns: Any, glow: Any, size: list[float] | None = None) -> None:
+    """Add gun turret number `k` of `guns` (a carrier's `turrets` config), its sensor in `glow`.
 
-    The dome and the barrel turn with the enemy's `turrets[k]`; the barrel recoils with its
-    `barrels[k]` (WPN-02, WPN-03).
+    A fixed pedestal, a dome and a barrel turning with it. The dome and the barrel turn with the
+    enemy's `turrets[k]`; the barrel recoils with its `barrels[k]` (WPN-02, WPN-03). `size` is how
+    many times as big as the Hatchery's it is and how high it stands (`[scale, lift]`; `[1, 0]`
+    when None); the config's barrel height and length must match it.
     """
-    guns = HATCHERY_CONFIG.turrets
+    if size is None:
+        size = [1, 0]
+    scale = size[0]
     pivot = guns.pivots[k]
     # The config's X is right of the screen, the model's +X its left; its Y up, the model's Z down.
     centre = [-pivot[0], 0, -pivot[1]]
-    p.hull.lathe(TURRET_BASE, 8, H.base, Placement(centre))
-    p.slide(centre, [0, -1], 0, k, dome_draw(centre), True, centre, "barrel", 0, k)
+    p.hull.lathe(scaled(TURRET_BASE, size), 8, H.base, Placement(centre))
+    dome = dome_draw(centre, guns.height, glow, size)
+    p.slide(centre, [0, -1], 0, k, dome, True, centre, "barrel", 0, k)
     tip = [centre[0], guns.height, centre[2] + guns.barrel]
-    end = [tip[0], tip[1], tip[2] - 0.8]
-    base = [end[0], end[1], end[2] - TURRET_BARREL[0]]
-    recoil = TURRET_BARREL[0] * ENEMY_LOOK.barrelRecoil
-    p.slide(base, [0, -1], recoil, k, barrel_draw(base, end), True, centre, "barrel", 0, k)
+    end = [tip[0], tip[1], tip[2] - 0.8 * scale]
+    length = TURRET_BARREL[0] * scale
+    base = [end[0], end[1], end[2] - length]
+    recoil = length * ENEMY_LOOK.barrelRecoil
+    barrel = barrel_draw(base, end, scale)
+    p.slide(base, [0, -1], recoil, k, barrel, True, centre, "barrel", 0, k)
     p.muzzle(tip, "gun")
 
 
@@ -240,6 +258,6 @@ def build_hatchery(scene: Any) -> Any:
         for k in range(len(bays)):
             bay(p, bays[k], k, len(bays))
         for k in range(len(HATCHERY_CONFIG.turrets.pivots)):
-            turret(p, k)
+            turret(p, k, HATCHERY_CONFIG.turrets, N.hatchery)
 
     return build_enemy_model("hatchery", scene, N.hatchery, draw)

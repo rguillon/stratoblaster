@@ -1,12 +1,10 @@
 # Copyright (c) 2026 Renaud Guillon
 """The Hatchery (`specs/enemies/hatchery.md`)."""
 
-from core.entities.barrel import Barrel
-from core.entities.boss_turret import BossTurret, BossTurretSpec
 from core.entities.enemy import Enemy
-from core.systems.projectile_motion import heading_to, turn_towards, wrap_angle
 from game.config.enemy_hatchery import HATCHERY_CONFIG
-from game.sim.enemies.enemy_helpers import DEG, DOWN, Cadence, on_playfield
+from game.sim.enemies.carrier_guns import CarrierGuns
+from game.sim.enemies.enemy_helpers import DOWN, Cadence, on_playfield
 from game.sim.enemies.wasp import Wasp
 
 # isort: split
@@ -17,10 +15,7 @@ from core.entities.enemy import EnemyContext
 
 
 CFG = HATCHERY_CONFIG
-GUNS = CFG.turrets
 INFINITY = float("Infinity")
-# A turret fires once it points within this of the player (WPN-02).
-AIMED = 6 * DEG
 
 
 def ramp(t: float, length: float) -> float:
@@ -49,18 +44,16 @@ class Hatchery(Enemy):
         self._launched_at: float | None = None
         self.tracks = [0.0 for _i in range(2 * len(CFG.bays))]
         self.heading = DOWN
-        # Its two turrets (each turns on its own, `turrets`), each with its barrel, pointing down
-        # the screen at rest; the shot each owes, waiting for it to point at the player.
-        self.turrets = [BossTurret(BossTurretSpec(p[0], p[1], GUNS.turnDeg)) for p in GUNS.pivots]
-        self.barrels = [Barrel([p[0], p[1] - GUNS.barrel, GUNS.height]) for p in GUNS.pivots]
-        self._gun = Cadence(GUNS.fireInterval, GUNS.firstShot)
-        self._due = [0 for _p in GUNS.pivots]
+        # Its two turrets (each turns on its own, `turrets`), each with its barrel.
+        self._guns = CarrierGuns(CFG.turrets)
+        self.turrets = self._guns.turrets
+        self.barrels = self._guns.barrels
 
     def update(self, ctx: EnemyContext, dt: float) -> None:
         """Advance the enemy by `dt` seconds."""
         self.y -= CFG.speed * dt
         if on_playfield(self, ctx):
-            self._turrets(ctx, dt)
+            self._guns.update(self, ctx, dt)
         if not on_playfield(self, ctx) or self.y < CFG.lastLaunchFraction * ctx.height:
             self.charge = 0
             self._move_bays(INFINITY)
@@ -70,25 +63,6 @@ class Hatchery(Enemy):
             self._launch(ctx)
         self.charge = self._launcher.progress
         self._move_bays((1 - self._launcher.progress) * CFG.launchInterval)
-
-    def _turrets(self, ctx: EnemyContext, dt: float) -> None:
-        """Turn each turret towards the player, and fire the shot it owes once it points at them."""
-        shots = self._gun.tick(dt * ctx.fire_rate)
-        for k, turret in enumerate(self.turrets):
-            # One shot owed at most: a turret slow to come round does not fire a burst.
-            self._due[k] = min(1, self._due[k] + shots)
-            pivot = ctx.seen(self.place((turret.spec.x, turret.spec.y, GUNS.height)))
-            target = heading_to(pivot.x, pivot.y, ctx.player_x, ctx.player_y)
-            rate = turret.spec.turn_rate_deg * DEG * dt
-            turret.aim = wrap_angle(turn_towards(turret.aim, target - self.heading, rate))
-            own = self.heading + turret.aim
-            if self._due[k] <= 0 or abs(wrap_angle(own - target)) > AIMED:
-                continue
-            barrel = self.barrels[k]
-            tip = ctx.seen(self.place(turret.turned(barrel.muzzle)))
-            barrel.kick(self.age)
-            ctx.fire_bullet(tip.x, tip.y, own, GUNS.bullet)
-            self._due[k] -= 1
 
     def _move_bays(self, next_launch: float) -> None:
         """Set the doors and the Wasps' lifts, `next_launch` seconds before the next launch."""

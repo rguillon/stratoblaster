@@ -144,13 +144,18 @@ class GunMuzzles:
         source: MuzzleSource,
         fire: Callable[[float, float, float], None],
     ) -> None:
-        """Fire one shot from every fixed barrel, along it (a ring, a pod ring): WPN-01, WPN-02."""
+        """Fire one shot from every fixed barrel, along it (a ring, a pod ring): WPN-01, WPN-02.
+
+        Barrels on a turret point the way it has turned them.
+        """
+        swivel = self._swivel_of(source)
+        turn = swivel.aim if swivel is not None else 0
         for barrel in self.barrels:
             if barrel.angle is None:
                 continue
             tip = ctx.seen(source.place(barrel.muzzle, self._on_turret))
             barrel.kick(_now(source))
-            fire(tip.x, tip.y, source.heading + barrel.angle)
+            fire(tip.x, tip.y, source.heading + turn + barrel.angle)
 
     def _swivel_of(self, source: MuzzleSource) -> BossTurret | None:
         """Return the turning turret these barrels are on, if the source has one (WPN-02)."""

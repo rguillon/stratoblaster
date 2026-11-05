@@ -7,6 +7,8 @@ as the Overlord's cannons (a collar, two coils, a white-hot lens). Neither recoi
 nose +Z, Y up.
 """
 
+import math
+
 from game.config.enemy_look import ENEMY_LOOK
 from render.geometry.solids import Placement
 
@@ -42,15 +44,16 @@ LENS_LENGTH = 3.0
 LENS_PROFILE = [[0, 0], [1.6, 0.5], [1.1, 1.4], [0, 1.7]]  # type: list[list[float]]
 
 
-def axis_of(at: Vec3, direction: str, back: float) -> Placement:
+def axis_of(at: Vec3, direction: str, back: float, yaw: float = 0) -> Placement:
     """Return the placement of a part standing along `direction` ("up" or "forward") from `at`.
 
     Its base is `back` behind `at` for a forward part (it ends at `at`), and at `at` for an upward
-    one (it stands on the deck).
+    one (it stands on the deck). A forward part points `yaw` radians from the nose (towards +X).
     """
     if direction == "up":
         return Placement([at[0], at[1], at[2]])
-    return Placement([at[0], at[1], at[2] - back], 0, QUARTER)
+    base = [at[0] - math.sin(yaw) * back, at[1], at[2] - math.cos(yaw) * back]
+    return Placement(base, yaw, QUARTER)
 
 
 def rocket_radius(missile: float) -> float:
@@ -144,13 +147,15 @@ def laser_lens(
     direction: str = "forward",
     length: float = LENS_LENGTH,
     radius: float = LENS_RADIUS,
+    yaw: float = 0,
 ) -> None:
     """WPN-06: add a laser's emitter at `at`: a hex barrel, two coils and a white-hot lens.
 
     The barrel is `length` long behind `at` and `radius` wide; its coils and lens scale with its
-    radius and stay at its mouth, so a long barrel is a gun the length of a whole nose.
+    radius and stay at its mouth, so a long barrel is a gun the length of a whole nose. A forward
+    one points `yaw` radians from the nose (along an arm that is not straight ahead).
     """
-    place = axis_of(at, direction, length)
+    place = axis_of(at, direction, length, yaw)
     k = radius / LENS_RADIUS
     parts.hull.lathe([[radius, 0], [radius, length]], 6, H.dark, place)
     for y in [0.7, 1.9]:
@@ -164,7 +169,10 @@ def axis_of_shift(place: Placement, along: float) -> Placement:
     """Return `place` moved `along` its own axis (up, or forward when it is pitched)."""
     at = place.at or [0, 0, 0]
     if place.pitch != 0:
-        return Placement([at[0], at[1], at[2] + along], place.yaw, place.pitch, place.roll)
+        # Forward along its yaw.
+        sx = math.sin(place.yaw) * along
+        sz = math.cos(place.yaw) * along
+        return Placement([at[0] + sx, at[1], at[2] + sz], place.yaw, place.pitch, place.roll)
     return Placement([at[0], at[1] + along, at[2]], place.yaw, place.pitch, place.roll)
 
 
