@@ -168,7 +168,7 @@ shrinks with its height as the camera sees it.
 |------|-------|-------|
 | `barrel_aim_tolerance` | 6° | as BOSS-29's `boss_turret_aim_tolerance` |
 | `barrel_recoil` | 0.35 of the barrel's length | WPN-03 |
-| `barrel_recoil_seconds` | 0.18 s | WPN-03; the slide back is instant, the return eased out |
+| `barrel_recoil_seconds` | 0.5 s | WPN-03; the slide back is instant, the return eased out |
 | `missile_launch_seconds` | 0.25 s | WPN-08 |
 | `missile_climb_seconds` | 0.3 s | WPN-09 |
 | `missile_arc_radius` | 40 px | WPN-09 |

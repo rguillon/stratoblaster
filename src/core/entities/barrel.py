@@ -14,7 +14,7 @@ DEG = math.pi / 180
 INFINITY = float("Infinity")
 
 # How long a barrel takes to slide back out after a shot (WPN-03), seconds.
-RECOIL_SECONDS = 0.18
+RECOIL_SECONDS = 0.5
 
 
 class Barrel:
