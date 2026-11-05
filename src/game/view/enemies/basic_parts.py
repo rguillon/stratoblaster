@@ -96,15 +96,17 @@ def model_barrel(
     tip = muzzle_at
     end = [tip[0] - sx * 0.8, tip[1], tip[2] - sz * 0.8]
     base = [end[0] - sx * length, end[1], end[2] - sz * length]
-    # The housing the barrel slides out of, fixed on the body.
-    parts.hull.cylinder(
-        radius * 1.45,
-        length * 0.45,
-        6,
-        H.dark,
-        Placement([base[0], base[1], base[2]], yaw, QUARTER),
-        0.45,
-    )
+    # The housing the barrel slides out of, fixed on the body. A swivelling barrel has none: it
+    # turns on its turret, and a fixed housing would be left pointing ahead.
+    if not swivel:
+        parts.hull.cylinder(
+            radius * 1.45,
+            length * 0.45,
+            6,
+            H.dark,
+            Placement([base[0], base[1], base[2]], yaw, QUARTER),
+            0.45,
+        )
 
     def draw(piece: Any) -> None:
         piece.hull.cylinder(
