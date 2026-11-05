@@ -10,7 +10,7 @@ centre (X right, Y up); `aim` is in radians, clockwise on screen from the nose. 
 
 import math
 
-from game.config.enemies import ENEMY_UNIT, fan_barrels
+from game.config.enemies import ENEMY_UNIT
 from game.config.record import concat, merge, record
 
 # isort: split
@@ -280,8 +280,13 @@ ELITE_CONFIG = record({
         "spreadCount": 7,
         "spreadSpacing": 9,
         "bullet": bullet("blue", 185),
-        # The twin cannon on its back turret.
-        "muzzles": fan_barrels(7, 9, 1.6, -9, 8.8),
+        # ENM-JUGGERNAUT-11: seven parallel barrels in the mantlet of its back turret (on the
+        # turret, WPN-02). The turret turns at `turret.turnDeg` and sweeps the spread: each
+        # barrel fires in turn, `sweepGap` after the one before, once the turret points that
+        # bullet's way.
+        "muzzles": [[(3 - i) * 1.6, -9, 8.8] for i in range(7)],
+        "turret": {"x": 0, "y": 3, "turnDeg": 240},
+        "sweepGap": 0.08,
         # Each shoulder cannon fires a burst of `burstCount` along its barrel every interval.
         "cannonInterval": 1.6,
         "firstBurst": 0.8,

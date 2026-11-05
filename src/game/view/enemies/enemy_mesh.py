@@ -127,9 +127,12 @@ class Slide:
         index: int,
         parts: WingParts,
         swivel: bool = False,
+        centre: Vec3 | None = None,
     ) -> None:
-        # `swivel`: it also turns about its pivot with the enemy's turret (`Enemy.turret`).
+        # `swivel`: it also turns with the enemy's turret (`Enemy.turret`), about its own pivot, or
+        # about `centre` (the turret's, in model space) when given.
         self.swivel = swivel
+        self.centre = centre
         self.pivot = pivot
         self.back = back
         self.distance = distance
@@ -244,12 +247,12 @@ def slide_back(node: Any, piece: Slide, recoil: float, aim: float = 0) -> None:
     k = recoil * piece.distance
     c = math.cos(aim)
     s = math.sin(aim)
-    bx = piece.back[0] * k
-    bz = piece.back[1] * k
+    # From the centre it turns about (its own pivot, or its turret's) to where it slides back to.
+    centre = piece.centre if piece.centre is not None else piece.pivot
+    bx = piece.pivot[0] - centre[0] + piece.back[0] * k
+    bz = piece.pivot[2] - centre[2] + piece.back[1] * k
     node.rotation.y = aim
-    node.position.set(
-        piece.pivot[0] + bx * c + bz * s, piece.pivot[1], piece.pivot[2] - bx * s + bz * c
-    )
+    node.position.set(centre[0] + bx * c + bz * s, piece.pivot[1], centre[2] - bx * s + bz * c)
 
 
 def collect_parts(build: Any) -> dict[str, Any]:
@@ -270,8 +273,9 @@ def collect_parts(build: Any) -> dict[str, Any]:
         index: int,
         draw: Any,
         swivel: Any = False,
+        centre: Any = None,
     ) -> None:
-        piece = Slide(pivot, back, distance, index, wing_parts_new(), bool(swivel))
+        piece = Slide(pivot, back, distance, index, wing_parts_new(), bool(swivel), centre)
         draw(piece.parts)
         slides.append(piece)
 

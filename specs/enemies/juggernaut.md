@@ -139,8 +139,12 @@ it is turned at that moment, from the barrel's tip. A destroyed cannon no longer
 
 #### ENM-JUGGERNAUT-11 — Aimed spread from the turret · MUST
 
-While its centre is over the playfield, every 2.5 s (the first 1.2 s after it is over it) the twin
-cannon on its back turret fires a spread of 7 bullets (185 px/s) 9° apart, centred on the player.
+While its centre is over the playfield, every 2.5 s (the first 1.2 s after it is over it) its back
+turret fires a spread of 7 bullets (185 px/s) 9° apart, centred on the player. The turret is a
+mantlet with seven parallel barrels that turns (240°/s): it sweeps across the spread, each barrel
+firing in turn, 0.08 s after the one before, as the turret points that bullet's way; every bullet
+leaves its barrel's tip along the turret (WPN-01, WPN-02). Between spreads the turret follows the
+player (owner request 2026-11-05, D-273).
 
 **Acceptance criteria**
 - Given a Juggernaut over the playfield, then it fires its spread of 7 from the core's twin cannon,

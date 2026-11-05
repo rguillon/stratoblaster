@@ -48,8 +48,18 @@ BODY = SegmentedBody(-24, 12, 3, 24, -4, 3, None, _body_girth, [False, False])
 SHELL = SegmentedBody(-23, 11, 3, 19, 0, 4.8, None, None, [False, False])
 # The metal plate bolted on its back, under the turret.
 BACK_PLATE = [[-9, -14], [9, -14], [11, 4], [-11, 4]]  # type: list[list[float]]
-# The back turret carrying the core's twin cannon.
-TURRET = {"radius": 6.5, "z": -3, "y": 4.6, "height": 3.2}
+# The back turret (ENM-JUGGERNAUT-11): a fixed collar, and the mantlet over it that turns about the
+# turret's pivot (`CFG.turret`, model Z = -Y) with its seven parallel barrels.
+TURRET = {"radius": 6.8, "z": -3, "y": 4.6, "height": 2}
+MANTLET = [  # type: list[list[float]]
+    [-6.6, 2.8],
+    [6.6, 2.8],
+    [7.6, -1],
+    [5.4, -8.5],
+    [-5.4, -8.5],
+    [-7.6, -1],
+]
+MANTLET_HEIGHTS = [6.4, 7, 10.8]  # type: list[float]
 # A cannon's flesh pod around its centre, along +Z.
 POD = SegmentedBody(-6, 5, 2, 5.2, -2.5, 4.2)
 # A front plate around its centre: a thick, chamfered slab.
@@ -83,13 +93,24 @@ def body(p: Any) -> None:
     for s in SIDES:
         vein_tube(vein, curve([s * 4, 5.4, -20], [s * 11, 4.8, 6], [s * 4, 0.6, 0], 2), 1, NEON)
     hull.cylinder(
-        TURRET["radius"], TURRET["height"], 8, H.panel, Placement([0, TURRET["y"], TURRET["z"]])
+        TURRET["radius"], TURRET["height"], 10, H.dark, Placement([0, TURRET["y"], TURRET["z"]])
     )
-    # A bank of seven fixed barrels on the back turret, fanned (WPN-01, WPN-03).
-    config_barrels(p, CFG.muzzles, 7, 0.6)
+    centre = [0, TURRET["y"], -CFG.turret.y]
+    # The mantlet turns with the turret and never recoils (a slide of no distance, WPN-02).
+    p.slide(centre, [0, -1], 0, 0, mantlet, True, centre)
+    # Seven parallel barrels out of its front, each recoiling as it fires (WPN-01, WPN-03).
+    config_barrels(p, CFG.muzzles, 7, 0.6, True, centre)
     for x in [-10, 10]:
         reactor_sac(p, [x, 0.5, -24.5], 2.4, NEON, None, 4)
     p.reactor([0, 0.5, -24.5], 2.4)
+
+
+def mantlet(piece: Any) -> None:
+    """Draw the back turret's mantlet: an armoured block, a neon line across its top."""
+    piece.hull.bevel_slab(MANTLET, MANTLET_HEIGHTS, [1, 1.4], H.panel, None, H.base)
+    piece.neon.box([10, 0.4, 0.8], NEON, Placement([0, MANTLET_HEIGHTS[2], -6]))
+    for x in [-4, 4]:
+        piece.neon.box([0.6, 0.4, 7], NEON, Placement([x, MANTLET_HEIGHTS[2], -2.5]))
 
 
 def shoulder(cannon: Any) -> Any:

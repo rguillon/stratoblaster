@@ -1027,3 +1027,18 @@
   ENM-12 (about 28 px).
 - **Consequences:** the Scout has no fluttering wings; ENM-SCOUT-02's tail booms are gone.
 - **Status:** Proposed
+
+### D-273 — The Juggernaut's turret sweeps its spread with parallel barrels
+- **Date:** 2026-11-05
+- **Requirements:** ENM-JUGGERNAUT-11, WPN-01 to WPN-03.
+- **Context:** owner: "rework the juggernaut dome, make all the barrels parallel, the turret shall
+  turn while shooting and with a little delay between each canon the bullets will still shoot like
+  a fan".
+- **Decision:** a fixed collar and a turning mantlet (a slide of no recoil turning about the
+  turret's pivot) with seven parallel barrels on `Enemy.turret` (240°/s). When a spread is due its
+  seven headings are fixed, centred on the player, and the turret steps across them from the side
+  it is nearest: each barrel fires in turn once the turret reaches its heading and `sweepGap`
+  (0.08 s) after the last. Slides can now turn about a centre (`Slide.centre`) rather than their
+  own root.
+- **Consequences:** a spread takes about half a second to leave; the player can see it coming.
+- **Status:** Proposed
