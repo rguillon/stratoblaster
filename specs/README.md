@@ -53,7 +53,7 @@ requirements that now carry it.
 
 **enemies/** — tier 1: `hornet` `scout` `rocketeer` `lancer` `carrier` · tier 2: `wasp` `strafer`
 `harrier` `sweeper` `hatchery` · tier 3: `phantom` `spinner` `mortar` `prism` `broodmother` ·
-tier 4: `splitter` `juggernaut` `hydra` `scissor` `hive` (file `enemies/hornet.md`, prefix
+tier 4: `splitter` `hydra` `juggernaut` `scissor` `hive` (file `enemies/hornet.md`, prefix
 `ENM-HORNET`).
 
 **bosses/** — one file per boss, named after its level:

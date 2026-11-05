@@ -28,8 +28,8 @@ TIER_IDS = [
     "prism",
     "broodmother",
     "splitter",
-    "juggernaut",
     "hydra",
+    "juggernaut",
     "scissor",
     "hive",
 ]

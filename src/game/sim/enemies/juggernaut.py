@@ -3,14 +3,13 @@
 
 import math
 
-from core.entities.barrel import Barrel
 from core.entities.boss_turret import BossTurret, BossTurretSpec
 from core.entities.jointed_enemy import JointedEnemy
 from core.systems.enemy_motion import approach
 from core.systems.gun_muzzles import GunMuzzles
 from core.systems.projectile_motion import heading_to, turn_towards, wrap_angle
 from game.config.enemies_elite import ELITE_CONFIG
-from game.sim.enemies.enemy_helpers import DEG, DOWN, Cadence, on_playfield
+from game.sim.enemies.enemy_helpers import DEG, DOWN, Cadence, missile_spec, on_playfield
 from game.sim.joints import jointed_design
 
 # isort: split
@@ -27,8 +26,9 @@ class Juggernaut(JointedEnemy):
     """ENM-JUGGERNAUT-08: an armoured brute.
 
     It comes down slowly to the upper third, drifts left and right for 10 s, then leaves downward.
-    Its two shoulder cannons swing to and fro (ENM-JUGGERNAUT-09; moving parts, ENM-27), each firing
-    a burst of 3 bullets along its barrel every 1.6 s (ENM-JUGGERNAUT-10); its two front plates are
+    Its two shoulder launchers swing to and fro (ENM-JUGGERNAUT-09; moving parts, ENM-27), each
+    launching a homing missile out of its port, along it, every 2.4 s (ENM-JUGGERNAUT-10, WPN-08,
+    the Hydra's former missiles); its two front plates are
     parts too, and while one stands the core cannot be hit (a shield, as a boss's,
     ENM-JUGGERNAUT-12). The back turret fires a spread of 7 bullets 9° apart centred on the player
     every 2.5 s (ENM-JUGGERNAUT-11): its seven parallel barrels fire one after the other as it
@@ -50,14 +50,10 @@ class Juggernaut(JointedEnemy):
         self._sweep: list[float] = []
         self._sweep_next: int | None = None
         self._sweep_clock = 0.0
-        # The back turret's seven barrels, then one per shoulder cannon (WPN-03).
-        self.barrels = list(self._muzzles.barrels)
-        for c in CFG.cannons:
-            self.barrels.append(Barrel(c.muzzle))
+        # The back turret's seven barrels (WPN-03); the shoulder launchers do not recoil.
+        self.barrels = self._muzzles.barrels
         self._cannons = Cadence(CFG.cannonInterval, CFG.firstBurst)
-        # Bullets left in the cannons' burst, and seconds until the next one.
-        self._burst_left = 0
-        self._burst_clock = 0.0
+        self._missile = missile_spec(CFG.missile)
         self._drift_for = 0.0
         self.heading = DOWN
 
@@ -85,13 +81,7 @@ class Juggernaut(JointedEnemy):
         self._turn_turret(ctx, dt)
         self.charge = self._gun.progress
         if self._cannons.tick(dt) > 0:
-            self._burst_left = CFG.burstCount
-            self._burst_clock = 0.0
-        self._burst_clock -= dt
-        while self._burst_left > 0 and self._burst_clock <= 0:
-            self._fire_cannons(ctx)
-            self._burst_left -= 1
-            self._burst_clock += CFG.burstGap
+            self._launch(ctx)
 
     def _start_sweep(self, ctx: EnemyContext) -> None:
         """Set the spread's headings, centred on the player now, for the turret to sweep."""
@@ -131,14 +121,13 @@ class Juggernaut(JointedEnemy):
         if self._sweep_next >= len(self._sweep):
             self._sweep_next = None
 
-    def _fire_cannons(self, ctx: EnemyContext) -> None:
-        """Each standing shoulder cannon fires a bullet along its barrel."""
-        for k, spec in enumerate(CFG.cannons):
-            cannon = self.part(spec.id)
-            if cannon is None:
+    def _launch(self, ctx: EnemyContext) -> None:
+        """Each standing shoulder launcher launches a missile from its port, along it (WPN-08)."""
+        for spec in CFG.cannons:
+            launcher = self.part(spec.id)
+            if launcher is None:
                 continue
-            point = ctx.seen(cannon.place(spec.muzzle))
-            # Along the barrel as its joint is turned now (the part's heading is set after `act`).
+            point = ctx.seen(launcher.place(spec.muzzle))
+            # Along the launcher as its joint is turned now (the part's heading is set after `act`).
             heading = self.heading + self.joints.angle(spec.joint)
-            self.barrels[len(CFG.muzzles) + k].kick(self.age)
-            ctx.fire_bullet(point.x, point.y, heading, CFG.cannonBullet)
+            ctx.fire_missile(point.x, point.y, heading, self._missile)

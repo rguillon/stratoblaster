@@ -40,19 +40,24 @@ def test_enm_juggernaut_11_a_juggernaut_fires_its_core_spread_on_the_playfield()
     assert len(ctx.bullets) >= CFG.spreadCount
 
 
-def _cannon_bullets(ctx: FakeContext) -> int:
-    return sum(1 for bullet in ctx.bullets if bullet[3] is CFG.cannonBullet)
-
-
-def test_enm_juggernaut_10_each_standing_cannon_fires_its_burst() -> None:
+def test_enm_juggernaut_10_each_standing_launcher_launches_a_missile_along_itself() -> None:
+    """WPN-08: from its port, along the launcher as its joint is turned (the Hydra's missiles)."""
     both = FakeContext()
-    run(Juggernaut(200, 300, 300), both, 1.1)  # the first burst, before the core's first spread
-    assert _cannon_bullets(both) == 2 * CFG.burstCount
+    jug = Juggernaut(200, 300, 300)
+    # The first launch, before the core's first spread: compared at the step it leaves.
+    while not both.missiles:
+        run(jug, both, STEP)
+    assert len(both.missiles) == 2
+    for (x, y, heading, spec), cannon in zip(both.missiles, CFG.cannons, strict=True):
+        tip = both.seen(jug.part(cannon.id).place(cannon.muzzle))
+        assert (x, y) == pytest.approx((tip.x, tip.y))
+        assert heading == pytest.approx(jug.heading + jug.joints.angle(cannon.joint))
+        assert spec.speed == CFG.missile.speed
     one = FakeContext()
     jug = Juggernaut(200, 300, 300)
     jug.part("cannon-left").health = 0
-    run(jug, one, 1.1)
-    assert _cannon_bullets(one) == CFG.burstCount
+    run(jug, one, 0.85)
+    assert len(one.missiles) == 1
 
 
 def test_enm_15_a_juggernaut_above_the_playfield_holds_its_fire() -> None:

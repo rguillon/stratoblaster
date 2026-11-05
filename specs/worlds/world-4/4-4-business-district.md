@@ -4,7 +4,7 @@
 
 The fourth level of World 4. From the tower edge 4-3 ended on, the player flies among city towers, over
 a tower park and the financial district, where the first skyscrapers rise, and high rise, to the first
-skyline, at midday under an orange glow, ash falling and embers rising together. Hives and Hydras
+skyline, at midday under an orange glow, ash falling and embers rising together. Hives and Juggernauts
 lead the waves, all five kinds of tier 4 in the mix. Its checkpoint is its mini boss (see
 [level flow](../../gameplay/level-flow.md)).
 
@@ -58,12 +58,12 @@ along the level. The windows and the cars are lit (World 4's ground lights).
 
 ### LVL-4-4-04 — Enemy waves · MUST
 
-4-4 uses all five kinds of tier 4, Splitter, Juggernaut, Scissor, Hydra and Hive, and no other. 4-4's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, with a beat every `wave_gap` seconds (3.4 s to 2.4 s) and
+4-4 uses all five kinds of tier 4, Splitter, Hydra, Scissor, Juggernaut and Hive, and no other. 4-4's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, with a beat every `wave_gap` seconds (3.4 s to 2.4 s) and
 groups growing by `wave_growth` (105 %) over the level (100 beats). The cycle of phrases, each a kind with its number of
-groups at the start: Splitter 2, Juggernaut 1, Scissor 1, Splitter 2, Hydra 1, Juggernaut 1, Splitter 2, Hive 1, Scissor 1, Juggernaut 1, Hydra 1. The filler draws Splitters and Juggernauts, at most `filler_gap` apart.
+groups at the start: Splitter 2, Hydra 1, Scissor 1, Splitter 2, Juggernaut 1, Hydra 1, Splitter 2, Hive 1, Scissor 1, Hydra 1, Juggernaut 1. The filler draws Splitters and Hydras, at most `filler_gap` apart.
 
 **Acceptance criteria**
-- Unit test: 4-4's waves use exactly Splitter, Juggernaut, Scissor, Hydra and Hive, and each of them.
+- Unit test: 4-4's waves use exactly Splitter, Hydra, Scissor, Juggernaut and Hive, and each of them.
 - Unit test: 4-4's waves are the same each time the level is built.
 
 *Sources: P10-R09, P05-R24, D-087, D-090, ENM-50.*

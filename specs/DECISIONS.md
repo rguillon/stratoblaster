@@ -1042,3 +1042,18 @@
   own root.
 - **Consequences:** a spread takes about half a second to leave; the player can see it coming.
 - **Status:** Proposed
+
+### D-274 — The Hydra and the Juggernaut swap weapons and roles
+- **Date:** 2026-11-05
+- **Requirements:** ENM-HYDRA-09, ENM-HYDRA-14, ENM-HYDRA-15, ENM-JUGGERNAUT-06, ENM-JUGGERNAUT-10,
+  WLD-4-17.
+- **Context:** owner: "Switch Hydra and Juggernaut, make Hydra shoot bullets, replace Juggernaut arm
+  canons with rocket launchers".
+- **Decision:** the Hydra is tier 4's shooter: each head, in turn every 0.8 s, fires a burst of 3
+  green bullets from a recoiling gun on its brow, along the head. The Juggernaut is tier 4's missile
+  launcher: its shoulder cannons become hexagonal launcher tubes with a port at the tip, each
+  launching the Hydra's former missile along itself every 2.4 s (straight out of the port first,
+  WPN-08). The tier roles swap, so World 4's levels bring the Hydra in 4-1 and the Juggernaut in
+  4-2, and the filler draws Splitters and Hydras; the world specs are updated to match.
+- **Consequences:** the Juggernaut, the heavier kind, comes less often; the Hydra more.
+- **Status:** Proposed

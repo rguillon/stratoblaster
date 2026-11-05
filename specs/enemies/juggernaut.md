@@ -3,9 +3,11 @@
 > **Area:** enemies · **Prefix:** `ENM-JUGGERNAUT` · **Related:** [common.md](common.md), [bosses/common.md](../bosses/common.md), [World 4](../worlds/world-4/world.md)
 
 The Juggernaut is an elite kind ([common.md](common.md)) with moving parts: a massive armoured
-brute that drifts from side to side in the upper third. Two swinging shoulder cannons fire bursts
-along their barrels, a turret on its back fires wide aimed spreads, and two armour plates over its
-front shield its core until both are shot off.
+brute that drifts from side to side in the upper third. Two swinging shoulder rocket launchers
+launch homing missiles along themselves, a turret on its back fires wide aimed spreads, and two
+armour plates over its front shield its core until both are shot off. It is tier 4's **missile
+launcher**; it swapped weapons and roles with the [Hydra](hydra.md) (owner request 2026-11-05,
+D-274).
 
 ## Requirements
 
@@ -74,15 +76,16 @@ and a plain one between them.
 
 #### ENM-JUGGERNAUT-06 — Cannons, plates and mounts · MUST
 
-Each shoulder cannon is a flesh pod (slate) in a metal band with a long barrel forward, on a dark
-metal shoulder mount that turns with it and cannot be shot off. Each front plate is a thick,
+Each shoulder launcher is a flesh pod (slate) in a metal band with a long hexagonal launcher tube
+forward ending in its missile port, as wide as the tube (WPN-07), on a dark metal shoulder mount
+that turns with it and cannot be shot off. Each front plate is a thick,
 chamfered metal slab with rivets. The model's cannons turn on their shoulders exactly as the
-Juggernaut's do in the game ([common.md](common.md)), and each barrel's tip is where its bursts
+Juggernaut's do in the game ([common.md](common.md)), and each port is where its missiles
 leave. A destroyed cannon or plate disappears from the model; the mounts stay.
 
 **Acceptance criteria**
 - Given the Juggernaut's model, then it draws the two cannons and two plates of its design, each
-  cannon on its shoulder joint with one muzzle at its barrel's tip, at the place the game fires
+  launcher on its shoulder joint with one missile muzzle at its port, at the place the game fires
   from.
 
 *Sources: P05-R22, P16-R04.*
@@ -124,18 +127,19 @@ the left one half a swing behind the right, all the time.
 
 *Sources: P05-R22.*
 
-#### ENM-JUGGERNAUT-10 — Cannon bursts · MUST
+#### ENM-JUGGERNAUT-10 — Launcher missiles · MUST
 
-While its centre is over the playfield, every 1.6 s (the first 0.8 s after it is over it) each
-standing shoulder cannon fires a burst of 3 bullets (210 px/s), 0.12 s apart, along its barrel as
-it is turned at that moment, from the barrel's tip. A destroyed cannon no longer fires.
+While its centre is over the playfield, every 2.4 s (the first 0.8 s after it is over it) each
+standing shoulder launcher launches one homing missile from its port, along the launcher as it is
+turned at that moment (WPN-08): 130 px/s, turning at up to 90°/s for 3.5 s, health 10, the
+`rocketeer` style (the Hydra's former missiles). A destroyed launcher no longer launches.
 
 **Acceptance criteria**
-- Given a Juggernaut fires a burst, then each standing cannon's 3 bullets leave its barrel's tip
-  along the barrel's current direction.
-- Given a cannon is destroyed, then it no longer fires and the other does.
+- Given a Juggernaut launches, then each standing launcher's missile leaves its port along the
+  launcher's current direction.
+- Given a launcher is destroyed, then it no longer launches and the other does.
 
-*Sources: P05-R22.*
+*Sources: P05-R22, owner request 2026-11-05 (D-274).*
 
 #### ENM-JUGGERNAUT-11 — Aimed spread from the turret · MUST
 
@@ -222,13 +226,13 @@ kind, and 4-5 uses it too.
 | drift / driftPeriod / stay | ±60 px / 5 s / 10 s | |
 | exitSpeed | 80 px/s | downward |
 | spread | 7 × 9° every 2.5 s, first after 1.2 s | `fireInterval`, `firstShot`, `spreadCount`, `spreadSpacing`; style `blue`, 185 px/s |
-| twin cannon muzzles | `[-3, -9, 7]`, `[3, -9, 7]` | on the back turret |
+| turret barrels | seven parallel, tips `[±4.8 … 0, -9, 8.8]`, 1.6 px apart | on the back turret (D-273) |
 | cannons | pivots `[±22, 3]`, centres `[±28, -3]`, muzzles `[±28, -16, 3]` | `JUGGERNAUT_CANNONS` |
 | cannon swing | ±20° every 2.4 s, phases 0 (right), 0.5 (left) | `ELITE_CONFIG.juggernaut.design.joints` |
 | cannon health / radius | 60 / 7 px | |
-| cannon bursts | 3 bullets 0.12 s apart every 1.6 s, first after 0.8 s | `cannonInterval`, `firstBurst`, `burstCount`, `burstGap`; style `blue`, 210 px/s |
+| launcher missiles | one per launcher every 2.4 s, first after 0.8 s; 130 px/s, turn 90°/s, homing 3.5 s, radius 5, health 10 | `cannonInterval`, `firstBurst`, `missile` |
 | plates | at `[±10, -17]`, health 120, radius 9 px, shield | `JUGGERNAUT_PLATES`, `design.parts` |
-| fire rate | spreads and bursts times the level's fire rate factor | [common.md](common.md) |
+| fire rate | spreads and launches times the level's fire rate factor | [common.md](common.md) |
 | neon | `[0.42, 0.62, 0.95]`, drawn `[0.42, 0.95, 0.46]` | `src/game/config/enemy_look_elite.py` `ELITE_NEON.juggernaut` |
 | triangle budget | 1200 (elite) | `src/game/config/enemy_look.py` `ENEMY_LOOK.budget.elite` |
 

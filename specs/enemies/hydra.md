@@ -3,9 +3,10 @@
 > **Area:** enemies · **Prefix:** `ENM-HYDRA` · **Related:** [common.md](common.md), [World 4](../worlds/world-4/world.md)
 
 The Hydra is an elite kind ([common.md](common.md)) with moving parts: a broad, armoured hull with
-three long necks swaying in front of it, each ending in a head that launches a homing missile at the
-player in turn. It is tier 4's **missile launcher** (World 4, the role of the
-[Rocketeer](rocketeer.md)). The heads can be shot off one by one; with all three gone the Hydra no
+three long necks swaying in front of it, each ending in a head with a gun on its brow that fires a
+burst of bullets along the head, in turn. It is tier 4's **shooter** (World 4, the role of the
+[Spinner](spinner.md)); it swapped weapons and roles with the [Juggernaut](juggernaut.md) (owner
+request 2026-11-05, D-274). The heads can be shot off one by one; with all three gone the Hydra no
 longer fires.
 
 ## Requirements
@@ -63,13 +64,13 @@ nozzle, a gland on its back and a vein running forward from it.
 
 Each neck is a teal flesh tendril from its joint at the front of the hull to its head, ringed with
 two metal collars. Each head is a swollen teal skull with a metal cap on its brow, a bone mandible
-either side and its eye lens at the front, where its missiles leave. The model's necks turn on their
+either side and a gun on its brow whose tip is where its bullets leave. The model's necks turn on their
 joints exactly as the Hydra's do in the game ([common.md](common.md)). A destroyed head disappears
 from the model; its neck stays.
 
 **Acceptance criteria**
 - Given the Hydra's model, then it draws the three heads of its design, each on its neck joint,
-  each with one muzzle at its eye, at the place the game fires from.
+  each with one muzzle at its gun's tip, at the place the game fires from.
 - Given a head is destroyed, then it is no longer drawn and its neck still is.
 
 *Sources: P05-R19, P16-R04.*
@@ -112,20 +113,20 @@ step, all the time.
 
 *Sources: P05-R19.*
 
-#### ENM-HYDRA-09 — Heads launch missiles in turn · MUST
+#### ENM-HYDRA-09 — Heads fire bursts in turn · MUST
 
 While its centre is over the playfield, the Hydra fires one head every `headFireInterval` (0.8 s, the
-first 0.5 s after it is over it), in turn (left, middle, right), skipping destroyed heads. Each shot
-is one homing missile (the engine's missiles, as the [Rocketeer](rocketeer.md)'s, ENM-ROCKETEER-07;
-it can be shot down, ENM-18) leaving that head's eye, where the head is now, aimed at the player. It
-fires no bullet.
+first 0.5 s after it is over it), in turn (left, middle, right), skipping destroyed heads. Each turn
+is a burst of `burstCount` bullets (3, `burstGap` 0.1 s apart, 200 px/s, style `green`) from the tip
+of that head's gun, along the head as its neck is turned at that instant (WPN-01); the gun recoils
+each time (WPN-03). It launches no missile.
 
 **Acceptance criteria**
-- Given a Hydra in place, then its living heads launch missiles in turn, each from where that head
-  is, and no bullet.
-- Given one head is destroyed, then the other two take turns, still one launch every 0.8 s.
+- Given a Hydra in place, then its living heads fire their bursts in turn, each bullet from that
+  head's gun tip along the head, and no missile.
+- Given one head is destroyed, then the other two take turns, still one burst every 0.8 s.
 
-*Sources: P05-R19, tier 4 redesign (was a bullet every 0.5 s).*
+*Sources: P05-R19, tier 4 redesign, owner request 2026-11-05 (D-274).*
 
 #### ENM-HYDRA-10 — The heads as parts · MUST
 
@@ -173,26 +174,25 @@ first two elite kinds, and every level of World 4 (4-1 to 4-5) uses it.
 
 *Sources: P05-R24, D-090.*
 
-#### ENM-HYDRA-14 — Slower, homing missiles · MUST
+#### ENM-HYDRA-14 — Bullets, not missiles · MUST
 
-The Hydra's missiles (`missile`) home like the Rocketeer's (turn rate 90°/s for 3.5 s, health 10, the
-`rocketeer` shot style) but fly slower: 130 px/s against 150, and at a slower cadence than the old
-bullets (0.8 s against 0.5 s).
-
-**Acceptance criteria**
-- Given the configs, then the Hydra's missile speed is below the Rocketeer's and it has no `bullet`.
-
-*Sources: tier 4 redesign.*
-
-#### ENM-HYDRA-15 — Missile tubes on the heads · MUST
-
-Each head carries a missile tube on its brow (replacing the metal cap), its mouth at the eye (the
-muzzle) with a charge light in it that glows as the head's turn comes.
+The Hydra fires bullets only; its old missiles are the Juggernaut's launchers' now
+([juggernaut.md](juggernaut.md), ENM-JUGGERNAUT-10).
 
 **Acceptance criteria**
-- Given the Hydra's model, then each head has one muzzle and a charge light.
+- Given the configs, then the Hydra has a `bullet` and no `missile`.
 
-*Sources: tier 4 redesign.*
+*Sources: tier 4 redesign, owner request 2026-11-05.*
+
+#### ENM-HYDRA-15 — Guns on the heads · MUST
+
+Each head carries a gun on its brow: a barrel in a housing that recoils when it fires, its tip the
+muzzle, with a charge light round its root that glows as the head's turn comes.
+
+**Acceptance criteria**
+- Given the Hydra's model, then each head has one muzzle, one recoiling barrel and a charge light.
+
+*Sources: tier 4 redesign, owner request 2026-11-05.*
 
 ## Tunable values
 
@@ -207,9 +207,9 @@ muzzle) with a charge light in it that glows as the head's turn comes.
 | necks | pivots `[-8, -5]`, `[0, -7]`, `[8, -5]`; heads `[-19, -21]`, `[0, -25]`, `[19, -21]` | `HYDRA_NECKS` |
 | neck swing | ±16° every 2.6 s, phases 0, ⅓, ⅔ | `ELITE_CONFIG.hydra.design.joints` |
 | head health / radius | 50 / 6.5 px | `HYDRA_HEAD` |
-| eye (muzzle) | 5 px ahead of the head's centre, 3 px up | `HYDRA_HEAD.eyeAhead`, `eyeHeight` |
+| gun tip (muzzle) | 5 px ahead of the head's centre, 3 px up | `HYDRA_HEAD.eyeAhead`, `eyeHeight` |
 | headFireInterval / firstShot | 0.8 s / 0.5 s | in turn; times the level's fire rate factor |
-| missile | 130 px/s, turn 90°/s, homing 3.5 s, radius 5, health 10, style `rocketeer` | `ELITE_CONFIG.hydra.missile` |
+| bursts | 3 bullets 0.1 s apart, 200 px/s, style `green` | `burstCount`, `burstGap`, `bullet` |
 | neon | `[0.05, 1, 0.78]`, drawn `[0.05, 1, 0.13]` | `src/game/config/enemy_look_elite.py` `ELITE_NEON.hydra` |
 | triangle budget | 1200 (elite) | `src/game/config/enemy_look.py` `ENEMY_LOOK.budget.elite` |
 

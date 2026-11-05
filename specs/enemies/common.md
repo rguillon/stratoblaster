@@ -32,7 +32,7 @@ a **diver** (rams, or dives at the player), a **shooter** (bullets), a **missile
 | 1 | [Hornet](hornet.md) | [Scout](scout.md) | [Rocketeer](rocketeer.md) | [Lancer](lancer.md) | [Carrier](carrier.md) (Hornets) |
 | 2 | [Wasp](wasp.md) | [Strafer](strafer.md) | [Harrier](harrier.md) | [Sweeper](sweeper.md) | [Hatchery](hatchery.md) (Wasps) |
 | 3 | [Phantom](phantom.md) | [Spinner](spinner.md) | [Mortar](mortar.md) | [Prism](prism.md) | [Broodmother](broodmother.md) (Phantoms) |
-| 4 | [Splitter](splitter.md) | [Juggernaut](juggernaut.md) | [Hydra](hydra.md) | [Scissor](scissor.md) | [Hive](hive.md) (Splitters) |
+| 4 | [Splitter](splitter.md) | [Hydra](hydra.md) | [Juggernaut](juggernaut.md) | [Scissor](scissor.md) | [Hive](hive.md) (Splitters) |
 
 The tiers are in the code's tier table (`src/game/config/enemy_tiers.py`). The pods a Splitter
 breaks into are part of the Splitter kind, not a kind of their own. A boss's hangars and bays

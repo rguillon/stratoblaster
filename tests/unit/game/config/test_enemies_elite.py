@@ -68,12 +68,15 @@ def test_enm_scissor_09_scissor_has_two_mirrored_arms() -> None:
     assert arms[0]["pivot"][0] == pytest.approx(-arms[1]["pivot"][0])
 
 
-def test_enm_hydra_14_hydra_launches_slower_homing_missiles_than_the_rocketeer() -> None:
+def test_enm_hydra_14_the_hydra_fires_bullets_and_the_juggernaut_slower_missiles() -> None:
+    """Owner request 2026-11-05: the Hydra and the Juggernaut swapped weapons."""
     hydra = ELITE_CONFIG.hydra
-    assert "bullet" not in hydra
-    assert hydra.missile.speed < ENEMY_CONFIG.rocketeer.missile.speed
-    assert hydra.missile.homingSeconds > 0
+    assert "missile" not in hydra
+    assert hydra.bullet.speed > 0
     assert hydra.headFireInterval > 0.5
+    juggernaut = ELITE_CONFIG.juggernaut
+    assert juggernaut.missile.speed < ENEMY_CONFIG.rocketeer.missile.speed
+    assert juggernaut.missile.homingSeconds > 0
 
 
 def test_enm_hive_09_hive_launches_a_splitter_every_six_seconds() -> None:

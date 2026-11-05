@@ -108,7 +108,7 @@ def hydra_heads() -> list[Any]:
                 "pivot": pivot,
                 "head": head,
                 "aim": aim,
-                # Its eye, where its bullets leave from.
+                # The tip of the gun on its brow, where its bullets leave from, along the head.
                 "muzzle": [eye[0], eye[1], HYDRA_HEAD.eyeHeight],
                 # The necks sway out of step.
                 "phase": i / len(HYDRA_NECKS),
@@ -158,7 +158,7 @@ JUGGERNAUT_CANNONS = [
         "joint": "shoulder-left" if s < 0 else "shoulder-right",
         "pivot": [s * 22, 3],
         "centre": [s * 28, -3],
-        # The tip of its barrel: its bursts leave from there, along it.
+        # The mouth of its launcher's port: its missiles leave from there, along it.
         "muzzle": [s * 28, -16, 3],
         "phase": 0.5 if s < 0 else 0,
     })
@@ -179,19 +179,14 @@ ELITE_CONFIG = record({
         "stopFraction": 0.74,
         "stay": 7,
         "exitSpeed": 95,
-        # One head launches a missile every `headFireInterval`, in turn; the first after
-        # `firstShot` (ENM-HYDRA-09).
+        # One head fires every `headFireInterval`, in turn, the first after `firstShot`: a burst
+        # of `burstCount` bullets `burstGap` apart from the gun on its brow, along the head
+        # (ENM-HYDRA-09, owner request 2026-11-05: it swapped weapons with the Juggernaut).
         "headFireInterval": 0.8,
         "firstShot": 0.5,
-        # Homing missiles, a little slower than the Rocketeer's (ENM-HYDRA-14).
-        "missile": {
-            "speed": 130,
-            "turnRateDeg": 90,
-            "homingSeconds": 3.5,
-            "radius": 5,
-            "health": 10,
-            "style": "rocketeer",
-        },
+        "burstCount": 3,
+        "burstGap": 0.1,
+        "bullet": bullet("green", 200),
         "heads": HYDRA_HEADS,
         "design": {
             "joints": fold_entries([
@@ -287,12 +282,19 @@ ELITE_CONFIG = record({
         "muzzles": [[(3 - i) * 1.6, -9, 8.8] for i in range(7)],
         "turret": {"x": 0, "y": 3, "turnDeg": 240},
         "sweepGap": 0.08,
-        # Each shoulder cannon fires a burst of `burstCount` along its barrel every interval.
-        "cannonInterval": 1.6,
+        # Each shoulder launcher launches a missile along it every interval (ENM-JUGGERNAUT-10,
+        # owner request 2026-11-05: it swapped weapons with the Hydra), a little slower than the
+        # Rocketeer's.
+        "cannonInterval": 2.4,
         "firstBurst": 0.8,
-        "burstCount": 3,
-        "burstGap": 0.12,
-        "cannonBullet": bullet("blue", 210),
+        "missile": {
+            "speed": 130,
+            "turnRateDeg": 90,
+            "homingSeconds": 3.5,
+            "radius": 5,
+            "health": 10,
+            "style": "rocketeer",
+        },
         "cannons": JUGGERNAUT_CANNONS,
         "plates": JUGGERNAUT_PLATES,
         "design": {

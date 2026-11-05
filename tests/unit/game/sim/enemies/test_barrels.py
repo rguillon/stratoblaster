@@ -8,7 +8,6 @@ import pytest
 from helpers.enemy_steps import STEP, run
 from helpers.fakes import FakeContext
 
-from game.config.enemies_elite import ELITE_CONFIG
 from game.sim.enemies.hive import Hive
 from game.sim.enemies.juggernaut import Juggernaut
 from game.sim.enemies.phantom import Phantom
@@ -56,10 +55,7 @@ def test_wpn_01_each_bullet_starts_at_a_barrel_tip_and_flies_along_it(build: Any
     _first_volley(enemy, ctx)
     assert enemy.barrels
     tips = _tips(enemy)
-    for x, y, heading, spec in ctx.bullets:
-        if spec is ELITE_CONFIG.juggernaut.cannonBullet:
-            # The shoulder cannons fire along their joints' barrels, not the bank's.
-            continue
+    for x, y, heading, _spec in ctx.bullets:
         assert any(
             math.hypot(tx - x, ty - y) < 0.01 and abs(math.remainder(th - heading, math.tau)) < 1e-4
             for tx, ty, th in tips
@@ -82,17 +78,3 @@ def test_wpn_02_a_scouts_gun_turns_to_the_player_before_it_fires() -> None:
     _, _, heading, _ = ctx.bullets[0]
     want = math.atan2(ctx.player_x - scout.x, ctx.player_y - scout.y)
     assert abs(math.remainder(heading - want, math.tau)) < math.radians(8)
-
-
-def test_wpn_03_a_juggernaut_shoulder_cannon_recoils_when_it_fires() -> None:
-    enemy = Juggernaut(200, 700, 500)
-    ctx = FakeContext()
-    cannon_barrels = enemy.barrels[7:]
-    assert len(cannon_barrels) == 2
-    recoiled = False
-    for _ in range(int(30 / STEP)):
-        run(enemy, ctx, STEP)
-        if any(b.recoil_at(enemy.age) > 0.9 for b in cannon_barrels):
-            recoiled = True
-            break
-    assert recoiled

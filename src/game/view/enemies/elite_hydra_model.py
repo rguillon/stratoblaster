@@ -7,6 +7,7 @@ from game.config.enemies_elite import ELITE_CONFIG
 from game.config.enemy_look import ENEMY_LOOK
 from game.config.enemy_look_elite import ELITE_NEON
 from game.view.bosses.boss_limbs import boss_point
+from game.view.enemies.basic_parts import model_barrel
 from game.view.enemies.elite_shapes import QUARTER, WHITE, H, ahead
 from game.view.enemies.enemy_shapes import SIDES
 from game.view.enemies.jointed_model import build_jointed_model
@@ -110,32 +111,29 @@ def neck(head: Any) -> Any:
     return draw
 
 
-def head(spec: Any) -> Any:
-    """Return a head on its neck: a skull with bone mandibles and a missile tube on its brow.
+def head(spec: Any, index: int) -> Any:
+    """Return a head on its neck: a skull with bone mandibles and a gun on its brow.
 
-    The tube's mouth is the eye, where the missile leaves, with a charge light in it (ENM-HYDRA-15).
+    The gun is barrel number `index` of the Hydra's: its tip is where the bullets leave, along the
+    head, and it recoils as it fires (ENM-HYDRA-15, WPN-01, WPN-03); a charge light rings its root.
     """
     at = boss_point(spec.head[0], spec.head[1], NECK_Y)
     aim = spec.aim
     eye = boss_point(spec.muzzle[0], spec.muzzle[1], spec.muzzle[2])
 
     def draw(p: Any) -> None:
-        hull = p.hull
         flesh = p.flesh
         neon = p.neon
-        muzzle = p.muzzle
         segmented_body(flesh, HEAD, F.teal, Placement(at, aim))
-        tube = Placement(ahead(eye, aim, -TUBE[1]), aim, QUARTER)
-        hull.cylinder(TUBE[0], TUBE[1], 5, H.dark, tube)
+        model_barrel(p, eye, aim, TUBE[1], index, TUBE[0] * 0.6)
         p.charge.cylinder(
-            TUBE[0] * 1.1, 0.6, 5, WHITE, Placement(ahead(eye, aim, -0.6), aim, QUARTER)
+            TUBE[0] * 1.2, 0.6, 6, WHITE, Placement(ahead(eye, aim, -TUBE[1] - 1), aim, QUARTER)
         )
         for s in SIDES:
             jaw = [[s * pt[0], pt[1]] for pt in JAW]
             flesh.bevel_slab(jaw, [-1.2, 0, 1], [0.2, 0.4], F.bone, Placement(at, aim))
         lens = [[0, -0.8], [1.5, 0], [0, 0.8]]
         neon.lathe(lens, 6, NEON, Placement([eye[0], eye[1] - 0.6, eye[2]]))
-        muzzle(eye, "gun")
 
     return draw
 
@@ -147,9 +145,9 @@ def build_hydra(scene: Any) -> Any:
     """
     limbs = {}
     parts = {}
-    for h in CFG.heads:
+    for i, h in enumerate(CFG.heads):
         limbs[h.joint] = neck(h)
-        parts[h.id] = head(h)
+        parts[h.id] = head(h, i)
     return build_jointed_model(
         "hydra", scene, NEON, CFG.design, {"body": body, "limbs": limbs, "parts": parts}
     )
