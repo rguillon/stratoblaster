@@ -130,8 +130,8 @@ class _Parts:
     def __getattr__(self, name: str) -> Any:
         return getattr(self._parts, name)
 
-    def muzzle(self, at: Any, kind: str | None = None) -> None:
-        self._parts.muzzle(at, "gun" if kind is None else kind)
+    def muzzle(self, at: Any, kind: str | None = None, direction: str | None = None) -> None:
+        self._parts.muzzle(at, "gun" if kind is None else kind, direction)
 
 
 def drawn(draw: Callable[[Any], None]) -> dict[str, Any]:

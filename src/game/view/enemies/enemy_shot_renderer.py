@@ -335,7 +335,9 @@ def sync_missiles(pool: Any, missiles: list[Any]) -> None:
         if i >= len(missiles):
             continue
         m = missiles[i]
-        node.position.set(m.x, m.y, -0.5)
+        # WPN-09: a missile arcing over from its silo is raised towards the camera, so it is seen
+        # growing and shrinking with its height.
+        node.position.set(m.x, m.y, -0.5 - m.height)
         node.rotation.z = -m.heading
         size = m.radius / LOOK.missile.baseRadius
         node.scaling.set(size, size, size)

@@ -121,7 +121,7 @@ _GLACIER_COLOSSUS = record({
             volley.laser("cutter-right", 6.5, 1.4, 5.25),
             volley.fan("ore-left", 2.6, 3, 18, ORE, 0.9),
             volley.fan("ore-right", 2.6, 3, 18, ORE, 2.2),
-            volley.missiles("missile-pod", 5.5, 2, 30, 3),
+            volley.missiles("missile-pod", 5.5, 2, 30, 3, False),
         ],
         [
             [volley.aimed("core", 2.8, 1, 0, RED, 1.4)],

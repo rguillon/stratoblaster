@@ -3,9 +3,10 @@
 
 import math
 
-from core.entities.enemy import Enemy, EnemyMissileSpec
+from core.entities.enemy import Enemy, EnemyMissileSpec, MissileFlight
 from core.systems.enemy_motion import Path
 from core.systems.projectile_motion import turn_towards
+from game.config.weapons import WEAPONS
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -49,7 +50,14 @@ def leave_upward(enemy: Enemy, speed: float, dt: float) -> None:
     enemy.y += speed * dt
 
 
-def missile_spec(missile: Any) -> EnemyMissileSpec:
+def missile_flight(up: bool) -> MissileFlight:
+    """Return how a missile leaves its launcher (WPN-08, WPN-09): from an upward silo, or not."""
+    if up:
+        return MissileFlight(0, WEAPONS.missileClimbSeconds, WEAPONS.missileArcRadius)
+    return MissileFlight(WEAPONS.missileLaunchSeconds, 0, 0)
+
+
+def missile_spec(missile: Any, up: bool = False) -> EnemyMissileSpec:
     """Return the engine's missile spec of a config's `missile` record.
 
     The core reads `turn_rate_deg` and `homing_seconds`, which the config writes in camel case, so
@@ -62,6 +70,8 @@ def missile_spec(missile: Any) -> EnemyMissileSpec:
         missile.radius,
         missile.health,
         missile.style,
+        None,
+        missile_flight(up),
     )
 
 

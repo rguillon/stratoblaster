@@ -120,15 +120,7 @@ class _WorldContext:
             burst = EnemyBurstSpec(
                 burst.after, burst.count, _faster(burst.bullet, self._bullet_speed)
             )
-            spec = EnemyMissileSpec(
-                spec.speed,
-                spec.turn_rate_deg,
-                spec.homing_seconds,
-                spec.radius,
-                spec.health,
-                spec.style,
-                burst,
-            )
+            spec = spec.with_burst(burst)
         self._shots.fire_missile(x, y, heading, spec)
 
     def fire_laser(self, owner: LaserOwner, spec: EnemyLaserSpec) -> None:
@@ -281,5 +273,6 @@ class EnemyWorld:
             if not enemy.gone:
                 self.targets.extend(enemy.shot_targets)
         for missile in self.shots.missiles:
-            if missile.alive:
+            # A missile still above the plane of play cannot be shot (WPN-09).
+            if missile.alive and missile.height <= 0:
                 self.targets.append(missile)

@@ -379,8 +379,8 @@ def test_gfx_shot_15_each_missile_node_sits_on_its_shot_facing_its_heading() -> 
     pool.show.return_value = nodes
     base = sr.LOOK.missile.baseRadius
     missiles = [
-        SimpleNamespace(x=1.0, y=2.0, heading=0.3, radius=base),
-        SimpleNamespace(x=4, y=5, heading=0, radius=2 * base),
+        SimpleNamespace(x=1.0, y=2.0, heading=0.3, radius=base, height=0),
+        SimpleNamespace(x=4, y=5, heading=0, radius=2 * base, height=0),
     ]
     sr.sync_missiles(pool, missiles)
     pool.show.assert_called_once_with(2)
@@ -469,7 +469,7 @@ def test_gfx_shot_15_the_renderer_draws_bullets_missiles_and_lasers_each_frame(
     renderer: SimpleNamespace,
 ) -> None:
     bullet = SimpleNamespace(style="red", x=1.0, y=2.0, radius=3.0, age=0.0, heading=0.0)
-    missile = SimpleNamespace(x=7.0, y=8.0, heading=0.5, radius=5)
+    missile = SimpleNamespace(x=7.0, y=8.0, heading=0.5, radius=5, height=0)
     lasers = [SimpleNamespace(spec=SimpleNamespace(style="lancer"))]
     frame = SimpleNamespace(dt_seconds=0.25, bullets=[bullet], missiles=[missile], lasers=lasers)
     renderer.handle.sync(frame)
@@ -501,7 +501,7 @@ def test_the_renderer_disposes_its_layers_lasers_missiles_and_flame(
     frame = SimpleNamespace(
         dt_seconds=0.0,
         bullets=[],
-        missiles=[SimpleNamespace(x=0, y=0, heading=0, radius=5)],
+        missiles=[SimpleNamespace(x=0, y=0, heading=0, radius=5, height=0)],
         lasers=[],
     )
     renderer.handle.sync(frame)
@@ -512,3 +512,17 @@ def test_the_renderer_disposes_its_layers_lasers_missiles_and_flame(
     assert renderer.lasers.disposed
     renderer.meshes[0].parent.dispose.assert_called_once()
     _flame(renderer.templates).mesh.dispose.assert_called_once()
+
+
+def test_wpn_09_a_missile_arcing_over_is_raised_towards_the_camera_by_its_height() -> None:
+    nodes = [
+        SimpleNamespace(
+            position=SimpleNamespace(set=lambda *a: seen.append(a)),
+            rotation=SimpleNamespace(z=0),
+            scaling=SimpleNamespace(set=lambda *_a: None),
+        )
+    ]
+    seen: list[tuple[float, ...]] = []
+    pool = SimpleNamespace(show=lambda n: nodes[:n])
+    sr.sync_missiles(pool, [SimpleNamespace(x=1.0, y=2.0, heading=0.0, radius=5, height=12.0)])
+    assert seen == [(1.0, 2.0, -12.5)]

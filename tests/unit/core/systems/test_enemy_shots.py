@@ -6,7 +6,13 @@ from types import SimpleNamespace
 
 import pytest
 
-from core.entities.enemy import EnemyBulletSpec, EnemyBurstSpec, EnemyLaserSpec, EnemyMissileSpec
+from core.entities.enemy import (
+    EnemyBulletSpec,
+    EnemyBurstSpec,
+    EnemyLaserSpec,
+    EnemyMissileSpec,
+    MissileFlight,
+)
 from core.entities.muzzle import PlanePoint, RaisedPoint
 from core.systems.enemy_shots import (
     EnemyBullet,
@@ -202,3 +208,42 @@ def test_enm_mortar_09_a_missile_that_leaves_the_playfield_does_not_burst() -> N
     shots.step(2, 0, 0)
     assert shots.missiles[0].alive is False
     assert shots.bullets == []
+
+
+def _flying(flight: MissileFlight) -> EnemyMissileSpec:
+    return EnemyMissileSpec(100, 90, 1, 2, 5, "rocket", None, flight)
+
+
+def test_wpn_08_a_missile_flies_straight_out_before_it_turns_and_homes() -> None:
+    shots = _shots()
+    shots.fire_missile(50, 90, math.pi, _flying(MissileFlight(0.25, 0, 0)))
+    missile = shots.missiles[0]
+    # The player is to the right: nothing turns it while it leaves the port.
+    shots.step(0.2, 90, 50)
+    assert missile.heading == pytest.approx(math.pi)
+    assert missile.homing == pytest.approx(1)
+    shots.step(0.1, 90, 50)
+    shots.step(0.1, 90, 50)
+    assert missile.heading != pytest.approx(math.pi)
+    assert missile.homing < 1
+
+
+def test_wpn_09_an_upward_missile_climbs_arcs_over_then_homes() -> None:
+    shots = _shots()
+    shots.fire_missile(50, 50, math.pi, _flying(MissileFlight(0, 0.3, 10)))
+    missile = shots.missiles[0]
+    shots.step(0.15, 90, 50)
+    assert missile.height == pytest.approx(5)
+    assert (missile.x, missile.y) == (50, 50)
+    assert missile.homing == pytest.approx(1)
+    shots.step(0.15, 90, 50)
+    # Climbed, and now pointed at the player.
+    assert missile.height == pytest.approx(10)
+    assert missile.heading == pytest.approx(math.pi / 2)
+    shots.step(0.1, 90, 50)
+    assert 0 < missile.height < 10
+    assert missile.homing == pytest.approx(1)
+    for _ in range(10):
+        shots.step(0.1, 90, 50)
+    assert missile.height == 0
+    assert missile.homing < 1

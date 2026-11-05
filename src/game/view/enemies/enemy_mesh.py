@@ -29,6 +29,7 @@ from game.view.enemies.living_motion import (
     is_living_motion,
     new_breath,
 )
+from game.view.enemies.weapon_ports import hex_port, laser_lens
 from render.babylon import (
     color3,
     new_transform_node,
@@ -280,9 +281,15 @@ def collect_parts(build: Any) -> dict[str, Any]:
     def rotor(at: Vec3, radius: float) -> None:
         rotors.append(Reactor(at, radius))
 
-    def muzzle(at: Vec3, kind: Any = None) -> None:
-        # `kind` is 'gun' when the caller leaves it out.
-        muzzles.append([at, kind if kind != None else "gun"])
+    def muzzle(at: Vec3, kind: Any = None, direction: Any = None) -> None:
+        # `kind` is 'gun' when the caller leaves it out. A missile muzzle is drawn as a hexagonal
+        # port (up unless `direction` says "forward"), a laser's as a lens (forward unless "up").
+        name = kind if kind != None else "gun"
+        muzzles.append([at, name])
+        if name == "missile":
+            hex_port(parts, at, direction if direction != None else "up")
+        elif name == "laser":
+            laser_lens(parts, at, direction if direction != None else "forward")
 
     def flap(pivot: Vec3, side: float, span: float, draw: Any) -> None:
         wing = Wing(pivot, side, span, wing_parts_new())

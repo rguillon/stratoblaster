@@ -93,7 +93,7 @@ def build_harrier(scene: Any) -> Any:
             charge.cylinder(
                 0.6, 1.2, 5, WHITE, Placement([s * rail_x, RAIL_HEIGHT, tip - 0.4], 0, QUARTER), 0.4
             )
-            p.muzzle([s * rail_x, RAIL_HEIGHT, tip + 0.6], "missile")
+            p.muzzle([s * rail_x, RAIL_HEIGHT, tip + 0.6], "missile", "forward")
         reactor_sac(p, [0, 0.1, -12], 1.4, N.harrier, F.sinew, 3)
 
     return build_enemy_model("harrier", scene, N.harrier, draw)

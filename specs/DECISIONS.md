@@ -993,3 +993,25 @@
 - **Consequences:** a Scout over the player's own height cannot turn fast enough to fire; its shots
   wait while it flies past. Bosses (BOSS-29 turrets) are the next slice.
 - **Status:** Proposed
+
+### D-271 — Slice 3: missile flight and ports, laser lenses
+- **Date:** 2026-11-05
+- **Requirements:** WPN-06 to WPN-09.
+- **Context:** owner: "do the missiles and lasers first".
+- **Decision:** `EnemyMissileSpec.flight` (`MissileFlight`: launch seconds, climb seconds, arc
+  radius, values in `game/config/weapons.py`). A missile flies straight for 0.25 s before the
+  homing time runs (WPN-08). A missile from an upward silo (`BossMissilesShape.up`, true for every
+  boss rack unless the volley says otherwise; river leviathan and glacier colossus fire forward)
+  has a height: it climbs 0.3 s, points at the player, arcs down to the plane over πR of travel
+  (R = 40, height `R·(1+cos πt)/2`), then homes. While its height is above 0 it is neither a shot
+  target nor a hit on the player. The renderer raises it towards the camera by its height. In the
+  models, `muzzle(at, kind, direction)` draws the port itself: kind "missile" a hexagonal port
+  (`weapon_ports.hex_port`, standing up by default or "forward"), kind "laser" a hex barrel with
+  two coils and a white-hot lens (`laser_lens`), as the Overlord's cannons, so every owner gets
+  the same weapon with no per-model drawing. All lasers already shared one renderer (same warning
+  line, beam and flare; only the owner's colour differs). The Harrier passed its raw config record
+  as a spec; it now uses `missile_spec` like the others. The Hydra's heads, which fire from the
+  eye at the player, keep a gun muzzle.
+- **Consequences:** boss models that drew their own hatch or lens keep it under the new port; a
+  boss's laser/missile muzzles are not yet barrels that recoil (WPN-05 slice).
+- **Status:** Proposed

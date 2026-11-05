@@ -77,7 +77,7 @@ def build_mortar(scene: Any) -> Any:
         # ENM-MORTAR-01: a missile loaded in the tube, its nose cone and neon band showing.
         hull.cylinder(1.9, 5, 8, H.panel, Placement([0, mouth_height, mouth - 5], 0, QUARTER), 0.4)
         neon.ring(2, 0.4, 8, N.mortar, Placement([0, mouth_height, mouth - 5.2], 0, QUARTER))
-        muzzle([0, mouth_height, mouth], "gun")
+        muzzle([0, mouth_height, mouth], "missile", "forward")
         eyes(p, [0, 1.6, 11.4], {"count": 2, "size": 0.6, "spacing": 3}, N.mortar)
         for s in SIDES:
             p.reactor([s * 8, 0, -14], 1.6)

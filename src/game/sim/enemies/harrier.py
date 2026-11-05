@@ -4,7 +4,7 @@
 from core.entities.enemy import Enemy
 from core.systems.gun_muzzles import GunMuzzles
 from game.config.enemy_harrier import HARRIER_CONFIG
-from game.sim.enemies.enemy_helpers import DOWN, Cadence, leave_upward
+from game.sim.enemies.enemy_helpers import DOWN, Cadence, leave_upward, missile_spec
 
 # isort: split
 # __pragma__ ("skip")
@@ -76,7 +76,7 @@ class Harrier(Enemy):
             return
         rail = self._rails[(CFG.missiles - self.missiles_left) % len(self._rails)]
         point = rail.along(ctx, self, DOWN)
-        ctx.fire_missile(point.x, point.y, DOWN, CFG.missile)
+        ctx.fire_missile(point.x, point.y, DOWN, missile_spec(CFG.missile))
         self.missiles_left -= 1
         if self.missiles_left <= 0:
             self.state = "exit"

@@ -30,6 +30,7 @@ from game.config.bosses.boss_kit import BOSS_TIMING, volley_muzzles, volley_on_t
 from game.sim.bosses.boss_launches import launch_fire
 from game.sim.config_access import keys_of as _keys
 from game.sim.config_access import opt
+from game.sim.enemies.enemy_helpers import missile_spec
 from game.sim.joints import joint_specs
 
 # isort: split
@@ -59,15 +60,8 @@ def bullet_spec(bullet: ConfigRecord) -> EnemyBulletSpec:
     return EnemyBulletSpec(bullet.speed, bullet.radius, bullet.style, burst_spec)
 
 
-def _missile_spec(missile: ConfigRecord) -> EnemyMissileSpec:
-    return EnemyMissileSpec(
-        missile.speed,
-        missile.turnRateDeg,
-        missile.homingSeconds,
-        missile.radius,
-        missile.health,
-        missile.style,
-    )
+def _missile_spec(missile: ConfigRecord, up: bool) -> EnemyMissileSpec:
+    return missile_spec(missile, up)
 
 
 def _laser_spec(laser: ConfigRecord) -> EnemyLaserSpec:
@@ -94,7 +88,9 @@ def _shape(shape: ConfigRecord) -> Any:
     if kind == "burst":
         return BossBurstShape(shape.count, shape.gap, bullet_spec(shape.bullet))
     if kind == "missiles":
-        return BossMissilesShape(shape.count, shape.spacingDeg, _missile_spec(shape.missile))
+        return BossMissilesShape(
+            shape.count, shape.spacingDeg, _missile_spec(shape.missile, shape.up), shape.up
+        )
     if kind == "laser":
         return BossLaserShape(_laser_spec(shape.laser))
     raise ValueError("Unknown boss volley shape " + kind)
@@ -153,7 +149,7 @@ def _angrier(volley: BossVolley, k: int) -> BossVolley:
         every = max(every, slowest)
     if isinstance(shape, BossMissilesShape):
         shape = BossMissilesShape(
-            shape.count * BOSS_TIMING.rageMissiles, shape.spacing_deg, shape.missile
+            shape.count * BOSS_TIMING.rageMissiles, shape.spacing_deg, shape.missile, shape.up
         )
     # It opens fire at once, its weapons one after the other.
     first = min(every, BOSS_TIMING.rageFirst + k * BOSS_TIMING.rageStagger)

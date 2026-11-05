@@ -95,6 +95,15 @@ class EnemyMissile:
         self.style = ""
         self.age = 0.0
         self.burst: EnemyBurstSpec | None = None
+        # WPN-08: seconds left flying straight out of the port, before any turning.
+        self.launch = 0.0
+        # WPN-09: how high above the plane of play it is (0 on it), and how it gets there: "climb"
+        # (rising from its silo), "arc" (curving over to the plane) or "flat".
+        self.height = 0.0
+        self.stage = "flat"
+        self.stage_age = 0.0
+        self.climb_seconds = 0.0
+        self.arc_radius = 0.0
 
 
 class EnemyLaser:
@@ -227,6 +236,13 @@ class EnemyShots:
         missile.style = spec.style
         missile.burst = spec.burst
         missile.age = 0
+        flight = spec.flight
+        missile.launch = 0 if flight.climb_seconds > 0 else flight.launch_seconds
+        missile.climb_seconds = flight.climb_seconds
+        missile.arc_radius = flight.arc_radius
+        missile.height = 0
+        missile.stage_age = 0
+        missile.stage = "climb" if flight.climb_seconds > 0 else "flat"
 
     def fire_laser(self, owner: LaserOwner, spec: EnemyLaserSpec) -> None:
         """Start a laser of `spec` from `owner`, aimed at once."""
@@ -284,7 +300,15 @@ class EnemyShots:
         if m.health <= 0:
             m.alive = False
             return
-        if m.homing > 0:
+        if m.stage == "climb":
+            self._climb(m, dt, player_x, player_y)
+            return
+        if m.stage == "arc":
+            self._arc(m, dt)
+        elif m.launch > 0:
+            # WPN-08: straight out of the port first, the homing time not yet running.
+            m.launch -= dt
+        elif m.homing > 0:
             m.heading = turn_towards(
                 m.heading, heading_to(m.x, m.y, player_x, player_y), m.turn_rate * dt
             )
@@ -296,6 +320,26 @@ class EnemyShots:
             m.alive = False
         elif m.burst and m.age >= m.burst.after:
             self._burst_missile(m, m.burst)
+
+    def _climb(self, m: EnemyMissile, dt: float, player_x: float, player_y: float) -> None:
+        """WPN-09: rise from the silo, then point the way it will fly and start the arc."""
+        m.age += dt
+        m.stage_age += dt
+        m.height = m.arc_radius * min(1, m.stage_age / m.climb_seconds)
+        if m.stage_age >= m.climb_seconds:
+            m.heading = heading_to(m.x, m.y, player_x, player_y)
+            m.stage = "arc"
+            m.stage_age = 0
+
+    def _arc(self, m: EnemyMissile, dt: float) -> None:
+        """WPN-09: a half loop of radius `arc_radius` down to the plane, along its heading."""
+        length = math.pi * m.arc_radius
+        m.stage_age += dt * m.speed / length
+        t = min(1, m.stage_age)
+        m.height = m.arc_radius * (1 + math.cos(math.pi * t)) / 2
+        if t >= 1:
+            m.height = 0
+            m.stage = "flat"
 
     def _burst_missile(self, m: EnemyMissile, burst: EnemyBurstSpec) -> None:
         """Remove a missile whose fuse is out and fire its ring of bullets from where it was."""

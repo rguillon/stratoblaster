@@ -340,5 +340,5 @@ def missile_rack(p: EnemyParts, at: Vec3) -> None:
         mouth = boss_point(cell[0], cell[1], cell[2])
         hull.cylinder(2.6, 0.5, 6, H.dark, Placement(offset(mouth, 0, -0.45, 0)))
         charge.ring(2.8, 0.4, 6, WHITE, Placement(offset(mouth, 0, -0.35, 0)))
-        muzzle(mouth, "missile")
+        muzzle(mouth, "missile", "forward")
     hull.box([3, 1.2, 18], SWAMP.stone, Placement(offset(at, 0, height - 0.2, 0)))

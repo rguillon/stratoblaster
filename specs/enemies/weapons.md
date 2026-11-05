@@ -104,7 +104,7 @@ A laser leaves a **lens at the end of a barrel**, which does not recoil.
   shapes and falloffs and differ in colour only (unit test).
 - Manual validation: the Lancer's, the Prism's and a mini boss's laser read as the Overlord's.
 
-*Sources: owner request 2026-11-04, BOSS-32.*
+*Sources: owner request 2026-11-04, BOSS-32. Slice: lasers (done, D-271).*
 
 ### Missile launchers
 
@@ -118,7 +118,7 @@ missile is drawn inside it before it leaves.
 - Given each missile launcher, then its model has a hexagonal port at its muzzle (unit test).
 - Given a missile fired, then it starts at the port's centre with the port's direction (unit test).
 
-*Sources: owner request 2026-11-04.*
+*Sources: owner request 2026-11-04. Slice: missiles (done, D-271).*
 
 #### WPN-08 — The missile leaves the port before it turns · MUST
 

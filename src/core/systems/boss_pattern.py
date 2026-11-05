@@ -92,8 +92,12 @@ class BossBurstShape:
 class BossMissilesShape:
     """`count` homing missiles in a fan `spacing_deg` apart around the player's direction."""
 
-    def __init__(self, count: int, spacing_deg: float, missile: EnemyMissileSpec) -> None:
+    def __init__(
+        self, count: int, spacing_deg: float, missile: EnemyMissileSpec, up: bool = False
+    ) -> None:
         self.kind = "missiles"
+        # Launched from an upward silo (WPN-09): the missiles arc over to the plane first.
+        self.up = up
         self.count = count
         self.spacing_deg = spacing_deg
         self.missile = missile

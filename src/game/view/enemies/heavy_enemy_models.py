@@ -161,7 +161,7 @@ def build_rocketeer(scene: Any) -> Any:
                 N.rocketeer,
             )
             charge.cylinder(2.4, 3.5, 6, WHITE, Placement([s * pod, 0, 11], 0, QUARTER), 0)
-            p.muzzle([s * pod, 0, 14.5], "missile")
+            p.muzzle([s * pod, 0, 14.5], "missile", "forward")
             reactor([s * 2.4, 0, -15], 1.6)
 
     return build_enemy_model("rocketeer", scene, N.rocketeer, draw)

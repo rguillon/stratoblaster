@@ -291,7 +291,7 @@ def missile_pod(p: EnemyParts, at: Vec3) -> None:
         tip = boss_point(cell[0], cell[1], cell[2])
         hull.ring(2.6, 1, 6, H.dark, Placement(offset(tip, 0, -2.8, 0)))
         charge.cylinder(1.9, 2.6, 6, WHITE, Placement(offset(tip, 0, -2.6, 0)), 0)
-        muzzle(tip, "missile")
+        muzzle(tip, "missile", "forward")
     vent(hull, offset(at, 0, 21.8, -8.5), [10, 3], 3)
     cap = [[-12.0, 4.0], [-6.0, 2.0], [-5.0, 11.0], [-9.0, 12.0]]
     snow_cap(

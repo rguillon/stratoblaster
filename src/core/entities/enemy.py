@@ -172,6 +172,20 @@ class EnemyBulletSpec:
         self.burst = burst
 
 
+class MissileFlight:
+    """How a missile leaves its launcher (WPN-08, WPN-09).
+
+    It flies straight out for `launch_seconds` before it turns. From an upward silo (`climb_seconds`
+    above 0) it first rises for `climb_seconds` to `arc_radius` high, then arcs over to the plane of
+    play along a half loop of that radius (its height falling to 0), and only then homes.
+    """
+
+    def __init__(self, launch_seconds: float, climb_seconds: float, arc_radius: float) -> None:
+        self.launch_seconds = launch_seconds
+        self.climb_seconds = climb_seconds
+        self.arc_radius = arc_radius
+
+
 class EnemyMissileSpec:
     """A missile an enemy launches.
 
@@ -187,6 +201,7 @@ class EnemyMissileSpec:
         health: float,
         style: str,
         burst: EnemyBurstSpec | None = None,
+        flight: MissileFlight | None = None,
     ) -> None:
         """`turn_rate_deg` is in degrees a second.
 
@@ -201,6 +216,20 @@ class EnemyMissileSpec:
         self.health = health
         self.style = style
         self.burst = burst
+        self.flight = flight if flight is not None else MissileFlight(0, 0, 0)
+
+    def with_burst(self, burst: EnemyBurstSpec | None) -> "EnemyMissileSpec":
+        """Return this spec with another `burst`."""
+        return EnemyMissileSpec(
+            self.speed,
+            self.turn_rate_deg,
+            self.homing_seconds,
+            self.radius,
+            self.health,
+            self.style,
+            burst,
+            self.flight,
+        )
 
 
 class EnemyLaserSpec:

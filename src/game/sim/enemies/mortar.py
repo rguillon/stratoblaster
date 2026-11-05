@@ -5,7 +5,7 @@ from core.entities.enemy import Enemy, EnemyBulletSpec, EnemyBurstSpec, EnemyMis
 from core.systems.gun_muzzles import GunMuzzles
 from core.systems.projectile_motion import heading_to
 from game.config.enemies_veteran import VETERAN_CONFIG
-from game.sim.enemies.enemy_helpers import DOWN, Cadence, on_playfield
+from game.sim.enemies.enemy_helpers import DOWN, Cadence, missile_flight, on_playfield
 
 # isort: split
 # __pragma__ ("skip")
@@ -32,6 +32,7 @@ def mortar_missile() -> EnemyMissileSpec:
         EnemyBurstSpec(
             burst.after, burst.count, EnemyBulletSpec(ring.speed, ring.radius, ring.style)
         ),
+        missile_flight(False),
     )
 
 
