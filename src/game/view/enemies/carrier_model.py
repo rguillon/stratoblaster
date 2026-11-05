@@ -127,7 +127,6 @@ def draw_docked_hornet(parts: Any, s: float, centre: Vec3) -> None:
             q = docked(s, centre, [w * pt[0], 0, pt[1]])
             wing.append([q[0], q[2]])
         parts.flesh.bevel_slab(wing, [1.4, 1.6, 1.8], [0.1, 0.1], F.membrane, None, F.sinew)
-    parts.neon.lathe(HORNET_EYE, 5, N.hornet, Placement(docked(s, centre, [0, 1.4, 7.4])))
 
 
 def bay(p: Any, s: float, z: float, index: int) -> None:

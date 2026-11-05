@@ -148,21 +148,17 @@ def scaled(profile: list[list[float]], size: list[float]) -> list[list[float]]:
     return [[q[0] * size[0], q[1] * size[0] + size[1]] for q in profile]
 
 
-def dome_draw(centre: list[float], height: float, glow: Any, size: list[float]) -> Any:
+def dome_draw(centre: list[float], height: float, size: list[float]) -> Any:
     """Return what a turret's turning dome at `centre` draws (factory): its gun's housing too.
 
-    Its gun at `height`, its sensor lit in `glow`; `size` is its scale and lift (see `turret`).
+    Its gun at `height`; `size` is its scale and lift (see `turret`).
     """
     k = size[0]
-    lift = size[1]
 
     def draw(piece: Any) -> None:
         piece.hull.lathe(scaled(TURRET_DOME, size), 8, H.panel, Placement(centre))
         housing = Placement([centre[0], height, centre[2] + 2.4 * k], 0, QUARTER)
         piece.hull.cylinder(1.1 * k, 2.2 * k, 6, H.dark, housing, 0.5 * k)
-        # Its sensor, a lit slit on the dome's front.
-        eye = Placement([centre[0], lift + 1.1 * k, centre[2] + 2.1 * k])
-        piece.neon.box([1.8 * k, 0.25 * k, 0.4 * k], glow, eye)
 
     return draw
 
@@ -183,13 +179,16 @@ def barrel_draw(base: list[float], end: list[float], k: float) -> Any:
     return draw
 
 
-def turret(p: Any, k: int, guns: Any, glow: Any, size: list[float] | None = None) -> None:
-    """Add gun turret number `k` of `guns` (a carrier's `turrets` config), its sensor in `glow`.
+def turret(
+    p: Any, k: int, guns: Any, size: list[float] | None = None, pedestal: bool = True
+) -> None:
+    """Add gun turret number `k` of `guns` (a carrier's `turrets` config).
 
     A fixed pedestal, a dome and a barrel turning with it. The dome and the barrel turn with the
     enemy's `turrets[k]`; the barrel recoils with its `barrels[k]` (WPN-02, WPN-03). `size` is how
     many times as big as the Hatchery's it is and how high it stands (`[scale, lift]`; `[1, 0]`
-    when None); the config's barrel height and length must match it.
+    when None); the config's barrel height and length must match it. Without `pedestal`, its dome
+    stands on the hull with no pedestal under it (one sunk in the hull would not show).
     """
     if size is None:
         size = [1, 0]
@@ -197,8 +196,9 @@ def turret(p: Any, k: int, guns: Any, glow: Any, size: list[float] | None = None
     pivot = guns.pivots[k]
     # The config's X is right of the screen, the model's +X its left; its Y up, the model's Z down.
     centre = [-pivot[0], 0, -pivot[1]]
-    p.hull.lathe(scaled(TURRET_BASE, size), 8, H.base, Placement(centre))
-    dome = dome_draw(centre, guns.height, glow, size)
+    if pedestal:
+        p.hull.lathe(scaled(TURRET_BASE, size), 8, H.base, Placement(centre))
+    dome = dome_draw(centre, guns.height, size)
     p.slide(centre, [0, -1], 0, k, dome, True, centre, "barrel", 0, k)
     tip = [centre[0], guns.height, centre[2] + guns.barrel]
     end = [tip[0], tip[1], tip[2] - 0.8 * scale]
@@ -258,6 +258,6 @@ def build_hatchery(scene: Any) -> Any:
         for k in range(len(bays)):
             bay(p, bays[k], k, len(bays))
         for k in range(len(HATCHERY_CONFIG.turrets.pivots)):
-            turret(p, k, HATCHERY_CONFIG.turrets, N.hatchery)
+            turret(p, k, HATCHERY_CONFIG.turrets)
 
     return build_enemy_model("hatchery", scene, N.hatchery, draw)

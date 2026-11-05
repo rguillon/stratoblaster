@@ -43,6 +43,7 @@ from render.babylon import (
     node_name,
 )
 from render.edge_trim_mesh import set_trim
+from render.geometry.facing import seen_from_above
 from render.geometry.solids import SolidBuilder
 from render.model_animation import (
     add_model_animation,
@@ -201,6 +202,17 @@ def wing_parts_new() -> WingParts:
     return WingParts(SolidBuilder(), SolidBuilder(), SolidBuilder(), SolidBuilder())
 
 
+# A face whose unit normal's Y is at most this points too far down for the playfield camera ever to
+# see it: within about 30° of straight down, past the camera's tilt and its field of view, and the
+# wings' flutter (GFX-CAM-02).
+UNSEEN_BELOW = -0.85
+
+
+def seen(builder: Any) -> Any:
+    """Return what a camera above can see of `builder`'s geometry: no face pointing down."""
+    return seen_from_above(builder.geometry, UNSEEN_BELOW)
+
+
 def add_surfaces(
     name: str, parts: Any, mats: SurfaceMaterials, neon_color: Sequence[float], root: Any
 ) -> None:
@@ -210,7 +222,7 @@ def add_surfaces(
     lights use the enemies' colour family (ENM-38). Everything goes under `root`.
     """
     scene = root.getScene()
-    for geo, mat in [(parts.hull.geometry, mats.hull), (parts.flesh.geometry, mats.flesh)]:
+    for geo, mat in [(seen(parts.hull), mats.hull), (seen(parts.flesh), mats.flesh)]:
         if len(geo.positions) == 0:
             continue
         mesh = mesh_of(name + "-" + node_name(mat), in_body_shades(geo), mat, scene)
@@ -219,12 +231,12 @@ def add_surfaces(
     # The bare metal and flesh: the hull's and the flesh's, with no trim (`EnemyParts.bare`,
     # `EnemyParts.bare_flesh`).
     if hasattr(parts, "bare") and len(parts.bare.geometry.positions) > 0:
-        bare = in_body_shades(parts.bare.geometry)
+        bare = in_body_shades(seen(parts.bare))
         mesh_of(name + "-bare", bare, mats.hull, scene).parent = root
     if hasattr(parts, "bare_flesh") and len(parts.bare_flesh.geometry.positions) > 0:
-        bare_flesh = in_body_shades(parts.bare_flesh.geometry)
+        bare_flesh = in_body_shades(seen(parts.bare_flesh))
         mesh_of(name + "-bare-flesh", bare_flesh, mats.flesh, scene).parent = root
-    for geo, mat in [(parts.neon.geometry, mats.neon), (parts.vein.geometry, mats.vein)]:
+    for geo, mat in [(seen(parts.neon), mats.neon), (seen(parts.vein), mats.vein)]:
         if len(geo.positions) == 0:
             continue
         mesh_of(
@@ -555,7 +567,7 @@ def build_enemy_model(
     slide_nodes = add_slides(name, slides, mats, charge_color, body)
     charge_mat = unlit(name + "-charge", scene)
     if len(parts.charge.geometry.positions) > 0:
-        mesh_of(name + "-charge", parts.charge.geometry, charge_mat, scene).parent = body
+        mesh_of(name + "-charge", seen(parts.charge), charge_mat, scene).parent = body
 
     # The last heading and the roll so far, for `bank`.
     turn: list[Any] = [None, 0.0]

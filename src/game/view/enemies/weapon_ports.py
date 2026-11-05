@@ -120,18 +120,17 @@ def hex_port(
 
 
 def _rocket(parts: Any, at: Vec3, direction: str, missile: float, depth: float, index: int) -> None:
-    """Add the rocket loaded in a port: a piece sliding out of sight down the well (WPN-07)."""
+    """Add the rocket loaded in a port: a piece sliding out of sight down the well (WPN-07).
+
+    Only its nose: the nose fills the bore, so the body behind it never shows down the well.
+    """
     radius = rocket_radius(missile)
-    length = ROCKET.length * missile / ROCKET.baseRadius
     nose = 1.6 * missile / ROCKET.baseRadius
-    # Its nose just under the mouth, its body down the well and the tube behind.
+    # Its nose just under the mouth.
     tip = depth - 0.1
     place = axis_of(at, direction, depth)
 
     def draw(piece: Any) -> None:
-        piece.hull.cylinder(
-            radius, length - nose, 6, ROCKET_BODY, axis_of_shift(place, tip - length)
-        )
         piece.neon.cylinder(radius, nose, 6, ROCKET.tip, axis_of_shift(place, tip - nose), 0)
 
     base = axis_of_shift(place, 0).at or [0, 0, 0]
@@ -153,11 +152,16 @@ def laser_lens(
 
     The barrel is `length` long behind `at` and `radius` wide; its coils and lens scale with its
     radius and stay at its mouth, so a long barrel is a gun the length of a whole nose. A forward
-    one points `yaw` radians from the nose (along an arm that is not straight ahead).
+    one points `yaw` radians from the nose (along an arm that is not straight ahead). With no
+    `length` (0), it has no barrel of its own: the lens sits on the mouth of one the model draws.
     """
+    own = length > 0
+    if not own:
+        length = LENS_LENGTH
     place = axis_of(at, direction, length, yaw)
     k = radius / LENS_RADIUS
-    parts.hull.lathe([[radius, 0], [radius, length]], 6, H.dark, place)
+    if own:
+        parts.hull.lathe([[radius, 0], [radius, length]], 6, H.dark, place)
     for y in [0.7, 1.9]:
         coil = length - (LENS_LENGTH - y) * k
         parts.charge.ring(radius * 1.2, 0.5 * k, 6, WHITE, axis_of_shift(place, coil))

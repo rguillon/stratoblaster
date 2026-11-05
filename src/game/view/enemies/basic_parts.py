@@ -54,16 +54,20 @@ def config_barrels(
     swivel: bool = False,
     centre: Any = None,
     lit: bool = True,
+    housing: bool = True,
 ) -> None:
     """Add a recoiling barrel at each of an enemy's config `muzzles`, in their order (WPN-03).
 
     Swivelling ones turn about `centre` (model space) when given, each about its root otherwise.
-    Unlit ones have no charge light at their tips and no edge trim (see `model_barrel`).
+    Unlit ones have no charge light at their tips and no edge trim (see `model_barrel`). Without
+    `housing`, a barrel sunk in the hull has no housing round its root (it would not show).
     """
     for i, m in enumerate(muzzles):
         angle = m[3] if len(m) > 3 else 0
         tip = [-m[0], m[2], -m[1]]
-        model_barrel(parts, tip, math.radians(angle), length, i, radius, swivel, centre, lit)
+        model_barrel(
+            parts, tip, math.radians(angle), length, i, radius, swivel, centre, lit, housing
+        )
 
 
 def recoil_barrel(
@@ -108,11 +112,13 @@ def model_barrel(
     swivel: bool = False,
     centre: Any = None,
     lit: bool = True,
+    housing: bool = True,
 ) -> None:
     """Add barrel number `index`, which recoils, with its tip at `muzzle_at` (model space).
 
     It points `yaw` radians from the nose (the model's own, no mirroring). A `lit` barrel has a
-    charge light at its tip and an edge trim; an unlit one has neither: no glow at all.
+    charge light at its tip and an edge trim; an unlit one has neither: no glow at all. Without
+    `housing`, it has no housing round its root (sunk in the hull, it would not show).
     """
     sx, sz = math.sin(yaw), math.cos(yaw)
     tip = muzzle_at
@@ -120,7 +126,7 @@ def model_barrel(
     base = [end[0] - sx * length, end[1], end[2] - sz * length]
     # The housing the barrel slides out of, fixed on the body. A swivelling barrel has none: it
     # turns on its turret, and a fixed housing would be left pointing ahead.
-    if not swivel:
+    if housing and not swivel:
         (parts.hull if lit else parts.bare).cylinder(
             radius * 1.45,
             length * 0.45,

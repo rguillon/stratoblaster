@@ -12,7 +12,6 @@ from game.config.enemy_look import ENEMY_LOOK
 from game.view.enemies.basic_parts import config_barrels
 from game.view.enemies.enemy_mesh import build_enemy_model
 from game.view.enemies.enemy_shapes import POD_SECTION, SIDES, flip_x
-from game.view.enemies.organic_parts import eyes
 from game.view.enemies.vetelite_organic import sinew
 from game.view.enemies.veteran_shapes import edge_strip
 from render.geometry.organic import (
@@ -96,7 +95,8 @@ def build_wasp(scene: Any) -> Any:
     """Return a small unmanned drone (ENM-WASP-01, ENM-WASP-02).
 
     A single fan spins in its round duct, its core; four stator struts hold the fan's hub. A
-    sensor pod at the nose carries its three guns and a lens that charges up through its pause
+    sensor pod at the nose carries its three guns' muzzles (their barrels would be hidden in it)
+    and a lens that charges up through its pause
     (ENM-WASP-04), an avionics box and a tail fin sit at the back, and a yellow light runs round
     the duct's lip (ENM-WASP-03).
     """
@@ -124,7 +124,9 @@ def build_wasp(scene: Any) -> Any:
         hull.box(WASP_POD, H.base, Placement(WASP_POD_AT), H.panel)
         lens_at = [0, WASP_POD_AT[1] + WASP_POD[1], WASP_POD_AT[2] + 0.6]
         p.charge.lathe(WASP_LENS, 6, [1, 1, 1], Placement(lens_at))
-        config_barrels(p, VETERAN_CONFIG.wasp.muzzles, 2, 0.45)
+        # Its three guns' muzzles at the pod's front: their barrels would be hidden in it.
+        for m in VETERAN_CONFIG.wasp.muzzles:
+            p.muzzle([-m[0], m[2], -m[1]], "gun")
         # The avionics box at the back, a tail fin on it and a light along its back.
         hull.box(WASP_AVIONICS, H.base, Placement(WASP_AVIONICS_AT), H.panel)
         fin = [[pt[1], pt[0]] for pt in WASP_FIN]
@@ -236,10 +238,11 @@ def build_phantom(scene: Any) -> Any:
                 N.phantom,
             )
             p.reactor([s * 2.4, 0.2, -10], 1.2)
-        eyes(p, [0, 1.6, 9], {"count": 2, "size": 0.5, "spacing": 1.6}, N.phantom)
         hull.loft(POD_SECTION, PHANTOM_NOSE, H.panel, None, None)
         # Its five guns spread along the front of the wing, sunk in it: only their tips show past
         # the leading edge.
-        config_barrels(p, VETERAN_CONFIG.phantom.muzzles, PHANTOM_GUN[0], PHANTOM_GUN[1])
+        config_barrels(
+            p, VETERAN_CONFIG.phantom.muzzles, PHANTOM_GUN[0], PHANTOM_GUN[1], housing=False
+        )
 
     return build_enemy_model("phantom", scene, N.phantom, draw)

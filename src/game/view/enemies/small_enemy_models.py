@@ -14,7 +14,6 @@ from game.config.enemies import ENEMY_CONFIG
 from game.config.enemy_look import ENEMY_LOOK
 from game.view.enemies.basic_parts import (
     config_barrels,
-    eye_pair,
     recoil_barrel,
     wing_pair,
 )
@@ -79,7 +78,6 @@ def build_hornet(scene: Any) -> Any:
     def draw(p: Any) -> None:
         flesh = p.flesh
         hull = p.hull
-        neon = p.neon
         hornet_body(flesh)
         hull.cylinder(0.9, 3.2, 4, H.panel, Placement([0, 0.4, 9.3], 0, QUARTER), 0)
         vein_tube(p.vein, curve([0, 2.3, -7], [0, 2.4, 6], [0, 0.6, 0], 3), 0.6, N.hornet)
@@ -95,8 +93,6 @@ def build_hornet(scene: Any) -> Any:
         )
         # Its reactor alone: the sac it sat in was hidden under the wings.
         p.reactor([0, 0.1, -9], 1.2)
-        eye = [[0, -0.5], [0.9, 0], [0, 0.6]]
-        neon.lathe(eye, 5, N.hornet, Placement([0, 1.4, 7.4]))
 
     return build_enemy_model("hornet", scene, N.hornet, draw)
 
@@ -167,13 +163,6 @@ def build_scout(scene: Any) -> Any:
             # wing root back to its nozzle.
             hull.loft(
                 POD_SECTION, scout_nacelle(), H.panel, Placement([s * SCOUT_NACELLE["x"], 0, 0])
-            )
-            neon.ring(
-                SCOUT_NACELLE["radius"] + 0.08,
-                0.4,
-                6,
-                N.scout,
-                Placement([s * SCOUT_NACELLE["x"], 0.3, SCOUT_NACELLE["back"] + 1.2], 0, QUARTER),
             )
             reactor([s * SCOUT_NACELLE["x"], 0.3, SCOUT_NACELLE["back"]], 1.5)
         # The turret: a metal ring the gun pivots on (WPN-02), its barrel recoiling (WPN-03).
@@ -255,7 +244,6 @@ def build_strafer(scene: Any) -> Any:
         reactor = p.reactor
         body = SegmentedBody(-6.5, 10.5, 2, 4.2, -1.3, 2.3)
         segmented_body(flesh, body, F.graphite, None, LOBE_SECTION)
-        eye_pair(p, [0, 1.5, 7], 1, 0.5, N.strafer)
         lights = [edge_light([3, 6], [20.5, -1.5], k / 4, 1.6, [2.4, 0.7]) for k in [1, 2, 3]]
         wing_pair(
             p,

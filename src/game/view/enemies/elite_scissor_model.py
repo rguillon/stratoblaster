@@ -15,7 +15,7 @@ from game.view.enemies.enemy_shapes import (
     flip_x,
 )
 from game.view.enemies.jointed_model import build_jointed_model
-from game.view.enemies.organic_parts import eyes, reactor_sac
+from game.view.enemies.organic_parts import reactor_sac
 from render.geometry.organic import (
     SegmentedBody,
     carapace,
@@ -74,10 +74,11 @@ def body(p: Any) -> None:
         LoftOptions(False, canopy_paint([2, 3], H.dark)),
     )
     neon.box([1.2, 0.5, 22], NEON, Placement([0, 4.8, -3]))
-    eyes(p, [0, 1.8, 22], {"count": 2, "size": 0.6, "spacing": 3}, NEON)
     for s in SIDES:
         vein_tube(vein, curve([s * 5, 2, -20], [s * 4.5, 2.4, 14], [s * 2.5, 0.6, 0], 3), 0.9, NEON)
-        plate(hull, SHOULDER if s > 0 else flip_x(SHOULDER), [3.6, 5], [H.panel, H.dark])
+        plate(
+            hull, SHOULDER if s > 0 else flip_x(SHOULDER), [3.6, 5], [H.panel, H.dark], None, False
+        )
         hull.bevel_slab(
             FIN if s > 0 else flip_x(FIN), [-0.5, 0, 0.6], [0.2, 0.4], H.base, None, H.panel
         )

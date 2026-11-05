@@ -88,7 +88,7 @@ def body(p: Any) -> None:
     # ENM-JUGGERNAUT-02: the swollen body, and the metal shell bolted over its back.
     segmented_body(flesh, BODY, F.sinew)
     carapace(flesh, SHELL, [F.slate, F.sinew])
-    plate(hull, BACK_PLATE, [3.6, 5.2], [H.base, H.dark])
+    plate(hull, BACK_PLATE, [3.6, 5.2], [H.base, H.dark], None, False)
     for slit in angry_eyes([0, 6], 6, [8, 1.4], 0.25):
         neon.slab(slit, [4.5, 4.9], NEON)
     for x in [-15, 15]:
@@ -162,8 +162,6 @@ def front_plate(spec: Any) -> Any:
         hull = p.hull
         neon = p.neon
         hull.bevel_slab(PLATE, [-3, 0, 5], [1, 2.2], H.panel, Placement(at), H.base)
-        for xz in [[-5, 4], [5, 4], [-6, -3], [6, -3]]:
-            hull.box([1, 0.6, 1], H.dark, Placement([at[0] + xz[0], 5.2, at[2] + xz[1]]))
         neon.box([10, 0.5, 1.2], NEON, Placement([at[0], 4.6, at[2] + 3.5]))
 
     return draw

@@ -7,7 +7,6 @@ from game.config.enemies_elite import ELITE_CONFIG
 from game.config.enemy_look import ENEMY_LOOK
 from game.config.enemy_look_elite import ELITE_NEON
 from game.view.bosses.boss_limbs import boss_point
-from game.view.enemies.basic_parts import model_barrel
 from game.view.enemies.elite_shapes import QUARTER, WHITE, H, ahead
 from game.view.enemies.enemy_shapes import SIDES
 from game.view.enemies.jointed_model import build_jointed_model
@@ -72,9 +71,9 @@ def body(p: Any) -> None:
     for s in SIDES:
         for i, pl in enumerate(PLATES):
             outline = [[s * pt[0], pt[1]] for pt in pl]
-            # The front plates riveted, the back ones plain (lean on triangles).
+            # The front plates a little thicker at the edge; no rivets: too small to see.
             if i == 0:
-                plate(hull, outline, [4.4, 5.6], [H.panel, H.dark])
+                plate(hull, outline, [4.4, 5.6], [H.panel, H.dark], None, False)
             else:
                 hull.bevel_slab(outline, [4.4, 4.4, 5.6], [0, 0.6], H.panel)
         vein_tube(vein, curve([s * 3, 5.6, -17], [s * 5, 5.4, 4], [s * 3, 1, 0], 3), 0.9, NEON)
@@ -111,11 +110,11 @@ def neck(head: Any) -> Any:
     return draw
 
 
-def head(spec: Any, index: int) -> Any:
-    """Return a head on its neck: a skull with bone mandibles and a gun on its brow.
+def head(spec: Any) -> Any:
+    """Return a head on its neck: a skull with bone mandibles and a gun's muzzle on its brow.
 
-    The gun is barrel number `index` of the Hydra's: its tip is where the bullets leave, along the
-    head, and it recoils as it fires (ENM-HYDRA-15, WPN-01, WPN-03); a charge light rings its root.
+    Its muzzle is where the bullets leave, along the head (ENM-HYDRA-15, WPN-01); a charge light
+    rings it. The gun's barrel is not drawn: it would be hidden in the head.
     """
     at = boss_point(spec.head[0], spec.head[1], NECK_Y)
     aim = spec.aim
@@ -125,7 +124,8 @@ def head(spec: Any, index: int) -> Any:
         flesh = p.flesh
         neon = p.neon
         segmented_body(flesh, HEAD, F.teal, Placement(at, aim))
-        model_barrel(p, eye, aim, TUBE[1], index, TUBE[0] * 0.6)
+        # Its gun's barrel would be hidden in the head: only its muzzle is marked.
+        p.muzzle(eye, "gun")
         p.charge.cylinder(
             TUBE[0] * 1.2, 0.6, 6, WHITE, Placement(ahead(eye, aim, -TUBE[1] - 1), aim, QUARTER)
         )
@@ -145,9 +145,9 @@ def build_hydra(scene: Any) -> Any:
     """
     limbs = {}
     parts = {}
-    for i, h in enumerate(CFG.heads):
+    for h in CFG.heads:
         limbs[h.joint] = neck(h)
-        parts[h.id] = head(h, i)
+        parts[h.id] = head(h)
     return build_jointed_model(
         "hydra", scene, NEON, CFG.design, {"body": body, "limbs": limbs, "parts": parts}
     )

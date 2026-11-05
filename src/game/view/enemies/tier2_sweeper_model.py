@@ -13,7 +13,6 @@ from game.config.enemy_sweeper import SWEEPER_CONFIG
 from game.view.enemies.enemy_mesh import build_enemy_model
 from game.view.enemies.enemy_shapes import around, radial
 from game.view.enemies.organic_parts import reactor_sac
-from render.geometry.organic import organ
 from render.geometry.solids import Placement
 
 # isort: split
@@ -50,11 +49,9 @@ def build_sweeper(scene: Any) -> Any:
     barrel = SWEEPER_CONFIG.barrelOffset
 
     def draw(p: Any) -> None:
-        flesh = p.flesh
         hull = p.hull
         neon = p.neon
         charge = p.charge
-        organ(flesh, 15, 8, F.graphite, Placement([0, -5, 0]), 0.3)
         hull.lathe(SWEEPER_DISC, DISC_SIDES, H.base, None)
         neon.ring(19.7, 0.8, DISC_SIDES, N.sweeper, Placement([0, 1.6, 0]))
         hull.cylinder(7, HUB_HEIGHT, 8, H.panel, Placement([0, 5.5, 0]), 5)

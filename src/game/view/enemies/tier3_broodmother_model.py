@@ -99,8 +99,8 @@ ISLAND_HEIGHTS = [SHOULDER_TOP - 0.2, SHOULDER_TOP + 2.4, SHOULDER_TOP + 3.6]  #
 BRIDGE = [5, 2.6, 9]  # type: list[float]
 BRIDGE_AT = [-24, SHOULDER_TOP + 3.3, 11]  # type: list[float]
 # The gun turret on the left shoulder, half as big again as the Hatchery's: its scale, and the
-# lift that stands its pedestal's top on the shoulder (the config's barrel height and length
-# match them).
+# lift that stands its dome on the shoulder, with no pedestal (the config's barrel height and
+# length match them).
 TURRET_SIZE = [1.5, SHOULDER_TOP + 0.9 * 1.5]  # type: list[float]
 # The two little wings either side of the bow (right one, `[x, z]`), each with a reactor in a
 # nacelle at its tip: the nacelle's X, its back (Z), its length and radius, and the reactor's.
@@ -275,14 +275,10 @@ def hangar(p: Any) -> None:
         x0 = min(s * HANGAR_INNER, s * (HANGAR_INNER + HANGAR_WALL))
         x1 = max(s * HANGAR_INNER, s * (HANGAR_INNER + HANGAR_WALL))
         hull.slab(rect(x0, x1, HANGAR_BACK, HANGAR_FRONT), [DECK_TOP, under], H.dark)
-        # A light down the front of each wall, either side of the mouth.
-        post = Placement([s * (HANGAR_INNER + HANGAR_WALL / 2), DECK_TOP, HANGAR_FRONT + 0.1])
-        p.neon.box([0.8, under - DECK_TOP, 0.2], N.broodmother, post)
     back = rect(-HANGAR_INNER, HANGAR_INNER, HANGAR_BACK - HANGAR_WALL, HANGAR_BACK)
     hull.slab(back, [DECK_TOP, under], H.dark)
-    # The dark ceiling and floor inside, so nothing lit shows through the mouth.
+    # The dark floor inside, so nothing lit shows through the mouth (the roof is its ceiling).
     inside = rect(-HANGAR_INNER, HANGAR_INNER, HANGAR_BACK, HANGAR_FRONT)
-    hull.slab(inside, [under - 0.3, under], H.dark)
     hull.slab(inside, [DECK_TOP, DECK_TOP + 0.02], H.dark)
     # The mouth's lintel, under the roof's front edge: the charge light.
     lintel = Placement([0, under - 0.6, HANGAR_FRONT + 0.15])
@@ -301,16 +297,13 @@ def hangar(p: Any) -> None:
 
 
 def island(p: Any) -> None:
-    """Add the island on the right shoulder: its base, the bridge with lit windows, a mast."""
+    """Add the island on the right shoulder: its base, and the bridge with lit windows."""
     hull = p.hull
     hull.bevel_slab(ISLAND, ISLAND_HEIGHTS, [0.3, 1], H.base, None, H.panel)
     hull.box(BRIDGE, H.panel, Placement(BRIDGE_AT), H.dark)
     front = BRIDGE_AT[2] + BRIDGE[2] / 2
     window = Placement([BRIDGE_AT[0], BRIDGE_AT[1] + 1.4, front + 0.05])
     p.neon.box([BRIDGE[0] - 1, 0.6, 0.2], N.broodmother, window)
-    top = BRIDGE_AT[1] + BRIDGE[1]
-    hull.cylinder(0.5, 3, 5, H.dark, Placement([BRIDGE_AT[0], top, BRIDGE_AT[2] - 2]))
-    hull.box([4, 0.4, 1.2], H.panel, Placement([BRIDGE_AT[0], top + 2.6, BRIDGE_AT[2] - 2]))
 
 
 # The radar on the right shoulder: where it stands (`[x, z]`), its flesh sensor dome's radius.
@@ -319,7 +312,7 @@ RADAR_DOME = 3.2
 
 
 def radar(p: Any) -> None:
-    """Add the radar on the right shoulder: a metal base, a flesh sensor dome, a lit ring, a mast.
+    """Add the radar on the right shoulder: a metal base, a flesh sensor dome, a lit ring.
 
     Its dome is the carrier's flesh.
     """
@@ -329,9 +322,6 @@ def radar(p: Any) -> None:
     p.hull.cylinder(RADAR_DOME + 0.8, 1, 8, H.base, Placement([x, y - 0.2, z]), RADAR_DOME + 0.4)
     organ(p.flesh, RADAR_DOME, 6, F.membrane, Placement([x, y + 0.6, z]), 0.8)
     p.neon.ring(RADAR_DOME + 0.5, 0.3, 8, N.broodmother, Placement([x, y + 0.7, z]))
-    mast = Placement([x - 0.5, y + 0.6, z + RADAR_DOME + 2])
-    p.hull.cylinder(0.4, 4.5, 5, H.dark, mast)
-    p.hull.box([3, 0.4, 0.8], H.panel, Placement([x - 0.5, y + 4.6, z + RADAR_DOME + 2]))
 
 
 def draw_broodmother(p: Any) -> None:
@@ -349,7 +339,7 @@ def draw_broodmother(p: Any) -> None:
     radar(p)
     hangar(p)
     for k in range(len(CFG.turrets.pivots)):
-        turret(p, k, CFG.turrets, N.broodmother, TURRET_SIZE)
+        turret(p, k, CFG.turrets, TURRET_SIZE, False)
     for r in REACTORS:
         p.reactor([r[0], REACTOR_Y, REACTOR_Z], r[1])
 

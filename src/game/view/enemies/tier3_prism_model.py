@@ -88,7 +88,7 @@ def draw_prism(p: Any) -> None:
     vein = p.vein
     neon = p.neon
     hull.loft(HULL_SECTION, CRYSTAL, H.base)
-    plate(hull, FACET, [7, 8.2], [H.panel, H.dark])
+    plate(hull, FACET, [7, 8.2], [H.panel, H.dark], None, False)
     # The core crystal: a lit bipyramid on its back, pulsing like a vein.
     vein.lathe(CORE, 4, N.prism, Placement([0, 8.6, -1]))
     neon.box([1, 0.5, 18], N.prism, Placement([0, 7.1, -2]))
