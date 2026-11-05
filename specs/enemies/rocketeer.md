@@ -23,7 +23,8 @@ On each side lies a long egg sac (its missile pod) ending in a hexagonal launche
 swept metal wing on each side joins the body to the pod, runs through it and comes out past its
 outer side, a neon light along its leading edge there; the wing's tip is swept forward to the
 pod's front half. The sac's lights are two glowing veins along its flanks, and the launcher has a
-highlight line along each of its left and right edges: nothing glows on top of it or at its mouth
+highlight line along each of its left and right edges; the launcher is its dark hexagonal port all
+along, 7 px deep into the sac, open to its floor, so the rocket is seen in it and leaving it: nothing glows on top of it or at its mouth
 (no rim on its port, and no edge trim on the launcher). The missiles' reload shows in the port
 (WPN-07) (owner requests 2026-11-05, D-278).
 

@@ -130,6 +130,9 @@ def build_lancer(scene: Any) -> Any:
 
 # ENM-ROCKETEER-02: the radius of a missile sac, and how far a wing reaches past the pod's centre.
 SAC_RADIUS = 4
+# A launcher: its mouth (the config's muzzle, model Z), and its length back into the sac.
+ROCKETEER_MOUTH = 14.5
+ROCKETEER_LAUNCHER = 7
 WING_PAST_POD = 7
 
 
@@ -200,16 +203,25 @@ def build_rocketeer(scene: Any) -> Any:
                     0.6,
                     N.rocketeer,
                 )
-            # The launcher: a hexagonal tube out of the sac, as wide as its port (WPN-07). It has
-            # no edge trim (drawn bare), so nothing glows at its mouth; a highlight line runs
-            # along each of its two side edges instead.
+            # The launcher is its port all along (WPN-07): a dark hexagonal tube out of the sac,
+            # hollow to its floor so the rocket is seen in it and leaving it, with no edge trim
+            # (drawn bare: nothing glows at its mouth) and a highlight line along each side edge.
             missile = ENEMY_CONFIG.rocketeer.missile.radius
             tube = port_radius(missile)
-            p.bare.cylinder(tube, 5, 6, H.dark, Placement([s * pod, 0, 9.5], 0, QUARTER))
+            mouth = ROCKETEER_MOUTH
             for side in [-1, 1]:
-                neon.box([0.3, 0.3, 4.6], N.rocketeer, Placement([s * pod + side * tube, 0, 12.1]))
+                edge = Placement([s * pod + side * tube, 0, mouth - ROCKETEER_LAUNCHER / 2])
+                neon.box([0.3, 0.3, ROCKETEER_LAUNCHER - 0.4], N.rocketeer, edge)
             # The model's +X is the screen's left: the config's first pod (launcher 0).
-            p.muzzle([s * pod, 0, 14.5], "missile", "forward", missile, 0 if s > 0 else 1, False)
+            p.muzzle(
+                [s * pod, 0, mouth],
+                "missile",
+                "forward",
+                missile,
+                0 if s > 0 else 1,
+                False,
+                ROCKETEER_LAUNCHER,
+            )
             reactor([s * 2.4, 0, -15], 1.6)
 
     return build_enemy_model("rocketeer", scene, N.rocketeer, draw)

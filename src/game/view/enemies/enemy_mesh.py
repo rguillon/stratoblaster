@@ -356,6 +356,7 @@ def collect_parts(build: Any) -> dict[str, Any]:
         size: Any = None,
         index: Any = None,
         rim: Any = True,
+        well: Any = None,
     ) -> None:
         # `kind` is 'gun' when the caller leaves it out. A missile muzzle is drawn as a hexagonal
         # port (up unless `direction` says "forward"), a laser's as a lens (forward unless "up").
@@ -369,6 +370,7 @@ def collect_parts(build: Any) -> dict[str, Any]:
                 size if size != None else DEFAULT_MISSILE,
                 index if index != None else ports[0],
                 rim is not False,
+                well if well != None else None,
             )
             ports[0] += 1
         elif name == "laser":

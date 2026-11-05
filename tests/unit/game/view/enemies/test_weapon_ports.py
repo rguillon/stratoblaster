@@ -4,12 +4,13 @@
 from typing import Any
 
 import pytest
-from helpers.view_probes import drawn
+from helpers.view_probes import drawings_of, drawn, probe_builder
 
 from core.entities.barrel import Barrel
 from game.config.enemy_look import ENEMY_LOOK
 from game.config.weapons import WEAPONS
 from game.view.enemies.enemy_mesh import rocket_sunk
+from game.view.enemies.enemy_models import ENEMY_MODELS
 from game.view.enemies.weapon_ports import HEX_INNER, port_bore, port_radius, rocket_radius
 
 
@@ -108,3 +109,40 @@ def test_wpn_07_a_port_lit_on_its_sides_has_no_glowing_rim_at_its_mouth() -> Non
     # Not even the edge trim: it is drawn on the bare metal, which is not trimmed.
     assert len(plain["parts"].hull.geometry.positions) == 0
     assert len(plain["parts"].bare.geometry.positions) > 0
+
+
+def _triangles(builder: Any) -> list[list[list[float]]]:
+    pos = builder.geometry.positions
+    idx = builder.geometry.indices
+    return [
+        [[pos[idx[t + k] * 3 + c] for c in range(3)] for k in range(3)]
+        for t in range(0, len(idx), 3)
+    ]
+
+
+def _crosses_axis(tri: list[list[float]], x: float, y: float) -> tuple[bool, float]:
+    """Whether a triangle crosses the line along Z through (x, y), and the Z where it does."""
+    (ax, ay, az), (bx, by, bz), (cx, cy, cz) = tri
+    det = (by - cy) * (ax - cx) + (cx - bx) * (ay - cy)
+    if abs(det) < 1e-9:
+        return False, 0.0
+    u = ((by - cy) * (x - cx) + (cx - bx) * (y - cy)) / det
+    v = ((cy - ay) * (x - cx) + (ax - cx) * (y - cy)) / det
+    w = 1 - u - v
+    inside = min(u, v, w) >= -1e-9
+    return inside, u * az + v * bz + w * cz
+
+
+@pytest.mark.parametrize("model", ["rocketeer", "harrier", "mortar"])
+def test_wpn_07_nothing_closes_a_launcher_s_well(model: str) -> None:
+    """The bore is open from the mouth down to its floor: the rocket is seen in it and leaving."""
+    body = drawings_of(probe_builder(pytest.MonkeyPatch(), ENEMY_MODELS[model]))["body"]
+    parts = body["parts"]
+    ports = [at for at, kind in body["muzzles"] if kind == "missile"]
+    assert ports
+    for at in ports:
+        for builder in (parts.hull, parts.bare, parts.flesh):
+            for tri in _triangles(builder):
+                crosses, z = _crosses_axis(tri, at[0], at[1])
+                # Nothing across the bore from the floor of the shallowest well up to the mouth.
+                assert not (crosses and at[2] - 2 < z < at[2] + 0.01), (model, at, z)

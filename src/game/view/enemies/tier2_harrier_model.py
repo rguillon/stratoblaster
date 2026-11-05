@@ -13,7 +13,7 @@ from game.view.enemies.basic_parts import eye_pair
 from game.view.enemies.enemy_mesh import build_enemy_model
 from game.view.enemies.enemy_shapes import LOBE_SECTION, SIDES, decal, flip_x
 from game.view.enemies.organic_parts import reactor_sac
-from game.view.enemies.weapon_ports import port_radius
+from game.view.enemies.weapon_ports import port_depth, port_radius
 from render.geometry.organic import (
     SegmentedBody,
     curve,
@@ -84,14 +84,16 @@ def build_harrier(scene: Any) -> Any:
             )
             # The launcher: a hexagonal tube as wide as its port (WPN-07), its hole at the tip,
             # glowing as the next missile is ready.
+            tip = RAIL_BACK + RAIL_LENGTH
+            # The rail stops where its port's well starts, so nothing closes the hole.
+            well = port_depth(HARRIER_CONFIG.missile.radius)
             hull.cylinder(
                 RAIL_RADIUS,
-                RAIL_LENGTH,
+                tip + 0.6 - well - RAIL_BACK,
                 6,
                 H.dark,
                 Placement([s * rail_x, RAIL_HEIGHT, RAIL_BACK], 0, QUARTER),
             )
-            tip = RAIL_BACK + RAIL_LENGTH
             # The model's +X is the screen's left: the config's first rail (WPN-07's launcher 0).
             p.muzzle(
                 [s * rail_x, RAIL_HEIGHT, tip + 0.6],

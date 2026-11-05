@@ -12,7 +12,7 @@ from game.config.enemy_look import ENEMY_LOOK
 from game.view.enemies.enemy_mesh import build_enemy_model
 from game.view.enemies.enemy_shapes import SIDES, flip_x
 from game.view.enemies.organic_parts import eyes
-from game.view.enemies.weapon_ports import port_radius
+from game.view.enemies.weapon_ports import port_depth, port_radius
 from render.geometry.organic import (
     SegmentedBody,
     carapace,
@@ -77,7 +77,9 @@ def build_mortar(scene: Any) -> Any:
         # (ENM-MORTAR-04), its rocket seen in the well once reloaded.
         missile = VETERAN_CONFIG.mortar.missile.radius
         tube = port_radius(missile)
-        hull.cylinder(tube, mouth - 4, 6, H.dark, Placement([0, mouth_height, 4], 0, QUARTER))
+        # The tube stops where its port's well starts, so nothing closes the hole.
+        length = mouth - port_depth(missile) - 4
+        hull.cylinder(tube, length, 6, H.dark, Placement([0, mouth_height, 4], 0, QUARTER))
         hull.ring(tube + 0.3, 1.5, 6, H.panel, Placement([0, mouth_height, mouth - 7], 0, QUARTER))
         band = Placement([0, mouth_height, mouth - 7.3], 0, QUARTER)
         neon.ring(tube + 0.35, 0.4, 6, N.mortar, band)

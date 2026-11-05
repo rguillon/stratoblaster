@@ -1115,4 +1115,9 @@
   edge (GFX-TRIM). Models get `EnemyParts.bare`, dark metal with no trim; the Rocketeer's launcher
   tubes and rimless ports are drawn on it, and its side lines are thin neon lines like the wings'
   (no longer the yellow charge strips).
+  Then (owner: "make the darker tip longer so it merges into the body of the gun, remove useless
+  geometry and get the hole in the barrel, I want to see the missiles coming out of the gun"):
+  every enemy launcher tube (Rocketeer, Harrier, Mortar, Juggernaut) ran up to the mouth and its
+  end cap closed the bore over the rocket. Tubes now stop where the port's well starts
+  (`port_depth`); the Rocketeer's launcher is its port all along (`well` 7 px), with no tube.
 - **Status:** Proposed

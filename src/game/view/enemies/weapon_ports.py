@@ -73,6 +73,14 @@ def port_radius(missile: float) -> float:
     return port_bore(missile) + PORT_WALL
 
 
+def port_depth(missile: float) -> float:
+    """Return the depth of the port of a missile of hit radius `missile`.
+
+    A launcher tube behind it stops there, so that nothing closes its well.
+    """
+    return max(2.4, port_bore(missile) * 1.8)
+
+
 def hex_port(
     parts: Any,
     at: Vec3,
@@ -80,8 +88,11 @@ def hex_port(
     missile: float = DEFAULT_MISSILE,
     index: int = 0,
     rim: bool = True,
+    well: float | None = None,
 ) -> None:
     """WPN-07: add a hexagonal missile port at `at` for missiles of hit radius `missile`.
+
+    `well` is how deep it is (`port_depth` when None): a launcher can be its port all along.
 
     A hex barrel with a hollow hexagonal bore wider than the rocket, a dark floor down the well and
     a glowing rim; the rocket of launcher number `index` waits in it, and is gone from the moment
@@ -89,7 +100,7 @@ def hex_port(
     """
     bore = port_bore(missile)
     outer = bore + PORT_WALL
-    depth = max(2.4, bore * 1.8)
+    depth = port_depth(missile) if well is None else well
     place = axis_of(at, direction, depth)
     # One revolved profile: the outer wall up, the rim in, the inner wall down the well. A port
     # with no rim is lit along its launcher's sides: nothing glows at its mouth, not even the

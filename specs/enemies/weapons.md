@@ -123,6 +123,8 @@ back into the well over `missile_reload_seconds` (seen from `missile_reload_show
 - Given the missiles of every launcher, then the bore's inner radius exceeds the drawn missile's
   radius and the tube's exceeds the bore's (unit test).
 - Given a port, then nothing covers its mouth, and its rocket is a piece of its own (unit test).
+- Given each missile enemy's model, then no face crosses its bore between the well's floor and
+  its mouth: the tube behind a port stops where the well starts (unit test).
 - Given a launcher that has just launched, then its port's rocket is hidden, then rises back and is
   in place after `missile_reload_seconds`; a launcher the simulation does not report (a boss's, until
   WPN-05) is always loaded (unit test).

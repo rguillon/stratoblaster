@@ -15,7 +15,7 @@ from game.view.enemies.elite_shapes import QUARTER, H
 from game.view.enemies.enemy_shapes import SIDES, angry_eyes
 from game.view.enemies.jointed_model import build_jointed_model
 from game.view.enemies.organic_parts import reactor_sac
-from game.view.enemies.weapon_ports import port_radius
+from game.view.enemies.weapon_ports import port_depth, port_radius
 from render.geometry.organic import (
     SegmentedBody,
     carapace,
@@ -141,9 +141,10 @@ def cannon(spec: Any, index: int) -> Any:
         p.vein.box([1.2, 0.5, 6], NEON, Placement([at[0], at[1] + 4.4, at[2]]))
         p.neon.box([0.6, 0.4, 3], NEON, Placement([at[0], at[1] + 4.6, at[2] - 4]))
         back = LAUNCHER["length"]
+        # The tube stops where its port's well starts, so nothing closes the hole.
         p.hull.cylinder(
             LAUNCHER["radius"],
-            back,
+            back - port_depth(CFG.missile.radius),
             6,
             H.dark,
             Placement([tip[0], tip[1], tip[2] - back], 0, QUARTER),
