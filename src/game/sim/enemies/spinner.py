@@ -19,15 +19,6 @@ from core.entities.enemy import EnemyContext
 CFG = ENEMY_CONFIG.spinner
 
 
-class SpinnerPod:
-    """Where one of a Spinner's pods is, and the direction it fires to."""
-
-    def __init__(self, x: float, y: float, heading: float) -> None:
-        self.x = x
-        self.y = y
-        self.heading = heading
-
-
 class Spinner(Enemy):
     """ENM-SPINNER-04: descends to its stop height in the upper half, stops.
 
@@ -49,20 +40,6 @@ class Spinner(Enemy):
         self._muzzles = GunMuzzles(CFG.muzzles, True)
         self.barrels = self._muzzles.barrels
         self._fired_for = 0.0
-
-    def pods(self) -> list[SpinnerPod]:
-        """Where each pod is, and the direction it fires to."""
-        result: list[SpinnerPod] = []
-        for i in range(CFG.pods):
-            heading = self.heading + self._ring.aim + (2 * math.pi * i) / CFG.pods
-            result.append(
-                SpinnerPod(
-                    self.x + math.sin(heading) * CFG.podRadius,
-                    self.y + math.cos(heading) * CFG.podRadius,
-                    heading,
-                )
-            )
-        return result
 
     def update(self, ctx: EnemyContext, dt: float) -> None:
         """Advance the enemy by `dt` seconds."""

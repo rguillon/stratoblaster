@@ -12,7 +12,7 @@ import math
 from game.config.enemy_hatchery import HATCHERY_CONFIG
 from game.config.enemy_look import ENEMY_LOOK
 from game.view.enemies.enemy_mesh import build_enemy_model
-from game.view.enemies.enemy_shapes import LOBE_SECTION, SIDES
+from game.view.enemies.enemy_shapes import LOBE_SECTION, SIDES, decal
 from game.view.enemies.veteran_small_models import docked_wasp
 from render.geometry.organic import SegmentedBody, segmented_body
 from render.geometry.solids import Placement
@@ -86,21 +86,30 @@ def deck_pieces(bays: list[float]) -> list[list[list[float]]]:
 def well(p: Any, c: float) -> None:
     """Add a bay's well at `c` (Z) under the deck: its dark walls and floor, lit edges on the deck.
 
-    The edges glow as the next launch nears (ENM-HATCHERY-03).
+    Only the faces seen through the open doors: the walls' inner sides and the floor's top. The
+    edges glow as the next launch nears (ENM-HATCHERY-03).
     """
-    walls = [
-        rect(-BAY - 0.3, -BAY, c - BAY, c + BAY),
-        rect(BAY, BAY + 0.3, c - BAY, c + BAY),
-        rect(-BAY, BAY, c - BAY - 0.3, c - BAY),
-        rect(-BAY, BAY, c + BAY, c + BAY + 0.3),
-    ]
-    for wall in walls:
-        p.hull.slab(wall, [BAY_FLOOR, DECK_TOP - 0.02], H.dark)
-    p.hull.slab(rect(-BAY, BAY, c - BAY, c + BAY), [BAY_FLOOR - 0.3, BAY_FLOOR], H.dark)
+    top = DECK_TOP - 0.02
+    # The well's corners round it, counter-clockwise seen from above: each wall from one to the
+    # next faces in.
+    corners = [[-BAY, c - BAY], [-BAY, c + BAY], [BAY, c + BAY], [BAY, c - BAY]]
+    for i in range(4):
+        a = corners[i]
+        b = corners[(i + 1) % 4]
+        p.hull.face(
+            [
+                [a[0], BAY_FLOOR, a[1]],
+                [a[0], top, a[1]],
+                [b[0], top, b[1]],
+                [b[0], BAY_FLOOR, b[1]],
+            ],
+            H.dark,
+        )
+    p.hull.face([[q[0], BAY_FLOOR, q[1]] for q in corners], H.dark)
     for s in SIDES:
         x0 = s * (BAY + 0.4)
         x1 = s * (BAY + 1)
-        p.charge.slab(rect(min(x0, x1), max(x0, x1), c - BAY, c + BAY), [DECK_TOP, -0.95], WHITE)
+        decal(p.charge, rect(min(x0, x1), max(x0, x1), c - BAY, c + BAY), DECK_TOP + 0.03, WHITE)
 
 
 def door_draw(s: float, c: float) -> Any:
@@ -246,8 +255,8 @@ def build_hatchery(scene: Any) -> Any:
                     [x - w, z],
                 ]
                 hull.bevel_slab(outline, PLATE_HEIGHTS, [0.3, 0.8], H.base, None, H.panel)
-                band = Placement([x, PLATE_HEIGHTS[2] - 0.15, z])
-                neon.box([0.6, 0.2, half * 1.4], N.hatchery, band)
+                band = rect(x - 0.3, x + 0.3, z - half * 0.7, z + half * 0.7)
+                decal(neon, band, PLATE_HEIGHTS[2] + 0.03, N.hatchery)
             p.reactor([s * HULL_X, -6, -36.5], 2.6)
         for piece in deck_pieces(bays):
             hull.bevel_slab(
