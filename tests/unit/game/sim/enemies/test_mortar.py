@@ -46,6 +46,15 @@ def test_enm_mortar_08_the_mortar_launches_a_homing_missile_from_its_tube_at_the
     assert ctx.bullets == []
 
 
+def test_wpn_08_the_mortar_missile_leaves_along_the_tube_wherever_the_player_is() -> None:
+    ctx = FakeContext()
+    ctx.player_x = 20.0
+    mortar = Mortar(300, 400)
+    run(mortar, ctx, CFG.firstShot + 0.2)
+    _x, _y, heading, _spec = ctx.missiles[0]
+    assert heading == pytest.approx(mortar.heading)
+
+
 def test_enm_mortar_08_the_mortar_launches_one_missile_every_interval() -> None:
     ctx = FakeContext()
     mortar = Mortar(200, 700)
