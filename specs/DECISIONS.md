@@ -1121,3 +1121,23 @@
   end cap closed the bore over the rocket. Tubes now stop where the port's well starts
   (`port_depth`); the Rocketeer's launcher is its port all along (`well` 7 px), with no tube.
 - **Status:** Proposed
+
+## D-279 — `make build` redoes only what changed (ENG-39)
+- **Context:** the owner asked "rework the make build target so it only regenerate the files that
+  needs it": every `make build` (and so every `make e2e`) re-ran `npm ci`, both Transcrypt builds
+  with `-b` (every module), both esbuild bundles, and wiped and re-copied `dist/`, about 22 s.
+- **Decision:** every build step is a file target. `npm ci` and the Playwright install leave
+  stamps in `.make/` (git-ignored), redone after `node/package*.json` or `uv.lock` change.
+  Transcrypt runs without `-b` (its own make mode recompiles only the modules newer than their
+  JavaScript, and everything when its options change), one stamp per output directory
+  (`build/game/.stamp`, `build/worker/.stamp`, `build/e2e/.stamp`) newer than every `src/**/*.py`.
+  Each bundle is redone only after its Transcrypt stamp; `dist/index.html` after `index.html` or
+  `src/build_info.py` (the commit); `public/` is copied (stamp `dist/.public`) when one of its files
+  or Babylon.js changes. Babylon.js is checked again only when missing or after a Makefile change.
+  The build checks (ENG-52, AUD-ENGINE-01) run with the step whose output they check, and a failing
+  bundle is never left in place. `dist-e2e/` is rebuilt only after the e2e Transcrypt build or a
+  `dist/` file changes.
+- **Measured:** nothing changed 0.14 s; one module changed 1.9 s; from scratch 22 s as before. An
+  incremental bundle is byte-identical to a clean one.
+- **Limit:** a file removed from `public/` stays in `dist/` until `dist/` is deleted.
+- **Status:** Proposed
