@@ -74,9 +74,25 @@ def recoil_barrel(
     fixed housing holds a barrel `length` long that slides back along its axis, with a charge light
     at its tip (the muzzle marked there, ENM-21).
     """
-    yaw = math.radians(angle_deg)
+    model_barrel(
+        parts, [-tip[0], tip[1], tip[2]], math.radians(angle_deg), length, index, radius, swivel
+    )
+
+
+def model_barrel(
+    parts: Any,
+    muzzle_at: Vec3,
+    yaw: float,
+    length: float,
+    index: int,
+    radius: float = 0.55,
+    swivel: bool = False,
+) -> None:
+    """Add barrel number `index`, which recoils, with its tip at `muzzle_at` (model space).
+
+    It points `yaw` radians from the nose (the model's own, no mirroring).
+    """
     sx, sz = math.sin(yaw), math.cos(yaw)
-    muzzle_at = [-tip[0], tip[1], tip[2]]
     tip = muzzle_at
     end = [tip[0] - sx * 0.8, tip[1], tip[2] - sz * 0.8]
     base = [end[0] - sx * length, end[1], end[2] - sz * length]

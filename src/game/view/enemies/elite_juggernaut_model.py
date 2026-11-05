@@ -10,8 +10,8 @@ from game.config.enemies_elite import ELITE_CONFIG
 from game.config.enemy_look import ENEMY_LOOK
 from game.config.enemy_look_elite import ELITE_NEON
 from game.view.bosses.boss_limbs import boss_point
-from game.view.enemies.basic_parts import config_barrels
-from game.view.enemies.elite_shapes import QUARTER, H, barrel
+from game.view.enemies.basic_parts import config_barrels, model_barrel
+from game.view.enemies.elite_shapes import QUARTER, H
 from game.view.enemies.enemy_shapes import SIDES, angry_eyes
 from game.view.enemies.jointed_model import build_jointed_model
 from game.view.enemies.organic_parts import reactor_sac
@@ -102,7 +102,7 @@ def shoulder(cannon: Any) -> Any:
     return draw
 
 
-def cannon(spec: Any) -> Any:
+def cannon(spec: Any, index: int) -> Any:
     """Return a shoulder cannon (ENM-JUGGERNAUT-06): a flesh pod in a metal band.
 
     It has a steel-blue gland and a long barrel.
@@ -115,7 +115,8 @@ def cannon(spec: Any) -> Any:
         p.hull.ring(4.9, 1.4, 6, H.panel, Placement([at[0], at[1] + 0.8, at[2] - 0.5], 0, QUARTER))
         p.vein.box([1.2, 0.5, 6], NEON, Placement([at[0], at[1] + 4.4, at[2]]))
         p.neon.box([0.6, 0.4, 3], NEON, Placement([at[0], at[1] + 4.6, at[2] - 4]))
-        barrel(p, tip, 0, [1.4, 8])
+        # WPN-03: the barrel slides back when this cannon fires (its number in `Enemy.barrels`).
+        model_barrel(p, tip, 0, 8, index, 1.4)
 
     return draw
 
@@ -143,9 +144,10 @@ def build_juggernaut(scene: Any) -> Any:
     """
     limbs = {}
     parts = {}
-    for c in CFG.cannons:
+    for i, c in enumerate(CFG.cannons):
         limbs[c.joint] = shoulder(c)
-        parts[c.id] = cannon(c)
+        # After the seven barrels of the back turret.
+        parts[c.id] = cannon(c, len(CFG.muzzles) + i)
     for pl in CFG.plates:
         parts[pl.id] = front_plate(pl)
     return build_jointed_model(

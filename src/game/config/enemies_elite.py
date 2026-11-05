@@ -281,7 +281,7 @@ ELITE_CONFIG = record({
         "spreadSpacing": 9,
         "bullet": bullet("blue", 185),
         # The twin cannon on its back turret.
-        "muzzles": fan_barrels(7, 9, 1.6, -9, 7),
+        "muzzles": fan_barrels(7, 9, 1.6, -9, 8.8),
         # Each shoulder cannon fires a burst of `burstCount` along its barrel every interval.
         "cannonInterval": 1.6,
         "firstBurst": 0.8,

@@ -30,6 +30,8 @@ def _tips(enemy: Any) -> list[tuple[float, float, float]]:
     on_turret = enemy.turret is not None
     tips = []
     for barrel in enemy.barrels:
+        if barrel.angle is None and not on_turret:
+            continue
         tip = enemy.place(barrel.muzzle, on_turret)
         own = enemy.heading + (enemy.turret.aim if on_turret else barrel.angle)
         tips.append((tip.x, tip.y, own))
@@ -80,3 +82,17 @@ def test_wpn_02_a_scouts_gun_turns_to_the_player_before_it_fires() -> None:
     _, _, heading, _ = ctx.bullets[0]
     want = math.atan2(ctx.player_x - scout.x, ctx.player_y - scout.y)
     assert abs(math.remainder(heading - want, math.tau)) < math.radians(8)
+
+
+def test_wpn_03_a_juggernaut_shoulder_cannon_recoils_when_it_fires() -> None:
+    enemy = Juggernaut(200, 700, 500)
+    ctx = FakeContext()
+    cannon_barrels = enemy.barrels[7:]
+    assert len(cannon_barrels) == 2
+    recoiled = False
+    for _ in range(int(30 / STEP)):
+        run(enemy, ctx, STEP)
+        if any(b.recoil_at(enemy.age) > 0.9 for b in cannon_barrels):
+            recoiled = True
+            break
+    assert recoiled

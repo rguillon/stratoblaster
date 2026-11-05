@@ -3,6 +3,7 @@
 
 import math
 
+from core.entities.barrel import Barrel
 from core.entities.jointed_enemy import JointedEnemy
 from core.systems.enemy_motion import approach
 from core.systems.gun_muzzles import GunMuzzles, fire_aimed
@@ -39,7 +40,10 @@ class Juggernaut(JointedEnemy):
         self.state = "enter"
         self._gun = Cadence(CFG.fireInterval, CFG.firstShot)
         self._muzzles = GunMuzzles(CFG.muzzles)
-        self.barrels = self._muzzles.barrels
+        # The back turret's seven barrels, then one per shoulder cannon (WPN-03).
+        self.barrels = list(self._muzzles.barrels)
+        for c in CFG.cannons:
+            self.barrels.append(Barrel(c.muzzle))
         self._cannons = Cadence(CFG.cannonInterval, CFG.firstBurst)
         # Bullets left in the cannons' burst, and seconds until the next one.
         self._burst_left = 0
@@ -87,11 +91,12 @@ class Juggernaut(JointedEnemy):
 
     def _fire_cannons(self, ctx: EnemyContext) -> None:
         """Each standing shoulder cannon fires a bullet along its barrel."""
-        for spec in CFG.cannons:
+        for k, spec in enumerate(CFG.cannons):
             cannon = self.part(spec.id)
             if cannon is None:
                 continue
             point = ctx.seen(cannon.place(spec.muzzle))
             # Along the barrel as its joint is turned now (the part's heading is set after `act`).
             heading = self.heading + self.joints.angle(spec.joint)
+            self.barrels[len(CFG.muzzles) + k].kick(self.age)
             ctx.fire_bullet(point.x, point.y, heading, CFG.cannonBullet)
