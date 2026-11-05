@@ -12,16 +12,18 @@ screen, firing one bullet aimed at the player at a steady beat.
 
 #### ENM-SCOUT-01 — A light winged scout · MUST
 
-The Scout is a light flyer about `size` L long: a fat flesh fuselage of three swollen segments, two
-eyes at the front, and fixed swept airplane wings in metal with a neon leading edge (no insect wings,
-nothing flaps) and a small tailplane; no fin (owner request 2026-11-05).
+The Scout is a light fighter about `size` L long, one blended airframe that does not look like an
+insect: a metal fighter fuselage, widest in the middle and closing to a point at the nose, with
+fixed swept wings in metal with a neon leading edge (nothing flaps) and a small tailplane, the
+wings' roots faired into the fuselage, and no fin. A flesh canopy sits on its back ahead of the
+turret, with a neon visor across its front; it has no eyes.
 
-*Sources: P05-R03, P16-R03, P16-R07, owner request 2026-11-05 (D-272).*
+*Sources: P05-R03, P16-R03, P16-R07, owner requests 2026-11-05 (D-272, D-277).*
 
 #### ENM-SCOUT-02 — Twin reactors under the wings · MUST
 
-A reactor sits at the trailing root of each wing, its nozzle opening in the end of a nacelle that
-grows out of the fuselage's flank (not hanging behind the tail on its own).
+A reactor sits at the trailing root of each wing, its nozzle opening in the end of an engine nacelle
+faired into the fuselage's flank (part of the body, not hanging behind the tail on its own).
 
 **Acceptance criteria**
 - Unit test: the model has two reactors, no flapping wing and one gun.

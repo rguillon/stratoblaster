@@ -1083,3 +1083,15 @@
   so its tip is at `[0, -7.8, 4.9]`. Owner: the reactors were floating; each now ends a tapered
   nacelle (8.5 px, 1.9 px round its nozzle) that grows out of the fuselage's flank.
 - **Status:** Proposed
+
+### D-277 — The Scout is one blended airframe
+- **Date:** 2026-11-05
+- **Requirements:** ENM-SCOUT-01, ENM-SCOUT-02.
+- **Context:** owner: "rework the scout body, no longer look like an insect, make it looks so the
+  wings and engines are fully part of the body" (and, before, "remove the vertical wing").
+- **Decision:** the flesh lobes, eyes and vein are replaced by a metal fighter fuselage
+  (`FIGHTER_SECTION` loft, 5 px half wide in the middle, a point at the nose); wing-root fairings
+  join the wings to the nose's flanks; the engines are hexagonal nacelles lofted into the
+  fuselage's flanks, swelling round their nozzles; the fin is gone. The cyber-organic touch is a
+  flesh canopy ahead of the turret, with a neon visor (ENM-35 still finds flesh on it).
+- **Status:** Proposed

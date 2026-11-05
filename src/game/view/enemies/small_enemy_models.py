@@ -20,7 +20,10 @@ from game.view.enemies.basic_parts import (
 )
 from game.view.enemies.enemy_mesh import build_enemy_model
 from game.view.enemies.enemy_shapes import (
+    CANOPY_SECTION,
+    FIGHTER_SECTION,
     LOBE_SECTION,
+    POD_SECTION,
     SIDES,
     decal,
     flip_x,
@@ -34,7 +37,7 @@ from render.geometry.organic import (
 from render.geometry.organic import (
     vein as vein_tube,
 )
-from render.geometry.solids import Placement
+from render.geometry.solids import LoftOptions, Placement
 
 # isort: split
 # __pragma__ ("skip")
@@ -87,20 +90,41 @@ SCOUT_WING = [[3.5, 4], [14, -4], [14, -7.5], [3.5, -6.5]]  # type: list[list[fl
 SCOUT_WING_LIGHT = [[4.6, 3], [13, -3.6], [12.6, -4.4], [4.2, 2.2]]  # type: list[list[float]]
 SCOUT_TAILPLANE = [[2.5, -9], [7.5, -13], [7.5, -14.5], [2.5, -12.5]]  # type: list[list[float]]
 # The gun turret: a ring on the fuselage's back at the gun's pivot (`ENEMY_CONFIG.scout.turret`).
-SCOUT_TURRET = {"radius": 3.6, "height": 1.4, "y": 3.1, "z": -ENEMY_CONFIG.scout.turret.y}
-# A reactor's nacelle: across from the centre, where its nozzle opens (Z), its length forward into
-# the fuselage, and its radius at the back (round the 1.5 nozzle) and at the front.
-SCOUT_NACELLE = {"x": 2.6, "back": -12.8, "length": 8.5, "radius": 1.9, "front": 1.3}
+SCOUT_TURRET = {"radius": 3.6, "height": 1.4, "y": 3.3, "z": -ENEMY_CONFIG.scout.turret.y}
+# The fuselage, tail to nose (`[z, half width, y0, y1]`): widest in the middle, where the wings,
+# the nacelles and the turret are faired in, closing to a point at the nose.
+SCOUT_FUSELAGE = [  # type: list[list[float]]
+    [-13.5, 2.6, -0.6, 2.2],
+    [-9, 4, -1.2, 3],
+    [-3, 5, -1.6, 3.5],
+    [3, 4.8, -1.5, 3.4],
+    [8, 3.4, -1.1, 2.8],
+    [12, 1.8, -0.6, 1.6],
+    [14.5, 0, 0.4, 0.4],
+]
+# The flesh canopy ahead of the turret (open at the bottom, sitting on the fuselage).
+SCOUT_CANOPY = [  # type: list[list[float]]
+    [2.5, 0.6, 3.2, 3.6],
+    [4.5, 1.8, 3.1, 4.4],
+    [8, 1.5, 2.6, 3.9],
+    [10.5, 0.3, 2, 2.3],
+]
+# A wing root's fairing (right side, `[x, z]`): from the nose's flank back along the wing's root.
+SCOUT_FAIRING = [[1.5, 11], [4.6, 4], [5.2, -4], [3.5, -6.5], [2, 6]]  # type: list[list[float]]
+# An engine nacelle: across from the centre, where its nozzle opens (Z), its length forward into the
+# fuselage, and its radius round the 1.5 nozzle.
+SCOUT_NACELLE = {"x": 3.4, "back": -12.8, "length": 9, "radius": 1.9}
 # The gun's barrel: its length (from the pivot to its tip light) and radius.
 SCOUT_GUN = {"length": 9, "radius": 1}
 
 
 def build_scout(scene: Any) -> Any:
-    """ENM-SCOUT-01: a light airplane scout with a fat flesh fuselage.
+    """ENM-SCOUT-01: a light fighter, one blended airframe.
 
-    Fixed swept airplane wings and a tailplane in metal with a neon edge, a reactor under each
-    wing's trailing root (ENM-SCOUT-02), and a gun turret on its back (ENM-SCOUT-03); green
-    (ENM-SCOUT-04).
+    A metal fighter fuselage, wide in the middle, into which the swept wings' roots, the tailplane
+    and the two engine nacelles are faired (ENM-SCOUT-02): nothing stands apart from the body. A
+    flesh canopy on its back with a neon visor, a neon spine line, and a gun turret behind the
+    canopy (ENM-SCOUT-03); green (ENM-SCOUT-04).
     """
 
     def draw(p: Any) -> None:
@@ -108,31 +132,29 @@ def build_scout(scene: Any) -> Any:
         hull = p.hull
         neon = p.neon
         reactor = p.reactor
-        body = SegmentedBody(-12, 11.5, 3, 4.2, -2, 3.2)
-        segmented_body(flesh, body, F.teal, None, LOBE_SECTION)
-        eye_pair(p, [0, 2.6, 9], 1.3, 0.55, N.scout)
-        vein_tube(p.vein, curve([0, 3.1, -9], [0, 3.2, 3], [0, 0.6, 0], 3), 0.6, N.scout)
+        hull.loft(FIGHTER_SECTION, SCOUT_FUSELAGE, H.base)
+        # The flesh canopy ahead of the turret, a neon visor across its front.
+        flesh.loft(CANOPY_SECTION, SCOUT_CANOPY, F.teal, None, LoftOptions(True))
+        neon.box([2.4, 0.4, 0.5], N.scout, Placement([0, 3.7, 7.8]))
         for s in SIDES:
             wing = SCOUT_WING if s > 0 else flip_x(SCOUT_WING)
             light = SCOUT_WING_LIGHT if s > 0 else flip_x(SCOUT_WING_LIGHT)
             tail = SCOUT_TAILPLANE if s > 0 else flip_x(SCOUT_TAILPLANE)
+            fairing = SCOUT_FAIRING if s > 0 else flip_x(SCOUT_FAIRING)
             hull.bevel_slab(wing, [-0.5, 0, 0.6], [0.2, 0.3], H.base, None, H.panel)
             decal(neon, light, 0.65, N.scout)
             hull.bevel_slab(tail, [-0.3, 0, 0.4], [0.2, 0.2], H.base, None, H.panel)
-            # ENM-SCOUT-02: each reactor's nacelle grows out of the fuselage's flank and runs back
-            # to the nozzle, which opens in its end (not hanging behind the tail on its own).
-            hull.cylinder(
-                SCOUT_NACELLE["radius"],
-                SCOUT_NACELLE["length"],
-                8,
-                H.panel,
-                Placement([s * SCOUT_NACELLE["x"], 0.3, SCOUT_NACELLE["back"]], 0, QUARTER),
-                SCOUT_NACELLE["front"],
+            # The wing root's fairing, from the nose's flank back along the wing.
+            hull.bevel_slab(fairing, [-0.9, 0.2, 1.4], [0.4, 0.8], H.base, None, H.panel)
+            # ENM-SCOUT-02: each engine is a nacelle faired into the fuselage's flank, from the
+            # wing root back to its nozzle.
+            hull.loft(
+                POD_SECTION, scout_nacelle(), H.panel, Placement([s * SCOUT_NACELLE["x"], 0, 0])
             )
             neon.ring(
                 SCOUT_NACELLE["radius"] + 0.08,
                 0.4,
-                8,
+                6,
                 N.scout,
                 Placement([s * SCOUT_NACELLE["x"], 0.3, SCOUT_NACELLE["back"] + 1.2], 0, QUARTER),
             )
@@ -151,6 +173,20 @@ def build_scout(scene: Any) -> Any:
         )
 
     return build_enemy_model("scout", scene, N.scout, draw)
+
+
+def scout_nacelle() -> list[list[float]]:
+    """Return the loft stations of an engine nacelle about its own axis (`[z, half width, y0, y1]`).
+
+    Round the nozzle at the back, swelling forward, then sinking into the fuselage at the wing root.
+    """
+    r = SCOUT_NACELLE["radius"]
+    back = SCOUT_NACELLE["back"]
+    return [
+        [back, r, 0.3 - r, 0.3 + r],
+        [back + 4, r * 1.1, 0.3 - r * 1.1, 0.3 + r * 1.1],
+        [back + SCOUT_NACELLE["length"], r * 0.5, 0.3 - r * 0.5, 0.3 + r * 0.5],
+    ]
 
 
 def edge_light(
