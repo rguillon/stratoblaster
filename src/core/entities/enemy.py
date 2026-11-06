@@ -114,8 +114,10 @@ class EnemyContext(Protocol):
         """Fire a bullet of `spec` from (x, y) along `heading`."""
         ...
 
-    def fire_missile(self, x: float, y: float, heading: float, spec: "EnemyMissileSpec") -> None:
-        """Launch a missile of `spec` from (x, y) along `heading`."""
+    def fire_missile(
+        self, x: float, y: float, heading: float, spec: "EnemyMissileSpec", height: float = 0
+    ) -> None:
+        """Launch a missile of `spec` from (x, y), `height` above the plane, along `heading`."""
         ...
 
     def fire_laser(self, owner: LaserOwner, spec: "EnemyLaserSpec") -> None:
@@ -175,15 +177,24 @@ class EnemyBulletSpec:
 class MissileFlight:
     """How a missile leaves its launcher (WPN-08, WPN-09).
 
-    It flies straight out for `launch_seconds` before it turns. From an upward silo (`climb_seconds`
-    above 0) it first rises for `climb_seconds` to `arc_radius` high, then arcs over to the plane of
-    play along a half loop of that radius (its height falling to 0), and only then homes.
+    It flies straight out for `launch_seconds` before it turns. From an upward silo (`loft_seconds`
+    above 0) it lofts instead: one smooth curve over `loft_seconds`, leaving straight up at
+    `loft_speed` (px/s), drifting off along the heading it was launched along (to its side, at
+    `loft_drift` px/s at most), slowing to its top and coming down onto the plane of play, level,
+    gathering its speed towards the player; only then it homes.
     """
 
-    def __init__(self, launch_seconds: float, climb_seconds: float, arc_radius: float) -> None:
+    def __init__(
+        self,
+        launch_seconds: float,
+        loft_seconds: float = 0,
+        loft_speed: float = 0,
+        loft_drift: float = 0,
+    ) -> None:
         self.launch_seconds = launch_seconds
-        self.climb_seconds = climb_seconds
-        self.arc_radius = arc_radius
+        self.loft_seconds = loft_seconds
+        self.loft_speed = loft_speed
+        self.loft_drift = loft_drift
 
 
 class EnemyMissileSpec:

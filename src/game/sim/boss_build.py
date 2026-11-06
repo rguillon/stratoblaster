@@ -16,6 +16,7 @@ from core.entities.boss import BossDeath, BossPartSpec, BossStats
 from core.entities.boss_roll import BossRoll
 from core.entities.boss_turret import BossTurretSpec
 from core.entities.enemy import EnemyBulletSpec, EnemyBurstSpec, EnemyLaserSpec, EnemyMissileSpec
+from core.systems.boss_mounts import BossMount, BossMountSpec
 from core.systems.boss_pattern import (
     BossAimedShape,
     BossBurstShape,
@@ -26,6 +27,7 @@ from core.systems.boss_pattern import (
     BossRingShape,
     BossVolley,
 )
+from game.config.bosses.boss_guns import mount_muzzles
 from game.config.bosses.boss_kit import BOSS_TIMING, volley_muzzles, volley_on_turret
 from game.sim.bosses.boss_launches import launch_fire
 from game.sim.config_access import keys_of as _keys
@@ -96,28 +98,94 @@ def _shape(shape: ConfigRecord) -> Any:
     raise ValueError("Unknown boss volley shape " + kind)
 
 
-def armed_volley(design: ConfigRecord, volley: ConfigRecord) -> BossVolley:
-    """Return a volley of the design's stages, fired from the muzzles and turret of its gun.
+# The kind of mount each kind of volley fires from (BOSS-58); a launch needs none.
+MOUNT_KIND = {
+    "aimed": "gun",
+    "fan": "gun",
+    "burst": "gun",
+    "ring": "gun",
+    "missiles": "missile",
+    "laser": "laser",
+}
 
-    This is the TS `#armed`. The volley fires only while the part it `needs` stands or once the part
-    it comes `after` is destroyed (BOSS-24). Each boss's own volleys are its boss file's stage
-    patterns (`specs/bosses/`).
+
+def _fits(mount: ConfigRecord, volley: ConfigRecord) -> bool:
+    """Whether a volley can fire from `mount`: its kind, and a rotor for a ring only."""
+    kind = volley.shape.kind
+    if kind not in MOUNT_KIND or MOUNT_KIND[kind] != mount.kind:
+        return False
+    if mount.kind != "gun":
+        return True
+    return bool((kind == "ring") == (mount.layout == "ring"))
+
+
+def volley_mount(design: ConfigRecord, volley: ConfigRecord) -> ConfigRecord | None:
+    """Return the mount a volley of the design fires from (BOSS-58), None for one it has none of.
+
+    The one it names (`mount`), or the first of its piece's that fits it: a rotor for a ring,
+    another gun mount for other bullets, a laser's, a missile mount's.
     """
+    mounts = opt(design.mounts) or []
+    named = opt(volley.mount)
+    for mount in mounts:
+        if named is not None:
+            if mount.id == named:
+                return mount
+        elif mount.piece == volley["from"] and _fits(mount, volley):
+            return mount
+    if named is not None:
+        raise ValueError('Unknown boss mount "' + named + '"')
+    return None
+
+
+def armed_volley(
+    design: ConfigRecord, volley: ConfigRecord, mounts: dict[str, BossMount] | None = None
+) -> BossVolley:
+    """Return a volley of the design's stages, fired from its mount, or its gun's muzzles.
+
+    This is the TS `#armed`. From the boss's mount it fires from (`mounts`, by id: BOSS-58) when it
+    has one, else from the muzzles and turret of its piece's gun. The volley fires only while the
+    part it `needs` stands or once the part it comes `after` is destroyed (BOSS-24). Each boss's own
+    volleys are its boss file's stage patterns (`specs/bosses/`).
+    """
+    mount = volley_mount(design, volley)
+    armed = mounts[mount.id] if mount is not None and mounts is not None else None
     return BossVolley(
         volley["from"],
         volley.every,
         _shape(volley.shape),
-        volley_muzzles(design, volley),
-        volley_on_turret(design, volley),
+        None if armed is not None else volley_muzzles(design, volley),
+        None if armed is not None else volley_on_turret(design, volley),
         opt(volley.needs),
         opt(volley.after),
         opt(volley.first),
+        armed,
     )
 
 
-def armed_pattern(design: ConfigRecord, volleys: list[ConfigRecord]) -> list[BossVolley]:
+def armed_pattern(
+    design: ConfigRecord, volleys: list[ConfigRecord], mounts: dict[str, BossMount] | None = None
+) -> list[BossVolley]:
     """`volleys` armed (see `armed_volley`), in the same order."""
-    result: list[BossVolley] = [armed_volley(design, volley) for volley in volleys]
+    result: list[BossVolley] = [armed_volley(design, volley, mounts) for volley in volleys]
+    return result
+
+
+def mount_specs(design: ConfigRecord) -> list[BossMountSpec]:
+    """Return the gun mounts of the design's pieces (BOSS-58), in its order.
+
+    Each with its barrels' tips at rest (`boss_guns.mount_muzzles`) and its turret, turning at the
+    bosses' rate (a laser's following the player at the laser rate, BOSS-31).
+    """
+    result: list[BossMountSpec] = []
+    for mount in opt(design.mounts) or []:
+        turret = None
+        if mount.turret:
+            laser_turn = BOSS_TIMING.laserTurnDeg if mount.kind == "laser" else None
+            turret = BossTurretSpec(mount.at[0], mount.at[1], BOSS_TIMING.turretTurnDeg, laser_turn)
+        result.append(
+            BossMountSpec(mount.id, mount.piece, mount.kind, mount_muzzles(mount), turret)
+        )
     return result
 
 
@@ -162,19 +230,29 @@ def _angrier(volley: BossVolley, k: int) -> BossVolley:
         volley.needs,
         volley.after,
         first,
+        volley.mount,
     )
 
 
-def angry_pattern(design: ConfigRecord, form: int) -> list[BossVolley]:
+def angry_pattern(
+    design: ConfigRecord, form: int, mounts: dict[str, BossMount] | None = None
+) -> list[BossVolley]:
     """Return what a boss of `design` fires when angry after transformation `form` (BOSS-27).
 
     Only the hidden weapons that transformation revealed, whatever their kind (bullets, missiles,
-    lasers, a hangar's Hornets), each fired `rageRate` times as often (see `_angrier`).
+    lasers, a hangar's Hornets), each fired `rageRate` times as often (see `_angrier`), and those of
+    the design's `rageAlso` (part ids) revealed before, still standing.
     """
-    revealed = [part.id for part in design.stats.parts if opt(part.reveal) == form]
+    also = opt(design.rageAlso) or []
+    revealed = [
+        part.id
+        for part in design.stats.parts
+        if opt(part.reveal) == form
+        or (part.id in also and opt(part.reveal) is not None and opt(part.reveal) < form)
+    ]
     stages = design.stages
     volleys = [volley for volley in stages[len(stages) - 1] if volley["from"] in revealed]
-    armed = [armed_volley(design, volley) for volley in volleys]
+    armed = [armed_volley(design, volley, mounts) for volley in volleys]
     launches = [launch for launch in opt(design.launches) or [] if launch["from"] in revealed]
     armed.extend([launch_volley(launch) for launch in launches])
     return [_angrier(volley, k) for k, volley in enumerate(armed)]
@@ -291,4 +369,5 @@ def boss_stats(design: ConfigRecord) -> BossStats:
         BOSS_TIMING.transformSeconds,
         opt(design.transformParts),
         opt(design.turns),
+        mount_specs(design),
     )

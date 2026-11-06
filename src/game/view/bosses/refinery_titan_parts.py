@@ -10,7 +10,7 @@ import math
 from game.config.boss_look import BOSS_LOOK
 from game.config.enemy_look import ENEMY_LOOK
 from game.view.bosses.world_1_organic_kit import F, graft, polygon, vein_line
-from game.view.enemies.enemy_shapes import POD_SECTION, decal
+from game.view.enemies.enemy_shapes import decal
 from render.geometry.solids import Placement
 
 # isort: split
@@ -23,7 +23,6 @@ type Vec3 = list[Any]
 
 
 H = ENEMY_LOOK.hull
-WHITE = [1, 1, 1]
 QUARTER = math.pi / 2
 # Orange: the boss's neon (BOSS-50, FB-REFINERY-TITAN-04).
 TITAN_NEON = BOSS_LOOK.neon["refinery-titan"]
@@ -99,25 +98,13 @@ TURRET_BASE = [
     [6, 8],
     [0, 8.6],
 ]
-TURRET_HOUSING = [
-    [-5, 5, -3.2, 3.4],
-    [4, 5.4, -3.6, 3.8],
-    [11, 4.4, -3, 3.2],
-]
-# The barrels around the rotary axis (x, y), their length and radius.
-BARRELS = [
-    [0, 1.8],
-    [-2.2, -1.2],
-    [2.2, -1.2],
-]
-BARREL_LENGTH = 10
-BARREL_RADIUS = 1.3
 
 
 def draw_turret(p: Any, at_point: Vec3) -> None:
     """FB-REFINERY-TITAN-03: a rotary turret's base on the front apron.
 
-    A swollen growth plated round its crown, under its turret (`draw_rotary`).
+    A swollen growth plated round its crown, under its rotor (its mount, drawn by
+    `build_boss_model`, BOSS-58).
     """
     x = at_point[0]
     y = at_point[1]
@@ -128,36 +115,7 @@ def draw_turret(p: Any, at_point: Vec3) -> None:
     graft(p, polygon(8, 9), [base + 5.6, base + 7], [x, 0, z], {"color": H.base})
 
 
-def draw_rotary(p: Any, at_point: Vec3) -> None:
-    """Draw a rotary turret: its housing and three barrels with charge-lit muzzles, on its base."""
-    hull = p.hull
-    neon = p.neon
-    charge = p.charge
-    mark = p.muzzle
-    x = at_point[0]
-    y = at_point[1]
-    z = at_point[2]
-    axis = y + TITAN_DECK["sponson"] + 9
-    hull.loft(POD_SECTION, TURRET_HOUSING, H.panel, Placement([x, axis, z]))
-    front = z + TURRET_HOUSING[2][0]
-    # The barrel shroud, then the barrels; their muzzles light up as the spiral charges.
-    hull.cylinder(4.6, 1.6, 6, H.dark, Placement([x, axis, front], 0, QUARTER))
-    for b in BARRELS:
-        bx = b[0]
-        by = b[1]
-        muzzle = Placement([x + bx, axis + by, front], 0, QUARTER)
-        hull.cylinder(BARREL_RADIUS, BARREL_LENGTH, 6, H.dark, muzzle)
-        tip = [x + bx, axis + by, front + BARREL_LENGTH]
-        charge.cylinder(BARREL_RADIUS * 1.25, 1.6, 6, WHITE, Placement(tip, 0, QUARTER))
-        mark([tip[0], tip[1], tip[2] + 1.6])
-    # A neon sight slit along the housing's top.
-    decal(neon, rect(1.4, 8, [x, z + 2]), axis + 3.9, TITAN_NEON)
-
-
-# The missile battery's cells: 2 columns by 3 rows on its top.
-CELLS = [[cx, cz] for cx in [-5.5, 5.5] for cz in [-7.5, 0, 7.5]]
-
-# The block under the missile battery's cells.
+# The block under the missile battery's ports.
 BLOCK = [
     [-11, -13],
     [11, -13],
@@ -173,12 +131,11 @@ BLOCK = [
 def draw_missile_battery(p: Any, at_point: Vec3) -> None:
     """FB-REFINERY-TITAN-03: a missile brood on the body's back.
 
-    A swollen mound under a grafted plate with six hatches lit as it loads.
+    A swollen mound under a grafted plate, its block of six missile ports on it (its mount, drawn by
+    `build_boss_model`, BOSS-58).
     """
     hull = p.hull
     neon = p.neon
-    charge = p.charge
-    muzzle = p.muzzle
     x = at_point[0]
     y = at_point[1]
     z = at_point[2]
@@ -200,12 +157,6 @@ def draw_missile_battery(p: Any, at_point: Vec3) -> None:
         Placement([x, 0, z]),
         H.panel,
     )
-    for cell in CELLS:
-        cx = cell[0]
-        cz = cell[1]
-        decal(hull, rect(7.4, 5.6, [x + cx, z + cz]), top + 0.04, H.dark)
-        decal(charge, rect(5.4, 3.6, [x + cx, z + cz]), top + 0.08, WHITE)
-        muzzle([x + cx, top + 0.08, z + cz], "missile")
     # Neon strips down both flanks of the block.
     for s in [-1, 1]:
         neon.box([0.6, 1.4, 16], TITAN_NEON, Placement([x + s * 12.6, base + 3.2, z]))

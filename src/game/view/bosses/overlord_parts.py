@@ -7,9 +7,9 @@ Shield generators, each drawn around its centre `at` (model space: logical pixel
 import math
 
 from game.config.enemy_look import ENEMY_LOOK
-from game.view.bosses.overlord_city import OVERLORD_DECK, OVERLORD_NEON, box2d
-from game.view.bosses.world_1_organic_kit import F, graft, polygon, tentacle, vein_line
-from game.view.enemies.enemy_shapes import around, decal, radial, side_stripe
+from game.view.bosses.overlord_city import OVERLORD_DECK, OVERLORD_NEON
+from game.view.bosses.world_1_organic_kit import F, tentacle, vein_line
+from game.view.enemies.enemy_shapes import around, radial, side_stripe
 from render.geometry.organic import ROUND_SECTION
 from render.geometry.solids import LoftOptions, Placement
 
@@ -23,60 +23,33 @@ type Vec3 = list[Any]
 
 
 H = ENEMY_LOOK.hull
-WHITE = [1, 1, 1]
-QUARTER = math.pi / 2
 
 # Height of the wings' top, where the laser cannons sit.
 WING_TOP = 2
 
-# A laser cannon's pod (loft stations around its centre), its barrel and its lens.
+# A laser cannon's pod (loft stations around its centre).
 LASER_POD = [
     [-15, 5, -2, 5],
     [-6, 8, -3, 8],
     [8, 7, -2.5, 7],
     [15, 4, -1, 4.5],
 ]
-LASER_BARREL = {"from": 15, "length": 10, "radius": 2.4}
-LASER_LENS = [
-    [0, 0],
-    [3.2, 1],
-    [2.2, 3],
-    [0, 3.6],
-]
 
 
 def draw_laser(p: Any, at_point: Vec3) -> None:
-    """FB-OVERLORD-03: a wing laser cannon: a swollen gland on the wing, a grafted collar.
+    """FB-OVERLORD-03: a wing laser cannon: a swollen gland on the wing.
 
-    A long barrel, coils and a lens charging.
+    Its laser (its mount, BOSS-58) sits on the gland's front.
     """
-    hull = p.hull
     neon = p.neon
-    charge = p.charge
-    muzzle = p.muzzle
     x = at_point[0]
     y = at_point[1]
     z = at_point[2]
     at = [x, y + WING_TOP - 1, z]
     p.flesh.loft(ROUND_SECTION, LASER_POD, F.slate, Placement(at))
-    graft(p, polygon(6, 4, [1.2, 1.4]), [at[1] + 6.6, at[1] + 7.6], [x, 0, z + 8])
     for side in [1, 3]:
         stripe = side_stripe(ROUND_SECTION, side, [0.25, 0.55])
         neon.loft(stripe, LASER_POD[0:3], OVERLORD_NEON, Placement(at), LoftOptions(True))
-    axis = at[1] + 3
-
-    def along(dz: float) -> Any:
-        return Placement([x, axis, z + dz], 0, QUARTER)
-
-    barrel_from = LASER_BARREL["from"]
-    barrel_length = LASER_BARREL["length"]
-    radius = LASER_BARREL["radius"]
-    hull.cylinder(radius, barrel_length, 6, H.dark, along(barrel_from))
-    # The coils and the lens brighten through the warning line, full while the beam fires.
-    for dz in [barrel_from + 2.5, barrel_from + 6]:
-        charge.ring(radius * 1.25, 1.3, 6, WHITE, along(dz))
-    charge.lathe(LASER_LENS, 6, WHITE, along(barrel_from + barrel_length))
-    muzzle([x, axis, z + barrel_from + barrel_length + 3.6], "laser")
     # Bone fins on the gland's back, a vein between them.
     for s in [-1, 1]:
         tentacle(
@@ -91,7 +64,7 @@ def draw_laser(p: Any, at_point: Vec3) -> None:
     vein_line(p, [x, at[1] + 8, z - 12], [x, at[1] + 8, z + 2], [0, 0.6, 0], 1.2, OVERLORD_NEON)
 
 
-# A missile battery's block, and its cells: 2 columns by 3 rows on its top.
+# A missile battery's block.
 BATTERY = [
     [-10, -13],
     [10, -13],
@@ -102,18 +75,15 @@ BATTERY = [
     [-12.5, 10],
     [-12.5, -9],
 ]
-CELLS = [[cx, cz] for cx in [-5, 5] for cz in [-7.5, 0, 7.5]]
 
 
 def draw_battery(p: Any, at_point: Vec3) -> None:
     """FB-OVERLORD-03: a missile brood on the mantle: a swollen mound under a grafted plate.
 
-    Six hatches lit as it loads.
+    Its six missile ports (its mount, BOSS-58) stand on the plate.
     """
     hull = p.hull
     neon = p.neon
-    charge = p.charge
-    muzzle = p.muzzle
     x = at_point[0]
     y = at_point[1]
     z = at_point[2]
@@ -136,12 +106,6 @@ def draw_battery(p: Any, at_point: Vec3) -> None:
         H.panel,
     )
     vein_line(p, [x, base, z - 13], [x, base - 2, z - 22], [0, 1.5, 0], 1.1, OVERLORD_NEON)
-    for cell in CELLS:
-        cx = cell[0]
-        cz = cell[1]
-        decal(hull, box2d(7, 5.6, [x + cx, z + cz]), top + 0.04, H.dark)
-        decal(charge, box2d(5, 3.6, [x + cx, z + cz]), top + 0.08, WHITE)
-        muzzle([x + cx, top + 0.08, z + cz], "missile")
     for s in [-1, 1]:
         neon.box([0.6, 1.4, 16], OVERLORD_NEON, Placement([x + s * 11.7, base + 3.2, z]))
 

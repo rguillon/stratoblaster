@@ -11,8 +11,11 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.enemy_look import ENEMY_LOOK
 from game.config.readability import READABILITY
+from game.view.enemies.blast_renderer import LayerMesh, puff
 from game.view.enemies.enemy_lasers import EnemyLasers
-from game.view.enemies.enemy_materials import enemy_materials, mesh_of
+from game.view.enemies.enemy_materials import enemy_materials, flame_materials, mesh_of
+from game.view.enemies.missile_smoke import MissileSmoke
+from game.view.reactor_flame import build_reactor_flame
 from game.view.shot_geometry import (
     build_glow_disc,
     build_swirl,
@@ -23,10 +26,12 @@ from game.view.shots.shot_meshes import (
 )
 from render.babylon import (
     babylon_constant,
+    child_meshes,
     new_transform_node,
     node_name,
 )
 from render.geometry.solids import Placement, SolidBuilder
+from render.model_animation import step_model_animations
 from render.node_adopter import ON_TOP_ALPHA_INDEX
 from render.node_pool import NodePool
 from render.outline import set_outline
@@ -290,14 +295,17 @@ def sync_bullets(pools: dict[str, list[list[Any]]], bullets: list[Any]) -> None:
             layer.show(spots)
 
 
-def build_missile(scene: Any, flame: Any, i: int) -> Any:
-    """Return a small dark missile pointing +Y with an orange tip and a flame behind it.
+def build_missile(scene: Any, i: int) -> Any:
+    """Return a small dark missile pointing +Y with an orange tip and a reactor flame behind it.
 
     It has a rim glow in the enemy shots' colour, so it shows over blasts and bright ground
-    (GFX-SHOT-15, GFX-READ-12).
+    (GFX-SHOT-15, GFX-READ-12). Its motor is the enemies' reactor flame (ENM-40), animated.
     """
     look = LOOK.missile
     root = new_transform_node("enemy-missile-" + str(i), scene)
+    # WPN-09: the missile tilts its nose up out of the plane (towards the camera, -Z) on this node.
+    tilt = new_transform_node("enemy-missile-" + str(i) + "-tilt", scene)
+    tilt.parent = root
     body = SolidBuilder().cylinder(
         look.radius,
         look.length,
@@ -315,32 +323,65 @@ def build_missile(scene: Any, flame: Any, i: int) -> Any:
     )
     mats = enemy_materials(scene)
     hull = mesh_of(node_name(root) + "-body", body.geometry, mats.hull, scene)
-    hull.parent = root
+    hull.parent = tilt
     set_outline(hull, look.tip)
-    mesh_of(node_name(root) + "-tip", tip.geometry, mats.neon, scene).parent = root
-    glow = flame.clone(node_name(root) + "-flame")
-    glow.parent = root
-    glow.setEnabled(True)
-    w = look.flameSize[0]
-    h = look.flameSize[1]
-    glow.position.set(0, -look.length / 2 - h * 0.6, 0.5)
-    glow.scaling.set(w, h, 1)
+    mesh_of(node_name(root) + "-tip", tip.geometry, mats.neon, scene).parent = tilt
+    # The flame streams out of its tail, towards -Y: the reactor flame points -Z, turned onto -Y.
+    nozzle = new_transform_node(node_name(root) + "-nozzle", scene)
+    nozzle.parent = tilt
+    nozzle.position.set(0, -look.length / 2, 0)
+    nozzle.rotation.x = -math.pi / 2
+    reactor = LOOK.reactor
+    width = look.nozzle
+    build_reactor_flame(
+        node_name(root) + "-flame",
+        {
+            "nozzleZ": 0,
+            "length": width * reactor.flameLength,
+            "diameter": width * 2 * reactor.core * reactor.flameWidth,
+            "puffDiameter": width * reactor.puffSize,
+            "sides": reactor.flameSides,
+            "light": {"puffs": reactor.puffs},
+        },
+        nozzle,
+        flame_materials(scene, look.flameColor),
+    )
     return root
 
 
-def sync_missiles(pool: Any, missiles: list[Any]) -> None:
-    """Places each missile's node on its shot."""
+def sync_missiles(pool: Any, missiles: list[Any], dt: float = 0) -> None:
+    """Places each missile's node on its shot; their flames flicker on for `dt` seconds."""
     shown = pool.show(len(missiles))
     for i, node in enumerate(shown):
         if i >= len(missiles):
             continue
         m = missiles[i]
-        # WPN-09: a missile arcing over from its silo is raised towards the camera, so it is seen
-        # growing and shrinking with its height.
+        # WPN-09: a missile from an upward silo is raised towards the camera, its nose pointing up
+        # as it climbs, then along its fall to the plane.
         node.position.set(m.x, m.y, -0.5 - m.height)
         node.rotation.z = -m.heading
+        tilt = node.getChildren()[0]
+        tilt.rotation.x = -m.pitch if hasattr(m, "pitch") else 0
+        step_model_animations(node, dt)
         size = m.radius / LOOK.missile.baseRadius
         node.scaling.set(size, size, size)
+        _draw_on_top(node, hasattr(m, "loft_seconds") and m.loft_seconds > 0)
+
+
+def _draw_on_top(node: Any, on: bool) -> None:
+    """WPN-09: draw a lofted missile over every model (never under the boss it rises over).
+
+    In the rendering group after the playfield's, whose depth Babylon clears; back in the
+    playfield's when its node shows a missile that does not loft.
+    """
+    if not hasattr(node, "playfield_group"):
+        node.playfield_group = child_meshes(node, False)[0].renderingGroupId
+        node.on_top = False
+    if node.on_top == on:
+        return
+    node.on_top = on
+    for mesh in child_meshes(node, False):
+        mesh.renderingGroupId = node.playfield_group + (1 if on else 0)
 
 
 class ShotRendererHandle:
@@ -362,17 +403,23 @@ def create_enemy_shot_renderer(scene: Any) -> ShotRendererHandle:
     """
     contrast = True
     bullets = bullet_pools(scene, contrast)
-    flame = additive_template("enemy-missile-flame", build_glow_disc(8, LOOK.missile.flame), scene)
-    # GFX-SHOT-15: over the player's shots and the blasts, under the bullets (its clones too).
-    flame.alphaIndex = ON_TOP_ALPHA_INDEX
-    missiles = NodePool(lambda i: build_missile(scene, flame, i))
+    missiles = NodePool(lambda i: build_missile(scene, i))
+    # Their smoke trails (GFX-SHOT-15), drawn as the explosions' smoke is.
+    smoke = MissileSmoke()
+    trail = LayerMesh(
+        "enemy-missile-smoke", puff(LOOK.missile.smoke.segments), False, -0.5, 0, scene
+    )
+    # Over the models, as the lofted missiles leaving it are (WPN-09).
+    if trail.mesh.material:
+        trail.mesh.material.depthFunction = babylon_constant("ALWAYS")
     lasers = EnemyLasers(scene, contrast)
     clock = [0.0]
 
     def sync(frame: Any) -> None:
         clock[0] += frame.dt_seconds
         sync_bullets(bullets, frame.bullets)
-        sync_missiles(missiles, frame.missiles)
+        sync_missiles(missiles, frame.missiles, frame.dt_seconds)
+        trail.show(smoke.step(frame.missiles, frame.dt_seconds))
         lasers.sync(frame.lasers, clock[0])
 
     def dispose() -> None:
@@ -381,7 +428,7 @@ def create_enemy_shot_renderer(scene: Any) -> ShotRendererHandle:
                 entry[0].dispose()
         lasers.dispose()
         missiles.dispose()
-        flame.dispose()
+        trail.dispose()
 
     def warm(on: bool) -> None:
         warm_bullets(bullets, on)

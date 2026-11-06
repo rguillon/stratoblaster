@@ -113,13 +113,18 @@ def model_barrel(
     centre: Any = None,
     lit: bool = True,
     housing: bool = True,
+    trim: bool = True,
+    sides: int = 5,
 ) -> None:
     """Add barrel number `index`, which recoils, with its tip at `muzzle_at` (model space).
 
     It points `yaw` radians from the nose (the model's own, no mirroring). A `lit` barrel has a
     charge light at its tip and an edge trim; an unlit one has neither: no glow at all. Without
-    `housing`, it has no housing round its root (sunk in the hull, it would not show).
+    `housing`, it has no housing round its root (sunk in the hull, it would not show). Without
+    `trim`, the barrel and its housing have no edge trim (its charge light stays when `lit`). A big
+    barrel may be rounder: `sides` facets.
     """
+    metal_of = trim and lit
     sx, sz = math.sin(yaw), math.cos(yaw)
     tip = muzzle_at
     end = [tip[0] - sx * 0.8, tip[1], tip[2] - sz * 0.8]
@@ -127,26 +132,26 @@ def model_barrel(
     # The housing the barrel slides out of, fixed on the body. A swivelling barrel has none: it
     # turns on its turret, and a fixed housing would be left pointing ahead.
     if housing and not swivel:
-        (parts.hull if lit else parts.bare).cylinder(
+        (parts.hull if metal_of else parts.bare).cylinder(
             radius * 1.45,
             length * 0.45,
-            6,
+            sides + 1,
             H.dark,
             Placement([base[0], base[1], base[2]], yaw, QUARTER),
             0.45,
         )
 
     def draw(piece: Any) -> None:
-        (piece.hull if lit else piece.bare).cylinder(
+        (piece.hull if metal_of else piece.bare).cylinder(
             radius,
             length,
-            5,
+            sides,
             H.dark,
             Placement([base[0], base[1], base[2]], yaw, QUARTER),
             radius * 0.82,
         )
         if lit:
-            piece.neon.cylinder(radius * 1.1, 0.8, 5, WHITE, Placement(end, yaw, QUARTER))
+            piece.neon.cylinder(radius * 1.1, 0.8, sides, WHITE, Placement(end, yaw, QUARTER))
 
     parts.slide(base, [-sx, -sz], length * ENEMY_LOOK.barrelRecoil, index, draw, swivel, centre)
     parts.muzzle(muzzle_at, "gun")

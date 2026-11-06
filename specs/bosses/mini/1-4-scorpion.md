@@ -29,7 +29,8 @@ over its back, its stinger hanging in front of its head, between the claws.
 
 Its body is a swollen, segmented abdomen under a ridged shell (sinew, slate and graphite shades; the
 shell is the plating it sheds, MB-SCORPION-11), its head plated with grafted armour, glowing eyes,
-bone legs and a plate grafted on its abdomen's shell. It
+bone legs and a plate grafted on its abdomen's shell. The core's two guns stand on its head plate,
+either side of the tail's root (MB-SCORPION-03). It
 is not symmetrical: its right hind leg is missing, a torn stump in its place, and its left claw (the
 screen's left) is the bigger one, a fiddler crab's.
 
@@ -38,25 +39,31 @@ screen's left) is the bigger one, a fiddler crab's.
 
 *Sources: P07-R05, P16-R05.*
 
-#### MB-SCORPION-03 — Arms and claws · MUST
+#### MB-SCORPION-03 — Arms, claws and guns · MUST
 
 Each arm is an upper arm on its shoulder and a forearm on its elbow, overlapping under the elbow's
 cog, each with its bed, a grafted armour plate, a light, a hydraulic ram and a lit conduit. Each
-**claw cannon** is a swollen knuckle under a grafted cap, a cannon between its two pincers, and the
-sinews that work them; its two jaws open and close on their own hinges.
+**claw cannon** is a swollen knuckle under a grafted cap, the sinews that work its two pincers, and
+between them a gun turret with three barrels side by side (the shared gun mount of
+[common](../common.md), BOSS-58), going with its wrist; its two jaws open and close on their own
+hinges.
+
+The core's guns, on its head plate either side of the tail arched over it: a gun turret with a
+single barrel on its left (its aimed shots) and a rotor with eight barrels on its right (its rings).
 
 **Acceptance criteria**
-- Given its model, then each arm has jointed limbs and a jaw on each side of its claw (unit test).
+- Given its model, then each arm has jointed limbs and a jaw on each side of its claw, and it draws
+  every gun mount (unit test).
 
-*Sources: P07-R05, P16-R05, D-061.*
+*Sources: P07-R05, P16-R05, D-061, D-280.*
 
 #### MB-SCORPION-04 — Stinger, tail and tail cannon · MUST
 
-The **stinger** is a venom bulb hanging from the tail's tip, its emitter at its front. The tail is a
-rig of six shelled beads with a sinew ring at each root and lights along its back and belly, drawn
-apart from the core so it can unfold. The **tail cannon** at its end, hidden until the
-transformation, is the venom bulb swollen into a barrel ringed with neon, a great lens at its mouth
-that brightens as the giant laser charges.
+The **stinger** is a venom bulb hanging from the tail's tip, a fixed laser mount (BOSS-58) at its
+tip. The tail is a rig of six shelled beads with a sinew ring at each root and lights along its back
+and belly, drawn apart from the core so it can unfold. The **tail cannon** at its end, hidden until
+the transformation, is the venom bulb swollen into a barrel ringed with neon round a big fixed laser
+mount pointing out behind it (towards the player once it has turned round).
 
 **Acceptance criteria**
 - Given its tail at rest and unfolded, then it holds together (unit test).
@@ -101,9 +108,11 @@ together. The claws' hit circles and barrels move with them.
 #### MB-SCORPION-08 — Parts and core · MUST
 
 It has three parts as it comes in, all shielding its core: `claw-left` and `claw-right` on their
-wrists, and the `stinger`, hanging in front of the core so shots from below reach it. Each claw
-fires an aimed fan of 3 blue bullets, the two in turn; the stinger fires a laser straight down,
-locked once it fires; the core's gun fires the core's volleys. None of its guns is on a turret.
+wrists, and the `stinger`, hanging in front of the core so shots from below reach it. Each claw's
+turret fires an aimed fan of 3 blue bullets, swept one bullet at a time as it turns across the fan
+(BOSS-58), the two claws in turn; the stinger's laser fires straight down, locked once it fires; the
+core's guns fire the core's volleys, and are the last the player destroys. The claws' and the
+core's turrets turn the way they fire; the stinger's and the tail cannon's lasers do not.
 
 **Acceptance criteria**
 - Given its design, then its claws hang on joints and its stinger sits in front of the core.
@@ -113,10 +122,11 @@ locked once it fires; the core's gun fires the core's volleys. None of its guns 
 #### MB-SCORPION-09 — Stage patterns · MUST
 
 The claws' fans and the stinger's laser go on in every stage while they stand. The core fires:
-- stage 0: one purple bullet at the player;
-- stage 1: a ring of 6;
+- stage 0: one purple bullet at the player, from its head turret;
+- stage 1: a ring of 8 from its rotor, one bullet a barrel;
 - stage 2: a ring of 8 turning at each volley;
-- stage 3: a ring of 12 turning at each volley, and a blue bullet at the player.
+- stage 3: a faster ring of 8 turning at each volley, and a blue bullet at the player from its
+  head turret.
 
 **Acceptance criteria**
 - Given each stage, then the core fires that stage's volleys and the parts left fire theirs
@@ -195,9 +205,13 @@ named.
 | Name | Value | Notes |
 |------|-------|-------|
 | size | 3.5 L (radius 59.5 px) | |
-| core | health 1 470, radius 18 | gun at (0, -26), 2 px high |
+| core | health 1 470, radius 18 | `coreHealth`, `coreRadius` |
 | `claw-left`, `claw-right` | (∓42, -24), radius 14, health 730, shield, drop 0.5, on `wrist-left` / `wrist-right` | |
 | `stinger` | (0, -34), radius 13, health 730, shield, drop 0.5, retires at transformation 1 | |
+| claw turrets | (∓41, -30), 4 px high; 3 barrels 2.9 px apart, bore 1.1, 11 px long; dome radius 4.6 | `SCORPION_CLAW`, `mounts` |
+| stinger laser | (0, -42), 9.6 px high, fixed; barrel 6 px long, bore 1.2; base radius 3 | `mounts` `stinger` |
+| head turret (core) | (-9, -11), 7 px high; 1 barrel, bore 1.4, 7 px long; dome radius 4.5 | `mounts` `head` |
+| head rotor (core) | (11, -5), 6.2 px high; 8 barrels, bore 0.9, 3.5 px long; hub radius 4 | `mounts` `head-rotor` |
 | shoulder | (∓14, -10), ±7°, 4.4 s | joints; the right arm 0.37 of a period late |
 | elbow | (∓27.5, -18), ±12°, 3.2 s, phase 0.25 | |
 | wrist | (∓40, -22), ±16°, 2.4 s, phase 0.5 | |
@@ -207,16 +221,17 @@ named.
 | ground speed | ×0.5 | |
 | stop height | 0.74 | |
 | sway / bob | 60 px over 7.5 s / 8 px over 3.2 s | |
-| claw fans | aimed 3, 10° apart, blue 185 px/s, every 2.2 s (first 1 s / 2.1 s) | |
+| claw fans | aimed 3, 10° apart, blue 185 px/s, every 2.2 s (first 1 s / 2.1 s) | a sweep |
 | stinger laser | 1.4 s, every 5.5 s (first 2.5 s) | |
-| core stage 0 | 1 aimed purple bullet, 195 px/s, every 3 s | |
-| core stage 1 | ring of 6, every 2.4 s | |
-| core stage 2 | ring of 8 turning 10°, every 2 s | |
-| core stage 3 | ring of 12 turning 8° every 1.4 s, and 1 aimed blue every 2.4 s | |
+| core stage 0 | 1 aimed purple bullet, 195 px/s, every 3 s | head turret |
+| core stage 1 | ring of 8, every 2.4 s | head rotor |
+| core stage 2 | ring of 8 turning 10°, every 2 s | head rotor |
+| core stage 3 | ring of 8 turning 8° every 1.4 s, and 1 aimed blue every 2.4 s | head rotor, head turret |
 | angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation | when `claw-left` and `claw-right` are destroyed; turns by pi | `transformParts`, `turns` |
 | shed region | back: a lozenge the shell's shape, x ±16 at its widest, y 0..31.5, `shell`, not mirrored; shell 1.33–8 px | `armour_region` |
 | `tail-cannon` | ends at (0, 108), radius 15, health 1 100, shield, drop 0.3; first shot 1.5 s | `SCORPION_TAIL_CANNON`, `tail_cannon` |
+| tail cannon's laser | 9 px high, fixed, pointing behind (180°); barrel 13.5 px long, bore 4.5; base radius 8.25 (0.55, 0.3, 0.9 and 0.6 of its radius) | `src/game/config/bosses/hidden_weapons.py` `tail_cannon` |
 | giant laser | 44 px wide, 2.4 s, every 7 s | `src/game/config/bosses/weapon_kinds.py` `BEAM` |
 | tail rig | 6 beads, 10 % longer unfolded | `src/game/view/bosses/scorpion_tail.py` |
 | neon | yellow (1, 0.9, 0.1) | `BOSS_LOOK.neon`; `src/game/view/bosses/scorpion_look.py` |

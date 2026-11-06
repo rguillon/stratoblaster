@@ -97,13 +97,57 @@ class EnemyMissile:
         self.burst: EnemyBurstSpec | None = None
         # WPN-08: seconds left flying straight out of the port, before any turning.
         self.launch = 0.0
-        # WPN-09: how high above the plane of play it is (0 on it), and how it gets there: "climb"
-        # (rising from its silo), "arc" (curving over to the plane) or "flat".
+        # WPN-09: how high above the plane of play it is (0 on it), and how it gets there: "loft"
+        # (up out of its silo and over, down to the plane) or "flat".
         self.height = 0.0
         self.stage = "flat"
         self.stage_age = 0.0
-        self.climb_seconds = 0.0
-        self.arc_radius = 0.0
+        # Its loft: how long it lasts, its height and upward speed (px/s) as it leaves the silo.
+        self.loft_seconds = 0.0
+        self.loft_from = 0.0
+        self.loft_speed = 0.0
+        # How far its nose points above the plane (radians: pi/2 straight up), for its model.
+        self.pitch = 0.0
+        # WPN-09: it drifts off to its side as it climbs (`side`, a heading, `drift` px/s at most),
+        # and gathers speed towards the player (`aim`, a heading, None until it has one).
+        self.side = 0.0
+        self.drift = 0.0
+        self.aim: float | None = None
+
+
+# WPN-09: how fast (radians a second) a lofted missile's nose turns up or down along its way.
+NOSE_RATE = 3.0
+
+
+def loft_height(s: float, start: float, rise: float) -> float:
+    """WPN-09: a loft's height at `s` (0 to 1 of it), from `start` up at `rise` (px per loft).
+
+    Straight up out of the silo, slowing to its top, then down onto the plane, level as it lands.
+    """
+    left = 1 - s
+    return left * left * left * (start + (rise + 3 * start) * s)
+
+
+def loft_rise(s: float, start: float, rise: float) -> float:
+    """WPN-09: how fast a loft's height grows at `s` (px per loft, `loft_height`'s slope)."""
+    left = 1 - s
+    b = rise + 3 * start
+    return left * left * (b * left - 3 * (start + b * s))
+
+
+def loft_side(s: float) -> float:
+    """WPN-09: how much of its sideways drift a lofted missile has at `s`: none, all at a third."""
+    left = 1 - s
+    return 6.75 * s * left * left
+
+
+def loft_gather(s: float) -> float:
+    """WPN-09: how much of its speed towards the player a lofted missile has at `s`.
+
+    Gathering from the start, so it is already on its way as it tips over its top, eased into its
+    full speed as it lands.
+    """
+    return s * (2 - s)
 
 
 class EnemyLaser:
@@ -212,8 +256,10 @@ class EnemyShots:
         bullet.burst = spec.burst
         bullet.age = 0
 
-    def fire_missile(self, x: float, y: float, heading: float, spec: EnemyMissileSpec) -> None:
-        """Launch a missile of `spec` from (x, y) along `heading`.
+    def fire_missile(
+        self, x: float, y: float, heading: float, spec: EnemyMissileSpec, height: float = 0
+    ) -> None:
+        """Launch a missile of `spec` from (x, y), `height` above the plane, along `heading`.
 
         Reusing a free one from the pool, with a fresh id.
         """
@@ -237,12 +283,18 @@ class EnemyShots:
         missile.burst = spec.burst
         missile.age = 0
         flight = spec.flight
-        missile.launch = 0 if flight.climb_seconds > 0 else flight.launch_seconds
-        missile.climb_seconds = flight.climb_seconds
-        missile.arc_radius = flight.arc_radius
-        missile.height = 0
+        lofts = flight.loft_seconds > 0
+        missile.launch = 0 if lofts else flight.launch_seconds
+        missile.loft_seconds = flight.loft_seconds
+        missile.loft_speed = flight.loft_speed
+        missile.height = height if lofts else 0
+        missile.loft_from = missile.height
+        missile.side = heading
+        missile.drift = flight.loft_drift if lofts else 0
+        missile.aim = None
+        missile.pitch = math.pi / 2 if lofts else 0
         missile.stage_age = 0
-        missile.stage = "climb" if flight.climb_seconds > 0 else "flat"
+        missile.stage = "loft" if lofts else "flat"
 
     def fire_laser(self, owner: LaserOwner, spec: EnemyLaserSpec) -> None:
         """Start a laser of `spec` from `owner`, aimed at once."""
@@ -300,12 +352,10 @@ class EnemyShots:
         if m.health <= 0:
             m.alive = False
             return
-        if m.stage == "climb":
-            self._climb(m, dt, player_x, player_y)
+        if m.stage == "loft":
+            self._loft(m, dt, player_x, player_y)
             return
-        if m.stage == "arc":
-            self._arc(m, dt)
-        elif m.launch > 0:
+        if m.launch > 0:
             # WPN-08: straight out of the port first, the homing time not yet running.
             m.launch -= dt
         elif m.homing > 0:
@@ -321,25 +371,53 @@ class EnemyShots:
         elif m.burst and m.age >= m.burst.after:
             self._burst_missile(m, m.burst)
 
-    def _climb(self, m: EnemyMissile, dt: float, player_x: float, player_y: float) -> None:
-        """WPN-09: rise from the silo, then point the way it will fly and start the arc."""
-        m.age += dt
-        m.stage_age += dt
-        m.height = m.arc_radius * min(1, m.stage_age / m.climb_seconds)
-        if m.stage_age >= m.climb_seconds:
-            m.heading = heading_to(m.x, m.y, player_x, player_y)
-            m.stage = "arc"
-            m.stage_age = 0
+    def _loft(self, m: EnemyMissile, dt: float, player_x: float, player_y: float) -> None:
+        """WPN-09: up out of the silo, over and down onto the plane, then it homes.
 
-    def _arc(self, m: EnemyMissile, dt: float) -> None:
-        """WPN-09: a half loop of radius `arc_radius` down to the plane, along its heading."""
-        length = math.pi * m.arc_radius
-        m.stage_age += dt * m.speed / length
-        t = min(1, m.stage_age)
-        m.height = m.arc_radius * (1 + math.cos(math.pi * t)) / 2
-        if t >= 1:
+        One smooth curve over `loft_seconds`: it leaves straight up at `loft_speed`, drifting off to
+        its side (so the missiles of a block part), slows to its top, and comes down gathering its
+        speed towards the player, landing level and at full speed along its way.
+        """
+        to_player = heading_to(m.x, m.y, player_x, player_y)
+        if m.aim is None:
+            m.aim = to_player
+        aim = turn_towards(m.aim, to_player, m.turn_rate * dt)
+        m.aim = aim
+        m.age += dt
+        seconds = m.loft_seconds
+        before = m.stage_age / seconds
+        m.stage_age = min(seconds, m.stage_age + dt)
+        s = m.stage_age / seconds
+        # Along the plane, by its velocity halfway through the step.
+        mid = self._loft_velocity(m, aim, (before + s) / 2)
+        m.x += mid[0] * dt
+        m.y += mid[1] * dt
+        rise = m.loft_speed * seconds
+        m.height = loft_height(s, m.loft_from, rise)
+        v = self._loft_velocity(m, aim, s)
+        flat = math.hypot(v[0], v[1])
+        if flat > 1e-6:
+            m.heading = math.atan2(v[0], v[1])
+        # Its nose follows its way, turning no faster than `NOSE_RATE` (no flip over its top).
+        way = math.atan2(loft_rise(s, m.loft_from, rise) / seconds, flat)
+        m.pitch = turn_towards(m.pitch, way, NOSE_RATE * dt)
+        if s >= 1:
             m.height = 0
+            m.pitch = 0
+            m.heading = aim
             m.stage = "flat"
+        if self._is_out(m.x, m.y):
+            m.alive = False
+
+    @staticmethod
+    def _loft_velocity(m: EnemyMissile, aim: float, s: float) -> tuple[float, float]:
+        """WPN-09: a lofted missile's velocity along the plane at `s` (0 to 1 of its loft)."""
+        drift = m.drift * loft_side(s)
+        travel = m.speed * loft_gather(s)
+        return (
+            math.sin(m.side) * drift + math.sin(aim) * travel,
+            math.cos(m.side) * drift + math.cos(aim) * travel,
+        )
 
     def _burst_missile(self, m: EnemyMissile, burst: EnemyBurstSpec) -> None:
         """Remove a missile whose fuse is out and fire its ring of bullets from where it was."""

@@ -12,7 +12,7 @@ from game.config.boss_look import BOSS_LOOK
 from game.config.bosses.final_bosses import STORM_PETREL
 from game.view.bosses.boss_model import build_boss_model
 from game.view.bosses.final_boss_petrel import draw_plate, draw_pod, draw_rack
-from game.view.bosses.final_boss_shapes import edge_strips, shift, sided, turret
+from game.view.bosses.final_boss_shapes import edge_strips, sided
 from game.view.bosses.storm_petrel_armour import (
     BOTTOM,
     MID,
@@ -24,6 +24,7 @@ from game.view.bosses.storm_petrel_armour import (
     draw_shell,
     petrel_armour,
 )
+from game.view.bosses.storm_petrel_struts import build_strut_rig
 from game.view.bosses.storm_petrel_wings import draw_floats
 from game.view.bosses.world_1_organic_kit import F, M, graft, polygon, rib_cage, tentacle
 from game.view.enemies.enemy_shapes import SIDES, flip_x
@@ -56,8 +57,8 @@ def _draw_hull(p: Any) -> None:
     """Draw the body (FB-STORM-PETREL-02): a long shelled body from tail to beak.
 
     Its belly the whole length, its shell short of the tail plating (the armour, drawn apart), ribs
-    across its shoulders, plated grafts on its back, eyes over its beak, a tail light on the tail's
-    tip and the barbette of the cockpit turret growing out of its back.
+    across its shoulders, plated grafts on its back, eyes over its beak and a tail light on the
+    tail's tip.
     """
     segmented_body(p.flesh, SegmentedBody(TAIL, NOSE, SEGMENTS, WIDTH, BOTTOM, MID, 0.15), F.slate)
     draw_shell(p.flesh, TAIL, TAIL_Z[0])
@@ -66,17 +67,7 @@ def _draw_hull(p: Any) -> None:
     graft(p, polygon(6, 5, [1.2, 1.6]), [13.6, 15], [0, 0, 26])
     graft(p, polygon(4, 4, [1.4, 1]), [13.6, 14.8], [0, 0, 38], {"color": M.base})
     eyes(p, [0, 9.5, 46], {"count": 2, "size": 1.4, "spacing": 7}, N)
-    # A barbette of flesh rising out of the back, the gun turret on it: the cockpit turret.
-    p.flesh.cylinder(8.5, 7.5, 7, F.sinew, Placement([0, 7, 5]), 8)
     p.neon.box([2, 1.2, 1], N, Placement([0, 10.4, -60]))
-
-
-def _cockpit_turret(p: Any, at: Vec3) -> None:
-    """Add the cockpit turret on its barbette (the core's gun, FB-STORM-PETREL-03).
-
-    It turns around its pivot `at`.
-    """
-    turret(p, shift(at, [0, 14.5, 0]), 8.5, [2, N])
 
 
 def _draw_tail(p: Any) -> None:
@@ -105,9 +96,8 @@ def build_storm_petrel(scene: Any) -> Any:
     """FB-STORM-PETREL-01, FB-STORM-PETREL-04: the Storm Petrel.
 
     A colossal sea-bird creature 4.5 L across its wings, magenta veins along the wing edges; a gun
-    growth on each wing, a missile brood on its tail, a bony shell over its breast, and a cockpit
-    turret on its back (the core). Its wings and its tail plating are drawn apart as its armour and
-    moving pieces (FB-STORM-PETREL-05).
+    growth on each wing, a missile brood on its tail and a bony shell over its breast. Its wings
+    and its tail plating are drawn apart as its armour and moving pieces (FB-STORM-PETREL-05).
     """
 
     def core(p: Any) -> None:
@@ -127,7 +117,8 @@ def build_storm_petrel(scene: Any) -> Any:
                 "missile-rack": draw_rack,
                 "belly-plate": draw_plate,
             },
-            "turrets": {"core": _cockpit_turret},
             "armour": petrel_armour(),
+            # The struts holding its batteries to its body (FB-STORM-PETREL-10).
+            "rig": {"build": build_strut_rig},
         },
     )

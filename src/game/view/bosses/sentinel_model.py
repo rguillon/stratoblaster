@@ -5,20 +5,11 @@ A blue body and a red one joined by a membrane through its thorax. Logical pixel
 (towards the camera).
 """
 
-import math
-
 from game.config.boss_look import BOSS_LOOK
 from game.config.bosses.mini_bosses import SENTINEL
 from game.view.bosses.boss_model import build_boss_model
 from game.view.bosses.mini_boss_greebles import lamps, mast
-from game.view.bosses.mini_boss_shapes import (
-    WHITE,
-    offset,
-    radius_of,
-    scaled,
-    socket,
-    turret,
-)
+from game.view.bosses.mini_boss_shapes import WHITE, offset, scaled, socket
 from game.view.bosses.world_1_organic_kit import (
     F,
     M,
@@ -53,7 +44,6 @@ type Vec3 = list[Any]
 # __pragma__ ("noskip")
 
 
-QUARTER = math.pi / 2
 BLUE = BOSS_LOOK.neon["sentinel"]
 # The police red of the Sentinel's other hull (its boss neon colour is the blue).
 POLICE_RED = [1, 0.08, 0.1]
@@ -231,10 +221,11 @@ def _draw_plating(p: Any) -> None:
 
 
 def _draw_body(p: Any) -> None:
-    """Draw the Sentinel's body: its thorax, its membrane, both bodies and the core's guns.
+    """Draw the Sentinel's body: its thorax, its membrane and both bodies.
 
     The thorax (flattened: its plating is drawn apart, `_draw_plating`) with its eyes at the nose,
-    the membrane joining the bodies, both bodies, the core's guns.
+    the membrane joining the bodies, both bodies. The core's two guns, its fan turret and its
+    rotor, are its mounts on the bodies' noses (BOSS-58).
     """
     mantle(p, WING, [-1.5, 2.5], F.membrane)
     rib_cage(p, [-14, 2], {"halfWidth": HULL_X - 6, "y": 1, "height": 3, "thickness": 0.9})
@@ -243,10 +234,6 @@ def _draw_body(p: Any) -> None:
     _draw_hull(p, HULL_X, BLUE)
     _draw_hull(p, -HULL_X, POLICE_RED)
     for s in SIDES:
-        # The core's fan guns, grafted in the membrane's leading edge either side of the thorax.
-        p.hull.cylinder(1.8, 3, 6, M.dark, Placement([s * 15, 1, 7], 0, QUARTER))
-        p.charge.cylinder(1.4, 2.5, 6, WHITE, Placement([s * 15, 1, 10], 0, QUARTER), 1)
-        p.muzzle([s * 15, 1, 12.5], None)
         socket(p.hull, [s * 38, 1, 8], 7, 1)
     # The brood pouch's grafted frame on the thorax's front.
     p.hull.box([18, 2, 4], M.dark, Placement([0, 0, 23]))
@@ -255,7 +242,7 @@ def _draw_body(p: Any) -> None:
 def _hull_gun(p: Any, at: Vec3) -> None:
     """Add a hull gun (MB-SENTINEL-03): an armoured growth on the body's outer flank.
 
-    The growth is under its turret.
+    The growth is under its twin-barrelled turret (its mount, BOSS-58).
     """
     sponson = SPONSON if at[0] > 0 else flip_x(SPONSON)  # type: ignore[arg-type]  # the argument does not match the parameter type mypy expects
     p.flesh.bevel_slab(sponson, [-2, 0.5, 3], [0.8, 1.6], F.slate, Placement(at), F.sinew)
@@ -265,26 +252,6 @@ def _hull_gun(p: Any, at: Vec3) -> None:
         9,
         BLUE if at[0] > 0 else POLICE_RED,
         {"flesh": F.graphite, "height": 0.35},
-    )
-
-
-def _hull_gun_turret(p: Any, at: Vec3) -> None:
-    """Add a hull gun's twin-barrelled turret."""
-    r = radius_of(SENTINEL.stats.parts, 0, 13)
-    outer = at[0] > 0
-    neon = BLUE if outer else POLICE_RED
-    turret(
-        p,
-        offset(at, 0, 4, 0),
-        {
-            "radius": r * 0.85,
-            "barrels": 2,
-            "gap": 3.6,
-            "bore": 1.3,
-            "length": 7,
-            "neon": neon,
-            "hatch": -1 if outer else 1,
-        },
     )
 
 
@@ -345,7 +312,6 @@ def build_sentinel(scene: Any) -> Any:
         {
             "core": core,
             "parts": {"gun-left": _hull_gun, "gun-right": _hull_gun, "drone-bay": _drone_bay},
-            "turrets": {"gun-left": _hull_gun_turret, "gun-right": _hull_gun_turret},
             "armour": {"back": {"whole": _draw_plating}},
         },
     )

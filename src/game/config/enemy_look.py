@@ -229,8 +229,24 @@ ENEMY_LOOK = record({
         "radius": 1.8,
         # Phase 14 (GFX-SHOT-15): an orange tip, in the enemy shots' family.
         "tip": [1, 0.5, 0.04],
-        "flame": glow([1, 0.95, 0.7], [1, 0.45, 0.1], [0.35, 0.12, 0]),
-        "flameSize": [2.6, 6],
+        # Its motor: the enemies' reactor flame (`reactor`), this wide at its nozzle and in this
+        # colour (the enemy shots' orange).
+        "nozzle": 1.3,
+        "flameColor": [1, 0.55, 0.15],
+        # Its smoke trail: a puff every `every` seconds per missile (at most `most` in all), each
+        # living `life` seconds, growing from `size[0]` to `size[1]` px wide, drifting at up to
+        # `drift` px/s, light grey, at most `alpha` opaque.
+        "smoke": {
+            "every": 0.035,
+            "most": 400,
+            "life": [0.45, 0.7],
+            "size": [1.2, 3.6],
+            "drift": 6,
+            "grey": 0.72,
+            "alpha": 0.4,
+            "seed": 9,
+            "segments": 8,
+        },
         # The hit radius the model is drawn for (the Rocketeer's); a missile with a bigger one
         # (the Mortar's, ENM-MORTAR-08) is drawn bigger in proportion.
         "baseRadius": 5,

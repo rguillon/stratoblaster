@@ -1,30 +1,28 @@
 # Copyright (c) 2026 Renaud Guillon
-"""Unit tests of `src/game/view/bosses/refinery_titan_parts.py`: the rotary turret."""
+"""Unit tests of `src/game/view/bosses/refinery_titan_parts.py` and the Refinery Titan's guns."""
 
-import pytest
+from typing import Any
+
+from helpers.bosses_top_turrets import check_mounts, drawn_mounts
 from helpers.view_probes import drawn
 
-from game.view.bosses.refinery_titan_parts import (
-    BARREL_LENGTH,
-    BARRELS,
-    TITAN_DECK,
-    TURRET_HOUSING,
-    draw_rotary,
-)
+from game.config.bosses.final_bosses import REFINERY_TITAN
+from game.view.bosses.refinery_titan_model import build_refinery_titan
+from game.view.bosses.refinery_titan_parts import draw_missile_battery, draw_turret
 
 
-def test_fb_refinery_titan_03_a_rotary_turret_has_three_barrels_with_lit_muzzles() -> None:
-    at = [10, 0, 20]
-    turret = drawn(lambda p: draw_rotary(p, at))
-    parts = turret["parts"]
-    assert len(parts.hull.geometry.positions) > 0
-    assert len(parts.charge.geometry.positions) > 0
-    assert len(parts.neon.geometry.positions) > 0
-    # One muzzle a barrel, at its tip, past the housing's front along the turret's axis.
-    axis = at[1] + TITAN_DECK["sponson"] + 9
-    front = at[2] + TURRET_HOUSING[2][0]
-    tips = [[at[0] + b[0], axis + b[1], front + BARREL_LENGTH + 1.6] for b in BARRELS]
-    assert len(turret["muzzles"]) == len(tips)
-    for muzzle, tip in zip(turret["muzzles"], tips, strict=True):
-        assert muzzle[0] == pytest.approx(tip)
-    assert [m[1] for m in turret["muzzles"]] == ["gun", "gun", "gun"]
+def test_fb_refinery_titan_03_its_model_draws_every_gun_mount(monkeypatch: Any) -> None:
+    """FB-REFINERY-TITAN-03: its five parts and every gun mount (BOSS-58).
+
+    Its turrets' rotors and its missile battery's ports are the shared mount models.
+    """
+    mounts = drawn_mounts(monkeypatch, build_refinery_titan)
+    check_mounts(mounts, REFINERY_TITAN)
+
+
+def test_fb_refinery_titan_03_its_turret_and_battery_are_growths_under_their_mounts() -> None:
+    """Their own drawings carry no gun: their mounts' models do (BOSS-58)."""
+    for draw in [draw_turret, draw_missile_battery]:
+        part = drawn(lambda p, d=draw: d(p, [10, 0, 20]))
+        assert len(part["parts"].hull.geometry.positions) > 0
+        assert part["muzzles"] == []

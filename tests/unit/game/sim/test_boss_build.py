@@ -2,6 +2,7 @@
 """Unit tests of `src/game/sim/boss_build.py`."""
 
 import pytest
+from helpers.config_checks import armed_mounts
 
 from core.entities.boss import BossStats
 from core.systems.boss_pattern import (
@@ -125,14 +126,16 @@ def test_boss_33_a_boss_with_joints_gets_a_swing_spec_for_each_joint() -> None:
 
 def test_boss_29_a_boss_with_turret_guns_gets_a_turret_spec_per_turret_piece() -> None:
     stats = boss_stats(STONE_IDOL)
-    assert set(stats.turrets.keys()) == {"eye-left", "eye-right", "third-eye"}
+    assert set(stats.turrets.keys()) == {"eye-left", "eye-right"}
+    # Its hidden weapon's turret is its mount's (BOSS-58).
+    [eye] = [mount for mount in stats.mounts if mount.id == "third-eye"]
+    assert eye.turret is not None
 
 
 def _with_parts(parts: list, transforms: list | None = None) -> object:
     stats = merge(REEF_WARDEN.stats, {"parts": [part(*p) for p in parts]})
-    extra = {"stats": stats}
-    if transforms is not None:
-        extra["transforms"] = transforms
+    # The Reef Warden's own transformation point left out: worked out from the parts given.
+    extra = {"stats": stats, "transforms": transforms}
     return merge(REEF_WARDEN, extra)
 
 
@@ -174,9 +177,11 @@ def test_boss_27_the_angry_pattern_is_the_newly_revealed_weapons_firing_faster()
         forms = {p["reveal"] for p in design.stats["parts"] if p.get("reveal")}
         assert forms
         for form in forms:
-            angry = angry_pattern(design, form)
+            angry = angry_pattern(design, form, armed_mounts(design))
             assert angry
-            assert {v.from_ for v in angry} <= set(_revealed(design, form))
+            # And the weapons its design keeps firing (`rageAlso`: the Storm Petrel's batteries).
+            also = set(design.get("rageAlso") or [])
+            assert {v.from_ for v in angry} <= set(_revealed(design, form)) | also
 
 
 def test_boss_27_an_angry_volley_comes_boss_timing_rage_rate_times_as_often() -> None:
@@ -186,8 +191,11 @@ def test_boss_27_an_angry_volley_comes_boss_timing_rage_rate_times_as_often() ->
     normal = [
         v for v in design.stages[-1] if v["from"] in revealed and v["shape"]["kind"] == "burst"
     ]
+    mounts = armed_mounts(design)
     angry = [
-        v for v in angry_pattern(design, 1) + angry_pattern(design, 2) if v.shape.kind == "burst"
+        v
+        for v in angry_pattern(design, 1, mounts) + angry_pattern(design, 2, mounts)
+        if v.shape.kind == "burst"
     ]
     assert angry
     assert min(v.every for v in angry) == pytest.approx(
@@ -198,7 +206,7 @@ def test_boss_27_an_angry_volley_comes_boss_timing_rage_rate_times_as_often() ->
 def test_boss_27_an_angry_laser_keeps_its_warning_its_beam_and_a_gap() -> None:
     for design in BOSS_DESIGNS:
         for form in (1, 2):
-            for v in angry_pattern(design, form):
+            for v in angry_pattern(design, form, armed_mounts(design)):
                 if isinstance(v.shape, BossLaserShape):
                     laser = v.shape.laser
                     least = laser.warning_seconds + laser.firing_seconds + BOSS_TIMING.rageLaserGap
@@ -209,7 +217,8 @@ def test_boss_27_an_angry_missile_rack_fires_more_missiles() -> None:
     counts: list[float] = []
     for design in BOSS_DESIGNS:
         base = {v["from"]: v for v in design.stages[-1] if v["shape"]["kind"] == "missiles"}
-        angry = angry_pattern(design, 1) + angry_pattern(design, 2)
+        mounts = armed_mounts(design)
+        angry = angry_pattern(design, 1, mounts) + angry_pattern(design, 2, mounts)
         counts.extend(
             v.shape.count / base[v.from_]["shape"]["count"]
             for v in angry
@@ -222,8 +231,15 @@ def test_boss_27_an_angry_missile_rack_fires_more_missiles() -> None:
 def test_boss_27_an_angry_boss_opens_fire_at_once_its_weapons_one_after_the_other() -> None:
     for design in BOSS_DESIGNS:
         for form in (1, 2):
-            angry = angry_pattern(design, form)
+            angry = angry_pattern(design, form, armed_mounts(design))
             for k, v in enumerate(angry):
                 expected = min(v.every, BOSS_TIMING.rageFirst + k * BOSS_TIMING.rageStagger)
                 assert v.first == pytest.approx(expected)
                 assert v.first <= v.every
+
+
+def test_boss_58_a_volley_naming_a_mount_its_boss_lacks_is_an_error() -> None:
+    design = record({"guns": {}, "mounts": [{"id": "gun", "piece": "core", "kind": "gun"}]})
+    named = merge(volley.aimed("core", 1, 1, 0, bullet("a", 1)), {"mount": "nope"})
+    with pytest.raises(ValueError, match='Unknown boss mount "nope"'):
+        armed_volley(design, named)

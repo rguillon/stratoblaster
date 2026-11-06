@@ -8,9 +8,10 @@ carrying three clinging sand rays. Logical pixels, nose +Z, Y up (towards the ca
 import math
 
 from game.config.boss_look import BOSS_LOOK
+from game.config.bosses.boss_guns import GUN_SHAPE
 from game.config.bosses.mini_bosses import DUST_DEVIL
 from game.view.bosses.boss_model import build_boss_model
-from game.view.bosses.mini_boss_shapes import WHITE, scaled
+from game.view.bosses.mini_boss_shapes import scaled
 from game.view.bosses.world_1_organic_kit import (
     F,
     graft,
@@ -65,11 +66,6 @@ CAP = [
 ]
 # Radius of the cap, and of the hub it leaves round (the `back` region's two half-rings).
 CAP_RADIUS = 15.2
-EMITTER = [
-    [3.6, 7.6],
-    [2.4, 9.4],
-    [0, 10],
-]
 # The turning ring: its collar round the bell and its rim carrying the pods (lathe profiles).
 HUB = [
     [18.5, -3],
@@ -94,8 +90,7 @@ BLADE = [
     [1, 39],
     [-6, 39],
 ]
-# A blade pod around its centre, outwards along +Z, across along X: a swept airfoil whose two tips
-# carry the muzzles (it fires both ways along the ring), and the muzzles' outlines.
+# A blade pod around its centre, outwards along +Z, across along X: a swept airfoil.
 POD = [
     [-14, -1],
     [-9, 5],
@@ -104,18 +99,6 @@ POD = [
     [14, 0],
     [7, -6],
     [-7, -7],
-]
-MUZZLES = [
-    [
-        [-14.6, -1.2],
-        [-12, 2.6],
-        [-11, 0.6],
-    ],
-    [
-        [14.6, 0],
-        [12.4, 3.6],
-        [11.6, 1],
-    ],
 ]
 # The amber light along a pod's back, and its canopy (a lathe profile).
 POD_LIGHT = [
@@ -130,6 +113,9 @@ POD_DOME = [
     [0, 3],
 ]
 POD_TOP = 3.5
+# The top of a pod's rotor's hub, its canopy on it (`DUST_DEVIL.mounts`, BOSS-58).
+POD_ROTOR = DUST_DEVIL.mounts[0]
+POD_ROTOR_TOP = POD_ROTOR.height + POD_ROTOR.size * GUN_SHAPE.domeHeight
 # The pods are drawn this much bigger than their outlines.
 POD_SCALE = 1.15
 
@@ -138,8 +124,8 @@ def _draw_core(p: Any) -> None:
     """Draw the core (MB-DUST-DEVIL-02): a swollen fleshy bell (the gyro disc grown over).
 
     The disc flattened under its cap (the plating it sheds, `_draw_plating`), the hub on its middle
-    with the amber charge gland on top (the ring emitter), eyes at its front, its reactors in sacs
-    behind.
+    carrying its stacked guns (its rotor under its turret: its mounts, BOSS-58), eyes at its front,
+    its reactors in sacs behind.
     """
     p.flesh.lathe(GYRO_DISC, 10, F.sinew, Placement(None, math.pi / 10))
     p.neon.ring(18.2, 1.2, 10, AMBER, Placement([0, -0.4, 0], math.pi / 10))
@@ -147,9 +133,6 @@ def _draw_core(p: Any) -> None:
         reactor_sac(p, [s * 6, 4, -23], 2.6, AMBER)
         tentacle(p, [s * 5, 3, -14], [s * 6, 4, -21], [0, 1, 0], [3, 2.6], F.slate, 5)
     eyes(p, [0, DISC_TOP + 0.3, 16.6], {"count": 3, "size": 1, "spacing": 3}, AMBER)
-    # Brightens as the core's next volley charges; its bullets leave from its top.
-    p.charge.lathe(EMITTER, 6, WHITE, None)
-    p.muzzle([0, 10, 0], None)
 
 
 def _draw_plating(p: Any) -> None:
@@ -213,7 +196,8 @@ def _draw_ring(p: Any) -> None:
 def _blade_pod(p: Any, at: Vec3) -> None:
     """Add a blade pod on the ring (MB-DUST-DEVIL-03): a sand ray clinging to the rim.
 
-    Its wide fleshy wings plated at the front, a bone barb at each wing tip carrying a muzzle.
+    Its wide fleshy wings plated at the front, its rotor on its back firing both ways along the
+    ring (its mount, BOSS-58).
     """
     yaw = math.atan2(at[0], at[2])
     place = Placement(at, yaw)
@@ -227,22 +211,9 @@ def _blade_pod(p: Any, at: Vec3) -> None:
     )
     organ(p.flesh, 5, 6, F.slate, Placement([at[0], POD_TOP - 2.5, at[2]]), 0.45)
     p.vein.slab(POD_LIGHT, [POD_TOP - 0.6, POD_TOP - 0.3], AMBER, place)
-    p.neon.lathe(POD_DOME, 5, AMBER, Placement([at[0], POD_TOP + 1.6, at[2]]))
-    for muzzle in MUZZLES:
-        p.charge.slab(scaled(muzzle, POD_SCALE), [-1.6, 2.2], WHITE, place)
+    # Its canopy crowns its rotor's hub (its mount, BOSS-58).
+    p.neon.lathe(scaled(POD_DOME, 0.75), 5, AMBER, Placement([at[0], POD_ROTOR_TOP, at[2]]))
     graft(p, scaled(POD[1:4], 0.8, 0, 0), [POD_TOP - 1.2, POD_TOP], at, {"yaw": yaw})
-
-    def put(x: float, z: float) -> Vec3:
-        return [
-            at[0] + x * math.cos(yaw) + z * math.sin(yaw),
-            POD_TOP,
-            at[2] - x * math.sin(yaw) + z * math.cos(yaw),
-        ]
-
-    # Its bullets leave from the tips, both ways along the ring.
-    for side in [-1, 1]:
-        tip = put(side * 14.6 * POD_SCALE, -1.2 * POD_SCALE if side < 0 else 0)
-        p.muzzle([tip[0], 0.3, tip[2]], None)
 
 
 def build_dust_devil(scene: Any) -> Any:

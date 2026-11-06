@@ -53,8 +53,10 @@ def leave_upward(enemy: Enemy, speed: float, dt: float) -> None:
 def missile_flight(up: bool) -> MissileFlight:
     """Return how a missile leaves its launcher (WPN-08, WPN-09): from an upward silo, or not."""
     if up:
-        return MissileFlight(0, WEAPONS.missileClimbSeconds, WEAPONS.missileArcRadius)
-    return MissileFlight(WEAPONS.missileLaunchSeconds, 0, 0)
+        return MissileFlight(
+            0, WEAPONS.missileLoftSeconds, WEAPONS.missileLoftSpeed, WEAPONS.missileLoftDrift
+        )
+    return MissileFlight(WEAPONS.missileLaunchSeconds)
 
 
 def missile_spec(missile: Any, up: bool = False) -> EnemyMissileSpec:

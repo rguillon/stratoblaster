@@ -174,17 +174,38 @@ def inside_outline(outline: list[Any], x: float, y: float) -> bool:
     return result
 
 
+def standing_region(design: Any, part: Any) -> Any:
+    """Return the moving region under the part `part` that stands from the start (BOSS-18), if any.
+
+    Its piece under the part's spot at rest: what the part leaves once destroyed (its stumps, its
+    smoke) moves with it. None for a hidden part, or one on no moving piece.
+    """
+    if part.reveal != None:
+        return None
+    for region in design.armour or []:
+        if not is_moving(region):
+            continue
+        m = region.motion
+        spot = move_point(m, inverse_value(m, motion_value(m, 0)), [part.x, part.y, 0])
+        if inside_outline(region.outlines[0], spot[0], spot[1]):
+            return region
+    return None
+
+
 def ridden_region(design: Any, part: Any) -> Any:
     """Return the moving region the hidden part `part` rides (D-230), if any.
 
     One moving at the transformation that reveals it, its piece under the part's pod once moved.
-    None otherwise.
+    None otherwise, or for one sliding out of the body (`slideFrom`).
     """
     reveal = part.reveal
     if reveal == None:
         return None
     weapons = design.weapons
     look = weapons[part.id] if weapons != None and part.id in weapons else None
+    if look != None and "slideFrom" in look:
+        # It slides out of the body, not off a piece.
+        return None
     height = look.height if look != None else 0
     for region in design.armour or []:
         if not is_moving(region) or region.form != reveal:

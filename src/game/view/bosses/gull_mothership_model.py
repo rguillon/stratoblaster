@@ -13,7 +13,7 @@ from game.config.boss_look import BOSS_LOOK
 from game.config.bosses.final_bosses import GULL_MOTHERSHIP
 from game.view.bosses.boss_model import build_boss_model
 from game.view.bosses.final_boss_gull import DECK_TOP, draw_flak, draw_hangar
-from game.view.bosses.final_boss_shapes import shift, turret
+from game.view.bosses.final_boss_shapes import shift
 from game.view.bosses.gull_mothership_armour import draw_centre, draw_mantle, gull_armour
 from game.view.bosses.world_1_organic_kit import (
     F,
@@ -36,21 +36,11 @@ from render.geometry.solids import Placement
 # __pragma__ ("skip")
 from typing import Any
 
-type Vec3 = list[Any]
 # __pragma__ ("noskip")
 
 
 N = BOSS_LOOK.neon["gull-mothership"]
-WHITE = [1, 1, 1]
 QUARTER = math.pi / 2
-
-# The laser eye's lens (a lathe profile along its axis), at the body's nose.
-LENS = [
-    [0, 0],
-    [5.5, 1.2],
-    [4.6, 3.4],
-    [0, 4.4],
-]
 
 
 def _draw_hull(p: Any) -> None:
@@ -81,9 +71,9 @@ def _draw_hull(p: Any) -> None:
         {"halfWidth": 20, "y": DECK_TOP, "height": 15, "thickness": 1.2},
     )
     spine(p, [0, 22.5, -50], [0, 22.5, 40], {"color": N, "width": 1.6, "bow": 3})
-    for z in [-30, -6, 18]:
-        gland(p, [0, 22, z], 1.8, N)
-    p.neon.box([1, 0.8, 16], N, Placement([0, 24.4, -9]))
+    # The core's turret stands on the graft, its two rotors down the spine behind it (its mounts,
+    # BOSS-58); a gland between the turret and the rotors.
+    gland(p, [0, 22, 18], 1.8, N)
     graft(p, polygon(6, 7, [1, 1.6]), [20.5, 22], [0, 0, 30])
     barbs(p, [0, 21, -44], {"count": 3, "spacing": 0.1, "size": 4, "dir": [0, 1, -0.4]})
     for s in SIDES:
@@ -92,26 +82,16 @@ def _draw_hull(p: Any) -> None:
 
 
 def _draw_emitter(p: Any) -> None:
-    """Draw the laser eye at the nose (FB-GULL-MOTHERSHIP-03): a socket of flesh, a grafted ring.
+    """Draw the laser eye's socket at the nose (FB-GULL-MOTHERSHIP-03): flesh, a grafted ring.
 
-    The lens glowing as it charges.
+    The eye's emitter, its lens glowing as it charges, is its laser mount set in it (BOSS-58).
     """
     at = [0, DECK_TOP + 3, 58]
     p.flesh.cylinder(8, 6, 8, F.graphite, Placement(at, 0, QUARTER), 6.5)  # type: ignore[arg-type]  # the argument does not match the parameter type mypy expects
     p.hull.ring(7.3, 1.4, 8, M.dark, Placement(shift(at, [0, 0, 5.4]), 0, QUARTER))
     for z in [1.5, 5]:
         p.neon.ring(7.6 - z * 0.15, 1, 8, N, Placement(shift(at, [0, 0, z]), 0, QUARTER))
-    p.charge.lathe(LENS, 8, WHITE, Placement(shift(at, [0, 0, 7.5]), 0, QUARTER))
     eyes(p, shift(at, [0, 9, -6]), {"count": 4, "size": 1.1, "spacing": 3}, N)
-    # The core's laser and bullets leave from the lens's front.
-    lens = shift(at, [0, 0, 11.9])
-    p.muzzle(lens, "laser")
-    p.muzzle(lens, None)
-
-
-def _flak_turret(p: Any, at: Vec3) -> None:
-    """Add a flak growth's twin guns, on its crown (FB-GULL-MOTHERSHIP-03)."""
-    turret(p, shift(at, [0, DECK_TOP + 2.5, 0]), 8.5, [2, N])
 
 
 def build_gull_mothership(scene: Any) -> Any:
@@ -138,7 +118,6 @@ def build_gull_mothership(scene: Any) -> Any:
                 "flak-left": draw_flak,
                 "flak-right": draw_flak,
             },
-            "turrets": {"flak-left": _flak_turret, "flak-right": _flak_turret},
             "armour": gull_armour(),
         },
     )

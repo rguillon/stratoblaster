@@ -6,7 +6,8 @@
 
 The Mesa Fortress is the final boss of 1-3: a colossal canyon tortoise, 5 L across (first designed
 as a flying fortress), its high stepped shell shaped like the mesas. A laser lance in each forelimb
-and two spore silos on its back shield its core, a fan cannon on its brow. The ground stops while it
+and two spore silos on its back shield its core, a fan turret on its brow and a rotor behind its
+keep. The ground stops while it
 is fought. At its second transformation its shell splits open. Shared rules are in
 [common](../common.md).
 
@@ -17,7 +18,7 @@ is fought. At its second transformation its shell splits open. Shared rules are 
 #### FB-MESA-FORTRESS-01 — Silhouette and size · MUST
 
 Seen from above, the Mesa Fortress is a wide tortoise, 5 L across: a skirt of hide under a high,
-stepped shell, its head at its front (down the screen) with a fan cannon on its brow, a forelimb on
+stepped shell, its head at its front (down the screen) with a fan turret on its brow, a forelimb on
 each side reaching forward to a laser lance, and two silos on the back of its shell.
 
 **Acceptance criteria**
@@ -36,23 +37,26 @@ shell's flat top, its head at its front. Each forelimb is a scaly limb out to it
 
 *Sources: P07-R05, P16-R06.*
 
-#### FB-MESA-FORTRESS-03 — Its parts · MUST
+#### FB-MESA-FORTRESS-03 — Its parts and guns · MUST
 
-- **Laser lances** (one in each forelimb's cradle): a swollen gland, a long grafted barrel out of it
-  ringed with neon, sinews binding it, its lens glowing as it charges.
+Every shot leaves one of its gun mounts, the shared models of [common](../common.md) (BOSS-58):
+- **Laser lances** (one in each forelimb's cradle): a swollen gland, a long fixed laser mount on the
+  cradle before it pointing down the screen, sinews binding it.
 - **Missile silos** (two, on the rear of its shell): a swollen spore pod, a grafted collar round its
-  mouth, four missile tips standing in it like seeds, a vein ring at its foot.
-- **Fan cannon** (the core's gun, on its brow): a grafted housing and five barrels fanned out
-  forward, turning about the hub of its barrels.
+  mouth, a missile block of four ports standing in it like seeds, a vein ring at its foot.
+- **Fan turret** (the core's, on its brow): a gun turret with seven barrels side by side (its fans
+  and aimed shots).
+- **Back rotor** (the core's, on its back behind the keep): a rotor with fourteen barrels (its
+  rings).
 
 **Acceptance criteria**
-- Given its model, then it draws its lances, its silos and the fan cannon's turret (unit test).
+- Given its model, then it draws its lances, its silos and every gun mount (unit test).
 
-*Sources: P07-R05, P16-R06, D-060.*
+*Sources: P07-R05, P16-R06, D-060, D-280.*
 
 #### FB-MESA-FORTRESS-04 — Lights · MUST
 
-Veins run along its shell and round its silos' feet; neon rings its lances. Its neon colour, set
+Veins run along its shell and round its silos' feet. Its neon colour, set
 red, shows bright yellow ([common](../common.md), BOSS-50).
 
 **Acceptance criteria**
@@ -105,8 +109,9 @@ again once it is destroyed.
 
 It has four parts as it comes in, all shielding its core: `lance-left`, `lance-right`, `silo-left`
 and `silo-right`. Each lance fires a laser straight down, the two in turn, locked once it fires;
-each silo fires one homing missile, in turn. The fan cannon on its turret fires the core's volleys
-and turns the way it fires.
+each silo fires one homing missile from its ports, in turn. The core's guns (the fan turret and the
+back rotor) fire the core's volleys, and are the last the player destroys; the turret turns the way
+it fires.
 
 **Acceptance criteria**
 - Given its design, then its four parts shield the core.
@@ -116,11 +121,15 @@ and turns the way it fires.
 #### FB-MESA-FORTRESS-08 — Stage patterns · MUST
 
 The lances' lasers and the silos' missiles go on in every stage while they stand. The core fires:
-- stage 0: a fan of 3 red;
-- stage 1: a fan of 5;
-- stage 2: a fan of 5 and one orange bullet at the player;
-- stage 3: a fan of 7;
-- stage 4 (all four parts gone): a ring of 14 orange turning at each volley, and a fan of 5 red.
+- stage 0: a fan of 3 red straight down, swept from the fan turret one bullet at a time as it turns
+  across the fan (BOSS-58);
+- stage 1: a fan of 5, swept the same way;
+- stage 2: a fan of 5 and one orange bullet at the player, both from the fan turret;
+- stage 3: a fan of 7, swept the same way;
+- stage 4 (all four parts gone): a ring of 14 orange from the back rotor, one bullet a barrel,
+  turning at each volley, and a fan of 5 red from the fan turret.
+
+Its fans are all 12° apart.
 
 **Acceptance criteria**
 - Given each stage, then the core fires that stage's volleys and the parts left fire theirs
@@ -197,9 +206,13 @@ All in `src/game/config/bosses/final_bosses.py` (`_MESA_FORTRESS`, `MESA_FORTRES
 | Name | Value | Notes |
 |------|-------|-------|
 | size | 5 L (radius 85 px) | |
-| core | health 3 000, radius 22, drop 1 | fan cannon pivot (0, -30), 5 barrels |
+| core | health 3 000, radius 22, drop 1 | `coreHealth`, `coreRadius`, `coreDrop` |
 | `lance-left`, `lance-right` | (∓58, -12), radius 15, health 1 050, shield, drop 0.6 | |
-| `silo-left`, `silo-right` | (∓28, 32), radius 13, health 1 500, shield, drop 0.6 | 4 cells each |
+| `silo-left`, `silo-right` | (∓28, 32), radius 13, health 1 500, shield, drop 0.6 | |
+| lance lasers | (∓58, -16), 5 px high, fixed; barrel 30 px long, bore 3.5; base radius 7 | `MESA_LANCE`, `mounts` |
+| silos' missile blocks | (∓28, 32), 12.4 px high; 4 ports each | `mounts` |
+| fan turret (core) | (0, -25), 14 px high; 7 barrels 2.9 px apart, bore 1.1, 9 px long; dome radius 10.3 | `mounts` `brow` |
+| back rotor (core) | (0, 48), 13.5 px high; 14 barrels, bore 0.7, 3.2 px long; hub radius 5 | `mounts` `back-rotor` |
 | full health | 15 000 (8 100 without the hidden weapons) | BOSS-54 |
 | points | 10 000; 1 000 a part | |
 | ground speed | ×0 | |
@@ -207,11 +220,11 @@ All in `src/game/config/bosses/final_bosses.py` (`_MESA_FORTRESS`, `MESA_FORTRES
 | sway / bob | 35 px over 10 s / 6 px over 5 s | |
 | lance lasers | 1.4 s every 6 s (first 2 s / 5 s) | |
 | silo missiles | 1 every 5 s (first 3.5 s / 6 s) | |
-| core stage 0 | fan of 3, 16° apart, red 190 px/s, every 3 s | |
-| core stage 1 | fan of 5, 14° apart, every 2.6 s | |
-| core stage 2 | fan of 5 every 2.6 s; 1 aimed orange bullet, 175 px/s, every 2.2 s | |
-| core stage 3 | fan of 7, 12° apart, every 2.2 s | |
-| core stage 4 | ring of 14 turning 12°, orange, every 1.5 s; fan of 5 red every 2.6 s | |
+| core stage 0 | fan of 3, 12° apart, red 190 px/s, every 3 s | fan turret, a sweep |
+| core stage 1 | fan of 5, 12° apart, every 2.6 s | fan turret, a sweep |
+| core stage 2 | fan of 5, 12° apart, every 2.6 s; 1 aimed orange bullet, 175 px/s, every 2.2 s | fan turret |
+| core stage 3 | fan of 7, 12° apart, every 2.2 s | fan turret, a sweep |
+| core stage 4 | ring of 14 turning 12°, orange, every 1.5 s; fan of 5, 12° apart, red every 2.6 s | back rotor; fan turret |
 | angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation 1 | `lance-left` and `lance-right` destroyed | `transformParts` |
 | wing-front region (shed) | the skirt's front flank out to the rim: x 16..46 at y -3.5..-28, then along the rim to (38, -38), (22, -46) and (16, -46.5), `wing`, mirrored; the plate 5-7 px | |

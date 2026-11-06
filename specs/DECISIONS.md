@@ -1141,3 +1141,21 @@
   incremental bundle is byte-identical to a clean one.
 - **Limit:** a file removed from `public/` stays in `dist/` until `dist/` is deleted.
 - **Status:** Proposed
+
+## D-280 — Every boss shot leaves a gun mount; the core's guns go last (BOSS-58)
+- **Context:** the owner asked to "apply the guns pattern to the bosses: one model for the guns, one
+  for the lazer, one for the missiles", with every bullet, laser and missile "perfectly aligned with
+  the guns", recoiling bullet guns, guns added where a pattern had none, and "when the player has
+  destroyed the last remaining gun, the health shall hit zero". Most boss volleys (about 314 of 457)
+  came from the core, from muzzles with no gun drawn; rings and fans left one point.
+- **Decision (owner's choices):** the core is the last gun: it carries its own mounts and every
+  part shields it. One barrel per bullet: a ring fires from a rotor with a barrel per bullet, a fan
+  or a multi-shot aimed volley from the middle barrels of a fanned turret, counts snapped to the
+  barrels. A boss's `mounts` (`boss_guns.gun_mount`, `laser_mount`, `missile_mount`) are data;
+  `core/systems/boss_mounts.py` fires from them (each shot from a barrel's tip along it, the barrel
+  kicked) and `view/bosses/boss_gun_models.py` draws them with the enemies' barrel, laser lens and
+  missile port. A volley fires from the first mount of its piece that fits it, or the one it names.
+  Parts hand the core their heading and age (a turned boss's guns turn with it; recoil on its
+  clock). Hidden weapon kinds get one mount each; their pods stay. Rolled out on World 1 first,
+  checked by the owner before Worlds 2–4.
+- **Status:** Proposed

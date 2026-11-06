@@ -8,11 +8,18 @@ dict-backed objects here.
 
 from typing import Any
 
+from core.systems.boss_mounts import BossMount
+from game.sim.boss_build import mount_specs
 from game.sim.enemy_kinds import ENEMY_KINDS
 
 WORLDS = (1, 2, 3, 4)
 LEVELS_PER_WORLD = 5
 LEVEL_IDS = [f"{world}-{level}" for world in WORLDS for level in range(1, LEVELS_PER_WORLD + 1)]
+
+# The World bosses (a mini and a final boss per level, BOSS-01) come first in `BOSS_DESIGNS`, the
+# Lab bosses (specs/bosses/lab/, in the dev viewer only) after them.
+WORLD_BOSS_COUNT = 40
+LAB_BOSS_COUNT = 50
 
 SHOT_KINDS = {"aimed", "fan", "ring", "burst", "missiles", "laser"}
 
@@ -20,6 +27,16 @@ SHOT_KINDS = {"aimed", "fan", "ring", "burst", "missiles", "laser"}
 def piece_ids(design: Any) -> set[str]:
     """Return the ids a boss's volleys and guns may name: its core and each of its parts."""
     return {"core"} | {part["id"] for part in design.stats["parts"]}
+
+
+def armed_mounts(design: Any) -> dict[str, BossMount]:
+    """Return the boss's gun mounts by id, as a world boss arms its volleys from them (BOSS-58)."""
+    return {spec.id: BossMount(spec) for spec in mount_specs(design)}
+
+
+# The bosses whose core fires nothing in any stage, their stages changing only as their parts go:
+# their owner's exceptions to BOSS-21 (MB-REEF-WARDEN-08, FB-STORM-PETREL-08).
+SILENT_CORES = frozenset({"reef-warden", "storm-petrel"})
 
 
 def original_parts(design: Any) -> list[Any]:
@@ -34,8 +51,9 @@ def assert_boss_design(design: Any) -> None:
     """Assert that a boss design is well formed.
 
     It has unique part ids and one stage more than it has original parts (each part destroyed moves
-    it on, BOSS-20; its hidden weapons, revealed later, keep it on its last). Its guns and volleys
-    name pieces of the boss, and its volleys are of a known kind.
+    it on, BOSS-20; its hidden weapons, revealed later, keep it on its last), or a single stage when
+    its core fires nothing (BOSS-58). Its guns and volleys name pieces of the boss, and its volleys
+    are of a known kind.
     """
     stats = design.stats
     assert design.id
@@ -46,7 +64,10 @@ def assert_boss_design(design: Any) -> None:
     parts = stats["parts"]
     ids = [part["id"] for part in parts]
     assert len(ids) == len(set(ids))
-    assert len(design.stages) == len(original_parts(design)) + 1
+    stage_counts = {len(original_parts(design)) + 1}
+    if design.id in SILENT_CORES:
+        stage_counts.add(1)
+    assert len(design.stages) in stage_counts
     known = piece_ids(design)
     for piece in design.guns:
         assert piece in known, piece

@@ -147,18 +147,29 @@ turns inside or beside the launcher.
 
 #### WPN-09 — Upward silos curve over to the player's plane · MUST
 
-A silo that points up (out of the plane of play, towards the camera) fires its missile up first; the
-missile then **arcs over**: it climbs for `missile_climb_seconds`, curves in a half loop of radius
-`missile_arc_radius` to the playfield's plane (its height falls to 0) pointed along the way it will
-fly, and only then tracks the player (WPN-08's homing). The arc is drawn: the missile grows and
-shrinks with its height as the camera sees it.
+A silo that points up (out of the plane of play, towards the camera) fires its missile straight up
+from its port's mouth, at its height, and the missile **lofts** to the playfield's plane along one
+smooth curve over `missile_loft_seconds`: it leaves straight up at `missile_loft_speed`, slows to its
+top and comes down onto the plane, landing level (no kink, no jump in height or in speed). Along the
+plane it drifts off to its side (along its launch heading, away from its block's middle, at most
+`missile_loft_drift` a third of the way), so the missiles of one block part, while its speed towards
+the player grows from none to its full speed as it lands. Its nose follows its way, turning no faster
+than `missile_nose_rate` (no flip over its top). Only on the plane does it track the player (WPN-08's
+homing). The loft is drawn: the missile is raised towards the camera by its height and tilted by
+its pitch, its reactor flame at its tail and a light smoke trail left behind it (GFX-SHOT-15).
+A lofted missile and its smoke are drawn over every model: it never passes under the boss it rises
+over.
 
 **Acceptance criteria**
-- Given a missile from an upward silo, then its height rises, falls to 0 after `missile_climb_seconds`
-  + the arc, and it homes only from then on (unit test).
-- Given the missile in its climb, then the player's shots and body do not hit it, and it does not hit
+- Given a missile from an upward silo, then it starts at its port's mouth and height, rises
+  straight up, then its height falls to 0 after `missile_loft_seconds`, level, and it homes only
+  from then on (unit test).
+- Given the missiles of one block, then each drifts away from the block's middle as it climbs (unit
+  test).
+- Given the missile in its loft, then the player's shots and body do not hit it, and it does not hit
   the player (it is not on the plane yet; unit test).
-- Manual validation: the arc reads as a missile turning over before it hunts.
+- Manual validation: the missile reads as shot straight up, then arcing smoothly over to the plane
+  before it hunts.
 
 *Sources: owner request 2026-11-04.*
 
@@ -170,8 +181,10 @@ shrinks with its height as the camera sees it.
 | `barrel_recoil` | 0.35 of the barrel's length | WPN-03 |
 | `barrel_recoil_seconds` | 0.5 s | WPN-03; the slide back is instant, the return eased out |
 | `missile_launch_seconds` | 0.25 s | WPN-08 |
-| `missile_climb_seconds` | 0.3 s | WPN-09 |
-| `missile_arc_radius` | 40 px | WPN-09 |
+| `missile_loft_seconds` | 2.1 s | WPN-09 |
+| `missile_loft_speed` | 260 px/s | WPN-09; straight up as it leaves the silo |
+| `missile_loft_drift` | 110 px/s | WPN-09; at most, a third of the way |
+| `missile_nose_rate` | 3 rad/s | WPN-09 |
 | `missile_reload_seconds` | 1.2 s | WPN-07; the port is empty, then the rocket rises back |
 | `missile_reload_show` | 0.35 of it | WPN-07; the rocket is hidden before |
 

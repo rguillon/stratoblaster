@@ -113,7 +113,9 @@ class _WorldContext:
     def fire_bullet(self, x: float, y: float, heading: float, spec: EnemyBulletSpec) -> None:
         self._shots.fire_bullet(x, y, heading, _faster(spec, self._bullet_speed))
 
-    def fire_missile(self, x: float, y: float, heading: float, spec: EnemyMissileSpec) -> None:
+    def fire_missile(
+        self, x: float, y: float, heading: float, spec: EnemyMissileSpec, height: float = 0
+    ) -> None:
         burst = spec.burst
         if burst:
             # The bullets it bursts into are as fast as the level makes bullets (ENM-22).
@@ -121,7 +123,7 @@ class _WorldContext:
                 burst.after, burst.count, _faster(burst.bullet, self._bullet_speed)
             )
             spec = spec.with_burst(burst)
-        self._shots.fire_missile(x, y, heading, spec)
+        self._shots.fire_missile(x, y, heading, spec, height)
 
     def fire_laser(self, owner: LaserOwner, spec: EnemyLaserSpec) -> None:
         self._shots.fire_laser(owner, spec)

@@ -3,7 +3,7 @@
 
 Its abdomen's shell is one carapace drawn in lengths along Z (`final_boss_shells`): the core keeps
 the length over its tail (behind `BACK_Z[0]`); the `back` armour is the middle length, with the
-plated skull over the core riding it (its eyes, spiracles and twin cannon), and the `spine` armour
+plated skull over the core riding it (its eyes, spiracles and mantlet), and the `spine` armour
 is the front length out to its nose, with its front rib and eyes. Under them the core is its belly
 (up to about 5 px) between the two lobes of its apron. Logical pixels, nose +Z, Y up (towards the
 camera).
@@ -28,9 +28,6 @@ from typing import Any
 
 # __pragma__ ("noskip")
 
-
-WHITE = [1, 1, 1]
-QUARTER = math.pi / 2
 
 # The abdomen: from its tail to its nose, `WIDTH` half-wide, its belly from `BOTTOM` to `MID` and
 # its shell from `MID` - 1 to `TOP` (as `world_1_organic_kit.hide` draws a body).
@@ -65,28 +62,12 @@ def _draw_skull(p: Any) -> None:
     p.hull.box([15, 4, 7], M.base, Placement([0, 17, 21]), M.panel)
 
 
-def _draw_cannon(p: Any) -> None:
-    """Draw the twin cannon's barrels out of the skull's mantlet (FB-REFINERY-TITAN-03).
-
-    Their muzzles are marked by the core (`draw_cannon_muzzles`): the core keeps firing from them.
-    """
-    for s in SIDES:
-        p.hull.cylinder(1.8, 14, 6, M.dark, Placement([s * 4.5, 19, 20], 0, QUARTER))
-        p.charge.cylinder(2.2, 1.8, 6, WHITE, Placement([s * 4.5, 19, 34], 0, QUARTER))
-
-
-def draw_cannon_muzzles(p: Any) -> None:
-    """Mark the twin cannon's muzzles, at its barrels' tips (the core's gun)."""
-    for s in SIDES:
-        p.muzzle([s * 4.5, 19, 35.8], None)
-
-
 def draw_back(p: Any) -> None:
     """Draw the back plating (the `back` armour, FB-REFINERY-TITAN-05).
 
     The middle length of the shell (from about 4 px up to its ridge, 18 px), the spine vein, the
-    veins and grafted plates on it, and the plated skull riding it with the twin cannon. The
-    gatlings lie folded under it.
+    veins and grafted plates on it, and the plated skull riding it. The gatlings lie folded under
+    it.
     """
     shell_length(p.flesh, SHELL, SHELL_COLORS, BACK_Z[0], BACK_Z[1])
     spine(p, [0, 17, -18], [0, 17.4, 23], {"color": TITAN_NEON, "width": 1.8, "bow": 0.6})
@@ -94,7 +75,6 @@ def draw_back(p: Any) -> None:
         graft(p, polygon(6, 6, [1.2, 1.8]), [13, 14.6], [s * 20, 0, 8], {"color": M.base})
         vein_line(p, [s * 12, 17, -14], [s * 28, 8, -8], [s * 3, 3, 0], 1.4, TITAN_NEON)
     _draw_skull(p)
-    _draw_cannon(p)
 
 
 def draw_spine(p: Any) -> None:

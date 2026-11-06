@@ -228,22 +228,55 @@ def test_wpn_08_a_missile_flies_straight_out_before_it_turns_and_homes() -> None
     assert missile.homing < 1
 
 
-def test_wpn_09_an_upward_missile_climbs_arcs_over_then_homes() -> None:
+def test_wpn_09_an_upward_missile_lofts_from_its_port_onto_the_plane_then_homes() -> None:
     shots = _shots()
-    shots.fire_missile(50, 50, math.pi, _flying(MissileFlight(0, 0.3, 10)))
+    shots.fire_missile(50, 50, math.pi, _flying(MissileFlight(0, 0.5, 40, 0)), 8)
     missile = shots.missiles[0]
-    shots.step(0.15, 90, 50)
-    assert missile.height == pytest.approx(5)
-    assert (missile.x, missile.y) == (50, 50)
+    # From its port's mouth, at its height, straight up.
+    assert (missile.x, missile.y, missile.height) == (50, 50, 8)
+    assert missile.stage == "loft"
+    assert missile.pitch == pytest.approx(math.pi / 2)
+    shots.step(0.05, 90, 50)
+    assert missile.height > 8
     assert missile.homing == pytest.approx(1)
-    shots.step(0.15, 90, 50)
-    # Climbed, and now pointed at the player.
-    assert missile.height == pytest.approx(10)
-    assert missile.heading == pytest.approx(math.pi / 2)
-    shots.step(0.1, 90, 50)
-    assert 0 < missile.height < 10
-    assert missile.homing == pytest.approx(1)
-    for _ in range(10):
-        shots.step(0.1, 90, 50)
+    shots.step(0.2, 90, 50)
+    assert missile.height > 0
+    assert missile.stage == "loft"
+    shots.step(0.25, 90, 50)
+    # Down on the plane after `loft_seconds`, level, and only now homing.
     assert missile.height == 0
+    assert missile.pitch == 0
+    assert missile.stage == "flat"
+    assert missile.homing == pytest.approx(1)
+    shots.step(0.1, 90, 50)
     assert missile.homing < 1
+
+
+def test_wpn_09_the_missiles_of_a_block_drift_apart_as_they_climb() -> None:
+    shots = _shots()
+    flight = MissileFlight(0, 0.6, 40, 30)
+    shots.fire_missile(50, 50, math.pi / 2, _flying(flight), 5)
+    shots.fire_missile(50, 50, -math.pi / 2, _flying(flight), 5)
+    right, left = shots.missiles
+    shots.step(0.2, 50, 0)
+    assert right.x > 50 > left.x
+    assert right.height > 5
+
+
+def test_wpn_09_a_missile_lofting_straight_up_keeps_its_heading() -> None:
+    shots = _shots()
+    still = EnemyMissileSpec(0, 90, 1, 2, 5, "rocket", None, MissileFlight(0, 0.5, 40, 0))
+    shots.fire_missile(50, 50, 1.0, still, 5)
+    missile = shots.missiles[0]
+    # No speed, no drift: nothing along the plane to point it.
+    shots.step(0.1, 90, 50)
+    assert missile.heading == 1.0
+    assert missile.height > 5
+
+
+def test_wpn_09_a_lofted_missile_drifting_off_the_field_is_gone() -> None:
+    shots = _shots()
+    # Past the right edge and its margin.
+    shots.fire_missile(200, 50, math.pi / 2, _flying(MissileFlight(0, 0.5, 40, 200)), 5)
+    shots.step(0.1, 50, 0)
+    assert shots.missiles[0].alive is False

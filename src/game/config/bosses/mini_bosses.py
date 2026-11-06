@@ -11,7 +11,8 @@ WLD-1-29), their full health going up from 1-1 to 1-5 (BOSS-55, WLD-1-27).
 
 import math
 
-from game.config.bosses.boss_kit import bullet, mirror, part, stages, stats, twin, volley
+from game.config.bosses.boss_guns import gun_mount, laser_mount
+from game.config.bosses.boss_kit import bullet, part, stages, stats, volley
 from game.config.bosses.hidden_weapons import (
     armour_region,
     hidden_weapon,
@@ -37,11 +38,15 @@ PURPLE = bullet("purple", 195)
 # The guns' muzzles (phase 7 review): the tips of the barrels their models draw, from the boss's
 # centre, X right, Y up, and height above the playfield (see `BossDesign.guns`).
 
-# The Reef Warden's right side cannon's two barrels (MB-REEF-WARDEN-03).
-CANNON = [
-    [38.5, -23.2, 7.9],
-    [33.5, -23.2, 7.9],
-]
+# The Reef Warden's side cannons' twin-barrelled turrets (MB-REEF-WARDEN-03).
+REEF_CANNON = {"size": 9, "barrels": 2, "gap": 5, "bore": 1.6, "length": 11}
+
+# The Scorpion's claw cannons' turrets: three barrels side by side, sweeping their aimed fans
+# (MB-SCORPION-03, MB-SCORPION-08).
+SCORPION_CLAW = {"size": 4.5, "barrels": 3, "gap": 1.2, "bore": 1.1, "length": 11}
+
+# The Sentinel's hull guns' twin-barrelled turrets, sweeping their aimed pairs (MB-SENTINEL-03).
+SENTINEL_GUN = {"size": 9, "barrels": 2, "gap": 3.6, "bore": 1.3, "length": 12}
 
 # 1-1: a wide hover-gunboat with a cyan ring under its rim; two side cannons shield the core
 # (MB-REEF-WARDEN-07).
@@ -65,24 +70,35 @@ _REEF_WARDEN = record({
     "stopFraction": 0.72,
     "sway": {"amplitude": 70, "period": 7},
     "bob": {"amplitude": 8, "period": 3.5},
-    "guns": {
-        "core": {"gun": [[0, -40.5, 5]], "turret": [0, -27]},
-        "cannon-left": {"gun": mirror(CANNON), "turret": [-36, -2]},
-        "cannon-right": {"gun": CANNON, "turret": [36, -2]},
-    },
-    # Its parts' volleys, then the core's pattern per stage (MB-REEF-WARDEN-08).
+    "guns": {},
+    # Its gatlings come out once both its side cannons are destroyed (MB-REEF-WARDEN-10).
+    "transforms": [2],
+    # Its gun mounts (BOSS-58, MB-REEF-WARDEN-03): a side cannon on each flank. Its core carries
+    # none: its gatlings are its last guns, and it dies with them.
+    "mounts": [
+        gun_mount("cannon-left", "cannon-left", [-36, -2], 4, REEF_CANNON),
+        gun_mount("cannon-right", "cannon-right", [36, -2], 4, REEF_CANNON),
+    ],
+    # Its parts' volleys; its core does not fire (MB-REEF-WARDEN-08).
     "stages": stages(
         [
             volley.burst("cannon-left", 2.6, 3, 0.18, RED, 1),
             volley.burst("cannon-right", 2.6, 3, 0.18, RED, 2.3),
         ],
-        [
-            [volley.fan("core", 3.2, 3, 18, ORANGE, 1.8)],
-            [volley.fan("core", 2.2, 5, 14, ORANGE, 0.6)],
-            [volley.ring("core", 1.8, 8, 11, ORANGE, 0.4)],
-        ],
+        [[]],
     ),
 })
+
+# The Breakwater's mortars, a single short, fat barrel each in a cradle on a turntable, its axis
+# high enough for the barrel to rest in it (MB-BREAKWATER-03).
+BREAKWATER_MORTAR = {
+    "size": 7,
+    "barrels": 1,
+    "bore": 3.6,
+    "length": 4,
+    "style": "mortar",
+    "axis": 0.8,
+}
 
 # 1-2: an armoured flying barge; its front plate shields the core, two mortars lob big bullets
 # (MB-BREAKWATER-07).
@@ -99,34 +115,54 @@ _BREAKWATER = record({
         "groundSpeed": 0.4,
         "parts": [
             part("ram-plate", [0, -34], 18, 810),
-            part("mortar-left", [-34, 12], 13, 430, {"shields": False}),
-            part("mortar-right", [34, 12], 13, 430, {"shields": False}),
+            part("mortar-left", [-34, 12], 13, 430),
+            part("mortar-right", [34, 12], 13, 430),
         ],
     }),
     # Where it stops and how it moves in place (MB-BREAKWATER-06).
     "stopFraction": 0.72,
     "sway": {"amplitude": 60, "period": 8},
     "bob": {"amplitude": 6, "period": 4},
-    # Its guns' muzzles (MB-BREAKWATER-03).
-    "guns": {
-        "core": {"gun": twin(1.5, -33.3, 6.4), "turret": [0, -21]},
-        "mortar-left": {"gun": [[-34, -1.5, 17.2]], "turret": [-34, 12]},
-        "mortar-right": {"gun": [[34, -1.5, 17.2]], "turret": [34, 12]},
-    },
-    # Its parts' volleys, then the core's pattern per stage (MB-BREAKWATER-08).
+    "guns": {},
+    # Its gun mounts (BOSS-58, MB-BREAKWATER-03): a mortar's single heavy barrel on each flank
+    # (the ram plate has no weapon), and the core's bow turret in its mouth (its fans, aimed shots
+    # and bursts) and the rotor on the plate grafted on its shell (its rings).
+    "mounts": [
+        gun_mount("mortar-left", "mortar-left", [-34, 12], 9.5, BREAKWATER_MORTAR),
+        gun_mount("mortar-right", "mortar-right", [34, 12], 9.5, BREAKWATER_MORTAR),
+        gun_mount(
+            "bow",
+            "core",
+            [0, -20],
+            4.4,
+            {"size": 6, "barrels": 3, "gap": 1.2, "bore": 1.2, "length": 4},
+        ),
+        gun_mount(
+            "shell-rotor",
+            "core",
+            [0, -2],
+            16.6,
+            {"size": 5, "barrels": 10, "layout": "ring", "bore": 0.9, "length": 3.5},
+        ),
+    ],
+    # Its parts' volleys, then the core's pattern per stage (MB-BREAKWATER-08). BOSS-58: the fan
+    # spaced as the bow turret's barrels (12°).
     "stages": stages(
         [
             volley.aimed("mortar-left", 2.4, 1, 0, bullet("orange", 110, 7), 1.2),
             volley.aimed("mortar-right", 2.4, 1, 0, bullet("orange", 110, 7), 2.4),
         ],
         [
-            [volley.fan("core", 3, 3, 16, RED, 1.6)],
+            [volley.fan("core", 3, 3, 12, RED, 1.6)],
             [volley.aimed("core", 2.4, 3, 12, RED, 0.6)],
             [volley.burst("core", 2.2, 4, 0.15, RED, 0.6)],
             [volley.ring("core", 1.7, 10, 9, RED, 0.4)],
         ],
     ),
 })
+
+# The Dust Devil's blade pods' rotors, a barrel each way along the ring (MB-DUST-DEVIL-03).
+DUST_DEVIL_ROTOR = {"size": 3.5, "barrels": 2, "layout": "ring", "bore": 1, "length": 6}
 
 # 1-3: a gyro gunship; three blade pods on its turning ring fire spirals and shield the core
 # (MB-DUST-DEVIL-07).
@@ -152,28 +188,29 @@ _DUST_DEVIL = record({
     "sway": {"amplitude": 60, "period": 9},
     "bob": {"amplitude": 10, "period": 3},
     "spinRate": 0.7,
-    # Its guns' muzzles (MB-DUST-DEVIL-03).
-    "guns": {
-        "core": {"gun": [[0, 0, 10]]},
-        "blade-1": {
-            "gun": [
-                [16.8, -38.6, 0.3],
-                [-16.8, -40, 0.3],
-            ],
-        },
-        "blade-2": {
-            "gun": [
-                [25, 33.8, 0.3],
-                [43, 5.5, 0.3],
-            ],
-        },
-        "blade-3": {
-            "gun": [
-                [-41.8, 4.8, 0.3],
-                [-26.2, 34.5, 0.3],
-            ],
-        },
-    },
+    "guns": {},
+    # Its gun mounts (BOSS-58, MB-DUST-DEVIL-03): a two-barrelled rotor on each blade pod, its
+    # barrels along the ring (it fires both ways along it, turning with it), and the core's stacked
+    # guns on its hub: the rotor (its rings) under the turret (its aimed shots and bursts).
+    "mounts": [
+        gun_mount("blade-1", "blade-1", [0, -40], 5, merge(DUST_DEVIL_ROTOR, {"restDeg": 90})),
+        gun_mount("blade-2", "blade-2", [34.6, 20], 5, merge(DUST_DEVIL_ROTOR, {"restDeg": -30})),
+        gun_mount("blade-3", "blade-3", [-34.6, 20], 5, merge(DUST_DEVIL_ROTOR, {"restDeg": 30})),
+        gun_mount(
+            "hub-turret",
+            "core",
+            [0, 0],
+            9.9,
+            {"size": 3.5, "barrels": 3, "gap": 0.8, "bore": 0.8, "length": 5},
+        ),
+        gun_mount(
+            "hub-rotor",
+            "core",
+            [0, 0],
+            7.7,
+            {"size": 4.4, "barrels": 12, "layout": "ring", "bore": 0.6, "length": 2.5},
+        ),
+    ],
     # Its parts' volleys, then the core's pattern per stage (MB-DUST-DEVIL-08).
     "stages": stages(
         [
@@ -256,13 +293,32 @@ _SCORPION = record({
     "stopFraction": 0.74,
     "sway": {"amplitude": 60, "period": 7.5},
     "bob": {"amplitude": 8, "period": 3.2},
-    "guns": {
-        "core": {"gun": [[0, -26, 2]]},
-        "claw-left": {"gun": [[-38.8, -41.3, 5.5]]},
-        "claw-right": {"gun": [[39.3, -38.8, 5.5]]},
-        "stinger": {"laser": [[0, -49.3, 8.9]]},
-    },
-    # Its parts' volleys, then the core's pattern per stage (MB-SCORPION-09).
+    "guns": {},
+    # Its gun mounts (BOSS-58, MB-SCORPION-03, MB-SCORPION-08): a three-barrelled turret between
+    # each claw's pincers (going with its wrist), the stinger's laser at the bulb's tip, and the
+    # core's turret (its aimed shots) and rotor (its rings) on the head plate, either side of the
+    # tail arched over it.
+    "mounts": [
+        gun_mount("claw-left", "claw-left", [-41, -30], 4, SCORPION_CLAW),
+        gun_mount("claw-right", "claw-right", [41, -30], 4, SCORPION_CLAW),
+        laser_mount("stinger", "stinger", [0, -42], 9.6, {"size": 3, "bore": 1.2, "length": 6}),
+        gun_mount(
+            "head",
+            "core",
+            [-9, -11],
+            7,
+            {"size": 4.5, "barrels": 1, "bore": 1.4, "length": 7},
+        ),
+        gun_mount(
+            "head-rotor",
+            "core",
+            [11, -5],
+            6.2,
+            {"size": 4, "barrels": 8, "layout": "ring", "bore": 0.9, "length": 3.5},
+        ),
+    ],
+    # Its parts' volleys, then the core's pattern per stage (MB-SCORPION-09). BOSS-58: its rings
+    # are of 8, one bullet per barrel of its rotor, each stage's spinning or timed its own way.
     "stages": stages(
         [
             volley.aimed("claw-left", 2.2, 3, 10, BLUE, 1),
@@ -271,10 +327,10 @@ _SCORPION = record({
         ],
         [
             [volley.aimed("core", 3, 1, 0, PURPLE, 1.5)],
-            [volley.ring("core", 2.4, 6, 0, PURPLE, 0.8)],
+            [volley.ring("core", 2.4, 8, 0, PURPLE, 0.8)],
             [volley.ring("core", 2, 8, 10, PURPLE, 0.6)],
             [
-                volley.ring("core", 1.4, 12, 8, PURPLE, 0.4),
+                volley.ring("core", 1.4, 8, 8, PURPLE, 0.4),
                 volley.aimed("core", 2.4, 1, 0, BLUE, 1),
             ],
         ],
@@ -305,25 +361,43 @@ _SENTINEL = record({
     "sway": {"amplitude": 70, "period": 6.5},
     "bob": {"amplitude": 8, "period": 3},
     "launches": [{"from": "drone-bay", "kind": "hornets", "count": 2, "every": 5.5, "first": 3}],
-    # Its guns' muzzles (MB-SENTINEL-03).
-    "guns": {
-        "core": {"gun": twin(15, -12.5, 1)},
-        "gun-left": {"gun": twin(-40, -24.6, 7.1, 1.8), "turret": [-40, -8]},
-        "gun-right": {"gun": twin(40, -24.6, 7.1, 1.8), "turret": [40, -8]},
-    },
-    # Its parts' volleys, then the core's pattern per stage (MB-SENTINEL-08).
+    "guns": {},
+    # Its gun mounts (BOSS-58, MB-SENTINEL-03): a hull gun's twin-barrelled turret on each body's
+    # outer flank, and the core's two guns on the bodies' noses, clear of the thorax's plating and
+    # the racks under it: the fan turret (its fans) on the blue body, the rotor (its ring) on the
+    # red one. The drone bay launches its Hornets and has no gun.
+    "mounts": [
+        gun_mount("gun-left", "gun-left", [-40, -8], 4, SENTINEL_GUN),
+        gun_mount("gun-right", "gun-right", [40, -8], 4, SENTINEL_GUN),
+        gun_mount(
+            "fan",
+            "core",
+            [-30, -42],
+            5.1,
+            {"size": 5, "barrels": 7, "gap": 0.8, "bore": 0.9, "length": 8},
+        ),
+        gun_mount(
+            "rotor",
+            "core",
+            [30, -42],
+            5.1,
+            {"size": 5.5, "barrels": 14, "layout": "ring", "bore": 0.8, "length": 3},
+        ),
+    ],
+    # Its parts' volleys, then the core's pattern per stage (MB-SENTINEL-08). BOSS-58: its fans are
+    # 12° apart, the spacing of its fan turret's barrels.
     "stages": stages(
         [
             volley.aimed("gun-left", 1.7, 2, 8, BLUE, 0.8),
             volley.aimed("gun-right", 1.7, 2, 8, RED, 1.65),
         ],
         [
-            [volley.fan("core", 2.8, 3, 16, BLUE, 1.4)],
-            [volley.fan("core", 2.4, 5, 14, RED, 0.8)],
+            [volley.fan("core", 2.8, 3, 12, BLUE, 1.4)],
+            [volley.fan("core", 2.4, 5, 12, RED, 0.8)],
             [volley.fan("core", 2.2, 7, 12, BLUE, 0.6)],
             [
                 volley.ring("core", 1.3, 14, 7, RED, 0.4),
-                volley.fan("core", 2.6, 5, 14, BLUE, 1),
+                volley.fan("core", 2.6, 5, 12, BLUE, 1),
             ],
         ],
     ),
@@ -407,6 +481,17 @@ BREAKWATER = with_weapons(
             "shell",
             None,
             False,
+        ),
+        # The hatch over its shell rotor (BOSS-58): it bursts as the rotor comes into use, in its
+        # last stage, and the rotor rises out of it.
+        armour_region(
+            "rotor-hatch",
+            None,
+            [[7 * math.cos(k * math.pi / 4), -2 + 7 * math.sin(k * math.pi / 4)] for k in range(8)],
+            "ring",
+            None,
+            False,
+            "shell-rotor",
         ),
     ],
 )
