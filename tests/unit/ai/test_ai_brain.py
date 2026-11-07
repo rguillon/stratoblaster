@@ -4,9 +4,9 @@
 from pathlib import Path
 
 import torch
-from ai.brain import Batch, Brain, BrainShape, LearnStats, load_brain, save_brain
+from ai.brain import FORMAT, Batch, Brain, BrainShape, LearnStats, load_brain, save_brain
 from ai.game_env import MOVES, Action, EpisodeSetup, GameEnv
-from ai.observation import observe
+from ai.observation import CH, N_CHANNELS, observe
 
 SMALL = BrainShape(hidden=32, field_features=16, fovea_features=16, state_features=8)
 
@@ -79,3 +79,21 @@ def test_a_saved_brain_loads_with_its_weights_and_stats(tmp_path: Path) -> None:
     assert loaded_stats == stats
     for name, value in brain.state_dict().items():
         assert torch.equal(value, loaded.state_dict()[name])
+
+
+def test_a_brain_saved_before_the_last_channels_loads_blind_to_them(tmp_path: Path) -> None:
+    """D-270: the healing bonuses' channel, added last, starts unseen (zero weights)."""
+    brain = Brain(SMALL)
+    weights = {k: v.clone() for k, v in brain.state_dict().items()}
+    for name in ("field_net.0.weight", "fovea_net.0.weight"):
+        weights[name] = weights[name][:, : CH["bonus_heal"]]
+    path = tmp_path / "old.pt"
+    stats = {"updates": 1, "decisions": 0, "episodes": 0, "hours": 0.0, "history": []}
+    shape = {"hidden": 32, "field_features": 16, "fovea_features": 16, "state_features": 8}
+    torch.save({"format": FORMAT, "shape": shape, "weights": weights, "stats": stats}, path)
+    loaded, _ = load_brain(path)
+    for name in ("field_net.0.weight", "fovea_net.0.weight"):
+        widened = loaded.state_dict()[name]
+        assert widened.shape[1] == N_CHANNELS
+        assert torch.equal(widened[:, : CH["bonus_heal"]], weights[name])
+        assert not widened[:, CH["bonus_heal"] :].any()

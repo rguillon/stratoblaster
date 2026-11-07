@@ -9,7 +9,7 @@
   weapons, the level's progress, the boss fought and the level's difficulty.
 
 Each grid has the same channels (`CHANNELS`): enemies and boss pieces, their health, the three kinds
-of enemy shot (bullets, missiles, lasers, each with their direction of travel), the three kinds of
+of enemy shot (bullets, missiles, lasers, each with their direction of travel), the four kinds of
 bonus, the ship itself and where the ship cannot fly.
 """
 
@@ -40,6 +40,7 @@ CHANNELS: tuple[str, ...] = (
     "bonus_bomb",  # 13
     "ship",  # 14: the player's ship
     "wall",  # 15: where the ship cannot fly
+    "bonus_heal",  # 16: healing bonuses (D-270; last, so the brains before it load, see `brain.py`)
 )
 N_CHANNELS = len(CHANNELS)
 CH = {name: i for i, name in enumerate(CHANNELS)}
@@ -55,7 +56,12 @@ _WIDTH = float(GAME.playfield.width)
 _HEIGHT = float(GAME.playfield.height)
 _CELL_W = _WIDTH / FIELD_COLS
 _CELL_H = _HEIGHT / FIELD_ROWS
-_BONUS_CHANNELS = {"weapon": CH["bonus_weapon"], "life": CH["bonus_life"], "bomb": CH["bonus_bomb"]}
+_BONUS_CHANNELS = {
+    "weapon": CH["bonus_weapon"],
+    "life": CH["bonus_life"],
+    "bomb": CH["bonus_bomb"],
+    "heal": CH["bonus_heal"],
+}
 
 
 def _can_fly(x: float, y: float) -> bool:

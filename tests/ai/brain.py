@@ -226,13 +226,33 @@ def save_brain(brain: Brain, stats: LearnStats, path: Path = BRAIN_FILE) -> None
     tmp.replace(path)
 
 
+# The first layer of each grid encoder: its weights are (out, channels, 3, 3).
+_GRID_INPUTS = ("field_net.0.weight", "fovea_net.0.weight")
+
+
+def widen_inputs(weights: dict[str, Tensor]) -> None:
+    """Give a brain saved with fewer channels the channels added since, unseen (zero weights).
+
+    Channels are only ever added last (`CHANNELS`), so what it learned still reads the same:
+    it plays as before and learns what the new ones show.
+    """
+    for name in _GRID_INPUTS:
+        old = weights[name]
+        missing = N_CHANNELS - old.shape[1]
+        if missing > 0:
+            zeros = old.new_zeros(old.shape[0], missing, *old.shape[2:])
+            weights[name] = torch.cat([old, zeros], dim=1)
+
+
 def load_brain(path: Path = BRAIN_FILE) -> tuple[Brain, LearnStats]:
-    """Load a saved brain and its learning stats."""
+    """Load a saved brain and its learning stats (widened to the channels added since)."""
     saved = torch.load(path, map_location="cpu", weights_only=True)
     if saved.get("format") != FORMAT:
         msg = f"{path}: unknown brain format {saved.get('format')}"
         raise ValueError(msg)
     brain = Brain(BrainShape(**saved["shape"]))
-    brain.load_state_dict(saved["weights"])
+    weights = saved["weights"]
+    widen_inputs(weights)
+    brain.load_state_dict(weights)
     stats = LearnStats(**saved["stats"])
     return brain, stats

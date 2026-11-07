@@ -103,10 +103,11 @@ def test_bonuses_show_by_kind() -> None:
     env = _env()
     bonuses = env.run.bonuses
     assert bonuses is not None
-    for kind, x in (("weapon", 200), ("life", 500), ("bomb", 800)):
+    placed = (("weapon", 200), ("life", 500), ("bomb", 800), ("heal", 350))
+    for kind, x in placed:
         bonuses.place(kind, PlanePoint(x, 400))
     obs = observe(env)
-    for kind, x in (("weapon", 200), ("life", 500), ("bomb", 800)):
+    for kind, x in placed:
         row, col = _field_cell(x, 400)
         assert obs.field[CH["bonus_" + kind], row, col] == 1
 

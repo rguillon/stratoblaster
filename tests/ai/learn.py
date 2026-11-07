@@ -105,6 +105,16 @@ def advantages(
     return adv, adv + rollout.values
 
 
+def _fits(optimizer: dict[str, Any], brain: Brain) -> bool:
+    """Whether a saved Adam state is of parameters shaped as the brain's (in the same order)."""
+    shapes = [p.shape for p in brain.parameters()]
+    for index, state in optimizer["state"].items():
+        moment = state.get("exp_avg")
+        if moment is not None and (index >= len(shapes) or moment.shape != shapes[index]):
+            return False
+    return True
+
+
 class Learner:
     """The brain, its optimiser and the PPO update."""
 
@@ -112,7 +122,7 @@ class Learner:
         self.settings = settings
         self.device = torch.device(settings.device)
         if BRAIN_FILE.exists() and not fresh:
-            self.brain, self.stats = load_brain()
+            self.brain, self.stats = load_brain(BRAIN_FILE)
             print(f"Resuming the brain of {BRAIN_FILE} ({self.stats.updates} updates)")
         else:
             self.brain, self.stats = Brain(BrainShape()), LearnStats()
@@ -123,7 +133,10 @@ class Learner:
         )
         if TRAINER_FILE.exists() and not fresh and self.stats.updates > 0:
             saved = torch.load(TRAINER_FILE, map_location="cpu", weights_only=True)
-            self.optimizer.load_state_dict(saved["optimizer"])
+            if _fits(saved["optimizer"], self.brain):
+                self.optimizer.load_state_dict(saved["optimizer"])
+            else:  # a brain widened to new channels (`widen_inputs`): its moments start over
+                print("The optimiser's state is of a smaller brain: starting it over")
 
     def save(self) -> None:
         save_brain(self.brain, self.stats)

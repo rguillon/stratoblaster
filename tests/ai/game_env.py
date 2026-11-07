@@ -177,7 +177,7 @@ class RewardWeights:
     complete: float = 6.0
     bomb: float = 0.4  # per bomb set off
     bonus: dict[str, float] = field(
-        default_factory=lambda: {"weapon": 0.6, "life": 1.0, "bomb": 0.4}
+        default_factory=lambda: {"weapon": 0.6, "life": 1.0, "bomb": 0.4, "heal": 0.5}
     )
 
 

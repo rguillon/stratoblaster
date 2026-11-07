@@ -3,12 +3,13 @@
 
 import random  # noqa: TID251  # the curriculum draws from a `random.Random`
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import pytest
 import torch
 from ai import learn as learn_module
-from ai.brain import Brain, BrainShape
+from ai.brain import Brain, BrainShape, LearnStats, save_brain
 from ai.game_env import LEVEL_IDS, MAX_WEAPON_LEVEL, SHIP_IDS, WEAPON_IDS, EpisodeSetup
 from ai.game_env import level_seconds as seconds_of
 from ai.learn import CPUS, Learner, Settings, advantages
@@ -152,3 +153,30 @@ def test_a_sampled_rating_episode_plays_the_same_alone_or_with_others() -> None:
     alone = play_episodes(brain, [setup(5)], greedy=False)[0]
     together = play_episodes(brain, [setup(7), setup(5)], greedy=False)[1]
     assert alone == together
+
+
+def test_a_widened_brain_resumes_with_its_optimiser_started_over(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """D-270: the saved Adam moments of a brain with fewer channels no longer fit it."""
+    monkeypatch.setattr(learn_module, "BRAIN_FILE", tmp_path / "brain.pt")
+    monkeypatch.setattr(learn_module, "TRAINER_FILE", tmp_path / "trainer.pt")
+    brain = Brain(SMALL)
+    save_brain(brain, LearnStats(updates=1), tmp_path / "brain.pt")
+
+    def trainer(model: torch.nn.Module) -> dict[str, Any]:
+        optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+        sum(p.sum() for p in model.parameters()).backward()
+        optimizer.step()
+        return optimizer.state_dict()
+
+    torch.save({"optimizer": trainer(Brain(SMALL))}, tmp_path / "trainer.pt")
+    learner = Learner(Settings(chunk=4, minibatches=2, epochs=1), fresh=False)
+    assert learner.optimizer.state_dict()["state"]
+    narrow = Brain(SMALL)
+    first = narrow.field_net[0]
+    first.weight = torch.nn.Parameter(first.weight[:, :-1].detach().clone())
+    torch.save({"optimizer": trainer(narrow)}, tmp_path / "trainer.pt")
+    learner = Learner(Settings(chunk=4, minibatches=2, epochs=1), fresh=False)
+    assert not learner.optimizer.state_dict()["state"]
+    assert "starting it over" in capsys.readouterr().out

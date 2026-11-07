@@ -1483,3 +1483,24 @@
   starts with them, the `?ai` page with 3 lives, 3 bombs and the bullet at level 1. Ratings made
   before were with level 3 weapons.
 - **Status:** Proposed
+
+### D-270 — Healing bonuses take the place of three weapon bonuses in four
+- **Date:** 2026-11-07
+- **Requirements:** none (requested by the human: a healing bonus that gives back 20 % of the
+  player's health, replacing 75 % of the weapon bonuses). It adds a kind to GAME-BONUS-01 and a
+  sound to AUD-SFX-01 (`specs/gameplay/bonuses.md` and `specs/audio/sfx.md` still list three kinds
+  and 29 sounds: for the owner to update).
+- **Decision:** `BonusRules.heal` (`HealRules`: `share` 0.75, `health` 0.2, `BONUS_RULES.heal`).
+  Each weapon bonus that drops is a healing one instead with a draw of its own (`create_rng(seed +
+  3)`), so which enemies drop a bonus, and the life and bomb draws, stay as before. Picked up, it
+  gives back 20 % of the ship's full health, up to full (`PlayerHull.heal`); at full health it
+  gives nothing (no points, unlike GAME-BONUS-10's life and bomb). Boss parts' weapon drops are
+  split the same way. Its badge is a cross in a rim, in the pickups' violet (`BONUS_LOOK.heal`,
+  `build_heal_badge`); its sound, `heal-bonus`, is the life bonus's chime pitched up a fourth
+  (`CREDITS.md`). The AI sees it in a 17th channel, `bonus_heal`, added last: a brain saved before
+  loads with zero weights for it (`widen_inputs`) and plays as it did; `make learn` then starts its
+  optimiser's moments over. Picking one up rewards it 0.5.
+- **Consequences:** about a quarter as many weapon levels a level (about 2 in 1-1 to 6 in 1-5,
+  were 8 to 23): the weapons level up much more slowly, the ship lasts longer. Ratings made before
+  are out of date.
+- **Status:** Proposed
