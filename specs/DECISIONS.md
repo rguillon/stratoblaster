@@ -1326,3 +1326,36 @@
 - **Lint:** `tests/ai/*` may `print` (T201), read the clock (TID251) and use `random` (S311): it is
   a command-line tool, not the deterministic simulation those rules protect.
 - **Status:** Proposed
+
+### D-264 — The AI player learns on an NVIDIA GPU, with every CPU core playing
+- **Date:** 2026-11-07
+- **Requirements:** none (requested by the human: make `make learn` faster on a server with an
+  RTX 2060 and 64 CPU threads); ENG-05 (the CUDA build of torch).
+- **Context:** on a CPU the learner's backward pass is the bottleneck (D-263): a third of the cores
+  play, the learner has the rest. With a GPU the learner is fast, so many more cores can play; a
+  round of 60 workers is then over a gigabyte of observations, too much to pickle through pipes.
+- **Decision:** torch leaves the `dev` group for two groups that cannot be installed together:
+  `ai-cpu` (a default group, the CPU-only wheels: `make check`, `make tests` and CI unchanged) and
+  `ai-cuda` (the CUDA 12.6 wheels, torch 2.14.1: the newest torch with CUDA 12 wheels; any driver
+  >= 525, Turing GPUs included; torch 2.15 has CUDA 13.2 wheels only). `make learn AI_TORCH=cuda`
+  installs and uses it (`make rate` too). `ai.learn --device auto` (the default) learns on the GPU
+  when torch sees one, with every core but two playing 8 episodes each, rounds of 64 decisions and
+  3 epochs a round. The workers write their rounds into two rollout buffers in shared memory
+  (`/dev/shm` files mapped by every process, in turn: one is played into while the learner learns
+  from the other) and send back only the episodes' summaries; the weights are pickled once a
+  round for all of them. The minibatches are a share of the round (12 an epoch), not a fixed size.
+  `make rate` plays fewer episodes side by side when there are many cores, so none is idle.
+- **Measured** (`glouton`: 2 x Xeon E5-2697A v4, 32 cores / 64 threads, RTX 2060): about 11,000
+  decisions a second (2,800 with the CPU build on the same machine, 600 on an 8-core laptop). The
+  playing is then the bottleneck: a worker alone plays 680 decisions a second, 180 with the 62
+  others (the game's simulation is 52 % of it, the observation 25 %, the network 13 %); the GPU is
+  about a third busy, so it goes over each round 3 times instead of 2 at no cost. More episodes
+  per worker (16) or fewer workers (31) were no faster.
+- **Alternatives considered:** a central inference server on the GPU for the workers (the network
+  is only 13 % of a worker's time); half-precision training (the learner already waits for the
+  workers); CUDA 13.2 wheels (they need a driver >= 580 and give nothing more here).
+- **Consequences:** on the GPU machine `uv run` without the group (as `make tests` does) switches
+  torch back to the CPU build, and `make learn AI_TORCH=cuda` back again (a re-install of a few
+  seconds from uv's cache); the lock file holds both builds. Faster still means a faster game
+  simulation (`src/core/`), which is the game's code, not the AI's.
+- **Status:** Proposed

@@ -81,10 +81,12 @@ class Settings:
 
         On a CPU, the learner's backward pass is the bottleneck: a third of the cores play, the
         rest learn. With a GPU, the learner is fast and playing is the bottleneck: every core but
-        two plays, each with 8 episodes (a batch through the network) and rounds of 64 decisions.
+        two plays, each with 8 episodes (a batch through the network) and rounds of 64 decisions,
+        and the learner goes over each round 3 times instead of 2 in the time the next one is
+        played (on an RTX 2060 with 64 cores: 11,000 decisions a second either way).
         """
         if device == "cuda":
-            return Settings(workers=max(1, CPUS - 2), envs=8, steps=64, device=device)
+            return Settings(workers=max(1, CPUS - 2), envs=8, steps=64, epochs=3, device=device)
         return Settings(device=device)
 
 
