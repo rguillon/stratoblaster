@@ -94,6 +94,11 @@ class Decision:
         self.switch = switch
         self.value = value
 
+    def row(self, index: int) -> "Decision":
+        """Return the decision of one player of the batch (a batch of one)."""
+        part = slice(index, index + 1)
+        return Decision(self.move[part], self.bomb[part], self.switch[part], self.value[part])
+
     def distributions(self) -> tuple[Categorical, Categorical, Categorical]:
         return (
             Categorical(logits=self.move),

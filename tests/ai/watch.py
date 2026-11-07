@@ -168,10 +168,14 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--ship", choices=SHIP_IDS, help="with this ship (with --level)")
     parser.add_argument("--host", default="127.0.0.1", help="0.0.0.0: reachable from elsewhere")
     parser.add_argument("--port", type=int, default=5174)
-    parser.add_argument("--sample", action="store_true", help="sample moves instead of the best")
+    parser.add_argument(
+        "--greedy",
+        action="store_true",
+        help="the likeliest move only (default: moves drawn as the brain learned to play)",
+    )
     parser.add_argument("--brain", type=Path, default=BRAIN_FILE)
     args = parser.parse_args(argv)
-    serve(args.brain, args.level, args.ship, args.host, args.port, not args.sample)
+    serve(args.brain, args.level, args.ship, args.host, args.port, args.greedy)
 
 
 if __name__ == "__main__":

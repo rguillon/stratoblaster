@@ -1415,3 +1415,25 @@
   The production bundle has none of it (the `ifdef e2e` block; `make build` checks
   `__GAME_TEST__` is absent).
 - **Status:** Proposed
+
+### D-267 — The AI player draws its moves (not the likeliest one) when watched and rating
+- **Date:** 2026-11-07
+- **Requirements:** none (the human saw the brain hold the ship in the bottom-left corner, firing
+  missiles only, in `make serve-ai`).
+- **Context:** the brain (1.8 h of learning) is a policy: a probability over its 9 moves, still
+  wide (its first decision of 1-1: 60 % south-west, the rest spread). `serve-ai` and `make rate`
+  played its likeliest move only, which turned that into "hold south-west". Measured on 1-1, 1-4,
+  2-3, 3-1 and 4-2 (two seeds, missiles at level 3): camping in the corner reaches 71 % of the level
+  and completes none; random moves 83 %, 60 % completed; the brain's likeliest moves 100 %, 90 %
+  completed with 4.7 lives' worth of damage; its moves drawn 100 %, all completed, 2.2 lives'
+  worth. It sees and dodges; its likeliest move alone hides it.
+- **Decision:** `make serve-ai` and `make rate` draw the moves as the brain learned to play
+  (`--greedy` for the likeliest). A rating episode draws from a generator of its own, seeded by the
+  episode, so the ratings are the same however episodes are batched or how many cores there are.
+  Ratings made before (`data/ratings.json`) used the likeliest moves.
+- **Finding (for the game's balance):** the brain switches to the missiles and keeps them. With
+  random moves (no aiming), at level 3 on the same levels with three seeds: bullets reach 36 % of
+  the level (50 kills, none completed), the laser 33 % (29 kills, none), the missiles 81 % (242
+  kills, 60 % completed). Homing missiles need no aiming; whether they are too strong is the owner's
+  call (GAME-WPN).
+- **Status:** Proposed

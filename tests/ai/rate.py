@@ -54,7 +54,10 @@ class RatingSettings:
     episodes: int = 8
     ship: str = "balanced"
     weapon_level: int = 3
-    greedy: bool = True
+    # Moves drawn from the brain's choices, as it learned to play (seeded: the ratings repeat).
+    # Always taking its likeliest move plays worse: a brain still learning spreads its choices, and
+    # the likeliest alone can be "hold one direction" (D-267).
+    greedy: bool = False
     seed: int = 1000
 
 
@@ -109,15 +112,17 @@ def play_episodes(brain: Brain, setups: list[EpisodeSetup], greedy: bool) -> lis
     """Play episodes side by side with `brain` (one batch through the network), each to its end."""
     envs = [GameEnv(setup) for setup in setups]
     memory = brain.initial_memory(len(envs))
-    generator = torch.Generator().manual_seed(setups[0].seed if setups else 0)
+    # One generator per episode, seeded by it: its moves are the same whatever it is played with.
+    generators = [torch.Generator().manual_seed(setup.seed) for setup in setups]
     playing = list(range(len(envs)))
     with torch.no_grad():
         while playing:
             batch = Batch.of([observe(envs[i]) for i in playing])
             decision, new_memory = brain(batch, memory[playing])
             memory[playing] = new_memory
-            actions = decision.sample(greedy, generator).tolist()
-            for i, (move, bomb, switch) in zip(playing, actions, strict=True):
+            for row, i in enumerate(playing):
+                one = decision.row(row)
+                move, bomb, switch = one.sample(greedy, generators[i])[0].tolist()
                 envs[i].step(Action(move, bomb == 1, switch == 1))
             playing = [i for i in playing if not envs[i].done]
     return [_result(env) for env in envs]
@@ -253,11 +258,15 @@ def main(argv: list[str] | None = None) -> None:
         default=RatingSettings.weapon_level,
     )
     parser.add_argument("--levels", nargs="*", choices=LEVEL_IDS, default=list(LEVEL_IDS))
-    parser.add_argument("--sample", action="store_true", help="sample moves instead of the best")
+    parser.add_argument(
+        "--greedy",
+        action="store_true",
+        help="the likeliest move only (default: moves drawn as the brain learned to play)",
+    )
     parser.add_argument("--workers", type=int, default=os.cpu_count() or 1)
     parser.add_argument("--brain", type=Path, default=BRAIN_FILE)
     args = parser.parse_args(argv)
-    settings = RatingSettings(args.episodes, args.ship, args.weapon_level, not args.sample)
+    settings = RatingSettings(args.episodes, args.ship, args.weapon_level, args.greedy)
     rate(settings, args.levels, args.workers, args.brain)
 
 

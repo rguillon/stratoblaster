@@ -179,7 +179,7 @@ rate:
 # Watch the brain play the real game in your own browser: a server of the e2e build (D-266) on
 # SERVE_AI_PORT, where the game runs in real time and asks the brain for its moves. Start a level
 # from the menus, or `make serve-ai LEVEL=2-3` (and SHIP=heavy). WATCH_ARGS: more options
-# (`--host 0.0.0.0` to open it from another machine, `--sample`).
+# (`--host 0.0.0.0` to open it from another machine, `--greedy`).
 SERVE_AI_PORT ?= 5174
 serve-ai: e2e-build
 	$(AI_RUN) ai.watch --port $(SERVE_AI_PORT) $(if $(LEVEL),--level $(LEVEL),) $(if $(SHIP),--ship $(SHIP),) $(WATCH_ARGS)

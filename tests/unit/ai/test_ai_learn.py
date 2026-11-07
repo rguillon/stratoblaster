@@ -17,6 +17,7 @@ from ai.rate import (
     RatingSettings,
     group_size,
     play_episode,
+    play_episodes,
     rate_level,
     setups,
 )
@@ -132,3 +133,18 @@ def test_rating_groups_leave_no_worker_idle() -> None:
     assert group_size(160, 8) == 4
     assert group_size(160, 64) == 3
     assert group_size(10, 64) == 1
+
+
+def test_a_sampled_rating_episode_plays_the_same_alone_or_with_others() -> None:
+    """Its moves are drawn from its own seeded generator: ratings repeat on any machine."""
+    assert RatingSettings().greedy is False  # moves drawn, as the brain learned to play
+    torch.manual_seed(0)
+    brain = Brain(SMALL)
+    seconds = seconds_of("1-1")
+
+    def setup(seed: int) -> EpisodeSetup:
+        return EpisodeSetup("1-1", seed=seed, start_time=seconds - 20, extra_seconds=0)
+
+    alone = play_episodes(brain, [setup(5)], greedy=False)[0]
+    together = play_episodes(brain, [setup(7), setup(5)], greedy=False)[1]
+    assert alone == together
