@@ -1583,7 +1583,12 @@
   what the episodes see then (`next_*` arrays of the rollout buffer). The learner sends the server
   the weights before each round, as it did to the workers; the learner and the server take a core
   each (workers: the CPU threads less 3). On a CPU only, the workers still decide themselves.
+  The server draws the actions and their log-probabilities without building PyTorch's
+  distributions (`Decision.sample_with_log_prob`), gathers what the episodes see into pinned
+  memory (one copy each to the GPU), and brings what it decided back in one copy: its first
+  version spent 8 ms a batch on that and held glouton at the same 10,000 decisions a second.
 - **Consequences:** the same decisions as the brain would make, step by step (a unit test replays
   them). On the laptop (8 threads, the server on the CPU) 1,884 decisions a second against 1,639.
-  On glouton's GPU: to measure.
+  On glouton's GPU, the server alone answers batches of 30 questions (120 episodes) in 3.2 ms
+  (was 7.7): about 38,000 decisions a second, more than the workers can play.
 - **Status:** Proposed

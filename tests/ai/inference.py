@@ -24,6 +24,7 @@ import numpy as np
 import torch
 
 from ai.brain import Batch, Brain, BrainShape
+from ai.observation import FIELD_COLS, FIELD_ROWS, FOVEA_SIZE, N_CHANNELS, N_STATE
 from ai.rollout import Next, Rollout, RolloutBuffer
 
 
@@ -49,6 +50,19 @@ class Server:
         self.generator.manual_seed(seed)
         self.out: Rollout | None = None
         self.after: Next | None = None
+        # Where the batches are gathered: pinned, so they reach the GPU fast (big enough for all).
+        pin = self.device.type == "cuda"
+        self._staging = {
+            "field": torch.empty(
+                (episodes, N_CHANNELS, FIELD_ROWS, FIELD_COLS), dtype=torch.float16
+            ),
+            "fovea": torch.empty(
+                (episodes, N_CHANNELS, FOVEA_SIZE, FOVEA_SIZE), dtype=torch.float16
+            ),
+            "state": torch.empty((episodes, N_STATE), dtype=torch.float32),
+        }
+        if pin:
+            self._staging = {name: t.pin_memory() for name, t in self._staging.items()}
 
     def start_round(self, weights: dict[str, Any], out: Rollout, after: Next) -> None:
         """Play the next round with `weights`, into `out` and `after`."""
@@ -57,11 +71,15 @@ class Server:
         self.after = after
 
     def answer(self, questions: list[Question]) -> None:
-        """Decide for every episode asked about, in one batch, and answer each question."""
+        """Decide for every episode asked about, in one batch, and answer each question.
+
+        What they see is gathered into memory pinned for the GPU and copied in one go each; what
+        was decided comes back in one copy.
+        """
         out, after = self.out, self.after
         assert out is not None  # a round has started
         assert after is not None
-        fields, foveas, states, starts, rows = [], [], [], [], []
+        fields, foveas, states, starts, rows, playing = [], [], [], [], [], []
         for q in questions:
             source: Any = after if q.t < 0 else out
             part: Any = slice(q.lo, q.hi) if q.t < 0 else (q.t, slice(q.lo, q.hi))
@@ -70,37 +88,39 @@ class Server:
             states.append(source.state[part])
             starts.append(source.starts[part])
             rows.append(np.arange(q.lo, q.hi))
+            playing.append(np.full(q.hi - q.lo, q.t >= 0))
+        count = sum(q.hi - q.lo for q in questions)
+        staged = self._staging
+        for name, parts in (("field", fields), ("fovea", foveas), ("state", states)):
+            np.concatenate(parts, out=staged[name].numpy()[:count])
         dev = self.device
-        index = torch.as_tensor(np.concatenate(rows), device=dev)
-        batch = Batch(
-            torch.as_tensor(np.concatenate(fields)).to(dev),
-            torch.as_tensor(np.concatenate(foveas)).to(dev),
-            torch.as_tensor(np.concatenate(states)).to(dev),
-        )
-        keep = torch.as_tensor(~np.concatenate(starts), dtype=torch.float32, device=dev)
+        moved = {name: staged[name][:count].to(dev, non_blocking=True) for name in staged}
+        index = torch.as_tensor(np.concatenate(rows)).to(dev, non_blocking=True)
+        keep = torch.as_tensor(~np.concatenate(starts), dtype=torch.float32).to(dev)
+        playing_rows = torch.as_tensor(np.concatenate(playing)).to(dev)
         memory = self.memory[index] * keep.unsqueeze(-1)
         with torch.no_grad():
+            batch = Batch(moved["field"], moved["fovea"], moved["state"])
             decision, new_memory = self.brain(batch, memory)
-            actions = decision.sample(greedy=False, generator=self.generator)
-            log_probs = decision.log_prob(actions)
-        playing = torch.as_tensor([q.t >= 0 for q in questions for _ in range(q.hi - q.lo)])
-        playing = playing.to(dev)
-        self.memory[index[playing]] = new_memory[playing]
-        got = {
-            "actions": actions.cpu().numpy(),
-            "log_probs": log_probs.cpu().numpy(),
-            "values": decision.value.cpu().numpy(),
-            "memories": memory.cpu().numpy(),
-        }
+            actions, log_probs = decision.sample_with_log_prob(self.generator)
+            self.memory[index[playing_rows]] = new_memory[playing_rows]
+            packed = (
+                torch
+                .cat([actions.float(), log_probs[:, None], decision.value[:, None], memory], dim=1)
+                .cpu()
+                .numpy()
+            )
         first = 0
         for q in questions:
-            span = slice(first, first + q.hi - q.lo)
-            first = span.stop
+            got = packed[first : first + q.hi - q.lo]
+            first += q.hi - q.lo
             if q.t < 0:
-                out.last_values[q.lo : q.hi] = got["values"][span]
+                out.last_values[q.lo : q.hi] = got[:, 4]
                 continue
-            for name in ("actions", "log_probs", "values", "memories"):
-                getattr(out, name)[q.t, q.lo : q.hi] = got[name][span]
+            out.actions[q.t, q.lo : q.hi] = got[:, :3]
+            out.log_probs[q.t, q.lo : q.hi] = got[:, 3]
+            out.values[q.t, q.lo : q.hi] = got[:, 4]
+            out.memories[q.t, q.lo : q.hi] = got[:, 5:]
         for q in questions:
             q.conn.send_bytes(b"")
 

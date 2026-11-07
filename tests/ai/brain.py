@@ -125,6 +125,24 @@ class Decision:
         move, bomb, switch = self.distributions()
         return move.entropy() + 0.5 * (bomb.entropy() + switch.entropy())
 
+    def sample_with_log_prob(
+        self, generator: torch.Generator | None = None
+    ) -> tuple[Tensor, Tensor]:
+        """Draw actions (N, 3) and return them with their log-probability (N).
+
+        As `sample` then `log_prob`, without building the distributions: the inference server
+        does it for every batch (D-274).
+        """
+        picks, total = [], None
+        for logits in (self.move, self.bomb, self.switch):
+            log_p = torch.log_softmax(logits, -1)
+            pick = torch.multinomial(log_p.exp(), 1, generator=generator)
+            chosen = log_p.gather(-1, pick).squeeze(-1)
+            picks.append(pick.squeeze(-1))
+            total = chosen if total is None else total + chosen
+        assert total is not None
+        return torch.stack(picks, dim=-1), total
+
     def sample(self, greedy: bool, generator: torch.Generator | None = None) -> Tensor:
         """Actions (N, 3), the likeliest ones when `greedy`."""
         if greedy:
