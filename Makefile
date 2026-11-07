@@ -176,9 +176,10 @@ learn:
 rate:
 	$(AI_RUN) ai.rate $(RATE_ARGS)
 
-# Watch the brain play the real game in a Chromium window (the e2e build, stepped in real time):
-# start a level from the menus, or `make serve-ai LEVEL=2-3` (and SHIP=heavy). WATCH_ARGS: more
-# options (`--speed 0.5`, `--sample`).
+# Watch the brain play the real game in your own browser: a server of the e2e build (D-266) on
+# SERVE_AI_PORT, where the game runs in real time and asks the brain for its moves. Start a level
+# from the menus, or `make serve-ai LEVEL=2-3` (and SHIP=heavy). WATCH_ARGS: more options
+# (`--host 0.0.0.0` to open it from another machine, `--sample`).
+SERVE_AI_PORT ?= 5174
 serve-ai: e2e-build
-	uv run playwright install chromium
-	$(AI_RUN) ai.watch $(if $(LEVEL),--level $(LEVEL),) $(if $(SHIP),--ship $(SHIP),) $(WATCH_ARGS)
+	$(AI_RUN) ai.watch --port $(SERVE_AI_PORT) $(if $(LEVEL),--level $(LEVEL),) $(if $(SHIP),--ship $(SHIP),) $(WATCH_ARGS)

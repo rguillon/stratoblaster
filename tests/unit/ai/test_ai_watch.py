@@ -1,12 +1,24 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `tests/ai/watch.py`: the brain at the controls of the browser game."""
 
+import json
+import threading
+from http.client import HTTPConnection
 from typing import Any
 
 from ai.brain import Brain, BrainShape
 from ai.game_env import MOVES, Action, EpisodeSetup, GameEnv
 from ai.observation import observe, observe_scene, scene_of
-from ai.watch import BOMB_KEY, FIRE_KEY, MOVE_KEYS, SWITCH_KEY, Player, _url
+from ai.watch import (
+    AI_PATH,
+    BOMB_KEY,
+    FIRE_KEY,
+    MOVE_KEYS,
+    SWITCH_KEY,
+    Player,
+    make_server,
+    page_query,
+)
 
 SMALL = BrainShape(hidden=32, field_features=16, fovea_features=16, state_features=8)
 DIRECTIONS = {"ArrowUp": (0, 1), "ArrowDown": (0, -1), "ArrowLeft": (-1, 0), "ArrowRight": (1, 0)}
@@ -65,7 +77,33 @@ def test_its_memory_starts_over_with_each_attempt() -> None:
     assert not (player.memory == remembered).all()
 
 
-def test_the_url_starts_a_level_only_when_asked() -> None:
-    assert _url(8000, None, None) == "http://127.0.0.1:8000/"
-    assert _url(8000, "2-3", None) == "http://127.0.0.1:8000/?level=2-3"
-    assert _url(8000, "2-3", "heavy") == "http://127.0.0.1:8000/?level=2-3&ship=heavy"
+def test_the_game_is_asked_for_with_ai_and_the_level_only_when_given() -> None:
+    assert page_query(None, None) == "?ai=1"
+    assert page_query(None, "heavy") == "?ai=1"
+    assert page_query("2-3", None) == "?ai=1&level=2-3"
+    assert page_query("2-3", "heavy") == "?ai=1&level=2-3&ship=heavy"
+
+
+def test_the_server_sends_the_game_on_with_ai_and_answers_with_the_keys() -> None:
+    server = make_server(Player(Brain(SMALL), greedy=True), "?ai=1", "127.0.0.1", 0)
+    threading.Thread(target=server.serve_forever, daemon=True).start()
+    try:
+        connection = HTTPConnection("127.0.0.1", server.server_address[1], timeout=10)
+        connection.request("GET", "/")
+        reply = connection.getresponse()
+        reply.read()
+        assert reply.status == 302
+        assert reply.getheader("Location") == "/index.html?ai=1"
+        reading = _reading(GameEnv(EpisodeSetup("1-1")))
+        connection.request("POST", AI_PATH, json.dumps(reading).encode())
+        reply = connection.getresponse()
+        keys = json.loads(reply.read())
+        assert reply.status == 200
+        assert FIRE_KEY in keys
+        connection.request("POST", "/elsewhere", b"{}")
+        reply = connection.getresponse()
+        reply.read()
+        assert reply.status == 404
+    finally:
+        server.shutdown()
+        server.server_close()

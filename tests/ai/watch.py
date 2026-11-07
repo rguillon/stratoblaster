@@ -1,29 +1,26 @@
 # Copyright (c) 2026 Renaud Guillon
-"""`make serve-ai`: watch the brain play the real game, in a browser window.
+"""`make serve-ai`: watch the brain play the real game, in your own browser.
 
-It serves the e2e build of the game (`dist-e2e/`, with its test API), opens it in a Chromium
-window and runs the game at 60 frames a second (the e2e build only moves when stepped). Choose a
-ship and a level in the menus as usual (or give `--level`): while a level is played, the brain
-plays it. Every 4 frames (as it learned) it reads what is on the playfield
-(`__GAME_TEST__.getScene()`), chooses a move in Python, and presses the game's keys: the arrows,
-Space (held: fire), R (a bomb), E (the next weapon). The menus, the pause and the "Level complete"
-or "Game over" panels are yours. Closing the window or Ctrl-C stops it.
+A local server (no browser of its own: open its address in any browser) serves the e2e build of
+the game (`dist-e2e/`) with `?ai` in its address: the game then runs in real time, and while a
+level is played (not paused, not over) it posts what is on the playfield to `POST /ai` about 15
+times a second (`src/debug/remote_player.py`, D-266). The brain answers here, in Python, with the
+keys to hold: the arrows, Space (fire), R (a bomb), E (the next weapon). Choose a ship and a level
+in the menus as usual (or give `--level`); the menus and the panels are yours. Ctrl-C stops it.
 
-    uv run python -m ai.watch [--level 2-3] [--ship heavy] [--speed 0.5]
+    uv run python -m ai.watch [--level 2-3] [--ship heavy] [--port 5174]
 """
 
 import argparse
-import contextlib
+import json
 import threading
-import time
 from functools import partial
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
+from urllib.parse import urlencode
 
 import torch
-from playwright.sync_api import Error as PlaywrightError
-from playwright.sync_api import Page, sync_playwright
 
 from ai import REPO_ROOT
 from ai.brain import BRAIN_FILE, Batch, Brain, load_brain
@@ -31,8 +28,7 @@ from ai.game_env import LEVEL_IDS, SHIP_IDS, level_difficulty
 from ai.observation import Scene, observe_scene
 
 DIST = REPO_ROOT / "dist-e2e"
-FRAMES_PER_DECISION = 4
-FRAME_SECONDS = 1 / 60
+AI_PATH = "/ai"
 # Seconds past a level's length the brain learned an episode may last (`EpisodeSetup`).
 EXTRA_SECONDS = 240.0
 # The keys of each move (`MOVES`: still, N, NE, E, SE, S, SW, W, NW).
@@ -50,37 +46,6 @@ MOVE_KEYS: tuple[frozenset[str], ...] = (
 FIRE_KEY = "Space"
 BOMB_KEY = "KeyR"
 SWITCH_KEY = "KeyE"
-# What the page gives at each decision: the level played and its scene, or null in the menus,
-# while it loads, while it is paused, and once it is over.
-_READ = """() => {
-    const api = window.__GAME_TEST__;
-    const state = api.getState();
-    const game = state.game;
-    if (!game || state.paused || (game.phase !== 'playing' && game.phase !== 'clearing')) {
-        return null;
-    }
-    return {level: game.levelId, attempt: state.attempt, time: game.time,
-            duration: game.duration, scene: api.getScene()};
-}"""
-
-
-class Keys:
-    """The game keys the brain holds down, pressed and let go through the page."""
-
-    def __init__(self, page: Page) -> None:
-        self._page = page
-        self._down: set[str] = set()
-
-    def hold(self, keys: set[str]) -> None:
-        """Hold exactly `keys` down."""
-        for key in sorted(self._down - keys):
-            self._page.keyboard.up(key)
-        for key in sorted(keys - self._down):
-            self._page.keyboard.down(key)
-        self._down = set(keys)
-
-    def release(self) -> None:
-        self.hold(set())
 
 
 class Player:
@@ -116,35 +81,62 @@ class Player:
         return keys
 
 
-def _serve(directory: Path) -> ThreadingHTTPServer:
-    """Serve `directory` on a free local port, in the background."""
-
-    class Quiet(SimpleHTTPRequestHandler):
-        def log_message(self, *_args: Any) -> None:
-            pass
-
-    server = ThreadingHTTPServer(("127.0.0.1", 0), partial(Quiet, directory=str(directory)))
-    threading.Thread(target=server.serve_forever, daemon=True).start()
-    return server
-
-
-def _url(port: int, level: str | None, ship: str | None) -> str:
-    url = f"http://127.0.0.1:{port}/"
+def page_query(level: str | None, ship: str | None) -> str:
+    """Return the query of the game's address: `ai` (D-266), and the level to start, if any."""
+    query: dict[str, str] = {"ai": "1"}
     if level is not None:
-        url += f"?level={level}" + (f"&ship={ship}" if ship else "")
-    return url
+        query["level"] = level
+        if ship is not None:
+            query["ship"] = ship
+    return "?" + urlencode(query)
 
 
-def watch(
-    brain_path: Path,
-    level: str | None,
-    ship: str | None,
-    speed: float,
-    greedy: bool,
-    headless: bool = False,
-    draw_every: int = 1,
+class _Handler(SimpleHTTPRequestHandler):
+    """The game's files, `/` sent on to the game with `?ai`, and the brain's answers."""
+
+    player: Player
+    query: str
+    lock: threading.Lock
+
+    def log_message(self, *_args: Any) -> None:
+        pass
+
+    def do_GET(self) -> None:  # the name http.server calls
+        if self.path in ("/", "/index.html"):
+            self.send_response(302)
+            self.send_header("Location", "/index.html" + self.query)
+            self.end_headers()
+            return
+        super().do_GET()
+
+    def do_POST(self) -> None:  # the name http.server calls
+        if self.path != AI_PATH:
+            self.send_error(404)
+            return
+        length = int(self.headers.get("Content-Length", "0"))
+        reading = json.loads(self.rfile.read(length) or b"null")
+        with self.lock:  # one brain, one memory: one decision at a time
+            keys = sorted(self.player.keys(reading))
+        body = json.dumps(keys).encode()
+        self.send_response(200)
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+
+def make_server(player: Player, query: str, host: str, port: int) -> ThreadingHTTPServer:
+    """Return the server of the game and of the brain's answers (not started)."""
+    handler = type(
+        "Handler", (_Handler,), {"player": player, "query": query, "lock": threading.Lock()}
+    )
+    return ThreadingHTTPServer((host, port), partial(handler, directory=str(DIST)))
+
+
+def serve(
+    brain_path: Path, level: str | None, ship: str | None, host: str, port: int, greedy: bool
 ) -> None:
-    """Open the game and let the brain play its levels until the window is closed."""
+    """Serve the game and let the brain play its levels, until Ctrl-C."""
     if not (DIST / "index.html").exists():
         msg = f"No e2e build in {DIST}: run `make serve-ai` (it builds it)."
         raise SystemExit(msg)
@@ -154,88 +146,32 @@ def watch(
     torch.set_num_threads(2)
     brain, stats = load_brain(brain_path)
     brain.eval()
-    player = Player(brain, greedy)
-    server = _serve(DIST)
-    url = _url(server.server_address[1], level, ship)
+    server = make_server(Player(brain, greedy), page_query(level, ship), host, port)
+    shown = "localhost" if host in ("127.0.0.1", "0.0.0.0") else host  # noqa: S104
     print(
         f"The brain of {brain_path} ({stats.updates} updates, {stats.hours:.1f} h of learning)"
-        f" plays the levels you start at {url}. Close the window or Ctrl-C to stop."
-    )
-    with sync_playwright() as playwright:
-        browser = playwright.chromium.launch(
-            headless=headless,
-            args=["--autoplay-policy=no-user-gesture-required", "--window-size=1600,900"],
-        )
-        page = browser.new_page(no_viewport=True)
-        page.goto(url)
-        page.wait_for_function("() => window.__GAME_TEST__ !== undefined")
-        keys = Keys(page)
-        try:
-            _run(page, player, keys, FRAME_SECONDS / speed, draw_every)
-        except (PlaywrightError, KeyboardInterrupt):
-            pass  # the window was closed, or Ctrl-C
-        finally:
-            server.shutdown()
-            # After Ctrl-C the browser's driver (in the same process group) is gone already.
-            with contextlib.suppress(Exception):
-                browser.close()
-
-
-def _run(page: Page, player: Player, keys: Keys, frame_seconds: float, draw_every: int) -> None:
-    """Step the game in real time (or at the asked speed), the brain deciding every 4 frames.
-
-    One frame in `draw_every` is drawn (a frame drawn by software WebGL takes some 200 ms).
-    """
-    next_frame = time.monotonic()
-    frame = 0
-    while not page.is_closed():
-        if frame % FRAMES_PER_DECISION == 0:
-            reading = page.evaluate(_READ)
-            keys.hold(player.keys(reading))
-            if reading is not None and frame % 600 == 0:
-                _report(reading)
-        draw = frame % draw_every == 0
-        page.evaluate("draw => window.__GAME_TEST__.step(1, draw)", draw)
-        frame += 1
-        next_frame += frame_seconds
-        wait = next_frame - time.monotonic()
-        if wait > 0:
-            time.sleep(wait)
-        else:
-            next_frame = time.monotonic()  # slower than real time: go on from now
-
-
-def _report(reading: dict[str, Any]) -> None:
-    scene = reading["scene"]
-    hull = scene["hull"]
-    lives = f", {hull[2]:g} lives, health {hull[0]:.0f}" if hull is not None else ""
-    progress, length = scene["track"]
-    print(
-        f"  {reading['level']} at {reading['time']:.0f} s: {progress / length:.0%} through"
-        f"{lives}, {len(scene['targets'])} targets, {len(scene['bullets'])} bullets",
+        f" plays the levels you start at http://{shown}:{server.server_address[1]}/"
+        " (Ctrl-C to stop).",
         flush=True,
     )
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        pass
+    finally:
+        server.server_close()
 
 
 def main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(description="Watch the brain play the game in a browser.")
+    parser = argparse.ArgumentParser(description="Serve the game for the brain to play it.")
     parser.add_argument("--level", choices=LEVEL_IDS, help="start this level (else: the menus)")
     parser.add_argument("--ship", choices=SHIP_IDS, help="with this ship (with --level)")
-    parser.add_argument("--speed", type=float, default=1.0, help="game speed (1: real time)")
+    parser.add_argument("--host", default="127.0.0.1", help="0.0.0.0: reachable from elsewhere")
+    parser.add_argument("--port", type=int, default=5174)
     parser.add_argument("--sample", action="store_true", help="sample moves instead of the best")
     parser.add_argument("--brain", type=Path, default=BRAIN_FILE)
-    parser.add_argument("--headless", action="store_true", help="no window (to check it runs)")
-    parser.add_argument("--draw-every", type=int, default=1, help="draw one frame in N")
     args = parser.parse_args(argv)
-    watch(
-        args.brain,
-        args.level,
-        args.ship,
-        args.speed,
-        not args.sample,
-        args.headless,
-        max(1, args.draw_every),
-    )
+    serve(args.brain, args.level, args.ship, args.host, args.port, not args.sample)
 
 
 if __name__ == "__main__":

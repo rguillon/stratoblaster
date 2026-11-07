@@ -104,6 +104,7 @@ ignore = [  "COM812",   # cause incompatibility with the formatter
 "src/app/saved_settings.py" = ["ARG001"]
 "src/app/saved_supplies.py" = ["ARG001"]
 "src/app/saved_weapons.py" = ["ARG001"]
+"src/debug/remote_player.py" = ["ARG001"]
 "src/game/view/audio/game_audio.py" = ["ARG001"]
 "src/game/view/reactor_flame.py" = ["ARG001"]
 "src/game/view/readability_view.py" = ["ARG001"]

@@ -1387,4 +1387,31 @@
   comes from the JavaScript simulation, so the brain plays the very game a player plays.
 - **Spec follow-up (owner's to edit):** DEV-API-01 lists five test API functions, now six
   (`getScene`); ENG-37's public targets lack `learn`, `rate` and `serve-ai`.
+- **Status:** Superseded in part by D-266 (the server and the in-page player replace the
+  Chromium window driven by Playwright; `getScene()` and the shared `play_scene` stay)
+
+### D-266 — `make serve-ai` serves the game; the page asks the brain for its keys
+- **Date:** 2026-11-07
+- **Requirements:** none (requested by the human: no Chromium window of its own, it is slow in
+  WSL; open the game in any browser); ENG-52 (the e2e build only).
+- **Context:** D-265 stepped the game from Python through Playwright, so it needed a Chromium the
+  script launched, which draws with software WebGL under WSL (some 200 ms a frame).
+- **Decision:** `make serve-ai` starts a local HTTP server (`tests/ai/watch.py`, port 5174,
+  `SERVE_AI_PORT`) of the e2e build, which sends `/` on to the game with `?ai` (and `level` and
+  `ship` when given). With `?ai` (`ai_mode`, `app/debug_options.py`) the e2e build runs as the
+  production game does (its own render loop, full render scale, shaders compiled ahead) with its
+  test API on, and `debug/remote_player.py` posts the level played (its id, attempt, time,
+  duration and `play_scene`) to `POST /ai` about every 4 frames (an interval of 4/60 s), one
+  question at a time. The server's brain answers with the key codes to hold, which go to the
+  level's controls (`controls.key`, as the keyboard's do); a held key is sent down again at each
+  answer (no new press: the controls count presses on their transitions), so a lost focus does not
+  leave it let go. Out of a level, while paused or over, or without an answer, every key is let go.
+- **Alternatives considered:** keeping Playwright with the host's Chrome (`channel`), which WSL
+  cannot reach; a WebSocket (one more protocol for 15 small questions a second); synchronous
+  requests (they would stall the page's frame).
+- **Consequences:** the brain decides on the wall clock (every 4/60 s), not every 4 frames, so at
+  a frame rate under 60 it decides more often per frame than it learned; an answer reaches the
+  game one frame or so after its question. `--host 0.0.0.0` serves it to other machines (glouton).
+  The production bundle has none of it (the `ifdef e2e` block; `make build` checks
+  `__GAME_TEST__` is absent).
 - **Status:** Proposed
