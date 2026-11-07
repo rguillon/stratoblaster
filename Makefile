@@ -162,9 +162,13 @@ serve: build
 # `learn` trains the brain for LEARN_MINUTES (Ctrl-C stops early and saves), resuming the one in
 # data/ if any; `rate` rates the difficulty of each level with it (data/ratings.json). Extra
 # options in LEARN_ARGS / RATE_ARGS (`uv run python -m ai.learn --help`, `... ai.rate --help`).
+# AI_TORCH=cuda installs and uses the CUDA build of torch (an NVIDIA GPU learns, every CPU core
+# plays); the default, cpu, the CPU-only build.
 LEARN_MINUTES ?= 60
+AI_TORCH ?= cpu
+AI_RUN := PYTHONPATH=tests uv run --no-default-groups --group dev --group ai-$(AI_TORCH) python -m
 learn:
-	PYTHONPATH=tests uv run python -m ai.learn --minutes $(LEARN_MINUTES) $(LEARN_ARGS)
+	$(AI_RUN) ai.learn --minutes $(LEARN_MINUTES) $(LEARN_ARGS)
 
 rate:
-	PYTHONPATH=tests uv run python -m ai.rate $(RATE_ARGS)
+	$(AI_RUN) ai.rate $(RATE_ARGS)

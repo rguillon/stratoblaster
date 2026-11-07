@@ -213,7 +213,7 @@ def save_brain(brain: Brain, stats: LearnStats, path: Path = BRAIN_FILE) -> None
         {
             "format": FORMAT,
             "shape": asdict(brain.shape),
-            "weights": brain.state_dict(),
+            "weights": {k: v.cpu() for k, v in brain.state_dict().items()},
             "stats": asdict(stats),
         },
         tmp,

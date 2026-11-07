@@ -24,9 +24,12 @@ dev = [
     "pytest-cov>=7.0.0",
     "ty>=0.0.95",
     "deptry>=0.25.1",
-    "torch>=2.15.0",
     "numpy>=2.5.4",
 ]
+# torch for the AI player (`tests/ai/`), in one of two builds (D-264): `ai-cpu` (installed by
+# default, CPU-only wheels) or `ai-cuda` (NVIDIA GPUs, CUDA 12.6: `make learn AI_TORCH=cuda`).
+ai-cpu = ["torch>=2.14"]
+ai-cuda = ["torch>=2.14"]
 
 # Ruff lints (ENG-12) and formats (ENG-13); `make check` checks the format without writing.
 [tool.ruff]
@@ -360,12 +363,25 @@ source_modules = [
 ]
 forbidden_modules = ["game"]
 
-# The AI player (`tests/ai/`, `make learn`, `make rate`) trains on the CPU: torch comes from the
-# CPU-only wheel index on Linux (no CUDA libraries pulled into dev installs or CI).
+# The AI player's torch (`tests/ai/`, D-263, D-264): the CPU-only wheels by default (no CUDA
+# libraries in dev installs or CI), the CUDA 12.6 ones in the `ai-cuda` group (any driver >= 525,
+# GPUs from the GTX 10 / RTX 20 series on). The two groups cannot be installed together.
+[tool.uv]
+default-groups = ["dev", "ai-cpu"]
+conflicts = [[{ group = "ai-cpu" }, { group = "ai-cuda" }]]
+
 [tool.uv.sources]
-torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+torch = [
+    { index = "pytorch-cpu", group = "ai-cpu", marker = "sys_platform == 'linux'" },
+    { index = "pytorch-cu126", group = "ai-cuda", marker = "sys_platform == 'linux'" },
+]
 
 [[tool.uv.index]]
 name = "pytorch-cpu"
 url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
 explicit = true

@@ -11,9 +11,16 @@ from ai import learn as learn_module
 from ai.brain import Brain, BrainShape
 from ai.game_env import LEVEL_IDS, MAX_WEAPON_LEVEL, SHIP_IDS, WEAPON_IDS, EpisodeSetup
 from ai.game_env import level_seconds as seconds_of
-from ai.learn import Learner, Settings, advantages
-from ai.rate import EpisodeResult, RatingSettings, play_episode, rate_level, setups
-from ai.rollout import Curriculum, Player, _empty
+from ai.learn import CPUS, Learner, Settings, advantages
+from ai.rate import (
+    EpisodeResult,
+    RatingSettings,
+    group_size,
+    play_episode,
+    rate_level,
+    setups,
+)
+from ai.rollout import Curriculum, Player, RolloutBuffer, _empty
 
 SMALL = BrainShape(hidden=32, field_features=16, fovea_features=16, state_features=8)
 
@@ -49,11 +56,12 @@ def test_a_player_plays_a_round_and_the_learner_learns_from_it(
     monkeypatch.setattr(learn_module, "TRAINER_FILE", tmp_path / "trainer.pt")
     torch.manual_seed(0)
     player = Player(SMALL, 2, 1, Curriculum(levels=("1-1",)))
-    learner = Learner(Settings(chunk=4, minibatch_chunks=2, epochs=1), fresh=True)
+    learner = Learner(Settings(chunk=4, minibatches=2, epochs=1), fresh=True)
     learner.brain = Brain(SMALL)
     learner.optimizer = torch.optim.Adam(learner.brain.parameters(), lr=1e-3)
     before = {k: v.clone() for k, v in learner.brain.state_dict().items()}
-    rollout = player.play(learner.weights(), 8)
+    rollout = _empty(8, 2, SMALL.hidden)
+    player.play(learner.weights(), rollout)
     assert rollout.field.shape[:2] == (8, 2)
     assert rollout.starts[0].all()  # the first step of each episode starts its memory over
     assert np.isfinite(rollout.values).all()
@@ -94,3 +102,33 @@ def test_a_rating_episode_is_played_to_its_end() -> None:
     assert result.outcome in ("timeout", "complete", "over")
     assert 0.0 <= result.health_left <= 1.0
     assert 0.0 <= result.difficulty <= 1.0
+
+
+def test_a_rollout_buffer_is_shared_by_whoever_maps_its_file(tmp_path: Path) -> None:
+    path = tmp_path / "rollout.bin"
+    learner_side = RolloutBuffer(path, 4, 6, 8, create=True)
+    worker_side = RolloutBuffer(path, 4, 6, 8, create=False).rollout(2, 4)  # episodes 2 and 3
+    worker_side.rewards[1] = [5.0, 6.0]
+    worker_side.field[0, 1, 3, 2, 5] = 1.0
+    worker_side.last_values[:] = 7.0
+    whole = learner_side.rollout()
+    assert whole.rewards.shape == (4, 6)
+    assert whole.rewards[1].tolist() == [0, 0, 5, 6, 0, 0]
+    assert whole.field[0, 3, 3, 2, 5] == 1
+    assert whole.field.sum() == 1
+    assert whole.last_values.tolist() == [0, 0, 7, 7, 0, 0]
+
+
+def test_with_a_gpu_nearly_every_core_plays() -> None:
+    gpu = Settings.for_device("cuda")
+    assert gpu.device == "cuda"
+    assert gpu.workers == max(1, CPUS - 2)
+    cpu = Settings.for_device("cpu")
+    assert cpu.device == "cpu"
+    assert cpu.workers == max(1, CPUS // 3)
+
+
+def test_rating_groups_leave_no_worker_idle() -> None:
+    assert group_size(160, 8) == 4
+    assert group_size(160, 64) == 3
+    assert group_size(10, 64) == 1

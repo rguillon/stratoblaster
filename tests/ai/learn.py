@@ -6,17 +6,25 @@ improves the brain from what they played, and sends them the new weights. It goe
 `--minutes`, or until Ctrl-C, saving the brain under `data/` every few updates and at the end.
 It starts from the saved brain when there is one (`--fresh` to start over).
 
-    uv run python -m ai.learn --minutes 120
+With an NVIDIA GPU (and the CUDA build of torch: `make learn AI_TORCH=cuda`) the learner runs on
+the GPU and nearly every CPU core plays; on a CPU only, a third of the cores play, the rest learn.
+
+    uv run python -m ai.learn --minutes 120 [--device cuda]
 """
 
 import argparse
 import csv
+import math
 import multiprocessing as mp
 import os
+import pickle
 import random
+import shutil
 import signal
+import tempfile
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 import numpy as np
@@ -35,7 +43,7 @@ from ai.brain import (
     load_brain,
     save_brain,
 )
-from ai.rollout import Curriculum, EpisodeReport, Rollout, worker_main
+from ai.rollout import Curriculum, EpisodeReport, Rollout, RolloutBuffer, worker_main
 
 if TYPE_CHECKING:
     from multiprocessing.connection import Connection
@@ -44,19 +52,20 @@ LOG_FILE = DATA / "learn-log.csv"
 HISTORY_KEPT = 2000
 
 
+CPUS = os.cpu_count() or 2
+
+
 @dataclass
 class Settings:
-    """How the brain learns."""
+    """How the brain learns (see `for_device` for the defaults of a machine)."""
 
-    # The workers play a round faster than the learner learns from it (the network's backward pass
-    # is the costly part on a CPU): a third of the cores play, the rest learn.
-    workers: int = max(1, (os.cpu_count() or 3) // 3)
+    workers: int = max(1, CPUS // 3)
     envs: int = 12  # episodes played side by side by each worker
     steps: int = 128  # decisions per episode per round
     chunk: int = 32  # decisions replayed in a row through the memory
     epochs: int = 2
-    # 256 decisions a minibatch: about 24 steps of the optimiser an update.
-    minibatch_chunks: int = 8
+    minibatches: int = 12  # per epoch: about 24 steps of the optimiser an update
+    device: str = "cpu"
     learning_rate: float = 2.5e-4
     gamma: float = 0.995
     lam: float = 0.95
@@ -65,6 +74,18 @@ class Settings:
     entropy_coef: float = 0.01
     max_grad_norm: float = 0.5
     save_every: int = 10
+
+    @staticmethod
+    def for_device(device: str) -> "Settings":
+        """Return the defaults for this machine, learning on `device` ("cpu" or "cuda").
+
+        On a CPU, the learner's backward pass is the bottleneck: a third of the cores play, the
+        rest learn. With a GPU, the learner is fast and playing is the bottleneck: every core but
+        two plays, each with 8 episodes (a batch through the network) and rounds of 64 decisions.
+        """
+        if device == "cuda":
+            return Settings(workers=max(1, CPUS - 2), envs=8, steps=64, device=device)
+        return Settings(device=device)
 
 
 def advantages(
@@ -83,42 +104,19 @@ def advantages(
     return adv, adv + rollout.values
 
 
-def _join(rollouts: list[Rollout]) -> Rollout:
-    """Return the rollouts of every worker as one, their episodes side by side."""
-
-    def cat(name: str, axis: int = 1) -> Any:
-        return np.concatenate([getattr(r, name) for r in rollouts], axis=axis)
-
-    episodes: list[EpisodeReport] = []
-    for r in rollouts:
-        episodes.extend(r.episodes)
-    return Rollout(
-        cat("field"),
-        cat("fovea"),
-        cat("state"),
-        cat("actions"),
-        cat("log_probs"),
-        cat("values"),
-        cat("rewards"),
-        cat("dones"),
-        cat("starts"),
-        cat("memories"),
-        cat("last_values", 0),
-        episodes,
-    )
-
-
 class Learner:
     """The brain, its optimiser and the PPO update."""
 
     def __init__(self, settings: Settings, fresh: bool) -> None:
         self.settings = settings
+        self.device = torch.device(settings.device)
         if BRAIN_FILE.exists() and not fresh:
             self.brain, self.stats = load_brain()
             print(f"Resuming the brain of {BRAIN_FILE} ({self.stats.updates} updates)")
         else:
             self.brain, self.stats = Brain(BrainShape()), LearnStats()
             print("Starting a new brain")
+        self.brain.to(self.device)
         self.optimizer = torch.optim.Adam(
             self.brain.parameters(), lr=settings.learning_rate, eps=1e-5
         )
@@ -133,7 +131,29 @@ class Learner:
         tmp.replace(TRAINER_FILE)
 
     def weights(self) -> dict[str, Any]:
-        return {k: v.detach().clone() for k, v in self.brain.state_dict().items()}
+        return {k: v.detach().to("cpu", copy=True) for k, v in self.brain.state_dict().items()}
+
+    def _on_device(self, data: Rollout, adv: Any, returns: Any) -> dict[str, torch.Tensor]:
+        """Return the round as tensors on the learner's device (moved once per update).
+
+        On a CPU the shared buffer is used in place, without a copy.
+        """
+        arrays = {
+            name: getattr(data, name)
+            for name in (
+                "field",
+                "fovea",
+                "state",
+                "actions",
+                "log_probs",
+                "values",
+                "starts",
+                "memories",
+            )
+        }
+        arrays["adv"] = adv
+        arrays["returns"] = returns
+        return {k: torch.as_tensor(np.asarray(v)).to(self.device) for k, v in arrays.items()}
 
     def update(self, data: Rollout) -> dict[str, float]:
         """Improve the brain from a round of play (several epochs of minibatches of sequences)."""
@@ -142,25 +162,21 @@ class Learner:
         steps, envs = data.rewards.shape
         chunk = min(s.chunk, steps)
         chunks = [(k * chunk, e) for k in range(steps // chunk) for e in range(envs)]
-        t_field = torch.as_tensor(data.field)
-        t_fovea = torch.as_tensor(data.fovea)
-        t_state = torch.as_tensor(data.state)
-        t_actions = torch.as_tensor(data.actions)
-        t_logp = torch.as_tensor(data.log_probs)
-        t_values = torch.as_tensor(data.values)
-        t_adv = torch.as_tensor((adv - adv.mean()) / (adv.std() + 1e-8))
-        t_ret = torch.as_tensor(returns)
-        t_starts = torch.as_tensor(data.starts)
-        t_mem = torch.as_tensor(data.memories)
+        per_minibatch = max(1, math.ceil(len(chunks) / s.minibatches))
+        dev = self.device
+        t = self._on_device(data, (adv - adv.mean()) / (adv.std() + 1e-8), returns)
+        t_field, t_fovea, t_state = t["field"], t["fovea"], t["state"]
+        t_actions, t_logp, t_values = t["actions"], t["log_probs"], t["values"]
+        t_adv, t_ret, t_starts, t_mem = t["adv"], t["returns"], t["starts"], t["memories"]
         losses: dict[str, list[float]] = {"policy": [], "value": [], "entropy": [], "kl": []}
         self.brain.train()
         for _ in range(s.epochs):
             random.shuffle(chunks)
-            for i in range(0, len(chunks), s.minibatch_chunks):
-                picked = chunks[i : i + s.minibatch_chunks]
-                t0 = torch.tensor([c[0] for c in picked])
-                env = torch.tensor([c[1] for c in picked])
-                times = (t0.unsqueeze(0) + torch.arange(chunk).unsqueeze(1)).reshape(-1)
+            for i in range(0, len(chunks), per_minibatch):
+                picked = chunks[i : i + per_minibatch]
+                t0 = torch.tensor([c[0] for c in picked], device=dev)
+                env = torch.tensor([c[1] for c in picked], device=dev)
+                times = (t0.unsqueeze(0) + torch.arange(chunk, device=dev).unsqueeze(1)).reshape(-1)
                 envs_idx = env.repeat(chunk)
 
                 def take(
@@ -239,19 +255,37 @@ def _log(row: dict[str, float]) -> None:
         writer.writerow(row)
 
 
+def _shared_dir() -> Path:
+    """Return a new folder for the rollout buffers: in memory (`/dev/shm`) where there is one."""
+    shm = Path("/dev/shm")  # noqa: S108  # shared memory, made private by mkdtemp
+    base = shm if shm.is_dir() and os.access(shm, os.W_OK) else None
+    return Path(tempfile.mkdtemp(prefix="stratoblaster-ai-", dir=base))
+
+
 class Workers:
-    """The worker processes playing the game."""
+    """The worker processes playing the game, writing into two shared rollout buffers in turn."""
 
     def __init__(self, settings: Settings, shape: BrainShape, seed: int) -> None:
         ctx = mp.get_context("spawn")
         self.conns: list[Connection] = []
         self.procs: list[Any] = []
+        self.episodes: list[EpisodeReport] = []
+        self._dir = _shared_dir()
+        total = settings.workers * settings.envs
+        spec = (settings.steps, total, shape.hidden)
+        # Two buffers: the workers play into one while the learner learns from the other.
+        self.buffers = [
+            RolloutBuffer(self._dir / f"rollout-{i}.bin", *spec, create=True) for i in range(2)
+        ]
+        paths = [(buffer.path, spec) for buffer in self.buffers]
+        self._round = 0
         curriculum = Curriculum()
         for i in range(settings.workers):
             parent, child = ctx.Pipe()
+            envs = (i * settings.envs, (i + 1) * settings.envs)
             proc = ctx.Process(
                 target=worker_main,
-                args=(child, shape, settings.envs, seed * 1000 + i, curriculum),
+                args=(child, shape, envs, seed * 1000 + i, curriculum, paths),
                 daemon=True,
             )
             proc.start()
@@ -259,41 +293,52 @@ class Workers:
             self.conns.append(parent)
             self.procs.append(proc)
 
-    def start(self, weights: dict[str, Any], steps: int) -> None:
+    def start(self, weights: dict[str, Any]) -> None:
         """Have every worker play a round with `weights` (in the background)."""
+        payload = pickle.dumps((self._round % 2, weights))  # pickled once for every worker
         for conn in self.conns:
-            conn.send((weights, steps))
+            conn.send_bytes(payload)
 
-    def collect(self) -> list[Rollout]:
-        """Wait for the round every worker is playing."""
-        rollouts: list[Rollout] = []
+    def collect(self) -> Rollout:
+        """Wait for the round under way; return it (it stays valid until the next one starts)."""
+        episodes: list[EpisodeReport] = []
         for conn in self.conns:
             got = conn.recv()
             if isinstance(got, str):
                 msg = "A worker failed:\n" + got
                 raise RuntimeError(msg)  # noqa: TRY004  # a worker's traceback, not a type error
-            rollouts.append(got)
-        return rollouts
+            episodes.extend(got)
+        rollout = self.buffers[self._round % 2].rollout()
+        rollout.episodes = episodes
+        self._round += 1
+        return rollout
 
     def close(self) -> None:
+        stop = pickle.dumps(None)
         for conn in self.conns:
             try:
-                conn.send(None)
+                conn.send_bytes(stop)
             except (BrokenPipeError, OSError):
                 pass
         for proc in self.procs:
-            proc.join(timeout=5)
+            proc.join(timeout=10)
             if proc.is_alive():
                 proc.terminate()
+        shutil.rmtree(self._dir, ignore_errors=True)
 
 
 def learn(settings: Settings, minutes: float, fresh: bool, seed: int) -> None:
     """Learn for `minutes` (or until Ctrl-C), saving the brain as it goes."""
-    torch.set_num_threads(max(1, (os.cpu_count() or 2) - settings.workers))
+    if settings.device == "cuda":
+        torch.backends.cudnn.benchmark = True
+        torch.set_num_threads(2)
+    else:
+        torch.set_num_threads(max(1, CPUS - settings.workers))
     learner = Learner(settings, fresh)
     workers = Workers(settings, learner.brain.shape, seed + learner.stats.updates)
     print(
-        f"Learning for {minutes:g} min with {settings.workers} workers x {settings.envs}"
+        f"Learning on {settings.device} for {minutes:g} min with {settings.workers} workers x"
+        f" {settings.envs}"
         f" episodes ({settings.workers * settings.envs * settings.steps} decisions per update)."
         " Ctrl-C stops (and saves)."
     )
@@ -303,11 +348,11 @@ def learn(settings: Settings, minutes: float, fresh: bool, seed: int) -> None:
     try:
         # The workers play a round while the brain learns from the one before (one update late:
         # the clipped ratio of PPO allows for it).
-        workers.start(learner.weights(), settings.steps)
+        workers.start(learner.weights())
         while time.monotonic() - start < minutes * 60 and not stop.requested:
             t0 = time.monotonic()
-            data = _join(workers.collect())
-            workers.start(learner.weights(), settings.steps)
+            data = workers.collect()
+            workers.start(learner.weights())
             t1 = time.monotonic()
             losses = learner.update(data)
             t2 = time.monotonic()
@@ -382,14 +427,26 @@ def _print(row: dict[str, float]) -> None:
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="The brain learns to play the game.")
     parser.add_argument("--minutes", type=float, default=60.0, help="how long to learn for")
-    parser.add_argument("--workers", type=int, default=Settings.workers)
-    parser.add_argument("--envs", type=int, default=Settings.envs)
-    parser.add_argument("--steps", type=int, default=Settings.steps)
+    parser.add_argument(
+        "--device",
+        choices=("auto", "cpu", "cuda"),
+        default="auto",
+        help="where the learner runs (auto: the GPU if torch sees one)",
+    )
+    parser.add_argument("--workers", type=int, help="processes playing (default: per device)")
+    parser.add_argument("--envs", type=int, help="episodes each worker plays side by side")
+    parser.add_argument("--steps", type=int, help="decisions per episode per round")
     parser.add_argument("--fresh", action="store_true", help="start a new brain")
     parser.add_argument("--seed", type=int, default=1)
     args = parser.parse_args(argv)
-    settings = Settings(workers=args.workers, envs=args.envs, steps=args.steps)
-    learn(settings, args.minutes, args.fresh, args.seed)
+    device = args.device
+    if device == "auto":
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+    elif device == "cuda" and not torch.cuda.is_available():
+        parser.error("torch sees no CUDA GPU: is it the CUDA build? (`make learn AI_TORCH=cuda`)")
+    settings = Settings.for_device(device)
+    given = {k: getattr(args, k) for k in ("workers", "envs", "steps") if getattr(args, k)}
+    learn(replace(settings, **given), args.minutes, args.fresh, args.seed)
 
 
 if __name__ == "__main__":

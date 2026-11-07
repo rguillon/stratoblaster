@@ -128,8 +128,17 @@ def play_episode(brain: Brain, setup: EpisodeSetup, greedy: bool) -> EpisodeResu
     return play_episodes(brain, [setup], greedy)[0]
 
 
-# Episodes a rating worker plays side by side.
+# The most episodes a rating worker plays side by side (one batch through the network).
 GROUP = 4
+
+
+def group_size(episodes: int, workers: int) -> int:
+    """Return how many episodes to play side by side so every worker has some to play.
+
+    Batches play faster per episode, but with too few groups some workers have none.
+    """
+    return max(1, min(GROUP, -(-episodes // workers)))
+
 
 _brain: Brain | None = None
 
@@ -206,7 +215,8 @@ def rate(
         raise SystemExit(msg)
     _, stats = load_brain(path)
     every = setups(settings, levels)
-    jobs = [(every[i : i + GROUP], settings.greedy) for i in range(0, len(every), GROUP)]
+    size = group_size(len(every), workers)
+    jobs = [(every[i : i + size], settings.greedy) for i in range(0, len(every), size)]
     print(
         f"Rating {len(levels)} levels x {settings.episodes} episodes with the brain of {path}"
         f" ({stats.updates} updates, {stats.decisions / 1e6:.1f}M decisions,"
