@@ -1530,3 +1530,22 @@
   so they are learned late. Games last until the ship is lost: early reports can have no game
   ended yet.
 - **Status:** Proposed
+
+### D-272 — Faster learning: a cheaper view, and a little reward for staying alive
+- **Date:** 2026-11-07
+- **Requirements:** none (requested by the human: speed up the learning, by learning on the GPU
+  machine, a faster observation, and a reward for staying alive). Amends D-271's reward.
+- **Context:** a worker spent about 43 % of its time in the game, 32 % in the network and 20 %
+  building what the brain sees; within that, a third went to the walls of the fovea (the camera
+  framing worked out row by row) and most of the rest to drawing each shot in three channels.
+- **Decision:** the fovea's walls are worked out for every row at once
+  (`_Bounds.half_widths_at`, the same sums as `half_width_at`); each shot is placed once for its
+  three channels; an enemy's cells are worked out once for its body and its health. The
+  observation is the same, cell for cell (checked on 420 scenes of 7 levels), in about half the
+  time (156 to 83 µs on the laptop). The reward adds 0.0005 a decision played (a point of score
+  each, 15 a second), and charges 1 per bar of health lost and 1 per life lost (2,000 points
+  each): the brain learns sooner that it scores only while it survives. The best brain is still
+  chosen on the score alone.
+- **Consequences:** about 10 % more moves a second per worker. The values the brain expects
+  change again with the reward: its first minutes relearn them.
+- **Status:** Proposed

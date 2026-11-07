@@ -15,6 +15,9 @@ import math
 from dataclasses import dataclass, field, replace
 from typing import Any
 
+import numpy as np
+from numpy.typing import NDArray
+
 import ai  # noqa: F401  # puts src/ and the Transcrypt stubs on the path
 from config.game_controls import GAME_CONTROLS_CONFIG
 from config.game_play import GAME_PLAY_CONFIG
@@ -112,6 +115,13 @@ class _Bounds:
     def visible_half_width(self, y: float) -> float:
         return visible_half_width(self._framing, self._aspect, y)
 
+    def half_widths_at(self, ys: NDArray[np.float64]) -> NDArray[np.float64]:
+        """Return `half_width_at` of each of `ys` at once (the same sums, in the same order)."""
+        framing = self._framing
+        dy, dz = framing.direction[0], framing.direction[1]
+        depth = -framing.height * dy + (ys - framing.back) * dz
+        return depth * math.tan(framing.half_fov) * self._aspect - self._side
+
     def in_view(self, x: float, y: float) -> bool:
         """Whether a playfield point is on screen (GAME-SCREEN-04)."""
         height = GAME.playfield.height
@@ -171,13 +181,18 @@ class StepInfo:
 
 @dataclass
 class RewardWeights:
-    """The reward of a decision: the points scored over it (D-271).
+    """The reward of a decision: the points scored over it, and a little for staying alive (D-272).
 
-    The best score is what the brain learns for: it scores only while it survives, and more with
-    its weapons levelled up, so surviving and picking up bonuses pay through the points to come.
+    The best score is what the brain learns for (D-271), and what the best brain is chosen by;
+    `alive` and the charges for damage only teach it sooner that it scores only while it
+    survives. `alive` is worth a point a decision (15 a second of play); the health of a whole
+    bar lost costs as much as 2,000 points, a life 2,000 more.
     """
 
     score: float = 1.0 / 2000  # per point scored
+    alive: float = 0.0005  # per decision played
+    damage: float = 1.0  # per bar of health lost
+    life: float = 1.0  # per life lost
 
 
 class GameEnv:
@@ -376,7 +391,10 @@ class GameEnv:
         return self.reward(info), info
 
     def reward(self, info: StepInfo) -> float:
-        return self.weights.score * info.score
+        w = self.weights
+        reward = w.score * info.score + w.alive
+        reward -= w.damage * info.damage / self.max_health
+        return reward - w.life * info.lives_lost
 
 
 def weapon_levels_of(run: LevelRun) -> dict[str, float]:

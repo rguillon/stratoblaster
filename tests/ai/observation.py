@@ -114,18 +114,43 @@ class _Grid:
         vals = values[keep] if isinstance(values, np.ndarray) else values
         np.add.at(self.data[channel], (rows[keep], cols[keep]), vals)
 
+    def moving(self, channel: int, shots: "_Shots") -> None:
+        """Add shots in flight: 1 each in `channel`, their velocity in the two channels after it.
+
+        One `points` for the three channels: the cells are worked out once.
+        """
+        if shots.count == 0:
+            return
+        cols = np.floor((shots.x - self.left) / self.cell_w).astype(np.int64)
+        rows = np.floor((self.top - shots.y) / self.cell_h).astype(np.int64)
+        keep = (cols >= 0) & (cols < self.cols) & (rows >= 0) & (rows < self.rows)
+        if not keep.any():
+            return
+        rows, cols = rows[keep], cols[keep]
+        channels = np.arange(channel, channel + 3)[:, None]
+        values = shots.values[:, keep]
+        np.add.at(self.data, (channels, rows[None, :], cols[None, :]), values)
+
+    def cells(self, x: float, y: float, radius: float) -> tuple[slice, slice] | None:
+        """Return the rows and columns a disc overlaps, None when it is off the grid."""
+        c0 = max(0, math.floor((x - radius - self.left) / self.cell_w))
+        c1 = min(self.cols - 1, math.floor((x + radius - self.left) / self.cell_w))
+        r0 = max(0, math.floor((self.top - y - radius) / self.cell_h))
+        r1 = min(self.rows - 1, math.floor((self.top - y + radius) / self.cell_h))
+        if c0 > c1 or r0 > r1:
+            return None
+        return slice(r0, r1 + 1), slice(c0, c1 + 1)
+
+    def raise_to(self, channel: int, cells: tuple[slice, slice], value: float) -> None:
+        """Set `cells` of `channel` to at least `value`."""
+        part = self.data[channel, cells[0], cells[1]]
+        np.maximum(part, value, out=part)
+
     def disc(self, channel: int, x: float, y: float, radius: float, value: float) -> None:
         """Set the cells a disc overlaps to at least `value`."""
-        c0 = math.floor((x - radius - self.left) / self.cell_w)
-        c1 = math.floor((x + radius - self.left) / self.cell_w)
-        r0 = math.floor((self.top - y - radius) / self.cell_h)
-        r1 = math.floor((self.top - y + radius) / self.cell_h)
-        c0, c1 = max(0, c0), min(self.cols - 1, c1)
-        r0, r1 = max(0, r0), min(self.rows - 1, r1)
-        if c0 > c1 or r0 > r1:
-            return
-        cells = self.data[channel, r0 : r1 + 1, c0 : c1 + 1]
-        np.maximum(cells, value, out=cells)
+        cells = self.cells(x, y, radius)
+        if cells is not None:
+            self.raise_to(channel, cells, value)
 
 
 class Observation:
@@ -184,22 +209,21 @@ def scene_of(env: GameEnv) -> Scene:
     )
 
 
-Shot = tuple[float, float, float, float]
+class _Shots:
+    """Shots in flight ([x, y, heading, speed] each) as arrays: where, and what each adds.
 
+    `values`: (3, count): 1, then the velocity across and up in units of `SPEED_UNIT`.
+    """
 
-def _moving(shots: list[list[float]]) -> list[Shot]:
-    """[x, y, heading, speed] as (x, y, vx, vy)."""
-    return [(x, y, math.sin(h) * v, math.cos(h) * v) for x, y, h, v in shots]
-
-
-def _draw_moving(grid: _Grid, shots: list[Shot], channel: int) -> None:
-    if not shots:
-        return
-    arr = np.asarray(shots, dtype=np.float64)
-    xs, ys = arr[:, 0], arr[:, 1]
-    grid.points(channel, xs, ys)
-    grid.points(channel + 1, xs, ys, arr[:, 2] / SPEED_UNIT)
-    grid.points(channel + 2, xs, ys, arr[:, 3] / SPEED_UNIT)
+    def __init__(self, shots: list[list[float]]) -> None:
+        self.count = len(shots)
+        arr = np.asarray(shots, dtype=np.float64).reshape(-1, 4)
+        self.x = arr[:, 0]
+        self.y = arr[:, 1]
+        speed = arr[:, 3]
+        across = np.sin(arr[:, 2]) * speed / SPEED_UNIT
+        up = np.cos(arr[:, 2]) * speed / SPEED_UNIT
+        self.values = np.stack([np.ones(self.count), across, up])
 
 
 def _draw_lasers(grid: _Grid, lasers: list[list[Any]]) -> None:
@@ -211,12 +235,15 @@ def _draw_lasers(grid: _Grid, lasers: list[list[Any]]) -> None:
         grid.points(CH["laser_beam"] if firing else CH["laser_warning"], xs, ys)
 
 
-def _draw(grid: _Grid, data: dict[str, Any], moving: tuple[list[Shot], list[Shot]]) -> None:
+def _draw(grid: _Grid, data: dict[str, Any], moving: tuple[_Shots, _Shots]) -> None:
     for x, y, radius, health, full, boss in data["targets"]:
-        grid.disc(CH["boss"] if boss else CH["enemy"], x, y, radius, 1.0)
-        grid.disc(CH["health"], x, y, radius, max(0.0, min(1.0, health / full)) if full else 1.0)
-    _draw_moving(grid, moving[0], CH["bullet"])
-    _draw_moving(grid, moving[1], CH["missile"])
+        cells = grid.cells(x, y, radius)
+        if cells is not None:
+            grid.raise_to(CH["boss"] if boss else CH["enemy"], cells, 1.0)
+            share = max(0.0, min(1.0, health / full)) if full else 1.0
+            grid.raise_to(CH["health"], cells, share)
+    grid.moving(CH["bullet"], moving[0])
+    grid.moving(CH["missile"], moving[1])
     _draw_lasers(grid, data["lasers"])
     for x, y, kind in data["bonuses"]:
         channel = _BONUS_CHANNELS.get(kind)
@@ -226,16 +253,16 @@ def _draw(grid: _Grid, data: dict[str, Any], moving: tuple[list[Shot], list[Shot
     grid.disc(CH["ship"], ship[0], ship[1], 8.0, 1.0)
 
 
+_FOVEA_STEPS = np.arange(FOVEA_SIZE) + 0.5
+
+
 def _fovea_walls(grid: _Grid) -> None:
-    walls = grid.data[CH["wall"]]
-    for row in range(grid.rows):
-        y = grid.top - (row + 0.5) * grid.cell_h
-        if y < BOUNDS.min_y or y > BOUNDS.max_y:
-            walls[row, :] = 1.0
-            continue
-        half = BOUNDS.half_width_at(y)
-        xs = grid.left + (np.arange(grid.cols) + 0.5) * grid.cell_w
-        walls[row] = (np.abs(xs - BOUNDS.center_x) > half).astype(np.float32)
+    """Mark where the ship cannot fly: every row at once (`half_widths_at`)."""
+    ys = grid.top - _FOVEA_STEPS * grid.cell_h
+    inside = (ys >= BOUNDS.min_y) & (ys <= BOUNDS.max_y)
+    half = np.where(inside, BOUNDS.half_widths_at(ys), -1.0)
+    xs = grid.left + _FOVEA_STEPS * grid.cell_w
+    grid.data[CH["wall"]] = np.abs(xs - BOUNDS.center_x)[None, :] > half[:, None]
 
 
 def _state(scene: Scene) -> NDArray[np.float32]:
@@ -286,7 +313,7 @@ def observe_scene(scene: Scene) -> Observation:
     half = FOVEA_SIZE * FOVEA_CELL / 2
     field_grid = _Grid(field, 0.0, _HEIGHT, _CELL_W, _CELL_H)
     fovea_grid = _Grid(fovea, ship_x - half, ship_y + half, FOVEA_CELL, FOVEA_CELL)
-    moving = (_moving(data["bullets"]), _moving(data["missiles"]))
+    moving = (_Shots(data["bullets"]), _Shots(data["missiles"]))
     _draw(field_grid, data, moving)
     _draw(fovea_grid, data, moving)
     _fovea_walls(fovea_grid)

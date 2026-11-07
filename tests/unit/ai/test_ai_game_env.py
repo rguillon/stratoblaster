@@ -79,11 +79,15 @@ def test_the_episode_times_out_past_its_limit() -> None:
     assert env.time <= env.limit + 4 * STEP_SECONDS
 
 
-def test_d_271_the_reward_is_the_points_scored() -> None:
+def test_d_272_the_reward_is_the_points_scored_and_a_little_for_staying_alive() -> None:
     env = GameEnv(EpisodeSetup("1-1"))
-    assert env.reward(StepInfo(score=2000)) == pytest.approx(1.0)
-    hurt = StepInfo(damage=env.max_health, lives_lost=1, picked=["weapon"], outcome="over")
-    assert env.reward(hurt) == 0
+    w = env.weights
+    assert env.reward(StepInfo()) == pytest.approx(w.alive)
+    assert env.reward(StepInfo(score=2000)) == pytest.approx(1.0 + w.alive)
+    hurt = StepInfo(damage=env.max_health / 2, picked=["weapon"])
+    assert env.reward(hurt) == pytest.approx(w.alive - w.damage / 2)
+    lost = StepInfo(damage=env.max_health, lives_lost=1, outcome="over")
+    assert env.reward(lost) == pytest.approx(w.alive - w.damage - w.life)
 
 
 def _clear(env: GameEnv) -> StepInfo:
