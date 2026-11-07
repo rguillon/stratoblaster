@@ -24,6 +24,8 @@ dev = [
     "pytest-cov>=7.0.0",
     "ty>=0.0.95",
     "deptry>=0.25.1",
+    "torch>=2.15.0",
+    "numpy>=2.5.4",
 ]
 
 # Ruff lints (ENG-12) and formats (ENG-13); `make check` checks the format without writing.
@@ -79,6 +81,9 @@ ignore = [  "COM812",   # cause incompatibility with the formatter
               ]
 # The ENG-18 ban on `time` is for core/: the e2e helpers wait in real time.
 "tests/e2e/*" = ["TID251"]
+# The AI player's command-line tools (`make learn`, `make rate`) print their progress, time
+# themselves and draw their episodes at random: not core/'s deterministic simulation (ENG-18).
+"tests/ai/*" = ["T201", "TID251", "S311"]
 # Imports a module in a fresh interpreter (`sys.executable`, a fixed command).
 "tests/unit/core/systems/test_boss_fights.py" = ["S603"]
 # Babylon's own camelCase names (ENG-113).
@@ -354,3 +359,13 @@ source_modules = [
     "ui",
 ]
 forbidden_modules = ["game"]
+
+# The AI player (`tests/ai/`, `make learn`, `make rate`) trains on the CPU: torch comes from the
+# CPU-only wheel index on Linux (no CUDA libraries pulled into dev installs or CI).
+[tool.uv.sources]
+torch = [{ index = "pytorch-cpu", marker = "sys_platform == 'linux'" }]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true

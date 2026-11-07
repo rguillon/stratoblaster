@@ -68,6 +68,20 @@ Then open http://localhost:5173. `SERVE_PORT=8000 make serve` picks another port
 | `make build` | Fetches Babylon.js if needed, builds the game into `dist/`                   |
 | `make e2e`   | Builds the e2e game, then runs the end-to-end tests (Playwright, Chromium)  |
 | `make serve` | Builds the game, then serves `dist/` on http://localhost:5173 (`SERVE_PORT`) |
+| `make learn` | The AI player learns the game for `LEARN_MINUTES` (60); resumes `data/brain.pt` |
+| `make rate`  | The AI player rates each level's difficulty, in % (`data/ratings.json`)      |
+
+### The AI player
+
+[`tests/ai/`](tests/ai/) is a neural network (convolutional encoders, a GRU memory) that learns to
+play the game by reinforcement learning (PPO), in pure Python: it runs the game's own simulation in
+CPython as fast as the CPU goes, no browser. It sees the whole playfield and a close-up around the
+ship: the enemies and bosses, the bullets, missiles and lasers, and the weapon, life and bomb
+bonuses. `make learn` trains it (Ctrl-C stops and saves; `LEARN_ARGS=--fresh` starts over), and
+`data/learn-log.csv` logs each update. `make rate` then plays every level 8 times with the same
+loadout and rates it from 0 % (cleared without a scratch) to 100 % (lost at once); the ratings are
+relative to how well the brain plays. Options: `RATE_ARGS="--episodes 16 --weapon-level 2"`, see
+`PYTHONPATH=tests uv run python -m ai.rate --help`. Decision D-263 has the details.
 
 [`node/tests/`](node/tests/) keeps the TypeScript test suite of the game this port came from. Nothing
 runs it: it is the reference for the tests still to port.

@@ -1272,4 +1272,57 @@
   `dev-audio`) keep the two steps: picking an item there shows or plays it. The ship and level
   select hints say "tap to go".
 - **Consequences:** a mis-tap on a menu goes straight through (a locked level still only shakes).
+
+### D-263 — An AI player (`tests/ai/`) that learns the game and rates its levels; torch and numpy
+- **Date:** 2026-11-07
+- **Requirements:** none yet (requested by the human: `make learn`, `make rate`; the brain kept in
+  `data/`); ENG-05 (new dev dependencies); ENG-18 (the AI is not `core/`).
+- **Context:** the human wants a neural network that learns to play the game, then rates how hard
+  each level is (as a percentage), to tune the levels' difficulty with it. Pure Python, no
+  JavaScript, as fast as the CPU goes, all of it in a package under `tests/`.
+- **Decision:** the package `tests/ai/` runs the game's own simulation in CPython: `game_env.py`
+  builds a `LevelRun` as `app/game_play.py` does (same playfield, ship, weapons, bonuses, bombs,
+  hull, bosses; the camera framing for the flight bounds and what is on screen; no fly-in journey,
+  a 30 px muzzle offset instead of the one measured on the 3D model), steps it 4 fixed steps
+  (1/60 s) per decision (15 decisions a second), and wraps the wave scripts' plain dicts as
+  attribute records (the browser reads object literals as attributes). The brain sees two grids of
+  16 channels (the whole playfield in 24 x 32 cells, and a 21 x 21 fovea of 12 px cells around the
+  ship): enemies, boss pieces, their health, bullets / missiles (each with their velocity), laser
+  warning lines and beams, the weapon / life / bomb bonuses, the ship, and where it cannot fly; and
+  24 numbers (ship, health, lives, bombs, weapons, progress, boss, difficulty). The network
+  (`brain.py`, about 2.5 M weights): two small convolutional encoders and a state MLP, a GRU (its
+  memory), and heads for the move (9 directions), the bomb, the weapon switch, and the value; fire
+  is always held. It learns by recurrent PPO (`learn.py`): worker processes play 12 episodes each
+  while the learner updates from the previous round (one update late), sequences of 32 decisions
+  replayed through the memory. The curriculum draws the level, a start anywhere in it (60 %), the
+  weapons and their levels, lives, bombs and ship at random. The reward: progress, points, damage
+  dealt and bonuses picked up, minus damage taken, lives lost, bombs used and the game over; plus a
+  completed level. `make rate` plays each level 8 times (seeds 1000…) from its start with the same
+  loadout (Balanced ship, every weapon at level 3, 3 lives, 3 bombs), greedy, and rates an episode
+  `1 - (progress + health left) / 2`; a level's rating is the mean, in percent
+  (`data/ratings.json`). `data/brain.pt` holds the weights and the learning stats,
+  `data/brain.trainer.pt` the optimiser (to resume), `data/learn-log.csv` one line per update.
+- **Dependencies (ENG-05):** `torch` (BSD-3-Clause; the CPU-only wheel, from the PyTorch CPU index
+  on Linux so no CUDA libraries are installed; about 200 MB installed) for the network and its
+  training; `numpy` (BSD-3-Clause, about 40 MB) for the observation grids. Both in the `dev` group:
+  the game itself still has no Python run-time dependency.
+- **Alternatives considered:** driving the browser build through Playwright (real time, and
+  JavaScript); a numpy-only network (no automatic gradients for the GRU); a feed-forward network
+  with stacked frames instead of a memory (the human asked for memory); stable-baselines3 / sb3-
+  contrib's recurrent PPO (one more dependency, and its single-process loop wastes the cores).
+- **Consequences:** about 700 decisions a second on 8 CPU cores (2.5 M an hour; the learner's
+  backward pass is the bottleneck), so a competent brain takes hours to days of `make learn`; the
+  ratings are relative to the brain's skill (a better brain rates every level easier); levels with
+  enemies the CPython run had never met turned up two bugs of the browser game (see the next
+  bullet).
+- **Game bugs found (fixed):** the Harrier fired its missiles with its raw config record (keys
+  `turnRateDeg`, `homingSeconds`) instead of an `EnemyMissileSpec`, and the Lancer its laser with
+  its raw record (`warningSeconds`, `firingSeconds`) instead of an `EnemyLaserSpec`: `core/` read
+  `undefined` in the browser (a NaN turn rate for the missiles; a laser with no warning that never
+  ended). Both now build their spec as the Rocketeer, Sweeper and Scissor do; their unit tests
+  asserted the raw record and now assert the spec.
+- **Spec follow-up (owner's to edit):** ENG-37 lists the public make targets; `learn` and `rate`
+  are new public targets (in `README.md`) and are not in it yet.
+- **Lint:** `tests/ai/*` may `print` (T201), read the clock (TID251) and use `random` (S311): it is
+  a command-line tool, not the deterministic simulation those rules protect.
 - **Status:** Proposed

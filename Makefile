@@ -1,7 +1,8 @@
-# Six targets: setup, check, tests, build, e2e, serve. uv runs the Python tools (ENG-04); Transcrypt
-# compiles src/ to JavaScript and esbuild bundles it. The first target, `setup`, is the default.
+# Eight targets: setup, check, tests, build, e2e, serve, learn, rate. uv runs the Python tools
+# (ENG-04); Transcrypt compiles src/ to JavaScript and esbuild bundles it. The first target,
+# `setup`, is the default.
 
-.PHONY: setup check tests build e2e serve FORCE
+.PHONY: setup check tests build e2e serve learn rate FORCE
 
 # The git hooks, ENG-60.
 setup:
@@ -156,3 +157,14 @@ SERVE_PORT ?= 5173
 serve: build
 	@echo 'serving $(DIST)/ on http://localhost:$(SERVE_PORT) (Ctrl-C to stop)'
 	uv run python -m http.server $(SERVE_PORT) --directory $(DIST)
+
+# The AI player (tests/ai/): pure Python, it runs the game's simulation in CPython at full speed.
+# `learn` trains the brain for LEARN_MINUTES (Ctrl-C stops early and saves), resuming the one in
+# data/ if any; `rate` rates the difficulty of each level with it (data/ratings.json). Extra
+# options in LEARN_ARGS / RATE_ARGS (`uv run python -m ai.learn --help`, `... ai.rate --help`).
+LEARN_MINUTES ?= 60
+learn:
+	PYTHONPATH=tests uv run python -m ai.learn --minutes $(LEARN_MINUTES) $(LEARN_ARGS)
+
+rate:
+	PYTHONPATH=tests uv run python -m ai.rate $(RATE_ARGS)
