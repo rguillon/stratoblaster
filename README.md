@@ -78,9 +78,9 @@ Then open http://localhost:5173. `SERVE_PORT=8000 make serve` picks another port
 play the game by reinforcement learning (PPO), in pure Python: it runs the game's own simulation in
 CPython as fast as the CPU goes, no browser. It sees the whole playfield and a close-up around the
 ship: the enemies and bosses, the bullets, missiles and lasers, and the weapon, life, bomb and
-healing bonuses. `make learn` trains it: each game it plays starts at 1-1 with 3 lives and 3
-bombs and goes on to the next level with what it earned, until the ship is lost, and it learns to
-score the most (D-271). Every minute it says how its games went (score, levels reached); the brain
+healing bonuses. `make learn` trains it: each game it plays, with the balanced ship, starts at
+1-1 with 3 lives and 3 bombs and goes on to the next level with what it earned, until the ship is
+lost, and it learns to score the most (D-271). Every 10 s it says how its games went (score, levels reached); the brain
 whose games scored best on average is kept in `data/brain-best.pt`, and `data/learn-log.csv` logs
 each update. Ctrl-C stops and saves; `LEARN_ARGS=--fresh` starts over. `make rate` then plays
 every level 8 times with the same loadout and rates it from 0 % (cleared without a scratch) to

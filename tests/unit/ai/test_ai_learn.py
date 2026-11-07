@@ -18,6 +18,7 @@ from ai.learn import (
     LOG_COLUMNS,
     MIN_GAMES_FOR_BEST,
     Learner,
+    Reporter,
     Settings,
     _keep_if_best,
     _log,
@@ -52,7 +53,6 @@ def test_advantages_discount_the_rewards_and_stop_at_an_episode_end() -> None:
 def test_d_271_each_episode_is_a_campaign_from_the_first_level_afresh() -> None:
     rng = random.Random(3)  # noqa: S311  # not cryptography: episodes drawn at random
     curriculum = Curriculum()
-    ships = set()
     for _ in range(20):
         env = curriculum.draw(rng)
         setup = env.setup
@@ -61,8 +61,8 @@ def test_d_271_each_episode_is_a_campaign_from_the_first_level_afresh() -> None:
         assert (setup.weapon, setup.lives, setup.bombs) == (WEAPON_IDS[0], 3, 3)
         assert setup.start_time == 0
         assert setup.weapon_levels == dict.fromkeys(WEAPON_IDS, 1)
-        ships.add(setup.ship_id)
-    assert ships == set(SHIP_IDS)
+        assert setup.ship_id == "balanced"
+    assert "balanced" in SHIP_IDS
 
 
 def _game(score: float, cleared: int = 0, outcome: str = "over") -> EpisodeReport:
@@ -73,8 +73,8 @@ def _game(score: float, cleared: int = 0, outcome: str = "over") -> EpisodeRepor
 def test_d_271_the_report_says_how_the_games_went_in_words() -> None:
     games = [_game(1000), _game(3000, 1), _game(5000, 2, "timeout"), _game(500)]
     stats = LearnStats(updates=7, decisions=2_500_000, hours=1.25, best_score=2400)
-    text = report(games, stats, 3, 9000, True)
-    assert "3 min in, 9,000 moves a second · in all: 1.2 h, 2.5 M moves, 7 updates" in text
+    text = report(games, stats, 190, 9000, True)
+    assert "3:10 in, 9,000 moves a second · in all: 1.2 h, 2.5 M moves, 7 updates" in text
     assert "4: 3 (75%) game over, 1 (25%) too slow on a level, 0 (0%) cleared every level" in text
     assert "average 2,375, best 5,000 (reached 1-3, balanced ship)" in text
     assert "0.8 cleared on average, furthest reached 1-3; 2 (50%) got past 1-1" in text
@@ -244,3 +244,17 @@ def test_a_widened_brain_resumes_with_its_optimiser_started_over(
     learner.save()  # where the learner was told: never the brain of data/
     assert (tmp_path / "brain.pt").exists()
     assert (tmp_path / "trainer.pt").exists()
+
+
+def test_d_271_short_reports_pool_their_games_to_choose_the_best_brain(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setattr(learn_module, "BEST_BRAIN_FILE", tmp_path / "best.pt")
+    learner = SimpleNamespace(brain=Brain(SMALL), stats=LearnStats())
+    reporter = Reporter(0, learner.stats)  # type: ignore[arg-type]
+    half = MIN_GAMES_FOR_BEST // 2
+    reporter.add([_game(800)] * half, learner)  # type: ignore[arg-type]
+    assert learner.stats.best_score == 0
+    reporter.add([_game(1200)] * (MIN_GAMES_FOR_BEST - half), learner)  # type: ignore[arg-type]
+    assert learner.stats.best_score == pytest.approx(1000)
+    assert capsys.readouterr().out.count("Games ended") == 2

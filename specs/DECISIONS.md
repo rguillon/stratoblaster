@@ -1515,12 +1515,12 @@
   (a new `LevelRun`, full health) with the weapon in use, the weapon levels, the lives and the
   bombs the cleared one ended with (GAME-WPN-15, GAME-LIFE-12), a seed of its own and its own time
   limit (its length + 240 s); the episode ends at a game over, a level over its limit, or 4-5
-  cleared. Every learning episode is such a game, the ship drawn at random; no more starts in the
-  middle of a level. The reward is the points scored (1 per 2000), nothing else: progress,
+  cleared. Every learning episode is such a game, with the balanced ship only; no more starts in
+  the middle of a level. The reward is the points scored (1 per 2000), nothing else: progress,
   damage, lives, bombs and bonuses pay only through the points they lead to (a life lost ends the
   scoring sooner). `gamma` 0.998 (was 0.995): about 30 s of play ahead. The brain whose games
-  scored best on average over a report (at least 20 games) is saved in `data/brain-best.pt`
-  (`LearnStats.best_score`). `make learn` now says, every minute (`--report-seconds`), in words:
+  scored best on average over at least 20 games (one report's or more) is saved in
+  `data/brain-best.pt` (`LearnStats.best_score`). `make learn` now says, every 10 s (`--report-seconds`), in words:
   the games ended and how (game over, too slow, all cleared), their average and best score, the
   levels cleared and the furthest reached, and the best average so far; the per-update numbers
   (losses, entropy, KL) go to `data/learn-log.csv` only, with new columns (an older log is moved

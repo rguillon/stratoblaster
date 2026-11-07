@@ -22,7 +22,7 @@ import torch
 from numpy.typing import NDArray
 
 from ai.brain import Batch, Brain, BrainShape
-from ai.game_env import LEVEL_IDS, SHIP_IDS, Action, EpisodeSetup, GameEnv
+from ai.game_env import LEVEL_IDS, Action, EpisodeSetup, GameEnv
 from ai.observation import FIELD_COLS, FIELD_ROWS, FOVEA_SIZE, N_CHANNELS, N_STATE, observe
 
 
@@ -32,17 +32,16 @@ class Curriculum:
 
     From the first of `levels` with a fresh start (3 lives, 3 bombs, the first weapon at level 1,
     as when watched and rated, D-269), each level cleared going on to the next with what it ended
-    with, until the game is over, a level takes too long or the last one is cleared. The ship and
-    the seed vary.
+    with, until the game is over, a level takes too long or the last one is cleared. Always with
+    the `ship` (the balanced one); the seed varies.
     """
 
     levels: tuple[str, ...] = LEVEL_IDS
+    ship: str = "balanced"
 
     def draw(self, rng: random.Random) -> GameEnv:
         """Return the game of a new episode."""
-        setup = EpisodeSetup(
-            self.levels[0], seed=rng.randrange(1 << 30), ship_id=rng.choice(SHIP_IDS)
-        )
+        setup = EpisodeSetup(self.levels[0], seed=rng.randrange(1 << 30), ship_id=self.ship)
         return GameEnv(setup, campaign=self.levels)
 
 
