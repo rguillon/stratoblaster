@@ -206,13 +206,13 @@ class ShotWorld:
             self.total_damage += damage_target(hit.target, dps * dt)
 
     def _collide(self, shot: Projectile) -> None:
+        # The shot's fields read once: this runs for every shot and target, every step.
+        x = shot.x
+        y = shot.y
+        size = shot.weapon.radius
         hit = None
         for t in self.targets:
-            if (
-                is_alive(t)
-                and (t.x - shot.x) ** 2 + (t.y - shot.y) ** 2
-                <= (t.radius + shot.weapon.radius) ** 2
-            ):
+            if t.health > 0 and (t.x - x) ** 2 + (t.y - y) ** 2 <= (t.radius + size) ** 2:
                 hit = t
                 break
         if hit is None:

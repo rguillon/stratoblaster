@@ -1549,3 +1549,20 @@
 - **Consequences:** about 10 % more moves a second per worker. The values the brain expects
   change again with the reward: its first minutes relearn them.
 - **Status:** Proposed
+
+### D-273 — A faster simulation for the AI player, the game played exactly as before
+- **Date:** 2026-11-07
+- **Requirements:** none (requested by the human: speed up the game's simulation for learning).
+- **Context:** in CPython the simulation's time is spread over many small functions; the player's
+  shots (moving them, and testing each against every target) were the largest share (about a
+  quarter), then the enemies and bosses.
+- **Decision:** the shots' hit test reads the shot's fields once and a target's health directly
+  (`ShotWorld._collide`); the AI's on-screen test reads the camera's constants once
+  (`_Bounds.in_view`, the same sums in the same order); a config record read in CPython is
+  `dict.get` itself (`_Fields.__getattr__`, CPython only). The browser's game is unchanged in
+  behaviour.
+- **Consequences:** about 6.5 % more simulation steps a second (53 to 50 µs a step on the
+  laptop). The same 30,000 decisions over the 20 levels play out identically (a fingerprint of
+  every decision's state). The rest of the time is spread thin over the game's logic: larger
+  gains need another approach (the network on the GPU, fewer decisions a second).
+- **Status:** Proposed

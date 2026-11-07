@@ -58,8 +58,7 @@ MAX_WEAPON_LEVEL = max(len(w.levels) for w in GAME.player_weapons)
 class _Record(dict[str, Any]):
     """A config record whose fields read as attributes, as JavaScript objects do in the browser."""
 
-    def __getattr__(self, key: str) -> Any:
-        return self.get(key)
+    __getattr__ = dict.get  # not a method calling it: read in the simulation's hottest loops
 
 
 def _as_record(value: Any) -> Any:
@@ -108,6 +107,12 @@ class _Bounds:
         self.min_y = margin.bottom
         self.max_y = screen.height - margin.top
         self.center_x = screen.width / 2
+        self._height = screen.height
+        framing = self._framing
+        self._near = -framing.height * framing.direction[0]
+        self._back = framing.back
+        self._dz = framing.direction[1]
+        self._tan = math.tan(framing.half_fov)
 
     def half_width_at(self, y: float) -> float:
         return visible_half_width(self._framing, self._aspect, y) - self._side
@@ -123,9 +128,14 @@ class _Bounds:
         return depth * math.tan(framing.half_fov) * self._aspect - self._side
 
     def in_view(self, x: float, y: float) -> bool:
-        """Whether a playfield point is on screen (GAME-SCREEN-04)."""
-        height = GAME.playfield.height
-        return 0 <= y <= height and abs(x - self.center_x) <= self.visible_half_width(y)
+        """Whether a playfield point is on screen (GAME-SCREEN-04).
+
+        `visible_half_width`'s sums, in the same order, with its constants read once.
+        """
+        if y < 0 or y > self._height:
+            return False
+        depth = self._near + (y - self._back) * self._dz
+        return abs(x - self.center_x) <= depth * self._tan * self._aspect
 
     @property
     def framing(self) -> Any:
