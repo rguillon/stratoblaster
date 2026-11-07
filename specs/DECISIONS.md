@@ -1339,8 +1339,7 @@
   `ai-cuda` (the CUDA 12.6 wheels, torch 2.14.1: the newest torch with CUDA 12 wheels; any driver
   >= 525, Turing GPUs included; torch 2.15 has CUDA 13.2 wheels only). `make learn AI_TORCH=cuda`
   installs and uses it (`make rate` too). `ai.learn --device auto` (the default) learns on the GPU
-  when torch sees one, with every core but two playing 8 episodes each, rounds of 64 decisions and
-  3 epochs a round. The workers write their rounds into two rollout buffers in shared memory
+  when torch sees one, with every core but two playing 8 episodes each and rounds of 64 decisions. The workers write their rounds into two rollout buffers in shared memory
   (`/dev/shm` files mapped by every process, in turn: one is played into while the learner learns
   from the other) and send back only the episodes' summaries; the weights are pickled once a
   round for all of them. The minibatches are a share of the round (12 an epoch), not a fixed size.
@@ -1349,8 +1348,8 @@
   decisions a second (2,800 with the CPU build on the same machine, 600 on an 8-core laptop). The
   playing is then the bottleneck: a worker alone plays 680 decisions a second, 180 with the 62
   others (the game's simulation is 52 % of it, the observation 25 %, the network 13 %); the GPU is
-  about a third busy, so it goes over each round 3 times instead of 2 at no cost. More episodes
-  per worker (16) or fewer workers (31) were no faster.
+  about a third busy. More episodes per worker (16), fewer workers (31) or 3 epochs a round
+  instead of 2 (8,800 a second: the learner's own CPU work slows the workers) were no faster.
 - **Alternatives considered:** a central inference server on the GPU for the workers (the network
   is only 13 % of a worker's time); half-precision training (the learner already waits for the
   workers); CUDA 13.2 wheels (they need a driver >= 580 and give nothing more here).
