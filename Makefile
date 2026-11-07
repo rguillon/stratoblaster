@@ -1,8 +1,8 @@
-# Eight targets: setup, check, tests, build, e2e, serve, learn, rate. uv runs the Python tools
-# (ENG-04); Transcrypt compiles src/ to JavaScript and esbuild bundles it. The first target,
+# Nine targets: setup, check, tests, build, e2e, serve, learn, rate, serve-ai. uv runs the Python
+# tools (ENG-04); Transcrypt compiles src/ to JavaScript and esbuild bundles it. The first target,
 # `setup`, is the default.
 
-.PHONY: setup check tests build e2e serve learn rate FORCE
+.PHONY: setup check tests build e2e e2e-build serve learn rate serve-ai FORCE
 
 # The git hooks, ENG-60.
 setup:
@@ -146,6 +146,9 @@ $(E2E_DIST)/js/game.js: $(TRANSCRYPT_OUT)/e2e/.stamp $(DIST_FILES)
 	@grep -q '__GAME_TEST__' $@ || { \
 		echo 'ENG-52: the e2e bundle has no test API' >&2; rm -f $@; exit 1; }
 
+# The e2e build alone (a step of `e2e` and `serve-ai`, ENG-37).
+e2e-build: $(E2E_DIST)/js/game.js
+
 # Chromium for Playwright, installed again only when the locked tools change.
 $(STAMPS)/playwright: uv.lock
 	uv run playwright install $(if $(CI),--with-deps --only-shell,) chromium
@@ -172,3 +175,10 @@ learn:
 
 rate:
 	$(AI_RUN) ai.rate $(RATE_ARGS)
+
+# Watch the brain play the real game in a Chromium window (the e2e build, stepped in real time):
+# start a level from the menus, or `make serve-ai LEVEL=2-3` (and SHIP=heavy). WATCH_ARGS: more
+# options (`--speed 0.5`, `--sample`).
+serve-ai: e2e-build
+	uv run playwright install chromium
+	$(AI_RUN) ai.watch $(if $(LEVEL),--level $(LEVEL),) $(if $(SHIP),--ship $(SHIP),) $(WATCH_ARGS)

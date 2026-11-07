@@ -78,6 +78,11 @@ def _playable(level: GameLevel) -> GameLevel:
 _LEVELS: dict[str, GameLevel] = {level.id: _playable(level) for level in GAME.game_levels}
 
 
+def level_difficulty(level_id: str) -> Any:
+    """Return the level's enemy difficulty (`EnemyDifficulty`: bullet speed and fire rate)."""
+    return _LEVELS[level_id].difficulty
+
+
 def level_seconds(level_id: str) -> float:
     """How long the level scrolls for, bosses' fights aside."""
     scenery = _LEVELS[level_id].scenery

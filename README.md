@@ -70,6 +70,7 @@ Then open http://localhost:5173. `SERVE_PORT=8000 make serve` picks another port
 | `make serve` | Builds the game, then serves `dist/` on http://localhost:5173 (`SERVE_PORT`) |
 | `make learn` | The AI player learns the game for `LEARN_MINUTES` (60); resumes `data/brain.pt` |
 | `make rate`  | The AI player rates each level's difficulty, in % (`data/ratings.json`)      |
+| `make serve-ai` | Opens the game in a browser window where the AI player plays (`LEVEL=2-3`) |
 
 ### The AI player
 
@@ -81,7 +82,14 @@ bonuses. `make learn` trains it (Ctrl-C stops and saves; `LEARN_ARGS=--fresh` st
 `data/learn-log.csv` logs each update. `make rate` then plays every level 8 times with the same
 loadout and rates it from 0 % (cleared without a scratch) to 100 % (lost at once); the ratings are
 relative to how well the brain plays. Options: `RATE_ARGS="--episodes 16 --weapon-level 2"`, see
-`PYTHONPATH=tests uv run python -m ai.rate --help`. Decision D-263 has the details.
+`PYTHONPATH=tests uv run python -m ai.rate --help`. Decision D-263 has the details. On a machine with an
+NVIDIA GPU, `make learn AI_TORCH=cuda` learns on the GPU with every CPU core playing (D-264).
+
+`make serve-ai` opens the real game in a Chromium window and lets the brain play: pick a ship and a
+level in the menus (or `make serve-ai LEVEL=2-3 SHIP=heavy`), and the brain plays every level you
+start, pressing the game's keys; the menus and panels stay yours. The brain still decides in
+Python, from what the game's test API shows of the playfield (D-265). `WATCH_ARGS="--speed 0.5"`
+slows it down.
 
 [`node/tests/`](node/tests/) keeps the TypeScript test suite of the game this port came from. Nothing
 runs it: it is the reference for the tests still to port.

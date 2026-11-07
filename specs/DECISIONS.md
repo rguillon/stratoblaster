@@ -1358,3 +1358,33 @@
   seconds from uv's cache); the lock file holds both builds. Faster still means a faster game
   simulation (`src/core/`), which is the game's code, not the AI's.
 - **Status:** Proposed
+
+### D-265 — `make serve-ai`: the brain plays the real game in a browser window
+- **Date:** 2026-11-07
+- **Requirements:** none (requested by the human: open a browser and watch the AI play the level
+  chosen); DEV-API-01 (a sixth test API function); ENG-52 (test API in the e2e build only).
+- **Context:** the brain decides in Python (D-263); the browser game is the JavaScript build.
+  Replaying a Python run in the browser would need the two runtimes to stay bit-identical for
+  minutes (their `sin`/`cos` may differ in the last bit, and the runs would drift apart); the test
+  API's `getState()` gives counts, not where things are.
+- **Decision:** the e2e build's test API gets `getScene()` (`src/debug/play_scene.py`): what is on
+  the playfield of the level played, as plain arrays (the ship, its hull, bombs and weapons, the
+  level's progress, the boss, and the position of each enemy and boss piece, bullet, missile,
+  laser and bonus). `tests/ai/watch.py` serves `dist-e2e/`, opens it in a Chromium window
+  (Playwright, already a dev dependency) and steps it at 60 frames a second (the e2e build only
+  moves when stepped). While a level is played (not paused, not over) it reads the scene every 4
+  frames, the brain decides, and it holds the game's own keys (arrows, Space, R, E) through the
+  page; out of a level it lets go and the human uses the menus. The training builds its
+  observations from the same `play_scene` (its two JavaScript helpers swapped for Python ones), so
+  what the brain sees while watched is exactly what it learned from. `make e2e-build` is now a step
+  of its own (ENG-37 already named it), used by `e2e` and `serve-ai`.
+- **Alternatives considered:** the browser asking a Python server for each move (a change to the
+  game's loop and input for a dev tool); a 2D replay of a Python run drawn on a canvas (not the
+  real game); replaying the moves of a Python run (the runs drift, see the context).
+- **Consequences:** `?level=` (with `make serve-ai LEVEL=...`) starts the level in debug mode
+  (DEV-OPT-01). The watch is as fast as the browser draws: with software WebGL (no GPU) a frame
+  takes some 200 ms (`WATCH_ARGS="--draw-every 4"` draws fewer). The scene of the browser's run
+  comes from the JavaScript simulation, so the brain plays the very game a player plays.
+- **Spec follow-up (owner's to edit):** DEV-API-01 lists five test API functions, now six
+  (`getScene`); ENG-37's public targets lack `learn`, `rate` and `serve-ai`.
+- **Status:** Proposed

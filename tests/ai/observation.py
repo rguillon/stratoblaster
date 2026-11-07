@@ -14,12 +14,13 @@ bonus, the ship itself and where the ship cannot fly.
 """
 
 import math
+from typing import Any
 
 import numpy as np
 from numpy.typing import NDArray
 
-from ai.game_env import BOUNDS, MAX_WEAPON_LEVEL, WEAPON_IDS, GameEnv, weapon_levels_of
-from core.entities.boss import Boss
+from ai.game_env import BOUNDS, MAX_WEAPON_LEVEL, WEAPON_IDS, GameEnv
+from debug import play_scene as play_scene_module
 from game.index import GAME
 
 CHANNELS: tuple[str, ...] = (
@@ -135,39 +136,57 @@ class Observation:
         self.state = state
 
 
-def _targets(env: GameEnv) -> list[tuple[float, float, float, float, bool]]:
-    """Every enemy body and boss piece: x, y, radius, health fraction, whether it is a boss's."""
-    out: list[tuple[float, float, float, float, bool]] = []
-    for enemy in env.run.enemies.enemies:
-        if enemy.gone:
-            continue
-        boss = isinstance(enemy, Boss)
-        pieces = enemy.shot_targets if boss else [enemy]
-        if boss and len(pieces) == 0:
-            pieces = [enemy]
-        for piece in pieces:
-            full = piece.max_health if getattr(piece, "max_health", 0) else 1.0
-            health = max(0.0, min(1.0, piece.health / full)) if full else 1.0
-            out.append((piece.x, piece.y, piece.radius, health, boss))
-    return out
+class Scene:
+    """What is on the playfield, with the level's difficulty and the share of the time left.
+
+    `data` is as `src/debug/play_scene.py` gives it: from the Python simulation, or from the
+    browser's `__GAME_TEST__.getScene()`.
+    """
+
+    def __init__(
+        self, data: dict[str, Any], bullet_speed: float, fire_rate: float, time_left: float
+    ) -> None:
+        self.data = data
+        self.bullet_speed = bullet_speed
+        self.fire_rate = fire_rate
+        self.time_left = time_left
 
 
-def _shots(env: GameEnv) -> tuple[list[tuple[float, float, float, float]], ...]:
-    shots = env.run.enemies.shots
-    bullets = [
-        (b.x, b.y, math.sin(b.heading) * b.speed, math.cos(b.heading) * b.speed)
-        for b in shots.bullets
-        if b.alive
-    ]
-    missiles = [
-        (m.x, m.y, math.sin(m.heading) * m.speed, math.cos(m.heading) * m.speed)
-        for m in shots.missiles
-        if m.alive
-    ]
-    return bullets, missiles
+def _scene_object() -> dict[str, Any]:
+    return {}
 
 
-def _draw_moving(grid: _Grid, shots: list[tuple[float, float, float, float]], channel: int) -> None:
+def _scene_set(target: dict[str, Any], key: str, value: Any) -> None:
+    target[key] = value
+
+
+# CPython twins of the JavaScript helpers `play_scene` builds its object with (`{}`, `o[k] = v`):
+# the scene of a Python run is then the very one the browser gives.
+play_scene_module.js_object = _scene_object  # type: ignore[assignment]
+play_scene_module.js_set = _scene_set  # type: ignore[assignment]
+
+
+def scene_of(env: GameEnv) -> Scene:
+    """Return the scene of a Python episode."""
+    difficulty = env.level.difficulty
+    time_left = max(0.0, 1.0 - env.time / max(1.0, env.limit))
+    return Scene(
+        play_scene_module.play_scene(env.run),
+        difficulty.bullet_speed,
+        difficulty.fire_rate,
+        time_left,
+    )
+
+
+Shot = tuple[float, float, float, float]
+
+
+def _moving(shots: list[list[float]]) -> list[Shot]:
+    """[x, y, heading, speed] as (x, y, vx, vy)."""
+    return [(x, y, math.sin(h) * v, math.cos(h) * v) for x, y, h, v in shots]
+
+
+def _draw_moving(grid: _Grid, shots: list[Shot], channel: int) -> None:
     if not shots:
         return
     arr = np.asarray(shots, dtype=np.float64)
@@ -177,34 +196,28 @@ def _draw_moving(grid: _Grid, shots: list[tuple[float, float, float, float]], ch
     grid.points(channel + 2, xs, ys, arr[:, 3] / SPEED_UNIT)
 
 
-def _draw_lasers(grid: _Grid, env: GameEnv) -> None:
-    for laser in env.run.enemies.shots.lasers:
-        steps = max(1, int(laser.length / LASER_SAMPLE))
-        t = np.linspace(0.0, laser.length, steps + 1)
-        xs = laser.x + t * math.sin(laser.heading)
-        ys = laser.y + t * math.cos(laser.heading)
-        channel = CH["laser_beam"] if laser.phase == "firing" else CH["laser_warning"]
-        grid.points(channel, xs, ys)
+def _draw_lasers(grid: _Grid, lasers: list[list[Any]]) -> None:
+    for x, y, heading, length, firing in lasers:
+        steps = max(1, int(length / LASER_SAMPLE))
+        t = np.linspace(0.0, length, steps + 1)
+        xs = x + t * math.sin(heading)
+        ys = y + t * math.cos(heading)
+        grid.points(CH["laser_beam"] if firing else CH["laser_warning"], xs, ys)
 
 
-def _draw(
-    grid: _Grid, env: GameEnv, targets: list[tuple[float, float, float, float, bool]]
-) -> None:
-    for x, y, radius, health, boss in targets:
+def _draw(grid: _Grid, data: dict[str, Any], moving: tuple[list[Shot], list[Shot]]) -> None:
+    for x, y, radius, health, full, boss in data["targets"]:
         grid.disc(CH["boss"] if boss else CH["enemy"], x, y, radius, 1.0)
-        grid.disc(CH["health"], x, y, radius, health)
-    bullets, missiles = _shots(env)
-    _draw_moving(grid, bullets, CH["bullet"])
-    _draw_moving(grid, missiles, CH["missile"])
-    _draw_lasers(grid, env)
-    bonuses = env.run.bonuses
-    if bonuses is not None:
-        for bonus in bonuses.bonuses:
-            channel = _BONUS_CHANNELS.get(bonus.kind)
-            if channel is not None:
-                grid.disc(channel, bonus.x, bonus.y, 11.0, 1.0)
-    ship = env.run.ship
-    grid.disc(CH["ship"], ship.x, ship.y, 8.0, 1.0)
+        grid.disc(CH["health"], x, y, radius, max(0.0, min(1.0, health / full)) if full else 1.0)
+    _draw_moving(grid, moving[0], CH["bullet"])
+    _draw_moving(grid, moving[1], CH["missile"])
+    _draw_lasers(grid, data["lasers"])
+    for x, y, kind in data["bonuses"]:
+        channel = _BONUS_CHANNELS.get(kind)
+        if channel is not None:
+            grid.disc(channel, x, y, 11.0, 1.0)
+    ship = data["ship"]
+    grid.disc(CH["ship"], ship[0], ship[1], 8.0, 1.0)
 
 
 def _fovea_walls(grid: _Grid) -> None:
@@ -219,57 +232,64 @@ def _fovea_walls(grid: _Grid) -> None:
         walls[row] = (np.abs(xs - BOUNDS.center_x) > half).astype(np.float32)
 
 
-def _state(env: GameEnv) -> NDArray[np.float32]:
-    run = env.run
-    ship = run.ship
-    hull = run.hull
-    state = np.zeros(N_STATE, dtype=np.float32)
-    speed = max(1.0, ship.max_speed)
-    weapon = run.shots.weapon.id
-    levels = weapon_levels_of(run)
-    fights = run.fights
-    boss = fights.boss
-    difficulty = env.level.difficulty
+def _state(scene: Scene) -> NDArray[np.float32]:
+    data = scene.data
+    x, y, vx, vy, top_speed = data["ship"]
+    hull = data["hull"]
+    bombs = data["bombs"]
+    levels = dict.fromkeys(WEAPON_IDS, 1.0)
+    for weapon_id, level in data["weapons"]:
+        levels[weapon_id] = float(level)
+    progress, length = data["track"]
+    fought, rank, boss_health, boss_full = data["boss"]
+    speed = max(1.0, top_speed)
     values = [
-        ship.x / _WIDTH,
-        ship.y / _HEIGHT,
-        ship.vx / speed,
-        ship.vy / speed,
-        (hull.health / hull.max_health) if hull is not None else 1.0,
-        (hull.lives / 5.0) if hull is not None else 1.0,
-        (run.bombs.count / 5.0) if run.bombs is not None else 0.0,
-        1.0 if hull is not None and hull.invincible > 0 else 0.0,
-        1.0 if run.bombs is not None and run.bombs.active is not None else 0.0,
-        *[1.0 if weapon == w else 0.0 for w in WEAPON_IDS],
+        x / _WIDTH,
+        y / _HEIGHT,
+        vx / speed,
+        vy / speed,
+        (hull[0] / hull[1]) if hull is not None else 1.0,
+        (hull[2] / 5.0) if hull is not None else 1.0,
+        (bombs[0] / 5.0) if bombs is not None else 0.0,
+        1.0 if hull is not None and hull[3] > 0 else 0.0,
+        1.0 if bombs is not None and bombs[1] else 0.0,
+        *[1.0 if data["weapon"] == w else 0.0 for w in WEAPON_IDS],
         *[levels[w] / MAX_WEAPON_LEVEL for w in WEAPON_IDS],
-        run.track.progress / max(1.0, run.track.length_),
-        1.0 if fights.active else 0.0,
-        1.0 if fights.rank == "mini" else 0.0,
-        1.0 if fights.rank == "final" else 0.0,
-        (boss.health / boss.max_health) if boss is not None and boss.max_health else 0.0,
-        difficulty.bullet_speed - 1.0,
-        difficulty.fire_rate - 1.0,
-        max(0.0, 1.0 - env.time / max(1.0, env.limit)),
-        ship.max_speed / 400.0,
+        progress / max(1.0, length),
+        1.0 if fought else 0.0,
+        1.0 if rank == "mini" else 0.0,
+        1.0 if rank == "final" else 0.0,
+        (boss_health / boss_full) if boss_full else 0.0,
+        scene.bullet_speed - 1.0,
+        scene.fire_rate - 1.0,
+        scene.time_left,
+        top_speed / 400.0,
     ]
+    state = np.zeros(N_STATE, dtype=np.float32)
     state[: len(values)] = values
     return state
 
 
-def observe(env: GameEnv) -> Observation:
-    """Return what the brain sees of `env` now."""
+def observe_scene(scene: Scene) -> Observation:
+    """Return what the brain sees of `scene`."""
+    data = scene.data
     field = np.zeros((N_CHANNELS, FIELD_ROWS, FIELD_COLS), dtype=np.float32)
     field[CH["wall"]] = _FIELD_WALLS
     fovea = np.zeros((N_CHANNELS, FOVEA_SIZE, FOVEA_SIZE), dtype=np.float32)
-    ship = env.run.ship
+    ship_x, ship_y = data["ship"][0], data["ship"][1]
     half = FOVEA_SIZE * FOVEA_CELL / 2
     field_grid = _Grid(field, 0.0, _HEIGHT, _CELL_W, _CELL_H)
-    fovea_grid = _Grid(fovea, ship.x - half, ship.y + half, FOVEA_CELL, FOVEA_CELL)
-    targets = _targets(env)
-    _draw(field_grid, env, targets)
-    _draw(fovea_grid, env, targets)
+    fovea_grid = _Grid(fovea, ship_x - half, ship_y + half, FOVEA_CELL, FOVEA_CELL)
+    moving = (_moving(data["bullets"]), _moving(data["missiles"]))
+    _draw(field_grid, data, moving)
+    _draw(fovea_grid, data, moving)
     _fovea_walls(fovea_grid)
     for grid in (field, fovea):
         for name in ("bullet", "missile", "laser_warning", "laser_beam"):
             np.minimum(grid[CH[name]], 3.0, out=grid[CH[name]])
-    return Observation(field, fovea, _state(env))
+    return Observation(field, fovea, _state(scene))
+
+
+def observe(env: GameEnv) -> Observation:
+    """Return what the brain sees of `env` now."""
+    return observe_scene(scene_of(env))
