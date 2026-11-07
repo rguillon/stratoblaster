@@ -27,7 +27,7 @@ from typing import Any
 # Enemy density (WLD-1-20): each beat brings this many times its groups, rounded. A beat of one
 # group gets its extra groups `DENSITY_GAP` seconds apart and, from the top, `DENSITY_SPREAD`
 # across the screen, so they do not come in on top of each other.
-WAVE_DENSITY = 2
+WAVE_DENSITY = 1.5
 DENSITY_GAP = 1.5
 DENSITY_SPREAD = 0.3
 
@@ -60,7 +60,12 @@ KIND_ENTRY = record({
         [3, 1, "left", 0.7, 0, 1],
         [3, 1, "top", 0.25, 0.5, 1],
     ],
-    "strafer": [[3, 0.8, "left", 0.8, -0.07, 0], [4, 0.7, "left", 0.7, 0, 1]],
+    "strafer": [
+        [3, 0.8, "left", 0.8, -0.07, 0],
+        [3, 0.9, "top", 0.15, 0.3, 0],
+        [4, 0.7, "left", 0.7, 0, 1],
+        [3, 0.9, "top", 0.2, 0.25, 1],
+    ],
     "harrier": [[3, 1.1, "top", 0.3, 0.2, 0], [3, 1.1, "top", 0.25, 0.5, 1]],
     "sweeper": [[1, 0, "top", 0.5, 0, 0], [1, 0, "top", 0.25, 0.5, 1]],
     "hatchery": [[1, 0, "top", 0.5, 0, 0], [1, 0, "top", 0.3, 0.4, 1]],

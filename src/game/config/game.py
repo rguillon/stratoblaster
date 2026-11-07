@@ -9,8 +9,8 @@ GAME_CONFIG = record({
     "title": "Stratoblaster",
     # Logical resolution (GAME-SCREEN-01): landscape 16:9, a full HD screen at x1.5 (D-249).
     "screen": {"width": 1280, "height": 720},
-    # The playfield window (D-252, D-253): the level is drawn and played in a 1000 x 720 window
-    # in the middle of the screen, between the HUD's 140 px side columns (UI-HUD-01); nothing of
-    # the level is drawn outside it.
-    "playfield": {"width": 1000, "height": 720, "left": 140},
+    # The playfield window (D-252, D-263): the level is drawn and played in a 540 x 720 (3:4)
+    # window in the middle of the screen, between the HUD's 370 px side columns (UI-HUD-01);
+    # nothing of the level is drawn outside it.
+    "playfield": {"width": 540, "height": 720, "left": 370},
 })

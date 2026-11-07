@@ -50,7 +50,22 @@ def test_a_hangar_s_launches_join_the_boss_s_own() -> None:
     bay = hidden_weapon("bay", "hangar", [0, 10], 10, 100, 1, "red", 3)
     result = with_weapons(design, [bay], [])
     assert [launch["from"] for launch in result.launches] == ["gun", "bay"]
-    assert result.guns["bay"] == {}
+    # A hangar has no gun (BOSS-58): only doors.
+    assert result.mounts == []
+
+
+def test_boss_58_a_hidden_weapon_s_mounts_join_the_boss_s_own() -> None:
+    own = {"id": "nose", "piece": "core", "kind": "laser"}
+    design = record({
+        "stats": {"parts": []},
+        "guns": {},
+        "mounts": [own],
+        "stages": [[]],
+    })
+    gun = hidden_weapon("gun", "gatling", [10, 0], 8, 300, 1, "red", 2)
+    result = with_weapons(design, [gun], [])
+    assert [mount.id for mount in result.mounts] == ["nose", "gun"]
+    assert result.mounts[1].piece == "gun"
 
 
 def test_boss_38_a_hidden_weapon_keeps_the_hinge_it_is_given() -> None:

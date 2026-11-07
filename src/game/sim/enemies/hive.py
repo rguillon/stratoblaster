@@ -1,8 +1,6 @@
 # Copyright (c) 2026 Renaud Guillon
 """The Hive (`specs/enemies/hive.md`)."""
 
-import math
-
 from core.entities.jointed_enemy import JointedEnemy
 from core.entities.muzzle import muzzle_point
 from core.systems.gun_muzzles import GunMuzzles
@@ -37,6 +35,8 @@ class Hive(JointedEnemy):
         self._launcher = Cadence(CFG.launchInterval, CFG.firstLaunch)
         self._ring = Cadence(CFG.ringInterval, CFG.firstRing)
         self._ring_muzzles = GunMuzzles(CFG.ringMuzzles)
+        self.barrels = self._ring_muzzles.barrels
+        self._ctx: EnemyContext | None = None
         self.heading = DOWN
 
     def hatch(self, ctx: EnemyContext) -> tuple[float, float]:
@@ -58,7 +58,10 @@ class Hive(JointedEnemy):
         self.charge = self._launcher.progress
         _count = self._ring.tick(dt * ctx.fire_rate)
         for _i in range(_count):
-            for k in range(CFG.ringCount):
-                heading = self.heading + (2 * math.pi * k) / CFG.ringCount
-                point = self._ring_muzzles.along(ctx, self, heading)
-                ctx.fire_bullet(point.x, point.y, heading, CFG.ringBullet)
+            # One bullet from each of the rim's vents, along it (WPN-01).
+            self._ctx = ctx
+            self._ring_muzzles.fire_all(ctx, self, self._fire_ring)
+
+    def _fire_ring(self, x: float, y: float, heading: float) -> None:
+        if self._ctx is not None:
+            self._ctx.fire_bullet(x, y, heading, CFG.ringBullet)

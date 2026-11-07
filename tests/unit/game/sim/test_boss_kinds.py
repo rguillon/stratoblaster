@@ -11,7 +11,7 @@ import itertools
 from typing import Any
 
 import pytest
-from helpers.config_checks import assert_boss_design
+from helpers.config_checks import LAB_BOSS_COUNT, WORLD_BOSS_COUNT, assert_boss_design
 from helpers.enemy_steps import area
 
 from core.entities.boss import Boss
@@ -32,7 +32,8 @@ from game.sim.bosses.world_boss import WorldBoss
 
 def test_boss_01_every_boss_design_of_the_game_is_a_kind_once() -> None:
     ids = [kind.id for kind in BOSS_KINDS]
-    assert len(ids) == len(BOSS_DESIGNS) == 40
+    # The 40 World bosses, then the Lab's (in the dev viewer only).
+    assert len(ids) == len(BOSS_DESIGNS) == WORLD_BOSS_COUNT + LAB_BOSS_COUNT
     assert len(ids) == len(set(ids))
     assert ids == [design.id for design in BOSS_DESIGNS]
 
@@ -147,9 +148,12 @@ def test_each_transformation_reveals_one_to_three_armed_weapons(design: Any) -> 
         assert 1 <= len([p for p in hidden if p["reveal"] == form]) <= 3
     fired = {shot["from"] for stage in design.stages for shot in (stage or [])}
     fired.update(launch["from"] for launch in design.get("launches") or [])
+    mounted = {mount.piece for mount in design.mounts or []}
     for p in hidden:
-        assert p["id"] in design.guns
-        assert design.weapons[p["id"]]["kind"] in KINDS
+        kind = design.weapons[p["id"]]["kind"]
+        assert kind in KINDS
+        # Its gun mount (BOSS-58); a hangar has only its doors.
+        assert (p["id"] in mounted) == (kind != "hangar"), p["id"]
         assert p["id"] in fired, f"{p['id']} never fires"
 
 
@@ -166,10 +170,17 @@ def test_a_boss_gets_no_easier_as_it_transforms(design: Any) -> None:
 def test_each_transformation_sheds_an_armour_region(design: Any) -> None:
     """BOSS-42."""
     # docs/superpowers/specs/2026-10-31-boss-armour-shedding-design.md: it breaks open.
-    forms = {p["reveal"] for p in _hidden(design)}
-    shed = {region.form for region in design.armour}
-    assert shed == forms
+    # A transformation whose weapons all slide out of the body (`out_of`: the Tiltrotor Behemoth's
+    # nacelles turning into cannons) is a morph of the view's and need shed nothing.
+    forms = {p["reveal"] for p in _hidden(design) if not design.weapons[p["id"]].get("slideFrom")}
+    # A hatch (no form) bursts off its gun mount instead, when the gun first comes out (BOSS-58).
+    shed = {region.form for region in design.armour if region.form is not None}
+    assert forms <= shed
+    assert shed <= {p["reveal"] for p in _hidden(design)}
+    mounts = {mount.id for mount in design.mounts or []}
     for region in design.armour:
+        if region.form is None:
+            assert region.mount in mounts, region.id
         # A moving region may leave no frame (D-230).
         assert region.frame in FRAMES or (is_moving(region) and region.frame is None)
         assert all(len(outline) >= 3 for outline in region.outlines)
@@ -180,6 +191,9 @@ def test_every_hidden_weapon_unfolds_from_a_region_its_transformation_sheds(desi
     for p in _hidden(design):
         if design.weapons[p["id"]].get("rig"):
             # At the end of a rig it unfolds (D-228: the Scorpion's tail), not in a region.
+            continue
+        if design.weapons[p["id"]].get("slideFrom"):
+            # It slides out from inside the body to its place (`out_of`), not out of a region.
             continue
         if ridden_region(design, p) is not None:
             # On a moving region's piece, where it ends up (D-230).
@@ -291,7 +305,8 @@ def test_at_least_ten_bosses_reveal_a_weapon_on_their_centre_line() -> None:
 def test_eight_bosses_change_shape_as_they_transform() -> None:
     """BOSS-45."""
     # D-230: two a world, each moving its own way.
-    shifting = [d for d in BOSS_DESIGNS if any(is_moving(r) for r in d.armour)]
+    world = BOSS_DESIGNS[:WORLD_BOSS_COUNT]
+    shifting = [d for d in world if any(is_moving(r) for r in d.armour)]
     assert len(shifting) == 8
     for world in range(1, 5):
         assert len([d for d in shifting if _world(d) == world]) == 2

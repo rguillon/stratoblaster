@@ -18,6 +18,8 @@ from core.entities.muzzle import PlanePoint, muzzle_point
 from collections.abc import Callable
 from typing import Literal, Protocol
 
+from core.entities.barrel import Barrel  # noqa: TC001
+from core.entities.boss_turret import BossTurret  # noqa: TC001
 from core.entities.muzzle import Muzzle, RaisedPoint
 from core.entities.shot_target import ShotTarget
 from core.math.rng import Random
@@ -112,8 +114,10 @@ class EnemyContext(Protocol):
         """Fire a bullet of `spec` from (x, y) along `heading`."""
         ...
 
-    def fire_missile(self, x: float, y: float, heading: float, spec: "EnemyMissileSpec") -> None:
-        """Launch a missile of `spec` from (x, y) along `heading`."""
+    def fire_missile(
+        self, x: float, y: float, heading: float, spec: "EnemyMissileSpec", height: float = 0
+    ) -> None:
+        """Launch a missile of `spec` from (x, y), `height` above the plane, along `heading`."""
         ...
 
     def fire_laser(self, owner: LaserOwner, spec: "EnemyLaserSpec") -> None:
@@ -170,6 +174,29 @@ class EnemyBulletSpec:
         self.burst = burst
 
 
+class MissileFlight:
+    """How a missile leaves its launcher (WPN-08, WPN-09).
+
+    It flies straight out for `launch_seconds` before it turns. From an upward silo (`loft_seconds`
+    above 0) it lofts instead: one smooth curve over `loft_seconds`, leaving straight up at
+    `loft_speed` (px/s), drifting off along the heading it was launched along (to its side, at
+    `loft_drift` px/s at most), slowing to its top and coming down onto the plane of play, level,
+    gathering its speed towards the player; only then it homes.
+    """
+
+    def __init__(
+        self,
+        launch_seconds: float,
+        loft_seconds: float = 0,
+        loft_speed: float = 0,
+        loft_drift: float = 0,
+    ) -> None:
+        self.launch_seconds = launch_seconds
+        self.loft_seconds = loft_seconds
+        self.loft_speed = loft_speed
+        self.loft_drift = loft_drift
+
+
 class EnemyMissileSpec:
     """A missile an enemy launches.
 
@@ -185,6 +212,7 @@ class EnemyMissileSpec:
         health: float,
         style: str,
         burst: EnemyBurstSpec | None = None,
+        flight: MissileFlight | None = None,
     ) -> None:
         """`turn_rate_deg` is in degrees a second.
 
@@ -199,6 +227,20 @@ class EnemyMissileSpec:
         self.health = health
         self.style = style
         self.burst = burst
+        self.flight = flight if flight is not None else MissileFlight(0, 0, 0)
+
+    def with_burst(self, burst: EnemyBurstSpec | None) -> "EnemyMissileSpec":
+        """Return this spec with another `burst`."""
+        return EnemyMissileSpec(
+            self.speed,
+            self.turn_rate_deg,
+            self.homing_seconds,
+            self.radius,
+            self.health,
+            self.style,
+            burst,
+            self.flight,
+        )
 
 
 class EnemyLaserSpec:
@@ -273,6 +315,13 @@ class Enemy:
         self.age = 0
         # How ready the next attack is, 0..1, for the visuals (e.g. a charging light, ENM-23).
         self.charge: float = 0
+        # The barrels of its guns, for the model to slide back as they fire (WPN-03).
+        self.barrels: list[Barrel] = []
+        # Its missile launchers, in the order of its config's muzzles: each `kick`ed as it
+        # launches, for the model to show its port empty, then a rocket reloading (WPN-07).
+        self.launchers: list[Barrel] = []
+        # A turret its guns turn on, if it has one (WPN-02): see `BossTurret`.
+        self.turret: BossTurret | None = None
         # Set when the enemy is done (left for good); the world then removes it.
         self.gone = False
         # Its own chance of dropping a bonus when destroyed; the game's rule when None.
@@ -282,9 +331,10 @@ class Enemy:
     def place(self, muzzle: Muzzle, on_turret: bool = False) -> RaisedPoint:
         """Where `muzzle`, one of its guns' (see `muzzle.py`), is now: it turns with its nose.
 
-        `on_turret` is accepted for `MuzzleSource` but ignored: an enemy has no turret.
+        With `on_turret`, it is first turned with the enemy's turret, if it has one.
         """
-        _ = on_turret
+        if on_turret and self.turret is not None:
+            muzzle = self.turret.turned(muzzle)
         return muzzle_point(self, muzzle)
 
     @property

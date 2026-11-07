@@ -6,9 +6,11 @@
 core of a final boss always drops a bonus (BOSS-57).
 """
 
-from game.config.bosses.boss_kit import bullet, cells, mirror, part, stages, stats, twin, volley
+from game.config.bosses.boss_guns import gun_mount, laser_mount, missile_mount
+from game.config.bosses.boss_kit import bullet, part, stages, stats, volley
 from game.config.bosses.hidden_weapons import armour_region, hidden_weapon, with_weapons
 from game.config.bosses.moving_regions import moving_region, slide, swing
+from game.config.bosses.weapon_kinds import WEAPON_FIRE
 from game.config.record import concat, merge, record
 
 # isort: split
@@ -35,15 +37,33 @@ PURPLE = bullet("purple", 195)
 # The guns' muzzles (phase 7 review): the tips of the barrels their models draw, from the boss's
 # centre, X right, Y up, and height above the playfield (see `BossDesign.guns`).
 
-# The Refinery Titan's right rotary turret's three barrels.
-ROTARY = [
-    [32, -46.6, 18.8],
-    [34.2, -46.6, 15.8],
-    [29.8, -46.6, 15.8],
-]
+# The Mesa Fortress's lances' laser emitters (FB-MESA-FORTRESS-03).
+MESA_LANCE = {"size": 7, "bore": 3.5, "length": 30}
+
+# The Refinery Titan's rotary turrets' rotors: three barrels, one per bullet of their rings
+# (FB-REFINERY-TITAN-03).
+TITAN_ROTARY = {"size": 6, "barrels": 3, "layout": "ring", "bore": 1.3, "length": 9}
+
+# The Storm Petrel's wing pods' fan turrets (FB-STORM-PETREL-03).
+PETREL_POD = {"size": 5.5, "barrels": 3, "gap": 1.2, "bore": 1.2, "length": 7}
 
 # 1-1: a seaplane bomber; wing gun pods (they shield the core), a tail missile rack, a belly plate
 # (FB-STORM-PETREL-07).
+# Once its second transformation has revealed its cannon and sweepers (stage 4), its batteries
+# (FB-STORM-PETREL-10) fire twice as often: a second fan each, between their usual ones.
+_BATTERY = WEAPON_FIRE.battery
+_BATTERY_RUSH = [
+    volley.fan(
+        part_id,
+        _BATTERY.every,
+        _BATTERY.count,
+        _BATTERY.spacingDeg,
+        bullet("magenta", _BATTERY.speed),
+        first + _BATTERY.every / 2,
+    )
+    for part_id, first in [("battery-left", 1.2), ("battery-right", 2.0)]
+]
+
 _STORM_PETREL = record({
     "id": "storm-petrel",
     # Its points, its core's drop and its parts' drops (FB-STORM-PETREL-13).
@@ -59,37 +79,37 @@ _STORM_PETREL = record({
         "parts": [
             fpart("pod-left", [-56, 4], 15, 1010),
             fpart("pod-right", [56, 4], 15, 1010),
-            fpart("missile-rack", [0, 40], 14, 820, {"shields": False}),
-            fpart("belly-plate", [0, -32], 15, 920, {"shields": False}),
+            fpart("missile-rack", [0, 40], 14, 820),
+            fpart("belly-plate", [0, -32], 15, 920),
         ],
     }),
     # Where it stops and how it moves in place (FB-STORM-PETREL-06).
     "stopFraction": 0.72,
     "sway": {"amplitude": 45, "period": 8},
     "bob": {"amplitude": 10, "period": 4},
-    # Its guns' muzzles (FB-STORM-PETREL-03).
-    "guns": {
-        "core": {"gun": twin(1.6, -19.3, 16.8), "turret": [0, -5]},
-        "pod-left": {"gun": twin(-56, -18.8, 14.3, 2.5)},
-        "pod-right": {"gun": twin(56, -18.8, 14.3, 2.5)},
-        "missile-rack": {"missile": cells([-6.2, 0, 6.2], [36.9, 43.1], 17.3)},
-    },
-    # Its parts' volleys, then the core's pattern per stage (FB-STORM-PETREL-08).
+    "guns": {},
+    # Its gun mounts (BOSS-58, FB-STORM-PETREL-03): a fan turret on each wing pod's collar, a block
+    # of missile ports in the tail rack. The core has none: it dies with its last gun (BOSS-58).
+    "mounts": [
+        gun_mount("pod-left", "pod-left", [-56, -6], 19.3, PETREL_POD),
+        gun_mount("pod-right", "pod-right", [56, -6], 19.3, PETREL_POD),
+        missile_mount("missile-rack", "missile-rack", [0, 40], 12.6, 4),
+    ],
+    # Its parts' volleys, then the core's pattern per stage (FB-STORM-PETREL-08): the wing pods
+    # fire fast, in turn; the core never fires.
     "stages": stages(
         [
-            volley.fan("pod-left", 2, 3, 15, MAGENTA, 0.8),
-            volley.fan("pod-right", 2, 3, 15, MAGENTA, 1.8),
-            volley.missiles("missile-rack", 5.5, 2, 30, 3),
+            volley.fan("pod-left", 1.2, 3, 15, MAGENTA, 0.6),
+            volley.fan("pod-right", 1.2, 3, 15, MAGENTA, 1.2),
+            volley.missiles("missile-rack", 5.5, 4, 30, 3),
         ],
-        [
-            [volley.aimed("core", 3, 1, 0, RED, 1.6)],
-            [volley.aimed("core", 2.4, 3, 12, RED, 0.8)],
-            [volley.burst("core", 2.4, 4, 0.14, RED, 0.6)],
-            [volley.fan("core", 2.2, 7, 12, MAGENTA, 0.6)],
-            [volley.ring("core", 1.5, 12, 8, RED, 0.4)],
-        ],
+        [[], [], [], [], _BATTERY_RUSH],
     ),
 })
+
+# The Gull Mothership's flak growths' twin-barrelled turrets, sweeping their aimed pairs
+# (FB-GULL-MOTHERSHIP-03).
+GULL_FLAK = {"size": 8.5, "barrels": 2, "gap": 3.2, "bore": 1.1, "length": 7.5}
 
 # 1-2: a wide carrier; two hangar bays launch Gnats, two flak turrets; all four shield the core
 # (FB-GULL-MOTHERSHIP-07).
@@ -120,12 +140,36 @@ _GULL_MOTHERSHIP = record({
         {"from": "hangar-left", "kind": "hornets", "count": 3, "every": 7, "first": 2.5},
         {"from": "hangar-right", "kind": "hornets", "count": 3, "every": 7, "first": 6},
     ],
-    # Its guns' muzzles (FB-GULL-MOTHERSHIP-03).
-    "guns": {
-        "core": {"gun": [[0, -69.9, 7]], "laser": [[0, -69.9, 7]]},
-        "flak-left": {"gun": twin(-28, -46.3, 8.8, 1.6), "turret": [-28, -32]},
-        "flak-right": {"gun": twin(28, -46.3, 8.8, 1.6), "turret": [28, -32]},
-    },
+    "guns": {},
+    # Its gun mounts (BOSS-58, FB-GULL-MOTHERSHIP-03): a twin-gun turret on each flak growth's
+    # crown, and the core's laser eye at its nose, the turret on the front of its back (its aimed
+    # shots and fans) and two rotors down its spine (its rings of 8, then of 12).
+    "mounts": [
+        gun_mount("flak-left", "flak-left", [-28, -32], 6.5, GULL_FLAK),
+        gun_mount("flak-right", "flak-right", [28, -32], 6.5, GULL_FLAK),
+        laser_mount("eye", "core", [0, -58], 4.7, {"size": 6, "bore": 3.5, "length": 9.2}),
+        gun_mount(
+            "prow",
+            "core",
+            [0, -29],
+            22,
+            {"size": 6.5, "barrels": 5, "gap": 1.3, "bore": 1.1, "length": 8},
+        ),
+        gun_mount(
+            "spine-rotor",
+            "core",
+            [0, 11],
+            22,
+            {"size": 6, "barrels": 12, "layout": "ring", "bore": 0.9, "length": 4.5},
+        ),
+        gun_mount(
+            "tail-rotor",
+            "core",
+            [0, 31],
+            22,
+            {"size": 4.5, "barrels": 8, "layout": "ring", "bore": 0.9, "length": 4},
+        ),
+    ],
     # Its parts' volleys, then the core's pattern per stage (FB-GULL-MOTHERSHIP-08).
     "stages": stages(
         [
@@ -136,7 +180,10 @@ _GULL_MOTHERSHIP = record({
             [volley.laser("core", 7, 1.5, 4)],
             [volley.laser("core", 6, 1.5, 2), volley.aimed("core", 2.6, 1, 0, ORANGE, 1)],
             [volley.laser("core", 5.5, 1.5, 2), volley.fan("core", 2.6, 5, 14, ORANGE, 1)],
-            [volley.laser("core", 5, 1.5, 2), volley.ring("core", 2.2, 8, 0, ORANGE, 1)],
+            [
+                volley.laser("core", 5, 1.5, 2),
+                merge(volley.ring("core", 2.2, 8, 0, ORANGE, 1), {"mount": "tail-rotor"}),
+            ],
             [volley.laser("core", 4.5, 1.6, 1.5), volley.ring("core", 1.5, 12, 9, GREEN, 0.4)],
         ],
     ),
@@ -167,24 +214,32 @@ _MESA_FORTRESS = record({
     "stopFraction": 0.74,
     "sway": {"amplitude": 35, "period": 10},
     "bob": {"amplitude": 6, "period": 5},
-    # Its guns' muzzles (FB-MESA-FORTRESS-03).
-    "guns": {
-        "core": {
-            "gun": [
-                [8, -42.7, 17.6],
-                [4.1, -44.4, 17.6],
-                [0, -45, 17.6],
-                [-4.1, -44.4, 17.6],
-                [-8, -42.7, 17.6],
-            ],
-            "turret": [0, -30],
-        },
-        "lance-left": {"laser": [[-58, -51.3, 6]]},
-        "lance-right": {"laser": [[58, -51.3, 6]]},
-        "silo-left": {"missile": cells([-30.8, -25.2], [29.2, 34.8], 17.3)},
-        "silo-right": {"missile": cells([25.2, 30.8], [29.2, 34.8], 17.3)},
-    },
-    # Its parts' volleys, then the core's pattern per stage (FB-MESA-FORTRESS-08).
+    "guns": {},
+    # Its gun mounts (BOSS-58, FB-MESA-FORTRESS-03): a laser emitter in each forelimb's cradle, a
+    # block of four missile ports in each silo's mouth, and the core's fan turret on its brow (its
+    # fans and aimed shots) and the rotor on its back behind the keep (its rings).
+    "mounts": [
+        laser_mount("lance-left", "lance-left", [-58, -16], 5, MESA_LANCE),
+        laser_mount("lance-right", "lance-right", [58, -16], 5, MESA_LANCE),
+        missile_mount("silo-left", "silo-left", [-28, 32], 12.4, 4),
+        missile_mount("silo-right", "silo-right", [28, 32], 12.4, 4),
+        gun_mount(
+            "brow",
+            "core",
+            [0, -25],
+            14,
+            {"size": 6.5, "barrels": 7, "gap": 1.2, "bore": 1.1, "length": 9},
+        ),
+        gun_mount(
+            "back-rotor",
+            "core",
+            [0, 48],
+            13.5,
+            {"size": 5, "barrels": 14, "layout": "ring", "bore": 0.7, "length": 3.2},
+        ),
+    ],
+    # Its parts' volleys, then the core's pattern per stage (FB-MESA-FORTRESS-08); its fans all
+    # 12 degrees apart, as the brow turret's barrels (BOSS-58).
     "stages": stages(
         [
             volley.laser("lance-left", 6, 1.4, 2),
@@ -193,16 +248,16 @@ _MESA_FORTRESS = record({
             volley.missiles("silo-right", 5, 1, 0, 6),
         ],
         [
-            [volley.fan("core", 3, 3, 16, RED, 1.5)],
-            [volley.fan("core", 2.6, 5, 14, RED, 0.8)],
+            [volley.fan("core", 3, 3, 12, RED, 1.5)],
+            [volley.fan("core", 2.6, 5, 12, RED, 0.8)],
             [
-                volley.fan("core", 2.6, 5, 14, RED, 0.8),
+                volley.fan("core", 2.6, 5, 12, RED, 0.8),
                 volley.aimed("core", 2.2, 1, 0, ORANGE, 1.4),
             ],
             [volley.fan("core", 2.2, 7, 12, RED, 0.6)],
             [
                 volley.ring("core", 1.5, 14, 12, ORANGE, 0.4),
-                volley.fan("core", 2.6, 5, 14, RED, 1.2),
+                volley.fan("core", 2.6, 5, 12, RED, 1.2),
             ],
         ],
     ),
@@ -223,11 +278,11 @@ _REFINERY_TITAN = record({
         "groundSpeed": 0.3,
         "coreDrop": 1,
         "parts": [
-            fpart("tank-left", [-66, 18], 17, 1400, {"shields": False}),
-            fpart("tank-right", [66, 18], 17, 1400, {"shields": False}),
+            fpart("tank-left", [-66, 18], 17, 1400),
+            fpart("tank-right", [66, 18], 17, 1400),
             fpart("turret-left", [-32, -24], 14, 1810),
             fpart("turret-right", [32, -24], 14, 1810),
-            fpart("missile-battery", [0, 38], 14, 1530, {"shields": False}),
+            fpart("missile-battery", [0, 38], 14, 1530),
         ],
     }),
     # Where it stops and how it moves in place (FB-REFINERY-TITAN-06).
@@ -238,14 +293,33 @@ _REFINERY_TITAN = record({
         "tank-left": {"count": 12, "bullet": ORANGE},
         "tank-right": {"count": 12, "bullet": ORANGE},
     },
-    # Its guns' muzzles (FB-REFINERY-TITAN-03).
-    "guns": {
-        "core": {"gun": twin(4.5, -35.8, 19)},
-        "turret-left": {"gun": mirror(ROTARY), "turret": [-32, -24]},
-        "turret-right": {"gun": ROTARY, "turret": [32, -24]},
-        "missile-battery": {"missile": cells([-5.5, 5.5], [30.5, 38, 45.5], 21.1)},
-    },
-    # Its parts' volleys, then the core's pattern per stage (FB-REFINERY-TITAN-08).
+    "guns": {},
+    # Its gun mounts (BOSS-58, FB-REFINERY-TITAN-03): a three-barrelled rotor on each rotary
+    # turret's base, a block of six missile ports on the brood, and the core's on its rear shell
+    # either side of the brood (out of its plating's way): a fan turret (its aimed shots, bursts
+    # and fans) on its right, a rotor (its rings) on its left. Its fuel tanks fire nothing: they
+    # burst into rings (`breakRings`).
+    "mounts": [
+        gun_mount("turret-left", "turret-left", [-32, -24], 15, TITAN_ROTARY),
+        gun_mount("turret-right", "turret-right", [32, -24], 15, TITAN_ROTARY),
+        missile_mount("missile-battery", "missile-battery", [0, 38], 21, 6),
+        gun_mount(
+            "rear-turret",
+            "core",
+            [20, 28],
+            12,
+            {"size": 5, "barrels": 7, "gap": 1, "bore": 1, "length": 7},
+        ),
+        gun_mount(
+            "rear-rotor",
+            "core",
+            [-20, 28],
+            12,
+            {"size": 4.5, "barrels": 14, "layout": "ring", "bore": 0.6, "length": 2.8},
+        ),
+    ],
+    # Its parts' volleys, then the core's pattern per stage (FB-REFINERY-TITAN-08); its fans all
+    # 12 degrees apart, as the rear turret's barrels (BOSS-58).
     "stages": stages(
         [
             volley.ring("turret-left", 0.7, 3, 19, ORANGE, 0.5),
@@ -256,7 +330,7 @@ _REFINERY_TITAN = record({
             [volley.aimed("core", 3, 1, 0, BLUE, 1.6)],
             [volley.aimed("core", 2.6, 3, 12, BLUE, 0.8)],
             [volley.burst("core", 2.4, 4, 0.14, BLUE, 0.6)],
-            [volley.fan("core", 2.4, 5, 14, BLUE, 0.6)],
+            [volley.fan("core", 2.4, 5, 12, BLUE, 0.6)],
             [
                 volley.fan("core", 2.2, 7, 12, BLUE, 0.6),
                 volley.aimed("core", 2.6, 1, 0, ORANGE, 1.2),
@@ -284,10 +358,10 @@ _OVERLORD = record({
         "groundSpeed": 0.25,
         "coreDrop": 1,
         "parts": [
-            fpart("laser-left", [-78, -6], 15, 1660, {"shields": False}),
-            fpart("laser-right", [78, -6], 15, 1660, {"shields": False}),
-            fpart("battery-left", [-46, 30], 14, 1520, {"shields": False}),
-            fpart("battery-right", [46, 30], 14, 1520, {"shields": False}),
+            fpart("laser-left", [-78, -6], 15, 1660),
+            fpart("laser-right", [78, -6], 15, 1660),
+            fpart("battery-left", [-46, 30], 14, 1520),
+            fpart("battery-right", [46, 30], 14, 1520),
             fpart("generator-left", [-34, -36], 13, 1940),
             fpart("generator-right", [34, -36], 13, 1940),
         ],
@@ -296,19 +370,53 @@ _OVERLORD = record({
     "stopFraction": 0.75,
     "sway": {"amplitude": 25, "period": 11},
     "bob": {"amplitude": 6, "period": 5},
-    # Its guns' muzzles (FB-OVERLORD-03).
-    "guns": {
-        "core": {
-            "gun": twin(7, -39.6, 15.5),
-            "ring": [[0, 0, 33.6]],
-            "laser": [[0, -38, 14.5]],
-            "missile": cells([-6, 6], [30, 38], 10.1),
-        },
-        "laser-left": {"laser": [[-78, -34.6, 4]]},
-        "laser-right": {"laser": [[78, -34.6, 4]]},
-        "battery-left": {"missile": cells([-51, -41], [22.5, 30, 37.5], 14.1)},
-        "battery-right": {"missile": cells([41, 51], [22.5, 30, 37.5], 14.1)},
-    },
+    "guns": {},
+    # Its gun mounts (BOSS-58, FB-OVERLORD-03): a laser on each wing cannon's gland, a block of six
+    # ports on each battery; on the citadel's weapon array a fanned turret in the middle (its aimed
+    # shots, purple bursts and fans) between a twin cannon (its red bursts, on a turret of its own:
+    # they aim at the player while its fans go down the screen) and a laser; the 14-barrel rotor on
+    # its roof (its last ring), the missile ports on the boulevard behind it and a 10-barrel rotor
+    # at the boulevard's tail (its first ring).
+    "mounts": [
+        laser_mount(
+            "laser-left", "laser-left", [-78, -18], 6, {"size": 4.5, "bore": 2.4, "length": 12}
+        ),
+        laser_mount(
+            "laser-right", "laser-right", [78, -18], 6, {"size": 4.5, "bore": 2.4, "length": 12}
+        ),
+        missile_mount("battery-left", "battery-left", [-46, 30], 14, 6),
+        missile_mount("battery-right", "battery-right", [46, 30], 14, 6),
+        gun_mount(
+            "array",
+            "core",
+            [0, -28],
+            19,
+            {"size": 6, "barrels": 7, "gap": 1, "bore": 1.1, "length": 8},
+        ),
+        gun_mount(
+            "array-cannon",
+            "core",
+            [14, -24],
+            19,
+            {"size": 4, "barrels": 2, "gap": 2.6, "bore": 1.2, "length": 7},
+        ),
+        laser_mount("array-laser", "core", [-14, -24], 19, {"size": 4, "bore": 2, "length": 9}),
+        gun_mount(
+            "roof-rotor",
+            "core",
+            [0, 0],
+            30.8,
+            {"size": 5, "barrels": 14, "layout": "ring", "bore": 0.9, "length": 5},
+        ),
+        gun_mount(
+            "tail-rotor",
+            "core",
+            [0, 48],
+            10,
+            {"size": 4.5, "barrels": 10, "layout": "ring", "bore": 0.9, "length": 4.5},
+        ),
+        missile_mount("hatches", "core", [0, 34], 10, 4),
+    ],
     # Its parts' volleys, then the core's pattern per stage (FB-OVERLORD-08).
     "stages": stages(
         [
@@ -321,11 +429,12 @@ _OVERLORD = record({
             [volley.aimed("core", 2.8, 1, 0, PURPLE, 1.4)],
             [volley.aimed("core", 2.4, 3, 12, PURPLE, 0.8)],
             [volley.burst("core", 2.4, 4, 0.13, PURPLE, 0.6)],
-            [volley.fan("core", 2.4, 5, 14, PURPLE, 0.6)],
-            [volley.ring("core", 2, 10, 6, PURPLE, 0.6)],
+            # 12 degrees apart: the array's barrels' spacing (BOSS-58).
+            [volley.fan("core", 2.4, 5, 12, PURPLE, 0.6)],
+            [merge(volley.ring("core", 2, 10, 6, PURPLE, 0.6), {"mount": "tail-rotor"})],
             [
                 volley.fan("core", 2.2, 7, 12, PURPLE, 0.6),
-                volley.burst("core", 2.6, 3, 0.13, RED, 1),
+                merge(volley.burst("core", 2.6, 3, 0.13, RED, 1), {"mount": "array-cannon"}),
             ],
             [
                 volley.ring("core", 1.2, 14, 9, PURPLE, 0.4),
@@ -337,17 +446,26 @@ _OVERLORD = record({
 })
 
 # Its transformations (D-230; what it sheds and moves, FB-STORM-PETREL-05): once both wing pods are
-# gone its outer wings swing 30 degrees forward about their leading edges' roots, a gun battery
-# riding each (FB-STORM-PETREL-10); once its rack and plate are gone its tail plating bursts off for
-# a heavy cannon and its wing roots' for a pair of sweepers (FB-STORM-PETREL-11).
+# gone its outer wings swing 30 degrees forward about their leading edges' roots, and a gun battery
+# slides out of each flank of its body onto each (FB-STORM-PETREL-10); once its rack and plate are
+# gone its tail plating bursts off for a heavy cannon and its wing roots' for a pair of sweepers
+# (FB-STORM-PETREL-11).
 STORM_PETREL = with_weapons(
     merge(
         _STORM_PETREL,
-        {"transformParts": [["pod-left", "pod-right"], ["missile-rack", "belly-plate"]]},
+        {
+            "transformParts": [["pod-left", "pod-right"], ["missile-rack", "belly-plate"]],
+            # Its batteries keep firing in its anger after its second transformation.
+            "rageAlso": ["battery-left", "battery-right"],
+        },
     ),
     [
-        hidden_weapon("battery-left", "battery", [-52, -13], 8, 810, 1, "magenta", 1.2, 13),
-        hidden_weapon("battery-right", "battery", [52, -13], 8, 810, 1, "magenta", 2.0, 13),
+        hidden_weapon(
+            "battery-left", "battery", [-50, -5], 8, 810, 1, "magenta", 1.2, [9, 15], None, [-6, -5]
+        ),
+        hidden_weapon(
+            "battery-right", "battery", [50, -5], 8, 810, 1, "magenta", 2.0, [9, 15], None, [6, -5]
+        ),
         hidden_weapon("cannon", "cannon", [0, 32], 11, 1010, 2, "red", 1.4, 14.5),
         hidden_weapon("sweeper-left", "sweeper", [-19, -12], 6, 1010, 2, "magenta", 2.2, 12.9),
         hidden_weapon("sweeper-right", "sweeper", [19, -12], 6, 1010, 2, "magenta", 4.6, 12.9),

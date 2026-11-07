@@ -23,6 +23,7 @@ from game.sim.enemies.enemy_helpers import (
     coin,
     pick_x,
     side_dive_stop_x,
+    side_height,
     top_x,
 )
 from game.sim.enemies.harrier import Harrier
@@ -73,8 +74,8 @@ def side_pass(area: EnemySpawnArea, height_fraction: float) -> tuple[bool, float
     """
     entry = area.entry
     if entry is not None and entry.side != "top":
-        return (entry.side == "left", clamp_entry(entry.position) * area.height)
-    return (_coin(area), height_fraction * area.height)
+        return (entry.side == "left", side_height(entry.position) * area.height)
+    return (_coin(area), side_height(height_fraction) * area.height)
 
 
 def _spawn_hornet(area: EnemySpawnArea) -> list[Enemy]:
@@ -94,6 +95,11 @@ def _spawn_scout(area: EnemySpawnArea) -> list[Enemy]:
 
 
 def _spawn_strafer(area: EnemySpawnArea) -> list[Enemy]:
+    entry = area.entry
+    # From the top, a vertical pass firing level (its wave's entry says so, or half the time).
+    top = entry.side == "top" if entry is not None else _coin(area)
+    if top:
+        return [Strafer(_entry_x(area, C.strafer.xRange), _top(area), "top")]
     left, y = side_pass(area, C.strafer.heightFraction)
     x = -MARGIN if left else area.width + MARGIN
     return [Strafer(x, y, "left" if left else "right")]

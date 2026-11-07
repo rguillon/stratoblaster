@@ -4,6 +4,8 @@
 Y up (towards the camera).
 """
 
+import math
+
 from game.config.boss_look import BOSS_LOOK
 from game.config.bosses.mini_bosses import BREAKWATER
 from game.view.bosses.boss_model import build_boss_model
@@ -14,7 +16,6 @@ from game.view.bosses.mini_boss_shapes import (
     radius_of,
     sign_of,
     socket,
-    turret,
 )
 from game.view.bosses.world_1_organic_kit import (
     F,
@@ -97,7 +98,7 @@ def _draw_body(p: Any) -> None:
 
     The forward shell with ribs over it and an orange vein along its spine, the rear belly flattened
     under its plating (the armour, `_draw_plating`), eyes on stalks at its front over its mouth
-    (the bow gun).
+    (the bow turret).
     """
     deck = HULL_Y[2]
     mantle(p, BARGE_HULL, [HULL_Y[0], deck], F.sinew, ORANGE)
@@ -159,8 +160,24 @@ def _draw_legs(p: Any) -> None:
             tentacle(p, knee, [s * 40, HULL_Y[0], z - 6], [s, 0, 0], [1.6, 0.2], F.bone, 4)
 
 
+def _draw_hatch(p: Any) -> None:
+    """Draw the hatch over the shell rotor (BOSS-58): an armoured cap, a seam of light round it.
+
+    It bursts off as the rotor comes into use.
+    """
+    graft(p, polygon(8, 6.8), [16.2, 18], [0, 0, 2], {"color": M.panel})
+    graft(p, polygon(8, 4.6), [18, 19.6], [0, 0, 2], {"color": M.base})
+    p.neon.ring(6.6, 0.25, 8, ORANGE, Placement([0, 17.6, 2], math.pi / 8))
+
+
+def _draw_hatch_frame(p: Any) -> None:
+    """Draw what the hatch leaves (BOSS-44): a collar round the opening the rotor rises out of."""
+    p.hull.ring(6.4, 0.9, 16, M.base, Placement([0, 16.4, 2]))
+    p.neon.ring(6.4, 0.3, 16, ORANGE, Placement([0, 17.2, 2]))
+
+
 def _draw_grafts(p: Any) -> None:
-    """Grafts on the core: a plate on the forward shell, running lights.
+    """Grafts on the core: a plate on the forward shell (its rotor's seat, BOSS-58), lights.
 
     The riveted back plate, the armour bands and the mast are on its plating (`_draw_plating`).
     """
@@ -172,15 +189,6 @@ def _draw_grafts(p: Any) -> None:
             1.2,
             ORANGE,
         )
-
-
-def _bow_gun(p: Any, at: Vec3) -> None:
-    """Add the bow gun in the hold (the core's fans, bursts and rings).
-
-    It turns on the hold's floor.
-    """
-    gun = {"radius": 7, "barrels": 2, "gap": 3, "bore": 1.2, "length": 6, "neon": ORANGE}
-    turret(p, offset(at, 0, HULL_Y[2] + 0.4, 0), gun)
 
 
 def _ram_plate(p: Any, at: Vec3) -> None:
@@ -199,39 +207,21 @@ def _ram_plate(p: Any, at: Vec3) -> None:
 
 
 def _mortar(p: Any, at: Vec3) -> None:
-    """Add a mortar (MB-BREAKWATER-03): a swollen barnacle growth on the flank under its turret.
+    """Add a mortar (MB-BREAKWATER-03): a swollen barnacle growth on the flank.
 
-    A spawn sac beside it.
+    Under its squat turret and its short, fat barrel (its mount, BOSS-58); a spawn sac beside it.
     """
     r = radius_of(BREAKWATER.stats.parts, 1, 13)
     growth(p, offset(at, 0, HULL_Y[2] - 2, 0), r, ORANGE, {"flesh": F.graphite, "height": 0.4})
     sac(p, offset(at, sign_of(at[0]) * 8, HULL_Y[2], 6), 3.5, F.slate, {"stretch": 0.7})
 
 
-def _mortar_turret(p: Any, at: Vec3) -> None:
-    """Add a mortar's turret: a squat dome and a short, fat, raised barrel."""
-    r = radius_of(BREAKWATER.stats.parts, 1, 13)
-    turret(
-        p,
-        offset(at, 0, HULL_Y[2] + 3, 0),
-        {
-            "radius": r,
-            "barrels": 1,
-            "gap": 0,
-            "bore": 3.6,
-            "length": 3,
-            "elevation": 0.6,
-            "neon": ORANGE,
-            "hatch": sign_of(at[0]),
-        },
-    )
-
-
 def build_breakwater(scene: Any) -> Any:
     """MB-BREAKWATER-01, MB-BREAKWATER-04: the Breakwater.
 
     A huge armoured shore crab with orange veins: a wide plated shell over jointed legs, a bony
-    V-shaped ram plate over its snout, a gun in its mouth and two barnacle mortars on its flanks.
+    V-shaped ram plate over its snout, a turret in its mouth and a rotor on the plate grafted on its
+    shell (its mounts, BOSS-58), and two barnacle mortars on its flanks.
     """
 
     def core(p: Any) -> None:
@@ -252,11 +242,9 @@ def build_breakwater(scene: Any) -> Any:
         {
             "core": core,
             "parts": {"ram-plate": _ram_plate, "mortar-left": _mortar, "mortar-right": _mortar},
-            "turrets": {
-                "core": _bow_gun,
-                "mortar-left": _mortar_turret,
-                "mortar-right": _mortar_turret,
+            "armour": {
+                "back": {"whole": _draw_plating},
+                "rotor-hatch": {"whole": _draw_hatch, "frame": _draw_hatch_frame},
             },
-            "armour": {"back": {"whole": _draw_plating}},
         },
     )

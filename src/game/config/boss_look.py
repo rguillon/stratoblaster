@@ -60,6 +60,57 @@ BOSS_LOOK = record({
         "ember-herald": [1, 0.78, 0.22],  # MB-EMBER-HERALD-04
         # FB-CALDERA-THRONE-06 (laser: FB-CALDERA-THRONE-12).
         "caldera-throne": [0.95, 0.05, 0.22],
+        # The Lab bosses (specs/bosses/lab/).
+        "carapace-drum": [0.2, 1, 0.8],  # MB-CARAPACE-DRUM-04
+        "tri-wing-hydra": [0.6, 1, 0.1],  # FB-TRI-WING-HYDRA-04
+        "twin-hammerhead": [1, 0.3, 0.1],  # MB-TWIN-HAMMERHEAD-04
+        "hive-carrier": [1, 0.8, 0.05],  # FB-HIVE-CARRIER-04
+        "moth-lantern": [0.85, 0.5, 1],  # MB-MOTH-LANTERN-04
+        "leviathan-spine": [0.05, 0.6, 1],  # FB-LEVIATHAN-SPINE-04
+        "mantis-lancer": [0.3, 1, 0.3],  # MB-MANTIS-LANCER-04
+        "siege-crawler": [1, 0.15, 0.1],  # FB-SIEGE-CRAWLER-04
+        "lamprey-coil": [1, 0.2, 0.6],  # MB-LAMPREY-COIL-04
+        "crescent-halo": [1, 0.95, 0.6],  # FB-CRESCENT-HALO-04
+        "prism-gate": [0.4, 0.85, 1],  # MB-PRISM-GATE-04
+        "orbital-foundry": [1, 0.55, 0.2],  # FB-ORBITAL-FOUNDRY-04
+        "bastion-cube": [1, 0.35, 0.35],  # MB-BASTION-CUBE-04
+        "twin-pylon": [0.3, 0.5, 1],  # FB-TWIN-PYLON-04
+        "arrow-lance": [1, 1, 0.2],  # MB-ARROW-LANCE-04
+        "cathedral-engine": [0.75, 0.3, 1],  # FB-CATHEDRAL-ENGINE-04
+        "lattice-node": [0.2, 1, 0.55],  # MB-LATTICE-NODE-04
+        "folding-citadel": [1, 0.6, 0.1],  # FB-FOLDING-CITADEL-04
+        "monolith-array": [0.1, 1, 1],  # MB-MONOLITH-ARRAY-04
+        "star-engine": [1, 0.1, 0.35],  # FB-STAR-ENGINE-04
+        "gale-corvette": [0.5, 0.9, 1],  # MB-GALE-CORVETTE-04
+        "sky-carrier": [1, 0.45, 0.1],  # FB-SKY-CARRIER-04
+        "bell-keep": [1, 0.85, 0.4],  # MB-BELL-KEEP-04
+        "cloud-dreadnought": [1, 0.1, 0.2],  # FB-CLOUD-DREADNOUGHT-04
+        "rotor-bastion": [0.3, 1, 0.6],  # MB-ROTOR-BASTION-04
+        "zeppelin-citadel": [0.6, 0.4, 1],  # FB-ZEPPELIN-CITADEL-04
+        "windmill-ram": [1, 0.7, 0],  # MB-WINDMILL-RAM-04
+        "sky-arsenal": [0.2, 0.7, 1],  # FB-SKY-ARSENAL-04
+        "kite-bulwark": [0.9, 1, 0.3],  # MB-KITE-BULWARK-04
+        "throne-of-storms": [1, 0.3, 0.8],  # FB-THRONE-OF-STORMS-04
+        "condor-lifter": [0.4, 1, 0.9],  # MB-CONDOR-LIFTER-04
+        "stratoliner-colossus": [1, 0.65, 0.3],  # FB-STRATOLINER-COLOSSUS-04
+        "aegis-wing": [0.6, 0.6, 1],  # MB-AEGIS-WING-04
+        "seaplane-leviathan": [0.1, 0.8, 1],  # FB-SEAPLANE-LEVIATHAN-04
+        "twin-boom-lancer": [1, 0.85, 0.2],  # MB-TWIN-BOOM-LANCER-04
+        "swing-wing-titan": [1, 0.25, 0.55],  # FB-SWING-WING-TITAN-04
+        "canard-gunship": [0.5, 1, 0.2],  # MB-CANARD-GUNSHIP-04
+        "tiltrotor-behemoth": [0.9, 0.4, 1],  # FB-TILTROTOR-BEHEMOTH-04
+        "rocket-interceptor": [1, 0.45, 0.2],  # MB-ROCKET-INTERCEPTOR-04
+        "aerial-ark": [1, 0.95, 0.95],  # FB-AERIAL-ARK-04
+        "anvil-barge": [1, 0.5, 0.25],  # MB-ANVIL-BARGE-04
+        "floating-dam": [0.2, 0.8, 1],  # FB-FLOATING-DAM-04
+        "iron-lighthouse": [1, 0.95, 0.5],  # MB-IRON-LIGHTHOUSE-04
+        "skyport-hub": [0.3, 1, 0.8],  # FB-SKYPORT-HUB-04
+        "drill-fort": [1, 0.75, 0.1],  # MB-DRILL-FORT-04
+        "aqueduct-leviathan": [0.5, 0.7, 1],  # FB-AQUEDUCT-LEVIATHAN-04
+        "bunker-saucer": [0.9, 0.3, 0.3],  # MB-BUNKER-SAUCER-04
+        "clockwork-citadel": [1, 0.85, 0.55],  # FB-CLOCKWORK-CITADEL-04
+        "mortar-raft": [0.6, 1, 0.4],  # MB-MORTAR-RAFT-04
+        "star-fort": [1, 0.35, 0.6],  # FB-STAR-FORT-04
     },
     # Its charge lights strobe this many times a second while it holds its fire (BOSS-22).
     "stageStrobeHz": 6,

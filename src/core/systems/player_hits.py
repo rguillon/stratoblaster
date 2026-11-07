@@ -103,7 +103,7 @@ def _missile_hits(world: EnemyWorld, rules: HullRules, touches: Touches) -> list
     hits: list[PlayerHit] = [
         PlayerHit("missile", rules.damage.missile, m.x, m.y, _missile_land(m))
         for m in world.shots.missiles
-        if m.alive and m.health > 0 and touches(m, m.radius)
+        if m.alive and m.health > 0 and m.height <= 0 and touches(m, m.radius)
     ]
     return hits
 

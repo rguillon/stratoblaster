@@ -20,7 +20,12 @@ from game.config.bosses.moving_regions import is_moving, motion_value
 from game.config.record import field
 from game.view.bosses.boss_frame import frame_drawings
 from game.view.bosses.boss_reveal import HIDDEN, SHOWN, ease, reveal_phase
-from game.view.bosses.region_motion import node_pose, progress, relative_value
+from game.view.bosses.region_motion import (
+    node_pose,
+    progress,
+    relative_value,
+    rest_relative_value,
+)
 from game.view.enemies.enemy_mesh import build_enemy_model, collect_parts
 from render.babylon import new_transform_node, set_enabled
 from render.edge_trim_mesh import clear_trim, set_trim_group
@@ -43,6 +48,22 @@ LAYERS = ["hull", "flesh", "neon", "vein", "charge"]
 GREY = [0.3, 0.3, 0.33]
 # The share of an armour's surface under the height its plates are drawn at (`armour_top`).
 TOP_SHARE = 0.9
+# Seconds a hatch over a gun mount takes to burst (`armour_region`'s `mount`), in the shares of a
+# transformation's (`BOSS_LOOK.reveal`'s `burst` and `burstEnd`).
+HATCH_SECONDS = 1.0
+
+
+def hatch_opens() -> float:
+    """Seconds after its gun comes into use a hatch has burst: the gun rises out then."""
+    return float(BOSS_LOOK.reveal.burst * HATCH_SECONDS)
+
+
+def _mount_since(boss: Any, mount_id: str) -> Any:
+    """Seconds since `boss` first used the mount `mount_id`; None before."""
+    for mount in boss.mounts:
+        if mount.id == mount_id:
+            return None if mount.shown_at == None else boss.age - mount.shown_at
+    return None
 
 
 def model_outline(outline: list[Any]) -> list[list[float]]:
@@ -285,15 +306,23 @@ class ArmourView:
         if boss == None:
             self._rest(lit, dt, 1000)
             return
-        phase = reveal_phase(self.region.form, boss.form, boss.transforming_into)
-        if phase == HIDDEN:
-            self._rest(lit, dt, boss.core.since_hit)
-            return
-        if phase == SHOWN:
-            self._shed(lit, dt, 1)
-            return
         look = BOSS_LOOK.reveal
-        t = boss.transform
+        if self.region.mount != None:
+            # A hatch: it bursts as its gun comes into use.
+            since = _mount_since(boss, self.region.mount)
+            if since == None:
+                self._rest(lit, dt, boss.core.since_hit)
+                return
+            t = min(1, since / HATCH_SECONDS)
+        else:
+            phase = reveal_phase(self.region.form, boss.form, boss.transforming_into)
+            if phase == HIDDEN:
+                self._rest(lit, dt, boss.core.since_hit)
+                return
+            if phase == SHOWN:
+                self._shed(lit, dt, 1)
+                return
+            t = boss.transform
         if t < look.burst:
             # It strains: shudders and strobes.
             self._rest(lit, dt, 0 if math.floor(t * look.strobeHz * 4) % 2 == 0 else 1000)
@@ -301,7 +330,7 @@ class ArmourView:
             jolt = math.sin(t * 90) * look.shudder * k
             self.whole.root.position.set(jolt, 0, -jolt * 0.6)
             return
-        self._shed(lit, dt, (t - look.burst) / (look.burstEnd - look.burst))
+        self._shed(lit, dt, min(1, (t - look.burst) / (look.burstEnd - look.burst)))
 
     def _rest(self, lit: Any, dt: float, since_hit: float) -> None:
         set_enabled(self.whole.root, True)
@@ -329,6 +358,11 @@ class ArmourView:
             node.scaling.set(pose[3], pose[3], pose[3])
 
 
+# The key of a moving region's carrier of what stands on it from the start (`MovingView`), after
+# its id.
+REST = "-rest"
+
+
 def place(node: Any, pose: list[Any]) -> None:
     """Put `node` at `pose`, `[position, rotation]` (see `region_motion.node_pose`)."""
     p = pose[0]
@@ -341,18 +375,20 @@ class MovingView:
     """A moving region of a boss model (BOSS-45, D-230): its piece.
 
     `whole` (a model on its `mover` node, with its flash group `flash`), moved by its motion as the
-    boss transforms; the `carrier` node the weapons riding it hang from (drawn where they end up);
+    boss transforms; the `carriers` the weapons riding it hang from (drawn where they end up) and
+    what its parts standing on it from the start leave (drawn where they stand at rest, BOSS-18);
     and its `frame` (a `FrameView`), if it leaves one where it was drawn.
     """
 
     def __init__(
-        self, region: Any, whole: Any, flash: Any, mover: Any, carrier: Any, frame: Any
+        self, region: Any, whole: Any, flash: Any, mover: Any, carriers: list[Any], frame: Any
     ) -> None:
         self.region = region
         self.whole = whole
         self.flash = flash
         self.mover = mover
-        self.carrier = carrier
+        self.carrier = carriers[0]
+        self.rest_carrier = carriers[1]
         self.frame = frame
 
     def show(self, boss: Any, lit: Any, dt: float) -> None:
@@ -365,6 +401,7 @@ class MovingView:
         value = motion_value(motion, k)
         place(self.mover, node_pose(motion, value))
         place(self.carrier, node_pose(motion, relative_value(motion, value)))
+        place(self.rest_carrier, node_pose(motion, rest_relative_value(motion, value)))
         since_hit = 1000 if boss == None else boss.core.since_hit
         look = BOSS_LOOK.reveal
         straining = (
@@ -457,11 +494,14 @@ def _moving_view(
     mover = new_transform_node(name + "-mover", scene)
     mover.parent = root
     whole.root.parent = mover
-    carrier = carriers[region.id] if carriers != None and region.id in carriers else None
-    if carrier == None:
-        carrier = new_transform_node(name + "-carrier", scene)
-        carrier.parent = root
-    return MovingView(region, whole, flash_of(whole), mover, carrier, frame)
+    nodes: list[Any] = []
+    for key in [region.id, region.id + REST]:
+        node = carriers[key] if carriers != None and key in carriers else None
+        if node == None:
+            node = new_transform_node(name + "-carrier" + (REST if key != region.id else ""), scene)
+            node.parent = root
+        nodes.append(node)
+    return MovingView(region, whole, flash_of(whole), mover, nodes, frame)
 
 
 def build_armour(

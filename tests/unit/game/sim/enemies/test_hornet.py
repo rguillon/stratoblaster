@@ -1,8 +1,10 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/sim/enemies/hornet.py`."""
 
+import math
+
 import pytest
-from helpers.enemy_steps import run, run_until
+from helpers.enemy_steps import STEP, run, run_until
 from helpers.fakes import FakeContext
 
 from game.config.enemies import ENEMY_CONFIG
@@ -74,3 +76,22 @@ def test_enm_hornet_04_a_hornet_from_a_side_never_leaves_its_height_while_enteri
         run(hornet, ctx, 0.05, 0.05)
         assert hornet.y == pytest.approx(350.0)
     assert hornet.x == pytest.approx(280.0)
+
+
+def test_enm_hornet_04_a_hornet_from_a_side_points_its_nose_along_its_flight() -> None:
+    hornet = Hornet(
+        -430, 400, HornetOptions(CFG.stats, 400.0, 200.0, 50.0, 1.0, 100.0, 400.0, 120.0)
+    )
+    hornet.update(FakeContext(), 0.1)
+    # Flying right (+X): the nose points right, not down.
+    assert hornet.heading == pytest.approx(math.pi / 2)
+
+
+def test_enm_hornet_04_a_hornet_without_entry_speed_already_at_its_stop_aims_as_it_was() -> None:
+    """A config with no `entrySpeed` (0): already at its stop, it aims without a nose flick."""
+    hornet = Hornet(100, 300, HornetOptions(CFG.stats, 300.0, 0.0, 50.0, 1.0, 100.0, 400.0))
+    hornet.heading = 1.0
+    run(hornet, FakeContext(), STEP)
+    assert hornet.state == "aim"
+    assert (hornet.x, hornet.y) == (100, 300)
+    assert hornet.heading == 1.0

@@ -4,7 +4,7 @@
 from core.entities.enemy import Enemy
 from core.systems.gun_muzzles import GunMuzzles
 from game.config.enemy_harrier import HARRIER_CONFIG
-from game.sim.enemies.enemy_helpers import DOWN, Cadence
+from game.sim.enemies.enemy_helpers import DOWN, Cadence, leave_upward, missile_spec
 
 # isort: split
 # __pragma__ ("skip")
@@ -37,6 +37,8 @@ class Harrier(Enemy):
         self.missiles_left = CFG.missiles
         self._launcher = Cadence(CFG.fireInterval, CFG.firstShot)
         self._rails = [GunMuzzles([muzzle]) for muzzle in CFG.muzzles]
+        # Each rail's port, kicked as its missile leaves (WPN-07).
+        self.launchers = [rail.barrels[0] for rail in self._rails]
         # Which way it strafes: 1 to the right, -1 to the left.
         self._strafe = 1
 
@@ -47,7 +49,7 @@ class Harrier(Enemy):
         elif self.state == "hold":
             self._hold(ctx, dt)
         else:
-            self.y += CFG.exitSpeed * dt
+            leave_upward(self, CFG.exitSpeed, dt)
 
     def _enter(self, ctx: EnemyContext, dt: float) -> None:
         left = self.y - self.stop_y
@@ -76,7 +78,7 @@ class Harrier(Enemy):
             return
         rail = self._rails[(CFG.missiles - self.missiles_left) % len(self._rails)]
         point = rail.along(ctx, self, DOWN)
-        ctx.fire_missile(point.x, point.y, DOWN, CFG.missile)
+        ctx.fire_missile(point.x, point.y, DOWN, missile_spec(CFG.missile))
         self.missiles_left -= 1
         if self.missiles_left <= 0:
             self.state = "exit"

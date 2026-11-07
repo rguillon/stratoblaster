@@ -75,8 +75,8 @@ ENEMY_TIERS = record({
         "hull": [0, 0, 0],
         "kinds": {
             "diver": "splitter",
-            "shooter": "juggernaut",
-            "missile": "hydra",
+            "shooter": "hydra",
+            "missile": "juggernaut",
             "laser": "scissor",
             "carrier": "hive",
         },

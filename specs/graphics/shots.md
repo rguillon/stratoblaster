@@ -193,14 +193,18 @@ bullet) sets its size. The bullets it bursts into are plain bullets.
 ### GFX-SHOT-15 — Enemy missiles · MUST
 
 An enemy missile (one the player can shoot down) is a small dark six-sided body with a self-lit
-orange tip, pointing along its heading, an orange flame glowing behind it and an orange rim round
-its body (Babylon's outline renderer, about 1 px wide), so it shows over blasts and bright ground
-and is not taken for a bullet. Missiles keep this rim; the ships' edge trim is not used on shots.
-Their flames are drawn over the player's shots and the explosions, under the bullets.
+orange tip, pointing along its heading (and tilted by its pitch while it lofts, WPN-09), the enemy
+ships' animated reactor flame (in orange) at its tail, and an orange rim round its body (Babylon's
+outline renderer, about 1 px wide), so it shows over blasts and bright ground and is not taken for a
+bullet. Missiles keep this rim; the ships' edge trim is not used on shots. Their flames are drawn
+over the player's shots and the explosions, under the bullets. It leaves a light grey smoke trail:
+small puffs left behind its tail at its height, growing and fading out in about half a second (the
+game's seeded particles drawn as thin instances, as the explosions' smoke).
 
 **Acceptance criteria**
-- Given an enemy missile, then it has a dark body, an orange tip, a flame and an orange rim, turned
-  along its heading.
+- Given an enemy missile, then it has a dark body, an orange tip, a reactor flame and an orange rim,
+  turned along its heading.
+- Given a flying enemy missile, then puffs of smoke are left behind its tail and fade out.
 
 *Sources: GD-43, P14-R05, D-123, D-220.*
 

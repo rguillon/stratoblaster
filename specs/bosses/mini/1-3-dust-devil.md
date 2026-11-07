@@ -26,8 +26,8 @@ it carrying three blade pods 120° apart, the ring turning slowly clockwise.
 #### MB-DUST-DEVIL-02 — Body · MUST
 
 Its core is a swollen fleshy bell (a gyro disc grown over, slate and sinew shades) with plated ribs
-radiating across its cap (the plating of MB-DUST-DEVIL-05, round the hub on its middle), a charge
-gland on its crown (its ring emitter, on the hub), eyes at its front and its reactors in flesh sacs
+radiating across its cap (the plating of MB-DUST-DEVIL-05, round the hub on its middle), the core's
+stacked guns on the hub (MB-DUST-DEVIL-03), eyes at its front and its reactors in flesh sacs
 behind. The ring is a sinew collar round the bell, a fleshy rim, three
 tentacle spokes out to the pods and membrane fins between them.
 
@@ -36,16 +36,21 @@ tentacle spokes out to the pods and membrane fins between them.
 
 *Sources: P07-R05, P16-R05.*
 
-#### MB-DUST-DEVIL-03 — Its parts · MUST
+#### MB-DUST-DEVIL-03 — Its parts and guns · MUST
 
+Every shot leaves one of its gun mounts, the shared models of [common](../common.md) (BOSS-58):
 - **Blade pods** (three, on the ring): each a sand ray clinging to the rim, its wide fleshy wings
-  plated at the front, a bone barb at each wing tip carrying a muzzle. They turn with the ring.
-- **Crown emitter** (the core's gun): the gland on the bell's crown; it does not turn.
+  plated at the front, a rotor with two barrels on its back, pointing both ways along the ring, its
+  amber canopy crowning the rotor's hub. They turn with the ring.
+- **Hub guns** (the core's): stacked on the hub in the middle of the bell, a rotor with twelve
+  barrels (its rings) under a gun turret with three barrels side by side (its aimed shots and
+  bursts).
 
 **Acceptance criteria**
-- Given its model, then the three pods are on its ring and turn with the boss's spin (unit test).
+- Given its model, then the three pods are on its ring and turn with the boss's spin, and it draws
+  every gun mount (unit test).
 
-*Sources: P07-R05, P16-R05.*
+*Sources: P07-R05, P16-R05, D-280.*
 
 #### MB-DUST-DEVIL-04 — Lights · MUST
 
@@ -62,7 +67,7 @@ yellow ([common](../common.md), BOSS-50).
 The plating over the middle of its bell is the armour it sheds at its transformation
 ([common](../common.md), BOSS-42): the bell's domed cap, a shell of revolution drawn as a piece of its
 own over the flattened disc (the disc up to 2.2 px; the cap from 2 px at its rim, 15.2 px out, sunk
-into the disc, up to 7.7 px round the hub that carries the emitter), the bone ribs radiating down it
+into the disc, up to 7.7 px round the hub that carries its guns), the bone ribs radiating down it
 to its rim, the plated ribs and the nose plate grafted on it, a vein down each side. Its region is
 two half-rings round the hub, from 4.8 to 15.2 px out (`back`, the right one mirrored); it bursts
 into plates cracked from those outlines and leaves a `shell` lattice frame on the disc, round the
@@ -93,8 +98,8 @@ While it is fought the ground scrolls at ×0.5.
 
 It has three parts as it comes in, all shielding its core: `blade-1`, `blade-2` and `blade-3`, on
 the turning ring ([common](../common.md), BOSS-34). Each pod fires a ring of 2 green bullets turning
-at each volley (a 2-way spiral) from its barbs, the three one after the other. The crown emitter
-fires the core's volleys.
+at each volley (a 2-way spiral) from its rotor, one bullet a barrel, the three one after the other.
+The core's hub guns fire the core's volleys, and are the last the player destroys.
 
 **Acceptance criteria**
 - Given its design, then its three pods orbit and shield the core (unit test on its design).
@@ -104,10 +109,12 @@ fires the core's volleys.
 #### MB-DUST-DEVIL-08 — Stage patterns · MUST
 
 The pods' spirals go on in every stage while they stand. The core fires:
-- stage 0: one orange bullet at the player;
-- stage 1: an aimed fan of 3;
-- stage 2: a burst of 4 at the player;
-- stage 3 (all three pods gone): a ring of 12 turning at each volley (a spiral).
+- stage 0: one orange bullet at the player, from the hub turret;
+- stage 1: an aimed fan of 3, swept from the hub turret one bullet at a time as it turns across the
+  fan (BOSS-58);
+- stage 2: a burst of 4 at the player, the hub turret's barrels taking turns;
+- stage 3 (all three pods gone): a ring of 12 from the hub rotor, one bullet a barrel, turning at
+  each volley (a spiral).
 
 **Acceptance criteria**
 - Given each stage, then the core fires that stage's volleys and the parts left fire theirs
@@ -157,8 +164,11 @@ All in `src/game/config/bosses/mini_bosses.py` (`_DUST_DEVIL`, `DUST_DEVIL`) unl
 | Name | Value | Notes |
 |------|-------|-------|
 | size | 3 L (radius 51 px) | |
-| core | health 1 230, radius 18 | crown emitter at (0, 0), 10 px high |
+| core | health 1 230, radius 18 | `coreHealth`, `coreRadius` |
 | `blade-1`, `blade-2`, `blade-3` | (0, -40), (34.6, 20), (-34.6, 20); radius 14, health 620, shield, drop 0.5, orbiting | |
+| pod rotors | 2 barrels, bore 1, 6 px long; hub radius 3.5, 5 px high; at rest along the ring (90°, -30°, 30°) | `DUST_DEVIL_ROTOR`, `mounts` |
+| hub turret (core) | (0, 0), 9.9 px high; 3 barrels 2.1 px apart, bore 0.8, 5 px long; dome radius 3.5 | `mounts` `hub-turret` |
+| hub rotor (core) | (0, 0), 7.7 px high; 12 barrels, bore 0.6, 2.5 px long; hub radius 4.4 | `mounts` `hub-rotor` |
 | `spinRate` | 0.7 rad/s | ring turn |
 | full health | 4 090 | BOSS-54 |
 | points | 4 000; 400 a part | |
@@ -166,10 +176,10 @@ All in `src/game/config/bosses/mini_bosses.py` (`_DUST_DEVIL`, `DUST_DEVIL`) unl
 | stop height | 0.72 | |
 | sway / bob | 60 px over 9 s / 10 px over 3 s | |
 | pod spirals | rings of 2 turning 23°, green 180 px/s, every 1 s (first 0.4 / 0.73 / 1.06 s) | |
-| core stage 0 | 1 aimed orange bullet, 170 px/s, every 3 s | |
-| core stage 1 | aimed 3, 12° apart, every 2.6 s | |
-| core stage 2 | burst of 4, 0.14 s apart, every 2.4 s | |
-| core stage 3 | ring of 12 turning 15°, every 1.5 s | |
+| core stage 0 | 1 aimed orange bullet, 170 px/s, every 3 s | hub turret |
+| core stage 1 | aimed 3, 12° apart, every 2.6 s | hub turret, a sweep |
+| core stage 2 | burst of 4, 0.14 s apart, every 2.4 s | hub turret |
+| core stage 3 | ring of 12 turning 15°, every 1.5 s | hub rotor |
 | angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation | 2 parts destroyed | default threshold |
 | shed region | back: two half-rings round the hub, 4.8..15.2 px out, mirrored, `shell`; cap 2–7.7 px | `armour_region` |

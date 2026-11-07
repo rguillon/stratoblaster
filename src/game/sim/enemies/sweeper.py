@@ -4,7 +4,7 @@
 from core.entities.enemy import Enemy, EnemyLaserSpec
 from core.entities.muzzle import RaisedPoint
 from game.config.enemy_sweeper import SWEEPER_CONFIG
-from game.sim.enemies.enemy_helpers import DEG, DOWN
+from game.sim.enemies.enemy_helpers import DEG, DOWN, leave_upward
 
 # isort: split
 # __pragma__ ("skip")
@@ -79,7 +79,7 @@ class Sweeper(Enemy):
         elif self.state == "attack":
             self._attack(dt)
         else:
-            self.y += CFG.exitSpeed * dt
+            leave_upward(self, CFG.exitSpeed, dt)
 
     def _enter(self, ctx: EnemyContext, dt: float) -> None:
         left = self.y - self.stop_y

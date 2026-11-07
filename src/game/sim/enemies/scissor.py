@@ -5,7 +5,7 @@ from core.entities.enemy import EnemyLaserSpec
 from core.entities.jointed_enemy import EnemyPart, JointedEnemy
 from core.entities.muzzle import RaisedPoint
 from game.config.enemies_elite import ELITE_CONFIG
-from game.sim.enemies.enemy_helpers import DOWN
+from game.sim.enemies.enemy_helpers import DOWN, leave_upward
 from game.sim.joints import jointed_design
 
 # isort: split
@@ -88,7 +88,7 @@ class Scissor(JointedEnemy):
         elif self.state == "fire":
             self._fire(dt)
         else:
-            self.y += CFG.exitSpeed * dt
+            leave_upward(self, CFG.exitSpeed, dt)
 
     def _enter(self, ctx: EnemyContext, dt: float) -> None:
         left = self.y - self.stop_y

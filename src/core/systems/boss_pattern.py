@@ -29,6 +29,7 @@ from core.entities.enemy import (
     LaserOwner,
 )
 from core.entities.muzzle import Muzzle, PlanePoint, RaisedPoint
+from core.systems.boss_mounts import BossMount
 from core.systems.gun_muzzles import MuzzleSource
 
 # __pragma__ ("noskip")
@@ -40,6 +41,11 @@ DEG = math.pi / 180
 AIM_TOLERANCE = 0.105
 # Straight down the screen.
 DOWN = math.pi
+# Seconds at least between two bullets of a turret's sweep (BOSS-58): it fires a fan one bullet at a
+# time, turning from one bullet's way to the next.
+SWEEP_GAP = 0.06
+# How far (radians) a sweeping turret may be from a bullet's way for it to fire: about 3 degrees.
+SWEEP_TOLERANCE = 0.05
 INFINITY = float("Infinity")
 
 # The core fires the volleys whose `from` is this.
@@ -92,8 +98,12 @@ class BossBurstShape:
 class BossMissilesShape:
     """`count` homing missiles in a fan `spacing_deg` apart around the player's direction."""
 
-    def __init__(self, count: int, spacing_deg: float, missile: EnemyMissileSpec) -> None:
+    def __init__(
+        self, count: int, spacing_deg: float, missile: EnemyMissileSpec, up: bool = False
+    ) -> None:
         self.kind = "missiles"
+        # Launched from an upward silo (WPN-09): the missiles arc over to the plane first.
+        self.up = up
         self.count = count
         self.spacing_deg = spacing_deg
         self.missile = missile
@@ -125,7 +135,9 @@ class BossVolley:
     and it turns the way its next volley goes (see `BossPattern.turn_turrets`). `needs`: fires only
     while the part with this id stands (e.g. a radar that aims the guns); `after`: only once that
     part is destroyed; always when None. `every`: seconds between two volleys. `first`: seconds
-    before the first one, from the start of the stage; `every` when None.
+    before the first one, from the start of the stage; `every` when None. `mount`: the mount of its
+    piece it fires from (BOSS-58), in place of `muzzles` and `turret`: each shot leaves one of its
+    barrels, along it.
     """
 
     def __init__(
@@ -138,6 +150,7 @@ class BossVolley:
         needs: str | None = None,
         after: str | None = None,
         first: float | None = None,
+        mount: BossMount | None = None,
     ) -> None:
         self.from_ = from_
         self.every = every
@@ -147,6 +160,7 @@ class BossVolley:
         self.needs = needs
         self.after = after
         self.first = first
+        self.mount = mount
 
 
 # Typing names only: Transcrypt skips this block, CPython needs the classes above first.
@@ -191,15 +205,22 @@ class _VolleyState:
         self.burst_left = 0.0
         # Seconds since its last laser was fired (Infinity before the first).
         self.laser_age = INFINITY
+        # A turret's sweep (BOSS-58): bullets still to fire, seconds until the next one, how many it
+        # has fired, and the turret's aim at its middle bullet.
+        self.sweep = 0
+        self.sweep_left = 0.0
+        self.swept = 0
+        self.sweep_centre = 0.0
         self.guns = guns
 
 
 class _TurretGroup:
-    """The indices of the volleys that fire from one piece's turret."""
+    """The indices of the volleys that fire from one turret: a piece's, or a mount's."""
 
-    def __init__(self, from_: str, volleys: list[int]) -> None:
+    def __init__(self, from_: str, volleys: list[int], mount: BossMount | None = None) -> None:
         self.from_ = from_
         self.volleys = volleys
+        self.mount = mount
 
 
 def _live(volley: BossVolley, intact: Callable[[str], bool]) -> bool:
@@ -228,13 +249,21 @@ class BossPattern:
         self._turrets: list[_TurretGroup] = []
         for i in range(len(volleys)):
             volley = volleys[i]
-            if not volley.turret:
+            mount = volley.mount
+            if mount is not None and mount.turret is None:
                 continue
-            group = _find_turret_group(self._turrets, volley.from_)
+            if mount is None and not volley.turret:
+                continue
+            group = _find_turret_group(self._turrets, volley.from_, mount)
             if group is None:
-                self._turrets.append(_TurretGroup(volley.from_, [i]))
+                self._turrets.append(_TurretGroup(volley.from_, [i], mount))
             else:
                 group.volleys.append(i)
+
+    def open_fire(self) -> None:
+        """Make every volley due now (they fire at their next step, their guns on aim)."""
+        for state in self._states:
+            state.left = 0
 
     @property
     def charge(self) -> float:
@@ -268,6 +297,7 @@ class BossPattern:
                 state.left += volley.every
                 self._fire(ctx, volley, state, source)
             self._step_burst(ctx, volley, state, source, time)
+            _step_sweep(ctx, volley, state, source, time)
 
     def turn_turrets(self, ctx: EnemyContext, dt: float, sources: VolleySources) -> None:
         """Turn the turrets its volleys fire from for `dt` seconds (BOSS-29).
@@ -281,7 +311,7 @@ class BossPattern:
             source = sources(group.from_)
             if not source:
                 continue
-            turret = source.turret if hasattr(source, "turret") else None
+            turret = _group_turret(group, source)
             if not turret:
                 continue
             for i in group.volleys:
@@ -300,7 +330,7 @@ class BossPattern:
             )
             rate = spec.turn_rate_deg if laser is None else laser_rate
             # Entities start `aim` at the int 0; it is a float from here on.
-            turret.aim = turn_towards(turret.aim, aim, rate * DEG * dt)  # type: ignore[assignment]  # the value assigned is wider than the field type
+            turret.aim = turn_towards(turret.aim, aim, rate * DEG * dt)
 
     def _laser_aim(
         self,
@@ -347,7 +377,7 @@ class BossPattern:
 
         next_volley: int | None = None
         for i in volleys:
-            if self._states[i].burst > 0:
+            if self._states[i].burst > 0 or self._states[i].sweep > 0:
                 next_volley = i
                 break
         if next_volley is None:
@@ -368,6 +398,9 @@ class BossPattern:
         self, ctx: EnemyContext, volley: BossVolley, state: _VolleyState, source: VolleySource
     ) -> None:
         shape = volley.shape
+        if volley.mount is not None and not isinstance(shape, BossLaunchShape):
+            _fire_mount(ctx, volley.mount, shape, state, source)
+            return
         if isinstance(shape, BossBurstShape):
             state.burst = shape.count
             state.burst_left = 0
@@ -418,22 +451,84 @@ class BossPattern:
             if not _on_aim(ctx, volley, state, source):
                 state.burst_left = 0
                 break
-            fire_aimed(
-                ctx,
-                state.guns,
-                source,
-                (1, 0),
-                lambda x, y, h: ctx.fire_bullet(x, y, h, shape.bullet),
-            )
+            mount = volley.mount
+            if mount is not None:
+                mount.fire(ctx, source, 1, lambda x, y, h: ctx.fire_bullet(x, y, h, shape.bullet))
+            else:
+                fire_aimed(
+                    ctx,
+                    state.guns,
+                    source,
+                    (1, 0),
+                    lambda x, y, h: ctx.fire_bullet(x, y, h, shape.bullet),
+                )
             state.burst -= 1
             state.burst_left += shape.gap
 
 
-def _find_turret_group(groups: list[_TurretGroup], from_: str) -> _TurretGroup | None:
+def _find_turret_group(
+    groups: list[_TurretGroup], from_: str, mount: BossMount | None
+) -> _TurretGroup | None:
     for group in groups:
-        if group.from_ == from_:
+        if group.from_ == from_ and group.mount is mount:
             return group
     return None
+
+
+def _group_turret(group: _TurretGroup, source: VolleySource) -> BossTurret | None:
+    """Return the turret a group's volleys turn: its mount's, or else its piece's."""
+    if group.mount is not None:
+        return group.mount.turret
+    return source.turret if hasattr(source, "turret") else None
+
+
+def _volley_turret(volley: BossVolley, source: VolleySource) -> BossTurret | None:
+    """Return the turret `volley`'s guns are on, if any: its mount's, or its piece's."""
+    if volley.mount is not None:
+        return volley.mount.turret
+    if not volley.turret:
+        return None
+    return source.turret if hasattr(source, "turret") else None
+
+
+def _fire_mount(
+    ctx: EnemyContext,
+    mount: BossMount,
+    shape: "BossVolleyShape",
+    state: _VolleyState,
+    source: VolleySource,
+) -> None:
+    """Fire one volley of `shape` from `mount` (BOSS-58): every shot from a barrel, along it.
+
+    A turret's fan or aimed spread starts a sweep (one bullet at a time as it turns across it,
+    `_step_sweep`); other aimed shots and fans leave `count` of its barrels, side by side taking
+    turns; a ring leaves all of a rotor's barrels; a burst starts (one barrel a shot,
+    `_step_burst`); missiles leave its ports in turn; a laser its lens.
+    """
+    if isinstance(shape, BossBurstShape):
+        state.burst = shape.count
+        state.burst_left = 0
+    elif isinstance(shape, (BossAimedShape, BossFanShape)) and _sweeps(mount, shape):
+        state.sweep = shape.count
+        state.swept = 0
+        state.sweep_left = 0
+        turret = mount.turret
+        state.sweep_centre = _sweep_middle(ctx, shape, source, turret) if turret is not None else 0
+    elif isinstance(shape, BossMissilesShape):
+        mount.launch(
+            ctx,
+            source,
+            (shape.count, shape.spacing_deg),
+            lambda mouth, seen, h, side: _launch(ctx, shape, mouth, seen, [h, side]),
+        )
+    elif isinstance(shape, BossLaserShape):
+        ctx.fire_laser(mount.laser(source), shape.laser)
+        state.laser_age = 0
+    elif isinstance(shape, BossRingShape):
+        state.turns += 1
+        mount.fire_all(ctx, source, lambda x, y, h: ctx.fire_bullet(x, y, h, shape.bullet))
+    elif isinstance(shape, (BossAimedShape, BossFanShape)):
+        mount.fire(ctx, source, shape.count, lambda x, y, h: ctx.fire_bullet(x, y, h, shape.bullet))
 
 
 def _preset_headings(shape: BossFanShape | BossRingShape, state: _VolleyState) -> list[float]:
@@ -454,6 +549,8 @@ def _turret_aim(
 ) -> float:
     """Where `turret` points for `volley` (radians from rest): see `BossPattern.turn_turrets`."""
     shape = volley.shape
+    if state.sweep > 0:
+        return _sweep_aim(shape, state)
     if isinstance(shape, (BossAimedShape, BossBurstShape, BossLaserShape)):
         return _aim_at_player(ctx, source, turret)
     if isinstance(shape, BossFanShape):
@@ -479,9 +576,12 @@ def _on_aim(
     has its warning line, and a volley not on a turret has none to wait for.
     """
     shape = volley.shape
-    if not volley.turret or isinstance(shape, (BossRingShape, BossLaserShape, BossLaunchShape)):
+    if isinstance(shape, (BossRingShape, BossLaserShape, BossLaunchShape)):
         return True
-    turret = source.turret if hasattr(source, "turret") else None
+    if volley.mount is not None and _sweeps(volley.mount, shape):
+        # A sweep starts at once: the turret turns to each of its bullets in turn.
+        return True
+    turret = _volley_turret(volley, source)
     if not turret:
         return True
     aim = _turret_aim(ctx, volley, state, source, turret)
@@ -525,10 +625,85 @@ def _laser_owner(volley: BossVolley, state: _VolleyState, source: VolleySource) 
 
 
 def _aim_at_player(ctx: EnemyContext, source: VolleySource, turret: BossTurret) -> float:
-    """How far `turret` must turn from its rest (straight down) to point at the player."""
+    """How far `turret` must turn from its rest (its piece's heading) to point at the player.
+
+    Its barrels point its piece's way turned by its aim (`BossMount.heading_of`), so on a boss
+    that has turned round (BOSS-46) the aim is measured from the boss's heading, not from down.
+    """
     if hasattr(source, "place"):
         pivot = source.place((turret.spec.x, turret.spec.y, 0))
         pivot_x, pivot_y = pivot.x, pivot.y
     else:
         pivot_x, pivot_y = source.x, source.y
-    return wrap_angle(heading_to(pivot_x, pivot_y, ctx.player_x, ctx.player_y) - DOWN)
+    return wrap_angle(heading_to(pivot_x, pivot_y, ctx.player_x, ctx.player_y) - source.heading)
+
+
+def _sweeps(mount: BossMount, shape: "BossVolleyShape") -> bool:
+    """Whether `mount` fires `shape` as a sweep (BOSS-58).
+
+    A fan or a spread of aimed shots from a turret: its barrels are side by side, so it turns
+    across the spread, one bullet at a time.
+    """
+    if mount.turret is None or not isinstance(shape, (BossAimedShape, BossFanShape)):
+        return False
+    return shape.count > 1
+
+
+def _sweep_middle(
+    ctx: EnemyContext, shape: "BossVolleyShape", source: VolleySource, turret: BossTurret
+) -> float:
+    """Return the turret's aim at a sweep's middle bullet: at the player, or a fan's heading."""
+    if isinstance(shape, BossFanShape):
+        return wrap_angle(-shape.heading_deg * DEG)
+    return _aim_at_player(ctx, source, turret)
+
+
+def _sweep_aim(shape: "BossVolleyShape", state: _VolleyState) -> float:
+    """Return where a sweeping turret points for its next bullet, from one side to the other."""
+    if not isinstance(shape, (BossAimedShape, BossFanShape)):
+        return state.sweep_centre
+    offset = (state.swept - (shape.count - 1) / 2) * shape.spacing_deg * DEG
+    return wrap_angle(state.sweep_centre + offset)
+
+
+def _step_sweep(
+    ctx: EnemyContext, volley: BossVolley, state: _VolleyState, source: VolleySource, time: float
+) -> None:
+    """Fire a sweep's bullets one at a time, each once the turret points its way (BOSS-58).
+
+    At least `SWEEP_GAP` apart, its barrels taking turns, each bullet along its barrel.
+    """
+    mount = volley.mount
+    shape = volley.shape
+    if state.sweep <= 0 or mount is None or mount.turret is None:
+        return
+    if not isinstance(shape, (BossAimedShape, BossFanShape)):
+        return
+    turret = mount.turret
+    state.sweep_left -= time
+    while state.sweep > 0 and state.sweep_left <= 0:
+        if abs(wrap_angle(_sweep_aim(shape, state) - turret.aim)) > SWEEP_TOLERANCE:
+            state.sweep_left = 0
+            break
+        mount.fire(ctx, source, 1, lambda x, y, h: ctx.fire_bullet(x, y, h, shape.bullet))
+        state.sweep -= 1
+        state.swept += 1
+        state.sweep_left += SWEEP_GAP
+
+
+def _launch(
+    ctx: EnemyContext,
+    shape: BossMissilesShape,
+    mouth: RaisedPoint,
+    seen: PlanePoint,
+    headings: list[float],
+) -> None:
+    """Launch a missile of `shape`: up from its silo's mouth (WPN-09), or flat where it is seen.
+
+    `headings` is its way and, for an upward one, the side it drifts off to as it climbs.
+    """
+    heading = headings[0]
+    if shape.up:
+        ctx.fire_missile(mouth.x, mouth.y, headings[1], shape.missile, mouth.height)
+    else:
+        ctx.fire_missile(seen.x, seen.y, heading, shape.missile)

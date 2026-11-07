@@ -6,8 +6,8 @@
 
 The Overlord is the final boss of 1-5, the last and hardest boss of World 1: a city-sized organism,
 6 L across (first designed as a city-ship), a city of living towers grown on its back. Two wing
-laser cannons and two missile batteries fire at the player; two shield generators in front are the
-only parts shielding its core, a citadel firing every kind of attack. It sheds its flank armour for
+laser cannons and two missile batteries fire at the player and two shield generators stand in front;
+all six shield its core, a citadel firing every kind of attack from its own guns. It sheds its flank armour for
 a pair of laser lances, then its spine plating for a pair of flak mortars. Shared rules are in
 [common](../common.md).
 
@@ -31,7 +31,8 @@ back.
 
 Its body is a vast dark mantle (slate and graphite shades) with ribs across it, veins out to its
 edges and swim bladders across its tail, four reactors in flesh sacs there. Its shelled spine (the
-boulevard) carries missile hatches behind the citadel, lit as missiles load. Its membrane wings
+boulevard) carries a grafted plate with the core's missile ports behind the citadel, and a rotor at
+its tail (FB-OVERLORD-03). Its membrane wings
 stretch on bone struts out to the laser cannons. Living towers of flesh and bone, lit with window
 glands, grow out of its back; the skyline is not symmetrical: a broadcast spire and a neon billboard
 on the left (the screen's left), a command stalk with a lit cab on the right.
@@ -44,20 +45,25 @@ on the left (the screen's left), a command stalk with a lit cab on the right.
 
 #### FB-OVERLORD-03 — Its parts and the citadel · MUST
 
-- **Wing laser cannons** (at the wing tips): a swollen gland on the wing, a grafted collar, a long
-  barrel, coils and a lens charging.
+Every shot leaves one of its gun mounts, the shared models of [common](../common.md) (BOSS-58):
+- **Wing laser cannons** (at the wing tips): a swollen gland on the wing, a fixed laser mount on its
+  front pointing down the screen.
 - **Missile batteries** (two, at its back): a missile brood on the mantle, a swollen mound under a
-  grafted plate with six hatches lit as it loads.
+  grafted plate carrying a missile block of six ports.
 - **Shield generators** (two, at its front): a glowing gland in a ring of grafted coil swelling out
   of a flesh mound, three bone horns round it tipped with neon; no weapon.
 - **Citadel** (over the core): a swollen, tiered brain-head ringed with neon, eyes on its front, a
-  ring emitter on top and a grafted weapon array before it (twin cannons and a laser).
+  rotor with fourteen barrels on its roof and a grafted weapon array before it: a gun turret with
+  seven barrels side by side in the middle, between a turret with two barrels side by side (the
+  twin cannon) and a fixed laser.
+- **Boulevard guns** (the core's, behind the citadel): a missile block of four ports on a grafted
+  plate, and a rotor with ten barrels at the boulevard's tail.
 
 **Acceptance criteria**
-- Given its model, then it draws its six parts and its citadel's guns where its design puts them
+- Given its model, then it draws its six parts and every gun mount where its design puts them
   (unit test).
 
-*Sources: P07-R05, P16-R06.*
+*Sources: P07-R05, P16-R06, D-280.*
 
 #### FB-OVERLORD-04 — Lights · MUST
 
@@ -109,28 +115,34 @@ height, then sways a little and bobs. While it is fought the ground scrolls at �
 
 #### FB-OVERLORD-07 — Parts and core · MUST
 
-It has six parts as it comes in: `generator-left` and `generator-right`, the only ones shielding its
-core, and `laser-left`, `laser-right`, `battery-left` and `battery-right`, which do not. Each wing
-cannon fires a laser straight down, the two in turn, locked once it fires; each battery fires pairs
-of homing missiles, in turn; the generators do not fire. The citadel fires the core's volleys from
-its twin cannons, its ring emitter, its laser and its missile hatches; none of them turns.
+It has six parts as it comes in, all shielding its core: `generator-left`, `generator-right`,
+`laser-left`, `laser-right`, `battery-left` and `battery-right`. Each wing cannon fires a laser
+straight down, the two in turn, locked once it fires; each battery fires pairs of homing missiles
+from its ports, in turn; the generators do not fire. The core's guns fire the core's volleys, and
+are the last the player destroys: the array's middle turret its aimed shots, purple bursts and
+fans, the twin cannon its red bursts (on a turret of its own, so they aim at the player while the
+fans go down the screen), the array's laser its laser, the two rotors its rings and the boulevard's
+ports its missiles. The two turrets turn the way they fire.
 
 **Acceptance criteria**
-- Given its design, then only its generators shield the core.
+- Given its design, then its six parts all shield the core.
 
 *Sources: P07-R01, P07-R05.*
 
 #### FB-OVERLORD-08 — Stage patterns · MUST
 
 The wing lasers and the batteries' missiles go on in every stage while they stand. The core fires:
-- stage 0: one purple bullet at the player;
-- stage 1: an aimed fan of 3;
-- stage 2: a burst of 4 at the player;
-- stage 3: a fan of 5;
-- stage 4: a ring of 10 turning at each volley;
-- stage 5: a fan of 7 and red bursts of 3;
-- stage 6 (all six parts gone): every attack kind at once: a ring of 14 purple turning at each
-  volley, its own laser and pairs of homing missiles.
+- stage 0: one purple bullet at the player, from the array's middle turret;
+- stage 1: an aimed fan of 3, swept from the middle turret one bullet at a time as it turns across
+  the fan (BOSS-58);
+- stage 2: a burst of 4 at the player, the middle turret's barrels taking turns;
+- stage 3: a fan of 5 straight down, 12° apart, swept the same way;
+- stage 4: a ring of 10 from the boulevard's tail rotor, one bullet a barrel, turning at each
+  volley;
+- stage 5: a fan of 7 from the middle turret, swept, and red bursts of 3 from the twin cannon;
+- stage 6 (all six parts gone): every attack kind at once: a ring of 14 purple from the roof rotor
+  turning at each volley, the array's laser and pairs of homing missiles from the boulevard's
+  ports.
 
 **Acceptance criteria**
 - Given each stage, then the core fires that stage's volleys and the parts left fire theirs
@@ -204,10 +216,18 @@ All in `src/game/config/bosses/final_bosses.py` (`_OVERLORD`, `OVERLORD`) unless
 | Name | Value | Notes |
 |------|-------|-------|
 | size | 6 L (radius 102 px) | |
-| core | health 5 540, radius 24, drop 1 | twin cannons (±7, -39.6), ring emitter (0, 0) 33.6 px high, laser (0, -38), 4 missile cells |
-| `laser-left`, `laser-right` | (∓78, -6), radius 15, health 1 660, no shield, drop 0.6 | |
-| `battery-left`, `battery-right` | (∓46, 30), radius 14, health 1 520, no shield, drop 0.6 | 6 cells each |
+| core | health 5 540, radius 24, drop 1 | `coreHealth`, `coreRadius`, `coreDrop` |
+| `laser-left`, `laser-right` | (∓78, -6), radius 15, health 1 660, shield, drop 0.6 | |
+| `battery-left`, `battery-right` | (∓46, 30), radius 14, health 1 520, shield, drop 0.6 | |
 | `generator-left`, `generator-right` | (∓34, -36), radius 13, health 1 940, shield, drop 0.6 | no weapon |
+| wing lasers | (∓78, -18), 6 px high, fixed; barrel 12 px long, bore 2.4; base radius 4.5 | `mounts` |
+| batteries' missile blocks | (∓46, 30), 14 px high; 6 ports each | `mounts` |
+| array turret (core) | (0, -28), 19 px high; 7 barrels 2.9 px apart, bore 1.1, 8 px long; dome radius 10.3 | `mounts` `array` |
+| twin cannon (core) | (14, -24), 19 px high; 2 barrels 3.1 px apart, bore 1.2, 7 px long; dome radius 4 | `mounts` `array-cannon` |
+| array laser (core) | (-14, -24), 19 px high, fixed; barrel 9 px long, bore 2; base radius 4 | `mounts` `array-laser` |
+| roof rotor (core) | (0, 0), 30.8 px high; 14 barrels, bore 0.9, 5 px long; hub radius 5 | `mounts` `roof-rotor` |
+| tail rotor (core) | (0, 48), 10 px high; 10 barrels, bore 0.9, 4.5 px long; hub radius 4.5 | `mounts` `tail-rotor` |
+| boulevard's missile block (core) | (0, 34), 10 px high; 4 ports | `mounts` `hatches` |
 | full health | 22 760 (15 780 without the hidden weapons) | BOSS-54 |
 | points | 15 000; 1 500 a part | |
 | ground speed | ×0.25 | |
@@ -215,13 +235,13 @@ All in `src/game/config/bosses/final_bosses.py` (`_OVERLORD`, `OVERLORD`) unless
 | sway / bob | 25 px over 11 s / 6 px over 5 s | |
 | wing lasers | 1.4 s every 6.5 s (first 2 s / 5.25 s) | |
 | battery missiles | 2, 24° apart, every 5.5 s (first 3.5 s / 6.25 s) | |
-| core stage 0 | 1 aimed purple bullet, 195 px/s, every 2.8 s | |
-| core stage 1 | aimed 3, 12° apart, every 2.4 s | |
-| core stage 2 | burst of 4, 0.13 s apart, every 2.4 s | |
-| core stage 3 | fan of 5, 14° apart, every 2.4 s | |
-| core stage 4 | ring of 10 turning 6°, every 2 s | |
-| core stage 5 | fan of 7, 12° apart, every 2.2 s; red burst of 3 every 2.6 s | |
-| core stage 6 | ring of 14 turning 9° every 1.2 s; laser 1.4 s every 5 s; 2 missiles, 30° apart, every 6 s | |
+| core stage 0 | 1 aimed purple bullet, 195 px/s, every 2.8 s | array turret |
+| core stage 1 | aimed 3, 12° apart, every 2.4 s | array turret, a sweep |
+| core stage 2 | burst of 4, 0.13 s apart, every 2.4 s | array turret |
+| core stage 3 | fan of 5, 12° apart, every 2.4 s | array turret, a sweep |
+| core stage 4 | ring of 10 turning 6°, every 2 s | tail rotor (named: `"mount"`) |
+| core stage 5 | fan of 7, 12° apart, every 2.2 s; red burst of 3, 0.13 s apart, every 2.6 s | array turret, a sweep; twin cannon (named) |
+| core stage 6 | ring of 14 turning 9° every 1.2 s; laser 1.4 s every 5 s; 2 missiles, 30° apart, every 6 s | roof rotor; array laser; boulevard's ports |
 | angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformations | 2 and 4 parts destroyed | default thresholds |
 | flank region (shed) | the deck's flank plate, x 32..64 at y -18..30, its edge to (52, -42) and (62.8, 32), back to x 32 at y -42..32, `wing`, mirrored; the plate 3-6 px, the city on it | first |

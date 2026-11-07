@@ -783,3 +783,26 @@ def test_d262_in_the_game_view_an_empty_world_is_a_boss_destroyed_in_the_bosses_
     v._world.enemies = []
     v.frame(0.1)
     assert v.take_cues().boss is True
+
+
+class _OpeningBoss(WorldEnemy):
+    """A boss of the game view that records being put in place to fight at once."""
+
+    def __init__(self) -> None:
+        super().__init__("warden")
+        self.opened = 0
+
+    def open_fire(self) -> None:
+        self.opened += 1
+
+
+@pytest.mark.usefixtures("env")
+def test_dev_menu_21_in_the_game_view_a_boss_is_in_place_and_opens_fire_at_once() -> None:
+    v = viewer("bosses", [DevItem("warden", "Warden", "1-1")])
+    boss = _OpeningBoss()
+    v.game.boss_kinds[0].spawn = lambda _area: boss
+    shots = SimpleNamespace(sync=lambda _frame: None, dispose=lambda: None)
+    v.game.view.enemies.shots = lambda _scene, _style: shots
+    v.show(0, toggle=False, mode=2)
+    v.frame(0)
+    assert boss.opened == 1

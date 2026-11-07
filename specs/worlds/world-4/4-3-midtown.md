@@ -4,7 +4,7 @@
 
 The third level of World 4. From the mid-rise blocks 4-2 ended on, the player flies over offices among
 mid-rise blocks, office blocks, the old river quays and plazas to the first city towers, at midday,
-embers rising and the city's orange glow growing from below. Scissors and Hydras lead the waves and
+embers rising and the city's orange glow growing from below. Scissors and Juggernauts lead the waves and
 the Hive comes in. Its checkpoint is its mini boss (see [level flow](../../gameplay/level-flow.md)).
 
 ## Requirements
@@ -57,12 +57,12 @@ along the level. The orange glow of the city lights the haze and the ground from
 
 ### LVL-4-3-04 — Enemy waves · MUST
 
-4-3 brings in the Hive, the last kind of tier 4, and so uses Splitter, Juggernaut, Scissor, Hydra and Hive, no other. 4-3's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, with a beat every `wave_gap` seconds (3.8 s to 2.7 s) and
+4-3 brings in the Hive, the last kind of tier 4, and so uses Splitter, Hydra, Scissor, Juggernaut and Hive, no other. 4-3's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, with a beat every `wave_gap` seconds (3.8 s to 2.7 s) and
 groups growing by `wave_growth` (100 %) over the level (89 beats). The cycle of phrases, each a kind with its number of
-groups at the start: Splitter 2, Juggernaut 1, Scissor 1, Splitter 2, Hydra 1, Juggernaut 1, Splitter 2, Hive 1, Scissor 1, Juggernaut 1, Hydra 1. The filler draws Splitters and Juggernauts, at most `filler_gap` apart.
+groups at the start: Splitter 2, Hydra 1, Scissor 1, Splitter 2, Juggernaut 1, Hydra 1, Splitter 2, Hive 1, Scissor 1, Hydra 1, Juggernaut 1. The filler draws Splitters and Hydras, at most `filler_gap` apart.
 
 **Acceptance criteria**
-- Unit test: 4-3's waves use exactly Splitter, Juggernaut, Scissor, Hydra and Hive, and each of them.
+- Unit test: 4-3's waves use exactly Splitter, Hydra, Scissor, Juggernaut and Hive, and each of them.
 - Unit test: 4-3's waves are the same each time the level is built.
 
 *Sources: P10-R09, P05-R24, D-087, D-090, ENM-50.*

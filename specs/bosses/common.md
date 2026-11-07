@@ -8,10 +8,11 @@
 > [shots](../graphics/shots.md), [debug options](../dev/debug-options.md)
 
 Every level has two bosses: a mini boss around its middle and a final boss at its end. A boss is
-one big code-generated creature made of a core and destroyable parts. The player shoots its parts
-off one by one, its shielding parts first; each lost part changes its attack and, at set points, makes it
-transform: it sheds armour or changes shape and reveals hidden weapons, which it then fires all out
-for a few seconds (it is angry). This file holds every rule the bosses share. The boss files
+one big code-generated creature made of a core and destroyable parts. Everything it fires leaves one
+of its guns (BOSS-58). The player shoots its parts off one by one; each lost part changes its attack
+and, at set points, makes it transform: it sheds armour or changes shape and reveals hidden weapons
+(new guns), which it then fires all out for a few seconds (it is angry). Its core's guns go last:
+once they are destroyed, its health is 0 and it is destroyed. This file holds every rule the bosses share. The boss files
 (`bosses/mini/<N-M>-<name>.md`, `bosses/final/<N-M>-<name>.md`) only give what is specific to one
 boss: its look, its parts and their numbers, its patterns and its transformations. Regular enemies
 are in [enemies/](../enemies/common.md); the health gauge on screen is in [ui/hud.md](../ui/hud.md).
@@ -174,7 +175,9 @@ from the barrels; the hit circles do not turn with it.
 A boss is one object made of a **core** and several **destroyable parts** (turrets, pods, hangars,
 armour plates, limbs…), each with its own health and hit circle. Parts are attached to the core and
 move with it. A player shot that hits a part damages that part only; a part at 0 health is
-destroyed. The boss is destroyed when its core reaches 0 health.
+destroyed. The core carries the boss's last guns (BOSS-58): they fire its own pattern at every
+stage, and they can only be hit once every part is gone (BOSS-14). The boss is destroyed when its
+core reaches 0 health: when the player destroys its last guns.
 
 **Acceptance criteria**
 - Given a boss with an intact part, when shots hit that part until its health reaches 0, then that
@@ -196,9 +199,11 @@ it reveals as it transforms (BOSS-38) come on top of these.
 
 #### BOSS-14 — A shielded core · MUST
 
-Some parts **shield the core**: while any of them stands (and is revealed), the core takes no
-damage. Which parts shield the core is part of each boss's data; its hidden weapons shield it once
-revealed. Once no shielding part is left, the core takes damage.
+Every part **shields the core**: while any of them stands (and is revealed), the core takes no
+damage, so the core's guns are the last the player destroys. Its hidden weapons shield it once
+revealed. Once no part is left, the core takes damage. (Whether a part shields the core is still
+part of each boss's data; the World 1 bosses have every part shield it, the other worlds' are to
+follow, see Notes.)
 
 **Acceptance criteria**
 - Given a shielding part is still there, when the core is hit, then the core's health does not
@@ -251,11 +256,17 @@ fading, again and again.
 
 #### BOSS-18 — A destroyed part leaves no stump · MUST
 
-A destroyed part explodes ([effects](../graphics/effects.md)) and its model is hidden: it leaves no
-stump, no wound and no debris, and the boss is visibly missing it. Its smoke stops.
+A destroyed part explodes ([effects](../graphics/effects.md)) and its model is hidden, so the boss is
+visibly missing it. Where each of its gun mounts stood (BOSS-58) it leaves a simple stump: a squat
+dark collar with a charred top. No wound and no debris; a part with no gun leaves nothing. Its smoke
+stops. A hidden weapon that never came out leaves nothing when the boss dies. A part standing on a
+moving piece (BOSS-45, e.g. a wing that swings as the boss transforms) leaves its stumps on that
+piece: they move with it.
 
 **Acceptance criteria**
-- Given a part is destroyed, then its model is no longer shown and nothing is drawn in its place.
+- Given a part is destroyed, then its model is no longer shown, and a stump is shown where each of
+  its mounts stood (none for a part with no mount).
+- Given a destroyed part on a moving piece, when the piece moves, then its stumps move with it.
 
 *Sources: P07-R01, P16-R05, D-167, D-225.*
 
@@ -322,7 +333,7 @@ damaged and still moves. Then the new stage's pattern starts.
 #### BOSS-23 — What bosses fire · MUST
 
 Boss patterns are made of volleys, each on its own timer (`every`, and `first` from the start of the
-stage), fired from its piece's muzzles:
+stage), fired from one of its piece's gun mounts (BOSS-58):
 - bullets: aimed shots and aimed fans (the middle one at the player), bursts (single shots at the
   player a gap apart), fans around a preset heading, rings all around and spirals (a ring turned a
   little more at each volley);
@@ -336,8 +347,8 @@ those of [shots](../graphics/shots.md); bullet colours are style names, all in t
 family.
 
 **Acceptance criteria**
-- Given each volley shape, then it fires as described, from the muzzle furthest along each shot's
-  way (unit tests).
+- Given each volley shape, then it fires as described, each shot from one of its mount's barrels
+  (unit tests).
 - Given a part that bursts when destroyed, then it fires its ring once (unit test).
 
 *Sources: P07-R04, GD-43, GD-44, D-068.*
@@ -405,21 +416,68 @@ pattern starts afresh with each transformation.
 
 *Sources: D-063, D-221, D-256.*
 
+### Gun mounts
+
+#### BOSS-58 — Every shot leaves a gun · MUST
+
+Every bullet, laser and missile a boss fires leaves one of its **gun mounts**, each on a part or on
+the core and going with it (hidden, shown and destroyed with it). There are three models, shared by
+every boss and drawn as the enemies' weapons are ([weapons](../enemies/weapons.md)):
+- a **gun**: a dome (on a turret, or fixed) and its barrels, either side by side and parallel, or
+  all round a hub (a **rotor**); a single fat barrel may rest instead in a **mortar** cradle (two
+  cheeks and a trunnion pin on a low turntable, its axis set higher to rest in it). A turret fires a fan or a spread of aimed shots as a **sweep**: one
+  bullet at a time, at least `boss_sweep_gap` apart, each once the turret has turned its way (within
+  `boss_sweep_tolerance`), its barrels taking turns; a single aimed shot or a burst leaves one
+  barrel a bullet, in turn; a ring leaves every barrel of a rotor at once, one bullet a barrel (a
+  spiral: the rotor turns, BOSS-29). Each bullet leaves its barrel's tip along that barrel, which
+  recoils (WPN-03). A row of barrels and a rotor have no edge trim on their barrels;
+- a **laser**: the enemies' laser emitter (a hexagonal barrel, its coils and its lens, WPN-06); its
+  beam leaves the lens along the barrel;
+- a **missile** block: the enemies' hexagonal ports (WPN-07); each missile leaves a port, whose
+  rocket then reloads.
+
+A gun is not there until the boss first fires from it: a mount no volley of the boss's current
+stage (or its anger) uses is hidden, and it rises out of the hull over `boss_mount_rise` when a
+stage first uses it (the rotor of the last stage's ring comes out once the other guns are gone).
+A gun may lie under a hatch, an armour region tied to its mount: the hatch bursts off as the gun
+first comes into use, like the armour a transformation sheds (BOSS-37: blasts, pieces, a frame
+left), and the gun rises out once it has burst. Once out it stays. A volley fires from the mount of its piece that fits it (a rotor for a ring, a gun for other
+bullets, a laser's, a missile block), or from the one its data names. A ring's count is its
+rotor's barrels; a sweep may fire more bullets than its turret has barrels. The mounts' places and sizes are the boss's data; the model
+draws them from the same numbers, so the barrels the player sees are where the shots leave from and
+the way they go.
+
+A boss whose core carries no mount (all its guns on its parts) dies when the last of its parts is
+destroyed, none still hidden: its last gun gone, its health is 0. Its core is never hit and its
+health does not count in the health bar (BOSS-54).
+
+**Acceptance criteria**
+- Given a boss whose core has no mount, when its last part is destroyed, then it dies (unit test).
+- Given a boss's mount, then every shot of its volleys leaves one of its barrels' tips (a port, a
+  lens) along that barrel (unit tests, and a fight of every World 1 boss in a test).
+- Given a ring from a rotor, then it fires one bullet from each barrel (unit test).
+- Given a gun barrel fires, then it recoils (unit test).
+- Given a mount no volley of the boss's stage uses yet, then it is hidden; given the first stage
+  that uses it, then it rises out (unit test).
+- Manual validation: every World 1 boss's bullets, lasers and missiles visibly leave its guns.
+
+*Sources: user request (2026-11-05: "every bullet comes from a gun").*
+
 ### Turrets, lasers and limbs
 
 #### BOSS-29 — Turrets turn the way they fire · MUST
 
-A piece's guns may be on a **turret** (a pivot of its own): the turret turns at up to
+A gun mount (BOSS-58) may be on a **turret** (a pivot of its own); a piece may have several. The
+turret turns at up to
 `boss_turret_turn` the way its next volley goes (a burst under way first, else the volley due
 soonest): at the player for aimed shots and bursts, along a fan's preset heading, and with a ring's
 turn, so a turret firing a spiral spins smoothly from one volley's turn to the next and never spins
 back. It keeps turning during pauses. Aimed shots, bursts, missiles and fans on a turret leave
 only once it points within `boss_turret_aim_tolerance` of where they go: a due volley is held until
 then (a burst, bullet by bullet), so shots never come out of barrels pointing elsewhere; rings,
-lasers (which have their warning line) and guns not on a turret never wait. Its muzzles turn with it, so shots leave the barrel tips and
-aimed shots are aimed from there. Guns built into hulls, blades, claws or pods, missile cells and
-launchers do not turn. In the model each turret is its own piece on its pivot; it flashes and hides
-with its part.
+lasers (which have their warning line) and guns not on a turret never wait. Its barrels turn with
+it, so shots leave their tips, along them. Fixed guns, missile blocks and launchers do not turn. In
+the model each mount is its own piece on its pivot; it hides with its part.
 
 **Acceptance criteria**
 - Given a turret whose next volley is aimed, then it turns towards the player at most 150°/s (unit
@@ -577,26 +635,30 @@ higher after the last one than as it came in.
 #### BOSS-40 — The kinds of hidden weapon · MUST
 
 A hidden weapon stands on a pod that tells its kind apart (octagon, square, round base, long deck,
-box), and fires as its kind does (numbers in Tunable values):
-- **gatling**: a three-barrelled turret following the player, firing bursts;
-- **lance**: a laser lance pointing down the screen, firing a laser;
-- **rack**: four missile cells, firing pairs of homing missiles;
-- **orb**: a glowing emitter in a cradle, firing turning rings;
-- **beam**: a cannon at the end of a rig the boss unfolds, firing a giant laser (the Scorpion's
+box), with one gun mount of its kind on top (BOSS-58), which rises out of the pod as it unfolds; it
+fires as its kind does (numbers in Tunable values):
+- **gatling**: a turret with three barrels side by side following the player, firing bursts;
+- **lance**: a fixed laser pointing down the screen;
+- **rack**: a block of four missile ports, firing pairs of homing missiles;
+- **orb**: a rotor, a barrel for each bullet of its turning rings;
+- **beam**: a laser at the end of a rig the boss unfolds, firing a giant laser (the Scorpion's
   tail, [Scorpion](mini/1-4-scorpion.md));
-- **cannon**: a big turret on a square base with one heavy barrel, firing aimed spreads of big shells;
-- **mortar**: a short, wide tube tilted up on a round base, lobbing flak shells that burst into a
-  ring;
-- **battery**: a long, low deck with five barrels in a row, firing wide fans straight down;
-- **sweeper**: a turret with two prongs and a lens, firing a laser that sweeps after the player;
-- **hangar**: a box whose two doors slide apart, launching Hornets.
+- **cannon**: a big turret on a square base with three heavy barrels side by side, sweeping aimed
+  spreads of big shells;
+- **mortar**: a squat turret with one short, wide barrel, on a round base, firing flak shells that
+  burst into a ring;
+- **battery**: a long, low deck with a turret of five barrels side by side, sweeping wide fans
+  straight down;
+- **sweeper**: a laser on a turret, firing a beam that sweeps after the player;
+- **hangar**: a box whose two doors slide apart, launching Hornets (no gun).
 
-Its muzzles are worked out from its size and pod height, and the model is drawn from the same
-numbers, so shots leave its barrels.
+Its mount is worked out from its size and pod height, and the model is drawn from the same numbers,
+so shots leave its barrels.
 
 **Acceptance criteria**
-- Given every kind, then it has its own pod and a turret or something that slides out (unit test).
-- Given each kind, then it fires its volleys from the muzzles its model draws (unit tests).
+- Given every kind, then it has its own pod, and a gun mount (a hangar: doors) that comes out of it
+  (unit test).
+- Given each kind, then it fires its volleys from its mount's barrels (unit tests).
 
 *Sources: D-221, D-228, D-229.*
 
@@ -798,7 +860,9 @@ A mini boss model stays within `tri_budget_mini_boss` triangles and a final boss
 
 A boss's full health is its core's and every part's, its hidden weapons included from the start, so
 the gauge never grows back. Its health left is its core's and its parts' left; a retired part's
-health leaves it. The gauge marks the share of each part ([HUD](../ui/hud.md)).
+health leaves it. The gauge marks the share of each part ([HUD](../ui/hud.md)). Its first lost
+parts bring out new guns (its hidden weapons, BOSS-35); the core's guns, shielded by every part
+(BOSS-14), are the last: the gauge reaches 0 when the player destroys them.
 
 **Acceptance criteria**
 - Given a boss with hidden weapons, then its full health counts them from its arrival (unit test).
@@ -894,11 +958,11 @@ same fight drops the same bonuses.
 | gatling | bursts of 4, 0.12 s apart, 190 px/s, every 2.2 s | BOSS-40; `src/game/config/bosses/weapon_kinds.py` |
 | lance | laser 1.4 s every 7.5 s; 1.9 radii long | BOSS-40; `weapon_kinds.WEAPON_SHAPE.lance` |
 | rack | 2 homing missiles, 30° apart, every 6 s | BOSS-40 |
-| orb | rings of 10 turning 13°, 175 px/s, every 2.6 s | BOSS-40 |
+| orb | rings of 10 (a 10-barrel rotor) turning 13°, 175 px/s, every 2.6 s | BOSS-40; `weapon_kinds.ORB_BARRELS` |
 | beam | 44 px wide, 2.4 s, every 7 s | BOSS-40; `weapon_kinds.BEAM` |
-| cannon | aimed spreads of 3, 12° apart, shells 150 px/s radius 7, every 2.4 s | BOSS-40; `WEAPON_FIRE.cannon` |
+| cannon | aimed spreads of 3 (3 barrels, swept 12° apart), shells 150 px/s radius 7, every 2.4 s | BOSS-40; `WEAPON_FIRE.cannon` |
 | mortar | 1 flak shell 110 px/s radius 8, bursting into 8 at 170 px/s after 1.1 s, every 3.2 s | BOSS-40; `WEAPON_FIRE.mortar` |
-| battery | fans of 7, 9° apart, straight down, 180 px/s, every 2 s | BOSS-40; `WEAPON_FIRE.battery` |
+| battery | fans of 7 (5 barrels, swept 9° apart), straight down, 180 px/s, every 2 s | BOSS-40; `WEAPON_FIRE.battery` |
 | sweeper | sweeping laser 2 s every 8 s | BOSS-40; `WEAPON_FIRE.sweeper` |
 | hangar | 2 Hornets every 7 s | BOSS-40; `WEAPON_FIRE.hangar` |
 | `reveal` timeline | strain to 0.15, pieces gone by 0.6; weapons swing 0.4–0.75, slide 0.7–1.0 (overshoot 1.7); moving pieces 0.15–0.6; shudder 0.8 px, strobe 9 Hz | BOSS-43, BOSS-45; `BOSS_LOOK.reveal` |
@@ -906,6 +970,11 @@ same fight drops the same bonuses.
 | `frame` | floor 0.6 px over the armour's lowest point; ribs 1.6 px wide, 9 px apart, a neon seam every 3 | BOSS-44; `BOSS_LOOK.frame` |
 | boss neon colours | one per boss | BOSS-50; `BOSS_LOOK.neon` |
 | enemy hues | 60° (yellow), 125° (green) | BOSS-50; `src/game/config/readability.py` `READABILITY.enemyHues` |
+| gun mount shapes | barrels' axis 0.38 of the dome's radius above its base (a mount's `axis` may set it), their roots 0.45 of it out (0.8 round a rotor's hub) | BOSS-58; `src/game/config/bosses/boss_guns.py` `GUN_SHAPE` |
+| `boss_sweep_gap`, `boss_sweep_tolerance` | 0.06 s, 0.05 rad (3°) | BOSS-58; `boss_pattern.SWEEP_GAP`, `SWEEP_TOLERANCE` |
+| `boss_mount_rise` | 0.8 s, eased | BOSS-58; `boss_model.MOUNT_RISE_SECONDS` |
+| barrels side by side | at least 2.6 bores apart, the dome covering the row | BOSS-58; `boss_guns.MIN_GAP` |
+| missile block | ports 6.4 px apart, 4.5 px high, on a 3 px block | BOSS-58; `boss_guns.MISSILE_BLOCK` |
 | `tri_budget_mini_boss` / `tri_budget_final_boss` | 4 000 / 10 000 | BOSS-53; `src/game/config/enemy_look.py` `ENEMY_LOOK.budget` |
 | part points | 10 % of the boss's points, rounded to 10 | BOSS-19; `src/game/config/scoring.py` `boss_part_points` |
 | `part_drop_chance` / `final_part_drop_chance` | 0.5 / 0.6 | BOSS-57; `boss_kit.part`, `final_bosses.fpart` |
@@ -915,9 +984,10 @@ same fight drops the same bonuses.
 
 ## Notes
 
-- **No stump, no wound.** A destroyed part first left a burnt, sparking stump (P07-R01), then a
-  wound of torn flesh, a dimmed organ, bone shards and torn plating (D-167, P16-R05); the reviewer
-  had it removed (D-225).
+- **Stumps.** A destroyed part first left a burnt, sparking stump (P07-R01), then a wound of torn
+  flesh, a dimmed organ, bone shards and torn plating (D-167, P16-R05); the reviewer had it removed
+  (D-225). On 2026-11-05 the owner asked for "a simple stump at the base of a weapon that just got
+  destroyed": a plain collar at each gun mount's base (BOSS-18).
 - **Sparks on a shielded core.** P07-R01 had shots spark on a shielded core; D-053 then kept
   shielding parts out of the core's shadow. Since D-062 shots go through a shielded core, so the
   parts behind it can be hit.
@@ -928,5 +998,11 @@ same fight drops the same bonuses.
   are likely above their ranges now.
 - **Drawn triangles, World 1 (scratch count, 2026-11-01):** 2 170 (Reef Warden) to 4 650
   (Overlord) for the bodies and parts as drawn, before hidden weapons, frames, stems and edge trim.
+- **Gun mounts, World 1 first (2026-11-05).** BOSS-58 and every part shielding the core (BOSS-14)
+  are applied to the World 1 bosses and to every boss's hidden weapons. The other worlds' parts and
+  cores still fire from muzzles with no gun drawn for some (the core's), and some of their parts
+  do not shield the core: they are to be converted the same way.
+- **Fuel tank rings.** A part bursting into a ring of bullets as it is destroyed (BOSS-23, the
+  Refinery Titan's tanks) is an explosion, not a gun: it is kept as it was.
 - The debug key that breaks a boss's next part (it skips hidden and retired parts and finishes a
   transformation) is in [debug options](../dev/debug-options.md).

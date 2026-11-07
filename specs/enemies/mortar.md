@@ -99,15 +99,16 @@ leaves at the bottom.
 #### ENM-MORTAR-08 — Missiles · MUST
 
 While its centre is over the playfield, every 3.5 s (the first 1 s after it is over it) the Mortar
-launches one heavy, slow homing missile from its tube's mouth, first towards the player (radius 8,
-90 px/s, turning at up to 55°/s towards the player for 2.2 s, then flying straight on). It is one
+launches one heavy, slow homing missile from its tube's mouth, exactly along the tube (WPN-08; owner
+request 2026-11-05), before it turns towards the player (radius 8, 90 px/s, turning at up to 55°/s
+towards the player for 2.2 s, then flying straight on). It is one
 of the engine's enemy missiles ([rocketeer.md](rocketeer.md), ENM-18): the player's shots can hit it
 (20 HP) and shoot it down, and it is drawn bigger than a Rocketeer's missile in proportion to its
 radius.
 
 **Acceptance criteria**
-- Given a Mortar fires, then its missile leaves the tube's mouth, heading towards the player, with
-  the speed, turn rate, radius and health above.
+- Given a Mortar fires, then its missile leaves the tube's mouth, heading along the tube wherever
+  the player is, with the speed, turn rate, radius and health above.
 - Given a Mortar outside the playfield, then it fires nothing.
 
 *Sources: P05-R15.*

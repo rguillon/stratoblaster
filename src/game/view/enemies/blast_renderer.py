@@ -147,8 +147,10 @@ class LayerMesh:
             self.colors = _float32_array(capacity * 4)
         for i, s in enumerate(spots):
             m = i * 16
+            # A spot with its own depth (a missile's smoke, high in the air) is drawn there.
+            z = s.z if hasattr(s, "z") else self.z
             self.matrices.set(
-                [s.radius, 0, 0, 0, 0, s.radius, 0, 0, 0, 0, 1, 0, s.x, s.y, self.z, 1],
+                [s.radius, 0, 0, 0, 0, s.radius, 0, 0, 0, 0, 1, 0, s.x, s.y, z, 1],
                 m,
             )
             self.colors.set([s.r, s.g, s.b, s.a], i * 4)

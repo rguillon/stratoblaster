@@ -82,6 +82,12 @@ def hinge_pose(base: Vec3, hinge: Vec3, fold: float, sink: float, t: float) -> P
     return Pose([base[0] + hinge[0] - rx, base[1] - (1 - e) * sink, base[2] + hinge[2] - rz], yaw)
 
 
+def slide_out_pose(base: Vec3, start: Vec3, t: float) -> Pose:
+    """Return the pose of a part's root sliding out from `start` (from `base`), `t` of the way."""
+    k = 1 - ease(t)
+    return Pose([base[0] + start[0] * k, base[1] + start[1] * k, base[2] + start[2] * k], 0)
+
+
 def slide_offset(axis: Vec3, distance: float, t: float) -> Vec3:
     """Where a sliding barrel is from its rest, `t` of the way out.
 
@@ -123,7 +129,8 @@ class RevealView:
     """How one hidden part of a boss model comes out.
 
     Its part's root (`root`, at `base` on its frame), its hinge and fold (`weapon_hinge`), how far
-    it sinks, and what slides out.
+    it sinks, and what slides out. With `start` (model space, from `base`) it does not unfold: it
+    slides out straight from there.
     """
 
     def __init__(
@@ -134,7 +141,9 @@ class RevealView:
         hinge: list[Any],
         sink: float,
         slides: list[Slide],
+        start: Any = None,
     ) -> None:
+        self.start = start
         self.reveal = reveal
         self.root = root
         self.base = base
@@ -163,6 +172,9 @@ class RevealView:
             return phase
         set_enabled(self.root, True)
         swing = share(transform, look.swing)
+        if self.start != None:
+            self._pose(slide_out_pose(self.base, self.start, swing), share(transform, look.slide))
+            return phase
         pose = hinge_pose(self.base, self.hinge[0], self.hinge[1], self.sink, swing)
         self._pose(pose, share(transform, look.slide))
         return phase
@@ -193,4 +205,8 @@ def build_reveal(design: Any, spec: Any, model_root: Any, slides: list[Slide]) -
         # At the end of a rig (D-228): it rises into place as the rig unfolds, no swing.
         hinge = [at, 0]
         sink = spec.radius * 0.5
-    return RevealView(spec.reveal, model_root, base, hinge, sink, slides)
+    start = None
+    if look != None and "slideFrom" in look:
+        out = boss_point(look.slideFrom[0], look.slideFrom[1])
+        start = [out[0] - at[0], 0, out[2] - at[2]]
+    return RevealView(spec.reveal, model_root, base, hinge, sink, slides, start)

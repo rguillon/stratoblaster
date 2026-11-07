@@ -8,11 +8,12 @@ nose +Z, Y up (towards the camera).
 
 import math
 
+from game.config.bosses.boss_guns import axis_height
 from game.config.bosses.mini_bosses import SCORPION
 from game.config.record import merge
 from game.view.bosses.boss_model import build_boss_model
 from game.view.bosses.mini_boss_greebles import mast
-from game.view.bosses.mini_boss_shapes import QUARTER, WHITE, offset
+from game.view.bosses.mini_boss_shapes import QUARTER, offset
 from game.view.bosses.scorpion_arms import arm_limbs, claw
 from game.view.bosses.scorpion_look import YELLOW
 from game.view.bosses.scorpion_tail import build_tail_rig, tail_triangles
@@ -68,17 +69,12 @@ PATCH = [
     [2.25, -3.25],
     [-2.75, -5.25],
 ]
-# The stinger around its centre: a bulb along +Z (loft stations), its emitter at the tip.
+# The stinger around its centre: a bulb along +Z (loft stations), its laser mount at the tip.
 STINGER = [
     [-11, 4, -4, 4],
     [-4, 7, -6, 6],
     [4, 6, -5, 4.5],
     [11, 2.5, -2.5, 1.5],
-]
-STINGER_EMITTER = [
-    [2.4, 0],
-    [1.6, 3.5],
-    [0, 5.5],
 ]
 # Height of the stinger, and its downward tilt (it aims at the player).
 STINGER_Y = 15
@@ -159,7 +155,7 @@ def _draw_plating(p: Any) -> None:
 def _stinger(p: Any, at: Vec3) -> None:
     """Add the stinger (MB-SCORPION-04): a venom bulb hanging from the tail's tip.
 
-    Its emitter in front.
+    Its laser's emitter at its tip is its mount (BOSS-58).
     """
     place_at = offset(at, 0, STINGER_Y, 0)
     place = Placement(place_at, 0, STINGER_TILT)
@@ -169,19 +165,14 @@ def _stinger(p: Any, at: Vec3) -> None:
         YELLOW,
         Placement(_along(place_at, STINGER_TILT, 6, -1), 0, STINGER_TILT),
     )
-    # Brightens through the laser's warning, full while it fires.
-    tip = _along(place_at, STINGER_TILT, -0.5, 11)
-    p.charge.lathe(STINGER_EMITTER, 6, WHITE, Placement(tip, 0, QUARTER + STINGER_TILT))
-    p.muzzle(_along(tip, QUARTER + STINGER_TILT, 5.5, 0), "laser")
 
 
 def _tail_cannon(p: Any, at: Vec3) -> None:
     """Add the cannon its tail unfolds into (D-228), round `at`, pointing out behind (-Z).
 
-    A venom bulb swollen into a barrel, neon rings, a great lens that brightens as the giant laser
-    charges.
+    A venom bulb swollen into a barrel round its laser mount's emitter (BOSS-58), neon rings.
     """
-    h = STINGER_Y * 0.6
+    h = axis_height(_mount("tail-cannon"))
     base = offset(at, 0, h, 12)
     back = Placement(base, 0, -QUARTER)
     p.flesh.lathe([[5, 0], [8.5, 5], [9, 11], [6.5, 18], [7.5, 22], [7.5, 24]], 8, F.graphite, back)
@@ -189,25 +180,28 @@ def _tail_cannon(p: Any, at: Vec3) -> None:
     for ring in rings:
         place = Placement(offset(base, 0, 0, -ring[0]), 0, -QUARTER)
         p.neon.cylinder(ring[1], 0.8, 8, YELLOW, place)
-    lens = offset(base, 0, 0, -24)
-    p.charge.lathe([[6, 0], [4, 1.5], [0, 2.4]], 8, WHITE, Placement(lens, 0, -QUARTER))
-    p.muzzle(offset(lens, 0, 0, -3), "laser")
+
+
+def _mount(mount_id: str) -> Any:
+    """Return the Scorpion's mount `mount_id` (BOSS-58)."""
+    for mount in SCORPION.mounts:
+        if mount.id == mount_id:
+            return mount
+    raise ValueError('Unknown Scorpion mount "' + mount_id + '"')
 
 
 def build_scorpion(scene: Any) -> Any:
     """MB-SCORPION-01: the Scorpion, a living desert scorpion with yellow veins.
 
     A segmented shell, two arms out to its claw cannons, and a segmented tail arched over its back,
-    its stinger hanging in front of the head, between the claws.
+    its stinger hanging in front of the head, between the claws. The core's turret and rotor stand
+    on the head plate either side of the tail (its mounts, BOSS-58).
     """
 
     def core(p: Any) -> None:
         _draw_body(p)
         _draw_machinery(p)
         mast(p, [-6, 6, 12], 6, YELLOW)
-        # The core's guns: a charge light at the front of the head.
-        p.charge.cylinder(1.8, 3, 6, WHITE, Placement([0, 2, 23], 0, QUARTER), 0.8)
-        p.muzzle([0, 2, 26], None)
         for s in SIDES:
             reactor_sac(p, [s * 9, 2, -28], 2.8, YELLOW)
 

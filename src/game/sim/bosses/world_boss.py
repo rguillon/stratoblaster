@@ -27,6 +27,7 @@ from core.systems.boss_pattern import BossPatternSpec, VolleySource, VolleySourc
 
 if TYPE_CHECKING:
     from core.entities.boss_pieces import BossPart
+    from core.systems.boss_mounts import BossMount
 # A boss design is a config record (`game/config/record.py`), typed as Any there.
 BossDesign = Any
 # __pragma__ ("noskip")
@@ -75,6 +76,10 @@ class WorldBoss(Boss):
         self._by_id: dict[str, BossPart] = {}
         for part in self.parts:
             self._by_id[part.spec.id] = part
+        # Its mounts by id, for its volleys to fire from (BOSS-58).
+        self._mounts: dict[str, BossMount] = {}
+        for mount in self.mounts:
+            self._mounts[mount.id] = mount
         # Its angry pattern, from the weapons its last transformation revealed (BOSS-27).
         self._rage = BossPattern([])
         self._rage_form = 0
@@ -84,6 +89,7 @@ class WorldBoss(Boss):
             self._launches.append(launch_volley(launch))
         self._ringed: list[str] = []
         self._pattern = BossPattern(self._stage(0))
+        self._bring_out(self._pattern)
 
     def _stage(self, stage: int) -> BossPatternSpec:
         """Return the pattern of stage `stage` (BOSS-20): its design's volleys, from their guns.
@@ -99,17 +105,27 @@ class WorldBoss(Boss):
 
     def _armed(self, volleys: list[Any]) -> list[Any]:
         """`volleys` from the muzzles of their guns (and turrets)."""
-        return armed_pattern(self.design, volleys)
+        return armed_pattern(self.design, volleys, self._mounts)
 
     def update(self, ctx: EnemyContext, dt: float) -> None:
         """Its turrets follow the player as long as it is there.
 
-        Fire pauses included (phase 7 review, BOSS-29).
+        Fire pauses included (phase 7 review, BOSS-29). They turn before it fires, so a volley
+        leaves its barrels where they are drawn this frame (BOSS-58).
         """
-        Boss.update(self, ctx, dt)
         pattern = self._angry() if self.rage > 0 and self.pause <= 0 else self._pattern
         if self.state != "dying":
             pattern.turn_turrets(ctx, dt, self._sources())
+        Boss.update(self, ctx, dt)
+
+    def open_fire(self) -> None:
+        """Put it in its place and fight at once, its first volleys due now (a dev viewer's).
+
+        It does not come in; the volleys of its first stage fire as soon as their guns are on aim.
+        """
+        self.y = self.stop_y
+        self.state = "fighting"
+        self._pattern.open_fire()
 
     def enter(self, _ctx: EnemyContext, dt: float) -> bool:
         """Fly in from above the top edge, braking into the stop height."""
@@ -142,7 +158,8 @@ class WorldBoss(Boss):
         """Its angry pattern: its newest weapons, fresh once it has transformed again."""
         if self._rage_form != self.form:
             self._rage_form = self.form
-            self._rage = BossPattern(angry_pattern(self.design, self.form))
+            self._rage = BossPattern(angry_pattern(self.design, self.form, self._mounts))
+            self._bring_out(self._rage)
         return self._rage
 
     def update_rage(self, ctx: EnemyContext, dt: float) -> None:
@@ -156,6 +173,7 @@ class WorldBoss(Boss):
     def on_stage_change(self, stage: int, ctx: EnemyContext) -> None:
         """Switch to the volleys of a new stage."""
         self._pattern = BossPattern(self._stage(stage))
+        self._bring_out(self._pattern, ctx)
         for ring_id in break_ring_ids(self.design):
             part = self._by_id.get(ring_id)
             if part is None or not part.destroyed or ring_id in self._ringed:
@@ -166,6 +184,26 @@ class WorldBoss(Boss):
             bullet = bullet_spec(ring.bullet)
             for k in range(ring.count):
                 ctx.fire_bullet(part.x, part.y, (2 * math.pi * k) / ring.count, bullet)
+
+    def _bring_out(self, pattern: BossPattern, ctx: EnemyContext | None = None) -> None:
+        """Bring out the mounts `pattern` fires from that are not out yet (BOSS-58).
+
+        A gun is only there once the boss uses it: the rotor of its last stage comes out then,
+        bursting the hatch over it if it has one (BOSS-37).
+        """
+        for volley in pattern.volleys:
+            mount = volley.mount
+            if mount is not None and mount.shown_at is None:
+                mount.shown_at = self.age
+                if ctx is not None:
+                    self._burst_hatches(mount.id, ctx)
+
+    def _burst_hatches(self, mount_id: str, ctx: EnemyContext) -> None:
+        """Burst the armour regions over the mount `mount_id` (`armour_region`'s `mount`)."""
+        for region in self.design.armour or []:
+            if region.mount == mount_id:
+                for blast in region_blasts(region, BOSS_TIMING.regionBlasts):
+                    ctx.explode(self.x + blast[0], self.y + blast[1], blast[2])
 
     def _sources(self) -> VolleySources:
         """Return the piece a volley fires from, as a function of what fires it."""
@@ -193,7 +231,7 @@ class WorldBoss(Boss):
         The weapons beneath come out (BOSS-37).
         """
         for region in self.design.armour or []:
-            if region.form == form:
+            if region.form == form and region.mount == None:
                 for blast in region_blasts(region, BOSS_TIMING.regionBlasts):
                     ctx.explode(self.x + blast[0], self.y + blast[1], blast[2])
         for part in self.parts:

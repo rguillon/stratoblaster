@@ -252,15 +252,15 @@ lines are drawn with their light, contrasting core (see [shots](../../graphics/s
 ### WLD-4-17 — Enemy roster · MUST
 
 World 4 uses the five kinds of tier 4 and no other (ENM-50; see [enemies](../../enemies/common.md)):
-[Splitter](../../enemies/splitter.md) (diver), [Juggernaut](../../enemies/juggernaut.md) (shooter),
-[Scissor](../../enemies/scissor.md) (laser), [Hydra](../../enemies/hydra.md) (missile launcher) and
-[Hive](../../enemies/hive.md) (launches Splitters). It starts with three kinds, adds the Hydra in 4-2
+[Splitter](../../enemies/splitter.md) (diver), [Hydra](../../enemies/hydra.md) (shooter),
+[Scissor](../../enemies/scissor.md) (laser), [Juggernaut](../../enemies/juggernaut.md) (missile launcher) and
+[Hive](../../enemies/hive.md) (launches Splitters). It starts with three kinds, adds the Juggernaut in 4-2
 and the Hive in 4-3, so 4-3 to 4-5 use all five:
 
 | Level | Enemy kinds |
 |-------|-------------|
-| 4-1 | Splitter, Juggernaut, Scissor |
-| 4-2 | Splitter, Juggernaut, Scissor, Hydra |
+| 4-1 | Splitter, Hydra, Scissor |
+| 4-2 | Splitter, Hydra, Scissor, Juggernaut |
 | 4-3 to 4-5 | all five |
 
 **Acceptance criteria**

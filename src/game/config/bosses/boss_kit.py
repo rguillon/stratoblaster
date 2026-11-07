@@ -325,13 +325,20 @@ def _volley_burst(
 
 
 def _volley_missiles(
-    source: str, every: float, count: float, spacing_deg: float, first: Any = None
+    source: str,
+    every: float,
+    count: float,
+    spacing_deg: float,
+    first: Any = None,
+    up: bool = True,
 ) -> Any:
     shape = record({
         "kind": "missiles",
         "count": count,
         "spacingDeg": spacing_deg,
         "missile": MISSILE,
+        # WPN-09: from a silo pointing up (the default), the missiles arc over to the plane first.
+        "up": up,
     })
     return _shot(source, every, first, shape)
 

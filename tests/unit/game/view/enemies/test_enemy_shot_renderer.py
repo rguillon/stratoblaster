@@ -346,30 +346,43 @@ def missile_parts(monkeypatch: pytest.MonkeyPatch) -> SimpleNamespace:
     monkeypatch.setattr(sr, "mesh_of", mesh_of)
     monkeypatch.setattr(sr, "enemy_materials", lambda _scene: mats)
     monkeypatch.setattr(sr, "set_outline", lambda mesh, color: parts.outlines.append((mesh, color)))
+    parts.flames = []
+    monkeypatch.setattr(
+        sr, "flame_materials", lambda _scene, color: SimpleNamespace(color=list(color))
+    )
+    monkeypatch.setattr(
+        sr,
+        "build_reactor_flame",
+        lambda name, options, parent, mats: parts.flames.append((name, options, parent, mats)),
+    )
     return parts
 
 
 def test_gfx_shot_15_a_missile_is_a_dark_body_an_orange_tip_and_a_flame(
     missile_parts: SimpleNamespace,
 ) -> None:
-    """Also GFX-READ-12: its rim glows in the enemy shots' colour."""
+    """Also GFX-READ-12: its rim glows in the enemy shots' colour; ENM-40: its reactor flame."""
     look = ENEMY_LOOK.missile
-    flame = MagicMock(name="flame")
-    root = sr.build_missile("scene", flame, 4)
+    root = sr.build_missile("scene", 4)
     assert root.name == "enemy-missile-4"
+    # WPN-09: its body, tip and nozzle are on a node of their own, which tilts its nose up.
+    tilt, nozzle = missile_parts.nodes[1:]
+    assert (tilt.name, tilt.parent) == ("enemy-missile-4-tilt", root)
     hull, tip = missile_parts.meshes
-    assert (hull.name, hull.mat, hull.parent) == ("enemy-missile-4-body", "hull-material", root)
-    assert (tip.name, tip.mat, tip.parent) == ("enemy-missile-4-tip", "neon-material", root)
+    assert (hull.name, hull.mat, hull.parent) == ("enemy-missile-4-body", "hull-material", tilt)
+    assert (tip.name, tip.mat, tip.parent) == ("enemy-missile-4-tip", "neon-material", tilt)
     assert missile_parts.outlines == [(hull, look.tip)]
     assert len(hull.geo.positions) > 0
     assert len(tip.geo.positions) > 0
-    flame.clone.assert_called_once_with("enemy-missile-4-flame")
-    glow = flame.clone.return_value
-    assert glow.parent is root
-    glow.setEnabled.assert_called_once_with(True)
-    w, h = look.flameSize
-    glow.position.set.assert_called_once_with(0, -look.length / 2 - h * 0.6, 0.5)
-    glow.scaling.set.assert_called_once_with(w, h, 1)
+    # The flame streams out of its tail, the reactor flame turned onto -Y.
+    assert nozzle.parent is tilt
+    nozzle.position.set.assert_called_once_with(0, -look.length / 2, 0)
+    assert nozzle.rotation.x == pytest.approx(-math.pi / 2)
+    [(name, options, parent, mats)] = missile_parts.flames
+    assert (name, parent) == ("enemy-missile-4-flame", nozzle)
+    assert mats.color == look.flameColor
+    assert options["length"] > 0
+    assert options["diameter"] > 0
 
 
 def test_gfx_shot_15_each_missile_node_sits_on_its_shot_facing_its_heading() -> None:
@@ -379,8 +392,8 @@ def test_gfx_shot_15_each_missile_node_sits_on_its_shot_facing_its_heading() -> 
     pool.show.return_value = nodes
     base = sr.LOOK.missile.baseRadius
     missiles = [
-        SimpleNamespace(x=1.0, y=2.0, heading=0.3, radius=base),
-        SimpleNamespace(x=4, y=5, heading=0, radius=2 * base),
+        SimpleNamespace(x=1.0, y=2.0, heading=0.3, radius=base, height=0),
+        SimpleNamespace(x=4, y=5, heading=0, radius=2 * base, height=0),
     ]
     sr.sync_missiles(pool, missiles)
     pool.show.assert_called_once_with(2)
@@ -412,6 +425,39 @@ class _Lasers:
         self.disposed = True
 
 
+class _BareTrail:
+    """A smoke trail layer whose mesh has no material (nothing to draw over the models)."""
+
+    def __init__(self, name: str, *_args: Any) -> None:
+        self.name = name
+        self.mesh = _mesh(name, material=False)
+
+    def dispose(self) -> None:
+        """Nothing to free."""
+
+
+class _Trail:
+    """The smoke trail's layer stand-in: what it was made with and shown, and its disposal."""
+
+    made: ClassVar[list[Any]] = []
+
+    def __init__(self, name: str, geo: Any, add: bool, z: float, order: int, scene: Any) -> None:
+        self.name = name
+        self.geo = geo
+        self.add = add
+        self.place = (z, order, scene)
+        self.mesh = _mesh(name)
+        self.shown: list[Any] = []
+        self.disposed = False
+        _Trail.made.append(self)
+
+    def show(self, spots: list[Any]) -> None:
+        self.shown.append(spots)
+
+    def dispose(self) -> None:
+        self.disposed = True
+
+
 @pytest.fixture
 def renderer(
     monkeypatch: pytest.MonkeyPatch,
@@ -426,11 +472,15 @@ def renderer(
     monkeypatch.setattr(sr, "node_name", lambda n: n.name)
     monkeypatch.setattr(node_pool, "dispose_node", lambda node: node.dispose())
     monkeypatch.setattr(sr, "EnemyLasers", _Lasers)
+    monkeypatch.setattr(sr, "LayerMesh", _Trail)
+    monkeypatch.setattr(sr, "child_meshes", lambda node, _direct: node.getChildMeshes())
     _Lasers.made = []
+    _Trail.made = []
     handle = sr.create_enemy_shot_renderer("scene")
     return SimpleNamespace(
         handle=handle,
         lasers=_Lasers.made[0],
+        trail=_Trail.made[0],
         templates=templates,
         meshes=missile_parts.meshes,
     )
@@ -438,10 +488,6 @@ def renderer(
 
 def _bullet_meshes(made: list[SimpleNamespace]) -> list[Any]:
     return [entry.mesh for entry in made if entry.name.startswith("enemy-bullet-")]
-
-
-def _flame(made: list[SimpleNamespace]) -> SimpleNamespace:
-    return next(entry for entry in made if entry.name == "enemy-missile-flame")
 
 
 def test_gfx_read_11_the_renderer_draws_the_contrast_look_with_its_lasers(
@@ -456,20 +502,20 @@ def test_gfx_read_11_the_renderer_draws_the_contrast_look_with_its_lasers(
     assert len(_bullet_meshes(renderer.templates)) == len(sr.STYLES) * (len(BULLETS.swirls) + 4)
 
 
-def test_gfx_shot_15_the_missile_flame_is_over_the_player_shots_and_under_the_bullets(
+def test_gfx_shot_15_the_missile_smoke_is_a_blended_layer_drawn_over_the_models(
     renderer: SimpleNamespace,
 ) -> None:
-    flame = _flame(renderer.templates)
-    assert flame.geo.colors[0:3] == ENEMY_LOOK.missile.flame[0]
-    assert flame.mesh.alphaIndex == sr.ON_TOP_ALPHA_INDEX
-    assert all(m.alphaIndex > flame.mesh.alphaIndex for m in _bullet_meshes(renderer.templates))
+    """WPN-09: a lofted missile's smoke never passes under the boss it rises over."""
+    trail = renderer.trail
+    assert (trail.name, trail.add) == ("enemy-missile-smoke", False)
+    assert trail.mesh.material.depthFunction == "ALWAYS"
 
 
 def test_gfx_shot_15_the_renderer_draws_bullets_missiles_and_lasers_each_frame(
     renderer: SimpleNamespace,
 ) -> None:
     bullet = SimpleNamespace(style="red", x=1.0, y=2.0, radius=3.0, age=0.0, heading=0.0)
-    missile = SimpleNamespace(x=7.0, y=8.0, heading=0.5, radius=5)
+    missile = SimpleNamespace(x=7.0, y=8.0, heading=0.5, radius=5, height=0)
     lasers = [SimpleNamespace(spec=SimpleNamespace(style="lancer"))]
     frame = SimpleNamespace(dt_seconds=0.25, bullets=[bullet], missiles=[missile], lasers=lasers)
     renderer.handle.sync(frame)
@@ -482,10 +528,12 @@ def test_gfx_shot_15_the_renderer_draws_bullets_missiles_and_lasers_each_frame(
         mesh.setEnabled.assert_called_with(drawn)
         assert mesh.thinInstanceCount == 1
     # The missile was built in the pool and placed on its shot.
-    root = renderer.meshes[0].parent
+    root = renderer.meshes[0].parent.parent
     assert root.name == "enemy-missile-0"
     root.position.set.assert_called_with(7.0, 8.0, -0.5)
     assert root.rotation.z == pytest.approx(-0.5)
+    # Its smoke trail is stepped and drawn every frame (GFX-SHOT-15).
+    assert len(renderer.trail.shown) == 2
 
 
 @pytest.mark.parametrize("on", [True, False])
@@ -501,7 +549,7 @@ def test_the_renderer_disposes_its_layers_lasers_missiles_and_flame(
     frame = SimpleNamespace(
         dt_seconds=0.0,
         bullets=[],
-        missiles=[SimpleNamespace(x=0, y=0, heading=0, radius=5)],
+        missiles=[SimpleNamespace(x=0, y=0, heading=0, radius=5, height=0)],
         lasers=[],
     )
     renderer.handle.sync(frame)
@@ -510,5 +558,49 @@ def test_the_renderer_disposes_its_layers_lasers_missiles_and_flame(
         mesh.dispose.assert_called_once()
         mesh.material.dispose.assert_called_once()
     assert renderer.lasers.disposed
-    renderer.meshes[0].parent.dispose.assert_called_once()
-    _flame(renderer.templates).mesh.dispose.assert_called_once()
+    renderer.meshes[0].parent.parent.dispose.assert_called_once()
+    assert renderer.trail.disposed
+
+
+def test_wpn_09_a_lofted_missile_is_raised_by_its_height_tilted_and_drawn_on_top(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    mesh = SimpleNamespace(renderingGroupId=1)
+    monkeypatch.setattr(sr, "child_meshes", lambda _node, _direct: [mesh])
+    tilt = SimpleNamespace(rotation=SimpleNamespace(x=0))
+    seen: list[tuple[float, ...]] = []
+    node = SimpleNamespace(
+        position=SimpleNamespace(set=lambda *a: seen.append(a)),
+        rotation=SimpleNamespace(z=0),
+        scaling=SimpleNamespace(set=lambda *_a: None),
+        getChildren=lambda: [tilt],
+    )
+    pool = SimpleNamespace(show=lambda n: [node][:n])
+    lofted = SimpleNamespace(
+        x=1.0, y=2.0, heading=0.0, radius=5, height=12.0, pitch=0.4, loft_seconds=1
+    )
+    sr.sync_missiles(pool, [lofted])
+    assert seen == [(1.0, 2.0, -12.5)]
+    assert tilt.rotation.x == pytest.approx(-0.4)
+    # In the rendering group after the playfield's, back in it once its node shows a flat one.
+    assert mesh.renderingGroupId == 2
+    flat = SimpleNamespace(x=1.0, y=2.0, heading=0.0, radius=5, height=0.0, pitch=0.0)
+    sr.sync_missiles(pool, [flat])
+    assert mesh.renderingGroupId == 1
+    assert tilt.rotation.x == 0
+
+
+def test_a_smoke_trail_without_a_material_is_left_as_it_is(
+    monkeypatch: pytest.MonkeyPatch,
+    missile_parts: SimpleNamespace,
+    templates: list[SimpleNamespace],
+) -> None:
+    stub_babylon(monkeypatch, sr, node_pool)
+    monkeypatch.setattr(sr, "_float32_array", FakeTypedArray)
+    monkeypatch.setattr(sr, "babylon_constant", lambda key: key)
+    monkeypatch.setattr(sr, "EnemyLasers", _Lasers)
+    monkeypatch.setattr(sr, "LayerMesh", _BareTrail)
+    handle = sr.create_enemy_shot_renderer("scene")
+    assert isinstance(handle, sr.ShotRendererHandle)
+    assert missile_parts.meshes == []
+    assert templates
