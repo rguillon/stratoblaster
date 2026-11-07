@@ -188,7 +188,7 @@ def test_a_rollout_buffer_is_shared_by_whoever_maps_its_file(tmp_path: Path) -> 
 def test_with_a_gpu_nearly_every_core_plays() -> None:
     gpu = Settings.for_device("cuda")
     assert gpu.device == "cuda"
-    assert gpu.workers == max(1, CPUS - 2)
+    assert gpu.workers == max(1, CPUS - 3)  # the learner and the inference server: a core each
     cpu = Settings.for_device("cpu")
     assert cpu.device == "cpu"
     assert cpu.workers == max(1, CPUS // 3)

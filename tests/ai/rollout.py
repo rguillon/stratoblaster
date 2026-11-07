@@ -12,10 +12,11 @@ import pickle
 import random
 import signal
 import traceback
+from collections import deque
 from dataclasses import dataclass
 from multiprocessing.connection import Connection
 from pathlib import Path
-from typing import Any
+from typing import Any, Protocol
 
 import numpy as np
 import torch
@@ -96,6 +97,29 @@ _STEP_ARRAYS: tuple[tuple[str, type, tuple[int, ...]], ...] = (
 )
 
 
+# What a rollout holds for each episode after its last decision, for the inference server to
+# work out the value of the round's end from (D-274): its name, type and shape.
+_NEXT_ARRAYS: tuple[tuple[str, type, tuple[int, ...]], ...] = (
+    ("next_field", np.float16, (N_CHANNELS, FIELD_ROWS, FIELD_COLS)),
+    ("next_fovea", np.float16, (N_CHANNELS, FOVEA_SIZE, FOVEA_SIZE)),
+    ("next_state", np.float32, (N_STATE,)),
+    ("next_starts", np.bool_, ()),
+)
+
+
+@dataclass
+class Next:
+    """What each episode sees after a round's last decision (`_NEXT_ARRAYS`).
+
+    And whether it starts there.
+    """
+
+    field: NDArray[np.float16]
+    fovea: NDArray[np.float16]
+    state: NDArray[np.float32]
+    starts: NDArray[np.bool_]
+
+
 def _empty(steps: int, envs: int, hidden: int) -> Rollout:
     arrays = [np.zeros((steps, envs, *shape), dtype) for _, dtype, shape in _STEP_ARRAYS]
     memories = np.zeros((steps, envs, hidden), np.float32)
@@ -117,6 +141,7 @@ class RolloutBuffer:
         ]
         layout.append(("memories", np.float32, (steps, envs, hidden)))
         layout.append(("last_values", np.float32, (envs,)))
+        layout.extend((name, dtype, (envs, *shape)) for name, dtype, shape in _NEXT_ARRAYS)
         offsets: list[int] = []
         size = 0
         for _, dtype, shape in layout:
@@ -137,6 +162,11 @@ class RolloutBuffer:
         part = slice(lo, hi)
         steps = [a[name][:, part] for name, _, _ in _STEP_ARRAYS]
         return Rollout(*steps, a["memories"][:, part], a["last_values"][part])
+
+    def next(self, lo: int = 0, hi: int | None = None) -> Next:
+        """Return what episodes `lo` to `hi` see after the round's last decision (views)."""
+        part = slice(lo, hi)
+        return Next(*(self._arrays[name][part] for name, _, _ in _NEXT_ARRAYS))
 
 
 class Player:
@@ -185,29 +215,107 @@ class Player:
         return out.episodes
 
     def _step(self, e: int, action: list[int], out: Rollout, t: int) -> None:
-        env = self.envs[e]
-        reward, _ = env.step(Action(action[0], action[1] == 1, action[2] == 1))
-        out.rewards[t, e] = reward
-        out.dones[t, e] = env.done
-        self.decisions[e] += 1
-        self.starts[e] = env.done
-        if env.done:
-            out.episodes.append(
-                EpisodeReport(
-                    env.setup.ship_id,
-                    env.outcome,
-                    env.score,
-                    env.setup.level_id,
-                    len(env.cleared),
-                    env.progress_fraction,
-                    env.total_lives_lost,
-                    int(self.decisions[e]),
-                )
+        self.observations[e] = observe(_play(self, e, action, out, t))
+
+
+class _Episodes(Protocol):
+    """The episodes a worker plays: `_play` steps them."""
+
+    envs: list[GameEnv]
+    starts: NDArray[np.bool_]
+    decisions: NDArray[np.int64]
+    rng: random.Random
+    curriculum: Curriculum
+
+
+def _play(owner: _Episodes, e: int, action: list[int], out: Rollout, t: int) -> GameEnv:
+    """Play decision `t` of episode `e`, and write what it got into `out`.
+
+    Returns the game it goes on with (a new one once it ends).
+    """
+    env = owner.envs[e]
+    reward, _ = env.step(Action(action[0], action[1] == 1, action[2] == 1))
+    out.rewards[t, e] = reward
+    out.dones[t, e] = env.done
+    owner.decisions[e] += 1
+    owner.starts[e] = env.done
+    if env.done:
+        out.episodes.append(
+            EpisodeReport(
+                env.setup.ship_id,
+                env.outcome,
+                env.score,
+                env.setup.level_id,
+                len(env.cleared),
+                env.progress_fraction,
+                env.total_lives_lost,
+                int(owner.decisions[e]),
             )
-            self.decisions[e] = 0
-            env = self.curriculum.draw(self.rng)
-            self.envs[e] = env
-        self.observations[e] = observe(env)
+        )
+        owner.decisions[e] = 0
+        env = owner.curriculum.draw(owner.rng)
+        owner.envs[e] = env
+    return env
+
+
+class ServedPlayer:
+    """A few episodes played side by side, their decisions made by the inference server (D-274).
+
+    They are in two groups: while the server decides for one, the worker plays the other's
+    decisions, so neither waits for the other. What each episode sees goes into the shared rollout
+    and the server writes its decisions there: only "decide for episodes a to b at step t" (and
+    "done") go through the pipe. `offset`: the first of its episodes in the rollout.
+    """
+
+    def __init__(self, envs: int, seed: int, curriculum: Curriculum, offset: int) -> None:
+        self.rng = random.Random(seed)
+        self.curriculum = curriculum
+        self.offset = offset
+        self.envs = [curriculum.draw(self.rng) for _ in range(envs)]
+        self.starts = np.ones(envs, np.bool_)
+        self.decisions = np.zeros(envs, np.int64)
+        half = (envs + 1) // 2
+        self.groups = [(0, half), (half, envs)] if envs > 1 else [(0, envs)]
+
+    def play(self, server: Connection, out: Rollout, after: Next) -> list[EpisodeReport]:
+        """Play a round into `out` (and `after`: what is seen after it).
+
+        Returns the episodes that ended.
+        """
+        steps = out.rewards.shape[0]
+        out.episodes = []
+        asked: deque[tuple[int, int]] = deque()
+        for group in range(len(self.groups)):
+            self._ask(server, out, after, group, 0)
+            asked.append((group, 0))
+        while asked:
+            server.recv_bytes()  # the server answers in the order it was asked
+            group, t = asked.popleft()
+            if t == steps:
+                continue  # the value of the round's end: nothing to play
+            lo, hi = self.groups[group]
+            for e in range(lo, hi):
+                _play(self, e, out.actions[t, e].tolist(), out, t)
+            self._ask(server, out, after, group, t + 1)
+            asked.append((group, t + 1))
+        return out.episodes
+
+    def _ask(self, server: Connection, out: Rollout, after: Next, group: int, t: int) -> None:
+        """Write what the group's episodes see at step `t`, and ask the server to decide."""
+        lo, hi = self.groups[group]
+        batch = Batch.of([observe(self.envs[e]) for e in range(lo, hi)])
+        last = t == out.rewards.shape[0]
+        if last:
+            target: Any = after
+            rows: Any = slice(lo, hi)
+        else:
+            target = out
+            rows = (t, slice(lo, hi))
+        target.field[rows] = batch.field.numpy()
+        target.fovea[rows] = batch.fovea.numpy()
+        target.state[rows] = batch.state.numpy()
+        target.starts[rows] = self.starts[lo:hi]
+        server.send((self.offset + lo, self.offset + hi, -1 if last else t))
 
 
 def worker_main(
@@ -217,28 +325,45 @@ def worker_main(
     seed: int,
     curriculum: Curriculum,
     buffers: list[tuple[Path, tuple[int, int, int]]],
+    server: Connection | None = None,
 ) -> None:
     """Play a round each time the learner asks, until it sends None (a worker process).
 
     The worker plays episodes `envs[0]` to `envs[1]` of the shared rollout buffers; each message
-    is the index of the buffer to write the round into and the weights to play it with. Ctrl-C is
-    the learner's to handle: it stops the workers once the brain is saved.
+    is the index of the buffer to write the round into and the weights to play it with. With a
+    `server` (the inference server, D-274) the weights are None: the server decides. Ctrl-C is the
+    learner's to handle: it stops the workers once the brain is saved.
     """
     signal.signal(signal.SIGINT, signal.SIG_IGN)
     torch.set_num_threads(1)
     try:
         lo, hi = envs
-        player = Player(shape, hi - lo, seed, curriculum)
-        views = [RolloutBuffer(path, *spec, create=False).rollout(lo, hi) for path, spec in buffers]
+        shared = [RolloutBuffer(path, *spec, create=False) for path, spec in buffers]
+        views = [buffer.rollout(lo, hi) for buffer in shared]
+        afters = [buffer.next(lo, hi) for buffer in shared]
+        player = Player(shape, hi - lo, seed, curriculum) if server is None else None
+        served = ServedPlayer(hi - lo, seed, curriculum, lo) if server is not None else None
         while True:
             message = pickle.loads(conn.recv_bytes())  # noqa: S301  # from the learner
             if message is None:
                 break
             index, weights = message
-            conn.send(player.play(weights, views[index]))
+            if player is not None:
+                conn.send(player.play(weights, views[index]))
+                continue
+            assert server is not None  # one of the two
+            assert served is not None
+            try:
+                episodes = served.play(server, views[index], afters[index])
+            except (EOFError, BrokenPipeError):
+                conn.send("The inference server stopped (its error, if any, follows).")
+                break
+            conn.send(episodes)
     except (EOFError, BrokenPipeError):
         pass  # the learner is gone
     except Exception:  # noqa: BLE001  # the learner shows what went wrong in the worker
         conn.send(traceback.format_exc())
     finally:
         conn.close()
+        if server is not None:
+            server.close()

@@ -1566,3 +1566,24 @@
   every decision's state). The rest of the time is spread thin over the game's logic: larger
   gains need another approach (the network on the GPU, fewer decisions a second).
 - **Status:** Proposed
+
+### D-274 — With a GPU, one inference server decides for every worker
+- **Date:** 2026-11-07
+- **Requirements:** none (requested by the human: run the brain on the GPU for the workers, to
+  learn faster).
+- **Context:** each worker ran its own copy of the brain on its CPU core, for batches of 8
+  episodes: about a third of its time.
+- **Decision:** with `--inference server` (the default with a GPU), one process
+  (`tests/ai/inference.py`) holds the brain on the learner's device and the memory of every
+  episode. A worker (`ServedPlayer`) writes what its episodes see into the shared rollout and asks
+  "decide for episodes a to b at step t"; the server batches every question waiting, decides, and
+  writes the actions, log-probabilities, values and memories into the rollout, then answers. Only
+  those small messages go through the pipes. A worker's episodes are in two groups, so it plays
+  one while the server decides for the other. The value after a round's last decision comes from
+  what the episodes see then (`next_*` arrays of the rollout buffer). The learner sends the server
+  the weights before each round, as it did to the workers; the learner and the server take a core
+  each (workers: the CPU threads less 3). On a CPU only, the workers still decide themselves.
+- **Consequences:** the same decisions as the brain would make, step by step (a unit test replays
+  them). On the laptop (8 threads, the server on the CPU) 1,884 decisions a second against 1,639.
+  On glouton's GPU: to measure.
+- **Status:** Proposed

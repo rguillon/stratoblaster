@@ -50,6 +50,7 @@ from ai.brain import (
     save_brain,
 )
 from ai.game_env import LEVEL_IDS
+from ai.inference import server_main
 from ai.rollout import Curriculum, EpisodeReport, Rollout, RolloutBuffer, worker_main
 
 if TYPE_CHECKING:
@@ -84,6 +85,9 @@ class Settings:
     max_grad_norm: float = 0.5
     save_every: int = 10
     report_seconds: float = 10.0
+    # The brain decides on the learner's device, in one process for every worker (D-274), rather
+    # than in each worker on its CPU core.
+    served: bool = False
 
     @staticmethod
     def for_device(device: str) -> "Settings":
@@ -91,11 +95,12 @@ class Settings:
 
         On a CPU, the learner's backward pass is the bottleneck: a third of the cores play, the
         rest learn. With a GPU, the learner is fast and playing is the bottleneck: every core but
-        two plays, each with 8 episodes (a batch through the network) and rounds of 64 decisions
-        (on an RTX 2060 with 64 CPU threads: about 11,000 decisions a second; D-264).
+        three plays, each with 8 episodes and rounds of 64 decisions, and the brain decides for
+        every one of them on the GPU (D-264, D-274).
         """
         if device == "cuda":
-            return Settings(workers=max(1, CPUS - 2), envs=8, steps=64, device=device)
+            workers = max(1, CPUS - 3)  # a core each for the learner and the inference server
+            return Settings(workers=workers, envs=8, steps=64, device=device, served=True)
         return Settings(device=device)
 
 
@@ -349,7 +354,10 @@ def _shared_dir() -> Path:
 
 
 class Workers:
-    """The worker processes playing the game, writing into two shared rollout buffers in turn."""
+    """The worker processes playing the game, writing into two shared rollout buffers in turn.
+
+    With `settings.served`, an inference server process decides for all of them (D-274).
+    """
 
     def __init__(self, settings: Settings, shape: BrainShape, seed: int) -> None:
         ctx = mp.get_context("spawn")
@@ -365,35 +373,66 @@ class Workers:
         ]
         paths = [(buffer.path, spec) for buffer in self.buffers]
         self._round = 0
+        self.server: Connection | None = None
+        server_ends: list[Connection] = []
+        worker_ends: list[Connection | None] = [None] * settings.workers
+        if settings.served:
+            for i in range(settings.workers):
+                server_ends_i, worker_end = ctx.Pipe()
+                server_ends.append(server_ends_i)
+                worker_ends[i] = worker_end
+            self.server, server_learner = ctx.Pipe()
+            proc = ctx.Process(
+                target=server_main,
+                args=(server_learner, server_ends, shape, settings.device, paths, seed),
+                daemon=True,
+            )
+            proc.start()
+            server_learner.close()
+            self.procs.append(proc)
         curriculum = Curriculum()
         for i in range(settings.workers):
             parent, child = ctx.Pipe()
             envs = (i * settings.envs, (i + 1) * settings.envs)
             proc = ctx.Process(
                 target=worker_main,
-                args=(child, shape, envs, seed * 1000 + i, curriculum, paths),
+                args=(child, shape, envs, seed * 1000 + i, curriculum, paths, worker_ends[i]),
                 daemon=True,
             )
             proc.start()
             child.close()
             self.conns.append(parent)
             self.procs.append(proc)
+        for end in (*server_ends, *worker_ends):
+            if end is not None:
+                end.close()  # the processes have their own copies
 
     def start(self, weights: dict[str, Any]) -> None:
         """Have every worker play a round with `weights` (in the background)."""
-        payload = pickle.dumps((self._round % 2, weights))  # pickled once for every worker
+        index = self._round % 2
+        if self.server is not None:
+            self.server.send_bytes(pickle.dumps((index, weights)))
+            self._check(self.server.recv(), "The inference server")
+            weights = {}  # the server decides: the workers need none
+        payload = pickle.dumps((index, weights or None))  # pickled once for every worker
         for conn in self.conns:
             conn.send_bytes(payload)
+
+    def _check(self, got: Any, who: str) -> Any:
+        """Return `got`, or raise with the traceback a process sent instead."""
+        if isinstance(got, str):
+            server = self.server
+            if server is not None and server.poll():
+                got += "\n" + str(server.recv())
+            msg = f"{who} failed:\n{got}"
+            raise RuntimeError(msg)  # noqa: TRY004  # a process's traceback, not a type error
+        return got
 
     def collect(self) -> Rollout:
         """Wait for the round under way; return it (it stays valid until the next one starts)."""
         episodes: list[EpisodeReport] = []
         for conn in self.conns:
-            got = conn.recv()
-            if isinstance(got, str):
-                msg = "A worker failed:\n" + got
-                raise RuntimeError(msg)  # noqa: TRY004  # a worker's traceback, not a type error
-            episodes.extend(got)
+            episodes.extend(self._check(conn.recv(), "A worker"))
         rollout = self.buffers[self._round % 2].rollout()
         rollout.episodes = episodes
         self._round += 1
@@ -401,7 +440,7 @@ class Workers:
 
     def close(self) -> None:
         stop = pickle.dumps(None)
-        for conn in self.conns:
+        for conn in (*self.conns, *([self.server] if self.server is not None else [])):
             try:
                 conn.send_bytes(stop)
             except (BrokenPipeError, OSError):
@@ -567,6 +606,13 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--workers", type=int, help="processes playing (default: per device)")
     parser.add_argument("--envs", type=int, help="episodes each worker plays side by side")
     parser.add_argument("--steps", type=int, help="decisions per episode per round")
+    parser.add_argument(
+        "--inference",
+        choices=("auto", "server", "workers"),
+        default="auto",
+        help="where the brain decides while playing: in one server process on the learner's"
+        " device, or in each worker on its CPU (auto: the server with a GPU)",
+    )
     parser.add_argument("--fresh", action="store_true", help="start a new brain")
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument(
@@ -581,6 +627,8 @@ def main(argv: list[str] | None = None) -> None:
     settings = Settings.for_device(device)
     given = {k: getattr(args, k) for k in ("workers", "envs", "steps") if getattr(args, k)}
     given["report_seconds"] = args.report_seconds
+    if args.inference != "auto":
+        given["served"] = args.inference == "server"
     learn(replace(settings, **given), args.minutes, args.fresh, args.seed)
 
 
