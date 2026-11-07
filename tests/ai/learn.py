@@ -1,10 +1,15 @@
 # Copyright (c) 2026 Renaud Guillon
 """`make learn`: the brain learns to play the game (proximal policy optimisation, PPO).
 
-Worker processes play the levels with the current brain (see `rollout.py`); the learner then
-improves the brain from what they played, and sends them the new weights. It goes on for
-`--minutes`, or until Ctrl-C, saving the brain under `data/` every few updates and at the end.
-It starts from the saved brain when there is one (`--fresh` to start over).
+Worker processes play games with the current brain (see `rollout.py`): each from level 1-1 with 3
+lives and 3 bombs, on through the levels with what it earned, until the game is over (D-271). The
+learner improves the brain from what they played, for the best score, and sends them the new
+weights. It goes on for `--minutes`, or until Ctrl-C, saving the brain under `data/` every few
+updates and at the end; the brain whose games scored best on average is kept too
+(`data/brain-best.pt`). It starts from the saved brain when there is one (`--fresh` to start over).
+
+Every minute it says how the games went (`--report-seconds`); `data/learn-log.csv` has the
+details of each update.
 
 With an NVIDIA GPU (and the CUDA build of torch: `make learn AI_TORCH=cuda`) the learner runs on
 the GPU and nearly every CPU core plays; on a CPU only, a third of the cores play, the rest learn.
@@ -34,6 +39,7 @@ from torch import nn
 
 from ai import DATA
 from ai.brain import (
+    BEST_BRAIN_FILE,
     BRAIN_FILE,
     TRAINER_FILE,
     Batch,
@@ -43,6 +49,7 @@ from ai.brain import (
     load_brain,
     save_brain,
 )
+from ai.game_env import LEVEL_IDS
 from ai.rollout import Curriculum, EpisodeReport, Rollout, RolloutBuffer, worker_main
 
 if TYPE_CHECKING:
@@ -50,6 +57,8 @@ if TYPE_CHECKING:
 
 LOG_FILE = DATA / "learn-log.csv"
 HISTORY_KEPT = 2000
+# Games a report needs for its average score to choose the best brain.
+MIN_GAMES_FOR_BEST = 20
 
 
 CPUS = os.cpu_count() or 2
@@ -67,13 +76,14 @@ class Settings:
     minibatches: int = 12  # per epoch: about 24 steps of the optimiser an update
     device: str = "cpu"
     learning_rate: float = 2.5e-4
-    gamma: float = 0.995
+    gamma: float = 0.998  # about 30 s ahead: a life lost is the points it would have scored
     lam: float = 0.95
     clip: float = 0.2
     value_coef: float = 0.5
     entropy_coef: float = 0.01
     max_grad_norm: float = 0.5
     save_every: int = 10
+    report_seconds: float = 60.0
 
     @staticmethod
     def for_device(device: str) -> "Settings":
@@ -227,16 +237,18 @@ class Learner:
 
 
 def _summary(episodes: list[EpisodeReport]) -> dict[str, float]:
+    """Return the games that ended in an update, summed up for the log."""
     if not episodes:
         return {}
-    full = [e for e in episodes if not e.mid_start]
     return {
-        "episodes": len(episodes),
-        "reward": float(np.mean([e.reward for e in episodes])),
-        "progress": float(np.mean([e.progress for e in episodes])),
-        "complete": float(np.mean([e.outcome == "complete" for e in episodes])),
-        "lives_lost": float(np.mean([e.lives_lost for e in episodes])),
-    } | ({"full_progress": float(np.mean([e.progress for e in full]))} if full else {})
+        "games": len(episodes),
+        "score": float(np.mean([e.score for e in episodes])),
+        "best_score": float(max(e.score for e in episodes)),
+        "cleared": float(np.mean([e.cleared for e in episodes])),
+        "game_over": float(np.mean([e.outcome == "over" for e in episodes])),
+        "too_slow": float(np.mean([e.outcome == "timeout" for e in episodes])),
+        "finished": float(np.mean([e.outcome == "complete" for e in episodes])),
+    }
 
 
 LOG_COLUMNS = (
@@ -246,12 +258,13 @@ LOG_COLUMNS = (
     "decisions_per_s",
     "wait_s",
     "learn_s",
-    "episodes",
-    "reward",
-    "progress",
-    "complete",
-    "lives_lost",
-    "full_progress",
+    "games",
+    "score",
+    "best_score",
+    "cleared",
+    "game_over",
+    "too_slow",
+    "finished",
     "policy",
     "value",
     "entropy",
@@ -260,13 +273,70 @@ LOG_COLUMNS = (
 
 
 def _log(row: dict[str, float]) -> None:
+    """Add `row` to the log; a log of other columns (an older `make learn`) is moved aside."""
     LOG_FILE.parent.mkdir(parents=True, exist_ok=True)
+    if LOG_FILE.exists():
+        with LOG_FILE.open(newline="") as f:
+            header = next(csv.reader(f), [])
+        if tuple(header) != LOG_COLUMNS:
+            LOG_FILE.replace(LOG_FILE.with_suffix(".old.csv"))
     new = not LOG_FILE.exists()
     with LOG_FILE.open("a", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=LOG_COLUMNS, restval="", extrasaction="ignore")
         if new:
             writer.writeheader()
         writer.writerow(row)
+
+
+def _level_after(cleared: int) -> str:
+    """Return the level a game ended in after clearing `cleared` levels (the last: all cleared)."""
+    return LEVEL_IDS[min(cleared, len(LEVEL_IDS) - 1)]
+
+
+def _share(count: int, total: int) -> str:
+    return f"{count} ({count / total:.0%})"
+
+
+def report(
+    games: list[EpisodeReport], stats: LearnStats, minutes: float, per_second: float, best: bool
+) -> str:
+    """Say how the games that ended since the last report went, in plain words."""
+    title = (
+        f"{minutes:.0f} min: {stats.decisions / 1e6:.1f} M moves played ({per_second:,.0f} a"
+        f" second), {stats.updates} updates of the brain"
+    )
+    lines = [f"── {title} " + "─" * max(0, 96 - len(title))]
+    if not games:
+        lines.append("  No game ended since the last report: they go on until the ship is lost.")
+        return "\n".join(lines)
+    count = len(games)
+    over = sum(g.outcome == "over" for g in games)
+    slow = sum(g.outcome == "timeout" for g in games)
+    finished = sum(g.outcome == "complete" for g in games)
+    scores = [g.score for g in games]
+    cleared = [g.cleared for g in games]
+    top = max(games, key=lambda g: (g.score, g.cleared))
+    beyond_first = sum(c > 0 for c in cleared)
+    lines.append(
+        f"  Games ended    {count}: {_share(over, count)} game over, {_share(slow, count)} too"
+        f" slow on a level, {_share(finished, count)} cleared every level"
+    )
+    lines.append(
+        f"  Score          average {np.mean(scores):,.0f}, best {top.score:,.0f}"
+        f" (reached {top.reached}, {top.ship_id} ship)"
+    )
+    lines.append(
+        f"  Levels         {np.mean(cleared):.1f} cleared on average, furthest reached"
+        f" {_level_after(max(cleared))}; {_share(beyond_first, count)} got past {LEVEL_IDS[0]}"
+    )
+    if stats.best_score > 0:
+        note = (
+            f"this brain, saved in {BEST_BRAIN_FILE.relative_to(DATA.parent)}"
+            if best
+            else "an earlier brain"
+        )
+        lines.append(f"  Best average   {stats.best_score:,.0f} ({note})")
+    return "\n".join(lines)
 
 
 def _shared_dir() -> Path:
@@ -350,15 +420,11 @@ def learn(settings: Settings, minutes: float, fresh: bool, seed: int) -> None:
         torch.set_num_threads(max(1, CPUS - settings.workers))
     learner = Learner(settings, fresh)
     workers = Workers(settings, learner.brain.shape, seed + learner.stats.updates)
-    print(
-        f"Learning on {settings.device} for {minutes:g} min with {settings.workers} workers x"
-        f" {settings.envs}"
-        f" episodes ({settings.workers * settings.envs * settings.steps} decisions per update)."
-        " Ctrl-C stops (and saves)."
-    )
+    _introduce(settings, minutes)
     stop = _StopOnCtrlC()
     start = time.monotonic()
     last = start
+    reporter = Reporter(settings.report_seconds, learner.stats)
     try:
         # The workers play a round while the brain learns from the one before (one update late:
         # the clipped ratio of PPO allows for it).
@@ -390,14 +456,14 @@ def learn(settings: Settings, minutes: float, fresh: bool, seed: int) -> None:
             stats.history.append(row)
             del stats.history[:-HISTORY_KEPT]
             _log(row)
-            _print(row)
             if stats.updates % settings.save_every == 0:
                 learner.save()
+            reporter.add(data.episodes, learner)
     finally:
         stop.ignore()
         workers.close()
         learner.save()
-        print(f"Brain saved in {BRAIN_FILE} ({learner.stats.updates} updates).", flush=True)
+        _farewell(learner.stats)
 
 
 class _StopOnCtrlC:
@@ -416,26 +482,70 @@ class _StopOnCtrlC:
         signal.signal(signal.SIGINT, signal.SIG_IGN)
 
 
-def _print(row: dict[str, float]) -> None:
-    parts = [
-        f"#{int(row['update'])}",
-        f"{row['decisions'] / 1e6:.2f}M dec",
-        f"{row['decisions_per_s']:.0f}/s",
-    ]
-    if "episodes" in row:
-        parts += [
-            f"eps {int(row['episodes'])}",
-            f"reward {row['reward']:+.2f}",
-            f"progress {row['progress']:.0%}",
-            f"done {row['complete']:.0%}",
-            f"lives lost {row['lives_lost']:.2f}",
-        ]
-    parts += [
-        f"entropy {row['entropy']:.2f}",
-        f"kl {row['kl']:.4f}",
-        f"wait {row['wait_s']:.1f}s learn {row['learn_s']:.1f}s",
-    ]
-    print(" | ".join(parts), flush=True)
+class Reporter:
+    """Says how the games went every `seconds`, and keeps the brain that scored best."""
+
+    def __init__(self, seconds: float, stats: LearnStats) -> None:
+        self.seconds = seconds
+        self.start = time.monotonic()
+        self._last = self.start
+        self._decisions = stats.decisions
+        self._games: list[EpisodeReport] = []
+
+    def add(self, games: list[EpisodeReport], learner: Learner) -> None:
+        """Count the games that ended in an update; report when it is time."""
+        self._games.extend(games)
+        now = time.monotonic()
+        if now - self._last < self.seconds:
+            return
+        stats = learner.stats
+        per_second = (stats.decisions - self._decisions) / max(1e-6, now - self._last)
+        best = _keep_if_best(learner, self._games)
+        print(report(self._games, stats, (now - self.start) / 60, per_second, best), flush=True)
+        self._games = []
+        self._last = now
+        self._decisions = stats.decisions
+
+
+def _introduce(settings: Settings, minutes: float) -> None:
+    games = settings.workers * settings.envs
+    print(
+        f"The brain learns on the {settings.device.upper()} for {minutes:g} minutes: {games} games"
+        f" at once ({settings.workers} processes x {settings.envs}), each from {LEVEL_IDS[0]} with"
+        " 3 lives and 3 bombs, on to the next level when one is cleared, until the ship is lost.\n"
+        f"It learns to score the most. Every {settings.report_seconds:g} s: how the games went"
+        f" (details in {LOG_FILE.relative_to(DATA.parent)}). Ctrl-C stops and saves.",
+        flush=True,
+    )
+
+
+def _farewell(stats: LearnStats) -> None:
+    print(
+        f"The brain is saved in {BRAIN_FILE.relative_to(DATA.parent)}: {stats.updates}"
+        f" updates, {stats.hours:.1f} h of learning in all.",
+        flush=True,
+    )
+    if stats.best_score > 0:
+        print(
+            f"The best one so far (average score {stats.best_score:,.0f}) is in"
+            f" {BEST_BRAIN_FILE.relative_to(DATA.parent)}.",
+            flush=True,
+        )
+
+
+def _keep_if_best(learner: Learner, games: list[EpisodeReport]) -> bool:
+    """Save the brain as the best when its games scored best on average so far (D-271).
+
+    Only with enough games for the average to mean something. Returns whether it was saved.
+    """
+    if len(games) < MIN_GAMES_FOR_BEST:
+        return False
+    average = float(np.mean([g.score for g in games]))
+    if average <= learner.stats.best_score:
+        return False
+    learner.stats.best_score = average
+    save_brain(learner.brain, learner.stats, BEST_BRAIN_FILE)
+    return True
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -452,6 +562,9 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--steps", type=int, help="decisions per episode per round")
     parser.add_argument("--fresh", action="store_true", help="start a new brain")
     parser.add_argument("--seed", type=int, default=1)
+    parser.add_argument(
+        "--report-seconds", type=float, default=60.0, help="how often to say how the games went"
+    )
     args = parser.parse_args(argv)
     device = args.device
     if device == "auto":
@@ -460,6 +573,7 @@ def main(argv: list[str] | None = None) -> None:
         parser.error("torch sees no CUDA GPU: is it the CUDA build? (`make learn AI_TORCH=cuda`)")
     settings = Settings.for_device(device)
     given = {k: getattr(args, k) for k in ("workers", "envs", "steps") if getattr(args, k)}
+    given["report_seconds"] = args.report_seconds
     learn(replace(settings, **given), args.minutes, args.fresh, args.seed)
 
 

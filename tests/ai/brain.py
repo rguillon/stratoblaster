@@ -23,6 +23,8 @@ from ai.game_env import MOVES
 from ai.observation import FIELD_COLS, FIELD_ROWS, FOVEA_SIZE, N_CHANNELS, N_STATE, Observation
 
 BRAIN_FILE = DATA / "brain.pt"
+# The brain whose games scored best on average while learning (D-271).
+BEST_BRAIN_FILE = DATA / "brain-best.pt"
 TRAINER_FILE = DATA / "brain.trainer.pt"
 FORMAT = 1
 
@@ -39,12 +41,16 @@ class BrainShape:
 
 @dataclass
 class LearnStats:
-    """How much the brain has learned: updates, decisions played, episodes and hours."""
+    """How much the brain has learned: updates, decisions played, episodes and hours.
+
+    `best_score`: the best average score of the games of a report while learning (D-271).
+    """
 
     updates: int = 0
     decisions: int = 0
     episodes: int = 0
     hours: float = 0.0
+    best_score: float = 0.0
     history: list[dict[str, float]] = field(default_factory=list)
 
 

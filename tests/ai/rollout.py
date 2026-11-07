@@ -3,7 +3,8 @@
 
 Each worker holds a copy of the brain (sent by the learner before each round), plays `steps`
 decisions in each of its episodes, and sends back everything the learner needs: what was seen,
-done, expected and got. An episode that ends is replaced by a new one, drawn by the curriculum.
+done, expected and got. An episode is a campaign from the first level (D-271); one that ends is
+replaced by a new one.
 """
 
 import dataclasses
@@ -21,66 +22,47 @@ import torch
 from numpy.typing import NDArray
 
 from ai.brain import Batch, Brain, BrainShape
-from ai.game_env import (
-    LEVEL_IDS,
-    MAX_WEAPON_LEVEL,
-    SHIP_IDS,
-    WEAPON_IDS,
-    Action,
-    EpisodeSetup,
-    GameEnv,
-    level_seconds,
-)
+from ai.game_env import LEVEL_IDS, SHIP_IDS, Action, EpisodeSetup, GameEnv
 from ai.observation import FIELD_COLS, FIELD_ROWS, FOVEA_SIZE, N_CHANNELS, N_STATE, observe
 
 
 @dataclass
 class Curriculum:
-    """How the learning episodes are drawn.
+    """How the learning episodes are drawn: each a campaign (D-271).
 
-    A share start in the middle of a level (`mid_start`), anywhere up to its final boss, so the
-    bosses and late waves come up as often as the first ones; with weapons, lives and bombs that
-    vary, as a player may have there. The others are a fresh start, as when it is watched
-    (`make serve-ai`) and rated: 3 lives, 3 bombs, the first weapon at level 1 (D-269). The ship
-    varies.
+    From the first of `levels` with a fresh start (3 lives, 3 bombs, the first weapon at level 1,
+    as when watched and rated, D-269), each level cleared going on to the next with what it ended
+    with, until the game is over, a level takes too long or the last one is cleared. The ship and
+    the seed vary.
     """
 
     levels: tuple[str, ...] = LEVEL_IDS
-    mid_start: float = 0.6
 
-    def draw(self, rng: random.Random) -> EpisodeSetup:
-        level_id = rng.choice(self.levels)
-        seconds = level_seconds(level_id)
-        ship_id = rng.choice(SHIP_IDS)
-        seed = rng.randrange(1 << 30)
-        if rng.random() >= self.mid_start:
-            return EpisodeSetup(level_id, seed=seed, ship_id=ship_id)  # a fresh start
-        start = rng.uniform(0.0, seconds * 0.99)
-        base = rng.randint(1, MAX_WEAPON_LEVEL)
-        levels = {w: max(1, min(MAX_WEAPON_LEVEL, base + rng.randint(-1, 1))) for w in WEAPON_IDS}
-        return EpisodeSetup(
-            level_id,
-            seed=seed,
-            ship_id=ship_id,
-            weapon=rng.choice(WEAPON_IDS),
-            weapon_levels=levels,
-            lives=rng.choice((1, 2, 3, 3, 3)),
-            bombs=rng.randint(0, 3),
-            start_time=start,
+    def draw(self, rng: random.Random) -> GameEnv:
+        """Return the game of a new episode."""
+        setup = EpisodeSetup(
+            self.levels[0], seed=rng.randrange(1 << 30), ship_id=rng.choice(SHIP_IDS)
         )
+        return GameEnv(setup, campaign=self.levels)
 
 
 @dataclass
 class EpisodeReport:
-    """How an episode went."""
+    """How an episode (a campaign) went.
 
-    level_id: str
+    `outcome`: "over" (no life left), "timeout" (a level took too long) or "complete" (the last
+    level cleared). `reached`: the level it ended in; `cleared`: how many levels it cleared;
+    `progress`: how far through the level it ended in.
+    """
+
+    ship_id: str
     outcome: str
-    reward: float
+    score: float
+    reached: str
+    cleared: int
     progress: float
     lives_lost: int
     decisions: int
-    mid_start: bool
 
 
 @dataclass
@@ -166,11 +148,10 @@ class Player:
         self.brain.eval()
         self.rng = random.Random(seed)
         self.curriculum = curriculum
-        self.envs = [GameEnv(curriculum.draw(self.rng)) for _ in range(envs)]
+        self.envs = [curriculum.draw(self.rng) for _ in range(envs)]
         self.observations = [observe(env) for env in self.envs]
         self.memory = self.brain.initial_memory(envs)
         self.starts = np.ones(envs, np.bool_)
-        self.returns = np.zeros(envs, np.float64)
         self.decisions = np.zeros(envs, np.int64)
 
     def play(self, weights: dict[str, Any], out: Rollout) -> list[EpisodeReport]:
@@ -209,24 +190,23 @@ class Player:
         reward, _ = env.step(Action(action[0], action[1] == 1, action[2] == 1))
         out.rewards[t, e] = reward
         out.dones[t, e] = env.done
-        self.returns[e] += reward
         self.decisions[e] += 1
         self.starts[e] = env.done
         if env.done:
             out.episodes.append(
                 EpisodeReport(
-                    env.setup.level_id,
+                    env.setup.ship_id,
                     env.outcome,
-                    float(self.returns[e]),
+                    env.score,
+                    env.setup.level_id,
+                    len(env.cleared),
                     env.progress_fraction,
                     env.total_lives_lost,
                     int(self.decisions[e]),
-                    env.setup.start_time > 0,
                 )
             )
-            self.returns[e] = 0.0
             self.decisions[e] = 0
-            env = GameEnv(self.curriculum.draw(self.rng))
+            env = self.curriculum.draw(self.rng)
             self.envs[e] = env
         self.observations[e] = observe(env)
 

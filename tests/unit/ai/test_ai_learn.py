@@ -3,6 +3,7 @@
 
 import random  # noqa: TID251  # the curriculum draws from a `random.Random`
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any
 
 import numpy as np
@@ -10,9 +11,19 @@ import pytest
 import torch
 from ai import learn as learn_module
 from ai.brain import Brain, BrainShape, LearnStats, save_brain
-from ai.game_env import LEVEL_IDS, MAX_WEAPON_LEVEL, SHIP_IDS, WEAPON_IDS, EpisodeSetup
+from ai.game_env import LEVEL_IDS, SHIP_IDS, WEAPON_IDS, EpisodeSetup
 from ai.game_env import level_seconds as seconds_of
-from ai.learn import CPUS, Learner, Settings, advantages
+from ai.learn import (
+    CPUS,
+    LOG_COLUMNS,
+    MIN_GAMES_FOR_BEST,
+    Learner,
+    Settings,
+    _keep_if_best,
+    _log,
+    advantages,
+    report,
+)
 from ai.rate import (
     EpisodeResult,
     RatingSettings,
@@ -22,7 +33,7 @@ from ai.rate import (
     rate_level,
     setups,
 )
-from ai.rollout import Curriculum, Player, RolloutBuffer, _empty
+from ai.rollout import Curriculum, EpisodeReport, Player, RolloutBuffer, _empty
 
 SMALL = BrainShape(hidden=32, field_features=16, fovea_features=16, state_features=8)
 
@@ -38,20 +49,68 @@ def test_advantages_discount_the_rewards_and_stop_at_an_episode_end() -> None:
     assert adv.tolist() == returns.tolist()
 
 
-def test_the_curriculum_draws_valid_episodes() -> None:
+def test_d_271_each_episode_is_a_campaign_from_the_first_level_afresh() -> None:
     rng = random.Random(3)  # noqa: S311  # not cryptography: episodes drawn at random
     curriculum = Curriculum()
-    for _ in range(50):
-        setup = curriculum.draw(rng)
-        assert setup.level_id in LEVEL_IDS
-        assert setup.ship_id in SHIP_IDS
-        assert setup.weapon in WEAPON_IDS
-        assert 0 <= setup.start_time <= seconds_of(setup.level_id)
-        assert all(1 <= v <= MAX_WEAPON_LEVEL for v in setup.weapon_levels.values())
-        assert setup.lives >= 1
-        if setup.start_time == 0:  # a fresh start (D-269)
-            assert (setup.weapon, setup.lives, setup.bombs) == (WEAPON_IDS[0], 3, 3)
-            assert setup.weapon_levels == dict.fromkeys(WEAPON_IDS, 1)
+    ships = set()
+    for _ in range(20):
+        env = curriculum.draw(rng)
+        setup = env.setup
+        assert env.campaign == LEVEL_IDS
+        assert setup.level_id == LEVEL_IDS[0]
+        assert (setup.weapon, setup.lives, setup.bombs) == (WEAPON_IDS[0], 3, 3)
+        assert setup.start_time == 0
+        assert setup.weapon_levels == dict.fromkeys(WEAPON_IDS, 1)
+        ships.add(setup.ship_id)
+    assert ships == set(SHIP_IDS)
+
+
+def _game(score: float, cleared: int = 0, outcome: str = "over") -> EpisodeReport:
+    level = LEVEL_IDS[min(cleared, len(LEVEL_IDS) - 1)]
+    return EpisodeReport("balanced", outcome, score, level, cleared, 0.5, 3, 100)
+
+
+def test_d_271_the_report_says_how_the_games_went_in_words() -> None:
+    games = [_game(1000), _game(3000, 1), _game(5000, 2, "timeout"), _game(500)]
+    text = report(games, LearnStats(updates=7, decisions=2_500_000, best_score=2400), 3, 9000, True)
+    assert "3 min: 2.5 M moves played (9,000 a second), 7 updates" in text
+    assert "4: 3 (75%) game over, 1 (25%) too slow on a level, 0 (0%) cleared every level" in text
+    assert "average 2,375, best 5,000 (reached 1-3, balanced ship)" in text
+    assert "0.8 cleared on average, furthest reached 1-3; 2 (50%) got past 1-1" in text
+    assert "Best average   2,400 (this brain, saved in data/brain-best.pt)" in text
+    quiet = report([], LearnStats(), 1, 0, False)
+    assert "No game ended" in quiet
+    assert "Best average" not in quiet
+    assert "an earlier brain" in report(games, LearnStats(best_score=9), 1, 1, False)
+
+
+def test_d_271_the_brain_whose_games_score_best_on_average_is_kept(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    best_file = tmp_path / "best.pt"
+    monkeypatch.setattr(learn_module, "BEST_BRAIN_FILE", best_file)
+    learner = SimpleNamespace(brain=Brain(SMALL), stats=LearnStats(best_score=1000))
+    few = [_game(5000)] * (MIN_GAMES_FOR_BEST - 1)
+    assert not _keep_if_best(learner, few)  # type: ignore[arg-type]
+    assert not _keep_if_best(learner, [_game(900)] * MIN_GAMES_FOR_BEST)  # type: ignore[arg-type]
+    assert not best_file.exists()
+    assert _keep_if_best(learner, [_game(1500)] * MIN_GAMES_FOR_BEST)  # type: ignore[arg-type]
+    assert learner.stats.best_score == 1500
+    assert best_file.exists()
+
+
+def test_d_271_a_log_of_other_columns_is_moved_aside(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    log = tmp_path / "learn-log.csv"
+    monkeypatch.setattr(learn_module, "LOG_FILE", log)
+    log.write_text("update,reward\n1,0.5\n")
+    _log({"update": 1, "score": 10})
+    _log({"update": 2, "score": 20})
+    assert (tmp_path / "learn-log.old.csv").read_text() == "update,reward\n1,0.5\n"
+    lines = log.read_text().splitlines()
+    assert lines[0] == ",".join(LOG_COLUMNS)
+    assert len(lines) == 3
 
 
 def test_a_player_plays_a_round_and_the_learner_learns_from_it(

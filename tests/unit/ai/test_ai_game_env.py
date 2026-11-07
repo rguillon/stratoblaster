@@ -79,17 +79,58 @@ def test_the_episode_times_out_past_its_limit() -> None:
     assert env.time <= env.limit + 4 * STEP_SECONDS
 
 
-def test_the_reward_pays_progress_points_and_pickups_and_charges_damage() -> None:
+def test_d_271_the_reward_is_the_points_scored() -> None:
     env = GameEnv(EpisodeSetup("1-1"))
-    w = env.weights
-    assert env.reward(StepInfo(progress=env.length)) == pytest.approx(w.progress)
     assert env.reward(StepInfo(score=2000)) == pytest.approx(1.0)
-    assert env.reward(StepInfo(picked=["weapon"])) == pytest.approx(w.bonus["weapon"])
-    hurt = env.reward(StepInfo(damage=env.max_health, lives_lost=1))
-    assert hurt == pytest.approx(-w.damage - w.life)
-    assert env.reward(StepInfo(outcome="over")) == pytest.approx(-w.game_over)
-    assert env.reward(StepInfo(outcome="complete")) == pytest.approx(w.complete)
-    assert env.reward(StepInfo(bombed=True)) == pytest.approx(-w.bomb)
+    hurt = StepInfo(damage=env.max_health, lives_lost=1, picked=["weapon"], outcome="over")
+    assert env.reward(hurt) == 0
+
+
+def _clear(env: GameEnv) -> StepInfo:
+    """Have the level under way cleared, and play the decision that sees it."""
+    env.run._phase = "complete"  # as if its last boss were destroyed
+    _, info = env.step(Action(0))
+    return info
+
+
+def test_d_271_a_campaign_goes_on_with_what_the_level_cleared_ended_with() -> None:
+    env = GameEnv(EpisodeSetup("1-1", seed=5), campaign=LEVEL_IDS)
+    run = env.run
+    assert run.hull is not None
+    assert run.bombs is not None
+    run.hull.lives = 2
+    run.bombs.count = 5
+    run.arsenal.level_up(2)
+    run.enemies.score = 1200
+    info = _clear(env)
+    assert info.cleared == "1-1"
+    assert info.outcome == ""
+    assert not env.done
+    assert env.setup.level_id == "1-2"
+    assert env.cleared == ["1-1"]
+    assert env.run is not run
+    assert env.run.hull is not None
+    assert env.run.bombs is not None
+    assert (env.run.hull.lives, env.run.bombs.count) == (2, 5)
+    assert env.run.shots.level == 3
+    assert env.run.track.progress == 0
+    assert env.score == 1200
+    assert env.time == 0
+    env.reset()
+    assert (env.setup.level_id, env.cleared, env.score) == ("1-1", [], 0)
+
+
+def test_d_271_a_campaign_ends_when_its_last_level_is_cleared() -> None:
+    env = GameEnv(EpisodeSetup("4-4"), campaign=LEVEL_IDS)
+    _clear(env)
+    assert env.setup.level_id == "4-5"
+    info = _clear(env)
+    assert info.outcome == "complete"
+    assert env.done
+    assert env.cleared == ["4-4"]
+    alone = GameEnv(EpisodeSetup("1-1"))
+    assert alone.next_level() is None
+    assert _clear(alone).outcome == "complete"
 
 
 def test_the_health_budget_counts_every_life() -> None:

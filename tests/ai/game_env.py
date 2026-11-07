@@ -1,14 +1,18 @@
 # Copyright (c) 2026 Renaud Guillon
-"""The game as an environment for the brain: one level run, headless, at full speed.
+"""The game as an environment for the brain: a level run, headless, at full speed.
 
 It builds a `LevelRun` as the game screen does (`src/app/game_play.py`), with the same playfield,
 ship, weapons, bonuses, bombs, hull, bosses and camera framing (for where the ship may fly and what
 is on screen), but no rendering and no clock: each `step` advances the simulation by
 `frame_skip` fixed steps of 1/60 s, as fast as the CPU goes.
+
+One level, or a campaign (D-271): the levels one after the other from the first, each cleared one
+going on to the next with the weapons, lives and bombs it ended with, as the game does, until the
+game is over, a level takes too long, or the last one is cleared.
 """
 
 import math
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any
 
 import ai  # noqa: F401  # puts src/ and the Transcrypt stubs on the path
@@ -161,31 +165,33 @@ class StepInfo:
     progress: float = 0.0
     picked: list[str] = field(default_factory=list)
     bombed: bool = False
+    cleared: str = ""  # the level of a campaign cleared over it (the next one then starts)
     outcome: str = ""  # "", "complete", "over" or "timeout"
 
 
 @dataclass
 class RewardWeights:
-    """The reward of a decision, from what happened over it."""
+    """The reward of a decision: the points scored over it (D-271).
 
-    progress: float = 6.0  # for the whole level's scroll
+    The best score is what the brain learns for: it scores only while it survives, and more with
+    its weapons levelled up, so surviving and picking up bonuses pay through the points to come.
+    """
+
     score: float = 1.0 / 2000  # per point scored
-    dealt: float = 1.0 / 4000  # per damage dealt
-    damage: float = 2.0  # per ship's health lost
-    life: float = 2.0  # per life lost
-    game_over: float = 4.0
-    complete: float = 6.0
-    bomb: float = 0.4  # per bomb set off
-    bonus: dict[str, float] = field(
-        default_factory=lambda: {"weapon": 0.6, "life": 1.0, "bomb": 0.4, "heal": 0.5}
-    )
 
 
 class GameEnv:
-    """One level, played by the brain: `reset`, then `step` until `done`."""
+    """One level, or a campaign of levels, played by the brain: `step` until `done`.
 
-    def __init__(self, setup: EpisodeSetup, frame_skip: int = 4) -> None:
+    `campaign`: the levels to play in turn, from `setup`'s; a single level when empty.
+    """
+
+    def __init__(
+        self, setup: EpisodeSetup, frame_skip: int = 4, campaign: tuple[str, ...] = ()
+    ) -> None:
+        self.first = setup
         self.setup = setup
+        self.campaign = campaign
         self.frame_skip = frame_skip
         self.weights = RewardWeights()
         self.run: LevelRun = self._new_run()
@@ -197,6 +203,8 @@ class GameEnv:
         self.total_damage = 0.0
         self.total_lives_lost = 0
         self.max_budget = 1.0
+        self.cleared: list[str] = []
+        self._banked_score = 0.0
         self.reset()
 
     @property
@@ -253,7 +261,48 @@ class GameEnv:
         )
 
     def reset(self) -> None:
-        """Start the episode again from its setup."""
+        """Start the episode again from its setup (a campaign from its first level)."""
+        self.setup = self.first
+        self.cleared = []
+        self._banked_score = 0.0
+        self.total_damage = 0.0
+        self.total_lives_lost = 0
+        self._start_level()
+
+    @property
+    def score(self) -> float:
+        """The points scored since the episode started (over every level of a campaign)."""
+        return self._banked_score + self.run.score
+
+    def next_level(self) -> str | None:
+        """Return the level of the campaign after the one played, None after the last (or alone)."""
+        if self.setup.level_id not in self.campaign:
+            return None
+        index = self.campaign.index(self.setup.level_id) + 1
+        return self.campaign[index] if index < len(self.campaign) else None
+
+    def _go_on(self, level_id: str) -> None:
+        """Start `level_id` with what the level cleared ended with (GAME-WPN-15, GAME-LIFE-12)."""
+        run = self.run
+        self.cleared.append(self.setup.level_id)
+        self._banked_score += run.score
+        weapons = run.arsenal.snapshot()
+        levels = weapon_levels_of(run)
+        supplies = run.supplies
+        self.setup = replace(
+            self.setup,
+            level_id=level_id,
+            seed=self.first.seed + 7919 * len(self.cleared),
+            weapon=weapons.weapon,
+            weapon_levels={k: int(v) for k, v in levels.items()},
+            lives=int(supplies.lives) if supplies is not None else self.setup.lives,
+            bombs=int(supplies.bombs) if supplies is not None else self.setup.bombs,
+            start_time=0.0,
+        )
+        self._start_level()
+
+    def _start_level(self) -> None:
+        """Start the level of `setup`."""
         self.run = self._new_run()
         if self.setup.start_time > 0:
             self.run.seek(self.setup.start_time)
@@ -263,8 +312,6 @@ class GameEnv:
         self.start_progress = self.run.track.progress
         remaining = level_seconds(self.setup.level_id) - self.setup.start_time
         self.limit = max(30.0, remaining) + self.setup.extra_seconds
-        self.total_damage = 0.0
-        self.total_lives_lost = 0
         self.max_budget = self.health_budget()
 
     def health_budget(self) -> float:
@@ -318,25 +365,18 @@ class GameEnv:
             info.outcome = "timeout"
         self.total_damage += info.damage
         self.total_lives_lost += info.lives_lost
+        following = self.next_level() if info.outcome == "complete" else None
+        if following is not None:
+            info.cleared = self.setup.level_id
+            info.outcome = ""
+            self._go_on(following)
         if info.outcome:
             self.done = True
             self.outcome = info.outcome
         return self.reward(info), info
 
     def reward(self, info: StepInfo) -> float:
-        w = self.weights
-        reward = w.progress * info.progress / max(1.0, self.length)
-        reward += w.score * info.score + w.dealt * info.dealt
-        reward -= w.damage * info.damage / self.max_health
-        reward -= w.life * info.lives_lost
-        reward -= w.bomb if info.bombed else 0.0
-        for kind in info.picked:
-            reward += w.bonus.get(kind, 0.0)
-        if info.outcome == "over":
-            reward -= w.game_over
-        elif info.outcome == "complete":
-            reward += w.complete
-        return reward
+        return self.weights.score * info.score
 
 
 def weapon_levels_of(run: LevelRun) -> dict[str, float]:
