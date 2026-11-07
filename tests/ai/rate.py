@@ -2,8 +2,9 @@
 """`make rate`: the brain plays every level and rates how hard each one is, as a percentage.
 
 Each level is played `--episodes` times (different seeds: the enemies' random choices differ) from
-its start, with the same loadout for every level (`--ship`, every weapon at `--weapon-level`, 3
-lives and 3 bombs), so the ratings compare the levels, not the loadouts.
+its start, with the same loadout for every level: a fresh start, as from the level select with
+nothing kept (3 lives, 3 bombs, every weapon at level 1, more only from the bonuses picked up;
+`--ship` and `--weapon-level` change it), so the ratings compare the levels, not the loadouts.
 
 An episode's difficulty is `1 - (progress + health left) / 2`:
 
@@ -53,7 +54,7 @@ class RatingSettings:
 
     episodes: int = 8
     ship: str = "balanced"
-    weapon_level: int = 3
+    weapon_level: int = 1
     # Moves drawn from the brain's choices, as it learned to play (seeded: the ratings repeat).
     # Always taking its likeliest move plays worse: a brain still learning spreads its choices, and
     # the likeliest alone can be "hold one direction" (D-267).

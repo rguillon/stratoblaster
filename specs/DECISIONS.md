@@ -1461,3 +1461,25 @@
   often: after under 2 hours of learning, that is how it plays. A browser warns that synchronous
   requests are deprecated on the main thread (e2e build with `?ai` only).
 - **Status:** Proposed
+
+### D-269 — The AI player starts every level afresh, apart from the player's save
+- **Date:** 2026-11-07
+- **Requirements:** none (requested by the human: in `make serve-ai` the brain started with 60
+  bombs and every weapon at level 5; it must start with 3 lives, 3 bombs and level 1 weapons, and
+  get more only from the bonuses it picks up). GAME-WPN-15 and GAME-LIFE-12 (what is kept from a
+  level to the next) do not apply to it.
+- **Context:** the page kept the weapons and supplies of the levels completed before in its
+  cookies, which every port of `localhost` shares: the AI's page read the player's save (and its
+  own wins piled up in it), and wrote the AI's into the player's.
+- **Decision:** with `?ai`, the page's storage is a `FreshStartStorage` (`src/debug/`, e2e builds
+  only): in memory, for the page's life, never keeping the weapons and supplies. Every level then
+  starts as from the level select with nothing kept; a Continue after a game over still starts from
+  the checkpoint (its weapons, GAME-LIFE-11). The volumes, last ship and high score are kept for
+  the page's life only. `make rate` rates with the same fresh start (every weapon at level 1, was
+  3; `--weapon-level` changes it), and the learning episodes that start at a level's start (40 %)
+  have it too (3 lives, 3 bombs, the first weapon at level 1); those that start in the middle keep
+  loadouts that vary.
+- **Consequences:** checked in a browser with a saved 60 bombs and level 5 weapons: the normal page
+  starts with them, the `?ai` page with 3 lives, 3 bombs and the bullet at level 1. Ratings made
+  before were with level 3 weapons.
+- **Status:** Proposed

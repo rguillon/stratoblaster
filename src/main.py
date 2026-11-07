@@ -35,6 +35,7 @@ from typing import Any
 
 # isort: split
 # __pragma__ ("ifdef", "e2e")
+from debug.fresh_start_storage import FreshStartStorage
 from debug.remote_player import ask_json, install_remote_player
 from debug.test_api import install_test_api
 
@@ -209,11 +210,17 @@ def start_game(engine: Any, draw_scale: float) -> None:
     fit_to_window(engine, element("stage"), overlay, draw_scale)
     # The URL's debug options, in every build (DEV-OPT-01, DEV-OPT-07).
     debug = parse_debug_options(window.location.search)
+    storage: Any = CookieStorage(document, MENU_CONFIG.cookie_max_age_days)
+    __pragma__("ifdef", "e2e")
+    # D-269: the AI player starts every level afresh, and leaves the player's cookies alone.
+    if not stepped:
+        storage = FreshStartStorage(GAME.id)
+    __pragma__("endif")
     options = AppOptions(
         True,
         document,
         overlay,
-        CookieStorage(document, MENU_CONFIG.cookie_max_age_days),
+        storage,
         next_frame,
         # e2e builds have no render loop: the tests step the app (ENG-52, ENG-58, DEV-API-08).
         not stepped,

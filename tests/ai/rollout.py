@@ -39,8 +39,10 @@ class Curriculum:
     """How the learning episodes are drawn.
 
     A share start in the middle of a level (`mid_start`), anywhere up to its final boss, so the
-    bosses and late waves come up as often as the first ones. The weapons, lives, bombs and ship
-    vary, so the brain learns to play with whatever it has.
+    bosses and late waves come up as often as the first ones; with weapons, lives and bombs that
+    vary, as a player may have there. The others are a fresh start, as when it is watched
+    (`make serve-ai`) and rated: 3 lives, 3 bombs, the first weapon at level 1 (D-269). The ship
+    varies.
     """
 
     levels: tuple[str, ...] = LEVEL_IDS
@@ -49,13 +51,17 @@ class Curriculum:
     def draw(self, rng: random.Random) -> EpisodeSetup:
         level_id = rng.choice(self.levels)
         seconds = level_seconds(level_id)
-        start = 0.0 if rng.random() >= self.mid_start else rng.uniform(0.0, seconds * 0.99)
+        ship_id = rng.choice(SHIP_IDS)
+        seed = rng.randrange(1 << 30)
+        if rng.random() >= self.mid_start:
+            return EpisodeSetup(level_id, seed=seed, ship_id=ship_id)  # a fresh start
+        start = rng.uniform(0.0, seconds * 0.99)
         base = rng.randint(1, MAX_WEAPON_LEVEL)
         levels = {w: max(1, min(MAX_WEAPON_LEVEL, base + rng.randint(-1, 1))) for w in WEAPON_IDS}
         return EpisodeSetup(
             level_id,
-            seed=rng.randrange(1 << 30),
-            ship_id=rng.choice(SHIP_IDS),
+            seed=seed,
+            ship_id=ship_id,
             weapon=rng.choice(WEAPON_IDS),
             weapon_levels=levels,
             lives=rng.choice((1, 2, 3, 3, 3)),

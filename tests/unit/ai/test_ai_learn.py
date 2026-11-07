@@ -48,6 +48,9 @@ def test_the_curriculum_draws_valid_episodes() -> None:
         assert 0 <= setup.start_time <= seconds_of(setup.level_id)
         assert all(1 <= v <= MAX_WEAPON_LEVEL for v in setup.weapon_levels.values())
         assert setup.lives >= 1
+        if setup.start_time == 0:  # a fresh start (D-269)
+            assert (setup.weapon, setup.lives, setup.bombs) == (WEAPON_IDS[0], 3, 3)
+            assert setup.weapon_levels == dict.fromkeys(WEAPON_IDS, 1)
 
 
 def test_a_player_plays_a_round_and_the_learner_learns_from_it(
@@ -86,6 +89,7 @@ def test_an_episode_difficulty_is_one_less_the_mean_of_progress_and_health_left(
 
 
 def test_the_rating_plays_every_level_with_the_same_loadout() -> None:
+    assert RatingSettings().weapon_level == 1  # a fresh start (D-269)
     settings = RatingSettings(episodes=2, weapon_level=4)
     all_setups = setups(settings, ["1-1", "2-3"])
     assert [s.level_id for s in all_setups] == ["1-1", "1-1", "2-3", "2-3"]
