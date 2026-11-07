@@ -16,16 +16,16 @@ layout in [ui/](../ui/).
 ### GAME-SCREEN-01 — Logical resolution · MUST
 
 The game is laid out on a logical screen of **1280 × 720** pixels (landscape, 16:9, a full HD
-screen at ×1.5; it was 480 × 640, portrait, until D-249). The playfield is a **1000 × 720** window
-(25:18) in the middle of the screen, from x = 140 to 1 140 of it (D-252, D-253; 540 × 720 between
-the two): the level is drawn and played there and nowhere else; the HUD's side columns fill the rest
+screen at ×1.5; it was 480 × 640, portrait, until D-249). The playfield is a **540 × 720** window
+(3:4, the original ratio) in the middle of the screen, from x = 370 to 910 of it (D-252, D-263;
+1000 × 720 between D-253 and D-263): the level is drawn and played there and nowhere else; the HUD's side columns fill the rest
 ([ui/hud.md](../ui/hud.md)). Every gameplay position, size, distance and speed is in logical
 pixels (`px`) of the playfield: X to the right, Y up, the origin at the bottom-left corner of the
 playfield window. Angles are in degrees from forward (+Y), positive to the right. The logical
 resolution and the window are game data.
 
 **Acceptance criteria**
-- Given the game definition, then its screen is 1280 × 720 and its playfield window 1000 × 720,
+- Given the game definition, then its screen is 1280 × 720 and its playfield window 540 × 720,
   in the middle (unit test).
 - Given the ship at x = 500, then it is in the middle of the playfield across.
 - Given a level, then nothing of it is drawn outside the playfield window (the camera draws only
@@ -125,8 +125,8 @@ Nothing scores or drops anything by being removed this way.
 | Name | Value | Notes |
 |------|-------|-------|
 | logical screen | 1280 × 720 px | `src/game/config/game.py` `GAME_CONFIG["screen"]` (GAME-SCREEN-01, D-249) |
-| playfield window | 1000 × 720 px, left 140 (viewport 0.109, 0, 0.781, 1 of the canvas) | `GAME_CONFIG["playfield"]`, `src/game/index.py` `PLAYFIELD`, `GameDefinition.playfield` (D-252, D-253) |
-| seen_half_width | ±305.2 px at y = 0, ±311.0 at y = 20, ±327.8 at y = 78, ±456.0 at y = 520, ±514.0 at y = 720 | From the camera (tilt 35°, field of view 40°, `src/game/config/scenery_look.py`) and the window's 25:18 aspect, `src/render/scenery/playfield_framing.py` `visible_half_width` |
+| playfield window | 540 × 720 px, left 370 (viewport 0.289, 0, 0.422, 1 of the canvas) | `GAME_CONFIG["playfield"]`, `src/game/index.py` `PLAYFIELD`, `GameDefinition.playfield` (D-252, D-263) |
+| seen_half_width | about ±165 px at y = 0 and ±278 at y = 720 (D-252) | From the camera (tilt 35°, field of view 40°, `src/game/config/scenery_look.py`) and the window's 3:4 aspect, `src/render/scenery/playfield_framing.py` `visible_half_width` |
 | ship_margin | side 18 px, bottom 20 px, top 200 px | `src/config/game_play.py` `GAME_PLAY_CONFIG.ship_margin` (GAME-SCREEN-05, D-251) |
 | ship reach | x ≈ 207 … 793 px | Computed from `ship_margin` and `seen_half_width` at y = 20, GAME-SCREEN-06 |
 | cull_margin | 80 px | `src/config/game_play.py` `GAME_PLAY_CONFIG.cull_margin` (GAME-SCREEN-07) |
@@ -147,3 +147,6 @@ Nothing scores or drops anything by being removed this way.
 - D-253 (owner, 2026-11-02): the columns were far too wide; the window is 1000 × 720, the
   columns 140 px. The ship's reach is 586 px wide (300 in the 540 px window), the ground in view
   ±390 units at the sea level; the wave density is 2 again, as on the whole screen (D-249).
+- D-263 (owner, 2026-11-04): back to the original 3:4 ratio: the window is 540 × 720 again and the
+  HUD's columns 370 px, outside the playing area (D-252's layout). The ship's reach is about
+  x 120 … 420, the wave density 1.5 and the ground extents of D-252 are back.

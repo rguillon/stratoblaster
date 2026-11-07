@@ -14,6 +14,7 @@ from core.entities.boss_joint import BossJoints
 from core.entities.boss_pieces import BossCore, BossPart
 from core.entities.boss_roll import roll_towards
 from core.entities.enemy import Enemy, EnemyStats
+from core.systems.boss_mounts import BossMount
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -26,9 +27,14 @@ from core.entities.boss_roll import BossRoll
 from core.entities.boss_turret import BossTurretSpec
 from core.entities.enemy import EnemyContext
 from core.entities.shot_target import ShotTarget
+from core.systems.boss_mounts import BossMountSpec
 
 BossState = Literal["entering", "fighting", "transforming", "dying"]
+
 # __pragma__ ("noskip")
+
+# The core's piece id in its mounts (`BossMountSpec.piece`).
+CORE = "core"
 
 
 class BossPartSpec:
@@ -109,6 +115,7 @@ class BossStats(EnemyStats):
         transform_seconds: float = 1.5,
         transform_parts: list[list[str]] | None = None,
         turns: list[float] | None = None,
+        mounts: list[BossMountSpec] | None = None,
     ) -> None:
         """Set the boss's fixed numbers; the optional fields come last.
 
@@ -133,6 +140,7 @@ class BossStats(EnemyStats):
           it, all of them (D-228), in place of `transforms`; None to count parts.
         - `turns`: how far (radians, clockwise on screen) the whole boss turns during each of its
           transformations (D-228), its parts and guns with it; it does not turn when None.
+        - `mounts`: the gun mounts of its pieces (BOSS-58), each going with its piece.
         """
         super().__init__(model, radius, health, points)
         self.name = name
@@ -151,6 +159,7 @@ class BossStats(EnemyStats):
         self.transform_seconds = transform_seconds
         self.transform_parts = transform_parts
         self.turns = turns
+        self.mounts = mounts
 
 
 class Boss(Enemy):
@@ -211,6 +220,14 @@ class Boss(Enemy):
         self._intact_parts: list[ShotTarget] = []
         self.parts = [BossPart(spec, i, self) for i, spec in enumerate(stats.parts)]
         self.core = BossCore(self)
+        # Its gun mounts (BOSS-58): their barrels recoil and their ports reload (WPN-03, WPN-07),
+        # numbered as `boss_guns.mount_order` numbers them for its model.
+        self.mounts: list[BossMount] = [BossMount(spec) for spec in stats.mounts or []]
+        for mount in self.mounts:
+            if mount.kind == "gun":
+                self.barrels.extend(mount.barrels)
+            elif mount.kind == "missile":
+                self.launchers.extend(mount.barrels)
         self._place()
         self._rebuild_targets()
 
@@ -232,17 +249,26 @@ class Boss(Enemy):
         )
 
     @property
+    def core_unarmed(self) -> bool:
+        """Whether its guns are all on its parts, none on its core (BOSS-58).
+
+        Then its parts' guns are its last: it dies with the last of them, its core never hit.
+        """
+        mounts = self.stats.mounts
+        return mounts is not None and len(mounts) > 0 and all(m.piece != CORE for m in mounts)
+
+    @property
     def core_health(self) -> float:
-        """Health the core has left: 0 once the boss is dying."""
-        return 0 if self.state == "dying" else self._core_health
+        """Health the core has left: 0 once the boss is dying, or when its core is unarmed."""
+        return 0 if self.state == "dying" or self.core_unarmed else self._core_health
 
     @property
     def full_health(self) -> float:
-        """Health of the core and every part when it arrives.
+        """Health of the core (none when unarmed) and every part when it arrives.
 
         This is its health bar's full length (BOSS-54).
         """
-        total = self.stats.health
+        total = 0 if self.core_unarmed else self.stats.health
         for part in self.parts:
             total += part.max_health
         return total
@@ -265,7 +291,7 @@ class Boss(Enemy):
         With its core shielded (BOSS-15), shots go through the core to the parts behind it. Coming
         in, shots spark on all of it (BOSS-09).
         """
-        if self.vulnerable and self.core_shielded:
+        if self.vulnerable and (self.core_shielded or self.core_unarmed):
             return self._intact_parts
         return self._targets
 
@@ -369,6 +395,17 @@ class Boss(Enemy):
         if changed:
             self._rebuild_targets()
             self._maybe_transform(ctx)
+            if self._last_gun_gone():
+                self._start_dying()
+
+    def _last_gun_gone(self) -> bool:
+        """Whether its core is unarmed and its last part with guns is destroyed (BOSS-58).
+
+        Fighting, every part destroyed or retired, none hidden still to come out.
+        """
+        if not self.core_unarmed or self.state != "fighting":
+            return False
+        return all(part.destroyed or part.retired for part in self.parts)
 
     def _forms_due(self) -> int:
         """How many transformations its destroyed original parts call for."""

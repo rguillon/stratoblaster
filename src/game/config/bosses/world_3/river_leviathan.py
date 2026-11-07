@@ -179,7 +179,7 @@ _RIVER_LEVIATHAN = record({
         concat(
             # The segments' rings in turn, from the neck to the tail, one a second.
             [volley.ring("segment-" + str(k), 4.4, 8, 11, TEAL, 1.1 * k) for k in SEGMENTS],
-            [volley.missiles("tail-rack", 6, 2, 30, 3)],
+            [volley.missiles("tail-rack", 6, 2, 30, 3, False)],
         ),
         [
             [volley.laser("core", 7, 1.5, 4)],

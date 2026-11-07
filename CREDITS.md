@@ -15,7 +15,10 @@ credited anyway.
   <https://kenney.nl/assets/sci-fi-sounds>)
 - **The Free Firearm Sound Library**, Ben Jaszczak, et al., <https://opengameart.org/content/the-free-firearm-sound-library>
   (CC0): only for the player gun
-- **Explosions**, compufox, <https://opengameart.org/content/explosions-4> (CC0)
+- **Explosion**, **Chunky Explosion**, **Muffled Distant Explosion** (Nenad Simic), **Explosion somewhere far**
+  and **Battle at sea**, all CC0 recordings on OpenGameArt (<https://opengameart.org/content/explosion-0>,
+  `/content/chunky-explosion`, `/content/muffled-distant-explosion`, `/content/explosion-somewhere-far`,
+  `/content/battle-at-sea`)
 - **Interface Sounds** 1.0, Kenney, <https://opengameart.org/content/interface-sounds> (also on
   <https://kenney.nl/assets/interface-sounds>)
 
@@ -38,15 +41,15 @@ quality 3, MP3 quality 5).
 | `hit` | Kenney | Sci-Fi Sounds 1.0 | `impactMetal_004.ogg` | CC0 1.0 | – |
 | `hit-shield` | Kenney | Sci-Fi Sounds 1.0 | `impactMetal_001.ogg` | CC0 1.0 | trimmed to 0.45 s |
 | `player-hit` | Kenney | Sci-Fi Sounds 1.0 | `impactMetal_003.ogg` | CC0 1.0 | – |
-| `explosion-small-1` | Kenney | Sci-Fi Sounds 1.0 | `explosionCrunch_000.ogg` | CC0 1.0 | – |
-| `explosion-small-2` | compufox | Explosions | `explosion2.ogg` | CC0 | leading silence removed |
-| `explosion-small-3` | compufox | Explosions | `explosion1_0.ogg` | CC0 | leading silence removed, cut to 0.8 s |
-| `explosion-large-1` | Kenney | Sci-Fi Sounds 1.0 | `explosionCrunch_002.ogg` | CC0 1.0 | – |
-| `explosion-large-2` | compufox | Explosions | `explosion3.ogg` | CC0 | cut to 1.5 s |
-| `explosion-large-3` | Kenney | Sci-Fi Sounds 1.0 | `explosionCrunch_001.ogg` | CC0 1.0 | – |
-| `boss-part-destroyed` | Kenney | Sci-Fi Sounds 1.0 | `explosionCrunch_003.ogg` | CC0 1.0 | – |
-| `boss-destroyed` | Kenney | Sci-Fi Sounds 1.0 | `lowFrequency_explosion_000.ogg` | CC0 1.0 | – |
-| `life-lost` | Kenney | Sci-Fi Sounds 1.0 | `lowFrequency_explosion_001.ogg` | CC0 1.0 | – |
+| `explosion-small-1` | (author not named) | Explosion | `explosion.wav` | CC0 | leading silence removed, cut to 0.78 s |
+| `explosion-small-2` | (author not named) | Chunky Explosion | `Chunky Explosion.mp3` | CC0 | leading silence removed, cut to 0.8 s |
+| `explosion-small-3` | (author not named) | Battle at sea | `cannon_hit_ship_short.ogg` | CC0 | cut to 0.8 s |
+| `explosion-large-1` | Nenad Simic | Muffled Distant Explosion | `NenadSimic - Muffled Distant Explosion.wav` | CC0 | cut to 1.25 s |
+| `explosion-large-2` | (author not named) | Explosion somewhere far | `explosion_somewhere_far.mp3` | CC0 | cut to 1.5 s |
+| `explosion-large-3` | (author not named) | Chunky Explosion | `Chunky Explosion.mp3` | CC0 | cut to 1.5 s |
+| `boss-part-destroyed` | Nenad Simic | Muffled Distant Explosion | `NenadSimic - Muffled Distant Explosion.wav` | CC0 | cut to 1.55 s |
+| `boss-destroyed` | (author not named) | Chunky Explosion | `Chunky Explosion.mp3` | CC0 | cut to 2 s |
+| `life-lost` | (author not named) | Explosion | `explosion.wav` | CC0 | leading silence removed, cut to 0.98 s |
 | `extra-life` | Kenney | Interface Sounds 1.0 | `confirmation_004.ogg` | CC0 1.0 | – |
 | `bomb` | Kenney | Sci-Fi Sounds 1.0 | `explosionCrunch_004.ogg` | CC0 1.0 | – |
 | `bomb-bonus` | Kenney | Interface Sounds 1.0 | `glass_004.ogg` | CC0 1.0 | – |

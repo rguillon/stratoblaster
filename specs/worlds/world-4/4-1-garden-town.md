@@ -4,7 +4,7 @@
 
 The first level of World 4. From the garden villages 3-5 ended on, the player flies over suburban
 lanes, suburbs, terraced streets and flats to a town centre with the first mid-rise blocks, on the
-flat, fully paved city ground, at a bright midday under a smoke haze. Splitters and Juggernauts lead the
+flat, fully paved city ground, at a bright midday under a smoke haze. Splitters and Hydras lead the
 waves, and the Scissor comes in with them.
 Its checkpoint is its mini boss (see [level flow](../../gameplay/level-flow.md)).
 
@@ -58,12 +58,12 @@ no glow from below, with no change along the level.
 
 ### LVL-4-1-04 — Enemy waves · MUST
 
-4-1 brings Splitter, Juggernaut and Scissor (a diver, a shooter and a laser) and no other kind. 4-1's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, with a beat every `wave_gap` seconds (4.6 s to 3.3 s) and
+4-1 brings Splitter, Hydra and Scissor (a diver, a shooter and a laser) and no other kind. 4-1's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, with a beat every `wave_gap` seconds (4.6 s to 3.3 s) and
 groups growing by `wave_growth` (90 %) over the level (74 beats). The cycle of phrases, each a kind with its number of
-groups at the start: Splitter 2, Juggernaut 1, Scissor 1, Splitter 2, Juggernaut 1, Splitter 2, Scissor 1, Juggernaut 1. The filler draws Splitters and Juggernauts, at most `filler_gap` apart.
+groups at the start: Splitter 2, Hydra 1, Scissor 1, Splitter 2, Hydra 1, Splitter 2, Scissor 1, Hydra 1. The filler draws Splitters and Hydras, at most `filler_gap` apart.
 
 **Acceptance criteria**
-- Unit test: 4-1's waves use exactly Splitter, Juggernaut and Scissor, and each of them.
+- Unit test: 4-1's waves use exactly Splitter, Hydra and Scissor, and each of them.
 - Unit test: 4-1's waves are the same each time the level is built.
 
 *Sources: P10-R09, P05-R24, D-087, D-090, ENM-50.*

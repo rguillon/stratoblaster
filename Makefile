@@ -49,10 +49,21 @@ src/build_info.py: FORCE
 	@printf 'APP_VERSION = "%s"\nAPP_COMMIT = "%s"\n' '$(APP_VERSION)' '$(GIT_COMMIT)' > $@.tmp
 	@cmp -s $@.tmp $@ && rm -f $@.tmp || mv $@.tmp $@
 
-build: src/build_info.py
+# Every step below is a file target: `make build` redoes only what an input changed (ENG-39).
+# Transcrypt runs without `-b`, so it also recompiles only the modules newer than their JavaScript.
+STAMPS := .make
+PY_SOURCES := $(shell find src -name '*.py' -not -path 'src/__target__/*')
+PUBLIC_FILES := $(shell find public -type f -not -path 'public/vendor/*')
+
+DIST_FILES := $(DIST)/js/game.js $(DIST)/js/ground_worker.js $(DIST)/index.html $(DIST)/.public
+build: $(DIST_FILES)
+
+# Babylon.js: checked when missing or after a Makefile change (a version bump), downloaded if wrong.
+$(BABYLON_FILE): Makefile
 	@mkdir -p $(VENDOR)
 	@if echo '$(BABYLON_SHA256)  $(BABYLON_FILE)' | $(SHA256SUM) -c --status 2>/dev/null; then \
 		echo 'babylon: $(BABYLON_FILE) is Babylon.js $(BABYLON_VERSION) (checksum OK)'; \
+		touch $@; \
 	else \
 		tmp=$$(mktemp) && \
 		{ curl -fsSL -o "$$tmp" '$(BABYLON_URL)' || { rm -f "$$tmp"; echo 'babylon: download failed: $(BABYLON_URL)' >&2; exit 1; }; } && \
@@ -65,27 +76,52 @@ build: src/build_info.py
 		mv "$$tmp" $(BABYLON_FILE) && \
 		echo 'babylon: downloaded Babylon.js $(BABYLON_VERSION), checksum OK'; \
 	fi
+
+# esbuild, installed again only when node/package*.json change.
+$(STAMPS)/npm: node/package.json node/package-lock.json
 	npm ci --prefix node
-	cd src && uv run transcrypt -b -n -od ../$(TRANSCRYPT_OUT)/game main.py
-	cd src && uv run transcrypt -b -n -od ../$(TRANSCRYPT_OUT)/worker worker_main.py
-	rm -rf $(DIST)
-	mkdir -p $(DIST)/js
-	$(ESBUILD) ./$(TRANSCRYPT_OUT)/game/main.js --bundle --format=esm --minify --log-level=warning --outfile=$(DIST)/js/game.js
-	$(ESBUILD) ./$(TRANSCRYPT_OUT)/worker/worker_main.js --bundle --format=esm --minify --log-level=warning --outfile=$(DIST)/js/ground_worker.js
-	cp index.html $(DIST)/
+	@mkdir -p $(STAMPS) && touch $@
+
+# Transcrypt, one output directory per entry; src/build_info.py changes only with the version or
+# commit.
+$(TRANSCRYPT_OUT)/game/.stamp: $(PY_SOURCES) src/build_info.py
+	cd src && uv run transcrypt -n -od ../$(TRANSCRYPT_OUT)/game main.py
+	@touch $@
+
+$(TRANSCRYPT_OUT)/worker/.stamp: $(PY_SOURCES) src/build_info.py
+	cd src && uv run transcrypt -n -od ../$(TRANSCRYPT_OUT)/worker worker_main.py
+	@touch $@
+
+# ENG-84: the worker URL carries the short commit, so a new deploy is never served stale from a cache.
+$(DIST)/js/game.js: $(TRANSCRYPT_OUT)/game/.stamp $(STAMPS)/npm
+	@mkdir -p $(DIST)/js
+	$(ESBUILD) ./$(TRANSCRYPT_OUT)/game/main.js --bundle --format=esm --minify --log-level=warning --outfile=$@.tmp
+	sed -e 's|\./ground_worker\.js|./ground_worker.js?v=$(GIT_COMMIT)|g' $@.tmp > $@.tmp2 && rm -f $@.tmp
+	@if grep -qE '__pragma__ *\(' $@.tmp2; then \
+		rm -f $@.tmp2; echo 'ENG-52: compiler pragmas leaked into the bundle' >&2; exit 1; fi
+	@if grep -q '__GAME_TEST__' $@.tmp2; then \
+		rm -f $@.tmp2; echo 'ENG-52: the e2e test API leaked into the production bundle' >&2; exit 1; fi
+	@mv $@.tmp2 $@
+
+$(DIST)/js/ground_worker.js: $(TRANSCRYPT_OUT)/worker/.stamp $(STAMPS)/npm
+	@mkdir -p $(DIST)/js
+	$(ESBUILD) ./$(TRANSCRYPT_OUT)/worker/worker_main.js --bundle --format=esm --minify --log-level=warning --outfile=$@
+
+# ENG-84: the script URLs carry the short commit (written into src/build_info.py).
+$(DIST)/index.html: index.html src/build_info.py
+	@mkdir -p $(DIST)
+	sed -e 's|js/game\.js|js/game.js?v=$(GIT_COMMIT)|' -e 's|vendor/babylon\.js|vendor/babylon.js?v=$(GIT_COMMIT)|' index.html > $@
+
+# public/ (the sound effects and Babylon.js), copied when a file in it changes.
+$(DIST)/.public: $(PUBLIC_FILES) $(BABYLON_FILE)
+	@mkdir -p $(DIST)
 	cp -r public/. $(DIST)/
-	# ENG-84: the script URLs carry the short commit, so a new deploy is never served stale from a cache.
-	sed -e 's|js/game\.js|js/game.js?v=$(GIT_COMMIT)|' -e 's|vendor/babylon\.js|vendor/babylon.js?v=$(GIT_COMMIT)|' $(DIST)/index.html > $(DIST)/index.html.tmp && mv $(DIST)/index.html.tmp $(DIST)/index.html
-	sed -e 's|\./ground_worker\.js|./ground_worker.js?v=$(GIT_COMMIT)|g' $(DIST)/js/game.js > $(DIST)/js/game.js.tmp && mv $(DIST)/js/game.js.tmp $(DIST)/js/game.js
-	@if grep -qE '__pragma__ *\(' $(DIST)/js/game.js; then \
-		echo 'ENG-52: compiler pragmas leaked into the bundle' >&2; exit 1; fi
 	# AUD-ENGINE-01: the only audio files are the sound effect samples, in sfx/, each as .ogg and .mp3.
 	@if find $(DIST) \( -iname '*.ogg' -o -iname '*.mp3' -o -iname '*.wav' -o -iname '*.m4a' -o -iname '*.flac' \) -not -path '$(DIST)/sfx/*' | grep -q .; then \
 		echo 'AUD-ENGINE-01: audio files outside $(DIST)/sfx/:' >&2; \
 		find $(DIST) \( -iname '*.ogg' -o -iname '*.mp3' -o -iname '*.wav' -o -iname '*.m4a' -o -iname '*.flac' \) -not -path '$(DIST)/sfx/*' >&2; exit 1; fi
 	@for f in $(DIST)/sfx/*.ogg; do [ -f "$${f%.ogg}.mp3" ] || { echo "AUD-ENGINE-01: $$f has no .mp3 fallback" >&2; exit 1; }; done
-	@if grep -q '__GAME_TEST__' $(DIST)/js/game.js; then \
-		echo 'ENG-52: the e2e test API leaked into the production bundle' >&2; exit 1; fi
+	@touch $@
 
 # End-to-end tests (Playwright, Chromium) on the e2e build (ENG-51, ENG-52): the game with its test
 # API, copied from dist/ into dist-e2e/. Traces, screenshots and videos of failures in test-results/.
@@ -94,15 +130,25 @@ E2E_DIST := dist-e2e
 E2E_WORKERS ?= 4
 E2E_ARGS ?=
 E2E_SHARD ?=
-e2e: build
-	cd src && uv run transcrypt -b -n -s e2e -od ../$(TRANSCRYPT_OUT)/e2e main.py
+e2e: $(E2E_DIST)/js/game.js $(STAMPS)/playwright
+	uv run pytest tests/e2e -p no:cacheprovider -n $(E2E_WORKERS) $(if $(E2E_SHARD),--shard $(E2E_SHARD),) --tracing retain-on-failure --screenshot only-on-failure --video retain-on-failure --output test-results $(E2E_ARGS)
+
+$(TRANSCRYPT_OUT)/e2e/.stamp: $(PY_SOURCES) src/build_info.py
+	cd src && uv run transcrypt -n -s e2e -od ../$(TRANSCRYPT_OUT)/e2e main.py
+	@touch $@
+
+# dist/ with the e2e bundle (with its test API) in place of the game's.
+$(E2E_DIST)/js/game.js: $(TRANSCRYPT_OUT)/e2e/.stamp $(DIST_FILES)
 	rm -rf $(E2E_DIST)
 	cp -r $(DIST) $(E2E_DIST)
-	$(ESBUILD) ./$(TRANSCRYPT_OUT)/e2e/main.js --bundle --format=esm --minify --log-level=warning --outfile=$(E2E_DIST)/js/game.js
-	@grep -q '__GAME_TEST__' $(E2E_DIST)/js/game.js || { \
-		echo 'ENG-52: the e2e bundle has no test API' >&2; exit 1; }
+	$(ESBUILD) ./$(TRANSCRYPT_OUT)/e2e/main.js --bundle --format=esm --minify --log-level=warning --outfile=$@
+	@grep -q '__GAME_TEST__' $@ || { \
+		echo 'ENG-52: the e2e bundle has no test API' >&2; rm -f $@; exit 1; }
+
+# Chromium for Playwright, installed again only when the locked tools change.
+$(STAMPS)/playwright: uv.lock
 	uv run playwright install $(if $(CI),--with-deps --only-shell,) chromium
-	uv run pytest tests/e2e -p no:cacheprovider -n $(E2E_WORKERS) $(if $(E2E_SHARD),--shard $(E2E_SHARD),) --tracing retain-on-failure --screenshot only-on-failure --video retain-on-failure --output test-results $(E2E_ARGS)
+	@mkdir -p $(STAMPS) && touch $@
 
 # The production game served locally (ENG-22): rebuilt, then dist/ on SERVE_PORT. No hot reload:
 # run it again to see a change.

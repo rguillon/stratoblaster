@@ -6,9 +6,11 @@ from core.math.rng import random_in
 from game.config.enemies import ENEMY_SPAWN_MARGIN as MARGIN
 from game.config.enemies_veteran import VETERAN_CONFIG as C
 from game.sim.enemies.enemy_helpers import (
+    SIDE_MIN_HEIGHT,
     clamp_entry,
     pick_x,
     side_dive_stop_x,
+    side_height,
     top_bounds,
     top_x,
 )
@@ -48,7 +50,9 @@ def _wasp_group(area: EnemySpawnArea) -> list[Enemy]:
     if entry is not None and entry.side != "top":
         # From a side (ENM-WASP-11): the group enters in a column, flying in level to a stop.
         left = entry.side == "left"
-        y = clamp_entry(entry.position) * area.height
+        spread = (group_size - 1) * group_spacing / 2
+        # The whole column stays out of the bottom third.
+        y = max(side_height(entry.position) * area.height, SIDE_MIN_HEIGHT * area.height + spread)
         stop_x = side_dive_stop_x(area, left)
         x = -MARGIN if left else area.width + MARGIN
         heights = [y + (i - (group_size - 1) / 2) * group_spacing for i in range(group_size)]

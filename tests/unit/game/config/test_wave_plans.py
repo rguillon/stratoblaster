@@ -101,8 +101,16 @@ def test_a_wave_is_over_before_the_next_kind_comes_in(world: int, level: int) ->
 def test_a_side_kind_comes_from_the_other_side_when_mirrored() -> None:
     long_plan = {**level_plan(2, 5), "to": 900}
     beats = [beat for beat in compose_beats(long_plan) if beat[1] == "strafer"]
-    assert [beat[4] for beat in beats[:2]] == ["left", "left"]
-    assert beats[2][4] == "right"
+    ways = len(KIND_ENTRY.strafer)
+    first = [beat[4] for beat in beats[:ways]]
+    mirrored = [beat[4] for beat in beats[ways : 2 * ways]]
+    assert "left" in first
+    assert "top" in first
+    # The second time round, a way from the left comes from the right; one from the top (a
+    # vertical pass) stays from the top, its position mirrored.
+    assert mirrored == [{"left": "right"}.get(side, side) for side in first]
+    for plain, flipped in zip(beats[:ways], beats[ways : 2 * ways], strict=True):
+        assert flipped[5] == pytest.approx(1 - plain[5])
 
 
 def test_wld_2_22_a_plan_fills_up_and_its_groups_grow() -> None:

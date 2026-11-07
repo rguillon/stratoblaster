@@ -419,11 +419,12 @@ def plate(
     heights: list[float],
     colors: list[Rgb],
     place: Placement | None = None,
+    rivets: bool = True,
 ) -> SolidBuilder:
     """Return an armour plate grafted on.
 
     A bevelled slab of `outline` from `heights[0]` to `heights[1]`, and a rivet at each of its
-    corners in `colors[1]`.
+    corners in `colors[1]` unless `rivets` is false (too small to see on a small model).
     """
     if place is None:
         place = Placement()
@@ -431,6 +432,8 @@ def plate(
     y1 = heights[1]
     t = y1 - y0
     b.bevel_slab(outline, [y0, y0, y1], [0, t * 0.8], colors[0], place)
+    if not rivets:
+        return b
     for p in outline:
         cx = p[0] * 0.82
         cz = p[1] * 0.82

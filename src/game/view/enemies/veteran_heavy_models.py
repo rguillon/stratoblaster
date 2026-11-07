@@ -10,12 +10,11 @@ from game.config.enemies_veteran import VETERAN_CONFIG
 from game.config.enemies_veteran import VETERAN_NEON as N
 from game.config.enemy_look import ENEMY_LOOK
 from game.view.enemies.enemy_mesh import build_enemy_model
-from game.view.enemies.enemy_shapes import SIDES, flip_x
-from game.view.enemies.organic_parts import eyes
+from game.view.enemies.enemy_shapes import SIDES, angry_eyes, decal, flip_x
+from game.view.enemies.weapon_ports import port_radius
 from render.geometry.organic import (
     SegmentedBody,
     carapace,
-    organ,
 )
 from render.geometry.solids import Placement
 
@@ -33,28 +32,69 @@ QUARTER = math.pi / 2
 
 
 def _mortar_girth(t: float) -> float:
-    return 0.55 + 0.45 * math.sin(math.pi * t)
+    return 0.6 + 0.4 * math.sin(math.pi * t)
 
 
-# ENM-MORTAR-01: the Mortar's squat, ridged shell, wider than long (tail to front).
-MORTAR_SHELL = SegmentedBody(-14, 12, 3, 17.5, -2.2, 3.4, None, _mortar_girth, [False, False])
-# The armour plates grafted on its front shoulders (right side).
-MORTAR_PLATE = [[6, 11], [12, 8], [12.5, 4], [7, 6]]  # type: list[list[float]]
+# ENM-MORTAR-01: the Mortar's lower hull, a wide armoured slab (`[x, z]`, nose +Z), its heights
+# (bottom, widest, top) and its bevels (bottom, top).
+MORTAR_HULL = [  # type: list[list[float]]
+    [0, 13],
+    [10, 11.5],
+    [14, 7],
+    [14, -11],
+    [10, -15.5],
+    [-10, -15.5],
+    [-14, -11],
+    [-14, 7],
+    [-10, 11.5],
+]
+MORTAR_HULL_HEIGHTS = [-2.6, 0.6, 3.2]  # type: list[float]
+# The ram across its front, low and wide.
+MORTAR_RAM = [[0, 15.5], [11, 13.5], [12, 10.5], [-12, 10.5], [-11, 13.5]]  # type: list[list[float]]
+# A shoulder pod on each side (right side), the armoured block its ammunition drum lies on.
+MORTAR_POD = [[13, 9], [20.5, 6], [20.5, -10], [17, -14], [13, -13]]  # type: list[list[float]]
+# The swollen flesh hump on its back, behind the gun.
+MORTAR_HUMP = SegmentedBody(-14, 5, 2, 9.5, 1.2, 7, None, _mortar_girth)
+# The casemate the launcher tube comes out of, high on the hull (its front holds the tube's base).
+MORTAR_CASEMATE = [[0, 6.5], [6.4, 5], [7, -5], [4.5, -8], [-4.5, -8], [-7, -5], [-6.4, 5]]  # type: list[list[float]]
+# A shoulder pod's ammunition drum: across, height, its back and length along Z, radius.
+MORTAR_DRUM = {"x": 16.8, "y": 7.2, "back": -11, "length": 13, "radius": 2.2}
 
 
-def mortar_sac(p: Any, s: float) -> None:
-    """Add a side sac on side `s`, swollen with shells, a running light along it (ENM-MORTAR-03)."""
-    organ(p.flesh, 3, 5, F.slate, Placement([s * 18, 0.6, -9], 0, QUARTER), 0.95)
-    p.neon.box([0.8, 0.3, 4], N.mortar, Placement([s * 18.2, 3.6, -4]))
+def mortar_pod(p: Any, s: float) -> None:
+    """Add the shoulder pod on side `s`: an armoured block, its ammunition drum, a light along it.
+
+    ENM-MORTAR-02, ENM-MORTAR-03.
+    """
+    pod = MORTAR_POD if s > 0 else flip_x(MORTAR_POD)
+    p.hull.bevel_slab(pod, [-1.6, 2.4, 5], [1, 1.2], H.base, None, H.panel)
+    drum = MORTAR_DRUM
+    x = s * drum["x"]
+    along = Placement([x, drum["y"], drum["back"]], 0, QUARTER)
+    p.hull.cylinder(drum["radius"], drum["length"], 8, H.dark, along)
+    for z in [drum["back"] + 2, drum["back"] + drum["length"] - 2]:
+        p.hull.ring(
+            drum["radius"] + 0.25, 0.8, 8, H.panel, Placement([x, drum["y"], z], 0, QUARTER)
+        )
+    # Its running light along the pod's outer top edge.
+    outer = s * 19.2
+    decal(
+        p.neon,
+        [[outer - 0.5, 4], [outer + 0.5, 4], [outer + 0.5, -8], [outer - 0.5, -8]],
+        5.05,
+        N.mortar,
+    )
+    p.reactor([x, 1, -14.2], 1.5)
 
 
 def build_mortar(scene: Any) -> Any:
-    """ENM-MORTAR-02: a squat, armoured beetle with a short, wide launcher tube.
+    """ENM-MORTAR-02: a super bulky armoured gunship with a short, wide launcher tube.
 
-    The tube is grafted on a raised mount in its middle, with shell sacs on its flanks and
-    olive-green neon (ENM-MORTAR-03), and two reactors at its back (ENM-MORTAR-05), within the
-    veteran triangle budget (ENM-MORTAR-06). The barrel's mouth glows as the next shell charges
-    (ENM-MORTAR-04).
+    A wide, bevelled metal hull with a ram across its front, a swollen flesh hump on its back, a
+    high casemate the tube comes out of, and on each side a shoulder pod with an ammunition drum
+    on it. Angry eyes on its front, lights along its pods and round the casemate (ENM-MORTAR-03),
+    two big reactors and one on each pod (ENM-MORTAR-05), within the veteran triangle budget
+    (ENM-MORTAR-06). The barrel's mouth glows as the next shell charges (ENM-MORTAR-04).
     """
     muzzle_cfg = VETERAN_CONFIG.mortar.muzzles[0]
     mouth_height = muzzle_cfg[2]
@@ -62,27 +102,35 @@ def build_mortar(scene: Any) -> Any:
 
     def draw(p: Any) -> None:
         hull = p.hull
-        flesh = p.flesh
         neon = p.neon
         charge = p.charge
         muzzle = p.muzzle
-        carapace(flesh, MORTAR_SHELL, [F.sinew, F.slate])
-        # The raised mount: a squat drum, a cradle on it, then the barrel.
-        hull.cylinder(7, 3, 8, H.panel, Placement([0, 2.4, 0]), 6)
-        hull.box([6, 2.6, 9], H.dark, Placement([0, 5.4, 1.5]))
-        neon.ring(6.6, 0.5, 8, N.mortar, Placement([0, 3.6, 0]))
-        hull.cylinder(2.6, mouth - 4.3, 8, H.dark, Placement([0, mouth_height, 4], 0, QUARTER), 2.4)
-        hull.ring(2.9, 1.5, 8, H.panel, Placement([0, mouth_height, mouth - 3], 0, QUARTER))
-        charge.ring(2, 0.3, 8, WHITE, Placement([0, mouth_height, mouth - 0.3], 0, QUARTER))
-        # ENM-MORTAR-01: a missile loaded in the tube, its nose cone and neon band showing.
-        hull.cylinder(1.9, 5, 8, H.panel, Placement([0, mouth_height, mouth - 5], 0, QUARTER), 0.4)
-        neon.ring(2, 0.4, 8, N.mortar, Placement([0, mouth_height, mouth - 5.2], 0, QUARTER))
-        muzzle([0, mouth_height, mouth], "gun")
-        eyes(p, [0, 1.6, 11.4], {"count": 2, "size": 0.6, "spacing": 3}, N.mortar)
+        # The bulk: the armoured hull, the ram, and the flesh hump swelling out of its back.
+        hull.bevel_slab(MORTAR_HULL, MORTAR_HULL_HEIGHTS, [1.6, 2], H.base, None, H.panel)
+        hull.bevel_slab(MORTAR_RAM, [-2, 0.4, 2.2], [0.8, 1], H.dark, None, H.base)
+        carapace(p.flesh, MORTAR_HUMP, [F.sinew, F.slate])
+        # The casemate, high on the hull, holding the base of the tube; a light band round it.
+        hull.bevel_slab(MORTAR_CASEMATE, [2.8, 9, 12], [0.4, 1.6], H.base, None, H.panel)
+        band = [[-6.6, 5.6], [6.6, 5.6], [6.6, 4.8], [-6.6, 4.8]]
+        decal(neon, band, 9.05, N.mortar)
+        for eye in angry_eyes([0, 9.6], 1.2, [3.2, 0.8], 0.45):
+            decal(neon, eye, MORTAR_HULL_HEIGHTS[2] + 0.05, N.mortar)
+        # The launcher tube, as wide as its port all along, which is wider than its heavy rocket
+        # (WPN-07); a band round it, and the port at its mouth, its rim the charge light
+        # (ENM-MORTAR-04), its rocket seen in the well once reloaded.
+        missile = VETERAN_CONFIG.mortar.missile.radius
+        tube = port_radius(missile)
+        hull.ring(tube + 0.3, 1.5, 6, H.panel, Placement([0, mouth_height, mouth - 7], 0, QUARTER))
+        band_at = Placement([0, mouth_height, mouth - 7.3], 0, QUARTER)
+        neon.ring(tube + 0.35, 0.4, 6, N.mortar, band_at)
+        charge.ring(
+            tube + 0.35, 0.3, 6, WHITE, Placement([0, mouth_height, mouth - 5.6], 0, QUARTER)
+        )
+        muzzle([0, mouth_height, mouth], "missile", "forward", missile)
         for s in SIDES:
-            p.reactor([s * 8, 0, -14], 1.6)
-            plate = MORTAR_PLATE if s == 1 else flip_x(MORTAR_PLATE)
-            hull.bevel_slab(plate, [2, 2.6, 3.6], [0, 0.4], H.panel)
-            mortar_sac(p, s)
+            mortar_pod(p, s)
+            # A big reactor each side of the tail, in an armoured housing.
+            hull.box([5.6, 4.6, 3], H.dark, Placement([s * 6.5, -1.6, -16]), H.base)
+            p.reactor([s * 6.5, 0.7, -17.5], 2.2)
 
     return build_enemy_model("mortar", scene, N.mortar, draw)

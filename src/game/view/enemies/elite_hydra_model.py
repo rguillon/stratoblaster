@@ -71,9 +71,9 @@ def body(p: Any) -> None:
     for s in SIDES:
         for i, pl in enumerate(PLATES):
             outline = [[s * pt[0], pt[1]] for pt in pl]
-            # The front plates riveted, the back ones plain (lean on triangles).
+            # The front plates a little thicker at the edge; no rivets: too small to see.
             if i == 0:
-                plate(hull, outline, [4.4, 5.6], [H.panel, H.dark])
+                plate(hull, outline, [4.4, 5.6], [H.panel, H.dark], None, False)
             else:
                 hull.bevel_slab(outline, [4.4, 4.4, 5.6], [0, 0.6], H.panel)
         vein_tube(vein, curve([s * 3, 5.6, -17], [s * 5, 5.4, 4], [s * 3, 1, 0], 3), 0.9, NEON)
@@ -111,31 +111,29 @@ def neck(head: Any) -> Any:
 
 
 def head(spec: Any) -> Any:
-    """Return a head on its neck: a skull with bone mandibles and a missile tube on its brow.
+    """Return a head on its neck: a skull with bone mandibles and a gun's muzzle on its brow.
 
-    The tube's mouth is the eye, where the missile leaves, with a charge light in it (ENM-HYDRA-15).
+    Its muzzle is where the bullets leave, along the head (ENM-HYDRA-15, WPN-01); a charge light
+    rings it. The gun's barrel is not drawn: it would be hidden in the head.
     """
     at = boss_point(spec.head[0], spec.head[1], NECK_Y)
     aim = spec.aim
     eye = boss_point(spec.muzzle[0], spec.muzzle[1], spec.muzzle[2])
 
     def draw(p: Any) -> None:
-        hull = p.hull
         flesh = p.flesh
         neon = p.neon
-        muzzle = p.muzzle
         segmented_body(flesh, HEAD, F.teal, Placement(at, aim))
-        tube = Placement(ahead(eye, aim, -TUBE[1]), aim, QUARTER)
-        hull.cylinder(TUBE[0], TUBE[1], 5, H.dark, tube)
+        # Its gun's barrel would be hidden in the head: only its muzzle is marked.
+        p.muzzle(eye, "gun")
         p.charge.cylinder(
-            TUBE[0] * 1.1, 0.6, 5, WHITE, Placement(ahead(eye, aim, -0.6), aim, QUARTER)
+            TUBE[0] * 1.2, 0.6, 6, WHITE, Placement(ahead(eye, aim, -TUBE[1] - 1), aim, QUARTER)
         )
         for s in SIDES:
             jaw = [[s * pt[0], pt[1]] for pt in JAW]
             flesh.bevel_slab(jaw, [-1.2, 0, 1], [0.2, 0.4], F.bone, Placement(at, aim))
         lens = [[0, -0.8], [1.5, 0], [0, 0.8]]
         neon.lathe(lens, 6, NEON, Placement([eye[0], eye[1] - 0.6, eye[2]]))
-        muzzle(eye, "gun")
 
     return draw
 

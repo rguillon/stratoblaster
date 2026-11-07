@@ -53,8 +53,6 @@ type Vec3 = list[Any]
 
 
 H = ENEMY_LOOK.hull
-WHITE = [1, 1, 1]
-QUARTER = math.pi / 2
 N = OVERLORD_NEON
 
 # The right wing.
@@ -76,17 +74,12 @@ CITADEL = [
     [11, 24],
     [0, 25],
 ]
-# The weapon array on the citadel's front.
+# The weapon array on the citadel's front, its mounts on it (BOSS-58).
 GUN_DECK = [
-    [-12, 14],
-    [12, 14],
-    [10, 34],
-    [-10, 34],
-]
-LENS = [
-    [0, -1.5],
-    [3.2, 0],
-    [0, 2.5],
+    [-20, 14],
+    [20, 14],
+    [19, 34],
+    [-19, 34],
 ]
 
 
@@ -121,13 +114,10 @@ def _draw_hull(p: Any) -> None:
 def _draw_citadel(p: Any) -> None:
     """Draw the citadel over the core (FB-OVERLORD-03): a swollen, tiered brain-head.
 
-    It is ringed with neon, with eyes on its front, a ring emitter on top and the grafted weapon
-    array before it.
+    It is ringed with neon, with eyes on its front, a rotor on its roof and the grafted weapon
+    array before it: a fanned turret between a twin cannon and a laser (its mounts, BOSS-58).
     """
-    hull = p.hull
     neon = p.neon
-    charge = p.charge
-    muzzle = p.muzzle
     top = OVERLORD_DECK["top"]
     # Turned an eighth of a turn, a flat of the octagon faces the front.
     p.flesh.lathe(CITADEL, 8, F.slate, Placement([0, top, 0], math.pi / 8))
@@ -138,44 +128,15 @@ def _draw_citadel(p: Any) -> None:
 
     lit(18.1, 12, 1.2)
     lit(11.9, 21.5, 1)
-    # The ring emitter on top of the citadel.
-    charge.lathe(
-        [
-            [5, 0],
-            [3.5, 1.8],
-            [0, 2.6],
-        ],
-        8,
-        WHITE,
-        Placement([0, top + 25, 0]),
-    )
-    muzzle([0, top + 27.6, 0], "ring")
     deck = OVERLORD_DECK["boulevard"]
-    hull.bevel_slab(GUN_DECK, [deck, deck, deck + 9], [0, 1.5], H.base, None, H.panel)
-    decal(neon, box2d(14, 1.2, [0, 24]), deck + 9.05, N)
-    # A laser lens between twin cannons, all charging before they fire.
-    axis = deck + 4.5
-    hull.cylinder(4.2, 3, 8, H.dark, Placement([0, axis, 31], 0, QUARTER))
-    charge.lathe(LENS, 6, WHITE, Placement([0, axis, 35.5], 0, QUARTER))
-    muzzle([0, axis, 38], "laser")
-    for s in SIDES:
-        hull.cylinder(1.6, 10, 6, H.dark, Placement([s * 7, axis + 1, 28], 0, QUARTER))
-        charge.cylinder(2, 1.6, 6, WHITE, Placement([s * 7, axis + 1, 38], 0, QUARTER))
-        muzzle([s * 7, axis + 1, 39.6], None)
+    p.hull.bevel_slab(GUN_DECK, [deck, deck, deck + 9], [0, 1.5], H.base, None, H.panel)
+    decal(neon, box2d(36, 1.2, [0, 33]), deck + 9.05, N)
 
 
 def _draw_hatches(p: Any) -> None:
-    """Draw the missile hatches on the boulevard behind the citadel, lit as missiles load."""
-    hull = p.hull
-    charge = p.charge
-    muzzle = p.muzzle
+    """Draw the grafted plate on the boulevard behind the citadel, its missile ports on it."""
     y = OVERLORD_DECK["boulevard"]
     graft(p, box2d(22, 18, [0, -34]), [y - 0.6, y], [0, 0, 0], {"color": M.base})
-    for x in [-6, 6]:
-        for z in [-30, -38]:
-            decal(hull, box2d(6.4, 5.4, [x, z]), y + 0.03, H.dark)
-            decal(charge, box2d(4.6, 3.6, [x, z]), y + 0.06, WHITE)
-            muzzle([x, y + 0.06, z], "missile")
 
 
 def _draw_core(parts: Any) -> None:
@@ -194,8 +155,8 @@ def build_overlord(scene: Any) -> Any:
 
     A city-sized organism (6 L) under purple neon: living towers lit with window glands grown out of
     its vast mantle, two wing laser cannons, two missile batteries at the back, two shield
-    generators in front, and a citadel over the core carrying a laser, twin cannons, a ring emitter
-    and missile hatches.
+    generators in front, and a citadel over the core; their guns, lasers and missile ports are its
+    mounts, drawn from its design (BOSS-58).
     """
     return build_boss_model(
         OVERLORD,

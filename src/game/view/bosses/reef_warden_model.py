@@ -14,7 +14,6 @@ from game.view.bosses.mini_boss_shapes import (
     radius_of,
     sign_of,
     socket,
-    turret,
 )
 from game.view.bosses.world_1_organic_kit import (
     F,
@@ -174,27 +173,11 @@ def _draw_grafts(p: Any) -> None:
     mast(p, [-4, 13.5, -16], 7, CYAN)
 
 
-def _prow_turret(p: Any, at: Vec3) -> None:
-    """Add the prow cannon (the core's gun), grafted on the snout, turning around its pivot `at`."""
-    turret(
-        p,
-        offset(at, 0, SKIRT[1], 0),
-        {
-            "radius": 7,
-            "barrels": 1,
-            "gap": 0,
-            "bore": 1.5,
-            "length": 7,
-            "neon": CYAN,
-        },
-    )
-
-
 def _cannon(p: Any, at: Vec3) -> None:
     """Add a side cannon (MB-REEF-WARDEN-03).
 
-    An armoured coral growth on the flank under its twin-barrelled turret, a feeding sac behind it,
-    barbs before it.
+    An armoured coral growth on the flank under its twin-barrelled turret (its mount, BOSS-58), a
+    feeding sac behind it, barbs before it.
     """
     r = radius_of(REEF_WARDEN.stats.parts, 0, 14)
     growth(p, offset(at, 0, -1, 0), r * 0.95, CYAN, {"flesh": F.graphite, "height": 0.32})
@@ -202,28 +185,11 @@ def _cannon(p: Any, at: Vec3) -> None:
     barbs(p, offset(at, 0, 2, 9), {"count": 3, "spacing": 4, "size": 3, "dir": [0, 0.3, 1]})
 
 
-def _cannon_turret(p: Any, at: Vec3) -> None:
-    """Add a side cannon's twin-barrelled turret."""
-    turret(
-        p,
-        offset(at, 0, 4, 0),
-        {
-            "radius": radius_of(REEF_WARDEN.stats.parts, 0, 14),
-            "barrels": 2,
-            "gap": 5,
-            "bore": 1.6,
-            "length": 9,
-            "neon": CYAN,
-            "hatch": -sign_of(at[0]),
-        },
-    )
-
-
 def build_reef_warden(scene: Any) -> Any:
     """MB-REEF-WARDEN-01, MB-REEF-WARDEN-04: the Reef Warden, a wide ray-like reef creature.
 
-    A cyan vein ring round its mantle and a prow cannon grafted on its snout; its two side cannons
-    grow from its flanks.
+    A cyan vein ring round its mantle, a prow turret grafted on its snout and a rotor on its spine
+    (its mounts, BOSS-58); its two side cannons grow from its flanks.
     """
 
     def core(p: Any) -> None:
@@ -241,11 +207,6 @@ def build_reef_warden(scene: Any) -> Any:
         {
             "core": core,
             "parts": {"cannon-left": _cannon, "cannon-right": _cannon},
-            "turrets": {
-                "core": _prow_turret,
-                "cannon-left": _cannon_turret,
-                "cannon-right": _cannon_turret,
-            },
             "armour": {"back": {"whole": _draw_plating}},
         },
     )

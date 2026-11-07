@@ -356,7 +356,9 @@ or boss is shown (the picked one is filled):
   (nothing hits the player, whose ship is not drawn), whose shots leave from where the camera sees
   each barrel, raised or not, as in a level (GFX-SHOT-09). What it fires (bullets, missiles, lasers),
   sends out (an enemy's carried or launched enemies) and what blows up are drawn. Once no enemy of
-  the world is left, a new one of the kind comes in. K (bosses) breaks the boss's next part.
+  the world is left, a new one of the kind comes in. A boss does not come in: it is already in its
+  place and opens fire at once, its first stage's volleys all due (no wait for its first shots).
+  K (bosses) breaks the boss's next part.
 
 The view is each viewer's own, kept from one item to the next and while the page is open, and starts
 on Model. The other viewers have no such buttons. A tap on a button reaches the menu flow as the

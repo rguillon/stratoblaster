@@ -70,7 +70,7 @@ def test_enm_harrier_07_it_launches_one_homing_missile_every_interval_from_alter
     assert len(ctx.missiles) == 1
     x0, _y0, heading, spec = ctx.missiles[0]
     assert heading == math.pi
-    assert spec is CFG.missile
+    assert spec.speed == CFG.missile.speed
     run(harrier, ctx, CFG.fireInterval)
     assert len(ctx.missiles) == 2
     # The two rails are either side of its centre.

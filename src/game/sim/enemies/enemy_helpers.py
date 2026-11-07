@@ -3,8 +3,10 @@
 
 import math
 
-from core.entities.enemy import Enemy, EnemyMissileSpec
+from core.entities.enemy import Enemy, EnemyMissileSpec, MissileFlight
 from core.systems.enemy_motion import Path
+from core.systems.projectile_motion import turn_towards
+from game.config.weapons import WEAPONS
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -25,6 +27,16 @@ DEG = math.pi / 180
 # Straight down the screen, towards the player's side.
 DOWN = math.pi
 
+# Straight up the screen, away from the player's side.
+UP = 0.0
+
+# How fast an enemy turns its nose to the way it leaves, rad/s.
+LEAVE_TURN = 4.0
+
+# Enemies coming in from a side keep above this fraction of the playfield height, so none appears
+# laterally in the bottom third, next to the player's ship.
+SIDE_MIN_HEIGHT = 1 / 3
+
 # A coin toss: a random number below one half.
 HALF = 0.5
 
@@ -32,7 +44,22 @@ HALF = 0.5
 ENTRY_INSET = 0.08
 
 
-def missile_spec(missile: Any) -> EnemyMissileSpec:
+def leave_upward(enemy: Enemy, speed: float, dt: float) -> None:
+    """Fly `enemy` up the screen at `speed`, its nose turning round to point the way it goes."""
+    enemy.heading = turn_towards(enemy.heading, UP, LEAVE_TURN * dt)
+    enemy.y += speed * dt
+
+
+def missile_flight(up: bool) -> MissileFlight:
+    """Return how a missile leaves its launcher (WPN-08, WPN-09): from an upward silo, or not."""
+    if up:
+        return MissileFlight(
+            0, WEAPONS.missileLoftSeconds, WEAPONS.missileLoftSpeed, WEAPONS.missileLoftDrift
+        )
+    return MissileFlight(WEAPONS.missileLaunchSeconds)
+
+
+def missile_spec(missile: Any, up: bool = False) -> EnemyMissileSpec:
     """Return the engine's missile spec of a config's `missile` record.
 
     The core reads `turn_rate_deg` and `homing_seconds`, which the config writes in camel case, so
@@ -45,6 +72,8 @@ def missile_spec(missile: Any) -> EnemyMissileSpec:
         missile.radius,
         missile.health,
         missile.style,
+        None,
+        missile_flight(up),
     )
 
 
@@ -82,6 +111,14 @@ def on_playfield(enemy: Enemy, ctx: EnemyContext) -> bool:
 def clamp_entry(position: float) -> float:
     """Return a wave's entry position (ENM-08), kept away from the corners of the playfield."""
     return min(1 - ENTRY_INSET, max(ENTRY_INSET, position))
+
+
+def side_height(position: float) -> float:
+    """Return the height fraction (0..1 from the bottom) a side entry at `position` comes in at.
+
+    Kept away from the corners and out of the bottom third of the playfield.
+    """
+    return max(SIDE_MIN_HEIGHT, clamp_entry(position))
 
 
 def side_dive_stop_x(area: EnemySpawnArea, left: bool) -> float:

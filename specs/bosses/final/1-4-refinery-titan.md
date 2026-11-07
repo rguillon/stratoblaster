@@ -7,7 +7,8 @@
 The Refinery Titan is the final boss of 1-4: a bloated industrial beetle, 5.5 L across (first
 designed as a heavy tanker-gunship), plumbed with grafted pipes. Two rotary turrets on its front
 apron fire spirals and shield its core; two glowing fuel bladders in its limbs burst into rings of
-bullets when destroyed; a missile brood sits on its back. It sheds its back plating for a pair of
+bullets when destroyed; a missile brood sits on its back. All five shield its core, whose own guns
+stand on its rear shell. It sheds its back plating for a pair of
 gatlings, then its spine plating for a pair of orbs. Shared rules are in [common](../common.md).
 
 ## Requirements
@@ -31,7 +32,8 @@ Its body is a huge shelled abdomen (slate and sinew shades) with ribs, a vein do
 armour plates grafted on, plumbed with grafted pipes running across into the bladders and along its
 back, with couplings. Two chimneys of flesh stand behind it, ringed with neon and joined by a
 grafted pipe. Its head over the core is a plated skull with clustered eyes, two smoking spiracles,
-mandibles at its front and the core's twin cannon grafted under its brow. Each bladder is held by a
+mandibles at its front. The core's two guns stand on its rear shell either side of the missile
+brood (FB-REFINERY-TITAN-03). Each bladder is held by a
 jointed bone-and-sinew limb, its claw curled round the bladder's outer side, lit along its top
 (the limbs do not move). Four reactors sit in flesh sacs at its tail.
 
@@ -45,21 +47,26 @@ jointed bone-and-sinew limb, its claw curled round the bladder's outer side, lit
 - **Fuel tanks** (one in each limb): a big fuel bladder, a swollen sac of flesh with orange bands of
   neon and glowing veins on it, grafted valves at its ends.
 - **Rotary turrets** (two, on its front apron): a swollen growth plated round its crown under a
-  turret: a housing with three barrels and charge-lit muzzles. The housing and barrels turn; the
-  base stays on the part.
-- **Missile battery** (on its back): a swollen mound under a grafted plate with six hatches, lit as
-  it loads.
-- **Twin cannon** (the core's gun): under the head's brow; it does not turn.
+  rotor with three barrels (the shared gun mount of [common](../common.md), BOSS-58). The rotor
+  turns; the base stays on the part.
+- **Missile battery** (on its back): a swollen mound under a grafted plate carrying a missile block
+  of six ports.
+- **Rear turret** (the core's, on its rear shell right of the brood): a gun turret with seven
+  barrels side by side (its aimed shots, bursts and fans).
+- **Rear rotor** (the core's, on its rear shell left of the brood): a rotor with fourteen barrels
+  (its rings).
+
+Its fuel tanks have no gun: their rings are bursts, not shots (BOSS-23).
 
 **Acceptance criteria**
-- Given its model, then it draws its five parts and both rotary turrets (unit test).
+- Given its model, then it draws its five parts and every gun mount (unit test).
 
-*Sources: P07-R05, P16-R06, D-060.*
+*Sources: P07-R05, P16-R06, D-060, D-280.*
 
 #### FB-REFINERY-TITAN-04 — Lights · MUST
 
 Orange bands and veins glow on its bladders; neon rings its chimneys, a vein runs down its spine,
-its eyes and hatches glow. Its neon colour, set orange, shows bright yellow
+its eyes glow. Its neon colour, set orange, shows bright yellow
 ([common](../common.md), BOSS-50).
 
 **Acceptance criteria**
@@ -76,8 +83,7 @@ BOSS-42). Under them the core is its belly (up to about 5 px) between the two lo
 
 - The **back plating** (`back`), the shell's middle length over the core (from about 4 px up to its
   ridge at 18 px), is shed at its first transformation, with the spine vein, the veins and two
-  grafted plates on it and the plated skull riding it (its eyes, spiracles, mantlet and the twin
-  cannon's barrels; the cannon goes on firing from its muzzles). Shed, it bursts into plates cracked
+  grafted plates on it and the plated skull riding it (its eyes, spiracles and mantlet). Shed, it bursts into plates cracked
   from its outline and leaves a `shell` lattice on the belly, out of which the gatlings rise.
 - The **spine plating** (`spine`), the shell's front length out to its nose (from about 5 px up to
   17 px), is shed at its second, with the front rib and the eyes at its front. Shed, it leaves a
@@ -105,15 +111,16 @@ height, then sways and bobs. While it is fought the ground scrolls at ×0.3.
 
 #### FB-REFINERY-TITAN-07 — Parts and core · MUST
 
-It has five parts as it comes in: `turret-left` and `turret-right`, which shield its core, and
-`tank-left`, `tank-right` and the `missile-battery`, which do not. Each rotary turret fires 3-arm
-spirals, the two turning opposite ways, its housing spinning with its spiral (about 27°/s). The
-battery fires pairs of homing missiles. A fuel tank does not fire, but bursts into a ring of 12
-orange bullets when it is destroyed. The twin cannon fires the core's volleys.
+It has five parts as it comes in, all shielding its core: `turret-left`, `turret-right`,
+`tank-left`, `tank-right` and the `missile-battery`. Each rotary turret fires 3-arm spirals, one
+bullet a barrel of its rotor, the two turning opposite ways, its rotor spinning with its spiral
+(about 27°/s). The battery fires pairs of homing missiles from its ports. A fuel tank does not
+fire, but bursts into a ring of 12 orange bullets when it is destroyed. The core's guns (the rear
+turret and the rear rotor) fire the core's volleys, and are the last the player destroys.
 
 **Acceptance criteria**
 - Given a tank is destroyed, then it bursts into its ring of bullets once (unit test).
-- Given its design, then only its rotary turrets shield the core.
+- Given its design, then its five parts all shield the core.
 
 *Sources: P07-R01, P07-R05, D-060.*
 
@@ -121,12 +128,16 @@ orange bullets when it is destroyed. The twin cannon fires the core's volleys.
 
 The turrets' spirals and the battery's missiles go on in every stage while they stand. The core
 fires:
-- stage 0: one blue bullet at the player;
-- stage 1: an aimed fan of 3;
-- stage 2: a burst of 4 at the player;
-- stage 3: a fan of 5;
-- stage 4: a fan of 7 and an orange bullet at the player;
-- stage 5 (all five parts gone): a ring of 14 blue turning at each volley, and orange bursts of 3.
+- stage 0: one blue bullet at the player, from the rear turret;
+- stage 1: an aimed fan of 3, swept from the rear turret one bullet at a time as it turns across
+  the fan (BOSS-58);
+- stage 2: a burst of 4 at the player, the rear turret's barrels taking turns;
+- stage 3: a fan of 5 straight down, swept the same way;
+- stage 4: a fan of 7, swept the same way, and an orange bullet at the player;
+- stage 5 (all five parts gone): a ring of 14 blue from the rear rotor, one bullet a barrel,
+  turning at each volley, and orange bursts of 3 from the rear turret.
+
+Its fans are all 12° apart.
 
 **Acceptance criteria**
 - Given each stage, then the core fires that stage's volleys and the parts left fire theirs
@@ -189,24 +200,28 @@ All in `src/game/config/bosses/final_bosses.py` (`_REFINERY_TITAN`, `REFINERY_TI
 | Name | Value | Notes |
 |------|-------|-------|
 | size | 5.5 L (radius 93.5 px) | |
-| core | health 4 740, radius 22, drop 1 | twin cannon at (±4.5, -35.8), 19 px high |
-| `tank-left`, `tank-right` | (∓66, 18), radius 17, health 1 400, no shield, drop 0.6 | |
+| core | health 4 740, radius 22, drop 1 | `coreHealth`, `coreRadius`, `coreDrop` |
+| `tank-left`, `tank-right` | (∓66, 18), radius 17, health 1 400, shield, drop 0.6 | no gun |
 | `turret-left`, `turret-right` | (∓32, -24), radius 14, health 1 810, shield, drop 0.6 | turrets on their centres |
-| `missile-battery` | (0, 38), radius 14, health 1 530, no shield, drop 0.6 | 6 cells |
+| `missile-battery` | (0, 38), radius 14, health 1 530, shield, drop 0.6 | |
+| rotary rotors | 15 px high; 3 barrels, bore 1.3, 9 px long; hub radius 6 | `TITAN_ROTARY`, `mounts` |
+| battery's missile block | (0, 38), 21 px high; 6 ports | `mounts` `missile-battery` |
+| rear turret (core) | (20, 28), 12 px high; 7 barrels 2.6 px apart, bore 1, 7 px long; dome radius 9.4 | `mounts` `rear-turret` |
+| rear rotor (core) | (-20, 28), 12 px high; 14 barrels, bore 0.6, 2.8 px long; hub radius 4.5 | `mounts` `rear-rotor` |
 | full health | 19 210 (12 690 without the hidden weapons) | BOSS-54 |
 | points | 12 000; 1 200 a part | |
 | ground speed | ×0.3 | |
 | stop height | 0.74 | |
 | sway / bob | 30 px over 10 s / 6 px over 5 s | |
-| rotary spirals | rings of 3 turning +19° (left) / -19° (right), orange 175 px/s, every 0.7 s (first 0.5 s / 0.85 s) | |
+| rotary spirals | rings of 3 turning +19° (left) / -19° (right), orange 175 px/s, every 0.7 s (first 0.5 s / 0.85 s) | one bullet a barrel |
 | battery missiles | 2, 30° apart, every 5.5 s (first 3 s) | |
 | tank burst | ring of 12 orange | `breakRings` |
-| core stage 0 | 1 aimed blue bullet, 190 px/s, every 3 s | |
-| core stage 1 | aimed 3, 12° apart, every 2.6 s | |
-| core stage 2 | burst of 4, 0.14 s apart, every 2.4 s | |
-| core stage 3 | fan of 5, 14° apart, every 2.4 s | |
-| core stage 4 | fan of 7, 12° apart, every 2.2 s; 1 aimed orange every 2.6 s | |
-| core stage 5 | ring of 14 turning 9°, blue, every 1.3 s; orange burst of 3 every 2.8 s | |
+| core stage 0 | 1 aimed blue bullet, 190 px/s, every 3 s | rear turret |
+| core stage 1 | aimed 3, 12° apart, every 2.6 s | rear turret, a sweep |
+| core stage 2 | burst of 4, 0.14 s apart, every 2.4 s | rear turret |
+| core stage 3 | fan of 5, 12° apart, every 2.4 s | rear turret, a sweep |
+| core stage 4 | fan of 7, 12° apart, every 2.2 s; 1 aimed orange every 2.6 s | rear turret |
+| core stage 5 | ring of 14 turning 9°, blue, every 1.3 s; orange burst of 3, 0.14 s apart, every 2.8 s | rear rotor; rear turret |
 | angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformations | 2 and 4 parts destroyed | default thresholds |
 | back region (shed) | the shell's middle length: y -24..20, x ±27 at its ends and ±32 at y -14..8, `shell`, not mirrored; the shell 4-18 px, the skull on it to 30 px | first |
@@ -218,5 +233,5 @@ All in `src/game/config/bosses/final_bosses.py` (`_REFINERY_TITAN`, `REFINERY_TI
 ## Notes
 
 - Its missile battery sits right behind the core: while the core is shielded, shots go through
-  the core and reach it (D-062); once the core can be damaged, only angled shots or missiles reach
-  it. Destroying it is optional.
+  the core and reach it (D-062). Destroying it was optional (it, like the tanks, did not shield the
+  core) until every part came to shield it (BOSS-14, D-280).

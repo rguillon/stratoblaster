@@ -31,7 +31,7 @@ def test_enm_01_the_twenty_kinds_are_listed_once_tier_by_tier() -> None:
     assert len(kinds) == 20
     assert len(set(kinds)) == 20
     assert kinds[:5] == ["hornet", "scout", "rocketeer", "lancer", "carrier"]
-    assert kinds[15:] == ["splitter", "juggernaut", "hydra", "scissor", "hive"]
+    assert kinds[15:] == ["splitter", "hydra", "juggernaut", "scissor", "hive"]
 
 
 def test_enm_50_a_world_uses_the_kinds_of_its_tier() -> None:

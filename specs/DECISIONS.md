@@ -881,3 +881,281 @@
 - **Consequences:** 4 more samples, 35 more KB in `dist/`; the voice pool counts a variant sound at
   its longest recording; the picks are not chosen by ear (reviewer to listen).
 - **Status:** Proposed
+
+### D-263 — Back to the original 3:4 playfield, the HUD still outside it
+- **Date:** 2026-11-04
+- **Requirements:** GAME-SCREEN-01, GAME-SCREEN-04, GAME-SCREEN-06, GFX-CAM-01, GFX-CAM-05,
+  UI-HUD-01, GFX-ROAD-19, WLD-1-20, WLD-3-13, WLD-4-13, ENM-09.
+- **Context:** owner: "revert to the original screen ratio but keep the UI outside the playing
+  area". Asked how to lay out the side space, the owner chose D-252's 370 px columns.
+- **Decision:** undoes D-253: the playfield window is **540 × 720** (3:4) at x = 370 of the
+  1280 × 720 screen, the HUD columns 370 px (`--hud-side`). The extents that followed the wider
+  view go back as D-252 set them: `WAVE_DENSITY` 2 → 1.5, `offscreenX` 780 → 420 (Worlds 1–2) and
+  560 → 300 (Worlds 3–4), the bomb ring 900 → 820 px. The ship's reach is about x 120 … 420.
+- **Consequences:** the ship crosses its reach in about 1.3 s again. The wave counts recorded in
+  the level specs were not re-measured with the new density (open point). Column contents keep the
+  D-253 sizes.
+- **Status:** Proposed
+
+### D-264 — Nothing enters laterally in the bottom third
+- **Date:** 2026-11-04
+- **Requirements:** ENM-08, ENM-HORNET-10, ENM-WASP-11.
+- **Context:** owner: "make sure no enemy spawn laterally in the first bottom 1/3 of the screen".
+- **Decision:** a side entry's height is its position (kept off the corners) but never below a
+  third of the playfield height (`side_height`, `SIDE_MIN_HEIGHT` in `enemy_helpers.py`): Hornets,
+  Strafers and Wasp columns (the column is shifted up as a whole). Random side passes obey it too.
+- **Status:** Proposed
+
+### D-265 — Recorded explosions replace the vocal-sounding ones
+- **Date:** 2026-11-04
+- **Requirements:** AUD-SFX-01, AUD-SFX-08, AUD-SFX-09.
+- **Context:** owner: "replace all the explosion sounds, those sound mouth generated".
+- **Decision:** the six explosion variants, `boss-part-destroyed`, `boss-destroyed` and `life-lost` are
+  now CC0 recordings from OpenGameArt (Explosion, Chunky Explosion, Muffled Distant Explosion,
+  Explosion somewhere far, Battle at sea), processed as the others (mono, 44.1 kHz, trimmed to the
+  same lengths so the sound designs are unchanged, peak -1 dBFS). The Kenney `explosionCrunch` and
+  `lowFrequency_explosion` and compufox samples are gone.
+- **Consequences:** picked by name and duration, not listened to: the reviewer is to listen and swap
+  any that is still wrong (a candidate: 0.17 s `explosion_dull.flac`, too short as it is).
+- **Status:** Proposed
+
+### D-266 — The Prism aims at the player and fires two parallel beams straight ahead
+- **Date:** 2026-11-04
+- **Requirements:** ENM-PRISM-05, ENM-PRISM-06, ENM-PRISM-07, ENM-PRISM-08.
+- **Context:** owner: "rework Prism, his two laser always shoot straight forward but the ship orient
+  itself pointing to the player before shooting, but stops rotating once it starts shooting".
+- **Decision:** the sweeping X of beams is gone. The Prism has an `aim` state (`aimSeconds`, eased
+  turn as the Hornet's) before each of its `bursts`; the nose freezes when the warning lines show
+  (the warning belongs to the shooting) and the beams follow the Prism's heading, not a sweep angle.
+  `bursts` is now a count and `gapSeconds` is replaced by `aimSeconds`; `Prism.sweep` is gone.
+- **Consequences:** the two beams are parallel, 42 px apart; the player is hit by dodging sideways
+  at the lock instant, not by outrunning a sweep. The tunables (`aimSeconds` 1 s) are for the
+  owner to tune after playing.
+- **Status:** Proposed
+
+### D-267 — The Prism arrives fast, aims while it brakes and fires when it stops
+- **Date:** 2026-11-04
+- **Requirements:** ENM-PRISM-05, ENM-PRISM-07.
+- **Context:** owner: "rework the movements of Prism, I want it to arrive quickly and slow down to a
+  stop, start targeting while it's still slowing down and only fire when it stops."
+- **Decision:** `entrySpeed` 150 -> 320 px/s and `brakeDistance` 60 -> 220 px (the slowdown lasts
+  about 1.8 s). The eased turn to the player starts as soon as the Prism is below `entrySpeed`; the
+  first burst starts when it reaches its stop point. The `aim` state remains only between bursts.
+- **Status:** Proposed
+
+### D-268 — Barrels: one shot, one barrel, with its own pose and recoil (slice 1: the Strafer)
+- **Date:** 2026-11-04
+- **Requirements:** WPN-01, WPN-02, WPN-03, WPN-04, ENM-STRAFER-03, ENM-STRAFER-06.
+- **Context:** owner: every weapon of every enemy and boss must be recognised at once: every bullet
+  from a Reef-Warden-style barrel that recoils, the bullet starting exactly at the barrel's tip along
+  its direction; lasers like the Overlord's; missiles out of hexagonal ports; three guns on each side
+  of the Strafer for its fan. Delivered in slices (engine, enemies, mini bosses, final bosses);
+  owner chose rotating multi-barrel turrets for fans and rings, and kept each boss's laser tint.
+- **Decision:** a muzzle config entry `[x, y, height, angleDeg]` is a fixed `Barrel` (angle optional:
+  without it the gun is not converted yet and fires as before). `GunMuzzles.shoot(ctx, source,
+  heading, fire)` fires one shot from the fixed barrel pointing nearest `heading` (within 6°), from
+  its tip along the barrel's own heading; a shot no barrel can take is held. The recoil is a pure
+  function of the source's `age` and the barrel's firing age (`Barrel.recoil_at`, eased 1 to 0 over
+  0.18 s), so the sim needs no per-frame step. Enemies list their barrels in `Enemy.barrels`; the
+  model draws each as a fixed housing and a sliding barrel (`EnemyParts.slide`) and `sync` slides it
+  back by `barrelRecoil` (0.35) of its length times the recoil. The Strafer is the pilot: six
+  barrels, fanned ±15°.
+- **Consequences:** the other enemies and every boss still fire as before until their slice; the
+  lasers (WPN-06) and missiles (WPN-07 to WPN-09) are the next slices of the engine work.
+- **Status:** Proposed
+
+### D-269 — Barrels are drawn mirrored, and held by a gun pod on each flank
+- **Date:** 2026-11-04
+- **Requirements:** WPN-01, WPN-03, WPN-04, ENM-21.
+- **Context:** owner: the Strafer's barrels floated and the wrong ones recoiled.
+- **Decision:** the config's X is right of an enemy facing down the screen, but a model turned to
+  face down has its +X on the screen's left, so a fixed barrel is drawn with its X and yaw mirrored
+  (`recoil_barrel`) and the one that fires is the one drawn firing. Each Strafer flank gets a hull
+  gun pod from the body out to the housings, so the barrels are held to it. The ENM-21 test expects
+  a barrel's marked muzzle at -X.
+- **Consequences:** other asymmetric models keep their (unchecked) X until they are converted.
+- **Status:** Proposed
+
+### D-270 — Slice 2: every enemy that fires bullets has barrels
+- **Date:** 2026-11-04
+- **Requirements:** WPN-01 to WPN-04.
+- **Context:** owner: "do the same for all the other enemies and bosses".
+- **Decision:** fixed banks of barrels, one per shot, for the Wasp (3 fanned 12°), the Phantom (5),
+  the Juggernaut's back turret (7, fanned 9°), the Spinner (one per pod, which spins with the body)
+  and the Hive (12 rim vents, which now fire along themselves: the old vents were drawn mirrored).
+  `fire_aimed` fires each fan shot from the barrel pointing nearest its way, and holds it if none
+  does (the Wasp and Phantom already point at the player when they fire). `GunMuzzles.fire_all`
+  fires every barrel (rings). The Scout, which flies nose-down, has a gun on a swivel
+  (`Enemy.turret`, the bosses' `BossTurret`) turning at 150°/s to the player; a due shot waits until
+  it points within 6°, and the model barrel turns and recoils. The Harrier, Hydra, Mortar and
+  Rocketeer (missiles) and the lasers (Lancer, Prism, Sweeper, Scissor) are WPN-06 to WPN-09's
+  slice; the Juggernaut's shoulder cannons already fire along their barrels.
+- **Consequences:** a Scout over the player's own height cannot turn fast enough to fire; its shots
+  wait while it flies past. Bosses (BOSS-29 turrets) are the next slice.
+- **Status:** Proposed
+
+### D-271 — Slice 3: missile flight and ports, laser lenses
+- **Date:** 2026-11-05
+- **Requirements:** WPN-06 to WPN-09.
+- **Context:** owner: "do the missiles and lasers first".
+- **Decision:** `EnemyMissileSpec.flight` (`MissileFlight`: launch seconds, climb seconds, arc
+  radius, values in `game/config/weapons.py`). A missile flies straight for 0.25 s before the
+  homing time runs (WPN-08). A missile from an upward silo (`BossMissilesShape.up`, true for every
+  boss rack unless the volley says otherwise; river leviathan and glacier colossus fire forward)
+  has a height: it climbs 0.3 s, points at the player, arcs down to the plane over πR of travel
+  (R = 40, height `R·(1+cos πt)/2`), then homes. While its height is above 0 it is neither a shot
+  target nor a hit on the player. The renderer raises it towards the camera by its height. In the
+  models, `muzzle(at, kind, direction)` draws the port itself: kind "missile" a hexagonal port
+  (`weapon_ports.hex_port`, standing up by default or "forward"), kind "laser" a hex barrel with
+  two coils and a white-hot lens (`laser_lens`), as the Overlord's cannons, so every owner gets
+  the same weapon with no per-model drawing. All lasers already shared one renderer (same warning
+  line, beam and flare; only the owner's colour differs). The Harrier passed its raw config record
+  as a spec; it now uses `missile_spec` like the others. The Hydra's heads, which fire from the
+  eye at the player, keep a gun muzzle.
+- **Consequences:** boss models that drew their own hatch or lens keep it under the new port; a
+  boss's laser/missile muzzles are not yet barrels that recoil (WPN-05 slice).
+- **Status:** Proposed
+
+### D-272 — Scout redesigned as an airplane with a turret gun
+- **Date:** 2026-11-05
+- **Requirements:** ENM-SCOUT-01 to ENM-SCOUT-03, WPN-02.
+- **Context:** owner: "redesign the scout, put his gun on a turret, no more insect wings, air plane
+  wings and a bigger body".
+- **Decision:** a fatter fuselage (4.2 wide, 5.2 tall), fixed metal swept wings with a neon leading
+  edge and a tailplane (no `flap`), one reactor under each wing root, a fin, and a turret ring under
+  the gun's pivot. The gun is raised to height 4.6 to sit on the ring. The footprint stays within
+  ENM-12 (about 28 px).
+- **Consequences:** the Scout has no fluttering wings; ENM-SCOUT-02's tail booms are gone.
+- **Status:** Proposed
+
+### D-273 — The Juggernaut's turret sweeps its spread with parallel barrels
+- **Date:** 2026-11-05
+- **Requirements:** ENM-JUGGERNAUT-11, WPN-01 to WPN-03.
+- **Context:** owner: "rework the juggernaut dome, make all the barrels parallel, the turret shall
+  turn while shooting and with a little delay between each canon the bullets will still shoot like
+  a fan".
+- **Decision:** a fixed collar and a turning mantlet (a slide of no recoil turning about the
+  turret's pivot) with seven parallel barrels on `Enemy.turret` (240°/s). When a spread is due its
+  seven headings are fixed, centred on the player, and the turret steps across them from the side
+  it is nearest: each barrel fires in turn once the turret reaches its heading and `sweepGap`
+  (0.08 s) after the last. Slides can now turn about a centre (`Slide.centre`) rather than their
+  own root.
+- **Consequences:** a spread takes about half a second to leave; the player can see it coming.
+- **Status:** Proposed
+
+### D-274 — The Hydra and the Juggernaut swap weapons and roles
+- **Date:** 2026-11-05
+- **Requirements:** ENM-HYDRA-09, ENM-HYDRA-14, ENM-HYDRA-15, ENM-JUGGERNAUT-06, ENM-JUGGERNAUT-10,
+  WLD-4-17.
+- **Context:** owner: "Switch Hydra and Juggernaut, make Hydra shoot bullets, replace Juggernaut arm
+  canons with rocket launchers".
+- **Decision:** the Hydra is tier 4's shooter: each head, in turn every 0.8 s, fires a burst of 3
+  green bullets from a recoiling gun on its brow, along the head. The Juggernaut is tier 4's missile
+  launcher: its shoulder cannons become hexagonal launcher tubes with a port at the tip, each
+  launching the Hydra's former missile along itself every 2.4 s (straight out of the port first,
+  WPN-08). The tier roles swap, so World 4's levels bring the Hydra in 4-1 and the Juggernaut in
+  4-2, and the filler draws Splitters and Hydras; the world specs are updated to match.
+- **Consequences:** the Juggernaut, the heavier kind, comes less often; the Hydra more.
+- **Status:** Proposed
+
+### D-275 — Hollow missile ports wider than their rockets, reloading
+- **Date:** 2026-11-05
+- **Requirements:** WPN-07.
+- **Context:** owner: "for every rocket launcher, make the cannon bigger than the rocket, and the top
+  shall be hollow until a rocket is here".
+- **Decision:** a port's size comes from its missile's hit radius: the hexagonal bore's inner radius
+  is 1.15 times the drawn rocket's (`ENEMY_LOOK.missile`), the wall 0.6 px; each launcher tube
+  (Harrier rails, Rocketeer pods, Mortar barrel, Juggernaut arms) is as wide as its port all along.
+  The port is a hollow well (one revolved profile: outer wall, rim, inner wall) with a dark floor.
+  Each port's rocket is a sliding piece (`Slide.kind` "rocket") tied to `Enemy.launchers[index]`,
+  a `Barrel` kicked as its missile leaves: hidden for the first 35 % of the 1.2 s reload, then
+  rising up the well, eased out. Boss pieces report no launchers yet, so their ports are always
+  loaded (their volleys' guns become per-port with WPN-05).
+- **Consequences:** the Mortar's barrel is now a thick hexagonal tube.
+- **Status:** Proposed
+
+### D-276 — The Scout's turret further back, a bigger gun
+- **Date:** 2026-11-05
+- **Requirements:** ENM-SCOUT-03, WPN-02.
+- **Context:** owner: "move the scout turret further to the back and make the canon bigger".
+- **Decision:** the turret's pivot moves from 6 px ahead of the centre to 2 px behind it (config
+  `turret.y` 2), its ring 3.6 px wide; the barrel is 9 px long and 1 px thick (was 6.5 and 0.6),
+  so its tip is at `[0, -7.8, 4.9]`. Owner: the reactors were floating; each now ends a tapered
+  nacelle (8.5 px, 1.9 px round its nozzle) that grows out of the fuselage's flank.
+- **Status:** Proposed
+
+### D-277 — The Scout is one blended airframe
+- **Date:** 2026-11-05
+- **Requirements:** ENM-SCOUT-01, ENM-SCOUT-02.
+- **Context:** owner: "rework the scout body, no longer look like an insect, make it looks so the
+  wings and engines are fully part of the body" (and, before, "remove the vertical wing").
+- **Decision:** the flesh lobes, eyes and vein are replaced by a metal fighter fuselage
+  (`FIGHTER_SECTION` loft, 5 px half wide in the middle, a point at the nose); wing-root fairings
+  join the wings to the nose's flanks; the engines are hexagonal nacelles lofted into the
+  fuselage's flanks, swelling round their nozzles; the fin is gone. The cyber-organic touch is a
+  flesh canopy ahead of the turret, with a neon visor (ENM-35 still finds flesh on it).
+- **Status:** Proposed
+
+### D-278 — The Rocketeer's pods on one wing each, lit on their flanks
+- **Date:** 2026-11-05
+- **Requirements:** ENM-ROCKETEER-02.
+- **Context:** owner: "don't highlight the barrel of the guns but their sides, make the pieces
+  connecting the body to the guns a single wing, and make the wings cross the guns and show to the
+  outer side of the ship".
+- **Decision:** the two sinews per side become one swept metal wing from the body's flank (x 5)
+  through the pod's middle to 7 px past its centre (3 px past the sac), with a neon light behind its
+  leading edge on the part out past the pod. The vein along the top of each pod becomes two veins
+  along its flanks. The model stays within ENM-12's footprint (about 47 px across, size 1.3 L).
+  Then (owner: "there is still a glow line at the front of the barrel, I only want the sides of the
+  barrel to be highlighted. Also move the tip of the wings more to the front"): the Rocketeer's
+  ports have no glowing rim (`muzzle(..., rim=False)`), its launchers' charge lights are two strips
+  along their left and right edges, and the wing tips run from z 4 to 0 (were -1 to -5). Then
+  (owner: "there is still a glowing line at the tip of the cannon, I want it gone, and replace the
+  side yellow lines with highlight lines"): the line was the edge trim along the launcher's front
+  edge (GFX-TRIM). Models get `EnemyParts.bare`, dark metal with no trim; the Rocketeer's launcher
+  tubes and rimless ports are drawn on it, and its side lines are thin neon lines like the wings'
+  (no longer the yellow charge strips).
+  Then (owner: "make the darker tip longer so it merges into the body of the gun, remove useless
+  geometry and get the hole in the barrel, I want to see the missiles coming out of the gun"):
+  every enemy launcher tube (Rocketeer, Harrier, Mortar, Juggernaut) ran up to the mouth and its
+  end cap closed the bore over the rocket. Tubes now stop where the port's well starts
+  (`port_depth`); the Rocketeer's launcher is its port all along (`well` 7 px), with no tube.
+- **Status:** Proposed
+
+## D-279 — `make build` redoes only what changed (ENG-39)
+- **Context:** the owner asked "rework the make build target so it only regenerate the files that
+  needs it": every `make build` (and so every `make e2e`) re-ran `npm ci`, both Transcrypt builds
+  with `-b` (every module), both esbuild bundles, and wiped and re-copied `dist/`, about 22 s.
+- **Decision:** every build step is a file target. `npm ci` and the Playwright install leave
+  stamps in `.make/` (git-ignored), redone after `node/package*.json` or `uv.lock` change.
+  Transcrypt runs without `-b` (its own make mode recompiles only the modules newer than their
+  JavaScript, and everything when its options change), one stamp per output directory
+  (`build/game/.stamp`, `build/worker/.stamp`, `build/e2e/.stamp`) newer than every `src/**/*.py`.
+  Each bundle is redone only after its Transcrypt stamp; `dist/index.html` after `index.html` or
+  `src/build_info.py` (the commit); `public/` is copied (stamp `dist/.public`) when one of its files
+  or Babylon.js changes. Babylon.js is checked again only when missing or after a Makefile change.
+  The build checks (ENG-52, AUD-ENGINE-01) run with the step whose output they check, and a failing
+  bundle is never left in place. `dist-e2e/` is rebuilt only after the e2e Transcrypt build or a
+  `dist/` file changes.
+- **Measured:** nothing changed 0.14 s; one module changed 1.9 s; from scratch 22 s as before. An
+  incremental bundle is byte-identical to a clean one.
+- **Limit:** a file removed from `public/` stays in `dist/` until `dist/` is deleted.
+- **Status:** Proposed
+
+## D-280 — Every boss shot leaves a gun mount; the core's guns go last (BOSS-58)
+- **Context:** the owner asked to "apply the guns pattern to the bosses: one model for the guns, one
+  for the lazer, one for the missiles", with every bullet, laser and missile "perfectly aligned with
+  the guns", recoiling bullet guns, guns added where a pattern had none, and "when the player has
+  destroyed the last remaining gun, the health shall hit zero". Most boss volleys (about 314 of 457)
+  came from the core, from muzzles with no gun drawn; rings and fans left one point.
+- **Decision (owner's choices):** the core is the last gun: it carries its own mounts and every
+  part shields it. One barrel per bullet: a ring fires from a rotor with a barrel per bullet, a fan
+  or a multi-shot aimed volley from the middle barrels of a fanned turret, counts snapped to the
+  barrels. A boss's `mounts` (`boss_guns.gun_mount`, `laser_mount`, `missile_mount`) are data;
+  `core/systems/boss_mounts.py` fires from them (each shot from a barrel's tip along it, the barrel
+  kicked) and `view/bosses/boss_gun_models.py` draws them with the enemies' barrel, laser lens and
+  missile port. A volley fires from the first mount of its piece that fits it, or the one it names.
+  Parts hand the core their heading and age (a turned boss's guns turn with it; recoil on its
+  clock). Hidden weapon kinds get one mount each; their pods stay. Rolled out on World 1 first,
+  checked by the owner before Worlds 2–4.
+- **Status:** Proposed

@@ -246,7 +246,7 @@ def view(monkeypatch: pytest.MonkeyPatch) -> Any:
     frame = FrameView(_node(), [_Model(), _Model()])
     chunks = [ArmourChunk(_node(), [10.0, 0.0, 5.0], 0), ArmourChunk(_node(), [-10.0, 0, 5], 1)]
     flash = _Flash()
-    region = SimpleNamespace(form=1)
+    region = SimpleNamespace(form=1, mount=None)
     return SimpleNamespace(
         view=ArmourView(region, whole, flash, chunks, frame),
         on=lambda node: enabled.get(id(node)),
@@ -285,6 +285,43 @@ def test_it_strains_then_bursts_into_flying_pieces_baring_the_frame(view: Any) -
     assert all(m.synced == 1 for m in view.frame.models)
     view.view.show(_boss(0, 1, LOOK.burstEnd + 0.01), {}, 0.1)
     assert all(view.on(c.node) is False for c in view.chunks)
+
+
+def _gunned(shown_at: Any, age: float) -> SimpleNamespace:
+    """Return a boss whose `gun` mount came into use at `shown_at` (None: not yet), at `age`."""
+    return SimpleNamespace(
+        form=0,
+        transforming_into=0,
+        transform=0,
+        age=age,
+        mounts=[
+            SimpleNamespace(id="other", shown_at=0.0),
+            SimpleNamespace(id="gun", shown_at=shown_at),
+        ],
+        core=SimpleNamespace(since_hit=7.0),
+    )
+
+
+def test_boss_58_a_hatch_bursts_off_as_its_gun_first_comes_into_use(view: Any) -> None:
+    view.view.region = SimpleNamespace(form=None, mount="gun")
+    view.view.show(_gunned(None, 5.0), {}, 0.1)
+    assert view.on(view.whole.root) is True
+    assert view.on(view.frame.root) is False
+    # Bursting, halfway between the start and the end of its burst (on the hatch's own clock).
+    mid = (LOOK.burst + LOOK.burstEnd) / 2 * boss_armour.HATCH_SECONDS
+    view.view.show(_gunned(5.0, 5.0 + mid), {}, 0.1)
+    assert view.on(view.whole.root) is False
+    assert view.on(view.frame.root) is True
+    assert all(view.on(c.node) is True for c in view.chunks)
+    # Long after: only its frame is left.
+    view.view.show(_gunned(5.0, 50.0), {}, 0.1)
+    assert view.on(view.whole.root) is False
+    assert all(view.on(c.node) is False for c in view.chunks)
+    assert boss_armour.hatch_opens() == pytest.approx(LOOK.burst * boss_armour.HATCH_SECONDS)
+
+
+def test_a_hatch_whose_mount_the_boss_lacks_stays_on() -> None:
+    assert boss_armour._mount_since(_gunned(1.0, 2.0), "missing") is None
 
 
 def test_once_shed_only_the_frame_is_left(view: Any) -> None:
@@ -433,11 +470,14 @@ def test_boss_43_the_drawn_regions_stay_in_the_piece_budget(design: Any) -> None
         drawn = region_drawings(design, boss_drawing(design.id, mp))
     finally:
         mp.undo()
-    total = 0
+    # Pieces bursting at once: a transformation's regions together; a hatch (BOSS-58) alone, as
+    # its gun first comes into use (within the region budget).
+    bursts: dict[Any, int] = {}
     for region, d in zip(design.armour, drawn, strict=True):
         if d is None:
             continue
         assert len(d.pieces) <= BOSS_LOOK.armour.chunks, region.id
         assert len(all_triangles(drawn_layers(d.whole))) > 0, region.id
-        total += len(d.pieces)
-    assert total <= BOSS_LOOK.armour.bossChunks
+        if region.form is not None:
+            bursts[region.form] = bursts.get(region.form, 0) + len(d.pieces)
+    assert sum(bursts.values()) <= BOSS_LOOK.armour.bossChunks

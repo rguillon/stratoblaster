@@ -12,25 +12,28 @@ screen, firing one bullet aimed at the player at a steady beat.
 
 #### ENM-SCOUT-01 — A light winged scout · MUST
 
-The Scout is a light flyer about `size` L long: a slim flesh body of two swollen segments, two eyes
-at the front, and broad membrane wings on bone struts that flutter about their roots.
+The Scout is a light fighter about `size` L long, one blended airframe that does not look like an
+insect: a metal fighter fuselage, widest in the middle and closing to a point at the nose, with
+fixed swept wings in metal with a neon leading edge (nothing flaps) and a small tailplane, the
+wings' roots faired into the fuselage, and no fin. A flesh canopy sits on its back ahead of the
+turret, with a neon visor across its front; it has no eyes.
 
-*Sources: P05-R03, P16-R03, P16-R07.*
+*Sources: P05-R03, P16-R03, P16-R07, owner requests 2026-11-05 (D-272, D-277).*
 
-#### ENM-SCOUT-02 — Twin tail booms with a neon strip · MUST
+#### ENM-SCOUT-02 — Twin reactors under the wings · MUST
 
-Two bone tail booms run back from the body, each with a neon strip along it and a reactor at its
-end.
+A reactor sits at the trailing root of each wing, its nozzle opening in the end of an engine nacelle
+faired into the fuselage's flank (part of the body, not hanging behind the tail on its own).
 
 **Acceptance criteria**
-- Unit test: the model has two reactors, two wings and one gun.
+- Unit test: the model has two reactors, no flapping wing and one gun.
 
-*Sources: P05-R03, phase 5 review.*
+*Sources: P05-R03, phase 5 review, owner request 2026-11-05.*
 
-#### ENM-SCOUT-03 — A nose gun · MUST
+#### ENM-SCOUT-03 — A gun on a turret · MUST
 
-A metal gun barrel is grafted on its nose, a charge light at its tip; its muzzle is where the
-Scout's bullets leave from.
+A metal gun barrel stands on a turret ring on the fuselage's back, pointing ahead, a charge light at
+its tip; its muzzle is where the Scout's bullets leave from (WPN-01 to WPN-03).
 
 *Sources: P05-R03, D-057.*
 

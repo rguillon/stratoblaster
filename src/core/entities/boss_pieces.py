@@ -86,8 +86,6 @@ class BossPart:
         self._boss = boss
         self.x = 0.0
         self.y = 0.0
-        # Lasers fired from it go this way (straight down).
-        self.heading = math.pi
         self.since_hit = INFINITY
         # Set once the boss has taken its destruction into account (its stage went up).
         self.broken = False
@@ -105,6 +103,16 @@ class BossPart:
     def id(self) -> int:
         """Unique among the boss's pieces (the core is the boss's id)."""
         return -(self._boss.id * 64 + self.index + 1)
+
+    @property
+    def heading(self) -> float:
+        """The way its nose points: its boss's (down the screen, unless it has turned, D-228)."""
+        return self._boss.heading
+
+    @property
+    def age(self) -> float:
+        """Its boss's age: the clock its barrels' recoil follows (WPN-03)."""
+        return self._boss.age
 
     @property
     def health(self) -> float:
@@ -181,7 +189,6 @@ class BossCore:
 
     def __init__(self, boss: "Boss") -> None:
         self._boss = boss
-        self.heading = math.pi
         self.since_hit = INFINITY
         self.radius = boss.stats.core_radius
         self.max_health = boss.stats.health
@@ -191,6 +198,16 @@ class BossCore:
     def id(self) -> int:
         """The id of the boss: the core shares it."""
         return self._boss.id
+
+    @property
+    def heading(self) -> float:
+        """The way its nose points: its boss's."""
+        return self._boss.heading
+
+    @property
+    def age(self) -> float:
+        """Its boss's age: the clock its barrels' recoil follows (WPN-03)."""
+        return self._boss.age
 
     @property
     def x(self) -> float:

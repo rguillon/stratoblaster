@@ -6,7 +6,8 @@
 
 The Gull Mothership is the final boss of 1-2: a brood-mother of the sea, 5 L across (first designed
 as a wide carrier). Two brood pouches on its flanks launch groups of Hornets and two flak growths on
-its front fire at the player; all four shield its core, a huge laser eye at its nose. It sheds its
+its front fire at the player; all four shield its core, a huge laser eye at its nose and its own
+guns down its back. It sheds its
 flank armour for a pair of laser lances, then its wing armour for a pair of orbs. Shared rules are
 in [common](../common.md).
 
@@ -28,27 +29,35 @@ on its front.
 #### FB-GULL-MOTHERSHIP-02 — Body · MUST
 
 Its body is a teal flesh mantle with a second fold on it, a shelled body along its middle (graphite
-and slate shades) with ribs over its back and glands down its spine, swim bladders at the back of
-the mantle with their reactors in flesh sacs, and at its nose the laser eye: a socket of flesh, a
-grafted ring and a lens that glows as it charges.
+and slate shades) with ribs over its back, the core's guns down its spine and a gland between them
+(FB-GULL-MOTHERSHIP-03), swim bladders at the back of the mantle with their reactors in flesh sacs,
+and at its nose the laser eye: a socket of flesh and a grafted ring round its laser mount, whose
+lens glows as it charges.
 
 **Acceptance criteria**
 - Manual validation: a living mantle; the eye's lens brightens before each laser.
 
 *Sources: P07-R05, P16-R06.*
 
-#### FB-GULL-MOTHERSHIP-03 — Its parts · MUST
+#### FB-GULL-MOTHERSHIP-03 — Its parts and guns · MUST
 
+Every shot leaves one of its gun mounts, the shared models of [common](../common.md) (BOSS-58):
 - **Hangar bays** (one on each flank): a swollen brood pouch on the mantle, a glowing birth slit in
-  its top between fleshy lips, glands down both sides, a grafted brace on its outer side.
+  its top between fleshy lips, glands down both sides, a grafted brace on its outer side. They
+  launch Hornets and have no gun.
 - **Flak turrets** (two, on the front of the mantle): a swollen, plated mound with a feeding sac
-  behind it, under a twin-gun turret on its crown.
-- **Laser eye** (the core's weapon): at its nose; it does not turn.
+  behind it, under a gun turret with two barrels side by side on its crown.
+- **Laser eye** (the core's): a fixed laser mount set in the eye's socket at its nose, pointing
+  down the screen.
+- **Prow turret** (the core's): a gun turret with five barrels side by side on the graft on the
+  front of its back (its aimed shots and fans).
+- **Spine and tail rotors** (the core's): a rotor with twelve barrels on its spine and one with
+  eight behind it (its rings).
 
 **Acceptance criteria**
-- Given its model, then it draws both hangars, both flak growths and their turrets (unit test).
+- Given its model, then it draws both hangars, both flak growths and every gun mount (unit test).
 
-*Sources: P07-R05, P16-R06, D-058.*
+*Sources: P07-R05, P16-R06, D-058, D-280.*
 
 #### FB-GULL-MOTHERSHIP-04 — Lights · MUST
 
@@ -99,8 +108,10 @@ height, then sways and bobs. While it is fought the ground scrolls at ×0.6.
 
 It has four parts as it comes in, all shielding its core: `hangar-left`, `hangar-right`,
 `flak-left` and `flak-right`. Each hangar launches a group of 3 Hornets, the two in turn, out to its
-own side ([common](../common.md), BOSS-25); each flak turret fires aimed green pairs, in turn, and
-turns the way it fires. The laser eye fires the core's volleys, its lasers straight down.
+own side ([common](../common.md), BOSS-25); each flak turret fires aimed green pairs, swept one
+bullet a barrel as it turns across the pair (BOSS-58), in turn, and turns the way it fires. The
+core's guns fire the core's volleys, and are the last the player destroys: the laser eye its lasers
+straight down, the prow turret and the rotors its bullets.
 
 **Acceptance criteria**
 - Given its design, then each hangar launches 3 Hornets every 7 s while it stands.
@@ -112,10 +123,12 @@ turns the way it fires. The laser eye fires the core's volleys, its lasers strai
 The Hornets and the flak pairs go on in every stage while their parts stand. The core fires a laser
 in every stage, more often from stage to stage, and:
 - stage 0: the laser alone;
-- stage 1: one orange bullet at the player;
-- stage 2: a fan of 5 orange;
-- stage 3: a ring of 8 orange;
-- stage 4 (all four parts gone): a longer laser, and a ring of 12 green turning at each volley.
+- stage 1: one orange bullet at the player, from the prow turret;
+- stage 2: a fan of 5 orange straight down, swept from the prow turret one bullet at a time as it
+  turns across the fan (BOSS-58);
+- stage 3: a ring of 8 orange from the tail rotor, one bullet a barrel;
+- stage 4 (all four parts gone): a longer laser, and a ring of 12 green from the spine rotor,
+  turning at each volley.
 
 **Acceptance criteria**
 - Given each stage, then the core fires that stage's volleys and the parts left fire theirs
@@ -191,21 +204,26 @@ named.
 | Name | Value | Notes |
 |------|-------|-------|
 | size | 5 L (radius 85 px) | |
-| core | health 2 280, radius 20, drop 1 | laser eye at (0, -69.9), 7 px high |
-| `hangar-left`, `hangar-right` | (∓62, 6), radius 18, health 1 050, shield, drop 0.6 | |
+| core | health 2 280, radius 20, drop 1 | `coreHealth`, `coreRadius`, `coreDrop` |
+| `hangar-left`, `hangar-right` | (∓62, 6), radius 18, health 1 050, shield, drop 0.6 | no gun |
 | `flak-left`, `flak-right` | (∓28, -32), radius 12, health 790, shield, drop 0.6 | turrets on their centres |
+| flak turrets | 6.5 px high; 2 barrels 3.2 px apart, bore 1.1, 7.5 px long; dome radius 8.5 | `GULL_FLAK`, `mounts` |
+| laser eye (core) | (0, -58), 4.7 px high, fixed; barrel 9.2 px long, bore 3.5; base radius 6 | `mounts` `eye` |
+| prow turret (core) | (0, -29), 22 px high; 5 barrels 2.9 px apart, bore 1.1, 8 px long; dome radius 7.5 | `mounts` `prow` |
+| spine rotor (core) | (0, 11), 22 px high; 12 barrels, bore 0.9, 4.5 px long; hub radius 6 | `mounts` `spine-rotor` |
+| tail rotor (core) | (0, 31), 22 px high; 8 barrels, bore 0.9, 4 px long; hub radius 4.5 | `mounts` `tail-rotor` |
 | full health | 9 740 (5 960 without the hidden weapons) | BOSS-54, BOSS-55 |
 | points | 9 000; 900 a part | |
 | ground speed | ×0.6 | |
 | stop height | 0.74 | |
 | sway / bob | 40 px over 9 s / 8 px over 4.5 s | |
 | Hornets | 3 a hangar every 7 s (first 2.5 s left, 6 s right) | `launches` |
-| flak pairs | aimed 2, 8° apart, green 180 px/s, every 1.9 s (first 0.9 s / 1.85 s) | |
-| core stage 0 | laser 1.5 s every 7 s (first 4 s) | |
-| core stage 1 | laser every 6 s; 1 aimed orange bullet, 175 px/s, every 2.6 s | |
-| core stage 2 | laser every 5.5 s; fan of 5, 14° apart, every 2.6 s | |
-| core stage 3 | laser every 5 s; ring of 8 every 2.2 s | |
-| core stage 4 | laser 1.6 s every 4.5 s; ring of 12 turning 9°, green, every 1.5 s | |
+| flak pairs | aimed 2, 8° apart, green 180 px/s, every 1.9 s (first 0.9 s / 1.85 s) | a sweep |
+| core stage 0 | laser 1.5 s every 7 s (first 4 s) | laser eye |
+| core stage 1 | laser every 6 s; 1 aimed orange bullet, 175 px/s, every 2.6 s | prow turret |
+| core stage 2 | laser every 5.5 s; fan of 5, 14° apart, every 2.6 s | prow turret, a sweep |
+| core stage 3 | laser every 5 s; ring of 8 every 2.2 s | tail rotor (named: `"mount"`) |
+| core stage 4 | laser 1.6 s every 4.5 s; ring of 12 turning 9°, green, every 1.5 s | spine rotor |
 | angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformations | 2 and 3 parts destroyed | default thresholds |
 | flank region (shed) | the rear flank out to the rim: x 18..47 at y 6..30, then along the rim to (34, 48) and (18, 54.4), `wing`, mirrored; the plate 1.9-4 px, the bladders to 12.5 px | first |

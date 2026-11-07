@@ -47,7 +47,12 @@ def barrel(p: Any, tip: Vec3, yaw: float, size: Any, kind: str = "gun") -> None:
 
     p.hull.cylinder(radius, length, 6, H.dark, place(length + 0.5))
     p.charge.cylinder(radius * 1.08, 0.5, 6, WHITE, place(0.5))
-    p.muzzle(tip, kind)
+    if kind == "laser":
+        # The laser's lens on this barrel's mouth, with no barrel of its own (it would be hidden
+        # in this one).
+        p.muzzle(tip, kind, "forward", radius, None, True, 0, yaw)
+    else:
+        p.muzzle(tip, kind)
 
 
 def strip(neon: Any, at: Vec3, yaw: float, span: Any, color: Rgb) -> None:

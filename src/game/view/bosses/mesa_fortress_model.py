@@ -3,18 +3,17 @@
 
 The final boss of 1-3 Logical pixels, nose +Z, Y up (towards the camera). A colossal canyon
 tortoise: a wide skirt of hide under a high, stepped shell like the mesas, plated with grafted
-armour, a fan cannon on its brow, a forelimb on each side cradling a laser lance, two spore silos on
-its back, red veins along its shell. Its skirt's flank plates and its keep's roof halves are drawn
-as pieces of their own (`mesa_fortress_armour`, D-254).
+armour, a fan turret on its brow and a rotor on its back (the core's mounts, BOSS-58), a forelimb
+on each side cradling a laser lance, two spore silos on its back, red veins along its shell. Its
+skirt's flank plates and its keep's roof halves are drawn as pieces of their own
+(`mesa_fortress_armour`, D-254).
 """
-
-import math
 
 from game.config.boss_look import BOSS_LOOK
 from game.config.bosses.final_bosses import MESA_FORTRESS
 from game.view.bosses.boss_model import build_boss_model
 from game.view.bosses.final_boss_mesa import BASE_TOP, draw_lance, draw_silo
-from game.view.bosses.final_boss_shapes import edge_strips, shift, sided
+from game.view.bosses.final_boss_shapes import edge_strips, sided
 from game.view.bosses.mesa_fortress_armour import (
     KEEP_Y,
     draw_centre,
@@ -34,20 +33,16 @@ from game.view.bosses.world_1_organic_kit import (
 )
 from game.view.enemies.enemy_shapes import SIDES
 from game.view.enemies.organic_parts import eyes, reactor_sac
-from render.geometry.solids import Placement
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 # __pragma__ ("skip")
 from typing import Any
 
-type Vec3 = list[Any]
 # __pragma__ ("noskip")
 
 
 N = BOSS_LOOK.neon["mesa-fortress"]
-WHITE = [1, 1, 1]
-QUARTER = math.pi / 2
 
 # The right forelimb: a broad paddle out from the body, the lance cradled on it, then a forearm
 # forward to the claw.
@@ -61,16 +56,6 @@ ARM = [
     [80, -23],
     [40, -24],
 ]
-# The fan cannon's housing, on the brow.
-FAN_HOUSING = [
-    [-12, -8],
-    [12, -8],
-    [14, 4],
-    [7, 12],
-    [-7, 12],
-    [-14, 4],
-]
-FAN_AT = [0, 13, 26]
 # Grafted armour plates on the lower shell's brow (x, z, radius), mirrored; the keep's plates are
 # on its roof halves.
 BROW_PLATES = [
@@ -155,44 +140,13 @@ def _draw_arms(p: Any) -> None:
         )
 
 
-def _fan_point(yaw: float, r: float) -> Vec3:
-    """Return a point of a fan barrel, `r` out along its yaw from the fan's pivot."""
-    return shift(FAN_AT, [math.sin(yaw) * r, 2.6, 4 + math.cos(yaw) * r])
-
-
-def _draw_fan_cannon(p: Any, _at: Any = None) -> None:
-    """Draw the fan cannon on the brow (the core's gun, FB-MESA-FORTRESS-03).
-
-    A grafted housing and five barrels fanned out forward, turning around the hub of its barrels
-    (its pivot).
-    """
-    p.hull.bevel_slab(FAN_HOUSING, [0, 0, 5], [0, 1.5], M.dark, Placement(FAN_AT), M.panel)  # type: ignore[arg-type]  # the argument does not match the parameter type mypy expects
-    for k in range(5):
-        yaw = (k - 2) * 0.28
-        p.hull.cylinder(
-            1.6,
-            9,
-            6,
-            M.dark,
-            Placement(_fan_point(yaw, 4), yaw, QUARTER),
-            1.3,
-        )
-        p.charge.cylinder(
-            1.5,
-            2,
-            6,
-            WHITE,
-            Placement(_fan_point(yaw, 13), yaw, QUARTER),
-        )
-        p.muzzle(_fan_point(yaw, 15), None)
-
-
 def build_mesa_fortress(scene: Any) -> Any:
     """FB-MESA-FORTRESS-01, FB-MESA-FORTRESS-04: the Mesa Fortress, a colossal canyon tortoise.
 
     It is 5 L across with red veins; a laser lance in each forelimb, two spore silos on its back,
-    and a fan cannon on its armoured brow (the core). Its skirt's flank plates and its roof halves
-    are drawn apart (FB-MESA-FORTRESS-05).
+    and the core's fan turret on its armoured brow and rotor behind its keep (its gun mounts,
+    drawn by `build_boss_model`, BOSS-58). Its skirt's flank plates and its roof halves are drawn
+    apart (FB-MESA-FORTRESS-05).
     """
 
     def core(p: Any) -> None:
@@ -211,7 +165,6 @@ def build_mesa_fortress(scene: Any) -> Any:
                 "silo-left": draw_silo,
                 "silo-right": draw_silo,
             },
-            "turrets": {"core": _draw_fan_cannon},
             "armour": mesa_armour(),
         },
     )

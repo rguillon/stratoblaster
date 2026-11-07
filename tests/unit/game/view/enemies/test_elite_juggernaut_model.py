@@ -21,10 +21,10 @@ def test_enm_juggernaut_06_juggernaut_draws_its_cannons_and_plates_on_their_join
     assert {"limbs.shoulder-left", "limbs.shoulder-right"} <= set(drawn)
 
 
-def test_enm_juggernaut_05_juggernaut_body_has_three_reactors_and_two_guns(
+def test_enm_juggernaut_05_juggernaut_body_has_three_reactors_and_seven_guns(
     monkeypatch: Any,
 ) -> None:
     capture = probe_builder(monkeypatch, module.build_juggernaut)
     body = drawings_of(capture)["body"]
     assert len(body["reactors"]) == 3
-    assert len(body["muzzles"]) == 2
+    assert len(body["muzzles"]) == 7

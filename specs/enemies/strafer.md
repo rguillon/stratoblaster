@@ -25,16 +25,17 @@ A row of three steady neon glands runs along each wing's leading edge.
 
 *Sources: P05-R04.*
 
-#### ENM-STRAFER-03 — Four reactors and a gun on each flank · MUST
+#### ENM-STRAFER-03 — Four reactors and three guns on each flank · MUST
 
-Four reactors sit along the trailing edge. A metal gun barrel on each flank of the body points out
-sideways, a charge light at its tip: as the Strafer flies across the screen, one of them faces down
-it.
+Four reactors sit along the trailing edge. Three metal gun barrels on each flank of the body, one
+above the other along it, point out sideways fanned 15° apart (one towards the nose, one straight
+out, one towards the tail), a charge light at each tip: as the Strafer flies across the screen, the
+three of one side face down it. Each is a barrel that recoils (WPN-03, WPN-04).
 
 **Acceptance criteria**
-- Unit test: the model has four reactors, two guns and two wings.
+- Unit test: the model has four reactors, six guns (each a sliding barrel) and two wings.
 
-*Sources: P05-R04, phase 5 review, D-057.*
+*Sources: P05-R04, phase 5 review, D-057, D-268.*
 
 #### ENM-STRAFER-04 — Yellow · MUST
 
@@ -65,14 +66,14 @@ top third.
 
 While it is over the playfield, the Strafer fires a fan of `fanCount` bullets every `fireInterval`
 (the first half an interval after it comes over the playfield), in preset directions:
-−`fanSpacing`, 0 and +`fanSpacing` from straight down, whatever the player's position. They leave
-from the flank gun facing down the screen.
+−`fanSpacing`, 0 and +`fanSpacing` from straight down, whatever the player's position. Each leaves
+from its own barrel of the flank facing down the screen, at its tip and along the barrel (WPN-01).
 
 **Acceptance criteria**
 - Given a Strafer fires, then its 3 bullets leave at −15°, 0° and +15° from straight down, whatever
-  the player's position.
+  the player's position, each from the tip of a different barrel, along it.
 
-*Sources: P05-R04, GD-44.*
+*Sources: P05-R04, GD-44, D-268.*
 
 #### ENM-STRAFER-07 — Health and points · MUST
 

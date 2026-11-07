@@ -119,6 +119,11 @@ def _armour_triangles(design: Any, drawn: list[Any], form: int) -> list[Any]:
     for k, region in enumerate(design.armour):
         if drawn[k] is None:
             continue
+        if region.form is None:
+            # A hatch over a gun mount (BOSS-58): it bursts as its gun first comes into use, at a
+            # stage, not a transformation; drawn on.
+            tris.extend(_drawn(drawn[k].whole))
+            continue
         if region.form > form or is_moving(region):
             # On still, or moved into its new pose (BOSS-45).
             tris.extend(posed(_drawn(drawn[k].whole), region, form))
@@ -167,8 +172,9 @@ def boss_states(boss_id: str, design: Any, monkeypatch: Any) -> list[list[Any]]:
     states: list[list[Any]] = []
     for form in range(forms + 1):
         tris = list(core)
-        if rig is not None:
-            # Its rig (D-228), unfolded from the first transformation on.
+        if rig is not None and rig.get("triangles") is not None:
+            # Its rig (D-228), unfolded from the first transformation on. A rig that only moves
+            # pieces as the boss transforms (the Storm Petrel's battery struts) draws none at rest.
             tris.extend(rig.triangles(1 if form >= 1 else 0))
         tris.extend(_armour_triangles(design, drawn, form))
         tris.extend(_parts_triangles(design, drawing, gone[form], form))

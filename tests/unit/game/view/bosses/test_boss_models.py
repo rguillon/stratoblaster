@@ -7,6 +7,7 @@ import pathlib
 from typing import Any
 
 import pytest
+from helpers.config_checks import LAB_BOSS_COUNT, WORLD_BOSS_COUNT
 from helpers.view_probes import drawings_of, probe_builder
 
 from game.config import bosses as bosses_config
@@ -32,9 +33,9 @@ CPYTHON_RECORDS = {}
 
 
 def _config_boss_ids() -> set[str]:
-    """Return the ids of every boss design in `game/config/bosses`."""
+    """Return the ids of every boss design in `game/config/bosses` (the Lab's included)."""
     modules = ["mini_bosses", "final_bosses"]
-    for world in ("world_2", "world_3", "world_4"):
+    for world in ("world_2", "world_3", "world_4", "lab"):
         modules.extend(
             f"{world}.{path.stem}"
             for path in sorted((CONFIG_ROOT / world).glob("*.py"))
@@ -62,7 +63,8 @@ def _with_reason(boss_id: str, reason: str) -> Any:
 def test_every_boss_design_has_its_model_and_no_model_is_orphaned() -> None:
     """BOSS-01: every boss design has its own model, and every model a design."""
     assert set(BOSS_MODELS) == _config_boss_ids()
-    assert len(BOSS_MODELS) == 40
+    # The 40 World bosses and the Lab's (in the dev viewer only).
+    assert len(BOSS_MODELS) == WORLD_BOSS_COUNT + LAB_BOSS_COUNT
 
 
 @pytest.mark.parametrize(
