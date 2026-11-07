@@ -11,10 +11,11 @@ from debug import play_scene as play_scene_module
 from debug import remote_player
 from debug.remote_player import (
     AI_PATH,
-    AI_SECONDS,
+    RELEASE_SECONDS,
+    STEPS_PER_DECISION,
     RemotePlayer,
+    ask_json,
     install_remote_player,
-    post_json,
     remote_reading,
 )
 
@@ -57,16 +58,20 @@ class FakeApp:
 
 
 class FakeServer:
-    """`post`: keeps each question, to answer it later."""
+    """`ask`: answers each question with the next of `answers` (None when there is none left)."""
 
-    def __init__(self) -> None:
-        self.asked: list[tuple[str, Any, Any]] = []
+    def __init__(self, *answers: Any) -> None:
+        self.asked: list[tuple[str, Any]] = []
+        self._answers = list(answers)
 
-    def __call__(self, path: str, body: Any, on_reply: Any) -> None:
-        self.asked.append((path, body, on_reply))
+    def __call__(self, path: str, body: Any) -> Any:
+        self.asked.append((path, body))
+        return self._answers.pop(0) if self._answers else None
 
-    def answer(self, keys: Any) -> None:
-        self.asked.pop(0)[2](keys)
+
+def _steps(player: RemotePlayer, count: int) -> None:
+    for _ in range(count):
+        player.step()
 
 
 def test_d_266_the_reading_is_the_level_its_attempt_time_and_scene() -> None:
@@ -87,54 +92,70 @@ def test_d_266_nothing_is_read_out_of_a_level_paused_or_over() -> None:
     assert remote_reading(FakeApp("complete")) is None
 
 
-def test_d_266_it_asks_once_at_a_time_and_holds_the_keys_answered() -> None:
+def test_d_268_it_asks_after_every_fourth_step_and_holds_the_keys_answered() -> None:
     app = FakeApp()
-    server = FakeServer()
+    server = FakeServer([["ArrowUp", "Space"], []], [["ArrowLeft", "Space"], ["KeyE"]])
     player = RemotePlayer(app, server)
-    player.tick()
-    player.tick()  # still waiting: no second question
-    assert len(server.asked) == 1
-    assert server.asked[0][0] == AI_PATH
-    server.answer(["ArrowUp", "Space"])
+    _steps(player, STEPS_PER_DECISION - 1)
+    assert server.asked == []
+    player.step()
+    assert server.asked == [(AI_PATH, remote_reading(app))]
     assert app.controls.keys == [("ArrowUp", True), ("Space", True)]
     app.controls.keys.clear()
-    player.tick()
-    server.answer(["ArrowLeft", "Space"])
+    _steps(player, STEPS_PER_DECISION)
     # The arrow let go, the new one pressed, the one still held sent down again.
-    assert app.controls.keys == [("ArrowUp", False), ("ArrowLeft", True), ("Space", True)]
+    # And the switch key tapped: down and up, one press.
+    assert app.controls.keys == [
+        ("ArrowUp", False),
+        ("ArrowLeft", True),
+        ("Space", True),
+        ("KeyE", True),
+        ("KeyE", False),
+    ]
 
 
-def test_d_266_out_of_a_level_or_without_an_answer_it_lets_every_key_go() -> None:
+def test_d_268_without_an_answer_or_out_of_a_level_it_lets_every_key_go() -> None:
     app = FakeApp()
-    server = FakeServer()
+    server = FakeServer([["Space"], []])
     player = RemotePlayer(app, server)
-    player.tick()
-    server.answer(["Space"])
-    player.tick()
-    server.answer(None)  # the server is gone
+    _steps(player, STEPS_PER_DECISION)
+    _steps(player, STEPS_PER_DECISION)  # the server is gone
     assert app.controls.keys[-1] == ("Space", False)
-    player.tick()
-    app.phase = "over"  # the answer comes after the level ended
-    server.answer(["Space"])
-    assert app.controls.keys[-1] == ("Space", False)
-    app.controls.keys.clear()
-    player.tick()  # over: nothing asked, nothing held
-    assert server.asked == []
-    assert app.controls.keys == []
+    app.phase = "over"
+    _steps(player, STEPS_PER_DECISION)  # over: nothing asked
+    assert len(server.asked) == 2
 
 
-def test_d_266_install_asks_every_four_frames() -> None:
+def test_d_268_out_of_a_level_the_tick_lets_go() -> None:
+    app = FakeApp()
+    player = RemotePlayer(app, FakeServer([["Space"], []]))
+    _steps(player, STEPS_PER_DECISION)
+    player.tick()  # still playing: kept
+    assert app.controls.keys == [("Space", True)]
+    app.paused = True
+    player.tick()
+    assert app.controls.keys[-1] == ("Space", False)
+
+
+def test_d_268_install_watches_the_steps_and_ticks() -> None:
+    app = FakeApp()
+    watchers: list[Any] = []
+    app.watch_steps = watchers.append  # type: ignore[attr-defined]
     started: list[tuple[Any, float]] = []
-    server = FakeServer()
+    server = FakeServer([["Space"], []])
     player = install_remote_player(
-        FakeApp(), lambda tick, seconds: started.append((tick, seconds)), server
+        app, lambda tick, seconds: started.append((tick, seconds)), server
     )
     assert isinstance(player, RemotePlayer)
-    assert started[0][1] == AI_SECONDS == pytest.approx(4 / 60)
+    for _ in range(STEPS_PER_DECISION):
+        watchers[0]("run")
+    assert app.controls.keys == [("Space", True)]
+    assert started[0][1] == RELEASE_SECONDS
+    app.paused = True
     started[0][0]()
-    assert len(server.asked) == 1
+    assert app.controls.keys[-1] == ("Space", False)
 
 
-def test_d_266_posting_is_javascript_only() -> None:
-    """`fetch` runs only in the browser: CPython runs its empty placeholder."""
-    assert post_json(AI_PATH, {}, lambda keys: keys) is None
+def test_d_268_asking_is_javascript_only() -> None:
+    """The request runs only in the browser: CPython runs its placeholder."""
+    assert ask_json(AI_PATH, {}) is None

@@ -35,7 +35,7 @@ from typing import Any
 
 # isort: split
 # __pragma__ ("ifdef", "e2e")
-from debug.remote_player import install_remote_player, post_json
+from debug.remote_player import ask_json, install_remote_player
 from debug.test_api import install_test_api
 
 # __pragma__ ("endif")
@@ -249,7 +249,7 @@ def start_game(engine: Any, draw_scale: float) -> None:
     install_test_api(window, app)
     # D-266: the AI player of `make serve-ai`, with `?ai` in the URL.
     if not stepped:
-        install_remote_player(app, start_interval, post_json)
+        install_remote_player(app, start_interval, ask_json)
     __pragma__("endif")
 
 

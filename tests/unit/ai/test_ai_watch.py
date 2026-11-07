@@ -6,6 +6,7 @@ import threading
 from http.client import HTTPConnection
 from typing import Any
 
+import torch
 from ai.brain import Brain, BrainShape
 from ai.game_env import MOVES, Action, EpisodeSetup, GameEnv
 from ai.observation import observe, observe_scene, scene_of
@@ -56,10 +57,25 @@ def test_the_browser_scene_is_seen_as_the_python_one() -> None:
 def test_in_a_level_the_brain_fires_and_moves_and_outside_it_lets_go() -> None:
     player = Player(Brain(SMALL), greedy=False)
     env = GameEnv(EpisodeSetup("1-1"))
-    keys = player.keys(_reading(env))
-    assert FIRE_KEY in keys
-    assert keys - {FIRE_KEY, BOMB_KEY, SWITCH_KEY} <= set(DIRECTIONS)
-    assert player.keys(None) == set()
+    hold, taps = player.keys(_reading(env))
+    assert FIRE_KEY in hold
+    assert hold - {FIRE_KEY} <= set(DIRECTIONS)
+    assert taps <= {BOMB_KEY, SWITCH_KEY}
+    assert player.keys(None) == (set(), set())
+
+
+def test_a_switch_or_a_bomb_is_a_tap_each_decision_never_a_key_held() -> None:
+    """As it learned: each decision choosing a switch is one press (held, E would press once)."""
+    brain = Brain(SMALL)
+    with torch.no_grad():
+        brain.switch_head.bias.copy_(torch.tensor([-20.0, 20.0]))
+        brain.bomb_head.bias.copy_(torch.tensor([-20.0, 20.0]))
+    player = Player(brain, greedy=True)
+    env = GameEnv(EpisodeSetup("1-1"))
+    for _ in range(3):
+        hold, taps = player.keys(_reading(env))
+        assert taps == {SWITCH_KEY, BOMB_KEY}
+        assert not hold & {SWITCH_KEY, BOMB_KEY}
 
 
 def test_its_memory_starts_over_with_each_attempt() -> None:
@@ -97,9 +113,10 @@ def test_the_server_sends_the_game_on_with_ai_and_answers_with_the_keys() -> Non
         reading = _reading(GameEnv(EpisodeSetup("1-1")))
         connection.request("POST", AI_PATH, json.dumps(reading).encode())
         reply = connection.getresponse()
-        keys = json.loads(reply.read())
+        hold, taps = json.loads(reply.read())
         assert reply.status == 200
-        assert FIRE_KEY in keys
+        assert FIRE_KEY in hold
+        assert set(taps) <= {BOMB_KEY, SWITCH_KEY}
         connection.request("POST", "/elsewhere", b"{}")
         reply = connection.getresponse()
         reply.read()

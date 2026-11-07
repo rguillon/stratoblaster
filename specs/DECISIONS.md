@@ -1437,3 +1437,27 @@
   kills, 60 % completed). Homing missiles need no aiming; whether they are too strong is the owner's
   call (GAME-WPN).
 - **Status:** Proposed
+
+### D-268 — The watched brain decides every 4 steps, and taps its bomb and switch keys
+- **Date:** 2026-11-07
+- **Requirements:** none (the human saw the brain stay in the bottom-left corner in
+  `make serve-ai`, not dodging and not picking up bonuses).
+- **Context:** the same brain, fed the same scenes, moved over the whole screen in the Python game
+  and stayed in the corner in the browser (the scenes were checked equal, to the bullets'
+  coordinates). Two differences with how it learned: (1) D-266 asked on the wall clock, so with a
+  slow drawing many steps passed between two decisions (some 23 instead of 4 in a headless
+  browser); (2) a decision to switch weapon (or to set a bomb off) is one press of E (R) in
+  learning, but the page held E down: one press for all the decisions after. The brain wants to
+  switch at the start of a level until it has the missiles (99 % at its first decision) and keeps
+  to its opening (down-left) meanwhile: with one press it never got there.
+- **Decision:** the game session calls `step_watchers` after each step of a level (with the audio;
+  `RunningApp.watch_steps`); the remote player asks after every 4th step and waits for the answer
+  (a synchronous request: the page waits a few milliseconds for the brain), so the keys apply from
+  the next step, as in learning, however fast the page draws. The answer is `[hold, tap]`: the
+  arrows and Space are held; E and R are tapped (down and up before the next step: one press each
+  decision that chooses one). The interval only lets the keys go out of a level.
+- **Consequences:** in a headless browser the brain now moves over the whole screen, takes the
+  missiles within 4 s and sets bombs off, as in the Python game. It still goes back to the corner
+  often: after under 2 hours of learning, that is how it plays. A browser warns that synchronous
+  requests are deprecated on the main thread (e2e build with `?ai` only).
+- **Status:** Proposed

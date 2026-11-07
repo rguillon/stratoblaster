@@ -57,11 +57,16 @@ class Player:
         self.memory = brain.initial_memory(1)
         self._playing: tuple[str, int] | None = None
 
-    def keys(self, reading: dict[str, Any] | None) -> set[str]:
-        """Return the keys to hold for what the page shows: none outside a level played."""
+    def keys(self, reading: dict[str, Any] | None) -> tuple[set[str], set[str]]:
+        """Return the keys to hold and the keys to tap once, for what the page shows.
+
+        None outside a level played. A bomb or a weapon switch is a tap (a press and a release
+        before the next step): each decision that chooses one is one press, as when it learned
+        (holding the key down would make only one press of many decisions).
+        """
         if reading is None:
             self._playing = None
-            return set()
+            return set(), set()
         attempt = (reading["level"], reading["attempt"])
         if attempt != self._playing:  # a new level, or the same one started again
             self._playing = attempt
@@ -73,12 +78,12 @@ class Player:
         with torch.no_grad():
             decision, self.memory = self.brain(Batch.of([observe_scene(scene)]), self.memory)
         move, bomb, switch = decision.sample(self.greedy)[0].tolist()
-        keys = set(MOVE_KEYS[move]) | {FIRE_KEY}
+        taps: set[str] = set()
         if bomb == 1:
-            keys.add(BOMB_KEY)
+            taps.add(BOMB_KEY)
         if switch == 1:
-            keys.add(SWITCH_KEY)
-        return keys
+            taps.add(SWITCH_KEY)
+        return set(MOVE_KEYS[move]) | {FIRE_KEY}, taps
 
 
 def page_query(level: str | None, ship: str | None) -> str:
@@ -116,7 +121,8 @@ class _Handler(SimpleHTTPRequestHandler):
         length = int(self.headers.get("Content-Length", "0"))
         reading = json.loads(self.rfile.read(length) or b"null")
         with self.lock:  # one brain, one memory: one decision at a time
-            keys = sorted(self.player.keys(reading))
+            hold, taps = self.player.keys(reading)
+        keys = [sorted(hold), sorted(taps)]
         body = json.dumps(keys).encode()
         self.send_response(200)
         self.send_header("Content-Type", "application/json")

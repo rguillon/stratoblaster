@@ -210,6 +210,9 @@ class GameSession:
         self.play: GamePlay | None = None
         # Whether the level being played is paused (UI-PAUSE-03): it is kept, but not advanced.
         self.paused = False
+        # Called with the run after each step of a level, as the audio is (the AI player of the
+        # e2e build decides there, D-268).
+        self.step_watchers: list[Any] = []
         # The player's in-game controls, fed by the keyboard target and the gamepads.
         # The config's bindings match `GameControlBindings` at run time (typed Any here).
         bindings: Any = GAME_CONTROLS_CONFIG
@@ -479,9 +482,13 @@ class GameSession:
         def on_complete(_result: Any) -> None:
             self._completed(play)
 
+        watchers = self.step_watchers
+
         def on_step(run: Any) -> None:
             if audio is not None:
                 audio.step(run)
+            for watch in watchers:
+                watch(run)
 
         play_options = GamePlayOptions(
             self.options.environment,

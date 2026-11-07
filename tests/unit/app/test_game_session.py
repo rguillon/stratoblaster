@@ -416,6 +416,16 @@ def test_aud_engine_09_each_step_of_the_level_is_heard_and_its_end_reported(env:
     assert completed == [play]
 
 
+def test_d_268_the_step_watchers_see_each_step_after_the_audio(env: Env) -> None:
+    heard: list[Any] = []
+    session = make_session(audio=SessionAudio(lambda _level: None, lambda run: heard.append(run)))
+    session.step_watchers.append(lambda run: heard.append(("watched", run)))
+    session.sync(menu())
+    (play,) = env.plays
+    play.options.on_step("run")
+    assert heard == ["run", ("watched", "run")]
+
+
 def test_aud_engine_09_without_audio_nothing_hears_the_level(env: Env) -> None:
     session = make_session()
     session.sync(menu())
