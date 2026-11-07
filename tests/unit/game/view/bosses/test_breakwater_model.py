@@ -3,21 +3,16 @@
 
 from typing import Any
 
-from helpers.bosses_top_turrets import check_turret, drawn_turrets, read_as_records
+from helpers.bosses_top_turrets import check_mounts, drawn_mounts
 
-from game.view.bosses import breakwater_model
+from game.config.bosses.mini_bosses import BREAKWATER
 from game.view.bosses.breakwater_model import build_breakwater
 
 
-def test_mb_breakwater_01_its_mouth_gun_and_mortars_turn_on_turrets_aiming_their_guns(
-    monkeypatch: Any,
-) -> None:
-    """MB-BREAKWATER-01: a gun in its mouth and two barnacle mortars, each on its turret.
+def test_mb_breakwater_03_its_model_draws_every_gun_mount(monkeypatch: Any) -> None:
+    """MB-BREAKWATER-03: its model draws the ram plate, both mortars and every gun mount (BOSS-58).
 
-    Their specs are dict literals read by attribute (`read_as_records`).
+    Its guns are the shared mount models (`boss_gun_models`), no turret drawing of its own.
     """
-    read_as_records(monkeypatch, breakwater_model, "turret")
-    turrets = drawn_turrets(monkeypatch, build_breakwater)
-    assert sorted(turrets) == ["core", "mortar-left", "mortar-right"]
-    for turret in turrets.values():
-        check_turret(turret)
+    mounts = drawn_mounts(monkeypatch, build_breakwater)
+    check_mounts(mounts, BREAKWATER)

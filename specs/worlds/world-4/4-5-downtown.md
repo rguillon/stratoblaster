@@ -61,12 +61,12 @@ grow to their strongest, which they keep for the final boss.
 
 ### LVL-4-5-04 — Enemy waves · MUST
 
-4-5 uses all five kinds of tier 4, Splitter, Juggernaut, Scissor, Hydra and Hive, and no other. 4-5's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, with a beat every `wave_gap` seconds (3 s to 2.2 s) and
+4-5 uses all five kinds of tier 4, Splitter, Hydra, Scissor, Juggernaut and Hive, and no other. 4-5's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, with a beat every `wave_gap` seconds (3 s to 2.2 s) and
 groups growing by `wave_growth` (110 %) over the level (113 beats). The cycle of phrases, each a kind with its number of
-groups at the start: Splitter 2, Juggernaut 1, Scissor 1, Splitter 2, Hydra 1, Juggernaut 1, Splitter 2, Hive 1, Scissor 1, Juggernaut 1, Hydra 1. The filler draws Splitters and Juggernauts, at most `filler_gap` apart.
+groups at the start: Splitter 2, Hydra 1, Scissor 1, Splitter 2, Juggernaut 1, Hydra 1, Splitter 2, Hive 1, Scissor 1, Hydra 1, Juggernaut 1. The filler draws Splitters and Hydras, at most `filler_gap` apart.
 
 **Acceptance criteria**
-- Unit test: 4-5's waves use exactly Splitter, Juggernaut, Scissor, Hydra and Hive, and each of them.
+- Unit test: 4-5's waves use exactly Splitter, Hydra, Scissor, Juggernaut and Hive, and each of them.
 - Unit test: 4-5's waves are the same each time the level is built.
 
 *Sources: P10-R09, P05-R24, D-087, D-090, ENM-50.*

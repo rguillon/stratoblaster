@@ -7,8 +7,10 @@ from typing import Any
 
 import pytest
 
+from core.entities.barrel import Barrel
 from game.config.enemy_look import ENEMY_LOOK
 from game.config.enemy_tiers import tier_look
+from game.config.weapons import WEAPONS
 from game.view.enemies import enemy_mesh
 from game.view.enemies.enemy_materials import body_color, enemy_color, rim_of
 from game.view.enemies.enemy_mesh import (
@@ -223,11 +225,19 @@ def test_gfx_trim_06_the_hull_is_in_body_shades_with_an_edge_trim(scene: SimpleN
     enemy_mesh.add_surfaces("gnat", parts, _materials(), neon, root)
     hull, lights = scene.meshes
     assert hull.name == "gnat-hull"
-    assert hull.geo == ("body-shades", parts.hull.geometry)
+    # The hull as a camera above sees it (`seen`): its box's bottom face left out.
+    shade, geo = hull.geo
+    assert shade == "body-shades"
+    assert geo.positions == enemy_mesh.seen(parts.hull).positions
+    assert geo.indices == enemy_mesh.seen(parts.hull).indices
+    assert len(geo.indices) == len(parts.hull.geometry.indices) - 6
     assert hull.parent is root
     assert hull.scene == "scene"
     assert lights.name == "gnat-neon"
-    assert lights.geo == ("enemy-family", parts.neon.geometry)
+    family, light_geo = lights.geo
+    assert family == "enemy-family"
+    assert light_geo.positions == enemy_mesh.seen(parts.neon).positions
+    assert len(light_geo.indices) == len(parts.neon.geometry.indices) - 6
     assert lights.parent is root
     # Only the hull is trimmed, in the rim colour of the neon.
     assert scene.trims == [(hull, rim_of(neon))]
@@ -467,3 +477,222 @@ def test_enm_weaver_07_a_heading_wrapping_round_the_other_way_is_not_a_sharp_tur
     enemy_mesh.bank_roll(turn, enemy, 0.1, bank)
     enemy.heading = math.pi - 0.01
     assert abs(enemy_mesh.bank_roll(turn, enemy, 0.1, bank)) == pytest.approx(0.1)
+
+
+def test_wpn_03_a_slide_goes_back_along_its_way_by_the_recoil() -> None:
+    piece = enemy_mesh.Slide([4, 1.5, 2], [-1, 0], 1.2, 0, enemy_mesh.wing_parts_new())
+    node = _Node("slide")
+    enemy_mesh.slide_back(node, piece, 0)
+    assert node.at == [4, 1.5, 2]
+    enemy_mesh.slide_back(node, piece, 1)
+    assert node.at == pytest.approx([2.8, 1.5, 2])
+
+
+# --- Tracks, swivels and bare flesh. ---
+
+
+class _Switch(_Node):
+    """A node stand-in that also records whether it is shown."""
+
+    def __init__(self, label: str) -> None:
+        super().__init__(label)
+        self.enabled: bool | None = None
+
+    def setEnabled(self, on: bool) -> None:
+        self.enabled = on
+
+
+def _track(index: int = 0) -> enemy_mesh.Slide:
+    """Return a track piece at `[1, 2, 3]` sliding back along -Z, 4 units at the full way along."""
+    return enemy_mesh.Slide(
+        [1, 2, 3], [0, -1], 4, index, enemy_mesh.wing_parts_new(), False, None, "track"
+    )
+
+
+def test_a_track_moves_along_its_way_back_as_far_as_the_enemy_says() -> None:
+    node = _Switch("door")
+    enemy_mesh.show_track(node, _track(), SimpleNamespace(tracks=[0.5]))
+    assert node.enabled is True
+    # Half its distance back (`back` * `distance`).
+    assert node.at == pytest.approx([1, 2, 1])
+    enemy_mesh.show_track(node, _track(), SimpleNamespace(tracks=[1.0]))
+    assert node.at == pytest.approx([1, 2, -1])
+
+
+def test_a_track_at_zero_is_shown_at_rest() -> None:
+    node = _Switch("door")
+    enemy_mesh.show_track(node, _track(), SimpleNamespace(tracks=[0.0]))
+    assert node.enabled is True
+    assert node.at == pytest.approx([1, 2, 3])
+
+
+def test_a_track_below_zero_is_hidden_at_rest() -> None:
+    node = _Switch("door")
+    enemy_mesh.show_track(node, _track(), SimpleNamespace(tracks=[-1.0]))
+    assert node.enabled is False
+    assert node.at == pytest.approx([1, 2, 3])
+
+
+def test_a_track_the_enemy_does_not_report_stays_at_rest() -> None:
+    node = _Switch("door")
+    # No `tracks` at all, and too few of them.
+    enemy_mesh.show_track(node, _track(), SimpleNamespace())
+    assert node.enabled is True
+    assert node.at == pytest.approx([1, 2, 3])
+    enemy_mesh.show_track(node, _track(2), SimpleNamespace(tracks=[0.5]))
+    assert node.at == pytest.approx([1, 2, 3])
+
+
+def test_sync_slides_moves_a_track_by_its_track_not_a_barrel_s_recoil() -> None:
+    node = _Switch("door")
+    enemy = SimpleNamespace(tracks=[0.25], barrels=[], age=0.0)
+    enemy_mesh.sync_slides([_track()], [node], enemy)
+    assert node.at == pytest.approx([1, 2, 2])
+
+
+def _swivel(swivel: bool, turret: int | None = None) -> enemy_mesh.Slide:
+    return enemy_mesh.Slide(
+        [0, 0, 0], [0, -1], 1, 0, enemy_mesh.wing_parts_new(), swivel, None, "barrel", 0, turret
+    )
+
+
+def test_a_piece_that_does_not_swivel_never_turns() -> None:
+    enemy = SimpleNamespace(turret=SimpleNamespace(aim=1.2))
+    assert enemy_mesh.swivel_aim(_swivel(False), enemy) == 0
+
+
+def test_a_swivelling_piece_turns_with_the_enemy_s_turret() -> None:
+    enemy = SimpleNamespace(turret=SimpleNamespace(aim=1.2))
+    assert enemy_mesh.swivel_aim(_swivel(True), enemy) == pytest.approx(1.2)
+    # An enemy with no turret: it stays pointing ahead.
+    assert enemy_mesh.swivel_aim(_swivel(True), SimpleNamespace(turret=None)) == 0
+
+
+def test_a_swivelling_piece_of_a_turret_turns_with_that_turret_only() -> None:
+    enemy = SimpleNamespace(
+        turret=SimpleNamespace(aim=9.0),
+        turrets=[SimpleNamespace(aim=0.3), SimpleNamespace(aim=-0.7)],
+    )
+    assert enemy_mesh.swivel_aim(_swivel(True, 1), enemy) == pytest.approx(-0.7)
+    assert enemy_mesh.swivel_aim(_swivel(True, 0), enemy) == pytest.approx(0.3)
+    # A turret the enemy does not have (or no `turrets` at all): at rest.
+    assert enemy_mesh.swivel_aim(_swivel(True, 2), enemy) == 0
+    assert enemy_mesh.swivel_aim(_swivel(True, 0), SimpleNamespace(turret=None)) == 0
+
+
+def test_a_swivelling_slide_turns_about_its_turret_s_centre() -> None:
+    piece = enemy_mesh.Slide([0, 1, 5], [0, -1], 2, 0, enemy_mesh.wing_parts_new(), True, [0, 0, 0])
+    node = _Node("barrel")
+    enemy_mesh.slide_back(node, piece, 0, math.pi / 2)
+    # A quarter turn about the centre carries the pivot from +Z to +X, at its own height.
+    assert node.at == pytest.approx([5, 1, 0], abs=1e-9)
+    assert node.rotation.y == pytest.approx(math.pi / 2)
+
+
+def test_gfx_trim_06_the_bare_flesh_is_drawn_untrimmed_when_there_is_some(
+    scene: SimpleNamespace,
+) -> None:
+    parts = enemy_mesh.EnemyParts(*(SolidBuilder() for _ in range(9)))
+    parts.bare_flesh.box([1, 1, 1], [0, 0, 0])
+    root = _Node("root")
+    enemy_mesh.add_surfaces("blob", parts, _materials(), [1, 1, 0], root)
+    assert [m.name for m in scene.meshes] == ["blob-bare-flesh"]
+    mesh = scene.meshes[0]
+    assert mesh.parent is root
+    assert mesh.material.name == "flesh"
+    shade, geo = mesh.geo
+    assert shade == "body-shades"
+    assert geo.positions == enemy_mesh.seen(parts.bare_flesh).positions
+    # No edge trim on it.
+    assert scene.trims == []
+
+
+def test_gfx_trim_06_empty_bare_metal_and_flesh_make_no_mesh(scene: SimpleNamespace) -> None:
+    parts = enemy_mesh.EnemyParts(*(SolidBuilder() for _ in range(9)))
+    enemy_mesh.add_surfaces("blob", parts, _materials(), [1, 1, 0], _Node("root"))
+    assert scene.meshes == []
+
+
+# --- Sliding barrels and rockets on a built model. ---
+
+
+def _gun_and_port(p: Any) -> None:
+    p.hull.box([1, 1, 1], [0, 0, 0])
+    # A barrel that slides back 2 along -Z at its full recoil (barrel 0).
+    p.slide([0, 0, 4], [0, -1], 2, 0, lambda w: w.hull.box([1, 1, 1], [0, 0, 4]))
+    # A rocket in launcher 0's port, sinking 3 down its well (`down` 1 per unit along).
+    p.slide(
+        [5, 0, 0],
+        [0, 0],
+        3,
+        0,
+        lambda w: w.bare.box([1, 1, 1], [5, 0, 0]),
+        kind="rocket",
+        down=-1,
+    )
+
+
+@pytest.fixture
+def switches(scene: SimpleNamespace, monkeypatch: Any) -> SimpleNamespace:
+    """Return the `scene` stand-ins, with nodes that also record whether they are shown."""
+
+    def node(label: str, _scene: Any) -> _Switch:
+        scene.nodes[label] = _Switch(label)
+        return scene.nodes[label]
+
+    monkeypatch.setattr(enemy_mesh, "new_transform_node", node)
+    return scene
+
+
+def test_wpn_03_a_model_s_slides_hang_on_the_body_at_their_pivots(
+    switches: SimpleNamespace,
+) -> None:
+    """Also GFX-TRIM-06: a slide drawn in bare metal gets an untrimmed mesh of its own."""
+    enemy_mesh.build_enemy_model("gun", "scene", [1.0, 0.1, 0.1], _gun_and_port)
+    body = switches.nodes["gun-body"]
+    barrel = switches.nodes["gun-slide-0"]
+    rocket = switches.nodes["gun-slide-1"]
+    assert (barrel.parent, barrel.at) == (body, [0, 0, 4])
+    assert (rocket.parent, rocket.at) == (body, [5, 0, 0])
+    # Each piece's skin is drawn back where the model drew it, under its node.
+    skin = switches.nodes["gun-slide-1-skin"]
+    assert (skin.parent, skin.at) == (rocket, [-5, 0, 0])
+    bare = next(m for m in switches.meshes if m.name == "gun-slide-1-bare")
+    assert bare.parent is skin
+    assert bare.material.name.startswith("hull:")
+    assert all(mesh is not bare for mesh, _rim in switches.trims)
+
+
+def test_wpn_03_wpn_07_sync_recoils_the_barrel_and_sinks_the_reloading_rocket(
+    switches: SimpleNamespace,
+) -> None:
+    model = enemy_mesh.build_enemy_model("gun", "scene", [1.0, 0.1, 0.1], _gun_and_port)
+    barrel = switches.nodes["gun-slide-0"]
+    rocket = switches.nodes["gun-slide-1"]
+    gun = Barrel([0, 0, 4])
+    launcher = Barrel([5, 0, 0])
+    gun.kick(1.0)
+    launcher.kick(1.0)
+    enemy = SimpleNamespace(charge=0.0, age=1.0, barrels=[gun], launchers=[launcher], turret=None)
+    model.sync(enemy, 0.016)
+    # Fired just now: the barrel thrown fully back, the port empty (its rocket out of sight).
+    assert barrel.at == pytest.approx([0, 0, 2])
+    assert rocket.enabled is False
+    assert rocket.at == pytest.approx([5, -3, 0])
+    # Reloaded: the barrel back at rest, the rocket shown, up in its port.
+    enemy.age = 1.0 + WEAPONS.missileReloadSeconds
+    model.sync(enemy, 0.016)
+    assert barrel.at == pytest.approx([0, 0, 4])
+    assert rocket.enabled is True
+    assert rocket.at == pytest.approx([5, 0, 0])
+
+
+def test_wpn_03_a_slide_of_a_barrel_the_enemy_does_not_have_stays_put(
+    switches: SimpleNamespace,
+) -> None:
+    model = enemy_mesh.build_enemy_model("gun", "scene", [1.0, 0.1, 0.1], _gun_and_port)
+    barrel = switches.nodes["gun-slide-0"]
+    model.sync(SimpleNamespace(charge=0.0, age=1.0, barrels=[], turret=None), 0.016)
+    # Never moved from where it was hung; the rocket of a launcher it does not report is loaded.
+    assert barrel.at == [0, 0, 4]
+    assert switches.nodes["gun-slide-1"].enabled is True

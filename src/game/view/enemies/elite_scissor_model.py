@@ -5,7 +5,7 @@ from game.config.enemies_elite import ELITE_CONFIG
 from game.config.enemy_look import ENEMY_LOOK
 from game.config.enemy_look_elite import ELITE_NEON
 from game.view.bosses.boss_limbs import boss_point
-from game.view.enemies.elite_shapes import QUARTER, WHITE, H, ahead, strip
+from game.view.enemies.elite_shapes import H, ahead, strip
 
 # Shared with the other elite models: `FIGHTER_SECTION` is in enemy_shapes.
 from game.view.enemies.enemy_shapes import (
@@ -15,7 +15,7 @@ from game.view.enemies.enemy_shapes import (
     flip_x,
 )
 from game.view.enemies.jointed_model import build_jointed_model
-from game.view.enemies.organic_parts import eyes, reactor_sac
+from game.view.enemies.organic_parts import reactor_sac
 from render.geometry.organic import (
     SegmentedBody,
     carapace,
@@ -74,10 +74,11 @@ def body(p: Any) -> None:
         LoftOptions(False, canopy_paint([2, 3], H.dark)),
     )
     neon.box([1.2, 0.5, 22], NEON, Placement([0, 4.8, -3]))
-    eyes(p, [0, 1.8, 22], {"count": 2, "size": 0.6, "spacing": 3}, NEON)
     for s in SIDES:
         vein_tube(vein, curve([s * 5, 2, -20], [s * 4.5, 2.4, 14], [s * 2.5, 0.6, 0], 3), 0.9, NEON)
-        plate(hull, SHOULDER if s > 0 else flip_x(SHOULDER), [3.6, 5], [H.panel, H.dark])
+        plate(
+            hull, SHOULDER if s > 0 else flip_x(SHOULDER), [3.6, 5], [H.panel, H.dark], None, False
+        )
         hull.bevel_slab(
             FIN if s > 0 else flip_x(FIN), [-0.5, 0, 0.6], [0.2, 0.4], H.base, None, H.panel
         )
@@ -108,7 +109,6 @@ def arm(spec: Any) -> Any:
         hull = p.hull
         flesh = p.flesh
         neon = p.neon
-        charge = p.charge
         muzzle = p.muzzle
         base = [pivot[0], ARM_Y + 0.6, pivot[2]]
         path = [ahead(base, yaw, d) for d in [0, 8, 16, 23]]
@@ -118,10 +118,9 @@ def arm(spec: Any) -> Any:
             pt = ahead(pivot, yaw, d)
             hull.box([6, 1, 2.4], H.panel, Placement([pt[0], ARM_Y + 1.6, pt[2]], yaw))
         strip(neon, [pivot[0], ARM_Y + 2.2, pivot[2]], yaw, [13, 18, 1.2], NEON)
-        # The emitter: a cone ending at the tip, brightening through the warning (ENM-SCISSOR-06).
-        lens = [[2, 0], [1.2, 2.2], [0, 3]]
-        charge.lathe(lens, 6, WHITE, Placement(ahead(tip, yaw, -3), yaw, QUARTER))
-        muzzle(tip, "laser")
+        # The emitter at the tip, along the arm: its coils and lens brighten through the warning
+        # (ENM-SCISSOR-06).
+        muzzle(tip, "laser", "forward", None, None, True, None, yaw)
 
     return draw
 

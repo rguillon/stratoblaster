@@ -34,6 +34,7 @@ class Wasp(Hornet):
         """
         super().__init__(x, y, hornet_options(CFG, min(stop_y, y), stop_x))
         self._muzzles = GunMuzzles(CFG.muzzles)
+        self.barrels = self._muzzles.barrels
 
     def update(self, ctx: EnemyContext, dt: float) -> None:
         """Advance the enemy by `dt` seconds."""

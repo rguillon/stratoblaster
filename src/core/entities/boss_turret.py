@@ -44,7 +44,7 @@ class BossTurret:
         self.spec = spec
         # How far it has turned from its rest (barrels straight down): radians, clockwise on
         # screen.
-        self.aim = 0
+        self.aim: float = 0
 
     def turned(self, muzzle: Muzzle) -> Muzzle:
         """`muzzle` (from the boss's centre, as drawn at rest) turned with it around its pivot."""

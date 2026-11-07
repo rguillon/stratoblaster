@@ -30,8 +30,9 @@ pouch at the nose, between the bodies. Each body ends in a tail fin.
 
 Each body is a long segmented worm (slate and graphite shades) with a shell plated on its back, lit
 veins along its flanks and a tail fin of membrane on bone struts; a reactor in a flesh sac at each
-tail, a third behind the thorax. The thorax is a flattened body carrying the core's two guns, built
-into it, its eyes at its nose, and its back plating over it (MB-SENTINEL-05) with the glands.
+tail, a third behind the thorax. The thorax is a flattened body, its eyes at its nose, and its back
+plating over it (MB-SENTINEL-05) with the glands. The core's two guns stand on the bodies' noses,
+clear of the thorax's plating and the racks under it (MB-SENTINEL-03).
 Grafts differ between the bodies: a radome and a mast on one, a searchlight and an extra plate on
 the other, and a whip antenna off-centre on the thorax's plating.
 
@@ -40,16 +41,21 @@ the other, and a whip antenna off-centre on the thorax's plating.
 
 *Sources: P07-R05, P16-R05.*
 
-#### MB-SENTINEL-03 — Its parts · MUST
+#### MB-SENTINEL-03 — Its parts and guns · MUST
 
-- **Hull guns** (one on each body's outer flank): an armoured growth under a twin-barrelled turret.
+Every shot leaves one of its gun mounts, the shared models of [common](../common.md) (BOSS-58):
+- **Hull guns** (one on each body's outer flank): an armoured growth under a gun turret with two
+  barrels side by side.
 - **Drone bay** (at the nose, in front of the core): a swollen brood pouch, its slit lit, launch
-  glands at its corners and two drones hatching from it, a grafted rim plate behind.
+  glands at its corners and two drones hatching from it, a grafted rim plate behind. It has no gun.
+- **Fan turret** (the core's, on the blue body's nose): a gun turret with seven barrels side by side
+  (its fans).
+- **Rotor** (the core's, on the red body's nose): a rotor with fourteen barrels (its ring).
 
 **Acceptance criteria**
-- Given its model, then it draws both hull guns, their turrets and the drone bay (unit test).
+- Given its model, then it draws both hull guns, the drone bay and every gun mount (unit test).
 
-*Sources: P07-R05, P16-R05, D-058.*
+*Sources: P07-R05, P16-R05, D-058, D-280.*
 
 #### MB-SENTINEL-04 — Lights · MUST
 
@@ -95,9 +101,10 @@ height, then sways and bobs. While it is fought the ground scrolls at ×0.6.
 
 It has three parts as it comes in, all shielding its core: `gun-left`, `gun-right` and the
 `drone-bay`, which hangs in front of the core so shots from below reach it. Each hull gun's turret
-fires aimed pairs at the player, blue from the left and red from the right, in turn. The drone bay
-launches Hornets ([common](../common.md), BOSS-25) in every stage while it stands. The core's two
-fixed guns fire the core's volleys.
+fires aimed pairs at the player, swept one bullet a barrel as it turns across the pair (BOSS-58),
+blue from the left and red from the right, in turn. The drone bay launches Hornets
+([common](../common.md), BOSS-25) in every stage while it stands. The core's two guns (the fan
+turret and the rotor) fire the core's volleys, and are the last the player destroys.
 
 **Acceptance criteria**
 - Given its design, then its drone bay launches 2 Hornets every 5.5 s while it stands.
@@ -107,10 +114,12 @@ fixed guns fire the core's volleys.
 #### MB-SENTINEL-08 — Stage patterns · MUST
 
 The hull guns' pairs and the bay's Hornets go on in every stage while they stand. The core fires:
-- stage 0: a fan of 3 blue bullets;
-- stage 1: a fan of 5 red;
-- stage 2: a fan of 7 blue;
-- stage 3 (all three parts gone): a ring of 14 red turning at each volley, and a fan of 5 blue.
+- stage 0: a fan of 3 blue bullets straight down, swept from the fan turret one bullet at a time as
+  it turns across the fan (BOSS-58);
+- stage 1: a fan of 5 red, swept the same way;
+- stage 2: a fan of 7 blue, swept the same way;
+- stage 3 (all three parts gone): a ring of 14 red from the rotor, one bullet a barrel, turning at
+  each volley, and a fan of 5 blue from the fan turret.
 
 **Acceptance criteria**
 - Given each stage, then the core fires that stage's volleys and the parts left fire theirs
@@ -161,20 +170,23 @@ All in `src/game/config/bosses/mini_bosses.py` (`_SENTINEL`, `SENTINEL`) unless 
 | Name | Value | Notes |
 |------|-------|-------|
 | size | 3.5 L (radius 59.5 px) | |
-| core | health 1 570, radius 18 | twin guns at (±15, -12.5), 1 px high, fixed |
+| core | health 1 570, radius 18 | `coreHealth`, `coreRadius` |
 | `gun-left`, `gun-right` | (∓40, -8), radius 13, health 780, shield, drop 0.5 | turrets on their centres |
+| hull gun turrets | 2 barrels 3.6 px apart, bore 1.3, 12 px long; dome radius 9, 4 px high | `SENTINEL_GUN`, `mounts` |
+| fan turret (core) | (-30, -42), 5.1 px high; 7 barrels 2.3 px apart, bore 0.9, 8 px long; dome radius 8.5 | `mounts` `fan` |
+| rotor (core) | (30, -42), 5.1 px high; 14 barrels, bore 0.8, 3 px long; hub radius 5.5 | `mounts` `rotor` |
 | `drone-bay` | (0, -36), radius 15, health 780, shield, drop 0.5 | |
 | full health | 5 150 | BOSS-54 |
 | points | 5 000; 500 a part | |
 | ground speed | ×0.6 | |
 | stop height | 0.74 | |
 | sway / bob | 70 px over 6.5 s / 8 px over 3 s | |
-| hull gun pairs | aimed 2, 8° apart, blue 185 / red 190 px/s, every 1.7 s (first 0.8 s / 1.65 s) | |
+| hull gun pairs | aimed 2, 8° apart, blue 185 / red 190 px/s, every 1.7 s (first 0.8 s / 1.65 s) | a sweep |
 | Hornets | 2 every 5.5 s (first 3 s), 14 px apart | `launches`; `src/game/sim/bosses/boss_launches.py` |
-| core stage 0 | fan of 3, 16° apart, blue, every 2.8 s | |
-| core stage 1 | fan of 5, 14° apart, red, every 2.4 s | |
-| core stage 2 | fan of 7, 12° apart, blue, every 2.2 s | |
-| core stage 3 | ring of 14 turning 7°, red, every 1.3 s; fan of 5 blue every 2.6 s | |
+| core stage 0 | fan of 3, 12° apart, blue, every 2.8 s | fan turret, a sweep |
+| core stage 1 | fan of 5, 12° apart, red, every 2.4 s | fan turret, a sweep |
+| core stage 2 | fan of 7, 12° apart, blue, every 2.2 s | fan turret, a sweep |
+| core stage 3 | ring of 14 turning 7°, red, every 1.3 s; fan of 5, 12° apart, blue every 2.6 s | rotor; fan turret |
 | angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
 | transformation | 2 parts destroyed | default threshold |
 | shed region | back: a lozenge x ±14 at the middle, y -24..28, `shell`, not mirrored; plating 4.2–10 px | |

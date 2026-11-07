@@ -5,8 +5,9 @@
 > [World 1](../../worlds/world-1/world.md)
 
 The Reef Warden is the mini boss of 1-1, the first boss of the game: a wide ray-like reef creature,
-3 L across, met over the open sea. Two side cannons on its flanks shield its core; once one is gone
-it sheds its back plating and unfolds a pair of gatlings. It is the easiest boss of the game. Every
+3 L across, met over the open sea. Two side cannons on its flanks shield its core; once both are
+gone it sheds its back plating and unfolds a pair of gatlings, its last guns: it dies with them. It
+is the easiest boss of the game. Every
 shared rule (parts, shield, stages, rage, transformations, death) is in [common](../common.md).
 
 ## Requirements
@@ -31,7 +32,7 @@ membrane shell, sinew belly) along its spine, bone ribs across its back, coral b
 before its cannons, gill glands either side (on its back plating, MB-REEF-WARDEN-05) and two eyes
 over its snout. Metal is grafted on: a
 riveted nose plate, a back plate, a plate on each flank, sockets for the cannons, a short mast off
-the centre line, and a prow cannon on its snout. Two reactors sit in flesh sacs at its tail, with a
+the centre line. Its core carries no gun (MB-REEF-WARDEN-03). Two reactors sit in flesh sacs at its tail, with a
 third reactor between them.
 
 **Acceptance criteria**
@@ -39,17 +40,20 @@ third reactor between them.
 
 *Sources: P07-R05, P16-R05.*
 
-#### MB-REEF-WARDEN-03 — Its parts · MUST
+#### MB-REEF-WARDEN-03 — Its parts and guns · MUST
 
+Every shot leaves one of its gun mounts, the shared models of [common](../common.md) (BOSS-58):
 - **Side cannons** (left and right, on its flanks): each an armoured coral growth with a feeding sac
-  behind it and barbs before it, under a twin-barrelled turret.
-- **Prow cannon** (the core's gun): a single-barrelled turret grafted on its snout.
+  behind it and barbs before it, under a gun turret with two barrels side by side.
+- **Gatlings** (MB-REEF-WARDEN-10): hidden until both side cannons are destroyed.
+
+Its core carries no gun mount and fires nothing.
 
 **Acceptance criteria**
-- Given its model, then it draws both side cannons and their turrets where its design puts them
+- Given its model, then it draws both side cannons and every gun mount where its design puts them
   (unit test).
 
-*Sources: P07-R05, P16-R05, D-060.*
+*Sources: P07-R05, P16-R05, D-060, D-280.*
 
 #### MB-REEF-WARDEN-04 — Lights · MUST
 
@@ -95,24 +99,25 @@ height, then sways and bobs (`sway`, `bob`). While it is fought the ground scrol
 #### MB-REEF-WARDEN-07 — Parts and core · MUST
 
 It has two parts as it comes in, both shielding its core: `cannon-left` and `cannon-right`. Each
-side cannon's turret fires bursts of 3 red bullets at the player, the two in turn; the prow cannon
-on its turret fires the core's volleys. Both turrets turn the way they fire.
+side cannon's turret fires bursts of 3 red bullets at the player, its two barrels taking turns, the
+two cannons in turn. Its core has no gun: its gatlings (MB-REEF-WARDEN-10) are its last guns, and
+once both are destroyed its health is 0 and it dies (BOSS-58); its core is never hit and its health
+does not count in the health bar. The turrets turn the way they fire.
 
 **Acceptance criteria**
 - Given its design, then it has two parts, both shielding the core, with the health and places of
   Tunable values.
+- Given both gatlings destroyed, then it dies, without its core being hit (unit test).
 
 *Sources: P07-R01, P07-R05, D-058, D-060.*
 
 #### MB-REEF-WARDEN-08 — Stage patterns · MUST
 
-The side cannons' bursts go on in every stage while they stand. The core fires:
-- stage 0: a fan of 3 orange bullets straight down;
-- stage 1: a fan of 5;
-- stage 2 (both cannons gone): a ring of 8 turning a little at each volley (a spiral).
+The side cannons' bursts, then the gatlings' bursts, go on in every stage while they stand. Its core
+fires nothing (an exception to BOSS-21's core patterns, the owner's request of 2026-11-05).
 
 **Acceptance criteria**
-- Given each stage, then the core fires that stage's volley (unit test on its design).
+- Given each stage, then only its parts fire (unit test on its design).
 
 *Sources: P07-R04, D-055.*
 
@@ -132,20 +137,20 @@ angry pattern of its own.
 
 #### MB-REEF-WARDEN-10 — Transformation · MUST
 
-It transforms once, when one of its side cannons is destroyed: its back plating bursts off, baring a
+It transforms once, when both of its side cannons are destroyed: its back plating bursts off, baring a
 dark metal lattice, and two **gatlings** unfold just in front of its core, on either side of its
 centre line. They shield the core and fire red bursts of 4 at the player, in turn.
 
 **Acceptance criteria**
-- Given one side cannon destroyed, then it transforms and its two gatlings are revealed (unit test
-  on its thresholds).
+- Given one side cannon destroyed, then it does not transform; given both, then it transforms and
+  its two gatlings are revealed (unit test on its thresholds).
 
 *Sources: D-221, D-224, D-229.*
 
 #### MB-REEF-WARDEN-11 — Death, drops and points · MUST
 
-Its parts drop a weapon bonus half of the time, its gatlings 30 % of the time; its core follows the
-regular enemies' chance and it drops a life bonus ([common](../common.md), BOSS-57). It scores the
+Its parts drop a weapon bonus half of the time, its gatlings 30 % of the time; as it dies its core
+follows the regular enemies' chance and it drops a life bonus ([common](../common.md), BOSS-57). It scores the
 points of Tunable values.
 
 **Acceptance criteria**
@@ -160,19 +165,17 @@ All in `src/game/config/bosses/mini_bosses.py` (`_REEF_WARDEN`, `REEF_WARDEN`) u
 | Name | Value | Notes |
 |------|-------|-------|
 | size | 3 L (radius 51 px) | `stats.size` |
-| core | health 960, radius 20 | `coreHealth`, `coreRadius` |
+| core | radius 20; no gun, so its health (960) is never used | `coreHealth`, `coreRadius` |
 | `cannon-left`, `cannon-right` | (∓36, -2), radius 14, health 620, shield, drop 0.5 | turrets on their centres |
-| full health | 3 200 (core, cannons, gatlings) | BOSS-54 |
+| side cannon turrets | 2 barrels 5 px apart, bore 1.6, 11 px long; dome radius 9, 4 px high | `REEF_CANNON`, `mounts` |
+| full health | 2 240 (cannons, gatlings) | BOSS-54 |
 | points | 3 000; 300 a part | `stats.points`; `src/game/config/scoring.py` |
 | ground speed | ×0.5 | `groundSpeed` |
 | stop height | 0.72 of the playfield | `stopFraction` |
 | sway / bob | 70 px over 7 s / 8 px over 3.5 s | `sway`, `bob` |
 | side cannon bursts | 3 red, 0.18 s apart, 190 px/s, every 2.6 s (first 1 s / 2.3 s) | |
-| core stage 0 | fan of 3, 18° apart, orange 170 px/s, every 3.2 s | prow turret pivot (0, -27) |
-| core stage 1 | fan of 5, 14° apart, every 2.2 s | |
-| core stage 2 | ring of 8 turning 11°, every 1.8 s | |
 | angry | the revealed weapons, BOSS-27 | `boss_build.angry_pattern` |
-| transformation | 1 part destroyed | default threshold |
+| transformation | 2 parts destroyed (both cannons) | `transforms` |
 | shed region | back: a horseshoe round the shelled back, y -33..-2, its arms x 15..23 at the rear narrowing towards the snout, joined by a bar y -33..-27 at the centre line; `shell`, not mirrored; plating 2.7–4.5 px | `armour_region` |
 | gatlings | (∓13, -25), radius 11, health 500, pod 8 px; red bursts, first 1.2 s / 2.0 s | `hidden_weapon` |
 | neon | cyan (0.1, 0.9, 1), shown green | `src/game/config/boss_look.py` `BOSS_LOOK.neon` |

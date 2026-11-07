@@ -24,6 +24,7 @@ class FakeContext:
         self.fire_rate = 1.0
         self.bullets: list[tuple[float, float, float, Any]] = []
         self.missiles: list[tuple[float, float, float, Any]] = []
+        self.missile_heights: list[float] = []
         self.lasers: list[tuple[Any, Any]] = []
         self.spawned: list[Any] = []
         self.explosions: list[tuple[float, float, float]] = []
@@ -35,8 +36,11 @@ class FakeContext:
     def fire_bullet(self, x: float, y: float, heading: float, spec: Any) -> None:
         self.bullets.append((x, y, heading, spec))
 
-    def fire_missile(self, x: float, y: float, heading: float, spec: Any) -> None:
+    def fire_missile(
+        self, x: float, y: float, heading: float, spec: Any, height: float = 0
+    ) -> None:
         self.missiles.append((x, y, heading, spec))
+        self.missile_heights.append(height)
 
     def fire_laser(self, owner: Any, spec: Any) -> None:
         self.lasers.append((owner, spec))

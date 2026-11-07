@@ -1,16 +1,23 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of every boss design.
 
-The 20 mini and 20 final bosses of the game: their part counts (BOSS-13) and their stage patterns
-(BOSS-21).
+The 20 mini and 20 final bosses of the game (the Lab's after them, in the dev viewer only): their
+part counts (BOSS-13) and their stage patterns (BOSS-21).
 """
 
 from collections.abc import Callable
+from functools import cache
 from itertools import combinations
 from typing import Any
 
 import pytest
-from helpers.config_checks import original_parts
+from helpers.config_checks import (
+    LAB_BOSS_COUNT,
+    SILENT_CORES,
+    WORLD_BOSS_COUNT,
+    armed_mounts,
+    original_parts,
+)
 
 from core.systems.boss_pattern import BossVolley, _live
 from game.config.world_1.bosses import WORLD_1_BOSSES
@@ -26,8 +33,10 @@ FINAL_IDS = {entry["final"] for table in WORLD_TABLES for entry in table.values(
 
 
 def test_boss_13_the_game_has_20_mini_bosses_and_20_final_bosses() -> None:
-    designs = {design.id for design in BOSS_DESIGNS}
-    assert len(designs) == len(BOSS_DESIGNS) == 40
+    world = BOSS_DESIGNS[:WORLD_BOSS_COUNT]
+    designs = {design.id for design in world}
+    assert len(designs) == len(world) == 40
+    assert len(BOSS_DESIGNS) == WORLD_BOSS_COUNT + LAB_BOSS_COUNT
     assert len(MINI_IDS) == 20
     assert len(FINAL_IDS) == 20
     assert designs == MINI_IDS | FINAL_IDS
@@ -73,17 +82,37 @@ def _pattern_signature(volleys: list[BossVolley], intact: Callable[[str], bool])
     return "|".join(sorted(_key(volley) for volley in volleys if _live(volley, intact)))
 
 
+@cache
+def _mounts(design_id: str) -> dict[str, Any]:
+    """Return the design's mounts, armed once so its stages fire from the same ones (BOSS-58)."""
+    design = next(d for d in BOSS_DESIGNS if d.id == design_id)
+    return armed_mounts(design)
+
+
 def _stage_signature(design: Any, stage: int, destroyed: frozenset[str]) -> str:
     """Return the pattern of `design`'s stage `stage`: the volleys of that stage that still fire.
 
     With `stage` parts destroyed (`destroyed`), as the world boss arms them (BOSS-20, BOSS-24).
     """
     stages = design.stages
-    volleys = armed_pattern(design, stages[min(stage, len(stages) - 1)] or [])
+    volleys = armed_pattern(design, stages[min(stage, len(stages) - 1)] or [], _mounts(design.id))
     return _pattern_signature(volleys, lambda piece: piece == "core" or piece not in destroyed)
 
 
-@pytest.mark.parametrize("design", BOSS_DESIGNS, ids=lambda d: d.id)
+# The Reef Warden's and the Storm Petrel's cores fire nothing, so their stages change only as their
+# parts go (their owner's exceptions to BOSS-21).
+CORE_FIRING = [design for design in BOSS_DESIGNS if design.id not in SILENT_CORES]
+
+
+def test_boss_21_a_silent_core_fires_nothing_in_any_stage() -> None:
+    for design in BOSS_DESIGNS:
+        if design.id in SILENT_CORES:
+            shots = [shot for stage in design.stages for shot in stage or []]
+            assert all(shot["from"] != "core" for shot in shots), design.id
+            assert all(mount.piece != "core" for mount in design.mounts or []), design.id
+
+
+@pytest.mark.parametrize("design", CORE_FIRING, ids=lambda d: d.id)
 def test_boss_21_each_stage_fires_a_new_pattern_in_every_order_of_destruction(design: Any) -> None:
     """Any order of destruction is a chain of sets of destroyed parts.
 
@@ -102,7 +131,7 @@ def test_boss_21_each_stage_fires_a_new_pattern_in_every_order_of_destruction(de
                 assert after != previous, (design.id, sorted(destroyed), part)
 
 
-@pytest.mark.parametrize("design", BOSS_DESIGNS, ids=lambda d: d.id)
+@pytest.mark.parametrize("design", CORE_FIRING, ids=lambda d: d.id)
 def test_boss_21_the_last_stage_pattern_is_used_by_no_earlier_stage(design: Any) -> None:
     """The last stage (every part destroyed, its core's ring or spiral) fires a new pattern.
 

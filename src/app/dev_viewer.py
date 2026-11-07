@@ -130,7 +130,9 @@ class DevEnemyContext:
     def fire_bullet(self, _x: float, _y: float, _heading: float, _spec: Any) -> None:
         """Do nothing: the viewer fires no bullets."""
 
-    def fire_missile(self, _x: float, _y: float, _heading: float, _spec: Any) -> None:
+    def fire_missile(
+        self, _x: float, _y: float, _heading: float, _spec: Any, _height: float = 0
+    ) -> None:
         """Do nothing: the viewer fires no missiles."""
 
     def fire_laser(self, _owner: Any, _spec: Any) -> None:
@@ -426,7 +428,7 @@ class DevViewer:
         world = EnemyWorld(options, create_rng(int(CFG.model_seed)))
         world.player_x = screen.width / 2
         world.player_y = GAME_PLAY_CONFIG.ship_start_y
-        group = self._spawn_group(item)
+        group = self._ready(self._spawn_group(item))
         world.add(*group)
         self._world = world
         self._enemy = group[0]
@@ -439,6 +441,16 @@ class DevViewer:
         group = self._spawn_group(item)
         self._entered = False
         return group[0]
+
+    def _ready(self, group: list[Any]) -> list[Any]:
+        """Return `group` with a boss already in place, its guns opening fire at once (game view).
+
+        No wait for it to come in and for its first volleys (DEV-MENU-21).
+        """
+        for enemy in group:
+            if hasattr(enemy, "open_fire"):
+                enemy.open_fire()
+        return group
 
     def _spawn_group(self, item: DevItem) -> list[Any]:
         """Return the enemies (a boss alone) of `item`'s kind, where its kind brings them in."""
@@ -514,7 +526,7 @@ class DevViewer:
         if len(world.enemies) == 0 and self._item is not None:
             self._cue_boss = self._cue_boss or self.viewer == "bosses"
             world.clear()
-            group = self._spawn_group(self._item)
+            group = self._ready(self._spawn_group(self._item))
             world.add(*group)
             self._enemy = group[0]
 

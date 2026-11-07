@@ -83,24 +83,6 @@ def membrane_pair(p: Any, wing: Any, span: float) -> None:
         p.flap([w["root"][0], w["y"], w["root"][1]], s, span, membrane_draw(w, span))
 
 
-def mandibles(b: Any, at: Vec3, size: Any) -> None:
-    """Add a pair of mandibles hooking forward and in from `at`, in bone (ENM-WASP-02)."""
-    x = at[0]
-    y = at[1]
-    z = at[2]
-    spread = size[0]
-    length = size[1]
-    radius = size[2]
-    for s in SIDES:
-        path = curve(
-            [x + s * spread * 0.5, y, z],
-            [x + s * spread * 0.3, y, z + length],
-            [s * spread * 0.6, 0, 0],
-            2,
-        )
-        tendril(b, path, [radius, 0], 3, F.bone)
-
-
 def sinew(b: Any, start: Vec3, end: Vec3, radii: Any, color: Any = None, bow: Any = None) -> None:
     """Add a sinew (a thin flesh tendril, 4 facets) from `start` to `end`, bowed by `bow`."""
     tint = color if color != None else F.sinew

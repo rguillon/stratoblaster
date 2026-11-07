@@ -7,7 +7,7 @@ Tail and breast Logical pixels, nose +Z, Y up.
 import math
 
 from game.config.boss_look import BOSS_LOOK
-from game.view.bosses.final_boss_shapes import barrels, edge_strips, missile_tips, shift
+from game.view.bosses.final_boss_shapes import edge_strips, shift
 from game.view.bosses.world_1_organic_kit import (
     F,
     M,
@@ -41,7 +41,8 @@ N = BOSS_LOOK.neon["storm-petrel"]
 def draw_pod(p: Any, at: Vec3) -> None:
     """Draw a wing gun pod (FB-STORM-PETREL-03): a swollen gun gland on the wing.
 
-    A grafted collar at its front and twin barrels at its nose, a vein along each flank.
+    A grafted collar at its front (its fan turret stands on it: its mount, BOSS-58), a vein along
+    each flank.
     """
     growth(p, shift(at, [0, 8, -2]), 13, N, {"flesh": F.slate, "height": 0.3, "armour": False})
     pod = shift(at, [0, 10, 0])
@@ -55,18 +56,17 @@ def draw_pod(p: Any, at: Vec3) -> None:
     for s in [-1, 1]:
         vein_line(p, shift(pod, [s * 6.6, 5, -10]), shift(pod, [s * 6.4, 5, 8]), [s, 0.5, 0], 1, N)
     p.neon.box([1, 0.4, 10], N, Placement(shift(pod, [0, 9.2, -4])))
-    barrels(p, shift(pod, [0, 4.3, 14]), [2, 5], [1.3, 7])
 
 
 def draw_rack(p: Any, at: Vec3) -> None:
     """Draw the tail missile rack (FB-STORM-PETREL-03): a brood sac on the tail.
 
-    A grafted rim round six missile tips standing in it like eggs, a neon lip along its front.
+    A grafted rim, its block of missile ports on it (its mount, BOSS-58), a neon lip along its
+    front.
     """
     organ(p.flesh, 13, 8, F.slate, Placement(shift(at, [0, 6, 0]), math.pi / 8), 0.25)
     sac(p, shift(at, [0, 8, -2]), 10, F.graphite, {"stretch": 0.25})
     graft(p, polygon(8, 11, [1, 1.1]), [11.6, 12.6], at, {"color": M.base})
-    missile_tips(p, shift(at, [0, 12.6, 0]), [2, 3], [6.2, 1.8])
     x = at[0]
     z = at[2]
     edge_strips(

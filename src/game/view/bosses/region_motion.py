@@ -71,6 +71,17 @@ def relative_value(motion: Any, value: Any) -> Any:
     return value + end
 
 
+def rest_relative_value(motion: Any, value: Any) -> Any:
+    """`value` of `motion` from its rest pose rather than from the pose as drawn.
+
+    Meant for what stands on the piece from the start, drawn where it is at rest (BOSS-18).
+    """
+    start = inverse_value(motion, motion_value(motion, 0))
+    if motion.kind == "slide":
+        return [value[0] + start[0], value[1] + start[1], value[2] + start[2]]
+    return value + start
+
+
 def progress(region: Any, boss: Any) -> float:
     """How far `region`'s piece has moved for `boss` (None: at rest).
 

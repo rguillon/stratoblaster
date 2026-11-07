@@ -28,6 +28,8 @@ class Rocketeer(Enemy):
         super().__init__(x, y, CFG.stats)
         self._launcher = Cadence(CFG.fireInterval, CFG.firstShot)
         self._pods = [GunMuzzles([muzzle]) for muzzle in CFG.muzzles]
+        # Each pod's port, kicked as its missile leaves (WPN-07).
+        self.launchers = [pod.barrels[0] for pod in self._pods]
         self.heading = DOWN
         self.charge = 1
 

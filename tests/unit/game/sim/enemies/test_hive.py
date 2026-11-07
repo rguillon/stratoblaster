@@ -72,3 +72,13 @@ def test_enm_hive_11_below_thirty_percent_it_launches_and_fires_nothing() -> Non
     assert ctx.spawned == []
     assert ctx.bullets == []
     assert hive.charge == 0
+
+
+def test_enm_hive_10_a_ring_shot_before_the_hive_has_acted_fires_nothing() -> None:
+    """WPN-01: the ring's bullets go to the world the hive last acted in; before that, nowhere."""
+    ctx = FakeContext()
+    hive = Hive(200, 500)
+    hive._fire_ring(200, 500, 0)
+    assert ctx.bullets == []
+    run(hive, ctx, 1.1)
+    assert len(ctx.bullets) == CFG.ringCount

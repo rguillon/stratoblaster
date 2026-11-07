@@ -4,7 +4,7 @@
 
 The second level of World 4. From the town centre 4-1 ended on, the player flies over town streets,
 the ring road, mid-rise flats and a city park to mid-rise blocks among the first offices, at midday
-under an ash cloud with ash falling. Splitters and Juggernauts lead the waves and the Hydra comes in.
+under an ash cloud with ash falling. Splitters and Hydras lead the waves and the Juggernaut comes in.
 Its mini boss is a chase. Its checkpoint is its mini boss (see [level flow](../../gameplay/level-flow.md)).
 
 ## Requirements
@@ -56,12 +56,12 @@ their brown-grey tint does not show, the clouds being plain), a dim, flat, yello
 
 ### LVL-4-2-04 — Enemy waves · MUST
 
-4-2 adds the Hydra to the kinds of 4-1 and uses Splitter, Juggernaut, Scissor and Hydra, no other. 4-2's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, with a beat every `wave_gap` seconds (4.2 s to 3 s) and
+4-2 adds the Juggernaut to the kinds of 4-1 and uses Splitter, Hydra, Scissor and Juggernaut, no other. 4-2's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, with a beat every `wave_gap` seconds (4.2 s to 3 s) and
 groups growing by `wave_growth` (95 %) over the level (81 beats). The cycle of phrases, each a kind with its number of
-groups at the start: Splitter 2, Juggernaut 1, Scissor 1, Splitter 2, Hydra 1, Juggernaut 1, Splitter 2, Scissor 1, Juggernaut 1, Hydra 1. The filler draws Splitters and Juggernauts, at most `filler_gap` apart.
+groups at the start: Splitter 2, Hydra 1, Scissor 1, Splitter 2, Juggernaut 1, Hydra 1, Splitter 2, Scissor 1, Hydra 1, Juggernaut 1. The filler draws Splitters and Hydras, at most `filler_gap` apart.
 
 **Acceptance criteria**
-- Unit test: 4-2's waves use exactly Splitter, Juggernaut, Scissor and Hydra, and each of them.
+- Unit test: 4-2's waves use exactly Splitter, Hydra, Scissor and Juggernaut, and each of them.
 - Unit test: 4-2's waves are the same each time the level is built.
 
 *Sources: P10-R09, P05-R24, D-087, D-090, ENM-50.*

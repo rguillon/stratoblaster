@@ -147,9 +147,12 @@ class Hornet(Enemy):
         if not arrived:
             self.x += dx / left * step
             self.y += dy / left * step
-        # The nose starts coming round as it slows down.
+        # The nose points along its flight (a side entry is diagonal), then starts coming round to
+        # the player as it slows down.
         if speed < options.entry_speed:
             self._turn_to_player(ctx, dt)
+        elif left > 0:
+            self.heading = math.atan2(dx, dy)
         if arrived:
             self.x = stop_x
             self.y = stop_y

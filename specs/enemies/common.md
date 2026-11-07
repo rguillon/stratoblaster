@@ -32,7 +32,7 @@ a **diver** (rams, or dives at the player), a **shooter** (bullets), a **missile
 | 1 | [Hornet](hornet.md) | [Scout](scout.md) | [Rocketeer](rocketeer.md) | [Lancer](lancer.md) | [Carrier](carrier.md) (Hornets) |
 | 2 | [Wasp](wasp.md) | [Strafer](strafer.md) | [Harrier](harrier.md) | [Sweeper](sweeper.md) | [Hatchery](hatchery.md) (Wasps) |
 | 3 | [Phantom](phantom.md) | [Spinner](spinner.md) | [Mortar](mortar.md) | [Prism](prism.md) | [Broodmother](broodmother.md) (Phantoms) |
-| 4 | [Splitter](splitter.md) | [Juggernaut](juggernaut.md) | [Hydra](hydra.md) | [Scissor](scissor.md) | [Hive](hive.md) (Splitters) |
+| 4 | [Splitter](splitter.md) | [Hydra](hydra.md) | [Juggernaut](juggernaut.md) | [Scissor](scissor.md) | [Hive](hive.md) (Splitters) |
 
 The tiers are in the code's tier table (`src/game/config/enemy_tiers.py`). The pods a Splitter
 breaks into are part of the Splitter kind, not a kind of their own. A boss's hangars and bays
@@ -299,7 +299,8 @@ A gun fires from its muzzles: points of the model (offsets from the enemy's cent
 down the screen, and a height above the playfield). A shot leaves from the muzzle furthest along
 its way, side-by-side muzzles taking turns, turned with the enemy's heading (and its part's swing
 or orbit), and is seen through the tilted camera onto the playfield, so it starts where the barrel
-tip is drawn. The model marks its barrel tips, and the config's muzzles are the same points.
+tip is drawn. The model marks its barrel tips, and the config's muzzles are the same points. A muzzle with an
+angle is a fixed barrel, and its shots leave along it ([weapons.md](weapons.md) WPN-01).
 
 **Acceptance criteria**
 - Given a kind's model, then its marked muzzles are at the config's muzzle offsets.
@@ -638,7 +639,7 @@ The waves of every level are composed from the kinds of the level (`src/game/con
 | `HITBOX` | 0.85 | hit radius = `HITBOX` × size × L / 2 (`radius()` in `enemies.py`) |
 | `ENEMY_SPAWN_MARGIN` | 60 px | `enemies.py`: how far outside the edge a group appears |
 | `ENTRY_INSET` | 0.08 | `src/game/sim/enemies/enemy_helpers.py`: entries kept off the corners |
-| `top_range` | the ship's reach at the bottom of its flight area (about 207–793 px in the 1000 × 720 playfield window, D-253; 120–420 in the 540 × 720 one, D-252; 107–373 px when measured on the 3:4 screen, D-048) | set by `LevelRun` |
+| `top_range` | the ship's reach at the bottom of its flight area (about 120–420 px in the 540 × 720 playfield window, D-252, D-263; 207–793 in the 1000 × 720 one, D-253; 107–373 px when measured on the 3:4 screen, D-048) | set by `LevelRun` |
 | `cull_margin` | 80 px | `src/config/game_play.py` `GAME_PLAY_CONFIG` |
 | `max_enemy_age` | 40 s | `GAME_PLAY_CONFIG` |
 | `bullet_radius` | 4 px | `bullet()` in `enemies.py` |

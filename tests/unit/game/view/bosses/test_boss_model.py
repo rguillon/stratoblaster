@@ -127,8 +127,8 @@ def test_boss_52_the_boss_holds_together_in_every_state(design: Any) -> None:
 
 # The model as built (BOSS-47) on fake nodes, from a small hand-made boss: a deck with a fuselage,
 # a light hanging over it; standing parts (one with a turret), a part on a joint with its limb, an
-# orbiting one, hidden weapons (a gatling with its turret, a lance with its barrel, an orb riding a
-# moving hatch, a cannon on a rig), a ring, a rig, an armour region that bursts off and two that
+# orbiting one, hidden weapons (a gatling, a lance and an orb riding a moving hatch, each on its gun
+# mount, a cannon on a rig), a ring, a rig, an armour region that bursts off and two that
 # move (BOSS-45), each drawn as a plate over the deck. Model space is mirrored: a config point
 # (x, y) is model (-x, -y) in XZ.
 
@@ -250,11 +250,10 @@ def _probe_design() -> Any:
         "guns": {
             "core": {"gun": [[0, -14, 6]], "turret": [0, -10]},
             "plain": {"gun": [[-30, -19, 6]], "turret": [-30, -15]},
-            "gat": gat.guns,
-            "lance": lance.guns,
-            "rider": rider.guns,
-            "tail": tail.guns,
         },
+        # The hidden weapons' gun mounts (BOSS-58): a gatling's turret, a lance, an orb's rotor
+        # and the tail's laser.
+        "mounts": [*gat.mounts, *lance.mounts, *rider.mounts, *tail.mounts],
         "weapons": {"gat": gat.look, "lance": lance.look, "rider": rider.look, "tail": tail.look},
         "armour": [
             armour_region("wings", 1, [[25, -10], [38, -10], [38, 10], [25, 10]], "wing"),
@@ -349,6 +348,12 @@ class _LiveBoss(Boss):
         self.transform = transform
         self.core = SimpleNamespace(turret=SimpleNamespace(aim=0.7), since_hit=0.0)
         self.parts = parts
+        # Its clock, barrels and launchers (WPN-03, WPN-07); no mount of its own state, so its
+        # mounts' models are shown out (BOSS-58).
+        self.age = 3.0
+        self.barrels: list[Any] = []
+        self.launchers: list[Any] = []
+        self.mounts: list[Any] = []
         self.joints = SimpleNamespace(angle=lambda _joint: 0.4)
 
 
@@ -367,9 +372,11 @@ def test_boss_47_the_model_builds_its_core_parts_turrets_limbs_ring_and_armour(
         "probe-ringbody",
         "probe-core-turret",
         "probe-plain-turret",
-        "probe-gat-turret",
+        "probe-gat-gun",
+        "probe-lance-gun",
+        "probe-rider-gun",
+        "probe-tail-gun",
         "probe-shoulder-limb",
-        "probe-lance-slide-0",
         "probe-armour-wings",
         "probe-armour-wings-chunk-0",
         "probe-armour-wings-frame-floor",
@@ -379,10 +386,14 @@ def test_boss_47_the_model_builds_its_core_parts_turrets_limbs_ring_and_armour(
         assert name in models, name
     for spec in probe.design.stats.parts:
         assert "probe-" + spec.id in models
-    # A moving region without a frame leaves none; the orb and the lance have no turret.
+    # A moving region without a frame leaves none; a hidden weapon's gun is its mount's model, on
+    # a pivot of its own (BOSS-58), not a turret drawing.
     assert "probe-armour-flap-frame-floor" not in models
-    assert "probe-rider-turret" not in models
-    assert "probe-lance-turret" not in models
+    assert "probe-gat-turret" not in models
+    assert models["probe-gat-gun"].root.parent.name == "probe-gat-mount"
+    # The core's own turret is still its drawing's; its stumps are the parts' with a mount.
+    assert "probe-gat-stump" in models
+    assert "probe-plain-stump" not in models
     # The core is drawn as it is, with its muzzle; the armour is drawn over it.
     assert probe.builder.drawn["probe-core"]["muzzles"] == [[[0, 4, 20], "gun"]]
     assert probe.builder.faces("probe-core") == 12
@@ -425,7 +436,8 @@ def test_boss_17_boss_22_a_live_boss_rolls_spins_aims_flashes_and_smokes(probe: 
     assert root.rotation.z == 0.2
     assert models["probe-ringbody"].root.parent.rotation.y == 1.5
     assert models["probe-core-turret"].root.parent.rotation.y == 0.7
-    assert models["probe-core"].synced == [({"charge": 0.5}, 0.05)]
+    [(lit, dt)] = models["probe-core"].synced
+    assert (lit.charge, lit.age, dt) == (0.5, 3.0, 0.05)
     # The core and its ring flash white: hit just now (BOSS-17).
     assert models["probe-core"].root.meshes[0].material == "FLASH"
     assert models["probe-ringbody"].root.meshes[0].material == "FLASH"
@@ -462,8 +474,10 @@ def test_boss_38_hidden_weapons_stay_folded_away_until_the_boss_transforms(probe
 def test_a_stand_in_is_shown_at_rest_with_its_own_charge(probe: Any) -> None:
     models = probe.builder.models
     probe.model.sync(SimpleNamespace(charge=0.3), 0.1)
-    assert models["probe-core"].synced == [({"charge": 0.3}, 0.1)]
-    assert models["probe-ringbody"].synced == [({"charge": 0.3}, 0.1)]
+    [(lit, dt)] = models["probe-core"].synced
+    # A stand-in has no clock: its guns' recoil stays at rest.
+    assert (lit.charge, lit.age, dt) == (0.3, 0, 0.1)
+    assert models["probe-ringbody"].synced == [(lit, 0.1)]
     assert models["probe-core-turret"].root.parent.rotation.y == 0
     assert models["probe-core-turret"].synced
     # Its parts are left as they are; its armour is on, its rig at rest.

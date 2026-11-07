@@ -13,7 +13,7 @@ ships map to the screen and what they may reach is in [../gameplay/screen.md](..
 ### GFX-CAM-01 — World units and axes · MUST
 
 One world unit is one logical pixel. X runs across the level (0 under the middle of the playfield),
-Z runs along it (the level scrolls towards +Z) and Y is up. The playfield is the 1000 × 720 playfield
+Z runs along it (the level scrolls towards +Z) and Y is up. The playfield is the 540 × 720 playfield
 window ([../gameplay/screen.md](../gameplay/screen.md)) laid flat on a plane at the flight altitude (`flightAltitude`, 320), its bottom edge at the
 Z the level has reached. Every scenery height (ground, sea, clouds, props) is an absolute Y.
 
@@ -43,12 +43,12 @@ The camera stands above the playfield's centre line, behind its bottom edge, at 
 bottom and top edges of the window pass through the bottom and top edges of the playfield (about
 621 above the flight plane and 166 behind its bottom edge for a 720 px tall window; 552 and 148
 for the old 480 × 640, D-249). The framing refuses a tilt and field of view that would show the
-horizon. Seen through the tilted camera the playfield is a trapezoid: about 610 of its 1000 logical
-pixels across the bottom edge and about 1 030 across the top (a little past the window's side edges
+horizon. Seen through the tilted camera the playfield is a trapezoid: about 330 of its 540 logical
+pixels across the bottom edge and about 556 across the top (a little past the window's side edges
 there).
 
 **Acceptance criteria**
-- Given the 1000 × 720 playfield, then the bottom and top screen rays meet the flight plane at the
+- Given the 540 × 720 playfield, then the bottom and top screen rays meet the flight plane at the
   playfield's bottom and top edges (unit test).
 - Given a tilt plus half field of view of 90° or more, then framing fails.
 

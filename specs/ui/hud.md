@@ -15,7 +15,7 @@ health. How the score, lives, bombs, health and weapons work is in
 
 The HUD is two columns, `hud_side_width` wide, down the left and right sides of the screen, the
 whole height, opaque blue-black with a thin cyan line along their inner edge; the playfield window
-is the 1000 px between them and nothing of the level is drawn under them (D-252, D-253,
+is the 540 px between them and nothing of the level is drawn under them (D-252, D-263,
 [gameplay/screen.md](../gameplay/screen.md)). The left one holds, top to bottom, one under the
 other:
 - the level's progress line (UI-HUD-02);
@@ -212,7 +212,7 @@ with a red glow; the notches are white. Red marks the danger ([look-and-layout.m
 
 | Name | Value | Notes |
 |------|-------|-------|
-| `hud_side_width` | 140 px (the whole height; 200 px between D-251 and D-252, 370 px until D-253) | `index.html` `--hud-side`, `.hud-panel`; the playfield window's `left`, `src/game/config/game.py` (D-252) |
+| `hud_side_width` | 370 px (the whole height; 200 px between D-251 and D-252, 140 px between D-253 and D-263) | `index.html` `--hud-side`, `.hud-panel`; the playfield window's `left`, `src/game/config/game.py` (D-252, D-263) |
 | Ship bottom margin | 20 px (half the ship's length; 78 px while the bar was at the bottom) | `src/config/game_play.py` `GAME_PLAY_CONFIG.ship_margin.bottom` |
 | `low_health` | 30 % | `src/ui/game_hud.py` `LOW_HEALTH` |
 | `hud_health_bar_width` | 116 px × 9 px (160 until D-253) | `index.html` `.hud-bar` |

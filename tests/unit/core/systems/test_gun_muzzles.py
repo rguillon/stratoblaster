@@ -140,3 +140,101 @@ def test_enm_20_fire_aimed_leaves_from_the_muzzle_and_aims_from_there() -> None:
     x, y, heading = shots[0]
     assert (x, y) == (5, 0)
     assert heading == pytest.approx(math.atan2(-5, 100))
+
+
+class _AgedSource(_Source):
+    age = 3.0
+
+
+def test_wpn_01_a_fixed_barrel_fires_from_its_tip_along_its_own_heading() -> None:
+    source = _AgedSource(heading=math.pi)
+    guns = GunMuzzles([[5, 0, 0, -90]])
+    fired: list[tuple[float, float, float]] = []
+    ok = guns.shoot(_Ctx(), source, math.pi / 2 + 0.05, lambda x, y, h: fired.append((x, y, h)))
+    assert ok
+    # The barrel points right (heading pi - 90 deg), not where the shot was wanted.
+    assert fired == [(5, 0, pytest.approx(math.pi / 2))]
+
+
+def test_wpn_02_a_shot_is_held_when_no_fixed_barrel_points_that_way() -> None:
+    guns = GunMuzzles([[5, 0, 0, -90]])
+    fired: list[tuple[float, float, float]] = []
+    assert not guns.shoot(_Ctx(), _AgedSource(), math.pi, lambda x, y, h: fired.append((x, y, h)))
+    assert fired == []
+
+
+def test_wpn_03_the_barrel_that_fired_recoils_at_the_source_age() -> None:
+    source = _AgedSource()
+    guns = GunMuzzles([[5, 0, 0, -90], [-5, 0, 0, 90]])
+    guns.shoot(_Ctx(), source, math.pi / 2, lambda _x, _y, _h: None)
+    assert guns.barrels[0].recoil_at(3.0) == 1
+    assert guns.barrels[1].recoil_at(3.0) == 0
+
+
+def _record(fired: list[tuple[float, float, float]]) -> Any:
+    return lambda x, y, h: fired.append((x, y, h))
+
+
+def test_wpn_01_a_gun_without_fixed_barrels_fires_from_the_muzzle_furthest_along() -> None:
+    guns = GunMuzzles([(-10, 0, 0), (10, 0, 0)])
+    fired: list[tuple[float, float, float]] = []
+    assert guns.shoot(_Ctx(), _AgedSource(), math.pi / 2, _record(fired))
+    assert fired == [(10, 0, math.pi / 2)]
+
+
+def test_wpn_01_a_free_muzzle_is_skipped_when_choosing_a_fixed_barrel() -> None:
+    guns = GunMuzzles([[0, 9, 0], [5, 0, 0, -90]])
+    fired: list[tuple[float, float, float]] = []
+    assert guns.shoot(_Ctx(), _AgedSource(), math.pi / 2, _record(fired))
+    assert fired == [(5, 0, pytest.approx(math.pi / 2))]
+
+
+def test_wpn_01_fire_all_fires_along_every_fixed_barrel_and_skips_free_muzzles() -> None:
+    guns = GunMuzzles([[5, 0, 0, -90], [0, 9, 0], [-5, 0, 0, 90]])
+    fired: list[tuple[float, float, float]] = []
+    guns.fire_all(_Ctx(), _AgedSource(), _record(fired))
+    assert fired == [
+        (5, 0, pytest.approx(math.pi / 2)),
+        (-5, 0, pytest.approx(3 * math.pi / 2)),
+    ]
+
+
+class _Turret:
+    def __init__(self, aim: float) -> None:
+        self.aim = aim
+
+
+class _TurretSource(_AgedSource):
+    def __init__(self, aim: float) -> None:
+        super().__init__(heading=math.pi)
+        self.turret = _Turret(aim)
+
+
+def test_wpn_02_fire_all_on_a_turret_adds_the_way_it_has_turned() -> None:
+    guns = GunMuzzles([[5, 0, 0, 0]], on_turret=True)
+    fired: list[tuple[float, float, float]] = []
+    source = _TurretSource(0.25)
+    guns.fire_all(_Ctx(), source, _record(fired))
+    assert fired == [(5, 0, pytest.approx(math.pi + 0.25))]
+    assert source.placed == [((5, 0, 0), True)]
+
+
+def test_wpn_02_a_turret_gun_fires_once_it_points_at_the_heading() -> None:
+    guns = GunMuzzles([(5, 0, 0)], on_turret=True)
+    fired: list[tuple[float, float, float]] = []
+    assert guns.shoot(_Ctx(), _TurretSource(0.25), math.pi + 0.25, _record(fired))
+    assert fired == [(5, 0, pytest.approx(math.pi + 0.25))]
+
+
+def test_wpn_02_a_turret_gun_holds_its_shot_until_it_points_at_the_heading() -> None:
+    guns = GunMuzzles([(5, 0, 0)], on_turret=True)
+    fired: list[tuple[float, float, float]] = []
+    assert not guns.shoot(_Ctx(), _TurretSource(0.0), math.pi + 1.0, _record(fired))
+    assert fired == []
+
+
+def test_wpn_02_a_turret_gun_without_barrels_never_fires() -> None:
+    fired: list[tuple[float, float, float]] = []
+    guns = GunMuzzles(on_turret=True)
+    assert not guns.shoot(_Ctx(), _TurretSource(0.0), math.pi, _record(fired))
+    assert fired == []

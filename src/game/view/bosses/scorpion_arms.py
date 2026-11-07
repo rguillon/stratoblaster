@@ -9,7 +9,7 @@ import math
 from game.config.bosses.mini_bosses import SCORPION
 from game.config.enemy_look import ENEMY_LOOK
 from game.view.bosses.boss_limbs import boss_point
-from game.view.bosses.mini_boss_shapes import QUARTER, WHITE, offset, scaled, socket
+from game.view.bosses.mini_boss_shapes import offset, scaled, socket
 from game.view.bosses.scorpion_look import YELLOW
 from game.view.bosses.world_1_organic_kit import F, graft, sac, tentacle, vein_line
 from game.view.enemies.enemy_shapes import flip_x
@@ -89,8 +89,6 @@ KNUCKLE_CAP = [
 ]
 # The claws are drawn this much bigger than their outlines: the left (+X) one is oversized.
 CLAW_SCALE = {"left": 1.45, "right": 1.22}
-# Length of the cannon between the jaws.
-CLAW_BARREL = 13
 
 
 def _knuckle() -> list[Any]:
@@ -238,9 +236,9 @@ def draw_jaw(p: Any, at: Vec3, jaw: list[Any]) -> None:
 def claw(p: Any, at: Vec3) -> None:
     """Add a claw cannon (MB-SCORPION-03), on its wrist joint.
 
-    A swollen knuckle under a grafted cap, a cannon between its two pincers (drawn on their own
-    hinges, `draw_jaw`), and the sinews that work them. The left (+X) claw is the bigger one, a
-    fiddler crab's (MB-SCORPION-02).
+    A swollen knuckle under a grafted cap, the sinews that work its two pincers (drawn on their own
+    hinges, `draw_jaw`); its cannon between them is its gun mount (BOSS-58). The left (+X) claw is
+    the bigger one, a fiddler crab's (MB-SCORPION-02).
     """
     placed = claw_place(at)
     k = placed[0]
@@ -259,21 +257,3 @@ def claw(p: Any, at: Vec3) -> None:
         )
     p.neon.box([5 * k, 0.4, 0.8], YELLOW, Placement(put(0, 8, -6.5 * k), place.yaw))
     vein_line(p, put(-5 * k, 3.4, -0.5 * k), put(5 * k, 3.4, -0.5 * k), [0, 0.8, 0], 1, YELLOW)
-    length = CLAW_BARREL * k * 0.85
-    p.hull.cylinder(
-        2.4,
-        length,
-        6,
-        M.dark,
-        Placement(put(0, 2.5, 0), place.yaw, QUARTER),
-        2,
-    )
-    p.charge.cylinder(
-        2.2,
-        1.6,
-        6,
-        WHITE,
-        Placement(put(0, 2.5, length), place.yaw, QUARTER),
-        1.4,
-    )
-    p.muzzle(put(0, 2.5, length + 1.6), None)

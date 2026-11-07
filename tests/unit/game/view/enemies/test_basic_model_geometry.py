@@ -31,20 +31,24 @@ def probe(monkeypatch: Any) -> Any:
 def _footprint(body: Any) -> float:
     """Return the model's footprint seen from above, in logical pixels.
 
-    Its longest extent across or along, its rotors included, its reactors as their nozzles (their
-    flames are not drawn here).
+    Its longest extent across or along, its rotors, wings and sliding pieces (at rest) included, its
+    reactors as their nozzles (their flames are not drawn here).
     """
     xs: list[float] = []
     zs: list[float] = []
     parts = body["parts"]
-    for builder in (parts.hull, parts.flesh, parts.vein, parts.neon, parts.charge):
+    body_builders = (parts.hull, parts.flesh, parts.vein, parts.neon, parts.charge, parts.bare)
+    for builder in (*body_builders, parts.bare_flesh):
         xs.extend(builder.geometry.positions[0::3])
         zs.extend(builder.geometry.positions[2::3])
     for spot in body["reactors"] + body["rotors"]:
         xs.extend([spot.at[0] - spot.radius, spot.at[0] + spot.radius])
         zs.extend([spot.at[2] - spot.radius, spot.at[2] + spot.radius])
-    for wing in body["wings"]:
-        for builder in (wing.parts.hull, wing.parts.flesh, wing.parts.neon, wing.parts.vein):
+    # The wings, and the sliding pieces at rest (barrels, and a ring that turns, like the
+    # Spinner's): drawn in model space on their own builders.
+    for piece in body["wings"] + body["slides"]:
+        skin = piece.parts
+        for builder in (skin.hull, skin.flesh, skin.neon, skin.vein, skin.bare, skin.bare_flesh):
             xs.extend(builder.geometry.positions[0::3])
             zs.extend(builder.geometry.positions[2::3])
     return max(max(xs) - min(xs), max(zs) - min(zs))
@@ -84,10 +88,15 @@ def test_enm_21_each_basic_model_marks_the_config_muzzles(probe: Any, model: Any
 
     A config muzzle is (X right, Y up
 
-        when facing down the screen, height); the model's nose is +Z, so it is (X, height, -Y).
+        when facing down the screen, height); the model's nose is +Z, so it is (X, height, -Y). A
+    barrel with an angle is drawn the way it truly turns on screen: the model's X is the config's
+    mirrored (a model turned to face down has its +X to the screen's left).
     """
     body = probe(ENEMY_MODELS[model])
-    expected = [[x, height, -y] for x, y, height in _config_muzzles(BASIC_BY_MODEL[model])]
+    expected = [
+        [-x if angle else x, height, -y]
+        for x, y, height, *angle in _config_muzzles(BASIC_BY_MODEL[model])
+    ]
     marked = [list(at) for at, _kind in body["muzzles"]]
     assert len(marked) == len(expected), model
     # Each config muzzle is marked once, up to float noise.

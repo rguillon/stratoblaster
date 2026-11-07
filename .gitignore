@@ -13,3 +13,6 @@ build/
 src/build_info.py
 dist-e2e/
 test-results/
+
+# Install stamps of the Makefile (ENG-39)
+.make/

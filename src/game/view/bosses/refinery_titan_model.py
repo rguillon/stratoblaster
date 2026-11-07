@@ -4,8 +4,9 @@
 Model space: logical pixels, nose +Z (down the screen), Y up towards the camera. A bloated
 industrial beetle: a huge shelled body plumbed with grafted pipes, limbs cradling two glowing fuel
 bladders, smoking chimneys of flesh on its back, a fleshy apron in front carrying the two rotary
-turrets. Its back and spine plating are drawn as pieces of their own (`refinery_titan_armour`,
-D-254).
+turrets' bases (their rotors, the missile brood's ports and the core's turret and rotor are its gun
+mounts, drawn by `build_boss_model`, BOSS-58). Its back and spine plating are drawn as pieces of
+their own (`refinery_titan_armour`, D-254).
 """
 
 import math
@@ -20,7 +21,6 @@ from game.view.bosses.refinery_titan_armour import (
     SEGMENTS,
     TAIL,
     WIDTH,
-    draw_cannon_muzzles,
     draw_rear_shell,
     titan_armour,
 )
@@ -28,7 +28,6 @@ from game.view.bosses.refinery_titan_parts import (
     TITAN_DECK,
     TITAN_NEON,
     draw_missile_battery,
-    draw_rotary,
     draw_tank,
     draw_turret,
 )
@@ -58,7 +57,6 @@ type Vec3 = list[Any]
 # __pragma__ ("noskip")
 
 
-WHITE = [1, 1, 1]
 QUARTER = math.pi / 2
 
 # The right lobe of the apron of flesh the turrets stand on, either side of the belly (the
@@ -143,12 +141,11 @@ def _draw_columns(p: Any) -> None:
 def _draw_jaws(p: Any) -> None:
     """Draw the mandibles at its front and the barbs on its tail (FB-REFINERY-TITAN-02).
 
-    The plated skull with the twin cannon rides the back plating (`refinery_titan_armour`); the
-    core keeps the cannon's muzzles.
+    The plated skull rides the back plating (`refinery_titan_armour`); the core's guns are its
+    mounts on its rear shell (drawn by `build_boss_model`, BOSS-58).
     """
     for s in SIDES:
         tentacle(p, [s * 8, 4, 62], [s * 3, 3, 70], [s * 3, 0, 0], [2.4, 0.2], F.bone, 4)
-    draw_cannon_muzzles(p)
     barbs(p, [0, 17, -50], {"count": 3, "spacing": 0.1, "size": 4, "dir": [0, 1, -0.5]})
 
 
@@ -177,8 +174,8 @@ def build_refinery_titan(scene: Any) -> Any:
     """Build the Refinery Titan (FB-REFINERY-TITAN-01, FB-REFINERY-TITAN-04).
 
     A bloated industrial beetle (5.5 L) with orange veins: two big fuel bladders glowing in its
-    limbs, two rotary turrets on its front apron, a missile brood on its back, and its plated head
-    with a twin cannon over the core.
+    limbs, two rotary turrets on its front apron, a missile brood on its back, its plated head over
+    the core, and the core's fan turret and rotor on its rear shell either side of the brood.
     """
     return build_boss_model(
         REFINERY_TITAN,
@@ -193,7 +190,6 @@ def build_refinery_titan(scene: Any) -> Any:
                 "turret-right": draw_turret,
                 "missile-battery": draw_missile_battery,
             },
-            "turrets": {"turret-left": draw_rotary, "turret-right": draw_rotary},
             "armour": titan_armour(),
         },
     )
