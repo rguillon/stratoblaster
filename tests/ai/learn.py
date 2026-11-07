@@ -149,7 +149,7 @@ class Learner:
                 print("The optimiser's state is of a smaller brain: starting it over")
 
     def save(self) -> None:
-        save_brain(self.brain, self.stats)
+        save_brain(self.brain, self.stats, BRAIN_FILE)
         tmp = TRAINER_FILE.with_suffix(".tmp")
         torch.save({"optimizer": self.optimizer.state_dict()}, tmp)
         tmp.replace(TRAINER_FILE)
@@ -302,8 +302,8 @@ def report(
 ) -> str:
     """Say how the games that ended since the last report went, in plain words."""
     title = (
-        f"{minutes:.0f} min: {stats.decisions / 1e6:.1f} M moves played ({per_second:,.0f} a"
-        f" second), {stats.updates} updates of the brain"
+        f"{minutes:.0f} min in, {per_second:,.0f} moves a second · in all: {stats.hours:.1f} h,"
+        f" {stats.decisions / 1e6:.1f} M moves, {stats.updates} updates of the brain"
     )
     lines = [f"── {title} " + "─" * max(0, 96 - len(title))]
     if not games:

@@ -72,8 +72,9 @@ def _game(score: float, cleared: int = 0, outcome: str = "over") -> EpisodeRepor
 
 def test_d_271_the_report_says_how_the_games_went_in_words() -> None:
     games = [_game(1000), _game(3000, 1), _game(5000, 2, "timeout"), _game(500)]
-    text = report(games, LearnStats(updates=7, decisions=2_500_000, best_score=2400), 3, 9000, True)
-    assert "3 min: 2.5 M moves played (9,000 a second), 7 updates" in text
+    stats = LearnStats(updates=7, decisions=2_500_000, hours=1.25, best_score=2400)
+    text = report(games, stats, 3, 9000, True)
+    assert "3 min in, 9,000 moves a second · in all: 1.2 h, 2.5 M moves, 7 updates" in text
     assert "4: 3 (75%) game over, 1 (25%) too slow on a level, 0 (0%) cleared every level" in text
     assert "average 2,375, best 5,000 (reached 1-3, balanced ship)" in text
     assert "0.8 cleared on average, furthest reached 1-3; 2 (50%) got past 1-1" in text
@@ -239,3 +240,7 @@ def test_a_widened_brain_resumes_with_its_optimiser_started_over(
     learner = Learner(Settings(chunk=4, minibatches=2, epochs=1), fresh=False)
     assert not learner.optimizer.state_dict()["state"]
     assert "starting it over" in capsys.readouterr().out
+    (tmp_path / "brain.pt").unlink()
+    learner.save()  # where the learner was told: never the brain of data/
+    assert (tmp_path / "brain.pt").exists()
+    assert (tmp_path / "trainer.pt").exists()

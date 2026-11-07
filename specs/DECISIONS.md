@@ -1504,3 +1504,29 @@
   were 8 to 23): the weapons level up much more slowly, the ship lasts longer. Ratings made before
   are out of date.
 - **Status:** Proposed
+
+### D-271 — The brain learns on whole games, from 1-1 until the ship is lost, for the best score
+- **Date:** 2026-11-07
+- **Requirements:** none (requested by the human: learning games start at 1-1 with 3 lives and 3
+  bombs, go on to the next level when one is cleared with the weapons, lives and bombs earned,
+  until death or the last level (4-5) is cleared; the best score is the criterion; `make learn`'s
+  output easier to understand). Replaces the curriculum of D-263 and D-269.
+- **Decision:** `GameEnv(setup, campaign=LEVEL_IDS)`: when a level is cleared, the next starts
+  (a new `LevelRun`, full health) with the weapon in use, the weapon levels, the lives and the
+  bombs the cleared one ended with (GAME-WPN-15, GAME-LIFE-12), a seed of its own and its own time
+  limit (its length + 240 s); the episode ends at a game over, a level over its limit, or 4-5
+  cleared. Every learning episode is such a game, the ship drawn at random; no more starts in the
+  middle of a level. The reward is the points scored (1 per 2000), nothing else: progress,
+  damage, lives, bombs and bonuses pay only through the points they lead to (a life lost ends the
+  scoring sooner). `gamma` 0.998 (was 0.995): about 30 s of play ahead. The brain whose games
+  scored best on average over a report (at least 20 games) is saved in `data/brain-best.pt`
+  (`LearnStats.best_score`). `make learn` now says, every minute (`--report-seconds`), in words:
+  the games ended and how (game over, too slow, all cleared), their average and best score, the
+  levels cleared and the furthest reached, and the best average so far; the per-update numbers
+  (losses, entropy, KL) go to `data/learn-log.csv` only, with new columns (an older log is moved
+  to `learn-log.old.csv`). `make rate` and `make serve-ai` are unchanged (one level at a time).
+- **Consequences:** the brain trained before resumes, but its value estimates were for the old
+  reward: the first minutes relearn them. Later levels come up only once the brain gets that far,
+  so they are learned late. Games last until the ship is lost: early reports can have no game
+  ended yet.
+- **Status:** Proposed
