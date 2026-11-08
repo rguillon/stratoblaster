@@ -17,7 +17,9 @@ test-results/
 # Install stamps of the Makefile (ENG-39)
 .make/
 
-# The AI player's optimiser state (only to resume `make learn`) and partial saves; the brain
-# itself (data/brain.pt), its log and its ratings are kept.
+# The AI player's optimiser state (only to resume `make learn`) and partial saves.
 data/brain.trainer.pt
 data/*.tmp
+
+# CSV files (e.g. the AI player's learning logs) are never committed.
+*.csv
