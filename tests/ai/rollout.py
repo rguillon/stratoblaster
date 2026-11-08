@@ -66,6 +66,16 @@ class EpisodeReport:
 
 
 @dataclass
+class GameProgress:
+    """A game still being played: the level it is in, the levels cleared, its score, its moves."""
+
+    level: str
+    cleared: int
+    score: float
+    decisions: int
+
+
+@dataclass
 class Rollout:
     """`steps` decisions of `envs` episodes, time first (T, E, ...)."""
 
@@ -81,6 +91,8 @@ class Rollout:
     memories: NDArray[np.float32]
     last_values: NDArray[np.float32]
     episodes: list[EpisodeReport] = dataclasses.field(default_factory=list)
+    # The games still being played once the round is over.
+    playing: list[GameProgress] = dataclasses.field(default_factory=list)
 
 
 # What a rollout holds for each decision of each episode: its name, type and shape.
@@ -228,6 +240,14 @@ class _Episodes(Protocol):
     curriculum: Curriculum
 
 
+def progress(owner: _Episodes) -> list[GameProgress]:
+    """Return how each game a worker is playing stands."""
+    return [
+        GameProgress(env.setup.level_id, len(env.cleared), env.score, int(owner.decisions[e]))
+        for e, env in enumerate(owner.envs)
+    ]
+
+
 def _play(owner: _Episodes, e: int, action: list[int], out: Rollout, t: int) -> GameEnv:
     """Play decision `t` of episode `e`, and write what it got into `out`.
 
@@ -349,7 +369,7 @@ def worker_main(
                 break
             index, weights = message
             if player is not None:
-                conn.send(player.play(weights, views[index]))
+                conn.send((player.play(weights, views[index]), progress(player)))
                 continue
             assert server is not None  # one of the two
             assert served is not None
@@ -358,7 +378,7 @@ def worker_main(
             except (EOFError, BrokenPipeError):
                 conn.send("The inference server stopped (its error, if any, follows).")
                 break
-            conn.send(episodes)
+            conn.send((episodes, progress(served)))
     except (EOFError, BrokenPipeError):
         pass  # the learner is gone
     except Exception:  # noqa: BLE001  # the learner shows what went wrong in the worker

@@ -45,13 +45,21 @@ from ai.brain import (
     Batch,
     Brain,
     BrainShape,
+    Decision,
     LearnStats,
     load_brain,
     save_brain,
 )
 from ai.game_env import LEVEL_IDS
 from ai.inference import server_main
-from ai.rollout import Curriculum, EpisodeReport, Rollout, RolloutBuffer, worker_main
+from ai.rollout import (
+    Curriculum,
+    EpisodeReport,
+    GameProgress,
+    Rollout,
+    RolloutBuffer,
+    worker_main,
+)
 
 if TYPE_CHECKING:
     from multiprocessing.connection import Connection
@@ -88,6 +96,9 @@ class Settings:
     # The brain decides on the learner's device, in one process for every worker (D-274), rather
     # than in each worker on its CPU core.
     served: bool = False
+    # The learner's sums in half precision where it is safe (PyTorch's autocast, the losses
+    # scaled against underflow): a GPU's tensor cores do them several times faster (D-275).
+    mixed_precision: bool = False
 
     @staticmethod
     def for_device(device: str) -> "Settings":
@@ -95,12 +106,19 @@ class Settings:
 
         On a CPU, the learner's backward pass is the bottleneck: a third of the cores play, the
         rest learn. With a GPU, the learner is fast and playing is the bottleneck: every core but
-        three plays, each with 8 episodes and rounds of 64 decisions, and the brain decides for
-        every one of them on the GPU (D-264, D-274).
+        three plays, each with 16 episodes and rounds of 32 decisions, and the brain decides for
+        every one of them on the GPU (D-264, D-274, D-275).
         """
         if device == "cuda":
             workers = max(1, CPUS - 3)  # a core each for the learner and the inference server
-            return Settings(workers=workers, envs=8, steps=64, device=device, served=True)
+            return Settings(
+                workers=workers,
+                envs=16,  # two halves of 8: the server's batches are bigger, and less often
+                steps=32,  # a round as big as before (it goes to the GPU whole)
+                device=device,
+                served=True,
+                mixed_precision=True,
+            )
         return Settings(device=device)
 
 
@@ -146,6 +164,8 @@ class Learner:
         self.optimizer = torch.optim.Adam(
             self.brain.parameters(), lr=settings.learning_rate, eps=1e-5
         )
+        self.mixed = settings.mixed_precision and self.device.type == "cuda"
+        self.scaler = torch.amp.GradScaler("cuda", enabled=self.mixed)
         if TRAINER_FILE.exists() and not fresh and self.stats.updates > 0:
             saved = torch.load(TRAINER_FILE, map_location="cpu", weights_only=True)
             if _fits(saved["optimizer"], self.brain):
@@ -197,7 +217,7 @@ class Learner:
         t_field, t_fovea, t_state = t["field"], t["fovea"], t["state"]
         t_actions, t_logp, t_values = t["actions"], t["log_probs"], t["values"]
         t_adv, t_ret, t_starts, t_mem = t["adv"], t["returns"], t["starts"], t["memories"]
-        losses: dict[str, list[float]] = {"policy": [], "value": [], "entropy": [], "kl": []}
+        losses: dict[str, list[torch.Tensor]] = {"policy": [], "value": [], "entropy": [], "kl": []}
         self.brain.train()
         for _ in range(s.epochs):
             random.shuffle(chunks)
@@ -214,7 +234,12 @@ class Learner:
                     return t[ti, ei]
 
                 batch = Batch(take(t_field), take(t_fovea), take(t_state))
-                decision = self.brain.unroll(batch, t_mem[t0, env], take(t_starts), chunk)
+                with torch.autocast(dev.type, dtype=torch.float16, enabled=self.mixed):
+                    half = self.brain.unroll(batch, t_mem[t0, env], take(t_starts), chunk)
+                # The losses in full precision.
+                decision = Decision(
+                    half.move.float(), half.bomb.float(), half.switch.float(), half.value.float()
+                )
                 logp = decision.log_prob(take(t_actions))
                 ratio = torch.exp(logp - take(t_logp))
                 a = take(t_adv)
@@ -228,17 +253,20 @@ class Learner:
                 entropy = decision.entropy().mean()
                 loss = policy_loss + s.value_coef * value_loss - s.entropy_coef * entropy
                 self.optimizer.zero_grad()
-                loss.backward()
+                self.scaler.scale(loss).backward()
+                self.scaler.unscale_(self.optimizer)
                 nn.utils.clip_grad_norm_(self.brain.parameters(), s.max_grad_norm)
-                self.optimizer.step()
+                self.scaler.step(self.optimizer)
+                self.scaler.update()
                 with torch.no_grad():
                     kl = (take(t_logp) - logp).mean()
-                losses["policy"].append(policy_loss.item())
-                losses["value"].append(value_loss.item())
-                losses["entropy"].append(entropy.item())
-                losses["kl"].append(kl.item())
+                # Kept on the device: read once at the end, not a wait for the GPU each time.
+                losses["policy"].append(policy_loss.detach())
+                losses["value"].append(value_loss.detach())
+                losses["entropy"].append(entropy.detach())
+                losses["kl"].append(kl)
         self.brain.eval()
-        return {k: float(np.mean(v)) for k, v in losses.items()}
+        return {k: torch.stack(v).mean().item() for k, v in losses.items()}
 
 
 def _summary(episodes: list[EpisodeReport]) -> dict[str, float]:
@@ -307,42 +335,112 @@ def _share(count: int, total: int) -> str:
     return f"{count} ({count / total:.0%})"
 
 
+def _play_time(decisions: float) -> str:
+    """Return the game time of `decisions` moves (15 a second), as minutes:seconds."""
+    seconds = int(decisions / 15)
+    return f"{seconds // 60}:{seconds % 60:02d}"
+
+
+def _record_best_game(stats: LearnStats, games: list[EpisodeReport]) -> None:
+    """Keep the game that scored the most so far in `stats` (it is saved with the brain)."""
+    for game in games:
+        if game.score > stats.best_game.get("score", 0):
+            stats.best_game = {
+                "score": game.score,
+                "reached": game.reached,
+                "cleared": game.cleared,
+                "decisions": game.decisions,
+                "outcome": game.outcome,
+                "update": stats.updates,
+            }
+
+
+_ENDINGS = {
+    "over": "ship lost",
+    "timeout": "too slow on a level",
+    "complete": "every level cleared",
+}
+
+
+def _playing_lines(playing: list[GameProgress]) -> list[str]:
+    if not playing:
+        return []
+    count = len(playing)
+    moves = float(np.mean([g.decisions for g in playing]))
+    points = float(np.mean([g.score for g in playing]))
+    past = sum(g.cleared > 0 for g in playing)
+    lead = max(playing, key=lambda g: (g.score, g.cleared))
+    furthest = max(playing, key=lambda g: g.cleared)
+    now = (
+        f"  Playing now    {count} games, on average {moves:,.0f} moves in ({_play_time(moves)} of"
+        f" play) and {points:,.0f} points; {_share(past, count)} past {LEVEL_IDS[0]}, furthest in"
+        f" {furthest.level}"
+    )
+    leading = (
+        f"  Leading now    {lead.score:,.0f} points, in {lead.level} ({lead.cleared} levels"
+        f" cleared, {_play_time(lead.decisions)} of play)"
+    )
+    return [now, leading]
+
+
+def _ended_lines(games: list[EpisodeReport]) -> list[str]:
+    if not games:
+        return ["  Games ended    none since the last report (a game lasts until the ship is lost)"]
+    count = len(games)
+    over = sum(g.outcome == "over" for g in games)
+    slow = sum(g.outcome == "timeout" for g in games)
+    finished = sum(g.outcome == "complete" for g in games)
+    cleared = [g.cleared for g in games]
+    top = max(games, key=lambda g: (g.score, g.cleared))
+    beyond_first = sum(c > 0 for c in cleared)
+    ended = (
+        f"  Games ended    {count} since the last report: {_share(over, count)} game over,"
+        f" {_share(slow, count)} too slow on a level, {_share(finished, count)} cleared every"
+        " level"
+    )
+    score = (
+        f"  Their score    average {np.mean([g.score for g in games]):,.0f}, best"
+        f" {top.score:,.0f} (reached {top.reached})"
+    )
+    levels = (
+        f"  Their levels   {np.mean(cleared):.1f} cleared on average, furthest reached"
+        f" {_level_after(max(cleared))}; {_share(beyond_first, count)} got past {LEVEL_IDS[0]}"
+    )
+    return [ended, score, levels]
+
+
 def report(
-    games: list[EpisodeReport], stats: LearnStats, seconds: float, per_second: float, best: bool
+    games: list[EpisodeReport],
+    stats: LearnStats,
+    seconds: float,
+    per_second: float,
+    best: bool,
+    playing: list[GameProgress] | None = None,
 ) -> str:
-    """Say how the games that ended since the last report went, in plain words."""
+    """Say in plain words how the games stand, how those that ended went, and the best one.
+
+    The games being played now, those that ended since the last report, and the best game since
+    learning started.
+    """
     title = (
         f"{int(seconds) // 60}:{int(seconds) % 60:02d} in, {per_second:,.0f} moves a second"
         f" · in all: {stats.hours:.1f} h,"
         f" {stats.decisions / 1e6:.1f} M moves, {stats.updates} updates of the brain"
     )
     lines = [f"── {title} " + "─" * max(0, 96 - len(title))]
-    if not games:
-        lines.append("  No game ended since the last report: they go on until the ship is lost.")
-        return "\n".join(lines)
-    count = len(games)
-    over = sum(g.outcome == "over" for g in games)
-    slow = sum(g.outcome == "timeout" for g in games)
-    finished = sum(g.outcome == "complete" for g in games)
-    scores = [g.score for g in games]
-    cleared = [g.cleared for g in games]
-    top = max(games, key=lambda g: (g.score, g.cleared))
-    beyond_first = sum(c > 0 for c in cleared)
-    lines.append(
-        f"  Games ended    {count}: {_share(over, count)} game over, {_share(slow, count)} too"
-        f" slow on a level, {_share(finished, count)} cleared every level"
-    )
-    lines.append(
-        f"  Score          average {np.mean(scores):,.0f}, best {top.score:,.0f}"
-        f" (reached {top.reached}, {top.ship_id} ship)"
-    )
-    lines.append(
-        f"  Levels         {np.mean(cleared):.1f} cleared on average, furthest reached"
-        f" {_level_after(max(cleared))}; {_share(beyond_first, count)} got past {LEVEL_IDS[0]}"
-    )
+    lines += _playing_lines(playing or [])
+    lines += _ended_lines(games)
+    record = stats.best_game
+    if record:
+        lines.append(
+            f"  Best game ever {record['score']:,.0f} points: reached {record['reached']}"
+            f" ({record['cleared']} levels cleared), {_play_time(record['decisions'])} of play,"
+            f" ended: {_ENDINGS.get(record['outcome'], record['outcome'])}, at update"
+            f" {record['update']:,}"
+        )
     if stats.best_score > 0:
         note = f"this brain, saved in {_shown(BEST_BRAIN_FILE)}" if best else "an earlier brain"
-        lines.append(f"  Best average   {stats.best_score:,.0f} ({note})")
+        lines.append(f"  Best average   {stats.best_score:,.0f} a game ({note})")
     return "\n".join(lines)
 
 
@@ -431,10 +529,14 @@ class Workers:
     def collect(self) -> Rollout:
         """Wait for the round under way; return it (it stays valid until the next one starts)."""
         episodes: list[EpisodeReport] = []
+        playing: list[GameProgress] = []
         for conn in self.conns:
-            episodes.extend(self._check(conn.recv(), "A worker"))
+            ended, going = self._check(conn.recv(), "A worker")
+            episodes.extend(ended)
+            playing.extend(going)
         rollout = self.buffers[self._round % 2].rollout()
         rollout.episodes = episodes
+        rollout.playing = playing
         self._round += 1
         return rollout
 
@@ -499,7 +601,7 @@ def learn(settings: Settings, minutes: float, fresh: bool, seed: int) -> None:
             _log(row)
             if stats.updates % settings.save_every == 0:
                 learner.save()
-            reporter.add(data.episodes, learner)
+            reporter.add(data.episodes, learner, data.playing)
     finally:
         stop.ignore()
         workers.close()
@@ -535,9 +637,18 @@ class Reporter:
         # The games of the brain's last few reports, until there are enough to judge it by.
         self._judged: list[EpisodeReport] = []
 
-    def add(self, games: list[EpisodeReport], learner: Learner) -> None:
-        """Count the games that ended in an update; report when it is time."""
+    def add(
+        self,
+        games: list[EpisodeReport],
+        learner: Learner,
+        playing: list[GameProgress] | None = None,
+    ) -> None:
+        """Count the games that ended in an update; report when it is time.
+
+        `playing`: how the games still being played stand.
+        """
         self._games.extend(games)
+        _record_best_game(learner.stats, games)
         now = time.monotonic()
         if now - self._last < self.seconds:
             return
@@ -547,7 +658,8 @@ class Reporter:
         best = _keep_if_best(learner, self._judged)
         if len(self._judged) >= MIN_GAMES_FOR_BEST:
             self._judged = []
-        print(report(self._games, stats, now - self.start, per_second, best), flush=True)
+        text = report(self._games, stats, now - self.start, per_second, best, playing or [])
+        print(text, flush=True)
         self._games = []
         self._last = now
         self._decisions = stats.decisions

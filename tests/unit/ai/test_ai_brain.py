@@ -53,9 +53,24 @@ def test_the_memory_carries_what_was_seen_to_the_next_step() -> None:
 def test_unroll_replays_the_steps_one_by_one_and_starts_over_at_an_episode_start() -> None:
     torch.manual_seed(0)
     brain = Brain(SMALL)
-    steps, count = 4, 2
+    steps, count = 4, 3
     batch = _batch(steps * count)  # time first: step t of player n is t * count + n
-    starts = torch.tensor([False, False, False, True, False, False, True, False])
+    # Player 0 starts over at step 3, player 1 at step 1 (both step by step); player 2 starts at
+    # step 0 only (its sequence replayed whole, D-275).
+    starts = torch.tensor([
+        False,
+        False,
+        True,
+        False,
+        True,
+        False,
+        False,
+        False,
+        False,
+        True,
+        False,
+        False,
+    ])
     memory0 = torch.randn(count, SMALL.hidden)
     replay = brain.unroll(batch, memory0, starts, steps)
     memory = memory0
@@ -97,3 +112,17 @@ def test_a_brain_saved_before_the_last_channels_loads_blind_to_them(tmp_path: Pa
         assert widened.shape[1] == N_CHANNELS
         assert torch.equal(widened[:, : CH["bonus_heal"]], weights[name])
         assert not widened[:, CH["bonus_heal"] :].any()
+
+
+def test_d_275_a_brain_saved_with_a_gru_cell_loads_into_the_gru(tmp_path: Path) -> None:
+    brain = Brain(SMALL)
+    weights = {k: v.clone() for k, v in brain.state_dict().items()}
+    for name in ("weight_ih", "weight_hh", "bias_ih", "bias_hh"):
+        weights[f"memory.{name}"] = weights.pop(f"memory.{name}_l0")
+    path = tmp_path / "cell.pt"
+    stats = {"updates": 1, "decisions": 0, "episodes": 0, "hours": 0.0, "history": []}
+    shape = {"hidden": 32, "field_features": 16, "fovea_features": 16, "state_features": 8}
+    torch.save({"format": FORMAT, "shape": shape, "weights": weights, "stats": stats}, path)
+    loaded, _ = load_brain(path)
+    for name, value in brain.state_dict().items():
+        assert torch.equal(value, loaded.state_dict()[name])

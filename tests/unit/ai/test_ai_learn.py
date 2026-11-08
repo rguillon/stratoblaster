@@ -22,6 +22,7 @@ from ai.learn import (
     Settings,
     _keep_if_best,
     _log,
+    _record_best_game,
     advantages,
     report,
 )
@@ -34,7 +35,7 @@ from ai.rate import (
     rate_level,
     setups,
 )
-from ai.rollout import Curriculum, EpisodeReport, Player, RolloutBuffer, _empty
+from ai.rollout import Curriculum, EpisodeReport, GameProgress, Player, RolloutBuffer, _empty
 
 SMALL = BrainShape(hidden=32, field_features=16, fovea_features=16, state_features=8)
 
@@ -73,16 +74,37 @@ def _game(score: float, cleared: int = 0, outcome: str = "over") -> EpisodeRepor
 def test_d_271_the_report_says_how_the_games_went_in_words() -> None:
     games = [_game(1000), _game(3000, 1), _game(5000, 2, "timeout"), _game(500)]
     stats = LearnStats(updates=7, decisions=2_500_000, hours=1.25, best_score=2400)
-    text = report(games, stats, 190, 9000, True)
+    playing = [GameProgress("1-1", 0, 1000, 900), GameProgress("1-3", 2, 8000, 2700)]
+    _record_best_game(stats, games)
+    text = report(games, stats, 190, 9000, True, playing)
     assert "3:10 in, 9,000 moves a second · in all: 1.2 h, 2.5 M moves, 7 updates" in text
-    assert "4: 3 (75%) game over, 1 (25%) too slow on a level, 0 (0%) cleared every level" in text
-    assert "average 2,375, best 5,000 (reached 1-3, balanced ship)" in text
+    assert "Playing now    2 games, on average 1,800 moves in (2:00 of play)" in text
+    assert "4,500 points; 1 (50%) past 1-1, furthest in 1-3" in text
+    assert "Leading now    8,000 points, in 1-3 (2 levels cleared, 3:00 of play)" in text
+    assert "4 since the last report: 3 (75%) game over, 1 (25%) too slow on a level" in text
+    assert "0 (0%) cleared every level" in text
+    assert "average 2,375, best 5,000 (reached 1-3)" in text
     assert "0.8 cleared on average, furthest reached 1-3; 2 (50%) got past 1-1" in text
-    assert "Best average   2,400 (this brain, saved in data/brain-best.pt)" in text
+    assert "Best game ever 5,000 points: reached 1-3 (2 levels cleared), 0:06 of play" in text
+    assert "ended: too slow on a level, at update 7" in text
+    assert "Best average   2,400 a game (this brain, saved in data/brain-best.pt)" in text
     quiet = report([], LearnStats(), 1, 0, False)
-    assert "No game ended" in quiet
+    assert "Games ended    none since the last report" in quiet
+    assert "Playing now" not in quiet
+    assert "Best game ever" not in quiet
     assert "Best average" not in quiet
     assert "an earlier brain" in report(games, LearnStats(best_score=9), 1, 1, False)
+
+
+def test_d_271_the_best_game_is_kept_until_a_better_one_ends() -> None:
+    stats = LearnStats(updates=3)
+    _record_best_game(stats, [_game(1000), _game(4000, 1)])
+    assert stats.best_game["score"] == 4000
+    stats.updates = 9
+    _record_best_game(stats, [_game(3000)])
+    assert (stats.best_game["score"], stats.best_game["update"]) == (4000, 3)
+    _record_best_game(stats, [_game(4500, 2)])
+    assert (stats.best_game["score"], stats.best_game["reached"]) == (4500, "1-3")
 
 
 def test_d_271_the_brain_whose_games_score_best_on_average_is_kept(

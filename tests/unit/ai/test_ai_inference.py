@@ -97,4 +97,6 @@ def test_d_274_with_a_server_the_workers_play_a_round() -> None:
 def test_d_274_a_gpu_learns_with_the_server_and_a_core_for_it() -> None:
     cuda = Settings.for_device("cuda")
     assert cuda.served
+    assert cuda.mixed_precision
+    assert (cuda.envs, cuda.steps) == (16, 32)
     assert not Settings.for_device("cpu").served

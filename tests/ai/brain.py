@@ -12,6 +12,7 @@ learned for.
 
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 import torch
@@ -43,7 +44,8 @@ class BrainShape:
 class LearnStats:
     """How much the brain has learned: updates, decisions played, episodes and hours.
 
-    `best_score`: the best average score of the games of a report while learning (D-271).
+    `best_score`: the best average score of the games of a report while learning (D-271);
+    `best_game`: the best game played while learning.
     """
 
     updates: int = 0
@@ -51,6 +53,8 @@ class LearnStats:
     episodes: int = 0
     hours: float = 0.0
     best_score: float = 0.0
+    # The game that scored the most while learning: score, reached, cleared, decisions, update.
+    best_game: dict[str, Any] = field(default_factory=dict)
     history: list[dict[str, float]] = field(default_factory=list)
 
 
@@ -168,7 +172,8 @@ class Brain(nn.Module):
         self.state_net = nn.Sequential(nn.Linear(N_STATE, s.state_features), nn.ReLU())
         joined = s.field_features + s.fovea_features + s.state_features
         self.trunk = nn.Sequential(nn.Linear(joined, s.hidden), nn.ReLU())
-        self.memory = nn.GRUCell(s.hidden, s.hidden)
+        # A GRU (cuDNN's on a GPU): the learner replays whole sequences through it at once (D-275).
+        self.memory = nn.GRU(s.hidden, s.hidden)
         self.move_head = nn.Linear(s.hidden, len(MOVES))
         self.bomb_head = nn.Linear(s.hidden, 2)
         self.switch_head = nn.Linear(s.hidden, 2)
@@ -214,7 +219,8 @@ class Brain(nn.Module):
 
     def forward(self, batch: Batch, memory: Tensor) -> tuple[Decision, Tensor]:
         """One step for N players: their decision and their new memory."""
-        memory = self.memory(self.encode(batch), memory)
+        _, memory = self.memory(self.encode(batch).unsqueeze(0), memory.unsqueeze(0))
+        memory = memory.squeeze(0)
         return self.heads(memory), memory
 
     def unroll(self, batch: Batch, memory: Tensor, starts: Tensor, steps: int) -> Decision:
@@ -226,12 +232,24 @@ class Brain(nn.Module):
         features = self.encode(batch)
         count = memory.shape[0]
         features = features.view(steps, count, -1)
-        keep = (1.0 - starts.float()).view(steps, count, 1)
-        outputs = []
-        for t in range(steps):
-            memory = self.memory(features[t], memory * keep[t])
-            outputs.append(memory)
-        return self.heads(torch.cat(outputs, dim=0))
+        starts = starts.view(steps, count)
+        keep = (1.0 - starts.float()).unsqueeze(-1)
+        outputs = features.new_empty(steps, count, memory.shape[-1])
+        # The sequences no episode starts in after their first step: all at once.
+        whole = ~starts[1:].any(dim=0)
+        if whole.any():
+            first = (memory * keep[0])[whole]
+            replayed, _ = self.memory(features[:, whole], first.unsqueeze(0).contiguous())
+            outputs[:, whole] = replayed.to(outputs.dtype)
+        # The others step by step, the memory starting over where an episode starts.
+        broken = ~whole
+        if broken.any():
+            state = memory[broken].unsqueeze(0)
+            for t in range(steps):
+                state = state * keep[t, broken].unsqueeze(0)
+                _, state = self.memory(features[t : t + 1, broken], state.contiguous())
+                outputs[t, broken] = state[0].to(outputs.dtype)
+        return self.heads(outputs.view(steps * count, -1))
 
 
 def save_brain(brain: Brain, stats: LearnStats, path: Path = BRAIN_FILE) -> None:
@@ -268,6 +286,17 @@ def widen_inputs(weights: dict[str, Tensor]) -> None:
             weights[name] = torch.cat([old, zeros], dim=1)
 
 
+def _cell_to_gru(weights: dict[str, Tensor]) -> None:
+    """Rename the memory's weights of a brain saved with a `GRUCell` to a `GRU`'s (D-275).
+
+    The same weights in the same order: what it learned is kept, and its optimiser's state fits.
+    """
+    for name in ("weight_ih", "weight_hh", "bias_ih", "bias_hh"):
+        old = f"memory.{name}"
+        if old in weights:
+            weights[f"memory.{name}_l0"] = weights.pop(old)
+
+
 def load_brain(path: Path = BRAIN_FILE) -> tuple[Brain, LearnStats]:
     """Load a saved brain and its learning stats (widened to the channels added since)."""
     saved = torch.load(path, map_location="cpu", weights_only=True)
@@ -277,6 +306,7 @@ def load_brain(path: Path = BRAIN_FILE) -> tuple[Brain, LearnStats]:
     brain = Brain(BrainShape(**saved["shape"]))
     weights = saved["weights"]
     widen_inputs(weights)
+    _cell_to_gru(weights)
     brain.load_state_dict(weights)
     stats = LearnStats(**saved["stats"])
     return brain, stats

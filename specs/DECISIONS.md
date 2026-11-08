@@ -1592,3 +1592,33 @@
   On glouton's GPU, the server alone answers batches of 30 questions (120 episodes) in 3.2 ms
   (was 7.7): about 38,000 decisions a second, more than the workers can play.
 - **Status:** Proposed
+
+### D-275 — A faster learner: whole sequences through cuDNN's GRU, and mixed precision
+- **Date:** 2026-11-07
+- **Requirements:** none (requested by the human: use glouton's idle CPU and GPU).
+- **Context:** with the inference server (D-274) and 16 episodes a worker, glouton played about
+  15,600 decisions a second, its CPUs 40 % busy: the workers played a round faster than the
+  learner learned from the one before (1.9 s an update), and waited. The learner replayed the
+  memory step by step (a `GRUCell`, 32 small steps forward and backward each minibatch).
+- **Decision:** the memory is an `nn.GRU` (cuDNN's on a GPU): the learner replays every sequence
+  in which no episode starts after its first step in one call, the others step by step as before.
+  A brain saved with the `GRUCell` loads into it (the same weights, renamed; its optimiser's state
+  fits). With a GPU the learner computes in half precision where it is safe (autocast, the losses
+  scaled), the losses in full precision, and reads them once an update rather than once a
+  minibatch. With a GPU, 16 episodes a worker and rounds of 32 decisions are the defaults.
+- **Consequences:** an update of 31,232 decisions takes 1.1 s on glouton instead of 1.5 (both
+  measured beside a running learner). The same decisions, step by step (unit test).
+- **Status:** Proposed
+
+### D-276 — `make learn` reports the games in progress and the best game so far
+- **Date:** 2026-11-07
+- **Requirements:** none (requested by the human: more explicit reports, with the best game so
+  far).
+- **Decision:** after each round every worker sends, with the games that ended, how each game it
+  is playing stands (`GameProgress`: level, levels cleared, score, moves). Each report (every
+  10 s) now says: the games being played (how many, their average moves, play time and score,
+  how many got past 1-1, the furthest level), the one leading now, the games that ended since the
+  last report and how, and the best game since learning started (score, level reached, levels
+  cleared, play time, how it ended, at which update). The best game is kept in the brain's stats
+  (`LearnStats.best_game`), so it survives a restart.
+- **Status:** Proposed
