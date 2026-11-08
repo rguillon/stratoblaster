@@ -172,7 +172,7 @@ def test_an_episode_difficulty_is_one_less_the_mean_of_progress_and_health_left(
 
 
 def test_the_rating_plays_every_level_with_the_same_loadout() -> None:
-    assert RatingSettings().weapon_level == 1  # a fresh start (D-269)
+    assert RatingSettings().weapon_level == 1  # a fresh start (D-294)
     settings = RatingSettings(episodes=2, weapon_level=4)
     all_setups = setups(settings, ["1-1", "2-3"])
     assert [s.level_id for s in all_setups] == ["1-1", "1-1", "2-3", "2-3"]
@@ -240,7 +240,7 @@ def test_a_sampled_rating_episode_plays_the_same_alone_or_with_others() -> None:
 def test_a_widened_brain_resumes_with_its_optimiser_started_over(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    """D-270: the saved Adam moments of a brain with fewer channels no longer fit it."""
+    """D-282: the saved Adam moments of a brain with fewer channels no longer fit it."""
     monkeypatch.setattr(learn_module, "BRAIN_FILE", tmp_path / "brain.pt")
     monkeypatch.setattr(learn_module, "TRAINER_FILE", tmp_path / "trainer.pt")
     brain = Brain(SMALL)

@@ -26,7 +26,7 @@ dev = [
     "deptry>=0.25.1",
     "numpy>=2.5.4",
 ]
-# torch for the AI player (`tests/ai/`), in one of two builds (D-264): `ai-cpu` (installed by
+# torch for the AI player (`tests/ai/`), in one of two builds (D-289): `ai-cpu` (installed by
 # default, CPU-only wheels) or `ai-cuda` (NVIDIA GPUs, CUDA 12.6: `make learn AI_TORCH=cuda`).
 ai-cpu = ["torch>=2.14"]
 ai-cuda = ["torch>=2.14"]
@@ -364,7 +364,7 @@ source_modules = [
 ]
 forbidden_modules = ["game"]
 
-# The AI player's torch (`tests/ai/`, D-263, D-264): the CPU-only wheels by default (no CUDA
+# The AI player's torch (`tests/ai/`, D-288, D-289): the CPU-only wheels by default (no CUDA
 # libraries in dev installs or CI), the CUDA 12.6 ones in the `ai-cuda` group (any driver >= 525,
 # GPUs from the GTX 10 / RTX 20 series on). The two groups cannot be installed together.
 [tool.uv]

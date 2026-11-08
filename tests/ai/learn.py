@@ -2,7 +2,7 @@
 """`make learn`: the brain learns to play the game (proximal policy optimisation, PPO).
 
 Worker processes play games with the current brain (see `rollout.py`): each from level 1-1 with 3
-lives and 3 bombs, on through the levels with what it earned, until the game is over (D-271). The
+lives and 3 bombs, on through the levels with what it earned, until the game is over (D-295). The
 learner improves the brain from what they played, for the best score, and sends them the new
 weights. It goes on for `--minutes`, or until Ctrl-C, saving the brain under `data/` every few
 updates and at the end; the brain whose games scored best on average is kept too
@@ -93,11 +93,11 @@ class Settings:
     max_grad_norm: float = 0.5
     save_every: int = 10
     report_seconds: float = 10.0
-    # The brain decides on the learner's device, in one process for every worker (D-274), rather
+    # The brain decides on the learner's device, in one process for every worker (D-298), rather
     # than in each worker on its CPU core.
     served: bool = False
     # The learner's sums in half precision where it is safe (PyTorch's autocast, the losses
-    # scaled against underflow): a GPU's tensor cores do them several times faster (D-275).
+    # scaled against underflow): a GPU's tensor cores do them several times faster (D-299).
     mixed_precision: bool = False
 
     @staticmethod
@@ -107,7 +107,7 @@ class Settings:
         On a CPU, the learner's backward pass is the bottleneck: a third of the cores play, the
         rest learn. With a GPU, the learner is fast and playing is the bottleneck: every core but
         three plays, each with 16 episodes and rounds of 32 decisions, and the brain decides for
-        every one of them on the GPU (D-264, D-274, D-275).
+        every one of them on the GPU (D-289, D-298, D-299).
         """
         if device == "cuda":
             workers = max(1, CPUS - 3)  # a core each for the learner and the inference server
@@ -454,7 +454,7 @@ def _shared_dir() -> Path:
 class Workers:
     """The worker processes playing the game, writing into two shared rollout buffers in turn.
 
-    With `settings.served`, an inference server process decides for all of them (D-274).
+    With `settings.served`, an inference server process decides for all of them (D-298).
     """
 
     def __init__(self, settings: Settings, shape: BrainShape, seed: int) -> None:
@@ -692,7 +692,7 @@ def _farewell(stats: LearnStats) -> None:
 
 
 def _keep_if_best(learner: Learner, games: list[EpisodeReport]) -> bool:
-    """Save the brain as the best when its games scored best on average so far (D-271).
+    """Save the brain as the best when its games scored best on average so far (D-295).
 
     Only with enough games for the average to mean something. Returns whether it was saved.
     """

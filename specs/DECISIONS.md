@@ -1273,7 +1273,7 @@
   select hints say "tap to go".
 - **Consequences:** a mis-tap on a menu goes straight through (a locked level still only shakes).
 
-### D-263 — An AI player (`tests/ai/`) that learns the game and rates its levels; torch and numpy
+### D-288 — An AI player (`tests/ai/`) that learns the game and rates its levels; torch and numpy
 - **Date:** 2026-11-07
 - **Requirements:** none yet (requested by the human: `make learn`, `make rate`; the brain kept in
   `data/`); ENG-05 (new dev dependencies); ENG-18 (the AI is not `core/`).
@@ -1327,11 +1327,11 @@
   a command-line tool, not the deterministic simulation those rules protect.
 - **Status:** Proposed
 
-### D-264 — The AI player learns on an NVIDIA GPU, with every CPU core playing
+### D-289 — The AI player learns on an NVIDIA GPU, with every CPU core playing
 - **Date:** 2026-11-07
 - **Requirements:** none (requested by the human: make `make learn` faster on a server with an
   RTX 2060 and 64 CPU threads); ENG-05 (the CUDA build of torch).
-- **Context:** on a CPU the learner's backward pass is the bottleneck (D-263): a third of the cores
+- **Context:** on a CPU the learner's backward pass is the bottleneck (D-288): a third of the cores
   play, the learner has the rest. With a GPU the learner is fast, so many more cores can play; a
   round of 60 workers is then over a gigabyte of observations, too much to pickle through pipes.
 - **Decision:** torch leaves the `dev` group for two groups that cannot be installed together:
@@ -1359,11 +1359,11 @@
   simulation (`src/core/`), which is the game's code, not the AI's.
 - **Status:** Proposed
 
-### D-265 — `make serve-ai`: the brain plays the real game in a browser window
+### D-290 — `make serve-ai`: the brain plays the real game in a browser window
 - **Date:** 2026-11-07
 - **Requirements:** none (requested by the human: open a browser and watch the AI play the level
   chosen); DEV-API-01 (a sixth test API function); ENG-52 (test API in the e2e build only).
-- **Context:** the brain decides in Python (D-263); the browser game is the JavaScript build.
+- **Context:** the brain decides in Python (D-288); the browser game is the JavaScript build.
   Replaying a Python run in the browser would need the two runtimes to stay bit-identical for
   minutes (their `sin`/`cos` may differ in the last bit, and the runs would drift apart); the test
   API's `getState()` gives counts, not where things are.
@@ -1387,14 +1387,14 @@
   comes from the JavaScript simulation, so the brain plays the very game a player plays.
 - **Spec follow-up (owner's to edit):** DEV-API-01 lists five test API functions, now six
   (`getScene`); ENG-37's public targets lack `learn`, `rate` and `serve-ai`.
-- **Status:** Superseded in part by D-266 (the server and the in-page player replace the
+- **Status:** Superseded in part by D-291 (the server and the in-page player replace the
   Chromium window driven by Playwright; `getScene()` and the shared `play_scene` stay)
 
-### D-266 — `make serve-ai` serves the game; the page asks the brain for its keys
+### D-291 — `make serve-ai` serves the game; the page asks the brain for its keys
 - **Date:** 2026-11-07
 - **Requirements:** none (requested by the human: no Chromium window of its own, it is slow in
   WSL; open the game in any browser); ENG-52 (the e2e build only).
-- **Context:** D-265 stepped the game from Python through Playwright, so it needed a Chromium the
+- **Context:** D-290 stepped the game from Python through Playwright, so it needed a Chromium the
   script launched, which draws with software WebGL under WSL (some 200 ms a frame).
 - **Decision:** `make serve-ai` starts a local HTTP server (`tests/ai/watch.py`, port 5174,
   `SERVE_AI_PORT`) of the e2e build, which sends `/` on to the game with `?ai` (and `level` and
@@ -1416,7 +1416,7 @@
   `__GAME_TEST__` is absent).
 - **Status:** Proposed
 
-### D-267 — The AI player draws its moves (not the likeliest one) when watched and rating
+### D-292 — The AI player draws its moves (not the likeliest one) when watched and rating
 - **Date:** 2026-11-07
 - **Requirements:** none (the human saw the brain hold the ship in the bottom-left corner, firing
   missiles only, in `make serve-ai`).
@@ -1438,13 +1438,13 @@
   call (GAME-WPN).
 - **Status:** Proposed
 
-### D-268 — The watched brain decides every 4 steps, and taps its bomb and switch keys
+### D-293 — The watched brain decides every 4 steps, and taps its bomb and switch keys
 - **Date:** 2026-11-07
 - **Requirements:** none (the human saw the brain stay in the bottom-left corner in
   `make serve-ai`, not dodging and not picking up bonuses).
 - **Context:** the same brain, fed the same scenes, moved over the whole screen in the Python game
   and stayed in the corner in the browser (the scenes were checked equal, to the bullets'
-  coordinates). Two differences with how it learned: (1) D-266 asked on the wall clock, so with a
+  coordinates). Two differences with how it learned: (1) D-291 asked on the wall clock, so with a
   slow drawing many steps passed between two decisions (some 23 instead of 4 in a headless
   browser); (2) a decision to switch weapon (or to set a bomb off) is one press of E (R) in
   learning, but the page held E down: one press for all the decisions after. The brain wants to
@@ -1462,7 +1462,7 @@
   requests are deprecated on the main thread (e2e build with `?ai` only).
 - **Status:** Proposed
 
-### D-269 — The AI player starts every level afresh, apart from the player's save
+### D-294 — The AI player starts every level afresh, apart from the player's save
 - **Date:** 2026-11-07
 - **Requirements:** none (requested by the human: in `make serve-ai` the brain started with 60
   bombs and every weapon at level 5; it must start with 3 lives, 3 bombs and level 1 weapons, and
@@ -1484,33 +1484,12 @@
   before were with level 3 weapons.
 - **Status:** Proposed
 
-### D-270 — Healing bonuses take the place of three weapon bonuses in four
-- **Date:** 2026-11-07
-- **Requirements:** none (requested by the human: a healing bonus that gives back 20 % of the
-  player's health, replacing 75 % of the weapon bonuses). It adds a kind to GAME-BONUS-01 and a
-  sound to AUD-SFX-01 (`specs/gameplay/bonuses.md` and `specs/audio/sfx.md` still list three kinds
-  and 29 sounds: for the owner to update).
-- **Decision:** `BonusRules.heal` (`HealRules`: `share` 0.75, `health` 0.2, `BONUS_RULES.heal`).
-  Each weapon bonus that drops is a healing one instead with a draw of its own (`create_rng(seed +
-  3)`), so which enemies drop a bonus, and the life and bomb draws, stay as before. Picked up, it
-  gives back 20 % of the ship's full health, up to full (`PlayerHull.heal`); at full health it
-  gives nothing (no points, unlike GAME-BONUS-10's life and bomb). Boss parts' weapon drops are
-  split the same way. Its badge is a cross in a rim, in the pickups' violet (`BONUS_LOOK.heal`,
-  `build_heal_badge`); its sound, `heal-bonus`, is the life bonus's chime pitched up a fourth
-  (`CREDITS.md`). The AI sees it in a 17th channel, `bonus_heal`, added last: a brain saved before
-  loads with zero weights for it (`widen_inputs`) and plays as it did; `make learn` then starts its
-  optimiser's moments over. Picking one up rewards it 0.5.
-- **Consequences:** about a quarter as many weapon levels a level (about 2 in 1-1 to 6 in 1-5,
-  were 8 to 23): the weapons level up much more slowly, the ship lasts longer. Ratings made before
-  are out of date.
-- **Status:** Proposed
-
-### D-271 — The brain learns on whole games, from 1-1 until the ship is lost, for the best score
+### D-295 — The brain learns on whole games, from 1-1 until the ship is lost, for the best score
 - **Date:** 2026-11-07
 - **Requirements:** none (requested by the human: learning games start at 1-1 with 3 lives and 3
   bombs, go on to the next level when one is cleared with the weapons, lives and bombs earned,
   until death or the last level (4-5) is cleared; the best score is the criterion; `make learn`'s
-  output easier to understand). Replaces the curriculum of D-263 and D-269.
+  output easier to understand). Replaces the curriculum of D-288 and D-294.
 - **Decision:** `GameEnv(setup, campaign=LEVEL_IDS)`: when a level is cleared, the next starts
   (a new `LevelRun`, full health) with the weapon in use, the weapon levels, the lives and the
   bombs the cleared one ended with (GAME-WPN-15, GAME-LIFE-12), a seed of its own and its own time
@@ -1531,10 +1510,10 @@
   ended yet.
 - **Status:** Proposed
 
-### D-272 — Faster learning: a cheaper view, and a little reward for staying alive
+### D-296 — Faster learning: a cheaper view, and a little reward for staying alive
 - **Date:** 2026-11-07
 - **Requirements:** none (requested by the human: speed up the learning, by learning on the GPU
-  machine, a faster observation, and a reward for staying alive). Amends D-271's reward.
+  machine, a faster observation, and a reward for staying alive). Amends D-295's reward.
 - **Context:** a worker spent about 43 % of its time in the game, 32 % in the network and 20 %
   building what the brain sees; within that, a third went to the walls of the fovea (the camera
   framing worked out row by row) and most of the rest to drawing each shot in three channels.
@@ -1550,7 +1529,7 @@
   change again with the reward: its first minutes relearn them.
 - **Status:** Proposed
 
-### D-273 — A faster simulation for the AI player, the game played exactly as before
+### D-297 — A faster simulation for the AI player, the game played exactly as before
 - **Date:** 2026-11-07
 - **Requirements:** none (requested by the human: speed up the game's simulation for learning).
 - **Context:** in CPython the simulation's time is spread over many small functions; the player's
@@ -1567,7 +1546,7 @@
   gains need another approach (the network on the GPU, fewer decisions a second).
 - **Status:** Proposed
 
-### D-274 — With a GPU, one inference server decides for every worker
+### D-298 — With a GPU, one inference server decides for every worker
 - **Date:** 2026-11-07
 - **Requirements:** none (requested by the human: run the brain on the GPU for the workers, to
   learn faster).
@@ -1593,10 +1572,10 @@
   (was 7.7): about 38,000 decisions a second, more than the workers can play.
 - **Status:** Proposed
 
-### D-275 — A faster learner: whole sequences through cuDNN's GRU, and mixed precision
+### D-299 — A faster learner: whole sequences through cuDNN's GRU, and mixed precision
 - **Date:** 2026-11-07
 - **Requirements:** none (requested by the human: use glouton's idle CPU and GPU).
-- **Context:** with the inference server (D-274) and 16 episodes a worker, glouton played about
+- **Context:** with the inference server (D-298) and 16 episodes a worker, glouton played about
   15,600 decisions a second, its CPUs 40 % busy: the workers played a round faster than the
   learner learned from the one before (1.9 s an update), and waited. The learner replayed the
   memory step by step (a `GRUCell`, 32 small steps forward and backward each minibatch).
@@ -1610,7 +1589,7 @@
   measured beside a running learner). The same decisions, step by step (unit test).
 - **Status:** Proposed
 
-### D-276 — `make learn` reports the games in progress and the best game so far
+### D-300 — `make learn` reports the games in progress and the best game so far
 - **Date:** 2026-11-07
 - **Requirements:** none (requested by the human: more explicit reports, with the best game so
   far).

@@ -1,5 +1,5 @@
 # Copyright (c) 2026 Renaud Guillon
-"""Unit tests of `src/debug/fresh_start_storage.py` (D-269)."""
+"""Unit tests of `src/debug/fresh_start_storage.py` (D-294)."""
 
 from app.saved_supplies import load_saved_supplies, save_supplies, saved_supplies_key
 from app.saved_weapons import load_saved_weapons, save_weapons, saved_weapons_key

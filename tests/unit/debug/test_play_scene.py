@@ -1,5 +1,5 @@
 # Copyright (c) 2026 Renaud Guillon
-"""Unit tests of `src/debug/play_scene.py` (D-265: the playfield for the AI player)."""
+"""Unit tests of `src/debug/play_scene.py` (D-290: the playfield for the AI player)."""
 
 from types import SimpleNamespace
 from typing import Any

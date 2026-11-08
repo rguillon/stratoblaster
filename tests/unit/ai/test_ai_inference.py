@@ -1,5 +1,5 @@
 # Copyright (c) 2026 Renaud Guillon
-"""Unit tests of `tests/ai/inference.py`: the brain deciding for every worker (D-274)."""
+"""Unit tests of `tests/ai/inference.py`: the brain deciding for every worker (D-298)."""
 
 from pathlib import Path
 

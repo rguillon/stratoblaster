@@ -56,7 +56,7 @@ def test_unroll_replays_the_steps_one_by_one_and_starts_over_at_an_episode_start
     steps, count = 4, 3
     batch = _batch(steps * count)  # time first: step t of player n is t * count + n
     # Player 0 starts over at step 3, player 1 at step 1 (both step by step); player 2 starts at
-    # step 0 only (its sequence replayed whole, D-275).
+    # step 0 only (its sequence replayed whole, D-299).
     starts = torch.tensor([
         False,
         False,
@@ -97,7 +97,7 @@ def test_a_saved_brain_loads_with_its_weights_and_stats(tmp_path: Path) -> None:
 
 
 def test_a_brain_saved_before_the_last_channels_loads_blind_to_them(tmp_path: Path) -> None:
-    """D-270: the healing bonuses' channel, added last, starts unseen (zero weights)."""
+    """D-282: the healing bonuses' channel, added last, starts unseen (zero weights)."""
     brain = Brain(SMALL)
     weights = {k: v.clone() for k, v in brain.state_dict().items()}
     for name in ("field_net.0.weight", "fovea_net.0.weight"):

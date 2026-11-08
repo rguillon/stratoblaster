@@ -1,5 +1,5 @@
 # Copyright (c) 2026 Renaud Guillon
-"""The inference server: the brain on the GPU decides for every worker's episodes (D-274).
+"""The inference server: the brain on the GPU decides for every worker's episodes (D-298).
 
 Without it, each worker runs its own copy of the brain on its CPU core, a third of its time. With
 it, one process holds the brain on the GPU and answers the workers' questions in batches: a worker

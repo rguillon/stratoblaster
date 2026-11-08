@@ -40,7 +40,7 @@ CHANNELS: tuple[str, ...] = (
     "bonus_bomb",  # 13
     "ship",  # 14: the player's ship
     "wall",  # 15: where the ship cannot fly
-    "bonus_heal",  # 16: healing bonuses (D-270; last, so the brains before it load, see `brain.py`)
+    "bonus_heal",  # 16: healing bonuses (D-282; last, so the brains before it load, see `brain.py`)
 )
 N_CHANNELS = len(CHANNELS)
 CH = {name: i for i, name in enumerate(CHANNELS)}

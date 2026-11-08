@@ -1,5 +1,5 @@
 # Copyright (c) 2026 Renaud Guillon
-"""A player outside the page: the AI player of `make serve-ai` (D-266, D-268), in e2e builds only.
+"""A player outside the page: the AI player of `make serve-ai` (D-291, D-293), in e2e builds only.
 
 With `?ai` in the URL, the e2e build runs in real time. After every 4th step of a level played (not
 paused, not over), as the brain learned to decide, it asks the page's own server (`POST /ai`: the

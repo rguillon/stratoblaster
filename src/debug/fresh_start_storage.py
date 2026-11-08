@@ -1,5 +1,5 @@
 # Copyright (c) 2026 Renaud Guillon
-"""The storage of the AI player's page (`?ai`, D-269): in memory, every level a fresh start.
+"""The storage of the AI player's page (`?ai`, D-294): in memory, every level a fresh start.
 
 The AI player starts each level as from the level select with nothing kept: the starting lives
 and bombs, every weapon at its first level, and more only from the bonuses it picks up. So the

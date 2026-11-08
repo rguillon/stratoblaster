@@ -6,7 +6,7 @@ ship, weapons, bonuses, bombs, hull, bosses and camera framing (for where the sh
 is on screen), but no rendering and no clock: each `step` advances the simulation by
 `frame_skip` fixed steps of 1/60 s, as fast as the CPU goes.
 
-One level, or a campaign (D-271): the levels one after the other from the first, each cleared one
+One level, or a campaign (D-295): the levels one after the other from the first, each cleared one
 going on to the next with the weapons, lives and bombs it ended with, as the game does, until the
 game is over, a level takes too long, or the last one is cleared.
 """
@@ -191,9 +191,9 @@ class StepInfo:
 
 @dataclass
 class RewardWeights:
-    """The reward of a decision: the points scored over it, and a little for staying alive (D-272).
+    """The reward of a decision: the points scored over it, and a little for staying alive (D-296).
 
-    The best score is what the brain learns for (D-271), and what the best brain is chosen by;
+    The best score is what the brain learns for (D-295), and what the best brain is chosen by;
     `alive` and the charges for damage only teach it sooner that it scores only while it
     survives. `alive` is worth a point a decision (15 a second of play); the health of a whole
     bar lost costs as much as 2,000 points, a life 2,000 more.

@@ -3,7 +3,7 @@
 
 Each worker holds a copy of the brain (sent by the learner before each round), plays `steps`
 decisions in each of its episodes, and sends back everything the learner needs: what was seen,
-done, expected and got. An episode is a campaign from the first level (D-271); one that ends is
+done, expected and got. An episode is a campaign from the first level (D-295); one that ends is
 replaced by a new one.
 """
 
@@ -29,10 +29,10 @@ from ai.observation import FIELD_COLS, FIELD_ROWS, FOVEA_SIZE, N_CHANNELS, N_STA
 
 @dataclass
 class Curriculum:
-    """How the learning episodes are drawn: each a campaign (D-271).
+    """How the learning episodes are drawn: each a campaign (D-295).
 
     From the first of `levels` with a fresh start (3 lives, 3 bombs, the first weapon at level 1,
-    as when watched and rated, D-269), each level cleared going on to the next with what it ended
+    as when watched and rated, D-294), each level cleared going on to the next with what it ended
     with, until the game is over, a level takes too long or the last one is cleared. Always with
     the `ship` (the balanced one); the seed varies.
     """
@@ -110,7 +110,7 @@ _STEP_ARRAYS: tuple[tuple[str, type, tuple[int, ...]], ...] = (
 
 
 # What a rollout holds for each episode after its last decision, for the inference server to
-# work out the value of the round's end from (D-274): its name, type and shape.
+# work out the value of the round's end from (D-298): its name, type and shape.
 _NEXT_ARRAYS: tuple[tuple[str, type, tuple[int, ...]], ...] = (
     ("next_field", np.float16, (N_CHANNELS, FIELD_ROWS, FIELD_COLS)),
     ("next_fovea", np.float16, (N_CHANNELS, FOVEA_SIZE, FOVEA_SIZE)),
@@ -279,7 +279,7 @@ def _play(owner: _Episodes, e: int, action: list[int], out: Rollout, t: int) -> 
 
 
 class ServedPlayer:
-    """A few episodes played side by side, their decisions made by the inference server (D-274).
+    """A few episodes played side by side, their decisions made by the inference server (D-298).
 
     They are in two groups: while the server decides for one, the worker plays the other's
     decisions, so neither waits for the other. What each episode sees goes into the shared rollout
@@ -351,7 +351,7 @@ def worker_main(
 
     The worker plays episodes `envs[0]` to `envs[1]` of the shared rollout buffers; each message
     is the index of the buffer to write the round into and the weights to play it with. With a
-    `server` (the inference server, D-274) the weights are None: the server decides. Ctrl-C is the
+    `server` (the inference server, D-298) the weights are None: the server decides. Ctrl-C is the
     learner's to handle: it stops the workers once the brain is saved.
     """
     signal.signal(signal.SIGINT, signal.SIG_IGN)

@@ -4,7 +4,7 @@
 A local server (no browser of its own: open its address in any browser) serves the e2e build of
 the game (`dist-e2e/`) with `?ai` in its address: the game then runs in real time, and while a
 level is played (not paused, not over) it posts what is on the playfield to `POST /ai` about 15
-times a second (`src/debug/remote_player.py`, D-266). The brain answers here, in Python, with the
+times a second (`src/debug/remote_player.py`, D-291). The brain answers here, in Python, with the
 keys to hold: the arrows, Space (fire), R (a bomb), E (the next weapon). Choose a ship and a level
 in the menus as usual (or give `--level`); the menus and the panels are yours. Ctrl-C stops it.
 
@@ -87,7 +87,7 @@ class Player:
 
 
 def page_query(level: str | None, ship: str | None) -> str:
-    """Return the query of the game's address: `ai` (D-266), and the level to start, if any."""
+    """Return the query of the game's address: `ai` (D-291), and the level to start, if any."""
     query: dict[str, str] = {"ai": "1"}
     if level is not None:
         query["level"] = level

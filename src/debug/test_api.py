@@ -17,7 +17,7 @@ JavaScript, and Playwright copies them out of the page.
 - `readability(share)`: how readable the level's frame is (DEV-API-09), a promise; null off the game
   screen;
 - `getScene()`: what is on the playfield of the level being played (`debug/play_scene.py`), for
-  the AI player of `make serve-ai` (D-265); null off the game screen.
+  the AI player of `make serve-ai` (D-290); null off the game screen.
 """
 
 import math
@@ -136,7 +136,7 @@ def step_test_frames(app: Any, frames: Any, render: Any) -> None:
 
 
 def scene_state(app: Any) -> Any:
-    """`__GAME_TEST__.getScene` (D-265): the playfield of the level played, or None off a level."""
+    """`__GAME_TEST__.getScene` (D-290): the playfield of the level played, or None off a level."""
     play = app.game()
     return play_scene(play.run) if play is not None else None
 

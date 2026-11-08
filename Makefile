@@ -176,7 +176,7 @@ learn:
 rate:
 	$(AI_RUN) ai.rate $(RATE_ARGS)
 
-# Watch the brain play the real game in your own browser: a server of the e2e build (D-266) on
+# Watch the brain play the real game in your own browser: a server of the e2e build (D-291) on
 # SERVE_AI_PORT, where the game runs in real time and asks the brain for its moves. Start a level
 # from the menus, or `make serve-ai LEVEL=2-3` (and SHIP=heavy). WATCH_ARGS: more options
 # (`--host 0.0.0.0` to open it from another machine, `--greedy`).

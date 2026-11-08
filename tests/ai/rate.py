@@ -57,7 +57,7 @@ class RatingSettings:
     weapon_level: int = 1
     # Moves drawn from the brain's choices, as it learned to play (seeded: the ratings repeat).
     # Always taking its likeliest move plays worse: a brain still learning spreads its choices, and
-    # the likeliest alone can be "hold one direction" (D-267).
+    # the likeliest alone can be "hold one direction" (D-292).
     greedy: bool = False
     seed: int = 1000
 

@@ -1,5 +1,5 @@
 # Copyright (c) 2026 Renaud Guillon
-"""What is on the playfield of a level run, for a player outside the page (D-265).
+"""What is on the playfield of a level run, for a player outside the page (D-290).
 
 `__GAME_TEST__.getScene()` (e2e builds only) gives it to the AI player of `make serve-ai`, which
 reads it from Python, chooses its moves and presses the game's keys. Everything is a number, a

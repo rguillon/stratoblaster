@@ -34,7 +34,7 @@ def dev_mode(search: str) -> bool:
 
 
 def ai_mode(search: str) -> bool:
-    """Whether the query asks for the AI player of `make serve-ai` (`?ai`, D-266; e2e builds)."""
+    """Whether the query asks for the AI player of `make serve-ai` (`?ai`, D-291; e2e builds)."""
     return _has_key(search, "ai")
 
 

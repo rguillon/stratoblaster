@@ -1,5 +1,5 @@
 # Copyright (c) 2026 Renaud Guillon
-"""Unit tests of `src/debug/remote_player.py` (D-266: the AI player of `make serve-ai`)."""
+"""Unit tests of `src/debug/remote_player.py` (D-291: the AI player of `make serve-ai`)."""
 
 from types import SimpleNamespace
 from typing import Any

@@ -195,7 +195,7 @@ def fit_to_window(engine: Any, stage: Any, overlay: Any, draw_scale: float) -> N
 
 
 def tested() -> bool:
-    """Whether the tests step the app: an e2e build, unless the AI player plays it (D-266).
+    """Whether the tests step the app: an e2e build, unless the AI player plays it (D-291).
 
     `?ai` runs the e2e build in real time, as the production game, with its test API on.
     """
@@ -212,7 +212,7 @@ def start_game(engine: Any, draw_scale: float) -> None:
     debug = parse_debug_options(window.location.search)
     storage: Any = CookieStorage(document, MENU_CONFIG.cookie_max_age_days)
     __pragma__("ifdef", "e2e")
-    # D-269: the AI player starts every level afresh, and leaves the player's cookies alone.
+    # D-294: the AI player starts every level afresh, and leaves the player's cookies alone.
     if not stepped:
         storage = FreshStartStorage(GAME.id)
     __pragma__("endif")
@@ -254,7 +254,7 @@ def start_game(engine: Any, draw_scale: float) -> None:
     app = start_app(engine, GAME, options)
     __pragma__("ifdef", "e2e")
     install_test_api(window, app)
-    # D-266: the AI player of `make serve-ai`, with `?ai` in the URL.
+    # D-291: the AI player of `make serve-ai`, with `?ai` in the URL.
     if not stepped:
         install_remote_player(app, start_interval, ask_json)
     __pragma__("endif")

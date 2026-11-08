@@ -24,7 +24,7 @@ from ai.game_env import MOVES
 from ai.observation import FIELD_COLS, FIELD_ROWS, FOVEA_SIZE, N_CHANNELS, N_STATE, Observation
 
 BRAIN_FILE = DATA / "brain.pt"
-# The brain whose games scored best on average while learning (D-271).
+# The brain whose games scored best on average while learning (D-295).
 BEST_BRAIN_FILE = DATA / "brain-best.pt"
 TRAINER_FILE = DATA / "brain.trainer.pt"
 FORMAT = 1
@@ -44,7 +44,7 @@ class BrainShape:
 class LearnStats:
     """How much the brain has learned: updates, decisions played, episodes and hours.
 
-    `best_score`: the best average score of the games of a report while learning (D-271);
+    `best_score`: the best average score of the games of a report while learning (D-295);
     `best_game`: the best game played while learning.
     """
 
@@ -135,7 +135,7 @@ class Decision:
         """Draw actions (N, 3) and return them with their log-probability (N).
 
         As `sample` then `log_prob`, without building the distributions: the inference server
-        does it for every batch (D-274).
+        does it for every batch (D-298).
         """
         picks, total = [], None
         for logits in (self.move, self.bomb, self.switch):
@@ -172,7 +172,7 @@ class Brain(nn.Module):
         self.state_net = nn.Sequential(nn.Linear(N_STATE, s.state_features), nn.ReLU())
         joined = s.field_features + s.fovea_features + s.state_features
         self.trunk = nn.Sequential(nn.Linear(joined, s.hidden), nn.ReLU())
-        # A GRU (cuDNN's on a GPU): the learner replays whole sequences through it at once (D-275).
+        # A GRU (cuDNN's on a GPU): the learner replays whole sequences through it at once (D-299).
         self.memory = nn.GRU(s.hidden, s.hidden)
         self.move_head = nn.Linear(s.hidden, len(MOVES))
         self.bomb_head = nn.Linear(s.hidden, 2)
@@ -287,7 +287,7 @@ def widen_inputs(weights: dict[str, Tensor]) -> None:
 
 
 def _cell_to_gru(weights: dict[str, Tensor]) -> None:
-    """Rename the memory's weights of a brain saved with a `GRUCell` to a `GRU`'s (D-275).
+    """Rename the memory's weights of a brain saved with a `GRUCell` to a `GRU`'s (D-299).
 
     The same weights in the same order: what it learned is kept, and its optimiser's state fits.
     """
