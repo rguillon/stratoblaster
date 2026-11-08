@@ -52,11 +52,6 @@ def play_first_level(page: Page) -> None:
 # -- Pause -------------------------------------------------------------------------------------
 
 
-# D-249: on a 390 px wide phone the 16:9 stage is scaled by 0.3, so the sliders are 17 CSS px
-# until the mobile layout comes (UI-LOOK-02 notes); expected to fail there, strictly.
-PHONE_TOO_SMALL = pytest.mark.xfail(strict=True, reason="D-249: the mobile layout is still to come")
-
-
 def test_ui_pause_03_p_pauses_nothing_moves_resume_goes_on_from_the_same_point(
     page: Page,
 ) -> None:
@@ -204,12 +199,10 @@ def test_ui_set_06_a_bad_volume_cookie_reads_as_the_default(
     assert game_state(page)["volumes"] == {"music": 6, "sfx": 8}
 
 
-@PHONE_TOO_SMALL
 @pytest.mark.browser_context_args(**TOUCH_PHONE)
 def test_ui_set_03_taps_set_the_sliders_every_target_is_at_least_44_px(page: Page) -> None:
     """Also UI-SET-08 and UI-INPUT-11: every target is at least 44 px."""
     open_game(page)
-    page.locator(".title-settings").tap()
     page.locator(".title-settings").tap()
     expect_state(page, {"screen": "settings"})
     bars = page.locator(".slider-bar")

@@ -31,7 +31,7 @@ SAND = texture(
         [0.86, 0.72, 0.5],
     ],
     18,
-    {"speckle": 0.025, "speckleColor": [0.52, 0.38, 0.24]},
+    {"speckle": 0.025, "speckleColor": [0.448, 0.328, 0.207]},
 )
 
 # Dry earth: the ground where the grass turns dry, between the green land and the sand.
@@ -48,9 +48,9 @@ DRY_EARTH = texture(
 # Fresh green grass of the islands, the coast and the meadows, with a few yellow tufts.
 GRASS = texture(
     [
-        [0.22, 0.34, 0.12],
-        [0.3, 0.46, 0.16],
-        [0.4, 0.55, 0.22],
+        [0.154, 0.237, 0.084],
+        [0.21, 0.321, 0.112],
+        [0.279, 0.384, 0.154],
     ],
     14,
     {"speckle": 0.035, "speckleColor": [0.6, 0.56, 0.28]},
@@ -71,9 +71,9 @@ CRAG = texture(
 # Red-brown desert rock, layered (World 2's slopes).
 DESERT_ROCK = texture(
     [
-        [0.42, 0.28, 0.2],
-        [0.56, 0.38, 0.27],
-        [0.66, 0.48, 0.35],
+        [0.353, 0.236, 0.168],
+        [0.471, 0.32, 0.227],
+        [0.555, 0.404, 0.295],
     ],
     8,
     {"strata": 0.45},
@@ -82,9 +82,9 @@ DESERT_ROCK = texture(
 # Red mesa rock, in strong layers (D-200): the walls of World 1's mesas, buttes and canyons.
 MESA_ROCK = texture(
     [
-        [0.46, 0.22, 0.13],
-        [0.62, 0.32, 0.19],
-        [0.74, 0.44, 0.28],
+        [0.323, 0.154, 0.091],
+        [0.435, 0.224, 0.133],
+        [0.519, 0.309, 0.196],
     ],
     8,
     {"strata": 0.5, "stones": 0.7},
@@ -94,9 +94,9 @@ MESA_ROCK = texture(
 # sage-grey scrub, no sand.
 DESERT_DIRT = texture(
     [
-        [0.56, 0.34, 0.21],
-        [0.67, 0.43, 0.28],
-        [0.76, 0.53, 0.36],
+        [0.341, 0.207, 0.128],
+        [0.408, 0.262, 0.17],
+        [0.462, 0.322, 0.219],
     ],
     14,
     {"speckle": 0.045, "speckleColor": [0.36, 0.34, 0.26]},
@@ -106,9 +106,9 @@ DESERT_DIRT = texture(
 # red dirt (World 1's other levels keep the olive `DRY_EARTH`).
 DRIED_EARTH = texture(
     [
-        [0.52, 0.38, 0.26],
-        [0.62, 0.47, 0.33],
-        [0.7, 0.56, 0.4],
+        [0.447, 0.327, 0.224],
+        [0.533, 0.404, 0.284],
+        [0.602, 0.482, 0.344],
     ],
     12,
     {"speckle": 0.04, "speckleColor": [0.4, 0.33, 0.24]},

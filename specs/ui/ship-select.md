@@ -27,7 +27,7 @@ drawn over the menu backdrop, whose own ship is hidden on this screen
 Under each ship, a card gives its name and its stats: its speed (its factor of the base speed and
 its top speed in px/s, e.g. `Speed ×1 (225 px/s)`) and its health (e.g. `HP 100`). The row of cards
 is as wide as the row of ships on screen, so each card sits under its ship. Above the cards: the
-heading "Choose your ship"; under them, the hint "◀ ▶ to pick · Enter or tap again to go"; at the
+heading "Choose your ship"; under them, the hint "◀ ▶ to pick · Enter or tap to go"; at the
 top left, the Back button ([menu-input.md](menu-input.md)).
 
 **Acceptance criteria**

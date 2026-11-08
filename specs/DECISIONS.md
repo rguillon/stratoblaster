@@ -1232,3 +1232,44 @@
 - **Consequences:** sweeping beams and laser warning lines can be outrun everywhere; aimed lasers
   land a little further from a moving player.
 - **Status:** Proposed
+
+## D-285 — Grass and desert ground darkened under the brightness cap (GFX-READ-05)
+- **Context:** the owner asked to resolve the strict xfails of GFX-READ-05: the grass greens of
+  every world sat in the enemy family, and the desert browns, red rock and sand grains of Worlds 1
+  and 2 in the enemy-shot family, above the 0.35 brightness cap. Owner's choice: darken them to the
+  cap, keeping their hue.
+- **Decision:** each texture holding such a colour (`GRASS`, `DESERT_ROCK`, `MESA_ROCK`,
+  `DESERT_DIRT`, `DRIED_EARTH`, the sand's grains, the meadows' `lush` grass) has all its shades
+  scaled by one factor, so its brightest flagged shade lands at 0.345: hue and the order of its
+  shades kept. Factors: grass 0.70, lush grass 0.78, mesa rock 0.70, desert dirt 0.61, desert rock
+  0.84, dried earth 0.86, sand grains 0.86.
+- **Consequences:** grass and the desert ground are darker (desert dirt the most, about 40 %);
+  enemies and shots stand out more on them. The palette unit tests run without xfail.
+- **Status:** Proposed
+
+## D-286 — Phone layout: menus across the window at their real size (UI-LOOK-02, UI-INPUT-11)
+- **Context:** on a 390 × 844 phone the 16:9 stage, and the overlay scaled with it, is 390 × 219
+  CSS px (scale 0.3): menus unreadable and touch targets of 13–17 CSS px. Two e2e tests were strict
+  xfails waiting for "the mobile layout" (D-249). Owner's choice: build it.
+- **Decision:** when the stage is scaled under `PHONE_SCALE` (0.5), `apply_stage_fit` gives the
+  overlay the `phone` class; the menu overlay gives it `on-play` while a level is played with no
+  panel over it. `#menu.phone:not(.on-play)` is fixed over the whole window, unscaled (one CSS
+  pixel per logical pixel), so every screen, the pause menu, the settings and the end panels are laid
+  out at their real size over the canvas, the HUD hidden under them. During play the overlay keeps
+  to the 16:9 box, so the HUD lines up with the playfield. The level cells are 60 px there, so a row
+  of five fits 390 px.
+- **Alternatives considered:** bigger logical targets inside the 16:9 box (a 44 CSS px target would
+  need about 150 logical px, so the level grid could not fit); a separate phone UI.
+- **Consequences:** the 3D ships of the ship select stay in the 16:9 band while their cards sit at
+  the bottom of the window, no longer under each ship. The HUD during play is still the small one.
+- **Status:** Proposed
+
+## D-287 — One tap or click selects and confirms (UI-INPUT-09)
+- **Context:** the owner: "make it so a single click is enough for the UI buttons". A tap on an
+  entry that was not selected only selected it; a second tap confirmed it.
+- **Decision:** a tap sends the entry's selection then Confirm (`pointer_commands`), so one tap
+  acts on every menu, the pause menu and the end panels. The dev viewers (`dev-viewer`,
+  `dev-audio`) keep the two steps: picking an item there shows or plays it. The ship and level
+  select hints say "tap to go".
+- **Consequences:** a mis-tap on a menu goes straight through (a locked level still only shakes).
+- **Status:** Proposed

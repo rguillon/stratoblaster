@@ -16,6 +16,7 @@ from ui.menu_view import (
     LevelOption,
     LevelSelectView,
     LoadingView,
+    PauseView,
     SettingsView,
     SliderView,
     TitleView,
@@ -83,14 +84,23 @@ def test_ui_flow_08_the_same_screen_again_does_not_fade_in_again() -> None:
     assert not root.children[0].classList.contains("menu-enter")
 
 
-def test_ui_input_09_tapping_the_selected_entry_confirms_and_another_selects_it() -> None:
+def test_ui_input_09_one_tap_selects_an_entry_and_confirms_it() -> None:
+    """D-287: a single click is enough; on the selected entry it confirms it at once."""
     overlay, _, root, commands = make_overlay()
     overlay.show(title(selected=0))
     root.children[0].querySelector(".title-start").fire("click")
     root.children[0].querySelector(".title-settings").fire("click")
-    assert commands[0] == "confirm"
+    assert [getattr(c, "select", c) for c in commands] == ["confirm", 1, "confirm"]
     assert isinstance(commands[1], MenuSelect)
-    assert commands[1].select == 1
+
+
+def test_ui_input_09_on_a_dev_viewer_a_tap_on_another_entry_only_selects_it() -> None:
+    """D-287: in the dev viewers, picking an item shows it; a second tap confirms."""
+    overlay, _, root, commands = make_overlay()
+    entries = [DevChoice("hit", 0, selected=False), DevChoice("bomb", 1, selected=False)]
+    overlay.show(DevAudioView("Sounds", "hint", "Back", 0, entries))
+    root.children[0].querySelectorAll(".dev-menu-item")[1].fire("pointerdown")
+    assert [getattr(c, "select", c) for c in commands] == [1]
 
 
 def test_ui_input_10_the_back_button_sends_back() -> None:
@@ -231,3 +241,18 @@ def test_ui_look_01_dispose_with_nothing_shown_is_harmless() -> None:
     overlay.dispose()
     assert root.children == []
     assert overlay.view is None
+
+
+def test_ui_look_02_the_overlay_keeps_to_the_stage_only_while_a_level_is_played() -> None:
+    """D-286: on a phone, only a level being played keeps its HUD on the stage.
+
+    A pause menu, an end panel or any other screen takes the whole window.
+    """
+    overlay, _, root, _ = make_overlay()
+    overlay.show(GameScreenView("Level 1", "FIRE", None, None, 0))
+    assert root.classList.contains("on-play")
+    paused = PauseView("Paused", ["Resume", "Settings", "Main menu"], "hint")
+    overlay.show(GameScreenView("Level 1", "FIRE", None, paused, 0))
+    assert not root.classList.contains("on-play")
+    overlay.show(title())
+    assert not root.classList.contains("on-play")

@@ -119,7 +119,7 @@ from it returns to the pause menu, with the level still paused.
 
 Main menu asks `Leave the level?`, with **No** (selected first) and **Yes** side by side, in place
 of the entries. Any direction picks: Left or Up for No, Right or Down for Yes; a tap selects a
-choice and a second tap confirms it. Yes ends the attempt: its score is checked against the high
+choice and confirms it (UI-INPUT-09, D-287). Yes ends the attempt: its score is checked against the high
 score and saved if higher ([gameplay/scoring.md](../gameplay/scoring.md)), and the title screen
 shows. No, or `back`, returns to the pause menu, with the level still paused.
 

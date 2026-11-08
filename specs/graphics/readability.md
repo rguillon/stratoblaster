@@ -82,14 +82,17 @@ The background palette of every world leaves the reserved families out, or uses 
 GFX-READ-01 brightness cap. In particular no background colour falls in the enemy-shot family above
 that cap.
 
+The grass greens (in the enemy family) and the desert browns, red rock and sand grains (in the
+enemy-shot family) are darkened to just under the cap, each texture's shades by one factor so they
+keep their hue and their order (D-285).
+
 **Acceptance criteria**
 - Given each world's background palette, when it is checked against the enemy-shot family, then no
   colour falls in it above the brightness cap (unit test on the palettes).
+- Given each world's background palette, then no colour falls in any reserved family above the
+  brightness cap (unit test on the palettes).
 
-**Gap:** no unit test checks the world palettes against the families since the Python port (the
-TypeScript palette test was not carried over); only the e2e luminance check of GFX-READ-01 runs.
-
-*Sources: P14-R02.*
+*Sources: P14-R02, D-285.*
 
 ### GFX-READ-06 — Colours moved into their family where they are drawn · SHOULD
 

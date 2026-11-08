@@ -132,15 +132,17 @@ shorter than `gamepad_dead_zone` is ignored.
 
 ### UI-INPUT-09 — Tap or click an entry · MUST
 
-Every menu entry can be tapped or clicked. Tapping an entry that is not selected selects it;
-tapping the selected entry confirms it. The same holds for the choices of the pause menu's question
-and of the "Game over" panel; the "Level complete" panel without choices is one entry that a tap
-confirms.
+Every menu entry can be tapped or clicked, and one tap is enough: it selects the entry and confirms
+it (D-287). The same holds for the pause menu, its question's choices, the "Game over" panel's
+choices and the "Level complete" panel. The dev viewers (DEV-MENU-05, DEV-MENU-19) keep two steps,
+since picking an item there shows it: a tap on another item selects it, a tap on the selected one
+confirms it.
 
 **Acceptance criteria**
-- Given the ship select screen with Balanced highlighted, when the Heavy card is tapped, then Heavy is highlighted; when it is tapped again, then the screen is `level-select`.
+- Given the ship select screen with Balanced highlighted, when the Heavy card is tapped once, then Heavy is the ship and the screen is `level-select` (e2e).
+- Given a dev viewer, when another item is tapped, then it is selected and nothing is confirmed (unit test).
 
-*Sources: P01-R11, D-008.*
+*Sources: P01-R11, D-008, D-287.*
 
 ### UI-INPUT-10 — An on-screen Back button · MUST
 
@@ -156,8 +158,8 @@ plays that part.
 ### UI-INPUT-11 — Large touch targets · MUST
 
 Every tappable target (menu entries, level cells, sliders, the Back button, the panels'
-choices) is at least 44 × 44 CSS px, also on a 390 px wide phone, where the logical screen is
-scaled down to about 0.81.
+choices) is at least 44 × 44 CSS px, also on a 390 px wide phone, where the menus are laid out at
+their real size across the window (UI-LOOK-02, D-286).
 
 **Acceptance criteria**
 - At 390 × 844, every `.menu-entry` and `.menu-back` of the title, ship select and level select screens is at least 44 × 44 CSS px (e2e).

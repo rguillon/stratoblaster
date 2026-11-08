@@ -9,7 +9,18 @@ from e2e.menu_helpers import expect_state, open_game, poll
 from playwright.sync_api import Page, expect
 
 
-@pytest.mark.parametrize(("width", "height"), [(800, 600), (1920, 1080), (390, 844)])
+def _assert_fitted_16_9(page: Page, selector: str, width: int, height: int) -> None:
+    box = page.locator(selector).bounding_box()
+    assert box, f"{selector} has no box"
+    assert box["x"] >= 0
+    assert box["y"] >= 0
+    assert box["x"] + box["width"] <= width + 1
+    assert box["y"] + box["height"] <= height + 1
+    assert box["width"] / box["height"] == pytest.approx(1280 / 720, abs=0.005)
+    assert max(box["width"] / width, box["height"] / height) > 0.99
+
+
+@pytest.mark.parametrize(("width", "height"), [(800, 600), (1920, 1080)])
 def test_ui_look_02_the_menu_is_fully_visible_not_cropped_not_stretched(
     page: Page, width: int, height: int
 ) -> None:
@@ -17,14 +28,21 @@ def test_ui_look_02_the_menu_is_fully_visible_not_cropped_not_stretched(
     page.set_viewport_size({"width": width, "height": height})
     open_game(page)
     for selector in ["#stage", "#menu"]:
-        box = page.locator(selector).bounding_box()
-        assert box, f"{selector} has no box"
-        assert box["x"] >= 0
-        assert box["y"] >= 0
-        assert box["x"] + box["width"] <= width + 1
-        assert box["y"] + box["height"] <= height + 1
-        assert box["width"] / box["height"] == pytest.approx(1280 / 720, abs=0.005)
-        assert max(box["width"] / width, box["height"] / height) > 0.99
+        _assert_fitted_16_9(page, selector, width, height)
+    expect(page.locator(".title-version")).to_be_in_viewport(ratio=1)
+
+
+def test_ui_look_02_on_a_phone_the_menu_fills_the_window_over_the_16_9_stage(page: Page) -> None:
+    """D-286: at 390 x 844 the stage is the 16:9 box, the menus take the whole window."""
+    page.set_viewport_size({"width": 390, "height": 844})
+    open_game(page)
+    _assert_fitted_16_9(page, "#stage", 390, 844)
+    box = page.locator("#menu").bounding_box()
+    assert box
+    assert box["x"] == pytest.approx(0, abs=1)
+    assert box["y"] == pytest.approx(0, abs=1)
+    assert box["width"] == pytest.approx(390, abs=1)
+    assert box["height"] == pytest.approx(844, abs=1)
     expect(page.locator(".title-version")).to_be_in_viewport(ratio=1)
 
 
@@ -61,11 +79,6 @@ def test_ui_look_08_the_selected_entry_is_marked_by_more_than_colour(page: Page)
     assert marker(".level-cell.selected", "", "outline-style") == "dashed"
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="D-249: on a 390 px wide phone the 16:9 stage is 390 x 219 CSS px (scale 0.3); the "
-    "mobile layout is still to come (UI-LOOK-02 notes).",
-)
 def test_ui_input_11_touch_targets_are_at_least_44_css_px_on_a_phone(page: Page) -> None:
     page.set_viewport_size({"width": 390, "height": 844})
     open_game(page)

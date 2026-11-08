@@ -31,11 +31,18 @@ across it. The overlay is scaled to that box
 with a CSS transform, so the 3D models and their HTML captions line up. The box follows window
 resizes.
 
+On a phone (the box scaled under `phone_scale`, such as 0.3 on a 390 × 844 portrait screen), the
+menus, the pause menu, the settings and the end-of-level panels are instead laid out across the
+whole window at their real size (one CSS pixel per logical pixel), over the 16:9 canvas, so they stay
+readable and their touch targets keep their size (UI-INPUT-11). The HUD of a level being played
+keeps to the 16:9 box, lined up with the playfield; under a panel it is hidden (D-286).
+
 **Acceptance criteria**
-- At window sizes 800 × 600, 1920 × 1080 and 390 × 844 (portrait phone), the menu is fully visible, not cropped, not stretched (16:9 within 0.5 %), and fills the window's width or height.
+- At window sizes 800 × 600 and 1920 × 1080, the menu is fully visible, not cropped, not stretched (16:9 within 0.5 %), and fills the window's width or height.
+- At 390 × 844 (portrait phone), the canvas is the 16:9 box and the menus fill the window at their real size (e2e: UI-INPUT-11, UI-SET-03); a level being played keeps its HUD on the box, a pause menu does not (unit tests).
 - Given the window goes from 800 × 600 to 390 × 844, then the menu follows within 5 s (e2e).
 
-*Sources: P01-R13, GD-02, GD-03, ENG-110, D-008, D-249.*
+*Sources: P01-R13, GD-02, GD-03, ENG-110, D-008, D-249, D-286.*
 
 ### UI-LOOK-03 — Neon blue/green palette · MUST
 
@@ -188,6 +195,7 @@ Under the system's "reduce motion" setting, the logo's glow and the hints' pulse
 |------|-------|-------|
 | Logical resolution | 1280 × 720 | `src/game/config/game.py` `GAME_CONFIG.screen` (GD-02, D-249) |
 | `menu_column` | 560 px | `index.html` `--menu-column` (UI-LOOK-02, D-249) |
+| `phone_scale` | 0.5 CSS px per logical px | `src/ui/stage_fit.py` `PHONE_SCALE`; `index.html` `#menu.phone` (UI-LOOK-02, D-286) |
 | `--neon` | `#00e8ff` | `index.html` `:root` |
 | `--accent` | `#3dff9a` | `index.html` `:root` |
 | `--deep` | `#0a5cff` | `index.html` `:root` |
@@ -215,6 +223,5 @@ Under the system's "reduce motion" setting, the logo's glow and the hints' pulse
   readouts, the segmented loading bar, the hazard-striped locked cells, the chrome logo, the neon
   frame and bottom line, the pulsing hints and the light selected block with black text.
 - D-249 (2026-11-02): the screen is 16:9. The menus were laid out for the 3:4 screen and only
-  got a centre column; on a 390 × 844 phone the stage is now 390 × 219 CSS px, so the UI-LOOK-09
-  manual check and the UI-INPUT-11 touch targets do not hold there until the mobile layout
-  comes (the owner's choice: "we will deal with the mobile UI later").
+  got a centre column; on a 390 × 844 phone the stage is now 390 × 219 CSS px. The phone layout
+  (D-286) lays the menus out across the window there, so the UI-INPUT-11 touch targets hold.

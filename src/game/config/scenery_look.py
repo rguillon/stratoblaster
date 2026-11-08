@@ -128,9 +128,9 @@ BASE_SCENERY_LOOK = record({
         # Phase 4 review: grass of the meadows, with a few dry yellow tufts.
         "lush": texture(
             [
-                [0.2, 0.3, 0.11],
-                [0.28, 0.4, 0.15],
-                [0.37, 0.49, 0.2],
+                [0.155, 0.233, 0.085],
+                [0.218, 0.311, 0.117],
+                [0.287, 0.381, 0.155],
             ],
             14,
             {"speckle": 0.04, "speckleColor": [0.55, 0.52, 0.26]},

@@ -475,3 +475,21 @@ def test_game_bonus_11_a_heal_bonus_gives_back_a_fifth_of_the_health_up_to_full(
     run.bonuses.place("heal", PlanePoint(50, 10))
     _step(run, dt=0.1)
     assert run.hull.health == pytest.approx(100)
+
+
+def test_game_bonus_11_a_heal_bonus_gives_nothing_without_a_hull_or_heal_rules() -> None:
+    """Picked up, it is gone; with no hull, or rules without a heal, it changes nothing."""
+    hull_less = _run(bonuses=_heal_rules())
+    hull_less.bonuses.place("heal", PlanePoint(50, 10))
+    _step(hull_less, dt=0.1)
+    assert hull_less.bonuses.collected == 1
+    assert hull_less.hull is None
+    no_heal = _run(
+        hull=HullRules(3, 0, 3, HullDamage(0, 0, 0, 0), 0),
+        bonuses=BonusRules(BonusChance(0, 1, 1), 0, 5),
+    )
+    no_heal.hull.health = 50
+    no_heal.bonuses.place("heal", PlanePoint(50, 10))
+    _step(no_heal, dt=0.1)
+    assert no_heal.bonuses.collected == 1
+    assert no_heal.hull.health == 50

@@ -5,7 +5,7 @@ Clicks into menu commands (UI-INPUT-09); it never reads raw keys or gamepad butt
 """
 
 from input.menu_action import MenuSet
-from input.pointer_menu_input import pointer_command
+from input.pointer_menu_input import pointer_commands
 from ui.menu_view import (
     DevAudioView,
     DevMenuView,
@@ -91,6 +91,21 @@ def _render_screen(doc: MenuDocument, view: MenuView, handlers: ScreenHandlers) 
     return render_settings_screen(doc, settings, handlers)
 
 
+# The screens where a tap only selects an entry that is not selected (D-287): the dev viewers,
+# where picking an item shows it. Everywhere else one tap selects and confirms.
+TWO_STEP_KINDS = ["dev-viewer", "dev-audio"]
+
+# The class the overlay carries while a level is played with no panel over it (D-286).
+PLAYING_CLASS = "on-play"
+
+
+def _playing(view: MenuView) -> bool:
+    """Whether `view` is a level being played, with no pause menu or end panel over it."""
+    if not isinstance(view, GameScreenView):
+        return False
+    return not view.paused and not view.complete
+
+
 def _selected_index(view: MenuView) -> int:
     return view.selected if hasattr(view, "selected") else 0
 
@@ -146,7 +161,9 @@ class MenuOverlay:
 
     def _handlers_for(self, view: MenuView) -> ScreenHandlers:
         def on_tap(index: int) -> None:
-            self._on_command(pointer_command(index, _selected_index(view)))
+            two_step = view.kind in TWO_STEP_KINDS
+            for command in pointer_commands(index, _selected_index(view), two_step):
+                self._on_command(command)
 
         def on_back() -> None:
             self._on_command("back")
@@ -178,6 +195,12 @@ class MenuOverlay:
         """Replace the overlay content with `view`, at once (PERF-04). A new screen fades in."""
         is_new_screen = self._view is None or self._view.kind != view.kind
         self._view = view
+        # The level is being played, with no panel over it: the overlay keeps to the stage even on
+        # a phone, so the HUD lines up with the playfield (D-286).
+        if _playing(view):
+            self._root.classList.add(PLAYING_CLASS)
+        else:
+            self._root.classList.remove(PLAYING_CLASS)
         screen = _render_screen(self._doc, view, self._handlers_for(view))
         screen.dataset.screen = view.kind
         if is_new_screen and view.kind != "loading":
