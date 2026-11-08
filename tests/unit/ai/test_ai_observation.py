@@ -15,12 +15,13 @@ from ai.observation import (
     N_STATE,
     observe,
 )
+from ai.sight import HEIGHT, WIDTH
 
 from core.entities.enemy import EnemyBulletSpec, EnemyLaserSpec, EnemyMissileSpec
 from core.entities.muzzle import PlanePoint
 
-CELL_W = 1000 / FIELD_COLS
-CELL_H = 720 / FIELD_ROWS
+CELL_W = WIDTH / FIELD_COLS
+CELL_H = HEIGHT / FIELD_ROWS
 
 
 def _env() -> GameEnv:
@@ -33,7 +34,7 @@ def _env() -> GameEnv:
 
 
 def _field_cell(x: float, y: float) -> tuple[int, int]:
-    return int((720 - y) // CELL_H), int(x // CELL_W)
+    return int((HEIGHT - y) // CELL_H), int(x // CELL_W)
 
 
 def test_the_grids_and_state_have_their_shapes() -> None:
@@ -51,7 +52,7 @@ def test_the_ship_is_in_the_field_and_at_the_centre_of_the_fovea() -> None:
     assert obs.field[CH["ship"], row, col] == 1
     middle = FOVEA_SIZE // 2
     assert obs.fovea[CH["ship"], middle, middle] == 1
-    assert obs.state[0] == np.float32(env.run.ship.x / 1000)
+    assert obs.state[0] == np.float32(env.run.ship.x / WIDTH)
 
 
 def test_a_bullet_shows_where_it_is_with_its_velocity() -> None:
@@ -103,7 +104,7 @@ def test_bonuses_show_by_kind() -> None:
     env = _env()
     bonuses = env.run.bonuses
     assert bonuses is not None
-    placed = (("weapon", 200), ("life", 500), ("bomb", 800), ("heal", 350))
+    placed = (("weapon", 100), ("life", 200), ("bomb", 320), ("heal", 440))
     for kind, x in placed:
         bonuses.place(kind, PlanePoint(x, 400))
     obs = observe(env)
@@ -129,7 +130,7 @@ def _area() -> object:
     from core.entities.enemy import EnemySpawnArea  # noqa: PLC0415
     from core.math.rng import create_rng  # noqa: PLC0415
 
-    return EnemySpawnArea(1000, 720, create_rng(1), None, (100, 900))
+    return EnemySpawnArea(WIDTH, HEIGHT, create_rng(1), None, (100, WIDTH - 100))
 
 
 def test_the_walls_are_where_the_ship_cannot_fly() -> None:

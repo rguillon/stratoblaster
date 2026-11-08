@@ -297,6 +297,10 @@ def _cell_to_gru(weights: dict[str, Tensor]) -> None:
             weights[f"memory.{name}_l0"] = weights.pop(old)
 
 
+class IncompatibleBrainError(ValueError):
+    """A saved brain whose layers do not fit the brain of today (what it sees has changed)."""
+
+
 def load_brain(path: Path = BRAIN_FILE) -> tuple[Brain, LearnStats]:
     """Load a saved brain and its learning stats (widened to the channels added since)."""
     saved = torch.load(path, map_location="cpu", weights_only=True)
@@ -307,6 +311,13 @@ def load_brain(path: Path = BRAIN_FILE) -> tuple[Brain, LearnStats]:
     weights = saved["weights"]
     widen_inputs(weights)
     _cell_to_gru(weights)
-    brain.load_state_dict(weights)
+    try:
+        brain.load_state_dict(weights)
+    except RuntimeError as error:  # its layers are of other sizes
+        msg = (
+            f"{path} was learned on another view of the game (the playfield's grid changed, D-301)"
+            " and cannot be used: learn a new brain (`make learn LEARN_ARGS=--fresh`)."
+        )
+        raise IncompatibleBrainError(msg) from error
     stats = LearnStats(**saved["stats"])
     return brain, stats

@@ -1601,3 +1601,42 @@
   cleared, play time, how it ended, at which update). The best game is kept in the brain's stats
   (`LearnStats.best_game`), so it survives a restart.
 - **Status:** Proposed
+
+### D-301 — The workers play under PyPy; what the brain sees is built in pure Python
+- **Date:** 2026-11-08
+- **Requirements:** none (requested by the human: simulate a whole level in seconds, not in about
+  real time, "go with PyPy"). Amends D-288, D-298.
+- **Context:** the game's simulation took about 50 µs a step in CPython (a 5-minute level is
+  about 1 s of CPU), yet each game played about as fast as real time while learning: every worker
+  played 16 games, built a numpy observation and waited for the brain every 4 steps, beside 61
+  other workers on 32 hyperthreaded cores. Measured on a whole level with no brain (1-1, 4-5):
+  PyPy 3.12 plays the same steps 4.7 to 5 times faster once its JIT is warm (the same scores to
+  the point); the Transcrypt JavaScript under Node is slower than CPython. PyPy has no PyTorch,
+  and its numpy is slow.
+- **Decision:**
+  - The workers are `python -m ai.play_worker` processes of PyPy (`--worker-python`, default
+    PyPy 3.12 when `uv python find` sees it, else the learner's CPython), started with
+    `subprocess`. They import no numpy and no torch: `game_env.py`, `episodes.py`, `sight.py`,
+    `layout.py` and `play_worker.py` are pure Python (a unit test checks it).
+  - The brain always decides in the inference server (D-298), on the GPU or the CPU: the
+    in-worker brain is gone. On a CPU, half the cores play and a quarter decide.
+  - What the brain sees is built in pure Python (`sight.py`): the non-zero cells of each grid,
+    which a worker writes into the shared rollout file with `struct.pack_into` on an `mmap` (under
+    PyPy several times faster than a `memoryview`'s items). `observation.py` makes numpy arrays of
+    them for `make rate`, `make serve-ai` and the tests. The two views agree to 2.4e-7 with the
+    numpy one they replace (1,200 scenes of four levels).
+  - The rollout file's layout is computed once in pure Python (`layout.py`), for numpy and for the
+    `mmap` alike.
+  - The learner and the server talk to a worker through `multiprocessing` pipes whose file
+    descriptors the worker inherits (PyPy and CPython frame their messages alike); the reports are
+    dataclasses both runtimes import (`episodes.py`).
+  - The field grid is 18 x 24 square cells of 30 px, for the 3:4 playfield of D-263 (it was 32 x
+    24 for 1000 x 720). Brains saved before cannot be loaded: `make learn` starts a new one, and
+    `make rate` / `make serve-ai` say so.
+- **Consequences:** on the laptop (one worker, 16 games, warm JIT) a worker plays about 9,000
+  decisions a second against 3,200 in CPython (2.8 times: the simulation 3 times, the sight 2.8
+  times faster); PyPy's JIT takes a few minutes to warm up. With the GPU, the inference server
+  (about 38,000 decisions a second, D-298) and the learner (about 28,000, D-299) become the
+  limit, no longer the workers. On a CPU only, the learner is the limit. `make learn` installs
+  PyPy 3.12 with uv.
+- **Status:** Proposed

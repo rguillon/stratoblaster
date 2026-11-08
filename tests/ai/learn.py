@@ -1,20 +1,23 @@
 # Copyright (c) 2026 Renaud Guillon
 """`make learn`: the brain learns to play the game (proximal policy optimisation, PPO).
 
-Worker processes play games with the current brain (see `rollout.py`): each from level 1-1 with 3
-lives and 3 bombs, on through the levels with what it earned, until the game is over (D-295). The
-learner improves the brain from what they played, for the best score, and sends them the new
-weights. It goes on for `--minutes`, or until Ctrl-C, saving the brain under `data/` every few
-updates and at the end; the brain whose games scored best on average is kept too
-(`data/brain-best.pt`). It starts from the saved brain when there is one (`--fresh` to start over).
+Worker processes play games (`play_worker.py`, under PyPy: about five times faster than CPython,
+D-301), each from level 1-1 with 3 lives and 3 bombs, on through the levels with what it earned,
+until the game is over (D-295). An inference server decides their moves with the current brain
+(`inference.py`). The learner improves the brain from what they played, for the best score, and
+sends the server the new weights. It goes on for `--minutes`, or until Ctrl-C, saving the brain
+under `data/` every few updates and at the end; the brain whose games scored best on average is
+kept too (`data/brain-best.pt`). It starts from the saved brain when there is one (`--fresh` to
+start over).
 
 Every 10 seconds it says how the games went (`--report-seconds`); `data/learn-log.csv` has the
 details of each update.
 
-With an NVIDIA GPU (and the CUDA build of torch: `make learn AI_TORCH=cuda`) the learner runs on
-the GPU and nearly every CPU core plays; on a CPU only, a third of the cores play, the rest learn.
+With an NVIDIA GPU (and the CUDA build of torch: `make learn AI_TORCH=cuda`) the learner and the
+server run on the GPU and nearly every CPU core plays; on a CPU only, half the cores play, the rest
+decide and learn. Without PyPy (`uv python install pypy3.12`) the workers play in CPython.
 
-    uv run python -m ai.learn --minutes 120 [--device cuda]
+    uv run python -m ai.learn --minutes 120 [--device cuda] [--worker-python PATH]
 """
 
 import argparse
@@ -26,6 +29,8 @@ import pickle
 import random
 import shutil
 import signal
+import subprocess
+import sys
 import tempfile
 import time
 from dataclasses import dataclass, replace
@@ -37,7 +42,7 @@ import torch
 from numpy.typing import NDArray
 from torch import nn
 
-from ai import DATA
+from ai import DATA, REPO_ROOT, STUBS_VARIABLE, transcrypt_stubs
 from ai.brain import (
     BEST_BRAIN_FILE,
     BRAIN_FILE,
@@ -46,19 +51,20 @@ from ai.brain import (
     Brain,
     BrainShape,
     Decision,
+    IncompatibleBrainError,
     LearnStats,
     load_brain,
     save_brain,
 )
 from ai.game_env import LEVEL_IDS
 from ai.inference import server_main
+from ai.play_worker import WorkerSetup
 from ai.rollout import (
     Curriculum,
     EpisodeReport,
     GameProgress,
     Rollout,
     RolloutBuffer,
-    worker_main,
 )
 
 if TYPE_CHECKING:
@@ -73,13 +79,35 @@ MIN_GAMES_FOR_BEST = 20
 CPUS = os.cpu_count() or 2
 
 
+# The PyPy the workers play in (D-301): `uv python install pypy3.12` installs it.
+PYPY = "pypy3.12"
+
+
+def find_pypy() -> str:
+    """Return the path of PyPy (as `uv python find` sees it), '' when it is not installed."""
+    found = shutil.which(PYPY)
+    if found:
+        return found
+    try:
+        done = subprocess.run(  # noqa: S603  # uv, with fixed arguments
+            ["uv", "python", "find", PYPY],  # noqa: S607  # uv from the PATH, as make runs it
+            capture_output=True,
+            text=True,
+            check=True,
+            timeout=60,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return ""
+    return done.stdout.strip()
+
+
 @dataclass
 class Settings:
     """How the brain learns (see `for_device` for the defaults of a machine)."""
 
-    workers: int = max(1, CPUS // 3)
-    envs: int = 12  # episodes played side by side by each worker
-    steps: int = 128  # decisions per episode per round
+    workers: int = max(1, CPUS // 2)
+    envs: int = 16  # episodes played side by side by each worker
+    steps: int = 64  # decisions per episode per round
     chunk: int = 32  # decisions replayed in a row through the memory
     epochs: int = 2
     minibatches: int = 12  # per epoch: about 24 steps of the optimiser an update
@@ -93,21 +121,24 @@ class Settings:
     max_grad_norm: float = 0.5
     save_every: int = 10
     report_seconds: float = 10.0
-    # The brain decides on the learner's device, in one process for every worker (D-298), rather
-    # than in each worker on its CPU core.
-    served: bool = False
     # The learner's sums in half precision where it is safe (PyTorch's autocast, the losses
     # scaled against underflow): a GPU's tensor cores do them several times faster (D-299).
     mixed_precision: bool = False
+    # The Python the workers play in: PyPy plays about five times faster than CPython (D-301).
+    # Empty: the learner's own (CPython).
+    worker_python: str = ""
+    # PyTorch's threads in the inference server, which decides for every worker (D-298).
+    server_threads: int = 1
 
     @staticmethod
     def for_device(device: str) -> "Settings":
         """Return the defaults for this machine, learning on `device` ("cpu" or "cuda").
 
-        On a CPU, the learner's backward pass is the bottleneck: a third of the cores play, the
-        rest learn. With a GPU, the learner is fast and playing is the bottleneck: every core but
-        three plays, each with 16 episodes and rounds of 32 decisions, and the brain decides for
-        every one of them on the GPU (D-289, D-298, D-299).
+        The brain decides for every worker in one server process, on the learner's device
+        (D-298). With a GPU, the learner is fast and playing is the bottleneck: every core but
+        three plays, each with 16 episodes and rounds of 32 decisions (D-289, D-299). On a CPU,
+        the server and the learner compute the brain themselves: half the cores play, a quarter
+        decide, the rest learn.
         """
         if device == "cuda":
             workers = max(1, CPUS - 3)  # a core each for the learner and the inference server
@@ -116,10 +147,9 @@ class Settings:
                 envs=16,  # two halves of 8: the server's batches are bigger, and less often
                 steps=32,  # a round as big as before (it goes to the GPU whole)
                 device=device,
-                served=True,
                 mixed_precision=True,
             )
-        return Settings(device=device)
+        return Settings(device=device, server_threads=max(1, CPUS // 4))
 
 
 def advantages(
@@ -155,8 +185,14 @@ class Learner:
         self.settings = settings
         self.device = torch.device(settings.device)
         if BRAIN_FILE.exists() and not fresh:
-            self.brain, self.stats = load_brain(BRAIN_FILE)
-            print(f"Resuming the brain of {BRAIN_FILE} ({self.stats.updates} updates)")
+            try:
+                self.brain, self.stats = load_brain(BRAIN_FILE)
+            except IncompatibleBrainError as error:
+                print(f"{error}\nStarting a new brain instead.")
+                fresh = True
+                self.brain, self.stats = Brain(BrainShape()), LearnStats()
+            else:
+                print(f"Resuming the brain of {BRAIN_FILE} ({self.stats.updates} updates)")
         else:
             self.brain, self.stats = Brain(BrainShape()), LearnStats()
             print("Starting a new brain")
@@ -454,13 +490,16 @@ def _shared_dir() -> Path:
 class Workers:
     """The worker processes playing the game, writing into two shared rollout buffers in turn.
 
-    With `settings.served`, an inference server process decides for all of them (D-298).
+    Each worker is a process of `settings.worker_python` (PyPy, D-301) running
+    `ai.play_worker`; an inference server process decides for all of them (D-298). The learner
+    and the server talk to each worker through `multiprocessing` pipes whose ends it inherits.
     """
 
     def __init__(self, settings: Settings, shape: BrainShape, seed: int) -> None:
         ctx = mp.get_context("spawn")
         self.conns: list[Connection] = []
         self.procs: list[Any] = []
+        self.workers: list[subprocess.Popen[bytes]] = []
         self.episodes: list[EpisodeReport] = []
         self._dir = _shared_dir()
         total = settings.workers * settings.envs
@@ -471,57 +510,84 @@ class Workers:
         ]
         paths = [(buffer.path, spec) for buffer in self.buffers]
         self._round = 0
-        self.server: Connection | None = None
         server_ends: list[Connection] = []
-        worker_ends: list[Connection | None] = [None] * settings.workers
-        if settings.served:
-            for i in range(settings.workers):
-                server_ends_i, worker_end = ctx.Pipe()
-                server_ends.append(server_ends_i)
-                worker_ends[i] = worker_end
-            self.server, server_learner = ctx.Pipe()
-            proc = ctx.Process(
-                target=server_main,
-                args=(server_learner, server_ends, shape, settings.device, paths, seed),
-                daemon=True,
-            )
-            proc.start()
-            server_learner.close()
-            self.procs.append(proc)
-        curriculum = Curriculum()
+        worker_server_ends: list[Connection] = []
+        for _ in range(settings.workers):
+            server_end, worker_end = ctx.Pipe()
+            server_ends.append(server_end)
+            worker_server_ends.append(worker_end)
+        self.server, server_learner = ctx.Pipe()
+        proc = ctx.Process(
+            target=server_main,
+            args=(
+                server_learner,
+                server_ends,
+                shape,
+                settings.device,
+                paths,
+                seed,
+                settings.server_threads,
+            ),
+            daemon=True,
+        )
+        proc.start()
+        self.procs.append(proc)
+        for end in (server_learner, *server_ends):
+            end.close()  # the server has its own copies
+        python = settings.worker_python or sys.executable
+        env = {
+            # PyPy's young generation: set, it does not look for the CPU's cache sizes (and warns
+            # where it cannot find them, as under WSL).
+            "PYPY_GC_NURSERY": "4M",
+            **os.environ,
+            "PYTHONPATH": str(REPO_ROOT / "tests"),
+            STUBS_VARIABLE: transcrypt_stubs(),
+        }
         for i in range(settings.workers):
-            parent, child = ctx.Pipe()
-            envs = (i * settings.envs, (i + 1) * settings.envs)
-            proc = ctx.Process(
-                target=worker_main,
-                args=(child, shape, envs, seed * 1000 + i, curriculum, paths, worker_ends[i]),
-                daemon=True,
+            mine, theirs = ctx.Pipe()
+            fds = (theirs.fileno(), worker_server_ends[i].fileno())
+            self.workers.append(
+                subprocess.Popen(  # noqa: S603  # this repository's worker, by its module name
+                    [python, "-m", "ai.play_worker", *(str(fd) for fd in fds)],
+                    env=env,
+                    cwd=REPO_ROOT,
+                    pass_fds=fds,
+                )
             )
-            proc.start()
-            child.close()
-            self.conns.append(parent)
-            self.procs.append(proc)
-        for end in (*server_ends, *worker_ends):
-            if end is not None:
-                end.close()  # the processes have their own copies
+            theirs.close()
+            worker_server_ends[i].close()
+            lo = i * settings.envs
+            mine.send(
+                WorkerSetup(
+                    lo,
+                    lo + settings.envs,
+                    seed * 1000 + i,
+                    Curriculum(),
+                    [str(path) for path, _ in paths],
+                    spec,
+                )
+            )
+            self.conns.append(mine)
+        for conn in self.conns:
+            try:
+                self._check(conn.recv(), "A worker")  # True: ready
+            except EOFError:
+                msg = f"A worker ({python}) stopped before it started: its error is above."
+                raise RuntimeError(msg) from None
 
     def start(self, weights: dict[str, Any]) -> None:
         """Have every worker play a round with `weights` (in the background)."""
         index = self._round % 2
-        if self.server is not None:
-            self.server.send_bytes(pickle.dumps((index, weights)))
-            self._check(self.server.recv(), "The inference server")
-            weights = {}  # the server decides: the workers need none
-        payload = pickle.dumps((index, weights or None))  # pickled once for every worker
+        self.server.send_bytes(pickle.dumps((index, weights)))
+        self._check(self.server.recv(), "The inference server")
         for conn in self.conns:
-            conn.send_bytes(payload)
+            conn.send(index)  # the server decides: the workers need no weights
 
     def _check(self, got: Any, who: str) -> Any:
         """Return `got`, or raise with the traceback a process sent instead."""
         if isinstance(got, str):
-            server = self.server
-            if server is not None and server.poll():
-                got += "\n" + str(server.recv())
+            if self.server.poll():
+                got += "\n" + str(self.server.recv())
             msg = f"{who} failed:\n{got}"
             raise RuntimeError(msg)  # noqa: TRY004  # a process's traceback, not a type error
         return got
@@ -541,12 +607,20 @@ class Workers:
         return rollout
 
     def close(self) -> None:
-        stop = pickle.dumps(None)
-        for conn in (*self.conns, *([self.server] if self.server is not None else [])):
+        for conn in self.conns:
             try:
-                conn.send_bytes(stop)
+                conn.send(None)
             except (BrokenPipeError, OSError):
                 pass
+        try:
+            self.server.send_bytes(pickle.dumps(None))
+        except (BrokenPipeError, OSError):
+            pass
+        for worker in self.workers:
+            try:
+                worker.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                worker.terminate()
         for proc in self.procs:
             proc.join(timeout=10)
             if proc.is_alive():
@@ -560,7 +634,7 @@ def learn(settings: Settings, minutes: float, fresh: bool, seed: int) -> None:
         torch.backends.cudnn.benchmark = True
         torch.set_num_threads(2)
     else:
-        torch.set_num_threads(max(1, CPUS - settings.workers))
+        torch.set_num_threads(max(1, CPUS - settings.workers - settings.server_threads))
     learner = Learner(settings, fresh)
     workers = Workers(settings, learner.brain.shape, seed + learner.stats.updates)
     _introduce(settings, minutes)
@@ -665,11 +739,17 @@ class Reporter:
         self._decisions = stats.decisions
 
 
+def _runtime(settings: Settings) -> str:
+    """Return the name of the Python the workers play in ("PyPy" or "CPython")."""
+    return "PyPy" if "pypy" in Path(settings.worker_python or sys.executable).name else "CPython"
+
+
 def _introduce(settings: Settings, minutes: float) -> None:
     games = settings.workers * settings.envs
     print(
         f"The brain learns on the {settings.device.upper()} for {minutes:g} minutes: {games} games"
-        f" at once ({settings.workers} processes x {settings.envs}), each from {LEVEL_IDS[0]} with"
+        f" at once ({settings.workers} {_runtime(settings)} processes x {settings.envs}), each from"
+        f" {LEVEL_IDS[0]} with"
         " 3 lives and 3 bombs, on to the next level when one is cleared, until the ship is lost.\n"
         f"It learns to score the most. Every {settings.report_seconds:g} s: how the games went"
         f" (details in {_shown(LOG_FILE)}). Ctrl-C stops and saves.",
@@ -719,11 +799,9 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--envs", type=int, help="episodes each worker plays side by side")
     parser.add_argument("--steps", type=int, help="decisions per episode per round")
     parser.add_argument(
-        "--inference",
-        choices=("auto", "server", "workers"),
+        "--worker-python",
         default="auto",
-        help="where the brain decides while playing: in one server process on the learner's"
-        " device, or in each worker on its CPU (auto: the server with a GPU)",
+        help="the Python the workers play in (auto: PyPy if installed, else this one)",
     )
     parser.add_argument("--fresh", action="store_true", help="start a new brain")
     parser.add_argument("--seed", type=int, default=1)
@@ -739,8 +817,14 @@ def main(argv: list[str] | None = None) -> None:
     settings = Settings.for_device(device)
     given = {k: getattr(args, k) for k in ("workers", "envs", "steps") if getattr(args, k)}
     given["report_seconds"] = args.report_seconds
-    if args.inference != "auto":
-        given["served"] = args.inference == "server"
+    worker_python = find_pypy() if args.worker_python == "auto" else args.worker_python
+    if not worker_python:
+        print(
+            f"{PYPY} is not installed (`uv python install {PYPY}`): the workers play in CPython,"
+            " about five times slower.",
+            flush=True,
+        )
+    given["worker_python"] = worker_python
     learn(replace(settings, **given), args.minutes, args.fresh, args.seed)
 
 

@@ -166,11 +166,14 @@ serve: build
 # data/ if any; `rate` rates the difficulty of each level with it (data/ratings.json). Extra
 # options in LEARN_ARGS / RATE_ARGS (`uv run python -m ai.learn --help`, `... ai.rate --help`).
 # AI_TORCH=cuda installs and uses the CUDA build of torch (an NVIDIA GPU learns, every CPU core
-# plays); the default, cpu, the CPU-only build.
+# plays); the default, cpu, the CPU-only build. The workers play under PyPy, about five times
+# faster than CPython (D-301): `learn` has uv install it (once; it is then found on its own).
 LEARN_MINUTES ?= 60
 AI_TORCH ?= cpu
+AI_PYPY := pypy3.12
 AI_RUN := PYTHONPATH=tests uv run --no-default-groups --group dev --group ai-$(AI_TORCH) python -m
 learn:
+	uv python install --quiet $(AI_PYPY)
 	$(AI_RUN) ai.learn --minutes $(LEARN_MINUTES) $(LEARN_ARGS)
 
 rate:

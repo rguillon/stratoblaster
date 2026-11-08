@@ -15,9 +15,6 @@ import math
 from dataclasses import dataclass, field, replace
 from typing import Any
 
-import numpy as np
-from numpy.typing import NDArray
-
 import ai  # noqa: F401  # puts src/ and the Transcrypt stubs on the path
 from config.game_controls import GAME_CONTROLS_CONFIG
 from config.game_play import GAME_PLAY_CONFIG
@@ -119,13 +116,6 @@ class _Bounds:
 
     def visible_half_width(self, y: float) -> float:
         return visible_half_width(self._framing, self._aspect, y)
-
-    def half_widths_at(self, ys: NDArray[np.float64]) -> NDArray[np.float64]:
-        """Return `half_width_at` of each of `ys` at once (the same sums, in the same order)."""
-        framing = self._framing
-        dy, dz = framing.direction[0], framing.direction[1]
-        depth = -framing.height * dy + (ys - framing.back) * dz
-        return depth * math.tan(framing.half_fov) * self._aspect - self._side
 
     def in_view(self, x: float, y: float) -> bool:
         """Whether a playfield point is on screen (GAME-SCREEN-04).

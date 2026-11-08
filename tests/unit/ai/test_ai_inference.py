@@ -3,13 +3,14 @@
 
 from pathlib import Path
 
-import numpy as np
 import pytest
 import torch
 from ai.brain import Batch, Brain, BrainShape
+from ai.episodes import Curriculum
 from ai.inference import Question, Server
-from ai.learn import Settings, Workers
-from ai.rollout import Curriculum, RolloutBuffer, ServedPlayer
+from ai.learn import Settings
+from ai.play_worker import Worker, WorkerSetup
+from ai.rollout import RolloutBuffer
 
 SMALL = BrainShape(hidden=32, field_features=16, fovea_features=16, state_features=8)
 
@@ -33,7 +34,7 @@ class _Direct:
         return b""
 
 
-def test_d_274_the_server_decides_as_the_brain_would_step_by_step(tmp_path: Path) -> None:
+def test_d_298_the_server_decides_as_the_brain_would_step_by_step(tmp_path: Path) -> None:
     torch.manual_seed(0)
     steps, envs = 6, 3
     buffer = RolloutBuffer(tmp_path / "rollout.bin", steps, envs + 2, SMALL.hidden, create=True)
@@ -42,10 +43,19 @@ def test_d_274_the_server_decides_as_the_brain_would_step_by_step(tmp_path: Path
     out, after = buffer.rollout(), buffer.next()
     server.start_round(brain.state_dict(), out, after)
     # Episodes 2 to 4 of the buffer: a worker's share starts at its offset.
-    player = ServedPlayer(envs, 2, Curriculum(levels=("1-1",)), offset=2)
-    assert player.groups == [(0, 2), (2, 3)]
+    setup = WorkerSetup(
+        2,
+        2 + envs,
+        2,
+        Curriculum(levels=("1-1",)),
+        [str(buffer.path)],
+        (steps, envs + 2, SMALL.hidden),
+    )
+    worker = Worker(setup)
+    assert worker.groups == [(0, 2), (2, 3)]
     mine = buffer.rollout(2, 2 + envs)
-    episodes = player.play(_Direct(server), mine, buffer.next(2, 2 + envs))  # type: ignore[arg-type]
+    episodes = worker.play(_Direct(server), 0)  # type: ignore[arg-type]
+    worker.close()
     assert episodes == []
     assert mine.starts[0].all()
     assert not mine.starts[1:].any()
@@ -78,25 +88,8 @@ def test_d_274_the_server_decides_as_the_brain_would_step_by_step(tmp_path: Path
     assert not buffer.rollout(0, 2).actions.any()
 
 
-def test_d_274_with_a_server_the_workers_play_a_round() -> None:
-    settings = Settings(workers=2, envs=2, steps=4, device="cpu", served=True)
-    workers = Workers(settings, SMALL, seed=5)
-    try:
-        weights = Brain(SMALL).state_dict()
-        for _ in range(2):  # both buffers
-            workers.start(weights)
-            rollout = workers.collect()
-            assert rollout.actions.shape[:2] == (4, 4)
-            assert np.isfinite(rollout.values).all()
-            assert (rollout.last_values != 0).all()
-            assert (rollout.log_probs < 0).all()
-    finally:
-        workers.close()
-
-
-def test_d_274_a_gpu_learns_with_the_server_and_a_core_for_it() -> None:
+def test_d_298_a_gpu_learns_with_the_server_and_a_core_for_it() -> None:
     cuda = Settings.for_device("cuda")
-    assert cuda.served
     assert cuda.mixed_precision
+    assert cuda.server_threads == 1
     assert (cuda.envs, cuda.steps) == (16, 32)
-    assert not Settings.for_device("cpu").served

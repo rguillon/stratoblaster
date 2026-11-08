@@ -20,12 +20,14 @@ from ai.learn import (
     Learner,
     Reporter,
     Settings,
+    Workers,
     _keep_if_best,
     _log,
     _record_best_game,
     advantages,
     report,
 )
+from ai.observation import CH
 from ai.rate import (
     EpisodeResult,
     RatingSettings,
@@ -35,13 +37,17 @@ from ai.rate import (
     rate_level,
     setups,
 )
-from ai.rollout import Curriculum, EpisodeReport, GameProgress, Player, RolloutBuffer, _empty
+from ai.rollout import Curriculum, EpisodeReport, GameProgress, Rollout, RolloutBuffer
 
 SMALL = BrainShape(hidden=32, field_features=16, fovea_features=16, state_features=8)
 
 
-def test_advantages_discount_the_rewards_and_stop_at_an_episode_end() -> None:
-    rollout = _empty(3, 1, 4)
+def _empty(path: Path, steps: int, envs: int, hidden: int) -> Rollout:
+    return RolloutBuffer(path / "rollout.bin", steps, envs, hidden, create=True).rollout()
+
+
+def test_advantages_discount_the_rewards_and_stop_at_an_episode_end(tmp_path: Path) -> None:
+    rollout = _empty(tmp_path, 3, 1, 4)
     rollout.rewards[:, 0] = [1.0, 0.0, 2.0]
     rollout.dones[:, 0] = [False, True, False]
     rollout.last_values[:] = 10.0
@@ -136,26 +142,40 @@ def test_d_271_a_log_of_other_columns_is_moved_aside(
     assert len(lines) == 3
 
 
-def test_a_player_plays_a_round_and_the_learner_learns_from_it(
+def test_d_301_the_workers_play_a_round_and_the_learner_learns_from_it(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(learn_module, "BRAIN_FILE", tmp_path / "brain.pt")
     monkeypatch.setattr(learn_module, "TRAINER_FILE", tmp_path / "trainer.pt")
     torch.manual_seed(0)
-    player = Player(SMALL, 2, 1, Curriculum(levels=("1-1",)))
     learner = Learner(Settings(chunk=4, minibatches=2, epochs=1), fresh=True)
     learner.brain = Brain(SMALL)
     learner.optimizer = torch.optim.Adam(learner.brain.parameters(), lr=1e-3)
     before = {k: v.clone() for k, v in learner.brain.state_dict().items()}
-    rollout = _empty(8, 2, SMALL.hidden)
-    player.play(learner.weights(), rollout)
-    assert rollout.field.shape[:2] == (8, 2)
-    assert rollout.starts[0].all()  # the first step of each episode starts its memory over
-    assert np.isfinite(rollout.values).all()
-    losses = learner.update(rollout)
+    # Worker processes of this Python (the tests' CPython; PyPy when learning).
+    workers = Workers(Settings(workers=2, envs=2, steps=8), SMALL, seed=1)
+    try:
+        workers.start(learner.weights())
+        rollout = workers.collect()
+        assert rollout.field.shape[:2] == (8, 4)
+        assert rollout.starts[0].all()  # the first step of each episode starts its memory over
+        assert not rollout.starts[1:].any()
+        assert np.isfinite(rollout.values).all()
+        assert rollout.field[:, :, CH["ship"]].any(axis=(2, 3)).all()  # every episode saw its ship
+        assert len(rollout.playing) == 4
+        losses = learner.update(rollout)
+    finally:
+        workers.close()
     assert set(losses) == {"policy", "value", "entropy", "kl"}
     after = learner.brain.state_dict()
     assert any(not torch.equal(before[k], after[k]) for k in before)
+
+
+def test_d_301_the_workers_play_in_pypy_when_it_is_installed() -> None:
+    found = learn_module.find_pypy()
+    assert found == "" or "pypy" in Path(found).name
+    assert learn_module._runtime(Settings(worker_python="/x/pypy3.12")) == "PyPy"
+    assert learn_module._runtime(Settings(worker_python="")) == "CPython"
 
 
 def test_an_episode_difficulty_is_one_less_the_mean_of_progress_and_health_left() -> None:
@@ -213,7 +233,8 @@ def test_with_a_gpu_nearly_every_core_plays() -> None:
     assert gpu.workers == max(1, CPUS - 3)  # the learner and the inference server: a core each
     cpu = Settings.for_device("cpu")
     assert cpu.device == "cpu"
-    assert cpu.workers == max(1, CPUS // 3)
+    assert cpu.workers == max(1, CPUS // 2)
+    assert cpu.server_threads == max(1, CPUS // 4)
 
 
 def test_rating_groups_leave_no_worker_idle() -> None:

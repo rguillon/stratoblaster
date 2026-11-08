@@ -75,8 +75,10 @@ Then open http://localhost:5173. `SERVE_PORT=8000 make serve` picks another port
 ### The AI player
 
 [`tests/ai/`](tests/ai/) is a neural network (convolutional encoders, a GRU memory) that learns to
-play the game by reinforcement learning (PPO), in pure Python: it runs the game's own simulation in
-CPython as fast as the CPU goes, no browser. It sees the whole playfield and a close-up around the
+play the game by reinforcement learning (PPO), in pure Python: it runs the game's own simulation as
+fast as the CPU goes, no browser. The games are played under PyPy, about five times faster than
+CPython on the simulation (`make learn` has uv install it; D-301), and the brain learns under
+CPython with PyTorch. It sees the whole playfield and a close-up around the
 ship: the enemies and bosses, the bullets, missiles and lasers, and the weapon, life, bomb and
 healing bonuses. `make learn` trains it: each game it plays, with the balanced ship, starts at
 1-1 with 3 lives and 3 bombs and goes on to the next level with what it earned, until the ship is

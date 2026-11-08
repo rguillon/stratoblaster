@@ -1,8 +1,8 @@
 # Copyright (c) 2026 Renaud Guillon
 """The inference server: the brain on the GPU decides for every worker's episodes (D-298).
 
-Without it, each worker runs its own copy of the brain on its CPU core, a third of its time. With
-it, one process holds the brain on the GPU and answers the workers' questions in batches: a worker
+The workers play under PyPy (D-301), which has no PyTorch: one process holds the brain on the
+learner's device (the GPU, or the CPU) and answers the workers' questions in batches. A worker
 writes what its episodes see into the shared rollout and asks "decide for episodes a to b at step
 t" (t = -1: the value after the round's last decision); the server reads them there, decides,
 writes the actions, their log-probabilities, the values and the memories back, and answers. It
@@ -142,14 +142,16 @@ def server_main(
     device: str,
     buffers: list[tuple[Path, tuple[int, int, int]]],
     seed: int,
+    threads: int = 1,
 ) -> None:
     """Answer the workers' questions, round after round, until the learner sends None.
 
     Each message of the learner is the index of the round's buffer and the weights; the server
-    answers it (None) once it is ready for the round.
+    answers it (None) once it is ready for the round. `threads`: PyTorch's threads (more on a CPU,
+    where the server computes the brain itself).
     """
     signal.signal(signal.SIGINT, signal.SIG_IGN)
-    torch.set_num_threads(1)
+    torch.set_num_threads(threads)
     try:
         shared = [RolloutBuffer(path, *spec, create=False) for path, spec in buffers]
         server = Server(shape, device, shared[0].spec[1], seed)
@@ -166,7 +168,7 @@ def server_main(
             questions = _questions(ready)
             if questions:
                 server.answer(questions)
-    except (EOFError, BrokenPipeError):
+    except (EOFError, BrokenPipeError, ConnectionResetError):
         pass  # the learner or a worker is gone
     except Exception:  # noqa: BLE001  # the learner shows what went wrong in the server
         learner.send(traceback.format_exc())
