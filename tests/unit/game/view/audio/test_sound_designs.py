@@ -87,9 +87,9 @@ def test_aud_sfx_01_every_group_is_in_the_merged_sound_table() -> None:
 def test_aud_sfx_01_every_event_has_its_own_sound_and_sample() -> None:
     names = [design.name for design in SOUND_DESIGNS.values()]
     assert len(names) == len(set(names))
-    assert len(names) == 29
+    assert len(names) == 30
     samples = [sample for design in SOUND_DESIGNS.values() for sample in design.samples]
-    assert len(samples) == len(set(samples)) == 33
+    assert len(samples) == len(set(samples)) == 34
     for cue, design in SOUND_DESIGNS.items():
         assert design.samples
         assert all(sample.startswith(design.name) for sample in design.samples), cue

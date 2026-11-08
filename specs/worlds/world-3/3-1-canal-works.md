@@ -4,8 +4,8 @@
 
 The first level of World 3. The player flies on from the great works 2-5 ended on, past foundries,
 rail yards, the canal docks and factory yards, to the first workshops, under a morning mist that
-lifts over the first half. The waves are a fresh start after World 2, with tier 3's diver, shooter
-and laser, the Phantom, the Spinner and the Prism. Its checkpoint is its mini boss, as in every level (see [level flow](../../gameplay/level-flow.md)).
+lifts over the first half. Tier 3 brings 60 % of the enemies,
+tier 2 the other 40 %. Its checkpoint is its mini boss, as in every level (see [level flow](../../gameplay/level-flow.md)).
 
 ## Requirements
 
@@ -59,15 +59,14 @@ over the first 150 s (the first half), back to the plain morning.
 
 ### LVL-3-1-04 — Enemy waves · MUST
 
-3-1 brings Phantom, Spinner and Prism (a diver, a shooter and a laser) and no other kind. 3-1's waves follow its wave plan (WLD-3-16) from 4 s to 292 s, with a beat every `wave_gap` seconds (5.2 s to 3.7 s) and
-groups growing by `wave_growth` (80 %) over the level (65 beats). The cycle of phrases, each a kind with its number of
-groups at the start: Phantom 1, Spinner 2, Prism 1, Phantom 1, Spinner 2, Phantom 1, Prism 1, Spinner 2. The filler draws Phantoms and Spinners, at most `filler_gap` apart.
+3-1 mixes two tiers: tier 3 (the main one) is 60 % of its enemy ships and tier 2 40 % (each within 5 points; a Wasp group counts as its 5 ships, and the filler is counted with the beats). It brings every kind of both tiers, each at least once: tier 3's Phantom, Spinner, Mortar, Prism and Broodmother; tier 2's Wasp, Strafer, Harrier, Sweeper and Hatchery, and no other kind. 3-1's waves follow its wave plan (WLD-3-16) from 4 s to 292 s, each wave followed by a breather of `wave_gap` seconds (2.8 s to 2 s), groups growing by `wave_growth` (80 %) over the level. Each beat goes to the tier furthest below its share of the ships so far (the filler that follows a beat counted with it). A tier's beats first bring each of its five kinds once (shooter, laser, missile, carrier, then diver; one group each outside the main tier), then follow the role cycle (shooter, diver, laser, diver, missile, shooter, diver, carrier, laser, shooter, missile). A wave brings no more groups than its tier lacks, the main tier's never fewer than written. The beats are composed around the quiet stretch before each boss, so none is dropped. The filler draws Phantoms, Spinners, Wasps and Strafers, at most `filler_gap` apart.
 
 **Acceptance criteria**
-- Unit test: 3-1's waves use exactly Phantom, Spinner and Prism, and each of them.
+- Unit test: 3-1's waves use only the kinds of tiers 3 and 2, and each of them.
+- Unit test: each tier's share of 3-1's enemy ships is within 5 points of its target.
 - Unit test: 3-1's waves are the same each time the level is built.
 
-*Sources: P09-R07, P05-R24, D-080, D-090, ENM-50.*
+*Sources: P09-R07, P05-R24, D-080, D-090, ENM-50, D-283.*
 
 ### LVL-3-1-05 — Difficulty · MUST
 
@@ -123,7 +122,7 @@ end, so the ground never runs out during the two fights.
 | streets | rows 45–90, columns 50–110 | `STREETS` |
 | morning_mist_fog / morning_mist_white | 0.4 / 0.8 | `MORNING_MIST`, `src/game/config/world_3/looks.py` |
 | clouds | 0.3 / 0.2 | `MORNING` |
-| wave_gap | 5.2 s → 3.7 s | `PLAN_3_1.gap`, `src/game/config/world_3/waves.py` |
+| wave_gap | 2.8 s → 2 s | `PLAN_3_1.gap`, `src/game/config/world_3/waves.py` |
 | wave_growth | 0.8 | `PLAN_3_1.growth` |
 | filler_gap | 3.4 s → 2.3 s | `WORLD_3_FILLERS["3-1"].maxGap` |
 | bullet speed / fire rate factors | 1 / 1 | `WORLD_3_DIFFICULTY["3-1"]` |

@@ -55,6 +55,7 @@ quality 3, MP3 quality 5).
 | `bomb-bonus` | Kenney | Interface Sounds 1.0 | `glass_004.ogg` | CC0 1.0 | – |
 | `weapon-bonus` | Kenney | Interface Sounds 1.0 | `select_003.ogg` | CC0 1.0 | – |
 | `life-bonus` | Kenney | Interface Sounds 1.0 | `confirmation_003.ogg` | CC0 1.0 | – |
+| `heal-bonus` | Kenney | Interface Sounds 1.0 | `confirmation_003.ogg` | CC0 1.0 | pitched up 4 semitones (0.26 s) |
 | `menu-move` | Kenney | Interface Sounds 1.0 | `tick_004.ogg` | CC0 1.0 | – |
 | `menu-confirm` | Kenney | Interface Sounds 1.0 | `select_001.ogg` | CC0 1.0 | – |
 | `menu-back` | Kenney | Interface Sounds 1.0 | `back_001.ogg` | CC0 1.0 | – |

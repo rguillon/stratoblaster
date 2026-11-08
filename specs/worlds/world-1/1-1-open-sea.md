@@ -3,8 +3,8 @@
 > **Area:** Worlds · **Prefix:** `LVL-1-1` · **Related:** [World 1](world.md), [1-2 Green coast](1-2-green-coast.md), [Reef Warden](../../bosses/mini/1-1-reef-warden.md), [Storm Petrel](../../bosses/final/1-1-storm-petrel.md), [level flow](../../gameplay/level-flow.md), [terrain](../../graphics/terrain.md), [water](../../graphics/water.md), [sky and light](../../graphics/sky-and-light.md)
 
 The first level of the game, and the easiest: midday over a clear turquoise sea, with small wooded
-islands and reefs, and the first green coast in the last 30 seconds. Hornets and
-Scouts come a few at a time; the Reef Warden waits at the middle and the Storm Petrel at the end.
+islands and reefs, and the first green coast in the last 30 seconds. Tier 1's kinds come a
+few at a time, a fifth of the enemies from tier 2; the Reef Warden waits at the middle and the Storm Petrel at the end.
 It is meant to be easy, even for a kid.
 
 ## Requirements
@@ -105,43 +105,35 @@ WLD-1-14).
 
 #### LVL-1-1-08 — Enemy kinds · MUST
 
-1-1 brings only Hornets and Scouts (a diver and a shooter), in its beats and its fillers.
+1-1 mixes two tiers: tier 1 (the main one) is 80 % of its enemy ships and tier 2 20 % (each within 5 points; a Wasp group counts as its 5 ships, and the filler is counted with the beats). It brings every kind of both tiers, each at least once: tier 1's Hornet, Scout, Rocketeer, Lancer and Carrier; tier 2's Wasp, Strafer, Harrier, Sweeper and Hatchery, and no other kind.
 
 **Acceptance criteria**
-- Given the 1-1 wave script, then it only uses Hornet and Scout, and it uses each of them (unit test).
+- Given the 1-1 wave script, then it only uses the kinds of tiers 1 and 2, and it uses each of them (unit test).
+- Given 1-1 assembled, then each tier's share of its enemy ships is within 5 points of its target (unit test).
 
-*Sources: P06-R07, ENM-50.*
+*Sources: P06-R07, ENM-50, D-283.*
 
 #### LVL-1-1-09 — Wave plan · MUST
 
 1-1's waves are composed from this plan (WLD-1-19; the density of WLD-1-20 applies on top):
 
-Beats from 4 s to 226 s, one every 6.4 s at the start down to 4.6 s at the end, groups growing by 60 % over the level (41 beats, the last at 223.5 s). The phrases, in their cycle:
+Beats from 4 s to 226 s, each wave followed by a breather of 3.4 s at the start down to 2.4 s at the end, groups growing by 60 % over the level. Each beat goes to the tier furthest below its share of the ships so far (the filler that follows a beat counted with it). A tier's beats first bring each of its five kinds once (shooter, laser, missile, carrier, then diver; one group each outside the main tier), then follow the role cycle (shooter, diver, laser, diver, missile, shooter, diver, carrier, laser, shooter, missile). A wave brings no more groups than its tier lacks, the main tier's never fewer than written.
 
-| # | Kind | Groups | Between groups (s) | Side | Position | Spread |
-|---|------|--------|--------------------|------|----------|--------|
-| 1 | Hornet | 4 | 0.8 | top | 0.15 | 0.23 |
-| 2 | Scout | 3 | 1.2 | top | 0.25 | 0.25 |
-| 3 | Hornet | 4 | 0.8 | top | 0.85 | -0.23 |
-| 4 | Scout | 3 | 1.2 | top | 0.75 | -0.25 |
-| 5 | Hornet | 4 | 0.8 | top | 0.15 | 0.23 |
-| 6 | Scout | 3 | 1.2 | top | 0.25 | 0.25 |
-
-No wave starts in the 10 s before each boss ([level-flow.md](../../gameplay/level-flow.md)).
+No wave starts in the 10 s before each boss ([level-flow.md](../../gameplay/level-flow.md)): the beats are composed around these stretches, so none is dropped.
 
 **Acceptance criteria**
 - Given the 1-1 plan, then it composes beats that name its kinds and sides in order of time (unit test).
 
-*Sources: P06-R07, D-067, ENM-50.*
+*Sources: P06-R07, D-067, ENM-50, D-283.*
 
 #### LVL-1-1-10 — Filler · MUST
 
-1-1's filler (WLD-1-21) brings only the Hornet, which does not shoot, one group every `max_gap`, the gentlest filler of the game.
+1-1's filler (WLD-1-21) brings only the Hornet, which does not shoot: after a Hornet wave, single Hornet groups in the lull, one every `max_gap`, the gentlest filler of the game.
 
 **Acceptance criteria**
 - Given the 1-1 filler, then its kind is the Hornet only and its gap shrinks (unit test).
 
-*Sources: D-051, ENM-50.*
+*Sources: D-051, ENM-50, D-283.*
 
 ### Difficulty
 
@@ -208,7 +200,7 @@ Petrel's chase.
 | shore | x −40 ± 90, every 1 800 units; beach 240; sea bed −55 | `GREEN_COAST` |
 | max_gap | 4.5 s → 3 s | `src/game/config/world_1/waves.py` `WORLD_1_FILLERS["1-1"]` |
 | bullet_speed_factor / fire_rate_factor | 0.8 / 0.8 | `src/game/config/world_1/difficulty.py` |
-| written | 41 beats from the plan; waves, groups, enemies and HP after fill and density: to be measured again with the new kinds | `src/game/config/wave_plans.py` `level_plan(1, 1)`; density 2 (D-249) |
+| written | beats composed from the plan and its tier mix (D-283); waves, groups, enemies and HP after fill and density: to be measured again | `src/game/config/wave_plans.py` `level_plan(1, 1)`, `tier_mix(1, 1)`; density 2 (D-249) |
 | mini boss / final boss | `reef-warden` / `storm-petrel` | `src/game/config/world_1/bosses.py` `WORLD_1_BOSSES` |
 | runout | 150 s | same |
 

@@ -4,8 +4,8 @@
 
 The third level of World 3. From the first flats 3-2 ended on, the player flies over blocks of
 workers' flats, terraced streets, a park and brick terraces to the first houses, while an afternoon
-thunderstorm builds over the first quarter and then rages, with lightning. Spinners and Mortars
-lead the waves and the Broodmother comes in. Its mini boss stops the ground. Its checkpoint is its
+thunderstorm builds over the first quarter and then rages, with lightning. Tier 3 brings 60 % of
+the enemies, tiers 2 and 4 20 % each. Its mini boss stops the ground. Its checkpoint is its
 mini boss (see [level flow](../../gameplay/level-flow.md)).
 
 ## Requirements
@@ -62,15 +62,14 @@ lightning (the flash limits are in [weather](../../graphics/weather.md)).
 
 ### LVL-3-3-04 — Enemy waves · MUST
 
-3-3 brings in the Broodmother, the last kind of tier 3, and so uses Phantom, Spinner, Prism, Mortar and Broodmother, no other. 3-3's waves follow its wave plan (WLD-3-16) from 4 s to 292 s, with a beat every `wave_gap` seconds (4.4 s to 3.2 s) and
-groups growing by `wave_growth` (90 %) over the level (77 beats). The cycle of phrases, each a kind with its number of
-groups at the start: Phantom 1, Spinner 2, Prism 1, Phantom 1, Mortar 1, Spinner 2, Phantom 1, Broodmother 1, Prism 1, Spinner 2, Mortar 1. The filler draws Phantoms and Spinners, at most `filler_gap` apart.
+3-3 mixes three tiers: tier 3 (the main one) is 60 % of its enemy ships, tier 2 20 % and tier 4 20 % (each within 5 points; a Wasp group counts as its 5 ships, and the filler is counted with the beats). It brings every kind of its tiers, each at least once: tier 3's Phantom, Spinner, Mortar, Prism and Broodmother; tier 2's Wasp, Strafer, Harrier, Sweeper and Hatchery; tier 4's Splitter, Hydra, Juggernaut, Scissor and Hive, and no other kind. 3-3's waves follow its wave plan (WLD-3-16) from 4 s to 292 s, each wave followed by a breather of `wave_gap` seconds (2.4 s to 1.7 s), groups growing by `wave_growth` (90 %) over the level. Each beat goes to the tier furthest below its share of the ships so far (the filler that follows a beat counted with it). A tier's beats first bring each of its five kinds once (shooter, laser, missile, carrier, then diver; one group each outside the main tier), then follow the role cycle (shooter, diver, laser, diver, missile, shooter, diver, carrier, laser, shooter, missile). A wave brings no more groups than its tier lacks, the main tier's never fewer than written. The beats are composed around the quiet stretch before each boss, so none is dropped. The filler draws Phantoms, Spinners, Wasps, Strafers, Splitters and Hydras, at most `filler_gap` apart.
 
 **Acceptance criteria**
-- Unit test: 3-3's waves use exactly Phantom, Spinner, Prism, Mortar and Broodmother, and each of them.
+- Unit test: 3-3's waves use only the kinds of tiers 3, 2 and 4, and each of them.
+- Unit test: each tier's share of 3-3's enemy ships is within 5 points of its target.
 - Unit test: 3-3's waves are the same each time the level is built.
 
-*Sources: P09-R07, P05-R24, D-080, D-090, ENM-50.*
+*Sources: P09-R07, P05-R24, D-080, D-090, ENM-50, D-283.*
 
 ### LVL-3-3-05 — Difficulty · MUST
 
@@ -125,7 +124,7 @@ the two fights.
 | storm start | clouds 0.5 / 0.5, storm 0.3 | `LEVEL_3_3_LOOK`, `src/game/config/world_3/looks.py` |
 | thunderstorm | clouds 0.9 / 0.9, storm 1, lightning 1, built over 0–75 s | `THUNDERSTORM` |
 | rain | 0.8 | `THUNDERSTORM.weather` |
-| wave_gap | 4.4 s → 3.2 s | `PLAN_3_3.gap`, `src/game/config/world_3/waves.py` |
+| wave_gap | 2.4 s → 1.7 s | `PLAN_3_3.gap`, `src/game/config/world_3/waves.py` |
 | wave_growth | 0.9 | `PLAN_3_3.growth` |
 | filler_gap | 3 s → 2 s | `WORLD_3_FILLERS["3-3"].maxGap` |
 | bullet speed / fire rate factors | 1.1 / 1.1 | `WORLD_3_DIFFICULTY["3-3"]` |

@@ -127,6 +127,25 @@ def _rect(x0: float, y0: float, x1: float, y1: float) -> list[list[float]]:
     return [[x0, y0], [x1, y0], [x1, y1], [x0, y1]]
 
 
+def _plus(geo: Any, s: float, z: float, color: list[float]) -> None:
+    """Add a plus sign of size `s` (arms `s` long from the centre, 0.36 `s` thick) at depth `z`."""
+    t = 0.36 * s
+    _polygon(geo, _rect(-t, -s, t, s), z, color)
+    _polygon(geo, _rect(-s, -t, -t, t), z, color)
+    _polygon(geo, _rect(t, -t, s, t), z, color)
+
+
+def build_heal_badge(colors: Any) -> ColoredGeometry:
+    """Return the badge of a heal bonus (GFX-FX-12, GAME-BONUS-11): a plus sign in a rim.
+
+    A lighter plus sign in front of it. A plus sign, so it reads without colour.
+    """
+    geo = _new_geometry()
+    _plus(geo, 1, 0, colors.rim)
+    _plus(geo, colors.inset, -0.02, colors.cross)
+    return geo
+
+
 def _letter_b(h: float) -> list[list[list[float]]]:
     """Return the blocky strokes of a letter B, `h` high, centred on the origin."""
     w = 0.62 * h

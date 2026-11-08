@@ -2,7 +2,6 @@
 """World 4."""
 
 from core.content.game_level import GameLevel
-from game.config.wave_plans import compose_beats
 from game.config.world_4.bosses import WORLD_4_BOSSES
 from game.config.world_4.difficulty import WORLD_4_DIFFICULTY
 from game.config.world_4.scenery import LEVEL_4_1, LEVEL_4_2, LEVEL_4_3, LEVEL_4_4, LEVEL_4_5
@@ -30,7 +29,7 @@ TABLES = WorldTables(WORLD_4_DIFFICULTY, WORLD_4_FILLERS, WORLD_4_BOSSES)
 
 def _level(level_id: str, scenery: Any, plan: WavePlan) -> GameLevel:
     # Its waves composed from its plan (WLD-4-18).
-    return assemble_level(level_id, scenery, compose_beats(plan), TABLES)
+    return assemble_level(level_id, scenery, plan, TABLES)
 
 
 # World 4 (WLD-4-01; reworked at the reviewer's request, 2026-10-27): five levels of about 5

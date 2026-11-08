@@ -11,10 +11,11 @@ from game.config.wave_plans import (
     KIND_ENTRY,
     SETTLE,
     compose_beats,
+    enemies_of,
     kinds_of,
     level_filler,
     level_plan,
-    roles_of,
+    tier_mix,
     wave_duration,
     world_fillers,
 )
@@ -27,28 +28,54 @@ def test_enm_50_every_kind_has_an_entry() -> None:
     assert set(KIND_ENTRY.keys()) == kinds
 
 
+def _tiers_of(world: int, level: int) -> list[int]:
+    return [pair[0] for pair in tier_mix(world, level)]
+
+
 @pytest.mark.parametrize(("world", "level"), LEVELS)
-def test_enm_50_a_level_names_only_kinds_of_its_worlds_tier(world: int, level: int) -> None:
-    allowed = set(tier_kinds(world))
+def test_enm_50_a_level_names_only_kinds_of_its_tiers_and_every_one_of_them(
+    world: int, level: int
+) -> None:
+    allowed = {kind for tier in _tiers_of(world, level) for kind in tier_kinds(tier)}
     beats = compose_beats(level_plan(world, level))
     assert beats
-    assert {beat[1] for beat in beats} <= allowed
+    assert {beat[1] for beat in beats} == allowed
     assert set(level_filler(world, level).kinds) <= allowed
-    assert set(kinds_of(world, level)) <= allowed
+    assert set(kinds_of(world, level)) == allowed
     assert_beats_well_formed(beats, enemy_kind_ids())
 
 
-def test_enm_50_world_1_brings_one_more_kind_each_level_and_the_others_start_with_three() -> None:
-    assert [len(roles_of(1, level)) for level in range(1, 6)] == [2, 3, 4, 5, 5]
-    for world in (2, 3, 4):
-        assert [len(roles_of(world, level)) for level in range(1, 6)] == [3, 4, 5, 5, 5]
-    assert kinds_of(1, 1) == ["hornet", "scout"]
-    assert set(kinds_of(1, 5)) == set(tier_kinds(1))
+def test_enm_50_the_tier_mix_of_each_level() -> None:
+    """Each level's share of the ships by tier (D-283).
+
+    World 1 from 80 / 20 % to 60 / 40 %, Worlds 2 and 3 60 % their tier with the rest sliding from
+    the tier below to the one above, World 4 up to tier 4 only.
+    """
+    assert [tier_mix(1, level) for level in range(1, 6)] == [
+        [[1, 80], [2, 20]],
+        [[1, 75], [2, 25]],
+        [[1, 70], [2, 30]],
+        [[1, 65], [2, 35]],
+        [[1, 60], [2, 40]],
+    ]
+    assert tier_mix(2, 1) == [[2, 60], [1, 40]]
+    assert tier_mix(2, 3) == [[2, 60], [1, 20], [3, 20]]
+    assert tier_mix(2, 5) == [[2, 60], [3, 40]]
+    assert tier_mix(3, 2) == [[3, 60], [2, 30], [4, 10]]
+    assert tier_mix(4, 1) == [[4, 60], [3, 40]]
+    assert tier_mix(4, 5) == [[4, 100]]
+    for world, level in LEVELS:
+        assert sum(pair[1] for pair in tier_mix(world, level)) == 100
 
 
-def test_enm_50_the_first_level_filler_is_the_diver_only_which_never_shoots() -> None:
+def test_enm_50_a_wasp_group_counts_as_its_swarm() -> None:
+    assert enemies_of(2, "hornet") == 3
+    assert enemies_of(2, "wasp") == 15
+
+
+def test_wld_1_25_the_first_level_filler_is_the_hornet_only_which_never_shoots() -> None:
     assert level_filler(1, 1).kinds == ["hornet"]
-    assert level_filler(1, 2).kinds == ["hornet", "scout", "hornet", "scout"]
+    assert level_filler(1, 2).kinds == ["hornet", "scout", "wasp", "strafer"]
 
 
 def test_wld_2_19_the_filler_gap_shrinks_and_every_level_has_one() -> None:

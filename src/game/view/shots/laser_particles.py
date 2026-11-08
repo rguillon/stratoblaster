@@ -41,8 +41,12 @@ class ParticleSpot:
 class LaserParticles:
     """Particles flowing up along a beam (GFX-SHOT-03)."""
 
-    def __init__(self, options: Any, random: Random, initial_length: float) -> None:
+    def __init__(
+        self, options: Any, random: Random, initial_length: float, width_bonus: float = 0
+    ) -> None:
         self._options = options
+        # Added to each segment's hit width to spread the particles over the drawn beam.
+        self._width_bonus = width_bonus
         self._particles: list[Particle] = [
             Particle(
                 random() * initial_length,
@@ -71,6 +75,7 @@ class LaserParticles:
             while k < len(segments) - 1 and y > segments[k].y1:
                 k += 1
             segment = segments[k]
-            x = segment.x + (p.lateral * segment.width * self._options.spread) / 2
+            width = segment.width + self._width_bonus
+            x = segment.x + (p.lateral * width * self._options.spread) / 2
             spots.append(ParticleSpot(x, y, p.radius))
         return spots

@@ -58,7 +58,9 @@ def full_frame(page: Page) -> dict[str, Any]:
 # Swept again for the 540 x 720 window and its wave density (D-263): 2-1 at 65 s, 3-1 at 75 s and
 # 4-1 at 70 s. The Hydra and the Juggernaut swapped roles (D-274): 4-1 at 65 s (at 70 s the shot
 # probed read 1.5; at 75, 80 and 100 s no frame had every object, at 90 s no enemy bullet).
-LEVELS = [("1-2", 120), ("2-1", 65), ("3-1", 75), ("4-1", 65)]
+# The tier mixes (D-283) moved them again: 4-1 at 110 s (from 20 to 100 s, and at 160 and 190 s, the
+# first shot probed read 1.4 to 1.9 or no frame had every object; 30 and 130 s pass too).
+LEVELS = [("1-2", 120), ("2-1", 65), ("3-1", 75), ("4-1", 110)]
 
 
 @pytest.mark.parametrize(("level_id", "time"), LEVELS)

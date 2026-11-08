@@ -103,7 +103,7 @@ Back opens the ship select screen.
 
 ### UI-LEVEL-09 — The screen's look · SHOULD
 
-The heading "Choose a level" is over the grid; the hint "Arrows to pick · Enter or tap again to go"
+The heading "Choose a level" is over the grid; the hint "Arrows to pick · Enter or tap to go"
 and the status line are under it; the Back button is at the top left. The cells are 68 × 68 px
 glass squares, 10 px apart, with a green border and the label in 22 px bold monospace. The
 highlighted cell is the light cyan block of the menus with a white border and a dashed white

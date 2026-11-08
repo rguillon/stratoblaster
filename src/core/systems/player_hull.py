@@ -105,6 +105,16 @@ class PlayerHull:
         self.lives += 1
         return True
 
+    def heal(self, share: float) -> bool:
+        """Return a heal bonus (GAME-BONUS-11): `share` of the full health back, up to full.
+
+        Returns whether any health was given back.
+        """
+        if self.out or self.health >= self.max_health:
+            return False
+        self.health = min(self.max_health, self.health + share * self.max_health)
+        return True
+
     def step(self, dt: float) -> None:
         """Count down the invincibility."""
         self.invincible = max(0, self.invincible - dt)

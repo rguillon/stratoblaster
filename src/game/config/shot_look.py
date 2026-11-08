@@ -40,13 +40,33 @@ SHOT_LOOK = record({
         "depth": 8,
     },
     "laser": {
-        # Visual width relative to the beam's hit width (the glow spills around the core).
+        # Owner, 2026-11-08 ("current level 5 shall be level 1"): the beam is drawn as if its hit
+        # width were `widthBonus` px wider, so level 1 (4 px) looks like the old level 5 (12 px).
+        # The bar, its base and contact glows and its particles all use that drawn width; the hit
+        # width (GAME-WPN-06) does not change.
+        "widthBonus": 8,
+        # Visual width relative to the drawn width (the glow spills around the core).
         "glowWidth": 1.8,
-        # Centre line to edge.
+        # Owner, 2026-11-08 ("the horizontal line is ugly"): the beam fades in over this many px
+        # from where it leaves the ship, under the base glow, instead of starting square.
+        "fadeIn": 18,
+        # Owner, 2026-11-08 ("too transparent"): a blended core under the additive glow, as wide as
+        # the drawn width, hiding the ground behind it as much as its alpha says (centre to edge).
+        "core": {
+            "colors": [
+                [0.9, 0.97, 1],
+                [0.4, 0.7, 1],
+                [0.1, 0.3, 0.9],
+                [0.03, 0.1, 0.45],
+            ],
+            "alphas": [0.95, 0.8, 0.45, 0],
+        },
+        # Centre line to edge. Owner, 2026-11-08: more intense (was [0.55, 0.8, 1],
+        # [0.12, 0.42, 1], [0.02, 0.1, 0.55]).
         "colors": [
-            [0.55, 0.8, 1],
-            [0.12, 0.42, 1],
-            [0.02, 0.1, 0.55],
+            [0.85, 0.95, 1],
+            [0.3, 0.62, 1],
+            [0.06, 0.22, 0.8],
             [0, 0, 0],
         ],
         # Width flicker (+- fraction) and its frequency, Hz.
@@ -59,9 +79,10 @@ SHOT_LOOK = record({
             "radius": [1.2, 2.6],
             # Sideways spread, as a fraction of the local beam width.
             "spread": 0.9,
+            # Owner, 2026-11-08: brighter (was [0.5, 0.8, 1], [0.1, 0.35, 0.9]).
             "colors": [
-                [0.5, 0.8, 1],
-                [0.1, 0.35, 0.9],
+                [0.8, 0.95, 1],
+                [0.2, 0.5, 1],
                 [0, 0, 0],
             ],
             "seed": 3,

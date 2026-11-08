@@ -4,7 +4,7 @@
 from helpers.dom import FakeDocument
 
 from core.content.game_definition import LogicalScreen
-from ui.stage_fit import apply_stage_fit, fit_stage, render_ratio
+from ui.stage_fit import apply_stage_fit, fit_stage, phone_layout, render_ratio
 
 LOGICAL = LogicalScreen(640, 360)
 
@@ -55,3 +55,20 @@ def test_eng_110_the_render_ratio_caps_the_pixels_drawn_per_logical_pixel() -> N
     assert render_ratio(2, fit_stage(320, 180, LOGICAL), 1.5) == 2
     # A stage with no room keeps the device ratio.
     assert render_ratio(2, fit_stage(0, 0, LOGICAL), 1.5) == 2
+
+
+def test_ui_look_02_a_stage_scaled_under_a_half_lays_the_menus_out_for_a_phone() -> None:
+    """D-286: a 390 px wide phone shows the 1280 x 720 stage at 0.3: the overlay gets `phone`."""
+    screen = LogicalScreen(1280, 720)
+    phone = fit_stage(390, 844, screen)
+    desk = fit_stage(800, 600, screen)
+    assert phone_layout(phone)
+    assert not phone_layout(desk)
+    assert not phone_layout(fit_stage(0, 0, screen))
+    doc = FakeDocument()
+    stage = doc.createElement("div")
+    overlay = doc.createElement("div")
+    apply_stage_fit(stage, overlay, phone, screen)
+    assert overlay.classList.contains("phone")
+    apply_stage_fit(stage, overlay, desk, screen)
+    assert not overlay.classList.contains("phone")

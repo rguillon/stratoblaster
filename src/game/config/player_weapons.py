@@ -5,10 +5,10 @@ Three weapons, five levels each. Logical pixels, Y up, angles in degrees from fo
 marked "default" were not given by the phase 3 spec; they are the agent's proposal (D-015), to be
 tuned in review.
 
-Balance (GAME-WPN-12, D-059): the bullet is the reference (the bosses were tuned with it, D-055); at
-every level the laser and the missiles put out 70-100 % of the bullets' damage per second. The
-laser trades spread for focus (one column, never misses, pierces); the missiles trade damage for
-reach (they home, but take time to arrive and overkill small enemies).
+Balance (GAME-WPN-12, D-281): the bullet is the reference (the bosses were tuned with it, D-055). At
+every level the laser puts out 125 % of the bullets' damage per second and the missiles 40 % of
+it: the laser trades spread (the guns' up to 5 streams) for focus and more damage (one column,
+never misses, pierces), the missiles pay for homing (no aiming at all) with the lowest damage.
 """
 
 from game.config.record import concat, record
@@ -75,23 +75,23 @@ BULLET = record({
 })
 
 # GAME-WPN-06, GAME-WPN-07: bright blue laser, more damage per second at each level; above level 1
-# it goes through a ship and continues one level lower. Damage per second from GAME-WPN-12 (D-059);
-# widths are defaults.
+# it goes through a ship and continues one level lower. Damage per second from GAME-WPN-12 (D-281):
+# 125 % of the bullets' at the same level; widths are defaults.
 LASER = record({
     "kind": "beam",
     "id": "laser",
     "name": "Laser",
     "levels": [
-        {"damagePerSecond": 80, "width": 4},
-        {"damagePerSecond": 140, "width": 6},
-        {"damagePerSecond": 200, "width": 8},
-        {"damagePerSecond": 260, "width": 10},
-        {"damagePerSecond": 320, "width": 12},
+        {"damagePerSecond": 100, "width": 4},
+        {"damagePerSecond": 200, "width": 6},
+        {"damagePerSecond": 300, "width": 8},
+        {"damagePerSecond": 400, "width": 10},
+        {"damagePerSecond": 500, "width": 12},
     ],
 })
 
-# GAME-WPN-08: missiles with constant acceleration that home on the closest enemy; 14 damage to
-# everything within 10 px of the impact (GAME-WPN-09; GAME-WPN-12, D-059); 4 missiles per second
+# GAME-WPN-08: missiles with constant acceleration that home on the closest enemy; 8 damage to
+# everything within 10 px of the impact (GAME-WPN-09; GAME-WPN-12, D-281); 4 missiles per second
 # per stream.
 MISSILE = record({
     "kind": "projectile",
@@ -112,7 +112,7 @@ MISSILE = record({
     "homingRange": 320,
     # Default.
     "radius": 3,
-    "damage": 14,
+    "damage": 8,
     "blastRadius": 10,
     "levels": [
         [FORWARD],

@@ -112,10 +112,10 @@ BOSS_TIMING = record({
     "roll": {"maxDeg": 12, "fullSpeed": 60, "easePerSec": 4},
     # Degrees a second a turret turns at, following the player (phase 7 review).
     "turretTurnDeg": 150,
-    # Degrees a second a laser turret follows the player at during the warning line (phase 8
-    # review): about half as fast as the ship crosses its aim from 300 px away, so it can be
-    # outrun.
-    "laserTurnDeg": 20,
+    # Degrees a second a laser turret follows the player at during the warning line and while a
+    # sweeping beam fires (phase 8 review). Owner, 2026-11-08 ("impossible to evade"): 12 (was 20),
+    # about 63 px/s across at 300 px away, a fraction of the ship's speed.
+    "laserTurnDeg": 12,
     # Seconds a boss is angry after each transformation (BOSS-27): only its newly revealed
     # weapons fire, `rageRate` times as often (a missile rack `rageMissiles` times as many).
     "rageSeconds": 8,

@@ -243,3 +243,17 @@ def test_boss_58_a_volley_naming_a_mount_its_boss_lacks_is_an_error() -> None:
     named = merge(volley.aimed("core", 1, 1, 0, bullet("a", 1)), {"mount": "nope"})
     with pytest.raises(ValueError, match='Unknown boss mount "nope"'):
         armed_volley(design, named)
+
+
+def test_boss_31_every_boss_turret_follows_the_player_at_the_laser_rate_while_a_laser_shows() -> (
+    None
+):
+    """D-284: a laser fired from any turret, a gun turret included, turns at the slow laser rate."""
+    assert BOSS_TIMING.laserTurnDeg == 12
+    turrets = []
+    for design in BOSS_DESIGNS:
+        stats = boss_stats(design)
+        turrets.extend((stats.turrets or {}).values())
+        turrets.extend(m.turret for m in stats.mounts or [] if m.turret)
+    assert turrets
+    assert all(t.laser_turn_rate_deg == BOSS_TIMING.laserTurnDeg for t in turrets)

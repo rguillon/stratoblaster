@@ -84,6 +84,29 @@
         -webkit-user-select: none;
         touch-action: manipulation;
       }
+      /* Phone layout (UI-LOOK-02, D-286): on a stage scaled under 0.5 (`PHONE_SCALE`), every menu,
+         the pause menu and the end-of-level panels are laid out across the whole window at their
+         real size, so their touch targets keep their 44 CSS px (UI-INPUT-11). The HUD of a level
+         being played (`.on-play`) keeps to the stage; under a panel it is hidden. */
+      #menu.phone:not(.on-play) {
+        position: fixed;
+        left: 0 !important;
+        top: 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        height: 100dvh !important;
+        transform: none !important;
+      }
+      #menu.phone .level-cell {
+        width: 60px;
+        height: 60px;
+      }
+      #menu.phone:not(.on-play) .game-hud,
+      #menu.phone:not(.on-play) .boss-bar,
+      #menu.phone:not(.on-play) .game-level,
+      #menu.phone:not(.on-play) .game-fire {
+        display: none;
+      }
       /* The message shown when the game cannot run (UI-LOAD-02). */
       #fatal {
         position: fixed;

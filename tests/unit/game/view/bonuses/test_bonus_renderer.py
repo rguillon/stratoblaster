@@ -60,8 +60,8 @@ def bonus(kind: Any = "weapon", x: Any = 10.0, y: Any = 20.0, age: Any = 0.0) ->
     return SimpleNamespace(kind=kind, x=x, y=y, age=age)
 
 
-def test_game_bonus_01_three_kinds_of_bonus_are_drawn() -> None:
-    assert KINDS == ["weapon", "life", "bomb"]
+def test_game_bonus_01_four_kinds_of_bonus_are_drawn() -> None:
+    assert KINDS == ["weapon", "life", "bomb", "heal"]
 
 
 def test_gfx_fx_12_each_kind_has_a_badge_and_a_halo_template(scene: Any, monkeypatch: Any) -> None:
@@ -73,9 +73,9 @@ def test_gfx_fx_12_each_kind_has_a_badge_and_a_halo_template(scene: Any, monkeyp
 
     monkeypatch.setattr(bonus_renderer, "additive_template", record)
     templates = kind_templates(scene)
-    assert set(templates) == {"weapon", "life", "bomb"}
+    assert set(templates) == {"weapon", "life", "bomb", "heal"}
     assert all(len(pair) == 2 for pair in templates.values())
-    assert set(made) == {"bonus-halo", "bonus-glow-life", "bonus-glow-bomb"}
+    assert set(made) == {"bonus-halo", "bonus-glow-life", "bonus-glow-bomb", "bonus-glow-heal"}
 
 
 def test_gfx_fx_11_a_ring_is_a_black_disc_with_a_coloured_rim() -> None:
@@ -172,7 +172,7 @@ def test_gfx_fx_11_the_renderer_disposes_every_template_it_made(scene: Any, temp
     renderer = create_bonus_renderer(scene)
     renderer["dispose"]()
     # Six kind templates (badge and halo of three kinds), the flash ring.
-    assert len(templates) == 7
+    assert len(templates) == 9
     assert all(t.dispose.called for t in templates)
 
 

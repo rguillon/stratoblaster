@@ -1,8 +1,8 @@
 # Copyright (c) 2026 Renaud Guillon
-"""The wave plans of the four worlds, composed from their tier (WLD-1-17, WLD-2-17, ENM-50).
+"""The wave plans of the four worlds, composed from a mix of tiers (WLD-1-17, WLD-2-17, ENM-50).
 
-World N uses the five kinds of tier N and no other (ENM-01). Each level cycles through the kinds of
-its roles, one kind per beat, and a beat is one big wave of that kind alone: the next beat starts
+Each level mixes two or three tiers, each with its share of the enemies (`tier_mix`, D-283), and
+brings every kind of each of them. A beat is one big wave of one kind alone: the next beat starts
 only when the wave has come in, plus a breather (`gap`, from `gap[0]` at the start to `gap[1]` at
 the end, so the level fills up as it goes). The groups of a wave grow by `growth` over the level
 (so the second half carries more enemy HP, WLD-2-22). Each time a kind comes round it comes in
@@ -13,6 +13,7 @@ written in seconds and turned into distances at the level's ground speed. A way 
 
 import math
 
+from game.config.enemies_veteran import VETERAN_CONFIG
 from game.config.enemy_tiers import ENEMY_TIERS
 from game.config.record import concat, record
 
@@ -81,8 +82,6 @@ KIND_ENTRY = record({
     "hive": [[1, 0, "top", 0.5, 0, 0], [1, 0, "top", 0.3, 0.4, 1]],
 })
 
-# The roles in the order a world brings them in over its levels (the cheap ones first).
-ROLE_ORDER = ["diver", "shooter", "laser", "missile", "carrier"]
 # One cycle of phrases, by role: divers and shooters often, the heavy kinds once. A shooter comes
 # first, so a level shows enemy bullets from its first beat.
 CYCLE = [
@@ -98,26 +97,62 @@ CYCLE = [
     "shooter",
     "missile",
 ]
-
-# How many roles a level has, by world: World 1 brings them in one level after the other; the
-# later worlds start with three, then four, then all five.
-ROLES_IN_LEVEL = {
-    1: [2, 3, 4, 5, 5],
-    2: [3, 4, 5, 5, 5],
-    3: [3, 4, 5, 5, 5],
-    4: [3, 4, 5, 5, 5],
-}
+# The first five beats of a tier in a level bring each of its kinds once (ENM-50), then its beats
+# follow `CYCLE`. The diver comes last: its waves are the biggest (the Wasp's groups are swarms),
+# so a tier with a small share meets its other kinds first.
+FIRST_PASS = ["shooter", "laser", "missile", "carrier", "diver"]
 
 
-def roles_of(world: int, level: int) -> list[str]:
-    """Return the roles World `world`'s level `level` (1..5) uses."""
-    return ROLE_ORDER[: ROLES_IN_LEVEL[world][level - 1]]
+def tier_mix(world: int, level: int) -> list[list[int]]:
+    """Return the tiers of World `world`'s level `level` (1..5), as `[tier, percent]` pairs.
+
+    The percent is the tier's share of the level's enemies (ENM-50, D-283). World 1 goes from 80 %
+    tier 1 and 20 % tier 2 in 1-1 to 60 / 40 in 1-5. Worlds 2 and 3 are 60 % their own tier, the
+    other 40 % sliding from the tier below (40 % in the first level) to the tier above (40 % in
+    the last). World 4 goes from 60 % tier 4 and 40 % tier 3 to tier 4 only in 4-5. The first pair
+    is the level's main tier; a tier at 0 % is left out.
+    """
+    step = level - 1
+    if world == 1:
+        pairs = [[1, 80 - 5 * step], [2, 20 + 5 * step]]
+    elif world == 4:
+        pairs = [[4, 60 + 10 * step], [3, 40 - 10 * step]]
+    else:
+        pairs = [[world, 60], [world - 1, 40 - 10 * step], [world + 1, 10 * step]]
+    return [pair for pair in pairs if pair[1] > 0]
+
+
+def tier_sequence(tier: int) -> list[str]:
+    """Return the kinds of `tier` in the order its beats bring them: `FIRST_PASS`, then `CYCLE`."""
+    kinds = ENEMY_TIERS[str(tier)].kinds
+    return [kinds[role] for role in concat(FIRST_PASS, CYCLE)]
 
 
 def kinds_of(world: int, level: int) -> list[str]:
-    """Return the kinds World `world`'s level `level` uses, in the order of the roles."""
-    kinds = ENEMY_TIERS[str(world)].kinds
-    return [kinds[role] for role in roles_of(world, level)]
+    """Return every kind World `world`'s level `level` uses: all the kinds of each of its tiers."""
+    kinds: list[str] = []
+    for pair in tier_mix(world, level):
+        tier_kinds = ENEMY_TIERS[str(pair[0])].kinds
+        kinds = concat(kinds, [tier_kinds[role] for role in FIRST_PASS])
+    return kinds
+
+
+def level_plan(world: int, level: int) -> Any:
+    """Return the wave plan of World `world`'s level `level` (1..5): its tiers and pace."""
+    start = 3.4 - 0.2 * (level - 1) - 0.3 * (world - 1)
+    return record({
+        "from": 4,
+        "to": 226 if world == 1 else 292,
+        "gap": [start, start * 0.7],
+        "growth": 0.6 + 0.1 * (world - 1) + 0.05 * (level - 1),
+        # How much bigger than written the waves of several groups are: later levels and worlds
+        # bring bigger waves (WLD-1-22). A lone heavy enemy stays alone.
+        "size": 1.4 + 0.2 * (level - 1) + 0.1 * (world - 1),
+        # Each tier's share of the enemies and the order its beats bring its kinds (D-283).
+        "tiers": [[pair[1], tier_sequence(pair[0])] for pair in tier_mix(world, level)],
+        # The filler, counted with the beats it follows when sharing the enemies out.
+        "filler": level_filler(world, level),
+    })
 
 
 def _phrase(kind: str, turn: int) -> list[Any]:
@@ -139,28 +174,6 @@ def _phrase(kind: str, turn: int) -> list[Any]:
     return [kind, entry[0], entry[1], side, position, spread, entry[5]]
 
 
-def level_cycle(world: int, level: int) -> list[str]:
-    """Return the kinds of one level in the order its beats bring them (see `CYCLE`)."""
-    roles = roles_of(world, level)
-    tier_kinds = ENEMY_TIERS[str(world)].kinds
-    return [tier_kinds[role] for role in CYCLE if role in roles]
-
-
-def level_plan(world: int, level: int) -> Any:
-    """Return the wave plan of World `world`'s level `level` (1..5): its cycle and pace."""
-    start = 3.4 - 0.2 * (level - 1) - 0.3 * (world - 1)
-    return record({
-        "from": 4,
-        "to": 226 if world == 1 else 292,
-        "gap": [start, start * 0.7],
-        "growth": 0.6 + 0.1 * (world - 1) + 0.05 * (level - 1),
-        # How much bigger than written the waves of several groups are: later levels and worlds
-        # bring bigger waves (WLD-1-22). A lone heavy enemy stays alone.
-        "size": 1.4 + 0.2 * (level - 1) + 0.1 * (world - 1),
-        "cycle": level_cycle(world, level),
-    })
-
-
 def wave_duration(groups: int, interval: float) -> float:
     """Return the seconds a beat of `groups` groups keeps coming in, density included."""
     more = max(1, math.floor(groups * WAVE_DENSITY + 0.5))
@@ -169,38 +182,172 @@ def wave_duration(groups: int, interval: float) -> float:
     return (more - 1) * DENSITY_GAP
 
 
-def compose_beats(plan: Any) -> list[Any]:
-    """Return the beats of `plan`, deterministic.
+# Ships in one group of a kind, when more than one: a Wasp group is a swarm.
+GROUP_SIZE = {"wasp": VETERAN_CONFIG.wasp.groupSize}
+
+
+def group_size(kind: str) -> int:
+    """Return how many ships one group of `kind` is."""
+    size: int = GROUP_SIZE.get(kind, 1)
+    return size
+
+
+def enemies_of(groups: int, kind: str = "") -> int:
+    """Return how many ships a beat (or a filler group) of `groups` groups of `kind` brings.
+
+    The density included (WLD-1-20), each group counted with its ships.
+    """
+    return max(1, math.floor(groups * WAVE_DENSITY + 0.5)) * group_size(kind)
+
+
+def filler_groups(plan: Any, kind: str, t: float, ends: float, next_t: float) -> int:
+    """Return how many filler groups come in after a beat of `kind` at `t` (see `waves.fill`).
+
+    `ends`: when its wave has come in. `next_t`: when the next beat comes. None when the level has
+    no filler or `kind` is not one of its kinds. The gap runs over the plan, not over its beats as
+    in `fill`, so the count is close, not exact.
+    """
+    filler = plan["filler"]
+    if not filler or kind not in filler["kinds"]:
+        return 0
+    span = plan["to"] - plan["from"]
+    first = filler["maxGap"][0]
+    last = filler["maxGap"][1]
+
+    def gap_at(at: float) -> float:
+        progress = min(1, max(0, (at - plan["from"]) / span))
+        gap: float = first + (last - first) * progress
+        return gap
+
+    count = 0
+    f = ends + gap_at(t)
+    while next_t - f > gap_at(f) / 2:
+        count += 1
+        f = f + gap_at(f)
+    return count
+
+
+def _quiet_end(quiet: list[list[float]] | None, t: float) -> float:
+    """Return when the quiet stretch `t` falls in ends (a little after), or `t` if in none."""
+    if quiet is None:
+        return t
+    for stretch in quiet:
+        # Beats are written to a tenth of a second: keep a tenth clear on each side.
+        if t > stretch[0] - 0.1 and t <= stretch[1] + 0.1:
+            return stretch[1] + 0.2
+    return t
+
+
+def _pick_tier(shares: list[float], counts: list[float]) -> list[float]:
+    """Return `[index, shortfall]` of the tier furthest below its share of the enemies so far.
+
+    The shortfall is how many enemies it lacks. Ties go to the first (the level's main tier).
+    """
+    total = 0.0
+    for c in counts:
+        total += c
+    best = 0
+    best_gap = -1e9
+    for i in range(len(shares)):
+        gap = shares[i] * total - counts[i]
+        if gap > best_gap + 1e-9:
+            best = i
+            best_gap = gap
+    return [best, best_gap]
+
+
+def _beat_of(t: float, kind: str, groups: int, phrase: list[Any]) -> list[Any]:
+    """Return the beat of `groups` groups of `kind` at `t`, coming in the way of `phrase`."""
+    head = [math.floor(t * 10 + 0.5) / 10, kind, groups, phrase[2], phrase[3], phrase[4]]
+    if phrase[6] == 1:
+        return concat(head, [phrase[5], 1])
+    if phrase[5] != 0:
+        return concat(head, [phrase[5]])
+    return head
+
+
+def _groups(plan: Any, t: float, phrase: list[Any], lacking: float, main: bool) -> int:
+    """Return how many groups a beat of `phrase` at `t` brings.
+
+    Its written groups, sized and grown over the level, but no more than its tier lacks
+    (`lacking` ships), so each tier keeps to its share: the main tier's never fewer groups than
+    written, another tier's at least one.
+    """
+    count = phrase[1]
+    if count > 1:
+        count = math.floor(count * plan["size"] + 0.5)
+    span = plan["to"] - plan["from"]
+    grown = max(1, math.floor(count * (1 + (plan["growth"] * (t - plan["from"])) / span) + 0.5))
+    fits = math.floor(lacking / group_size(phrase[0]) / WAVE_DENSITY + 0.5)
+    least = phrase[1] if main else 1
+    return int(max(1, min(grown, max(least, fits))))
+
+
+class _TierPicker:
+    """Which tier, and which of its kinds, each beat of a plan brings (D-283)."""
+
+    def __init__(self, tiers: list[Any]) -> None:
+        self.tiers = tiers
+        self.shares = [tier[0] / 100 for tier in tiers]
+        # Ships of each tier so far, the filler counted with its beat.
+        self.counts = [0.0 for _ in tiers]
+        self.next_kind = [0 for _ in tiers]
+        self.turns: dict[str, int] = {}
+
+    def pick(self) -> list[Any]:
+        """Return `[tier index, kind, its turn, shortfall, introducing]` of the next beat."""
+        picked = _pick_tier(self.shares, self.counts)
+        tier = int(picked[0])
+        sequence = self.tiers[tier][1]
+        introducing = self.next_kind[tier] < len(FIRST_PASS)
+        kind = sequence[self.next_kind[tier]]
+        self.next_kind[tier] = self.next_kind[tier] + 1
+        if self.next_kind[tier] >= len(sequence):
+            self.next_kind[tier] = len(FIRST_PASS)
+        turn = self.turns.get(kind, 0)
+        self.turns[kind] = turn + 1
+        return [tier, kind, turn, picked[1], introducing]
+
+
+def compose_beats(plan: Any, quiet: list[list[float]] | None = None) -> list[Any]:
+    """Return the beats of `plan`, deterministic, none in the `quiet` `[from, to]` seconds.
 
     A beat is `[seconds, kind, groups, seconds between groups, side, position]` with, when it has
     them, the spread and the alternate flag (`1`: the groups come in from both edges in turn).
+    Each beat goes to the tier furthest below its share of the ships (the filler groups that
+    follow a beat counted with it, D-283), which brings the next kind of its sequence. A wave
+    brings no more than its tier lacks (see `_groups`); a smaller tier brings each of its kinds
+    first as one group, so all of them fit in its share (ENM-50).
     """
-    beats = []
+    beats: list[Any] = []
     span = plan["to"] - plan["from"]
     t = plan["from"]
-    i = 0
-    turns: dict[str, int] = {}
-    while t <= plan["to"] and len(plan["cycle"]) > 0:
-        kind = plan["cycle"][i % len(plan["cycle"])]
-        turn = turns.get(kind, 0)
-        turns[kind] = turn + 1
-        phrase = _phrase(kind, turn)
-        count = phrase[1]
-        if count > 1:
-            count = math.floor(count * plan["size"] + 0.5)
-        interval = phrase[2]
-        grown = max(1, math.floor(count * (1 + (plan["growth"] * (t - plan["from"])) / span) + 0.5))
-        head = [math.floor(t * 10 + 0.5) / 10, kind, grown, interval, phrase[3], phrase[4]]
-        if phrase[6] == 1:
-            beats.append(concat(head, [phrase[5], 1]))
-        elif phrase[5] != 0:
-            beats.append(concat(head, [phrase[5]]))
-        else:
-            beats.append(head)
+    picker = _TierPicker(plan["tiers"])
+    last: list[Any] = []
+    while t <= plan["to"] and len(plan["tiers"]) > 0:
+        held = _quiet_end(quiet, t)
+        if held > t:
+            # The stretch before a boss stays free (GAME-LEVEL-05): wait for its end.
+            t = held
+            continue
+        if len(last) > 0:
+            # `last`: the tier, kind, time and end of the beat before, whose filler comes now.
+            fill_count = filler_groups(plan, last[1], last[2], last[3], t)
+            picker.counts[last[0]] += enemies_of(1, last[1]) * fill_count
+        choice = picker.pick()
+        tier = choice[0]
+        kind = choice[1]
+        phrase = _phrase(kind, choice[2])
+        groups = _groups(plan, t, phrase, choice[3], tier == 0)
+        if tier > 0 and choice[4]:
+            groups = 1
+        picker.counts[tier] += enemies_of(groups, kind)
+        beat = _beat_of(t, kind, groups, phrase)
+        beats.append(beat)
         # The wave comes in, is met, then a breather: no other kind comes in meanwhile.
         breather = plan["gap"][0] + ((plan["gap"][1] - plan["gap"][0]) * (t - plan["from"])) / span
-        t = t + wave_duration(grown, interval) + SETTLE + breather
-        i = i + 1
+        last = [tier, kind, beat[0], beat[0] + wave_duration(groups, phrase[2])]
+        t = t + wave_duration(groups, phrase[2]) + SETTLE + breather
     return beats
 
 
@@ -217,12 +364,17 @@ FILLER_GAPS: list[dict[int, list[float]]] = [
 
 
 def level_filler(world: int, level: int) -> Any:
-    """Return the filler of World `world`'s level `level`: its kinds and the gap between groups."""
-    tier_kinds = ENEMY_TIERS[str(world)].kinds
+    """Return the filler of World `world`'s level `level`: its kinds and the gap between groups.
+
+    The divers and shooters of each of the level's tiers (D-283); 1-1's only the Hornet, which never
+    shoots, so it stays easy (WLD-1-25).
+    """
     if world == 1 and level == 1:
-        kinds = [tier_kinds.diver]
-    else:
-        kinds = [tier_kinds.diver, tier_kinds.shooter, tier_kinds.diver, tier_kinds.shooter]
+        return record({"kinds": [ENEMY_TIERS["1"].kinds.diver], "maxGap": FILLER_GAPS[0][1]})
+    kinds: list[str] = []
+    for pair in tier_mix(world, level):
+        tier_kinds = ENEMY_TIERS[str(pair[0])].kinds
+        kinds = concat(kinds, [tier_kinds.diver, tier_kinds.shooter])
     return record({"kinds": kinds, "maxGap": FILLER_GAPS[level - 1][world]})
 
 

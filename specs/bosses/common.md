@@ -507,11 +507,14 @@ while it fires.
 No boss laser turns while it fires, except a sweeper's (BOSS-40). A laser on a turret aims at the
 player during its warning line at only `boss_laser_turn` (so the beam can be outrun), then holds
 still while its beam fires. A sweeper's turret keeps following the player at that same rate while
-its beam fires. Lasers built into a hull fire straight down.
+its beam fires. This holds for every turret a laser fires from, a gun turret included: while a
+laser of it shows, a turret never turns faster than `boss_laser_turn` (D-284). Lasers built into a
+hull fire straight down.
 
 **Acceptance criteria**
-- Given a laser turret during its warning, then it turns towards the player at most 20°/s (unit
+- Given a laser turret during its warning, then it turns towards the player at most 12°/s (unit
   test).
+- Given any boss turret, then its laser rate is `boss_laser_turn` (unit test).
 - Given its beam fires, then it holds still; given a sweeping beam, then it keeps following (unit
   tests).
 
@@ -948,7 +951,7 @@ same fight drops the same bonuses.
 | `boss_rage_flicker` | 14 Hz, down to 0.35 | BOSS-27; `BOSS_LOOK.rageFlicker` |
 | `boss_turret_turn` | 150°/s | BOSS-29; `BOSS_TIMING.turretTurnDeg` |
 | boss laser | 1 s warning, 12 px wide, Lancer's style recoloured | BOSS-30; `boss_kit.laser_of` |
-| `boss_laser_turn` | 20°/s (warning line, sweeping beam) | BOSS-31; `BOSS_TIMING.laserTurnDeg` |
+| `boss_laser_turn` | 12°/s (warning line, sweeping beam) | BOSS-31; `BOSS_TIMING.laserTurnDeg` (D-284; was 20°/s) |
 | boss missile | 140 px/s, turns 80°/s, homes 3 s, radius 5, health 10 | BOSS-23; `boss_kit.MISSILE` |
 | `boss_transform_seconds` | 2.0 s | BOSS-37; `BOSS_TIMING.transformSeconds` |
 | `boss_region_blasts` | 5 blasts a region at most | BOSS-37; `BOSS_TIMING.regionBlasts` |

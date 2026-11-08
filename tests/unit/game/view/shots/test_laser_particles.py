@@ -51,6 +51,14 @@ def test_gfx_shot_03_each_particle_is_drawn_inside_the_width_of_its_segment() ->
         assert abs(s.x - 20.0) <= 10.0 * OPTIONS.spread / 2 + 1e-9
 
 
+def test_gfx_shot_03_the_particles_spread_over_the_drawn_width() -> None:
+    """With a width bonus, the particles spread over the hit width plus the bonus."""
+    narrow = LaserParticles(OPTIONS, create_rng(7), 100.0).step([segment(0, 100)], 0.0)
+    wide = LaserParticles(OPTIONS, create_rng(7), 100.0, 10.0).step([segment(0, 100)], 0.0)
+    for a, b in zip(narrow, wide, strict=True):
+        assert b.x == pytest.approx(2 * a.x)
+
+
 def test_gfx_shot_03_a_particle_moves_up_the_beam_by_its_speed() -> None:
     particles = LaserParticles(OPTIONS, create_rng(3), 100.0)
     p = particles._particles[0]

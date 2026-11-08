@@ -7,7 +7,14 @@ from typing import Any, Never
 import pytest
 
 from game.view import shot_geometry
-from game.view.shot_geometry import build_glow_bar, build_glow_disc, build_swirl, build_tracer
+from game.view.shot_geometry import (
+    bar_alphas,
+    build_glow_bar,
+    build_glow_disc,
+    build_glow_ramp,
+    build_swirl,
+    build_tracer,
+)
 
 WHITE = [1.0, 1.0, 1.0]
 RED = [1.0, 0.0, 0.0]
@@ -180,3 +187,17 @@ def test_gfx_shot_03_glow_bar_needs_two_colours() -> None:
 def test_the_range_error_is_thrown_by_javascript_only() -> None:
     """`throw new RangeError` runs in the browser; CPython runs only the placeholder: no error."""
     assert shot_geometry._range_error("Need 2 colours") is None
+
+
+def test_gfx_shot_03_a_glow_ramp_fades_in_from_black_at_its_bottom() -> None:
+    """Owner, 2026-11-08: the laser starts with a fade, not a square edge."""
+    geo = build_glow_ramp([RED, WHITE])
+    # Each column is a bottom then a top vertex.
+    assert colour(geo, 0) == [0, 0, 0, 1]
+    assert colour(geo, 1) == [1.0, 1.0, 1.0, 1]
+    assert colour(geo, 3) == [1.0, 0.0, 0.0, 1]
+
+
+def test_gfx_shot_03_bar_alphas_follow_the_columns_and_a_ramp_starts_clear() -> None:
+    assert bar_alphas([0.9, 0.0]) == [0.0, 0.0, 0.9, 0.9, 0.0, 0.0]
+    assert bar_alphas([0.9, 0.0], ramp=True) == [0, 0.0, 0, 0.9, 0, 0.0]

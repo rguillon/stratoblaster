@@ -1159,3 +1159,117 @@
   clock). Hidden weapon kinds get one mount each; their pods stay. Rolled out on World 1 first,
   checked by the owner before Worlds 2–4.
 - **Status:** Proposed
+
+## D-281 — Laser at 125 % of the guns, missiles at 40 % (GAME-WPN-06, GAME-WPN-09, GAME-WPN-12)
+- **Context:** with D-059 the laser dealt 80–100 % of the guns' damage per second and the missiles
+  70 %. The missiles need no aiming at all (they home), so at 70 % they were the best pick almost
+  everywhere, and the laser, which forces the ship to sit under its target, fell behind the guns
+  above level 1.
+- **Decision:** the guns stay the reference (the bosses were tuned with them, D-055). At every
+  level the laser deals 125 % of the guns' damage per second (100 / 200 / 300 / 400 / 500): the
+  owner asked for a laser "more powerful than the gun", since the guns' up to 5 streams are an
+  advantage of their own. The missiles deal 40 % of the guns' (missile damage 14 → 8, same blast, rate and streams). The aim is that each weapon is
+  the best pick for about a third of the waves.
+- **Alternatives considered:** keeping 70–100 % and slowing the missiles' homing instead (keeps
+  their strength against bosses, which do not dodge).
+- **Consequences:** boss fight times with the guns are unchanged; with the laser they get shorter
+  at every level, with the missiles longer. GAME-WPN-12's test checks the exact ratios.
+- **Status:** Proposed
+
+## D-282 — Heal bonus: 75 % of the weapon bonuses give back 20 % health (GAME-BONUS-11)
+- **Context:** the owner asked to "add a Heal bonus that restore 20% of the player's health, replace
+  75% of the current weapon upgrade bonus with this new one".
+- **Decision:** a fourth bonus kind, `heal`. Every weapon bonus that drops (enemies, boss parts and
+  cores, the final boss's sure drop included) turns into a heal bonus with 75 % chance, drawn from a
+  source of its own (the run's seed + 3) after the weapon draw, so which enemies drop a bonus does
+  not change (GAME-BONUS-05). It gives back 20 % of the ship's full health (20 for the Balanced, 28
+  for the Heavy, 16 for the Light), never above full. It looks like a violet plus sign (its own
+  shape, GFX-FX-12) and sounds like the life bonus's chime pitched up 4 semitones (`heal-bonus`,
+  made from the same CC0 file).
+- **Alternatives considered:** keeping the boss drops as weapon bonuses (fewer level-ups lost);
+  a heal picked up at full health scoring points (as GAME-BONUS-10 does for lives and bombs).
+- **Consequences:** a quarter of the weapon level-ups: from about 8 (1-1) to 23 (1-5) weapon bonuses
+  per World 1 level (D-049) down to about 2 to 6; reaching level 5 takes several levels.
+- **Status:** Proposed
+
+## D-283 — Each level mixes enemy tiers by share of ships (ENM-50)
+- **Context:** the owner asked: "1-1 shall have 80% of tier 1 enemies and 20% of tier 2, gradually
+  more until 1-5 60% tier 1, 40% tier 2. 2-1 60% tier 2, 40% tier 1, 2-5 60% tier 2 40% tier 3 and so
+  on. Each level shall have at least one example of each ship from each tier it has." Until then
+  World N used only tier N, bringing its kinds in one role at a time (D-255).
+- **Decision (owner's choices on the open points):** the share counts enemy ships (a Wasp group is
+  5, filler included, carrier launches not). Worlds 2 and 3 keep their own tier at 60 % and slide the
+  other 40 % linearly from the tier below to the tier above (10 points a level, so the middle levels
+  mix three tiers); World 4 goes from 60 / 40 % (tier 4 / tier 3) to tier 4 only in 4-5; World 1 from
+  80 / 20 % to 60 / 40 %. `tier_mix` gives each level's mix. `compose_beats` gives each beat to the
+  tier furthest below its share (the filler that will follow a beat counted with it); each tier
+  first brings its five kinds once (shooter, laser, missile, carrier, diver: the diver last, its
+  waves being the biggest; a smaller tier one group each), then follows the role cycle. A wave
+  brings no more groups than its tier lacks (the main tier never fewer than written), so a 10 % tier
+  comes as small groups. The level composes its beats around the 10 s quiet stretch before each boss
+  (`plan_beats`), so no beat bringing a kind is dropped there. The filler is the divers and
+  shooters of every tier of the level; 1-1's stays the Hornet only (WLD-1-25: the Wasp shoots).
+  Measured shares are within 5 points of the targets (unit test).
+- **Consequences:** enemy HP per level (waves and filler, summed health) before → after, in
+  thousands: World 1 6.6–11.4 → 7.8–11.0 (harder: tier 2 kinds and every tier 1 kind from 1-1);
+  World 2 20–24 → 14–22 (2-1 lighter with tier 1); World 3 17–22 → 19–30; World 4 41–50 → 27–40
+  (smaller waves: tier 4 waves are capped to the share too). The progression is steadier across
+  worlds; World 4 is easier than before and may need its size factor raised. Ship counts per level
+  change too (1-1 273 → 152, heavier kinds taking beats from Hornet and Scout waves). The per-level
+  phrase tables in the level files no longer apply.
+- **Status:** Proposed
+
+## D-284 — Boss lasers follow the player at 12°/s, from every turret (BOSS-31)
+- **Context:** the owner: "lower the rotating speed of the boss laser following the player,
+  currently it's impossible to evade them". The laser rate (20°/s) applied only to turrets flagged
+  as laser turrets (`turretLaser`, or a mount of kind `laser`); a laser fired from any other turret
+  (a gun turret, BOSS-58 mounts) followed the player at the guns' 150°/s during its warning line and,
+  for a sweeping beam, while it fired.
+- **Decision:** every boss turret gets the laser rate, so while a laser of it shows it turns at
+  `boss_laser_turn` whatever else it carries; the rate goes from 20 to 12°/s (about 63 px/s across
+  at 300 px). The guns keep turning at 150°/s when no laser shows. The `turretLaser` flag in the
+  boss data no longer changes anything.
+- **Consequences:** sweeping beams and laser warning lines can be outrun everywhere; aimed lasers
+  land a little further from a moving player.
+- **Status:** Proposed
+
+## D-285 — Grass and desert ground darkened under the brightness cap (GFX-READ-05)
+- **Context:** the owner asked to resolve the strict xfails of GFX-READ-05: the grass greens of
+  every world sat in the enemy family, and the desert browns, red rock and sand grains of Worlds 1
+  and 2 in the enemy-shot family, above the 0.35 brightness cap. Owner's choice: darken them to the
+  cap, keeping their hue.
+- **Decision:** each texture holding such a colour (`GRASS`, `DESERT_ROCK`, `MESA_ROCK`,
+  `DESERT_DIRT`, `DRIED_EARTH`, the sand's grains, the meadows' `lush` grass) has all its shades
+  scaled by one factor, so its brightest flagged shade lands at 0.345: hue and the order of its
+  shades kept. Factors: grass 0.70, lush grass 0.78, mesa rock 0.70, desert dirt 0.61, desert rock
+  0.84, dried earth 0.86, sand grains 0.86.
+- **Consequences:** grass and the desert ground are darker (desert dirt the most, about 40 %);
+  enemies and shots stand out more on them. The palette unit tests run without xfail.
+- **Status:** Proposed
+
+## D-286 — Phone layout: menus across the window at their real size (UI-LOOK-02, UI-INPUT-11)
+- **Context:** on a 390 × 844 phone the 16:9 stage, and the overlay scaled with it, is 390 × 219
+  CSS px (scale 0.3): menus unreadable and touch targets of 13–17 CSS px. Two e2e tests were strict
+  xfails waiting for "the mobile layout" (D-249). Owner's choice: build it.
+- **Decision:** when the stage is scaled under `PHONE_SCALE` (0.5), `apply_stage_fit` gives the
+  overlay the `phone` class; the menu overlay gives it `on-play` while a level is played with no
+  panel over it. `#menu.phone:not(.on-play)` is fixed over the whole window, unscaled (one CSS
+  pixel per logical pixel), so every screen, the pause menu, the settings and the end panels are laid
+  out at their real size over the canvas, the HUD hidden under them. During play the overlay keeps
+  to the 16:9 box, so the HUD lines up with the playfield. The level cells are 60 px there, so a row
+  of five fits 390 px.
+- **Alternatives considered:** bigger logical targets inside the 16:9 box (a 44 CSS px target would
+  need about 150 logical px, so the level grid could not fit); a separate phone UI.
+- **Consequences:** the 3D ships of the ship select stay in the 16:9 band while their cards sit at
+  the bottom of the window, no longer under each ship. The HUD during play is still the small one.
+- **Status:** Proposed
+
+## D-287 — One tap or click selects and confirms (UI-INPUT-09)
+- **Context:** the owner: "make it so a single click is enough for the UI buttons". A tap on an
+  entry that was not selected only selected it; a second tap confirmed it.
+- **Decision:** a tap sends the entry's selection then Confirm (`pointer_commands`), so one tap
+  acts on every menu, the pause menu and the end panels. The dev viewers (`dev-viewer`,
+  `dev-audio`) keep the two steps: picking an item there shows or plays it. The ship and level
+  select hints say "tap to go".
+- **Consequences:** a mis-tap on a menu goes straight through (a locked level still only shakes).
+- **Status:** Proposed

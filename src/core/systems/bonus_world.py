@@ -16,9 +16,9 @@ from typing import Literal, Protocol
 from core.entities.enemy import DropSource
 from core.math.rng import Random
 
-# What a bonus gives when picked up (GAME-BONUS-01, GAME-BONUS-09): a weapon level, a life or a
-# bomb.
-BonusKind = Literal["weapon", "life", "bomb"]
+# What a bonus gives when picked up (GAME-BONUS-01, GAME-BONUS-09): a weapon level, a life, a
+# bomb or health (GAME-BONUS-11).
+BonusKind = Literal["weapon", "life", "bomb", "heal"]
 
 
 class _Point(Protocol):
@@ -56,6 +56,18 @@ class LifeAndBomb:
         self.bomb = bomb
 
 
+class HealRules:
+    """The heal bonus (GAME-BONUS-11).
+
+    `share`: the share (0..1) of the weapon bonuses that drop as heal bonuses instead. `amount`: the
+    share (0..1) of the ship's full health a heal bonus gives back.
+    """
+
+    def __init__(self, share: float, amount: float) -> None:
+        self.share = share
+        self.amount = amount
+
+
 class BonusRules:
     """The bonus rules.
 
@@ -64,7 +76,8 @@ class BonusRules:
     `special`: chances that a destroyed enemy (not a boss or one of its parts) drops a life or a
     bomb bonus (GAME-BONUS-03), drawn in that order before the weapon bonus's chance: an enemy drops
     at most one bonus. Weapon bonuses only when None. `overflow_points`: points scored for a life or
-    bomb bonus picked up when the player has the most (GAME-BONUS-10).
+    bomb bonus picked up when the player has the most (GAME-BONUS-10). `heal`: see `HealRules`; no
+    heal bonus when None.
     """
 
     def __init__(
@@ -74,12 +87,14 @@ class BonusRules:
         pickup_radius: float,
         special: LifeAndBomb | None = None,
         overflow_points: LifeAndBomb | None = None,
+        heal: HealRules | None = None,
     ) -> None:
         self.chance = chance
         self.fall_speed = fall_speed
         self.pickup_radius = pickup_radius
         self.special = special
         self.overflow_points = overflow_points
+        self.heal = heal
 
 
 class Bonus:
@@ -122,18 +137,22 @@ class BonusWorld:
         reach: tuple[float, float],
         cull_margin: float,
         special_random: Random | None = None,
+        heal_random: Random | None = None,
     ) -> None:
         """`reach`: the X range the ship can reach: bonuses drop within it.
 
         `cull_margin`: bonuses this far under the bottom edge are removed. `special_random`: where
         the life and bomb draws come from (GAME-BONUS-03): a source of their own, so the weapon
-        bonuses drop as they did without them. `random` when None.
+        bonuses drop as they did without them. `random` when None. `heal_random`: where the draw
+        that turns a weapon bonus into a heal bonus comes from (GAME-BONUS-11), a source of its own
+        too; `special_random` when None.
         """
         self.rules = rules
         self._random = random
         self._reach = reach
         self._cull_margin = cull_margin
         self._special_random = special_random if special_random is not None else random
+        self._heal_random = heal_random if heal_random is not None else self._special_random
         self.bonuses: list[Bonus] = []
         # Bonuses picked up during the last step.
         self.picked: list[Bonus] = []
@@ -169,7 +188,8 @@ class BonusWorld:
         """Return the kind of bonus `target` drops, if any: at most one.
 
         Life first, then bomb, then weapon. The weapon draw always happens, so the weapon bonuses'
-        draws stay as without the others.
+        draws stay as without the others. A weapon bonus then turns into a heal bonus with the heal
+        share (GAME-BONUS-11).
         """
         weapon = self._random() < drop_chance(self.rules, target)
         odds = self.rules.special if special else None
@@ -177,7 +197,12 @@ class BonusWorld:
             return "life"
         if odds and self._special_random() < odds.bomb:
             return "bomb"
-        return "weapon" if weapon else None
+        if not weapon:
+            return None
+        heal = self.rules.heal
+        if heal is not None and self._heal_random() < heal.share:
+            return "heal"
+        return "weapon"
 
     def step(self, dt: float, ship: _Point | None = None) -> None:
         """Move the bonuses by `dt` seconds.

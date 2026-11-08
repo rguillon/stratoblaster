@@ -85,22 +85,22 @@ level's damage per second:
 
 | Level | Damage per second | Width |
 |-------|-------------------|-------|
-| 1 | 80 | 4 px |
-| 2 | 140 | 6 px |
-| 3 | 200 | 8 px |
-| 4 | 260 | 10 px |
-| 5 | 320 | 12 px |
+| 1 | 100 | 4 px |
+| 2 | 200 | 6 px |
+| 3 | 300 | 8 px |
+| 4 | 400 | 10 px |
+| 5 | 500 | 12 px |
 
 A target is touched when its centre is above the beam's start and its distance across from the beam
 is at most its radius plus half the beam's width. With nothing in its way, the beam runs to the top
 of the screen.
 
 **Acceptance criteria**
-- Given the laser at level 3 on a target for 1 s, then the target loses 200 health (unit test).
+- Given the laser at level 3 on a target for 1 s, then the target loses 300 health (unit test).
 - Given a target beside the beam by more than its radius plus half the width, then it is not
   touched (unit test).
 
-*Sources: P03-R02, D-015, D-059.*
+*Sources: P03-R02, D-015, D-059, D-281.*
 
 ### GAME-WPN-07 — Laser: piercing · MUST
 
@@ -131,15 +131,15 @@ again every step. With no target in range it flies straight on. Farther enemies 
 
 ### GAME-WPN-09 — Missiles: area damage · MUST
 
-A missile that touches a target (missile radius 3 px) blows up there and deals 14 damage to every
+A missile that touches a target (missile radius 3 px) blows up there and deals 8 damage to every
 target whose hitbox is within `missile_blast` (10 px) of the impact, the one touched included. The
 damage is the same at every level. Each missile stream fires 4 missiles a second.
 
 **Acceptance criteria**
 - Given two targets next to each other within the blast, when a missile hits one, then both lose
-  14 health (unit test).
+  8 health (unit test).
 
-*Sources: P03-R03, D-059.*
+*Sources: P03-R03, D-059, D-281.*
 
 ### GAME-WPN-10 — Missiles: streams by level · MUST
 
@@ -177,25 +177,27 @@ weapon or its level changes, the first stream fires at once.
 
 ### GAME-WPN-12 — Weapon balance · MUST
 
-The weapons are balanced against the guns, which are the reference: at every level, the laser and
-the missiles each deal 70–100 % of the guns' damage per second (every stream counted), and the
-laser deals more than the missiles. Each weapon pays for its strength: the guns spread widest, the
-laser is the most focused (one column, never misses, pierces), the missiles home but take time to
-arrive. With the current numbers:
+The weapons are balanced against the guns, which are the reference (the bosses were tuned with
+them): at every level the laser deals 125 % of the guns' damage per second and the missiles 40 %
+of it (every stream counted), so the laser is above the guns and the guns are above the missiles.
+Each weapon pays for its strength: the guns spread widest (up to 5 streams, which reach wide waves),
+so the laser, the most focused (one column, never misses, pierces, but the ship must sit under its
+target), deals more; the missiles need no aiming at all (they home) and so deal the least. The aim is that each weapon is the best pick for about a
+third of the waves. With the current numbers:
 
 | Level | Guns | Laser | Missiles |
 |-------|------|-------|----------|
-| 1 | 80 /s | 80 /s (100 %) | 56 /s (70 %) |
-| 2 | 160 /s | 140 /s (88 %) | 112 /s (70 %) |
-| 3 | 240 /s | 200 /s (83 %) | 168 /s (70 %) |
-| 4 | 320 /s | 260 /s (81 %) | 224 /s (70 %) |
-| 5 | 400 /s | 320 /s (80 %) | 280 /s (70 %) |
+| 1 | 80 /s | 100 /s (125 %) | 32 /s (40 %) |
+| 2 | 160 /s | 200 /s (125 %) | 64 /s (40 %) |
+| 3 | 240 /s | 300 /s (125 %) | 96 /s (40 %) |
+| 4 | 320 /s | 400 /s (125 %) | 128 /s (40 %) |
+| 5 | 400 /s | 500 /s (125 %) | 160 /s (40 %) |
 
 **Acceptance criteria**
-- Given the weapon data, then at every level the laser's and the missiles' damage per second are
-  within 70–100 % of the guns', and the laser's is above the missiles' (unit test on the data).
+- Given the weapon data, then at every level the laser's damage per second is 125 % of the guns'
+  and the missiles' is 40 % of it (unit test on the data).
 
-*Sources: GD-33, D-059.*
+*Sources: GD-33, D-059, D-281.*
 
 ### GAME-WPN-13 — Switching weapon · MUST
 
@@ -302,17 +304,17 @@ which nothing ran, was removed with the code only tests called (D-237).
 | guns diagonals | ±10°, ±20° | `BULLET["levels"]` |
 | bullet_launch_back | 13 px | `BULLET["launchBack"]` (D-106) |
 | muzzle_inset | 3 px below the nose tip | `src/config/game_play.py` `GAME_PLAY_CONFIG.muzzle_inset` |
-| laser damage per second | 80 / 140 / 200 / 260 / 320 | `LASER["levels"]` (D-059; was 40 / 60 / 85 / 115 / 150) |
+| laser damage per second | 100 / 200 / 300 / 400 / 500 | `LASER["levels"]` (D-281; was 80 / 140 / 200 / 260 / 320, D-059) |
 | laser width | 4 / 6 / 8 / 10 / 12 px | `LASER["levels"]` |
 | missiles | 150 → 700 px/s at 600 px/s², 4 shots/s per stream, radius 3 px | `MISSILE` |
 | homing | 180°/s, `homing_range` 320 px | `MISSILE["homingTurnRateDeg"]`, `["homingRange"]` |
-| missile damage | 14 to everything within `missile_blast` 10 px | `MISSILE["damage"]`, `["blastRadius"]` (D-059; was 8) |
+| missile damage | 8 to everything within `missile_blast` 10 px | `MISSILE["damage"]`, `["blastRadius"]` (D-281; was 14, D-059) |
 | missile diagonals | ±25°, ±45° | `MISSILE_ANGLES` (phase 3 review; the first text said ±10°, ±20°) |
 | saved weapons key | `<game id>_weapons` (cookie) | `src/app/saved_weapons.py` |
 
 ## Notes
 
 - The guns' diagonals miss small or far targets, so on a single boss their real damage is closer to
-  their forward streams': the laser is the best boss weapon at high levels, the guns the best
-  against wide waves, the missiles the safest (D-059).
+  their forward streams': the laser is the best boss weapon, the guns the best against wide waves,
+  the missiles the safest but the weakest (D-281).
 - There is no way to start again from level 1 weapons but clearing the cookies (D-071).

@@ -57,6 +57,18 @@ def render_ratio(device_ratio: float, fit: StageFit, max_render_scale: float) ->
     return min(device_ratio, max_render_scale / fit.scale)
 
 
+# Below this many CSS pixels per logical pixel (a phone, D-286), the menus are laid out across the
+# whole window at their real size instead of being scaled down with the stage (UI-LOOK-02).
+PHONE_SCALE = 0.5
+# The class the overlay carries then.
+PHONE_CLASS = "phone"
+
+
+def phone_layout(fit: StageFit) -> bool:
+    """Whether the stage is so small that the menus are laid out for a phone (UI-LOOK-02)."""
+    return 0 < fit.scale < PHONE_SCALE
+
+
 def _px(n: float) -> str:
     return str(n) + "px"
 
@@ -73,3 +85,9 @@ def apply_stage_fit(stage: Any, overlay: Any, fit: StageFit, logical: LogicalScr
     overlay.style.width = _px(logical.width)
     overlay.style.height = _px(logical.height)
     overlay.style.transform = "scale(" + str(fit.scale) + ")"
+    # On a phone the menus take the whole window instead (index.html, `#menu.phone`, D-286); the
+    # HUD over a level being played keeps to the stage.
+    if phone_layout(fit):
+        overlay.classList.add(PHONE_CLASS)
+    else:
+        overlay.classList.remove(PHONE_CLASS)

@@ -10,7 +10,14 @@ from core.entities.enemy import Enemy, EnemyKindDefinition, EnemyStats
 from core.entities.muzzle import PlanePoint
 from core.entities.weapon import ProjectileWeaponDefinition, ShotStream
 from core.math.rng import create_rng
-from core.systems.bonus_world import BonusChance, BonusRules, BonusWorld, LifeAndBomb, drop_chance
+from core.systems.bonus_world import (
+    BonusChance,
+    BonusRules,
+    BonusWorld,
+    HealRules,
+    LifeAndBomb,
+    drop_chance,
+)
 from core.systems.boss_fights import BossFightRules, LevelBoss
 from core.systems.enemy_world import EnemyDifficulty
 from core.systems.level_run import LevelRun
@@ -418,3 +425,71 @@ def test_game_bonus_04_a_mini_boss_drops_a_life_bonus_where_it_fell() -> None:
     run.fights.boss.health = 0
     _step(run)
     assert [b.kind for b in run.bonuses.bonuses] == ["life"]
+
+
+def _heal_rules(share: float = 0.75, amount: float = 0.2) -> BonusRules:
+    return BonusRules(BonusChance(0, 1, 1), 0, 5, heal=HealRules(share, amount))
+
+
+def test_game_bonus_11_a_weapon_bonus_turns_into_a_heal_bonus_when_the_heal_draw_succeeds() -> None:
+    drawn = BonusWorld(_heal_rules(), _always(0.0), (0, 100), 10, None, _always(0.74))  # type: ignore[arg-type]
+    drawn.drop([_Source()])
+    assert [b.kind for b in drawn.bonuses] == ["heal"]
+    kept = BonusWorld(_heal_rules(), _always(0.0), (0, 100), 10, None, _always(0.75))  # type: ignore[arg-type]
+    kept.drop([_Source()])
+    assert [b.kind for b in kept.bonuses] == ["weapon"]
+
+
+def test_game_bonus_11_about_three_quarters_of_the_weapon_drops_are_heal_bonuses() -> None:
+    world = BonusWorld(_heal_rules(), create_rng(1), (0, 100), 10, create_rng(2), create_rng(3))
+    world.drop([_Source() for _ in range(2000)])
+    heals = sum(1 for b in world.bonuses if b.kind == "heal")
+    assert len(world.bonuses) == 2000
+    assert 0.72 < heals / 2000 < 0.78
+
+
+def test_game_bonus_11_the_heal_draw_leaves_the_bonus_draws_unchanged() -> None:
+    """Which enemies drop a bonus is the same with and without heal bonuses (GAME-BONUS-05)."""
+    sources = [_Source(max_health=h) for h in range(1, 200)]
+    plain = BonusWorld(_rules(per_health=0.003), create_rng(5), (0, 100), 10, create_rng(6))
+    rules = _rules(per_health=0.003)
+    rules.heal = HealRules(0.75, 0.2)
+    healing = BonusWorld(rules, create_rng(5), (0, 100), 10, create_rng(6), create_rng(7))
+    plain.drop(sources)
+    healing.drop(sources)
+    assert [b.y for b in plain.bonuses] == [b.y for b in healing.bonuses]
+    assert plain.dropped == healing.dropped > 0
+
+
+def test_game_bonus_11_a_heal_bonus_gives_back_a_fifth_of_the_health_up_to_full() -> None:
+    run = _run(
+        hull=HullRules(3, 0, 3, HullDamage(0, 0, 0, 0), 0),
+        bonuses=_heal_rules(),
+    )
+    run.hull.health = 50
+    run.bonuses.place("heal", PlanePoint(50, 10))
+    _step(run, dt=0.1)
+    assert run.hull.health == pytest.approx(70)
+    assert run.shots.level == 1
+    run.hull.health = 90
+    run.bonuses.place("heal", PlanePoint(50, 10))
+    _step(run, dt=0.1)
+    assert run.hull.health == pytest.approx(100)
+
+
+def test_game_bonus_11_a_heal_bonus_gives_nothing_without_a_hull_or_heal_rules() -> None:
+    """Picked up, it is gone; with no hull, or rules without a heal, it changes nothing."""
+    hull_less = _run(bonuses=_heal_rules())
+    hull_less.bonuses.place("heal", PlanePoint(50, 10))
+    _step(hull_less, dt=0.1)
+    assert hull_less.bonuses.collected == 1
+    assert hull_less.hull is None
+    no_heal = _run(
+        hull=HullRules(3, 0, 3, HullDamage(0, 0, 0, 0), 0),
+        bonuses=BonusRules(BonusChance(0, 1, 1), 0, 5),
+    )
+    no_heal.hull.health = 50
+    no_heal.bonuses.place("heal", PlanePoint(50, 10))
+    _step(no_heal, dt=0.1)
+    assert no_heal.bonuses.collected == 1
+    assert no_heal.hull.health == 50

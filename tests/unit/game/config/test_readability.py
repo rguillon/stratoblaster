@@ -4,7 +4,6 @@
 import importlib
 from typing import Any
 
-import pytest
 from helpers.color_families import in_family
 
 from core.math.color import relative_luminance
@@ -114,14 +113,6 @@ def test_gfx_read_05_each_world_has_a_background_palette_to_check() -> None:
         assert len(colours) >= 10, world
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "GFX-READ-05: the desert browns of World 1 (dry lands, deep desert sand and steep ground) "
-        "and the steep ground of World 2 fall in the enemy-shot family above the 0.35 brightness "
-        "cap"
-    ),
-)
 def test_gfx_read_05_no_background_colour_is_in_the_enemy_shot_family_above_the_cap() -> None:
     cap = READABILITY.backgroundMaxLuminance
     family = READABILITY.families.enemyShot
@@ -131,13 +122,6 @@ def test_gfx_read_05_no_background_colour_is_in_the_enemy_shot_family_above_the_
                 assert relative_luminance(colour) <= cap, (world, path, colour)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "GFX-READ-05: the lush grass greens (every world's grass) fall in the enemy family above "
-        "the 0.35 brightness cap, as do the desert browns in the enemy-shot family"
-    ),
-)
 def test_gfx_read_05_no_background_colour_is_in_a_reserved_family_above_the_cap() -> None:
     cap = READABILITY.backgroundMaxLuminance
     for world, colours in _background_palettes().items():

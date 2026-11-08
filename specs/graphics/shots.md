@@ -39,15 +39,21 @@ starts at the nose (GFX-SHOT-05).
 
 ### GFX-SHOT-03 — Laser beam · MUST
 
-The laser is a bright blue beam: white-blue on its centre line to deep blue at its edges, drawn
-`glowWidth` times its hit width, its width flickering. Each segment of a piercing beam is its own
+The laser is an intense blue beam: near white on its centre line to deep blue at its edges. It is
+drawn as if `widthBonus` px wider than its hit width (so level 1 looks like the first text's level
+5), times `glowWidth`, its width flickering; its base and contact glows and its particles use the
+same drawn width. Under the additive glow, a blended core as wide as the drawn width hides the ground
+behind it (near white and nearly opaque on its centre line, clear at its edges), so the beam reads as
+solid. Where it leaves the ship the beam fades in over `fadeIn` px, under its base glow, instead of
+starting square. Each segment of a piercing beam is its own
 bar, thinner at each lower level. Bright blue particles flow up along the beam, spread over its
 width, starting again from its base as they reach its end. A glow shows where the beam stops on a
 target.
 
 **Acceptance criteria**
-- Given a beam of several segments, then one bar is drawn per segment, from its start to its end
-  (unit test).
+- Given a beam of several segments, then one bar is drawn per segment, from its start to its end,
+  the first starting with a ramp `fadeIn` long that fades in from nothing (unit tests).
+- Given a beam, then its blended core is drawn under its glow (unit test).
 - Given a beam stopped on a target, then a contact glow shows there; given no target, none (unit
   tests).
 - Given a beam, then its particles are small discs along it (unit test).
@@ -255,10 +261,13 @@ shades, all orange to amber.
 | Tracer depth | 8 units behind the playfield | `SHOT_LOOK["bullet"]["depth"]` |
 | `launchBack` (bullet) | 13 px | `src/game/config/player_weapons.py` `BULLET` |
 | `muzzle_inset` | 3 px below the nose tip | `src/config/game_play.py` `GAME_PLAY_CONFIG` |
-| Laser glow width / flicker | 1.8 × hit width / ±0.12 at 23 Hz | `SHOT_LOOK["laser"]` |
+| Laser drawn width / glow width / flicker | hit width + 8 px / 1.8 × drawn width / ±0.12 at 23 Hz | `SHOT_LOOK["laser"]` (owner, 2026-11-08: was 1.8 × hit width) |
+| Laser colours | [0.85, 0.95, 1], [0.3, 0.62, 1], [0.06, 0.22, 0.8], black | `SHOT_LOOK["laser"]["colors"]` (owner, 2026-11-08: brighter) |
+| Laser core | as wide as the drawn width; [0.9, 0.97, 1] at alpha 0.95, [0.4, 0.7, 1] 0.8, [0.1, 0.3, 0.9] 0.45, [0.03, 0.1, 0.45] 0 (centre to edge) | `SHOT_LOOK["laser"]["core"]` (owner, 2026-11-08: "too transparent") |
+| Laser fade-in | 18 px from the ship | `SHOT_LOOK["laser"]["fadeIn"]` (owner, 2026-11-08: no square start) |
 | Laser particles | 48, 500–900 px/s, radius 1.2–2.6 px, spread 0.9 | `SHOT_LOOK["laser"]["particles"]` |
 | Laser contact glow | radius 9 px | `SHOT_LOOK["laser"]["contact"]` |
-| Laser base glow | radius 12 × (0.6 + width / 12), stretch 1.3, pulse ±0.15 at 9 and 17 Hz, 24 sides | `SHOT_LOOK["laser"]["muzzle"]` |
+| Laser base glow | radius 12 × (0.6 + drawn width / 12), stretch 1.3, pulse ±0.15 at 9 and 17 Hz, 24 sides | `SHOT_LOOK["laser"]["muzzle"]` |
 | Missile body | length 2.2, radius 0.2, fin span 0.4 model units; body [0.78, 0.8, 0.85], tip [0.3, 0.85, 1] | `SHOT_LOOK["missile"]` |
 | Missile flare | radius 7 px, ±0.25 at 70 rad/s | `SHOT_LOOK["missile"]["flare"]` |
 | Missile trail | 4 × 46 px | `SHOT_LOOK["missile"]["trail"]` |

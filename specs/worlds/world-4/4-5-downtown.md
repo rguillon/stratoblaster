@@ -5,7 +5,7 @@
 The last level of World 4 and of the game. From the skyline 4-4 ended on, the player flies over
 skyscrapers, a central park, and downtown blocks filled with skyscrapers side by side to the city's
 heart, at midday while a volcano erupts somewhere beyond downtown: the glow from below turns deep red
-and the embers grow to their strongest by the final boss. Its waves are the heaviest of the game, and
+and the embers grow to their strongest by the final boss. Its waves are the heaviest of the game, tier 4 alone, and
 its final boss, the Caldera Throne, is the game's last and hardest. Its checkpoint is its mini boss
 (see [level flow](../../gameplay/level-flow.md)).
 
@@ -61,15 +61,13 @@ grow to their strongest, which they keep for the final boss.
 
 ### LVL-4-5-04 — Enemy waves · MUST
 
-4-5 uses all five kinds of tier 4, Splitter, Hydra, Scissor, Juggernaut and Hive, and no other. 4-5's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, with a beat every `wave_gap` seconds (3 s to 2.2 s) and
-groups growing by `wave_growth` (110 %) over the level (113 beats). The cycle of phrases, each a kind with its number of
-groups at the start: Splitter 2, Hydra 1, Scissor 1, Splitter 2, Juggernaut 1, Hydra 1, Splitter 2, Hive 1, Scissor 1, Hydra 1, Juggernaut 1. The filler draws Splitters and Hydras, at most `filler_gap` apart.
+4-5 brings tier 4 only (100 % of its enemy ships), all five of its kinds, Splitter, Hydra, Juggernaut, Scissor and Hive, each at least once, and no other kind. 4-5's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, each wave followed by a breather of `wave_gap` seconds (1.7 s to 1.2 s), groups growing by `wave_growth` (110 %) over the level. Its beats first bring each of the five kinds once (shooter, laser, missile, carrier, then diver), then follow the role cycle (shooter, diver, laser, diver, missile, shooter, diver, carrier, laser, shooter, missile). The beats are composed around the quiet stretch before each boss, so none is dropped. The filler draws Splitters and Hydras, at most `filler_gap` apart.
 
 **Acceptance criteria**
-- Unit test: 4-5's waves use exactly Splitter, Hydra, Scissor, Juggernaut and Hive, and each of them.
+- Unit test: 4-5's waves use only the kinds of tier 4, and each of them.
 - Unit test: 4-5's waves are the same each time the level is built.
 
-*Sources: P10-R09, P05-R24, D-087, D-090, ENM-50.*
+*Sources: P10-R09, P05-R24, D-087, D-090, ENM-50, D-283.*
 
 ### LVL-4-5-05 — Difficulty · MUST
 
@@ -128,7 +126,7 @@ the two fights: the mini boss's chase runs the ground ahead.
 | clouds | 0.7 / 0.6 | `LEVEL_4_5_LOOK`, `src/game/config/world_4/looks.py` |
 | underglow | colour 1, 0.16, 0.08; 0.6 → 1 over 180–300 s | `ERUPTION_RED`, `LEVEL_4_5_LOOK` |
 | embers | 0.6 → 1 over 180–300 s | same |
-| wave_gap | 3 s → 2.2 s | `PLAN_4_5.gap`, `src/game/config/world_4/waves.py` |
+| wave_gap | 1.7 s → 1.2 s | `PLAN_4_5.gap`, `src/game/config/world_4/waves.py` |
 | wave_growth | 1.1 | `PLAN_4_5.growth` |
 | filler_gap | 2.8 s → 1.6 s | `WORLD_4_FILLERS["4-5"].maxGap` |
 | bullet speed / fire rate factors | 1.35 / 1.35 | `WORLD_4_DIFFICULTY["4-5"]` |

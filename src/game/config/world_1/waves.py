@@ -147,14 +147,19 @@ def fill(beats: list[Any], filler: Any) -> list[Any]:
     return out
 
 
-# The written beats of each level (LVL-1-1-08 … LVL-1-5-08), composed from World 1's tier (ENM-50):
-# 1-1 has the Hornet and the Scout, and each level brings in one more kind: the Lancer, the
-# Rocketeer, then the Carrier, with every kind in 1-5.
-WAVES_1_1 = compose_beats(level_plan(1, 1))
-WAVES_1_2 = compose_beats(level_plan(1, 2))
-WAVES_1_3 = compose_beats(level_plan(1, 3))
-WAVES_1_4 = compose_beats(level_plan(1, 4))
-WAVES_1_5 = compose_beats(level_plan(1, 5))
+# The plans of each level (LVL-1-1-08 … LVL-1-5-08): tier 1 with a growing share of tier 2, from
+# 80 / 20 % of the enemies in 1-1 to 60 / 40 % in 1-5, every kind of both in each level (ENM-50,
+# D-283). The level composes them around its bosses; the beats here are without that.
+PLAN_1_1 = level_plan(1, 1)
+PLAN_1_2 = level_plan(1, 2)
+PLAN_1_3 = level_plan(1, 3)
+PLAN_1_4 = level_plan(1, 4)
+PLAN_1_5 = level_plan(1, 5)
+WAVES_1_1 = compose_beats(PLAN_1_1)
+WAVES_1_2 = compose_beats(PLAN_1_2)
+WAVES_1_3 = compose_beats(PLAN_1_3)
+WAVES_1_4 = compose_beats(PLAN_1_4)
+WAVES_1_5 = compose_beats(PLAN_1_5)
 
 # The filler of each level (phase 6 review: the levels felt empty), in level order: LVL-1-1-10 …
 # LVL-1-5-10. 1-1 gets only Hornets, which do not shoot, so it stays easy (WLD-1-25); later levels

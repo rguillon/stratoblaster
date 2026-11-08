@@ -4,8 +4,8 @@
 
 The third level of World 4. From the mid-rise blocks 4-2 ended on, the player flies over offices among
 mid-rise blocks, office blocks, the old river quays and plazas to the first city towers, at midday,
-embers rising and the city's orange glow growing from below. Scissors and Juggernauts lead the waves and
-the Hive comes in. Its checkpoint is its mini boss (see [level flow](../../gameplay/level-flow.md)).
+embers rising and the city's orange glow growing from below. Tier 4 brings 80 % of the enemies,
+tier 3 20 %. Its checkpoint is its mini boss (see [level flow](../../gameplay/level-flow.md)).
 
 ## Requirements
 
@@ -57,15 +57,14 @@ along the level. The orange glow of the city lights the haze and the ground from
 
 ### LVL-4-3-04 — Enemy waves · MUST
 
-4-3 brings in the Hive, the last kind of tier 4, and so uses Splitter, Hydra, Scissor, Juggernaut and Hive, no other. 4-3's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, with a beat every `wave_gap` seconds (3.8 s to 2.7 s) and
-groups growing by `wave_growth` (100 %) over the level (89 beats). The cycle of phrases, each a kind with its number of
-groups at the start: Splitter 2, Hydra 1, Scissor 1, Splitter 2, Juggernaut 1, Hydra 1, Splitter 2, Hive 1, Scissor 1, Hydra 1, Juggernaut 1. The filler draws Splitters and Hydras, at most `filler_gap` apart.
+4-3 mixes two tiers: tier 4 (the main one) is 80 % of its enemy ships and tier 3 20 % (each within 5 points; a Wasp group counts as its 5 ships, and the filler is counted with the beats). It brings every kind of both tiers, each at least once: tier 4's Splitter, Hydra, Juggernaut, Scissor and Hive; tier 3's Phantom, Spinner, Mortar, Prism and Broodmother, and no other kind. 4-3's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, each wave followed by a breather of `wave_gap` seconds (2.1 s to 1.5 s), groups growing by `wave_growth` (100 %) over the level. Each beat goes to the tier furthest below its share of the ships so far (the filler that follows a beat counted with it). A tier's beats first bring each of its five kinds once (shooter, laser, missile, carrier, then diver; one group each outside the main tier), then follow the role cycle (shooter, diver, laser, diver, missile, shooter, diver, carrier, laser, shooter, missile). A wave brings no more groups than its tier lacks, the main tier's never fewer than written. The beats are composed around the quiet stretch before each boss, so none is dropped. The filler draws Splitters, Hydras, Phantoms and Spinners, at most `filler_gap` apart.
 
 **Acceptance criteria**
-- Unit test: 4-3's waves use exactly Splitter, Hydra, Scissor, Juggernaut and Hive, and each of them.
+- Unit test: 4-3's waves use only the kinds of tiers 4 and 3, and each of them.
+- Unit test: each tier's share of 4-3's enemy ships is within 5 points of its target.
 - Unit test: 4-3's waves are the same each time the level is built.
 
-*Sources: P10-R09, P05-R24, D-087, D-090, ENM-50.*
+*Sources: P10-R09, P05-R24, D-087, D-090, ENM-50, D-283.*
 
 ### LVL-4-3-05 — Difficulty · MUST
 
@@ -120,7 +119,7 @@ the two fights.
 | clouds | 0.5 / 0.4, storm 0.5 (not shown) | `LEVEL_4_3_LOOK`, `src/game/config/world_4/looks.py` |
 | embers | 0.4 | same |
 | underglow | colour 1, 0.42, 0.12; 0.25 → 0.8 over 60–280 s | `LAVA_GLOW`, `LEVEL_4_3_LOOK` |
-| wave_gap | 3.8 s → 2.7 s | `PLAN_4_3.gap`, `src/game/config/world_4/waves.py` |
+| wave_gap | 2.1 s → 1.5 s | `PLAN_4_3.gap`, `src/game/config/world_4/waves.py` |
 | wave_growth | 1 | `PLAN_4_3.growth` |
 | filler_gap | 3 s → 2 s | `WORLD_4_FILLERS["4-3"].maxGap` |
 | bullet speed / fire rate factors | 1.2 / 1.2 | `WORLD_4_DIFFICULTY["4-3"]` |

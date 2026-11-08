@@ -2,7 +2,6 @@
 """World 2."""
 
 from core.content.game_level import GameLevel
-from game.config.wave_plans import compose_beats
 from game.config.world_2.bosses import WORLD_2_BOSSES
 from game.config.world_2.difficulty import WORLD_2_DIFFICULTY
 from game.config.world_2.scenery import LEVEL_2_1, LEVEL_2_2, LEVEL_2_3, LEVEL_2_4, LEVEL_2_5
@@ -30,7 +29,7 @@ TABLES = WorldTables(WORLD_2_DIFFICULTY, WORLD_2_FILLERS, WORLD_2_BOSSES)
 
 def _level(level_id: str, scenery: Any, plan: WavePlan) -> GameLevel:
     # Its waves composed from its plan (WLD-2-19).
-    return assemble_level(level_id, scenery, compose_beats(plan), TABLES)
+    return assemble_level(level_id, scenery, plan, TABLES)
 
 
 # World 2, the Industrial Desert (WLD-2-01, reworked at the reviewer's request, 2026-10-27):

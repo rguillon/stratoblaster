@@ -165,12 +165,13 @@ in the pickup family, a blue violet that does not read pink.
 
 The kinds are told apart by shape, not colour: a weapon bonus is a hexagon badge with a violet
 frame, a dark face and two light violet chevrons pointing up (a level up); a life bonus is a heart
-in a violet rim; a bomb bonus is a violet ball with a highlight, marked `B`.
+in a violet rim; a bomb bonus is a violet ball with a highlight, marked `B`; a heal bonus is a
+light violet plus sign in a violet rim.
 
 **Acceptance criteria**
-- Given the three kinds, then each is drawn with its own badge and halo (unit tests).
+- Given the four kinds, then each is drawn with its own badge and halo (unit tests).
 
-*Sources: P11-R07, D-049, D-231.*
+*Sources: P11-R07, D-049, D-231, D-282.*
 
 ### GFX-FX-13 — Pickup flash · MUST
 
