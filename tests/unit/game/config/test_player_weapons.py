@@ -40,17 +40,17 @@ def test_game_wpn_10_missiles_fan_out_at_an_inner_and_an_outer_angle() -> None:
     assert 0 < MISSILE_ANGLES.inner < MISSILE_ANGLES.outer
 
 
-def test_game_wpn_12_laser_and_missiles_keep_70_to_100_percent_of_the_guns_per_second() -> None:
-    """Each level's laser and missiles each put out 70-100 % of the guns' damage per second.
+def test_game_wpn_12_laser_deals_125_percent_and_missiles_40_percent_of_the_guns() -> None:
+    """Each level's laser deals 125 % of the guns' damage per second, the missiles 40 % of it.
 
-    Counting every stream, the laser puts out more than the missiles (GAME-WPN-12, D-059). Whole
-    percentages are compared with integers, so no float rounding decides a level.
+    Every stream counted (GAME-WPN-12, D-281). Whole percentages are compared with integers, so no
+    float rounding decides a level.
     """
     assert len(BULLET.levels) == len(LASER.levels) == len(MISSILE.levels) == 5
     for level in range(5):
         guns = BULLET.shotsPerSecond * BULLET.damage * len(BULLET.levels[level])
         laser = LASER.levels[level].damagePerSecond
         missiles = MISSILE.shotsPerSecond * MISSILE.damage * len(MISSILE.levels[level])
-        assert 70 * guns <= 100 * laser <= 100 * guns, level + 1
-        assert 70 * guns <= 100 * missiles <= 100 * guns, level + 1
-        assert laser > missiles, level + 1
+        assert 100 * laser == 125 * guns, level + 1
+        assert 100 * missiles == 40 * guns, level + 1
+        assert laser > guns > missiles, level + 1

@@ -1159,3 +1159,19 @@
   clock). Hidden weapon kinds get one mount each; their pods stay. Rolled out on World 1 first,
   checked by the owner before Worlds 2–4.
 - **Status:** Proposed
+
+## D-281 — Laser at 125 % of the guns, missiles at 40 % (GAME-WPN-06, GAME-WPN-09, GAME-WPN-12)
+- **Context:** with D-059 the laser dealt 80–100 % of the guns' damage per second and the missiles
+  70 %. The missiles need no aiming at all (they home), so at 70 % they were the best pick almost
+  everywhere, and the laser, which forces the ship to sit under its target, fell behind the guns
+  above level 1.
+- **Decision:** the guns stay the reference (the bosses were tuned with them, D-055). At every
+  level the laser deals 125 % of the guns' damage per second (100 / 200 / 300 / 400 / 500): the
+  owner asked for a laser "more powerful than the gun", since the guns' up to 5 streams are an
+  advantage of their own. The missiles deal 40 % of the guns' (missile damage 14 → 8, same blast, rate and streams). The aim is that each weapon is
+  the best pick for about a third of the waves.
+- **Alternatives considered:** keeping 70–100 % and slowing the missiles' homing instead (keeps
+  their strength against bosses, which do not dodge).
+- **Consequences:** boss fight times with the guns are unchanged; with the laser they get shorter
+  at every level, with the missiles longer. GAME-WPN-12's test checks the exact ratios.
+- **Status:** Proposed
