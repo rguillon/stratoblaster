@@ -6,7 +6,7 @@ World 2, the Industrial Desert, has five levels of about five minutes, cut from 
 starts in the deep desert where World 1 ended, and the desert is slowly taken over by industry,
 mines first, then oil fields, refineries, an industrial belt and dense factories at the end. The
 changes are slow. There is no sea in World 2. Each level has its own time of day, three day levels,
-then dusk, then night. World 2 uses the five kinds of tier 2 in harder mixes, and as a whole it
+then dusk, then night. World 2's enemies are mostly tier 2, with tier 1 then tier 3 (ENM-50), and as a whole it
 is harder than World 1. This file holds what the five levels share; each level's own content is in
 its level file. World 2 is built with World 1's rules where nothing else is said: its beats,
 density and fillers ([World 1](../world-1/world.md)), its roads.
@@ -223,39 +223,39 @@ belonged to the Frozen North World 2 was first drafted as).
 
 ### Enemies and difficulty
 
-#### WLD-2-17 — The kinds that lead the waves · MUST
+#### WLD-2-17 — Tier 2 with tier 1, then tier 3 · MUST
 
-World 2 uses the five kinds of tier 2 (ENM-50): Wasp (diver), Strafer (shooter), Sweeper (laser),
-Harrier (missile launcher) and Hatchery (launches Wasps). Its first level has three, the second four,
-the others all five, and its waves, fillers included, use only these kinds:
+Tier 2 (Wasp, Strafer, Sweeper, Harrier, Hatchery) is 60 % of the ships of every World 2 level; the
+other 40 % slides from tier 1 to tier 3 (ENM-50). Every kind of each tier a level has comes in it:
 
-| Level | Enemy kinds |
-|-------|-------------|
-| 2-1 | Wasp, Strafer, Sweeper, over the dunes |
-| 2-2 | the 2-1 kinds plus the Harrier, over the mines |
-| 2-3 | all five kinds, the Hatchery new, over the oil fields |
-| 2-4 | all five kinds, over the industrial belt |
-| 2-5 | all five kinds, in the heaviest mixes |
-
-**Acceptance criteria**
-- Given each World 2 wave script, then it only uses the kinds listed for its level, and 2-3 to 2-5 use all five (unit test).
-
-*Sources: P08-R08, ENM-50.*
-
-#### WLD-2-18 — Tier 2 kinds only · MUST
-
-No kind of tier 1, 3 or 4 ever comes in World 2.
+| Level | Tier 1 | Tier 2 | Tier 3 |
+|-------|--------|--------|--------|
+| 2-1 | 40 % | 60 % | – |
+| 2-2 | 30 % | 60 % | 10 % |
+| 2-3 | 20 % | 60 % | 20 % |
+| 2-4 | 10 % | 60 % | 30 % |
+| 2-5 | – | 60 % | 40 % |
 
 **Acceptance criteria**
-- Given the World 2 wave scripts, then they use none of the kinds of the other tiers (unit test).
+- Given each World 2 level, then its waves use every kind of the tiers of its row and no other, each tier's share of the ships within 5 points (unit tests).
 
-*Sources: P05-R24, ENM-50.*
+*Sources: P08-R08, ENM-50, D-283.*
+
+#### WLD-2-18 — No tier 4 · MUST
+
+No kind of tier 4 ever comes in World 2.
+
+**Acceptance criteria**
+- Given the World 2 wave scripts, then they use none of the kinds of tier 4 (unit test).
+
+*Sources: P05-R24, ENM-50, D-283.*
 
 #### WLD-2-19 — Waves composed from a plan · MUST
 
 Each World 2 level's waves are composed from its plan, not written beat by beat: a cycle of phrases
 (`[kind, groups, seconds between groups, side, position (0..1), spread]`), one beat every `gap`
-seconds from `from` to `to`, each beat the next phrase of the cycle. The gap shrinks from its first
+seconds from `from` to `to`, each beat the next phrase of a kind of the tier furthest below its
+share (ENM-50). The gap shrinks from its first
 value at the start to its second at the end, so the level fills up as it goes, and the groups grow by
 `growth` over the level (rounded half up), so the second half carries more enemy HP. The beats then
 go through World 1's density and filler (WLD-1-19 to WLD-1-21) and the quiet stretch before each

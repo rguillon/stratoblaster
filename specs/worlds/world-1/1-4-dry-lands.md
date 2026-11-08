@@ -4,8 +4,8 @@
 
 The fourth level of World 1: sunset over the dry lands, from the dry grassland 1-3 ended on into an
 American desert of red dirt and scrub, rock, a cracked dry lake, an oasis town, a canyon, mesas and a
-desert town, to the desert outskirts. No sea, no sand dunes. The Carrier joins the 1-3
-kinds. The Scorpion waits at the middle and the Refinery Titan at the end.
+desert town, to the desert outskirts. No sea, no sand dunes. Tier 1 brings 65 % of the
+enemies, tier 2 35 %. The Scorpion waits at the middle and the Refinery Titan at the end.
 
 ## Requirements
 
@@ -117,48 +117,35 @@ here and there (`lone_dead_trees`) (WLD-1-14).
 
 #### LVL-1-4-08 — Enemy kinds · MUST
 
-1-4 brings in the last kind, the Carrier, and so uses the five kinds of tier 1 (Hornet, Scout, Lancer, Rocketeer and Carrier), in its beats and its fillers, and no other kind.
+1-4 mixes two tiers: tier 1 (the main one) is 65 % of its enemy ships and tier 2 35 % (each within 5 points; a Wasp group counts as its 5 ships, and the filler is counted with the beats). It brings every kind of both tiers, each at least once: tier 1's Hornet, Scout, Rocketeer, Lancer and Carrier; tier 2's Wasp, Strafer, Harrier, Sweeper and Hatchery, and no other kind.
 
 **Acceptance criteria**
-- Given the 1-4 wave script, then it only uses Hornet, Scout, Lancer, Rocketeer and Carrier, and it uses each of them (unit test).
+- Given the 1-4 wave script, then it only uses the kinds of tiers 1 and 2, and it uses each of them (unit test).
+- Given 1-4 assembled, then each tier's share of its enemy ships is within 5 points of its target (unit test).
 
-*Sources: P06-R07, ENM-50.*
+*Sources: P06-R07, ENM-50, D-283.*
 
 #### LVL-1-4-09 — Wave plan · MUST
 
 1-4's waves are composed from this plan (WLD-1-19; the density of WLD-1-20 applies on top):
 
-Beats from 4 s to 226 s, one every 5.2 s at the start down to 3.7 s at the end, groups growing by 75 % over the level (50 beats, the last at 222.5 s). The phrases, in their cycle:
+Beats from 4 s to 226 s, each wave followed by a breather of 2.8 s at the start down to 2 s at the end, groups growing by 75 % over the level. Each beat goes to the tier furthest below its share of the ships so far (the filler that follows a beat counted with it). A tier's beats first bring each of its five kinds once (shooter, laser, missile, carrier, then diver; one group each outside the main tier), then follow the role cycle (shooter, diver, laser, diver, missile, shooter, diver, carrier, laser, shooter, missile). A wave brings no more groups than its tier lacks, the main tier's never fewer than written.
 
-| # | Kind | Groups | Between groups (s) | Side | Position | Spread |
-|---|------|--------|--------------------|------|----------|--------|
-| 1 | Hornet | 4 | 0.8 | top | 0.15 | 0.23 |
-| 2 | Scout | 3 | 1.2 | top | 0.25 | 0.25 |
-| 3 | Lancer | 2 | 2.5 | top | 0.25 | 0.5 |
-| 4 | Hornet | 4 | 0.8 | top | 0.85 | -0.23 |
-| 5 | Rocketeer | 1 | 0 | top | 0.5 | — |
-| 6 | Scout | 3 | 1.2 | top | 0.75 | -0.25 |
-| 7 | Hornet | 4 | 0.8 | top | 0.15 | 0.23 |
-| 8 | Carrier | 1 | 0 | top | 0.5 | — |
-| 9 | Lancer | 2 | 2.5 | top | 0.75 | -0.5 |
-| 10 | Scout | 3 | 1.2 | top | 0.25 | 0.25 |
-| 11 | Rocketeer | 1 | 0 | top | 0.5 | — |
-
-No wave starts in the 10 s before each boss ([level-flow.md](../../gameplay/level-flow.md)).
+No wave starts in the 10 s before each boss ([level-flow.md](../../gameplay/level-flow.md)): the beats are composed around these stretches, so none is dropped.
 
 **Acceptance criteria**
 - Given the 1-4 plan, then it composes beats that name its kinds and sides in order of time (unit test).
 
-*Sources: P06-R07, D-067, ENM-50.*
+*Sources: P06-R07, D-067, ENM-50, D-283.*
 
 #### LVL-1-4-10 — Filler · MUST
 
-1-4's filler (WLD-1-21) brings the level's divers and shooters, Hornet, Scout, Hornet, Scout, in turn, one group every `max_gap`.
+1-4's filler (WLD-1-21) brings the divers and shooters of the level's tiers, Hornet, Scout, Wasp and Strafer: after a wave of one of them, single groups of its kind in the lull, one every `max_gap`.
 
 **Acceptance criteria**
-- Given the 1-4 filler, then its kinds are the Hornet and the Scout only and its gap shrinks (unit test).
+- Given the 1-4 filler, then its kinds are the Hornet, the Scout, the Wasp and the Strafer only and its gap shrinks (unit test).
 
-*Sources: D-051, ENM-50.*
+*Sources: D-051, ENM-50, D-283.*
 
 ### Difficulty
 
@@ -225,7 +212,7 @@ end, for the ground that gets ahead of the level during the fights.
 | desert_woods / lone_dead_trees | cover 0.55, keep 0.15, scatter 0.01 / cover 0, keep 0, scatter 0.004 | `src/game/config/trees.py` |
 | max_gap | 3.2 s → 2 s | `src/game/config/world_1/waves.py` `WORLD_1_FILLERS["1-4"]` |
 | bullet_speed_factor / fire_rate_factor | 1 / 1 | `src/game/config/world_1/difficulty.py` |
-| written | 50 beats from the plan; waves, groups, enemies and HP after fill and density: to be measured again with the new kinds | `src/game/config/wave_plans.py` `level_plan(1, 4)`; density 2 (D-249) |
+| written | beats composed from the plan and its tier mix (D-283); waves, groups, enemies and HP after fill and density: to be measured again | `src/game/config/wave_plans.py` `level_plan(1, 4)`, `tier_mix(1, 4)`; density 2 (D-249) |
 | buildings | 14 909 (halves 2 290 / 12 619) | each level's seed, measured for this file |
 | mini boss / final boss | `scorpion` / `refinery-titan` | `src/game/config/world_1/bosses.py` |
 | runout | 70 s | same |

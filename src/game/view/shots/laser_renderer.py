@@ -45,6 +45,15 @@ def glow_pool(scene: Any, name: str, geo: ColoredGeometry) -> tuple[Any, NodePoo
     return template, pool
 
 
+def drawn_width(width: float) -> float:
+    """Return the width a beam of hit width `width` is drawn with (GFX-SHOT-03).
+
+    `widthBonus` wider than its hit width.
+    """
+    bonus: float = LOOK.widthBonus
+    return width + bonus
+
+
 def place_bars(bars: NodePool, beam: list[BeamSegment], wobble: float) -> None:
     """One bar per segment, as wide as the segment's level (times the glow), from y0 to y1."""
     for i, mesh in enumerate(bars.show(len(beam))):
@@ -52,7 +61,7 @@ def place_bars(bars: NodePool, beam: list[BeamSegment], wobble: float) -> None:
         if not s:
             continue
         mesh.position.set(s.x, s.y0, 0)
-        mesh.scaling.set(s.width * LOOK.glowWidth * wobble, max(0, s.y1 - s.y0), 1)
+        mesh.scaling.set(drawn_width(s.width) * LOOK.glowWidth * wobble, max(0, s.y1 - s.y0), 1)
 
 
 def place_contacts(contacts: NodePool, beam: list[BeamSegment], wobble: float) -> None:
@@ -60,7 +69,7 @@ def place_contacts(contacts: NodePool, beam: list[BeamSegment], wobble: float) -
     hits = [s for s in beam if s.hit]
     for i, mesh in enumerate(contacts.show(len(hits))):
         s = hits[i]
-        r = LOOK.contact.radius * wobble * (0.5 + s.width / 16)
+        r = LOOK.contact.radius * wobble * (0.5 + drawn_width(s.width) / 16)
         mesh.position.set(s.x, s.y1, -0.5)
         mesh.scaling.set(r, r, 1)
 
@@ -77,7 +86,7 @@ def place_muzzle(muzzle: NodePool, beam: list[BeamSegment], time: float) -> None
         return
     look = LOOK.muzzle
     pulse = 1 + look.pulse * flicker(time, 1, look.pulseHz)
-    r = look.radius * (look.baseScale + first.width / look.widthDivisor) * pulse
+    r = look.radius * (look.baseScale + drawn_width(first.width) / look.widthDivisor) * pulse
     mesh.position.set(first.x, first.y0, -0.6)
     mesh.scaling.set(r, r * look.stretch, 1)
 
@@ -104,7 +113,9 @@ def create_laser_renderer(scene: Any) -> ShotRenderer:
     muzzle_template, muzzle = glow_pool(
         scene, "laser-muzzle", build_glow_disc(LOOK.muzzle.segments, LOOK.muzzle.colors)
     )
-    particles = LaserParticles(LOOK.particles, create_rng(LOOK.particles.seed), INITIAL_LENGTH)
+    particles = LaserParticles(
+        LOOK.particles, create_rng(LOOK.particles.seed), INITIAL_LENGTH, LOOK.widthBonus
+    )
     # The beam's clock, in a list so the closure below can advance it.
     clock = [0.0]
 

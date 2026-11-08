@@ -3,6 +3,8 @@
 
 from types import SimpleNamespace
 
+import pytest
+
 from core.content.game_level import GameLevel
 from core.entities.enemy import Enemy, EnemyBulletSpec, EnemyKindDefinition, EnemyStats
 from core.entities.muzzle import PlanePoint
@@ -279,3 +281,22 @@ def test_game_bonus_09_a_life_bonus_does_nothing_once_the_game_is_over() -> None
     hull = PlayerHull(_rules(lives=0), 100)
     assert hull.add_life() is False
     assert hull.lives == 0
+
+
+def test_game_bonus_11_heal_gives_back_a_share_of_the_full_health_up_to_full() -> None:
+    hull = PlayerHull(_rules(), 140)
+    assert hull.heal(0.2) is False
+    hull.health = 30
+    assert hull.heal(0.2) is True
+    assert hull.health == pytest.approx(58)
+    hull.health = 130
+    assert hull.heal(0.2) is True
+    assert hull.health == 140
+
+
+def test_game_bonus_11_heal_does_nothing_once_the_game_is_over() -> None:
+    hull = PlayerHull(_rules(lives=1), 100)
+    hull.health = 0
+    hull.lives = 0
+    assert hull.heal(0.2) is False
+    assert hull.health == 0

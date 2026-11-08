@@ -4,7 +4,7 @@
 
 The third level of World 1: a golden late afternoon over the green country, from the farmland 1-2
 ended on, through woods, green hills and a market town, to where the grass turns yellow and dry.
-No sea. The Rocketeer joins the 1-2 kinds. The Dust Devil waits at the middle and the Mesa
+No sea. Tier 1 brings 70 % of the enemies, tier 2 30 %. The Dust Devil waits at the middle and the Mesa
 Fortress at the end.
 
 ## Requirements
@@ -107,47 +107,35 @@ yellowing grass and the dry grassland grow dying woods, living and dead trees mi
 
 #### LVL-1-3-08 — Enemy kinds · MUST
 
-1-3 adds the Rocketeer to the 1-2 kinds (Hornet, Scout, Lancer and Rocketeer), in its beats and its fillers, and uses no other kind.
+1-3 mixes two tiers: tier 1 (the main one) is 70 % of its enemy ships and tier 2 30 % (each within 5 points; a Wasp group counts as its 5 ships, and the filler is counted with the beats). It brings every kind of both tiers, each at least once: tier 1's Hornet, Scout, Rocketeer, Lancer and Carrier; tier 2's Wasp, Strafer, Harrier, Sweeper and Hatchery, and no other kind.
 
 **Acceptance criteria**
-- Given the 1-3 wave script, then it only uses Hornet, Scout, Lancer and Rocketeer, and it uses each of them (unit test).
+- Given the 1-3 wave script, then it only uses the kinds of tiers 1 and 2, and it uses each of them (unit test).
+- Given 1-3 assembled, then each tier's share of its enemy ships is within 5 points of its target (unit test).
 
-*Sources: P06-R07, ENM-50.*
+*Sources: P06-R07, ENM-50, D-283.*
 
 #### LVL-1-3-09 — Wave plan · MUST
 
 1-3's waves are composed from this plan (WLD-1-19; the density of WLD-1-20 applies on top):
 
-Beats from 4 s to 226 s, one every 5.6 s at the start down to 4 s at the end, groups growing by 70 % over the level (47 beats, the last at 224.6 s). The phrases, in their cycle:
+Beats from 4 s to 226 s, each wave followed by a breather of 3 s at the start down to 2.1 s at the end, groups growing by 70 % over the level. Each beat goes to the tier furthest below its share of the ships so far (the filler that follows a beat counted with it). A tier's beats first bring each of its five kinds once (shooter, laser, missile, carrier, then diver; one group each outside the main tier), then follow the role cycle (shooter, diver, laser, diver, missile, shooter, diver, carrier, laser, shooter, missile). A wave brings no more groups than its tier lacks, the main tier's never fewer than written.
 
-| # | Kind | Groups | Between groups (s) | Side | Position | Spread |
-|---|------|--------|--------------------|------|----------|--------|
-| 1 | Hornet | 4 | 0.8 | top | 0.15 | 0.23 |
-| 2 | Scout | 3 | 1.2 | top | 0.25 | 0.25 |
-| 3 | Lancer | 2 | 2.5 | top | 0.25 | 0.5 |
-| 4 | Hornet | 4 | 0.8 | top | 0.85 | -0.23 |
-| 5 | Rocketeer | 1 | 0 | top | 0.5 | — |
-| 6 | Scout | 3 | 1.2 | top | 0.75 | -0.25 |
-| 7 | Hornet | 4 | 0.8 | top | 0.15 | 0.23 |
-| 8 | Lancer | 2 | 2.5 | top | 0.75 | -0.5 |
-| 9 | Scout | 3 | 1.2 | top | 0.25 | 0.25 |
-| 10 | Rocketeer | 1 | 0 | top | 0.5 | — |
-
-No wave starts in the 10 s before each boss ([level-flow.md](../../gameplay/level-flow.md)).
+No wave starts in the 10 s before each boss ([level-flow.md](../../gameplay/level-flow.md)): the beats are composed around these stretches, so none is dropped.
 
 **Acceptance criteria**
 - Given the 1-3 plan, then it composes beats that name its kinds and sides in order of time (unit test).
 
-*Sources: P06-R07, D-067, ENM-50.*
+*Sources: P06-R07, D-067, ENM-50, D-283.*
 
 #### LVL-1-3-10 — Filler · MUST
 
-1-3's filler (WLD-1-21) brings the level's divers and shooters, Hornet, Scout, Hornet, Scout, in turn, one group every `max_gap`.
+1-3's filler (WLD-1-21) brings the divers and shooters of the level's tiers, Hornet, Scout, Wasp and Strafer: after a wave of one of them, single groups of its kind in the lull, one every `max_gap`.
 
 **Acceptance criteria**
-- Given the 1-3 filler, then its kinds are the Hornet and the Scout only and its gap shrinks (unit test).
+- Given the 1-3 filler, then its kinds are the Hornet, the Scout, the Wasp and the Strafer only and its gap shrinks (unit test).
 
-*Sources: D-051, ENM-50.*
+*Sources: D-051, ENM-50, D-283.*
 
 ### Difficulty
 
@@ -212,7 +200,7 @@ the shortest of World 1: its final fight stops the ground.
 | town_streets | rows 60–110, columns 70–130, links 0.55 | `TOWN_STREETS` (also 1-4's towns and 1-5's oasis villages and towns) |
 | max_gap | 3.3 s → 2.2 s | `src/game/config/world_1/waves.py` `WORLD_1_FILLERS["1-3"]` |
 | bullet_speed_factor / fire_rate_factor | 0.9 / 0.9 | `src/game/config/world_1/difficulty.py` |
-| written | 47 beats from the plan; waves, groups, enemies and HP after fill and density: to be measured again with the new kinds | `src/game/config/wave_plans.py` `level_plan(1, 3)`; density 2 (D-249) |
+| written | beats composed from the plan and its tier mix (D-283); waves, groups, enemies and HP after fill and density: to be measured again | `src/game/config/wave_plans.py` `level_plan(1, 3)`, `tier_mix(1, 3)`; density 2 (D-249) |
 | buildings | 8 034 (halves 598 / 7 436) | each level's seed, measured for this file |
 | mini boss / final boss | `dust-devil` / `mesa-fortress` | `src/game/config/world_1/bosses.py` |
 | runout | 30 s | same |

@@ -251,30 +251,30 @@ lines are drawn with their light, contrasting core (see [shots](../../graphics/s
 
 ### WLD-4-17 — Enemy roster · MUST
 
-World 4 uses the five kinds of tier 4 and no other (ENM-50; see [enemies](../../enemies/common.md)):
-[Splitter](../../enemies/splitter.md) (diver), [Hydra](../../enemies/hydra.md) (shooter),
-[Scissor](../../enemies/scissor.md) (laser), [Juggernaut](../../enemies/juggernaut.md) (missile launcher) and
-[Hive](../../enemies/hive.md) (launches Splitters). It starts with three kinds, adds the Juggernaut in 4-2
-and the Hive in 4-3, so 4-3 to 4-5 use all five:
+Tier 4 ([Splitter](../../enemies/splitter.md), [Hydra](../../enemies/hydra.md),
+[Scissor](../../enemies/scissor.md), [Juggernaut](../../enemies/juggernaut.md),
+[Hive](../../enemies/hive.md)) grows from 60 % of the ships in 4-1 to all of them in 4-5, tier 3
+making up the rest (ENM-50; see [enemies](../../enemies/common.md)). Every kind of each tier a level
+has comes in it:
 
-| Level | Enemy kinds |
-|-------|-------------|
-| 4-1 | Splitter, Hydra, Scissor |
-| 4-2 | Splitter, Hydra, Scissor, Juggernaut |
-| 4-3 to 4-5 | all five |
+| Level | Tier 3 | Tier 4 |
+|-------|--------|--------|
+| 4-1 | 40 % | 60 % |
+| 4-2 | 30 % | 70 % |
+| 4-3 | 20 % | 80 % |
+| 4-4 | 10 % | 90 % |
+| 4-5 | – | 100 % |
 
 **Acceptance criteria**
-- Unit test: each World 4 level's waves (plan and filler) use exactly the kinds of its row.
-- Unit test: no World 4 level uses a kind of another tier.
+- Unit test: each World 4 level's waves use every kind of the tiers of its row, and no other.
+- Unit test: each tier's share of each World 4 level's ships is within 5 points of its row.
 
-*Sources: P10-R09, P05-R24, D-087, D-090, ENM-50.*
-
-**Gap:** the unit tests check only that the kinds exist, not the table.
+*Sources: P10-R09, P05-R24, D-087, D-090, ENM-50, D-283.*
 
 ### WLD-4-18 — Wave plans · SHOULD
 
 Each World 4 level's waves are composed from a wave plan, as in World 3 (WLD-3-16): from 4 s to 292 s,
-every kind of the level in every cycle, its gap and growth set in `wave_plans.py`. A filler of the
+its tier mix (ENM-50), its gap and growth set in `wave_plans.py`. A filler of the
 level's divers and shooters fills the lulls. The waves are
 deterministic. Each level's plan is in its file.
 

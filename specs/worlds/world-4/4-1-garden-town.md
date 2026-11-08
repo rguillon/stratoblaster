@@ -4,8 +4,8 @@
 
 The first level of World 4. From the garden villages 3-5 ended on, the player flies over suburban
 lanes, suburbs, terraced streets and flats to a town centre with the first mid-rise blocks, on the
-flat, fully paved city ground, at a bright midday under a smoke haze. Splitters and Hydras lead the
-waves, and the Scissor comes in with them.
+flat, fully paved city ground, at a bright midday under a smoke haze. Tier 4 brings 60 % of the
+enemies, tier 3 the other 40 %.
 Its checkpoint is its mini boss (see [level flow](../../gameplay/level-flow.md)).
 
 ## Requirements
@@ -58,15 +58,14 @@ no glow from below, with no change along the level.
 
 ### LVL-4-1-04 — Enemy waves · MUST
 
-4-1 brings Splitter, Hydra and Scissor (a diver, a shooter and a laser) and no other kind. 4-1's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, with a beat every `wave_gap` seconds (4.6 s to 3.3 s) and
-groups growing by `wave_growth` (90 %) over the level (74 beats). The cycle of phrases, each a kind with its number of
-groups at the start: Splitter 2, Hydra 1, Scissor 1, Splitter 2, Hydra 1, Splitter 2, Scissor 1, Hydra 1. The filler draws Splitters and Hydras, at most `filler_gap` apart.
+4-1 mixes two tiers: tier 4 (the main one) is 60 % of its enemy ships and tier 3 40 % (each within 5 points; a Wasp group counts as its 5 ships, and the filler is counted with the beats). It brings every kind of both tiers, each at least once: tier 4's Splitter, Hydra, Juggernaut, Scissor and Hive; tier 3's Phantom, Spinner, Mortar, Prism and Broodmother, and no other kind. 4-1's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, each wave followed by a breather of `wave_gap` seconds (2.5 s to 1.8 s), groups growing by `wave_growth` (90 %) over the level. Each beat goes to the tier furthest below its share of the ships so far (the filler that follows a beat counted with it). A tier's beats first bring each of its five kinds once (shooter, laser, missile, carrier, then diver; one group each outside the main tier), then follow the role cycle (shooter, diver, laser, diver, missile, shooter, diver, carrier, laser, shooter, missile). A wave brings no more groups than its tier lacks, the main tier's never fewer than written. The beats are composed around the quiet stretch before each boss, so none is dropped. The filler draws Splitters, Hydras, Phantoms and Spinners, at most `filler_gap` apart.
 
 **Acceptance criteria**
-- Unit test: 4-1's waves use exactly Splitter, Hydra and Scissor, and each of them.
+- Unit test: 4-1's waves use only the kinds of tiers 4 and 3, and each of them.
+- Unit test: each tier's share of 4-1's enemy ships is within 5 points of its target.
 - Unit test: 4-1's waves are the same each time the level is built.
 
-*Sources: P10-R09, P05-R24, D-087, D-090, ENM-50.*
+*Sources: P10-R09, P05-R24, D-087, D-090, ENM-50, D-283.*
 
 ### LVL-4-1-05 — Difficulty · MUST
 
@@ -121,7 +120,7 @@ the two fights.
 | streets | lanes 35–60 × 40–80; village 40–70 × 45–90; streets 45–90 × 50–110 (rows × columns) | `LANES`, `VILLAGE_STREETS`, `STREETS`, `src/game/config/world_3/scenery.py` |
 | smoke_haze_fog / smoke_haze_white | 0.75 / 0.2 | `SMOKE_HAZE`, `src/game/config/world_4/looks.py` |
 | clouds | 0.4 / 0.3 (tint 0.95, 0.84, 0.86, not shown) | `LEVEL_4_1_LOOK` |
-| wave_gap | 4.6 s → 3.3 s | `PLAN_4_1.gap`, `src/game/config/world_4/waves.py` |
+| wave_gap | 2.5 s → 1.8 s | `PLAN_4_1.gap`, `src/game/config/world_4/waves.py` |
 | wave_growth | 0.9 | `PLAN_4_1.growth` |
 | filler_gap | 3.4 s → 2.3 s | `WORLD_4_FILLERS["4-1"].maxGap` |
 | bullet speed / fire rate factors | 1.1 / 1.1 | `WORLD_4_DIFFICULTY["4-1"]` |

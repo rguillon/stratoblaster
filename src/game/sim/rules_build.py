@@ -6,7 +6,7 @@ The rules are specified in `specs/gameplay/lives-and-damage.md`, `bombs.md`, `bo
 snake_case attributes. Mapping rules are in `config_build.py`.
 """
 
-from core.systems.bonus_world import BonusChance, BonusRules, LifeAndBomb
+from core.systems.bonus_world import BonusChance, BonusRules, HealRules, LifeAndBomb
 from core.systems.boss_fights import BossFightRules
 from core.systems.player_bombs import BombRules
 from core.systems.player_hull import HullDamage, HullRules
@@ -44,16 +44,18 @@ def _life_and_bomb(pair: ConfigRecord) -> LifeAndBomb:
 
 
 def bonus_rules(config: ConfigRecord) -> BonusRules:
-    """Bonuses dropped by destroyed enemies (GAME-BONUS-02, GAME-BONUS-03)."""
+    """Bonuses dropped by destroyed enemies (GAME-BONUS-02, GAME-BONUS-03, GAME-BONUS-11)."""
     chance = config.chance
     special = opt(config.special)
     overflow = opt(config.overflowPoints)
+    heal = opt(config.heal)
     return BonusRules(
         BonusChance(chance.perHealth, chance["min"], chance["max"]),
         config.fallSpeed,
         config.pickupRadius,
         None if special is None else _life_and_bomb(special),
         None if overflow is None else _life_and_bomb(overflow),
+        None if heal is None else HealRules(heal.share, heal.amount),
     )
 
 

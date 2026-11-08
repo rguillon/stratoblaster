@@ -4,8 +4,8 @@
 
 The fourth level of World 3. From the suburb edge 3-3 ended on, the player flies over garden suburbs,
 houses along the river, a town park and leafy avenues to the first garden villages, on gently rolling
-ground, at a rainy dusk with the windows and streets lit. No industry is left. Broodmothers and Prisms lead
-the waves, all five kinds of tier 3 in the mix. Its checkpoint is its mini boss (see
+ground, at a rainy dusk with the windows and streets lit. No industry is left. Tier 3 brings 60 % of
+the enemies, tier 4 30 % and tier 2 its last 10 %. Its checkpoint is its mini boss (see
 [level flow](../../gameplay/level-flow.md)).
 
 ## Requirements
@@ -59,15 +59,14 @@ streets.
 
 ### LVL-3-4-04 — Enemy waves · MUST
 
-3-4 uses all five kinds of tier 3, Phantom, Spinner, Prism, Mortar and Broodmother, and no other. 3-4's waves follow its wave plan (WLD-3-16) from 4 s to 292 s, with a beat every `wave_gap` seconds (4 s to 2.9 s) and
-groups growing by `wave_growth` (95 %) over the level (85 beats). The cycle of phrases, each a kind with its number of
-groups at the start: Phantom 1, Spinner 2, Prism 1, Phantom 1, Mortar 1, Spinner 2, Phantom 1, Broodmother 1, Prism 1, Spinner 2, Mortar 1. The filler draws Phantoms and Spinners, at most `filler_gap` apart.
+3-4 mixes three tiers: tier 3 (the main one) is 60 % of its enemy ships, tier 2 10 % and tier 4 30 % (each within 5 points; a Wasp group counts as its 5 ships, and the filler is counted with the beats). It brings every kind of its tiers, each at least once: tier 3's Phantom, Spinner, Mortar, Prism and Broodmother; tier 2's Wasp, Strafer, Harrier, Sweeper and Hatchery; tier 4's Splitter, Hydra, Juggernaut, Scissor and Hive, and no other kind. 3-4's waves follow its wave plan (WLD-3-16) from 4 s to 292 s, each wave followed by a breather of `wave_gap` seconds (2.2 s to 1.5 s), groups growing by `wave_growth` (95 %) over the level. Each beat goes to the tier furthest below its share of the ships so far (the filler that follows a beat counted with it). A tier's beats first bring each of its five kinds once (shooter, laser, missile, carrier, then diver; one group each outside the main tier), then follow the role cycle (shooter, diver, laser, diver, missile, shooter, diver, carrier, laser, shooter, missile). A wave brings no more groups than its tier lacks, the main tier's never fewer than written. The beats are composed around the quiet stretch before each boss, so none is dropped. The filler draws Phantoms, Spinners, Wasps, Strafers, Splitters and Hydras, at most `filler_gap` apart.
 
 **Acceptance criteria**
-- Unit test: 3-4's waves use exactly Phantom, Spinner, Prism, Mortar and Broodmother, and each of them.
+- Unit test: 3-4's waves use only the kinds of tiers 3, 2 and 4, and each of them.
+- Unit test: each tier's share of 3-4's enemy ships is within 5 points of its target.
 - Unit test: 3-4's waves are the same each time the level is built.
 
-*Sources: P09-R07, P05-R24, D-080, D-090, ENM-50.*
+*Sources: P09-R07, P05-R24, D-080, D-090, ENM-50, D-283.*
 
 ### LVL-3-4-05 — Difficulty · MUST
 
@@ -120,7 +119,7 @@ the two fights.
 | streets | suburb 40–70 × 50–95; garden suburb 36–62 × 46–88; streets 45–90 × 50–110; avenue 36–62 × 40–78 (rows × columns) | `SUBURB_STREETS`, `GARDEN_SUBURB_STREETS`, `STREETS`, `AVENUE_STREETS` |
 | clouds | 0.6 / 0.4 | `LEVEL_3_4_LOOK`, `src/game/config/world_3/looks.py` |
 | rain | 0.3 | same |
-| wave_gap | 4 s → 2.9 s | `PLAN_3_4.gap`, `src/game/config/world_3/waves.py` |
+| wave_gap | 2.2 s → 1.5 s | `PLAN_3_4.gap`, `src/game/config/world_3/waves.py` |
 | wave_growth | 0.95 | `PLAN_3_4.growth` |
 | filler_gap | 2.9 s → 1.8 s | `WORLD_3_FILLERS["3-4"].maxGap` |
 | bullet speed / fire rate factors | 1.2 / 1.2 | `WORLD_3_DIFFICULTY["3-4"]` |

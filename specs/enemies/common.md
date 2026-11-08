@@ -617,19 +617,32 @@ tells its tier, never what shoots at the player.
 
 *Sources: reviewer request, 2026-11-03.*
 
-#### ENM-50 — A world uses the kinds of its tier · MUST
+#### ENM-50 — Each level mixes tiers · MUST
 
-World N uses the five kinds of tier N, and no other kind. A world's levels bring them in over time:
-World 1 starts with its diver and its shooter and each level adds one kind (the laser, the missile
-launcher, then the carrier), every kind being in 1-5; Worlds 2 to 4 start with three kinds (diver,
-shooter, laser), add the missile launcher in the second level and have all five from the third.
-The waves of every level are composed from the kinds of the level (`src/game/config/wave_plans.py`).
+Each level mixes two or three tiers, each with its share of the level's enemy ships (a group of
+several ships, such as a Wasp swarm, counts each of them; the filler counts too; the enemies a
+carrier launches do not):
+
+| World | First level | Last level | Between |
+|-------|-------------|------------|---------|
+| 1 | tier 1 80 %, tier 2 20 % | tier 1 60 %, tier 2 40 % | tier 2 grows by 5 points a level |
+| 2 | tier 2 60 %, tier 1 40 % | tier 2 60 %, tier 3 40 % | tier 2 stays 60 %; the other 40 % slides from tier 1 to tier 3 by 10 points a level |
+| 3 | tier 3 60 %, tier 2 40 % | tier 3 60 %, tier 4 40 % | as World 2, one tier up |
+| 4 | tier 4 60 %, tier 3 40 % | tier 4 100 % | tier 3 shrinks by 10 points a level |
+
+Every kind of each tier a level has comes in that level at least once. The waves of every level are
+composed from its tier mix (`tier_mix` and `compose_beats` in `src/game/config/wave_plans.py`): each
+beat goes to the tier furthest below its share; each tier brings each of its kinds once first (a
+smaller tier one group at a time), then follows the role cycle; a wave brings no more than its tier
+lacks; nothing is composed in the quiet stretch before a boss. A wave is one kind, so a share is
+met to within 5 points.
 
 **Acceptance criteria**
-- Given each level's waves and filler, then they name only kinds of the level's world's tier
-  (unit test).
+- Given each level's tier mix, then it is the table's (unit test).
+- Given each assembled level, then each tier's share of its ships is within 5 points of its mix,
+  and its waves name every kind of its tiers and no other (unit tests).
 
-*Sources: reviewer request, 2026-11-03.*
+*Sources: reviewer request, 2026-11-03; owner request, 2026-11-08 (D-283).*
 
 ## Tunable values
 

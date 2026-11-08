@@ -4,8 +4,8 @@
 
 World 1 is the first world of the game: five levels of about four minutes, cut from one long journey
 that starts over the open sea, crosses green grassland and dries out into an American desert of red
-land, cracked dry lakes, mesas and buttes, with more and more buildings along the way. It teaches the
-five kinds of enemy of tier 1 one level after the other, and each level is harder than the one before it.
+land, cracked dry lakes, mesas and buttes, with more and more buildings along the way. Its enemies
+are tier 1 with a growing share of tier 2 (ENM-50), and each level is harder than the one before it.
 This file holds what the five levels share; each level's own content is in its level file. How a
 level runs (scroll, waves by distance, bosses, checkpoint, level end) is in
 [level-flow.md](../../gameplay/level-flow.md); the terrain, sky, road, building and prop engines are
@@ -273,39 +273,39 @@ level, and no World 1 level has weather. Each level's light is in its level file
 
 ### Enemies and difficulty
 
-#### WLD-1-17 — A new kind or two in each level · MUST
+#### WLD-1-17 — Tier 1 with a growing share of tier 2 · MUST
 
-The five kinds of tier 1 (ENM-50) are brought in over the world, one role after the other, so each
-level teaches something new. Each level's waves, fillers included, use only these kinds:
+Every World 1 level brings all five kinds of tier 1 and all five of tier 2 (ENM-50), tier 2's share
+of the ships growing over the world:
 
-| Level | Enemy kinds |
-|-------|-------------|
-| 1-1 | Hornet (diver), Scout (shooter) |
-| 1-2 | the 1-1 kinds plus the Lancer (laser) |
-| 1-3 | the 1-2 kinds plus the Rocketeer (missile launcher) |
-| 1-4 | the 1-3 kinds plus the Carrier (launches Hornets) |
-| 1-5 | all five kinds |
-
-**Acceptance criteria**
-- Given each World 1 wave script, then it only uses the kinds listed for its level, and the kinds new in each level appear in it (unit test).
-
-*Sources: P06-R07, ENM-50.*
-
-#### WLD-1-18 — Tier 1 kinds only · MUST
-
-No kind of tier 2, 3 or 4 ever comes in World 1: they are for Worlds 2 to 4.
+| Level | Tier 1 | Tier 2 |
+|-------|--------|--------|
+| 1-1 | 80 % | 20 % |
+| 1-2 | 75 % | 25 % |
+| 1-3 | 70 % | 30 % |
+| 1-4 | 65 % | 35 % |
+| 1-5 | 60 % | 40 % |
 
 **Acceptance criteria**
-- Given the World 1 wave scripts, then they use none of the kinds of the other tiers (unit test).
+- Given each World 1 level, then its waves use every kind of tiers 1 and 2 and no other, each tier's share of the ships within 5 points of its row (unit tests).
 
-*Sources: P05-R24, ENM-50.*
+*Sources: P06-R07, ENM-50, D-283.*
+
+#### WLD-1-18 — No tier 3 or 4 · MUST
+
+No kind of tier 3 or 4 ever comes in World 1: they are for Worlds 2 to 4.
+
+**Acceptance criteria**
+- Given the World 1 wave scripts, then they use none of the kinds of tiers 3 and 4 (unit test).
+
+*Sources: P05-R24, ENM-50, D-283.*
 
 #### WLD-1-19 — Waves composed from a plan · MUST
 
-Each World 1 level's waves are composed from its plan (`src/game/config/wave_plans.py`, ENM-50): a
-cycle of phrases (`[kind, groups, seconds between groups, side, position (0..1), spread]`) over the
-level's kinds, one beat every `gap` seconds from `from` to `to`, the gap shrinking and the groups
-growing over the level, so the level fills up as it goes (World 2's WLD-2-19 gives the rule). The
+Each World 1 level's waves are composed from its plan (`src/game/config/wave_plans.py`, ENM-50): its
+tier mix, each beat one kind of the tier furthest below its share, one beat every `gap` seconds from
+`from` to `to`, the gap shrinking and the groups growing over the level, so the level fills up as it
+goes (World 2's WLD-2-19 gives the rule). The
 beats are `[seconds, kind, groups, seconds between groups, side, position (0..1), spread]`; a beat's
 seconds are turned into a distance at the level's ground speed, as waves are triggered by distance
 ([level-flow.md](../../gameplay/level-flow.md)). A group of any kind is one enemy, except where a
@@ -382,7 +382,7 @@ more total enemy HP than its first half.
 #### WLD-1-25 — 1-1 is easy, even for a kid · MUST
 
 1-1 is the gentlest level of the game: its filler groups are only Hornets, which do not
-shoot, and its enemy factors the lowest (0.8). Its bosses stay beatable for a kid.
+shoot (its tier 2 enemies come only in its beats, D-283), and its enemy factors the lowest (0.8). Its bosses stay beatable for a kid.
 
 **Acceptance criteria**
 - Given the 1-1 filler, then it brings only Hornets (unit test).

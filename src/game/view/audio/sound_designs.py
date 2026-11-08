@@ -126,6 +126,8 @@ PLAYER = {
     "bonus:bomb": sound("bomb-bonus", PRIORITY["player"], 0.35, 0.69, {}),
     "bonus:weapon": sound("weapon-bonus", PRIORITY["player"], 0.35, 0.38, {}),
     "bonus:life": sound("life-bonus", PRIORITY["player"], 0.35, 0.32, {}),
+    # GAME-BONUS-11: the life bonus's chime pitched up, a little softer.
+    "bonus:heal": sound("heal-bonus", PRIORITY["player"], 0.28, 0.26, {}),
 }
 
 MENUS = {

@@ -4,8 +4,8 @@
 
 The first level of World 2: a clear desert morning over the great erg, from an oasis edge across
 great dunes, caravan posts and a dune field to rocky desert and desert outposts, the first mines in
-the last 30 seconds. Open sand to the end, no sea. Wasps, Strafers and Sweepers lead
-the waves. A breather after 1-5, about as hard as 1-3. The Floe Breaker waits at the middle and the
+the last 30 seconds. Open sand to the end, no sea. Tier 2 brings 60 % of
+the enemies, tier 1 the rest. A breather after 1-5, about as hard as 1-3. The Floe Breaker waits at the middle and the
 Narwhal at the end.
 
 ## Requirements
@@ -94,45 +94,35 @@ industrial or heavy-industry group (WLD-2-09). It has World 1's roads (WLD-2-14)
 
 #### LVL-2-1-07 — Enemy kinds · MUST
 
-2-1 brings Wasp, Strafer and Sweeper (a diver, a shooter and a laser), in its beats and its fillers, and no other kind.
+2-1 mixes two tiers: tier 2 (the main one) is 60 % of its enemy ships and tier 1 40 % (each within 5 points; a Wasp group counts as its 5 ships, and the filler is counted with the beats). It brings every kind of both tiers, each at least once: tier 2's Wasp, Strafer, Harrier, Sweeper and Hatchery; tier 1's Hornet, Scout, Rocketeer, Lancer and Carrier, and no other kind.
 
 **Acceptance criteria**
-- Given the 2-1 wave script, then it only uses Wasp, Strafer and Sweeper, and it uses each of them (unit test).
+- Given the 2-1 wave script, then it only uses the kinds of tiers 2 and 1, and it uses each of them (unit test).
+- Given 2-1 assembled, then each tier's share of its enemy ships is within 5 points of its target (unit test).
 
-*Sources: P06-R07, ENM-50.*
+*Sources: P06-R07, ENM-50, D-283.*
 
 #### LVL-2-1-08 — Wave plan · MUST
 
 2-1's waves are composed from this plan (WLD-2-19; World 1's density and filler apply on top):
 
-Beats from 4 s to 292 s, one every 5.8 s at the start down to 4.2 s at the end, groups growing by 70 % over the level (59 beats, the last at 291.6 s). The phrases, in their cycle:
+Beats from 4 s to 292 s, each wave followed by a breather of 3.1 s at the start down to 2.2 s at the end, groups growing by 70 % over the level. Each beat goes to the tier furthest below its share of the ships so far (the filler that follows a beat counted with it). A tier's beats first bring each of its five kinds once (shooter, laser, missile, carrier, then diver; one group each outside the main tier), then follow the role cycle (shooter, diver, laser, diver, missile, shooter, diver, carrier, laser, shooter, missile). A wave brings no more groups than its tier lacks, the main tier's never fewer than written.
 
-| # | Kind | Groups | Between groups (s) | Side | Position | Spread |
-|---|------|--------|--------------------|------|----------|--------|
-| 1 | Wasp | 2 | 1.6 | top | 0.4 | 0.3 |
-| 2 | Strafer | 2 | 1.5 | left | 0.8 | — |
-| 3 | Sweeper | 1 | 0 | top | 0.5 | — |
-| 4 | Wasp | 2 | 1.6 | top | 0.6 | -0.3 |
-| 5 | Strafer | 2 | 1.5 | right | 0.2 | — |
-| 6 | Wasp | 2 | 1.6 | top | 0.4 | 0.3 |
-| 7 | Sweeper | 1 | 0 | top | 0.5 | — |
-| 8 | Strafer | 2 | 1.5 | left | 0.8 | — |
-
-No wave starts in the 10 s before each boss ([level-flow.md](../../gameplay/level-flow.md)).
+No wave starts in the 10 s before each boss ([level-flow.md](../../gameplay/level-flow.md)): the beats are composed around these stretches, so none is dropped.
 
 **Acceptance criteria**
 - Given the 2-1 plan, then it composes beats that name its kinds and sides in order of time (unit test).
 
-*Sources: P06-R07, D-067, ENM-50.*
+*Sources: P06-R07, D-067, ENM-50, D-283.*
 
 #### LVL-2-1-09 — Filler · MUST
 
-2-1's filler (WLD-1-21) brings the level's divers and shooters, Wasp, Strafer, Wasp, Strafer, in turn, one group every `max_gap`.
+2-1's filler (WLD-1-21) brings the divers and shooters of the level's tiers, Wasp, Strafer, Hornet and Scout: after a wave of one of them, single groups of its kind in the lull, one every `max_gap`.
 
 **Acceptance criteria**
-- Given the 2-1 filler, then its kinds are the Wasp and the Strafer only and its gap shrinks (unit test).
+- Given the 2-1 filler, then its kinds are the Wasp, the Strafer, the Hornet and the Scout only and its gap shrinks (unit test).
 
-*Sources: D-051, ENM-50.*
+*Sources: D-051, ENM-50, D-283.*
 
 ### Difficulty
 
@@ -197,7 +187,7 @@ Narwhal's chase.
 | dune_field | crests 45 high every 240 units, at 70°, warp 0.6 | `dunes(45, 240, 70)` |
 | max_gap | 3.4 s → 2.3 s | `src/game/config/world_2/waves.py` `WORLD_2_FILLERS["2-1"]` |
 | bullet_speed_factor / fire_rate_factor | 0.9 / 0.9 | `src/game/config/world_2/difficulty.py` |
-| written | 59 beats from the plan; waves, groups, enemies and HP after fill and density: to be measured again with the new kinds | `src/game/config/wave_plans.py` `level_plan(2, 1)`; density 2 (D-249) |
+| written | beats composed from the plan and its tier mix (D-283); waves, groups, enemies and HP after fill and density: to be measured again | `src/game/config/wave_plans.py` `level_plan(2, 1)`, `tier_mix(2, 1)`; density 2 (D-249) |
 | buildings | 1 384 (halves 525 / 859) | each level's seed, measured for this file |
 | mini boss / final boss | `floe-breaker` / `narwhal` | `src/game/config/world_2/bosses.py` `WORLD_2_BOSSES` |
 | runout | 160 s | same |

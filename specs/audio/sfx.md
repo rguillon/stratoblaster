@@ -37,7 +37,7 @@ sample's file name, `public/sfx/<name>.ogg`, [engine.md](engine.md) AUD-ENGINE-0
 | Player | life lost (`life-lost`) | `life-lost`, a short low-frequency explosion |
 | | extra life (`extra-life`) | `extra-life`, a rising confirmation chime |
 | | bomb (`bomb`) | `bomb`, the longest crunching blast |
-| | bonuses picked up (`bonus:weapon`, `bonus:life`, `bonus:bomb`) | `weapon-bonus` (a select blip), `life-bonus` (a confirmation chime), `bomb-bonus` (a glass ring) |
+| | bonuses picked up (`bonus:weapon`, `bonus:life`, `bonus:bomb`, `bonus:heal`) | `weapon-bonus` (a select blip), `life-bonus` (a confirmation chime), `bomb-bonus` (a glass ring), `heal-bonus` (the confirmation chime pitched up) |
 | Menus | move, confirm, back, pause, resume, slider step | `menu-move` (a tick), `menu-confirm` (a select click), `menu-back` (a back click), `pause` and `resume` (a switch thrown, two different ones), `slider-step` (a tick) |
 
 A blast is large when the enemy's hit radius is at least `large_blast_radius` (18 px); an enemy

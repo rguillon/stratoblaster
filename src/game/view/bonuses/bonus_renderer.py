@@ -13,6 +13,7 @@ from game.config.bonus_look import BONUS_LOOK as LOOK
 from game.view.bonuses.bonus_geometry import (
     build_bomb_badge,
     build_bonus_badge,
+    build_heal_badge,
     build_life_badge,
 )
 from game.view.shot_geometry import build_glow_disc
@@ -38,7 +39,7 @@ from render.game_view import BonusRenderer
 # __pragma__ ("noskip")
 
 
-KINDS = ["weapon", "life", "bomb"]
+KINDS = ["weapon", "life", "bomb", "heal"]
 
 
 def _bonus_renderer(sync: Any, dispose: Any) -> Any:
@@ -148,6 +149,7 @@ def kind_templates(scene: Any) -> dict[str, list[Any]]:
     halo = LOOK.halo
     life = LOOK.life
     bomb = LOOK.bomb
+    heal = LOOK.heal
 
     def glow(name: str, rings: Any) -> Any:
         return additive_template(name, build_glow_disc(halo.segments, rings), scene)
@@ -162,10 +164,13 @@ def kind_templates(scene: Any) -> dict[str, list[Any]]:
     life_halo = glow("bonus-glow-life", life.halo)
     bomb_sphere = opaque_template("bonus-sphere", build_bomb_badge(bomb), scene)
     bomb_halo = glow("bonus-glow-bomb", bomb.halo)
+    heal_cross = opaque_template("bonus-cross", build_heal_badge(heal), scene)
+    heal_halo = glow("bonus-glow-heal", heal.halo)
     return {
         "weapon": [weapon_badge, weapon_halo],
         "life": [life_heart, life_halo],
         "bomb": [bomb_sphere, bomb_halo],
+        "heal": [heal_cross, heal_halo],
     }
 
 

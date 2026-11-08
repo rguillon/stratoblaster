@@ -3,8 +3,8 @@
 > **Area:** Worlds · **Prefix:** `LVL-1-2` · **Related:** [World 1](world.md), [1-1 Open sea](1-1-open-sea.md), [1-3 Green country](1-3-green-country.md), [Breakwater](../../bosses/mini/1-2-breakwater.md), [Gull Mothership](../../bosses/final/1-2-gull-mothership.md), [level flow](../../gameplay/level-flow.md), [terrain](../../graphics/terrain.md), [sky and light](../../graphics/sky-and-light.md)
 
 The second level of World 1: early afternoon along the green coast where 1-1 ended, its beaches and
-bays, then inland over green meadows, groves and farmland once the sea is gone. The Lancer
-joins the 1-1 kinds. The Breakwater waits at the middle and the Gull Mothership at the end.
+bays, then inland over green meadows, groves and farmland once the sea is gone. Tier 1 brings
+three quarters of the enemies, tier 2 a quarter. The Breakwater waits at the middle and the Gull Mothership at the end.
 
 ## Requirements
 
@@ -104,45 +104,35 @@ full on the meadows, groves and farmland, less on the coast.
 
 #### LVL-1-2-08 — Enemy kinds · MUST
 
-1-2 adds the Lancer to the 1-1 kinds (Hornet, Scout and Lancer), in its beats and its fillers, and uses no other kind.
+1-2 mixes two tiers: tier 1 (the main one) is 75 % of its enemy ships and tier 2 25 % (each within 5 points; a Wasp group counts as its 5 ships, and the filler is counted with the beats). It brings every kind of both tiers, each at least once: tier 1's Hornet, Scout, Rocketeer, Lancer and Carrier; tier 2's Wasp, Strafer, Harrier, Sweeper and Hatchery, and no other kind.
 
 **Acceptance criteria**
-- Given the 1-2 wave script, then it only uses Hornet, Scout and Lancer, and it uses each of them (unit test).
+- Given the 1-2 wave script, then it only uses the kinds of tiers 1 and 2, and it uses each of them (unit test).
+- Given 1-2 assembled, then each tier's share of its enemy ships is within 5 points of its target (unit test).
 
-*Sources: P06-R07, ENM-50.*
+*Sources: P06-R07, ENM-50, D-283.*
 
 #### LVL-1-2-09 — Wave plan · MUST
 
 1-2's waves are composed from this plan (WLD-1-19; the density of WLD-1-20 applies on top):
 
-Beats from 4 s to 226 s, one every 6 s at the start down to 4.3 s at the end, groups growing by 65 % over the level (44 beats, the last at 224.9 s). The phrases, in their cycle:
+Beats from 4 s to 226 s, each wave followed by a breather of 3.2 s at the start down to 2.2 s at the end, groups growing by 65 % over the level. Each beat goes to the tier furthest below its share of the ships so far (the filler that follows a beat counted with it). A tier's beats first bring each of its five kinds once (shooter, laser, missile, carrier, then diver; one group each outside the main tier), then follow the role cycle (shooter, diver, laser, diver, missile, shooter, diver, carrier, laser, shooter, missile). A wave brings no more groups than its tier lacks, the main tier's never fewer than written.
 
-| # | Kind | Groups | Between groups (s) | Side | Position | Spread |
-|---|------|--------|--------------------|------|----------|--------|
-| 1 | Hornet | 4 | 0.8 | top | 0.15 | 0.23 |
-| 2 | Scout | 3 | 1.2 | top | 0.25 | 0.25 |
-| 3 | Lancer | 2 | 2.5 | top | 0.25 | 0.5 |
-| 4 | Hornet | 4 | 0.8 | top | 0.85 | -0.23 |
-| 5 | Scout | 3 | 1.2 | top | 0.75 | -0.25 |
-| 6 | Hornet | 4 | 0.8 | top | 0.15 | 0.23 |
-| 7 | Lancer | 2 | 2.5 | top | 0.75 | -0.5 |
-| 8 | Scout | 3 | 1.2 | top | 0.25 | 0.25 |
-
-No wave starts in the 10 s before each boss ([level-flow.md](../../gameplay/level-flow.md)).
+No wave starts in the 10 s before each boss ([level-flow.md](../../gameplay/level-flow.md)): the beats are composed around these stretches, so none is dropped.
 
 **Acceptance criteria**
 - Given the 1-2 plan, then it composes beats that name its kinds and sides in order of time (unit test).
 
-*Sources: P06-R07, D-067, ENM-50.*
+*Sources: P06-R07, D-067, ENM-50, D-283.*
 
 #### LVL-1-2-10 — Filler · MUST
 
-1-2's filler (WLD-1-21) brings the level's divers and shooters, Hornet, Scout, Hornet, Scout, in turn, one group every `max_gap`.
+1-2's filler (WLD-1-21) brings the divers and shooters of the level's tiers, Hornet, Scout, Wasp and Strafer: after a wave of one of them, single groups of its kind in the lull, one every `max_gap`.
 
 **Acceptance criteria**
-- Given the 1-2 filler, then its kinds are the Hornet and the Scout only and its gap shrinks (unit test).
+- Given the 1-2 filler, then its kinds are the Hornet, the Scout, the Wasp and the Strafer only and its gap shrinks (unit test).
 
-*Sources: D-051, ENM-50.*
+*Sources: D-051, ENM-50, D-283.*
 
 ### Difficulty
 
@@ -205,7 +195,7 @@ the ground that gets ahead of the level during the fights.
 | shore | coast road x −40 ± 90 every 1 800; bays x −90 ± 170 every 1 500; coast farms x −230 ± 110 every 1 700 (beach 240, sea bed −55) | `GREEN_COAST`, `GREEN_COAST_LEVEL` |
 | max_gap | 3.5 s → 2.4 s | `src/game/config/world_1/waves.py` `WORLD_1_FILLERS["1-2"]` |
 | bullet_speed_factor / fire_rate_factor | 0.85 / 0.85 | `src/game/config/world_1/difficulty.py` |
-| written | 44 beats from the plan; waves, groups, enemies and HP after fill and density: to be measured again with the new kinds | `src/game/config/wave_plans.py` `level_plan(1, 2)`; density 2 (D-249) |
+| written | beats composed from the plan and its tier mix (D-283); waves, groups, enemies and HP after fill and density: to be measured again | `src/game/config/wave_plans.py` `level_plan(1, 2)`, `tier_mix(1, 2)`; density 2 (D-249) |
 | buildings | 1 466 (halves 681 / 785) | each level's seed, measured for this file |
 | mini boss / final boss | `breakwater` / `gull-mothership` | `src/game/config/world_1/bosses.py` |
 | runout | 80 s | same |

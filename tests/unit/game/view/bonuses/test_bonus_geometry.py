@@ -16,6 +16,7 @@ from game.view.bonuses.bonus_geometry import (
     _rect,
     build_bomb_badge,
     build_bonus_badge,
+    build_heal_badge,
     build_life_badge,
 )
 
@@ -24,6 +25,7 @@ FRAME = [0.9, 0.5, 0.1]
 CHEVRON = [1.0, 1.0, 0.0]
 BADGE = SimpleNamespace(inset=0.7, face=FACE, frame=FRAME, chevrons=CHEVRON)
 LIFE = SimpleNamespace(inset=0.6, rim=[1.0, 0.2, 0.2], heart=[1.0, 0.8, 0.8])
+HEAL = SimpleNamespace(inset=0.7, rim=[0.4, 0.1, 0.8], cross=[0.9, 0.8, 1.0])
 BOMB = record({"shell": [0.2, 0.2, 0.8], "highlight": [0.8, 0.8, 1.0], "letter": [1, 1, 1]})
 
 
@@ -115,3 +117,16 @@ def test_gfx_fx_12_bomb_badge_is_a_round_shell_with_a_highlight_and_a_letter_b()
     assert {tuple(BOMB.shell), tuple(BOMB.highlight), tuple(BOMB.letter)} <= rgb
     # Shell: 18 sides; highlight: 10; the letter: 6 strokes of 4 corners.
     assert len(geo.positions) // 3 == 18 + 10 + 6 * 4
+
+
+def test_gfx_fx_12_heal_badge_is_a_plus_sign_in_a_rim_with_a_lighter_one_in_front() -> None:
+    """GAME-BONUS-11: a plus sign, so it reads by its shape."""
+    geo = build_heal_badge(HEAL)
+    rgb = {tuple(geo.colors[4 * i : 4 * i + 3]) for i in range(len(geo.colors) // 4)}
+    assert {tuple(HEAL.rim), tuple(HEAL.cross)} <= rgb
+    rim = [p for p in points_of(geo) if p[2] == 0]
+    assert max(abs(x) for x, _, _ in rim) == pytest.approx(1)
+    assert max(abs(y) for _, y, _ in rim) == pytest.approx(1)
+    # No corner of the plus sign reaches the badge's corners.
+    assert all(min(abs(x), abs(y)) <= 0.36 + 1e-9 for x, y, _ in rim)
+    assert {round(z, 3) for _, _, z in points_of(geo)} == {0, -0.02}

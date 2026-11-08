@@ -216,31 +216,31 @@ level uses snow, falling ash, embers or an aurora. The levels' looks are in thei
 
 ### WLD-3-15 — Enemy roster · MUST
 
-World 3 uses the five kinds of tier 3 and no other (ENM-50; see [enemies](../../enemies/common.md)):
-[Phantom](../../enemies/phantom.md) (diver), [Spinner](../../enemies/spinner.md) (shooter),
-[Prism](../../enemies/prism.md) (laser), [Mortar](../../enemies/mortar.md) (missile launcher) and
-[Broodmother](../../enemies/broodmother.md) (launches Phantoms). It starts with three kinds, adds the
-Mortar in 3-2 and the Broodmother in 3-3:
+Tier 3 ([Phantom](../../enemies/phantom.md), [Spinner](../../enemies/spinner.md),
+[Prism](../../enemies/prism.md), [Mortar](../../enemies/mortar.md),
+[Broodmother](../../enemies/broodmother.md)) is 60 % of the ships of every World 3 level; the other
+40 % slides from tier 2 to tier 4 (ENM-50; see [enemies](../../enemies/common.md)). Every kind of each
+tier a level has comes in it:
 
-| Level | Enemy kinds |
-|-------|-------------|
-| 3-1 | Phantom, Spinner, Prism |
-| 3-2 | Phantom, Spinner, Prism, Mortar |
-| 3-3 to 3-5 | all five |
+| Level | Tier 2 | Tier 3 | Tier 4 |
+|-------|--------|--------|--------|
+| 3-1 | 40 % | 60 % | – |
+| 3-2 | 30 % | 60 % | 10 % |
+| 3-3 | 20 % | 60 % | 20 % |
+| 3-4 | 10 % | 60 % | 30 % |
+| 3-5 | – | 60 % | 40 % |
 
 **Acceptance criteria**
-- Unit test: the kinds of each World 3 level's waves (plan and filler) are exactly those of its row.
-- Unit test: no World 3 level uses a kind of another tier.
+- Unit test: the kinds of each World 3 level's waves are every kind of the tiers of its row, and no other.
+- Unit test: each tier's share of each World 3 level's ships is within 5 points of its row.
 
-*Sources: P09-R07, P05-R24, D-080, D-090, ENM-50.*
-
-**Gap:** the unit tests check only that the kinds exist, not the table.
+*Sources: P09-R07, P05-R24, D-080, D-090, ENM-50, D-283.*
 
 ### WLD-3-16 — Wave plans · SHOULD
 
 Each World 3 level's waves are composed from a wave plan, as in World 2: from 4 s to 292 s, a beat
-every gap seconds, the gap shrinking over the level, each beat the next phrase of the level's cycle
-(a kind, a number of groups, the seconds between groups, a side and a place on it, a spread), its
+every gap seconds, the gap shrinking over the level, each beat the next phrase of a kind of the
+tier furthest below its share (ENM-50; a kind, a number of groups, the seconds between groups, a side and a place on it, a spread), its
 groups growing over the level by the plan's growth. A filler of the level's divers and shooters fills the lulls (its
 largest gap shrinking over the level), and nothing new comes in the quiet stretch before each boss
 (see [level flow](../../gameplay/level-flow.md)). The waves are deterministic. Each level's plan

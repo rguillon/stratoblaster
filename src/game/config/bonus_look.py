@@ -3,10 +3,11 @@
 
 Weapon bonuses (GFX-FX-11; phase 6 review): a hexagon badge with chevrons pointing up (a level
 up), swinging from side to side over a pulsing halo; a ring flashes out where the ship picks one up
-(GFX-FX-13). GFX-FX-12: life bonuses are a heart, bomb bonuses a ball marked B, so each kind reads
-by its shape. Phase 14 (GFX-ART-07): all in the pickups' family, violet since D-231 (reviewer,
-2026-11-01: the enemies took the yellow and green; were an acid green badge, a mint heart and a
-green ball, and before phase 14 yellow, pink and orange).
+(GFX-FX-13). GFX-FX-12: life bonuses are a heart, bomb bonuses a ball marked B, heal bonuses a
+plus sign (GAME-BONUS-11), so each kind reads by its shape. Phase 14 (GFX-ART-07): all in the
+pickups' family, violet since D-231 (reviewer, 2026-11-01: the enemies took the yellow and green;
+were an acid green badge, a mint heart and a green ball, and before phase 14 yellow, pink and
+orange).
 
 Linear RGB, 0..1; sizes in logical pixels; times in seconds.
 """
@@ -54,6 +55,19 @@ BONUS_LOOK = record({
             [0.22, 0.09, 0.46],
             [0.1, 0.04, 0.2],
             [0.025, 0.01, 0.05],
+            [0, 0, 0],
+        ],
+    },
+    # A heal bonus (GFX-FX-12, GAME-BONUS-11): the plus sign's rim, the plus sign, how far in it is,
+    # its halo.
+    "heal": {
+        "rim": [0.4, 0.15, 0.85],
+        "cross": [0.85, 0.75, 1],
+        "inset": 0.7,
+        "halo": [
+            [0.24, 0.12, 0.5],
+            [0.11, 0.05, 0.22],
+            [0.03, 0.012, 0.06],
             [0, 0, 0],
         ],
     },

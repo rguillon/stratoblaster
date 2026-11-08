@@ -4,7 +4,7 @@
 
 The second level of World 4. From the town centre 4-1 ended on, the player flies over town streets,
 the ring road, mid-rise flats and a city park to mid-rise blocks among the first offices, at midday
-under an ash cloud with ash falling. Splitters and Hydras lead the waves and the Juggernaut comes in.
+under an ash cloud with ash falling. Tier 4 brings 70 % of the enemies, tier 3 30 %.
 Its mini boss is a chase. Its checkpoint is its mini boss (see [level flow](../../gameplay/level-flow.md)).
 
 ## Requirements
@@ -56,15 +56,14 @@ their brown-grey tint does not show, the clouds being plain), a dim, flat, yello
 
 ### LVL-4-2-04 — Enemy waves · MUST
 
-4-2 adds the Juggernaut to the kinds of 4-1 and uses Splitter, Hydra, Scissor and Juggernaut, no other. 4-2's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, with a beat every `wave_gap` seconds (4.2 s to 3 s) and
-groups growing by `wave_growth` (95 %) over the level (81 beats). The cycle of phrases, each a kind with its number of
-groups at the start: Splitter 2, Hydra 1, Scissor 1, Splitter 2, Juggernaut 1, Hydra 1, Splitter 2, Scissor 1, Hydra 1, Juggernaut 1. The filler draws Splitters and Hydras, at most `filler_gap` apart.
+4-2 mixes two tiers: tier 4 (the main one) is 70 % of its enemy ships and tier 3 30 % (each within 5 points; a Wasp group counts as its 5 ships, and the filler is counted with the beats). It brings every kind of both tiers, each at least once: tier 4's Splitter, Hydra, Juggernaut, Scissor and Hive; tier 3's Phantom, Spinner, Mortar, Prism and Broodmother, and no other kind. 4-2's waves follow its wave plan (WLD-4-18) from 4 s to 292 s, each wave followed by a breather of `wave_gap` seconds (2.3 s to 1.6 s), groups growing by `wave_growth` (95 %) over the level. Each beat goes to the tier furthest below its share of the ships so far (the filler that follows a beat counted with it). A tier's beats first bring each of its five kinds once (shooter, laser, missile, carrier, then diver; one group each outside the main tier), then follow the role cycle (shooter, diver, laser, diver, missile, shooter, diver, carrier, laser, shooter, missile). A wave brings no more groups than its tier lacks, the main tier's never fewer than written. The beats are composed around the quiet stretch before each boss, so none is dropped. The filler draws Splitters, Hydras, Phantoms and Spinners, at most `filler_gap` apart.
 
 **Acceptance criteria**
-- Unit test: 4-2's waves use exactly Splitter, Hydra, Scissor and Juggernaut, and each of them.
+- Unit test: 4-2's waves use only the kinds of tiers 4 and 3, and each of them.
+- Unit test: each tier's share of 4-2's enemy ships is within 5 points of its target.
 - Unit test: 4-2's waves are the same each time the level is built.
 
-*Sources: P10-R09, P05-R24, D-087, D-090, ENM-50.*
+*Sources: P10-R09, P05-R24, D-087, D-090, ENM-50, D-283.*
 
 ### LVL-4-2-05 — Difficulty · MUST
 
@@ -119,7 +118,7 @@ the two fights, the longest runout of World 4, as the chase runs the ground ahea
 | clouds | 0.9 / 0.9 (tint 0.8, 0.72, 0.62, not shown) | `LEVEL_4_2_LOOK`, `src/game/config/world_4/looks.py` |
 | ash_light | ambient × 1.04, 0.96, 0.74 | `ASH_LIGHT` |
 | ash | 0.5 | `LEVEL_4_2_LOOK.start.weather` |
-| wave_gap | 4.2 s → 3 s | `PLAN_4_2.gap`, `src/game/config/world_4/waves.py` |
+| wave_gap | 2.3 s → 1.6 s | `PLAN_4_2.gap`, `src/game/config/world_4/waves.py` |
 | wave_growth | 0.95 | `PLAN_4_2.growth` |
 | filler_gap | 3.2 s → 2.1 s | `WORLD_4_FILLERS["4-2"].maxGap` |
 | bullet speed / fire rate factors | 1.15 / 1.15 | `WORLD_4_DIFFICULTY["4-2"]` |

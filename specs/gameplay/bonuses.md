@@ -3,19 +3,19 @@
 > **Area:** Gameplay · **Prefix:** `GAME-BONUS` · **Related:** [weapons.md](weapons.md), [lives-and-damage.md](lives-and-damage.md), [bombs.md](bombs.md), [scoring.md](scoring.md), [screen.md](screen.md), [../graphics/effects.md](../graphics/effects.md), [../audio/sfx.md](../audio/sfx.md), [../bosses/common.md](../bosses/common.md), [../enemies/common.md](../enemies/common.md)
 
 Some destroyed enemies and boss parts drop a bonus. It falls down the screen and the ship picks it
-up by flying over it. There are three kinds: a weapon bonus raises the weapon in use by a level, a
-life bonus adds a life, a bomb bonus adds a bomb. This file gives what drops them, how they fall
+up by flying over it. There are four kinds: a weapon bonus raises the weapon in use by a level, a
+heal bonus gives back some health, a life bonus adds a life, a bomb bonus adds a bomb. This file gives what drops them, how they fall
 and are picked up, and what they give. Their look (one shape per kind) is in
 [graphics/effects.md](../graphics/effects.md); their sounds in [audio/sfx.md](../audio/sfx.md).
 
 ## Requirements
 
-### GAME-BONUS-01 — Three kinds · MUST
+### GAME-BONUS-01 — Four kinds · MUST
 
-There are three kinds of bonus: **weapon**, **life** and **bomb**. Each looks different from the
+There are four kinds of bonus: **weapon**, **heal** (GAME-BONUS-11), **life** and **bomb**. Each looks different from the
 others by its shape, not only its colour ([graphics/effects.md](../graphics/effects.md)).
 
-*Sources: GD-20, GD-31, D-049, P11-R07.*
+*Sources: GD-20, GD-31, D-049, P11-R07, D-282.*
 
 ### GAME-BONUS-02 — Weapon bonus chance · MUST
 
@@ -113,6 +113,7 @@ centre (more forgiving than the hitbox). Once the game is over, nothing is picke
 
 - A weapon bonus raises the weapon in use by one level, up to level 5 ([weapons.md](weapons.md)
   GAME-WPN-14).
+- A heal bonus gives back `heal_amount` (20 %) of the ship's full health (GAME-BONUS-11).
 - A life bonus adds one life ([lives-and-damage.md](lives-and-damage.md)).
 - A bomb bonus adds one bomb ([bombs.md](bombs.md)).
 
@@ -136,6 +137,25 @@ does not happen in play.
 
 *Sources: P11-R07, D-154.*
 
+### GAME-BONUS-11 — Heal bonus · MUST
+
+`heal_share` (75 %) of the weapon bonuses drop as heal bonuses instead, wherever a weapon bonus
+drops (enemies, boss parts and cores). The weapon bonus is drawn first as before (GAME-BONUS-02,
+GAME-BONUS-04); a second draw, from a random source of its own, then turns it into a heal bonus, so
+which enemies drop a bonus is the same as without heal bonuses. A heal bonus gives back
+`heal_amount` (20 %) of the ship's full health ([lives-and-damage.md](lives-and-damage.md)
+GAME-LIFE-01), never above full; at full health, or once the game is over, it gives nothing.
+
+**Acceptance criteria**
+- Given a weapon bonus that drops, when its heal draw is under 75 %, then a heal bonus drops in its
+  place; otherwise the weapon bonus (unit test).
+- Given the same enemies destroyed with and without heal bonuses, then the same ones drop a bonus
+  (unit test).
+- Given the Balanced ship at 50 of 100 health, when a heal bonus is picked up, then it has 70; at
+  90, 100 (unit test).
+
+*Sources: D-282.*
+
 ## Tunable values
 
 | Name | Value | Notes |
@@ -145,10 +165,11 @@ does not happen in play.
 | life_chance / bomb_chance | 1 % / 3 % | `BONUS_RULES["special"]` |
 | part drop chance | 50 % (mini boss parts), 60 % (final boss parts) | `src/game/config/bosses/boss_kit.py` `part` (`dropChance` default 0.5), `final_bosses.py` `fpart` (0.6); per part in each boss's data |
 | final boss core drop | 100 % | `coreDrop` 1 in each final boss's data |
+| heal_share / heal_amount | 75 % of the weapon bonuses / 20 % of the full health | `BONUS_RULES["heal"]` |
 | fall_speed | 45 px/s | `BONUS_RULES["fallSpeed"]` |
 | pickup_radius | 22 px | `BONUS_RULES["pickupRadius"]` |
 | overflow_points | life 5 000, bomb 2 000 | `src/game/config/scoring.py` `SCORING["overflow"]` (unused while there is no maximum) |
-| random sources | the run's seed + 1 (weapon draws), + 2 (life and bomb draws) | `src/core/systems/level_run.py` `_player_systems` |
+| random sources | the run's seed + 1 (weapon draws), + 2 (life and bomb draws), + 3 (heal draws) | `src/core/systems/level_run.py` `_player_systems` |
 
 ## Notes
 

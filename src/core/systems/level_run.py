@@ -69,7 +69,8 @@ def _player_systems(
     """Return the bonuses, hull and bombs of a run, each only when its rules are given.
 
     The bonuses draw from the run's seed (GAME-BONUS-05); the life and bomb bonuses from a source of
-    their own (GAME-BONUS-03), so the weapon bonuses drop as before.
+    their own (GAME-BONUS-03), and the heal bonuses from another (GAME-BONUS-11), so the weapon
+    bonus draws stay as before.
     """
     seed = options.seed
     supplies = options.start_supplies
@@ -81,6 +82,7 @@ def _player_systems(
             reach,
             options.cull_margin,
             create_rng(seed + 2),
+            create_rng(seed + 3),
         )
     hull: PlayerHull | None = None
     if options.hull is not None:
@@ -396,11 +398,17 @@ class LevelRun:
         """Give what a bonus of `kind` gives.
 
         A weapon bonus raises the weapon in use by a level, up to its last (the new level fires at
-        once, GAME-WPN-14); a life or a bomb bonus adds one (GAME-BONUS-09), or scores its points
-        at the most (GAME-BONUS-10).
+        once, GAME-WPN-14); a heal bonus gives back a share of the health (GAME-BONUS-11); a life
+        or a bomb bonus adds one (GAME-BONUS-09), or scores its points at the most (GAME-BONUS-10).
         """
         if kind == "weapon":
             self.arsenal.level_up(1)
+            return
+        if kind == "heal":
+            rules = self._options.bonuses
+            heal = rules.heal if rules is not None else None
+            if heal is not None and self.hull is not None:
+                self.hull.heal(heal.amount)
             return
         if kind == "life":
             added = self.hull.add_life() if self.hull is not None else None

@@ -1175,3 +1175,46 @@
 - **Consequences:** boss fight times with the guns are unchanged; with the laser they get shorter
   at every level, with the missiles longer. GAME-WPN-12's test checks the exact ratios.
 - **Status:** Proposed
+
+## D-282 — Heal bonus: 75 % of the weapon bonuses give back 20 % health (GAME-BONUS-11)
+- **Context:** the owner asked to "add a Heal bonus that restore 20% of the player's health, replace
+  75% of the current weapon upgrade bonus with this new one".
+- **Decision:** a fourth bonus kind, `heal`. Every weapon bonus that drops (enemies, boss parts and
+  cores, the final boss's sure drop included) turns into a heal bonus with 75 % chance, drawn from a
+  source of its own (the run's seed + 3) after the weapon draw, so which enemies drop a bonus does
+  not change (GAME-BONUS-05). It gives back 20 % of the ship's full health (20 for the Balanced, 28
+  for the Heavy, 16 for the Light), never above full. It looks like a violet plus sign (its own
+  shape, GFX-FX-12) and sounds like the life bonus's chime pitched up 4 semitones (`heal-bonus`,
+  made from the same CC0 file).
+- **Alternatives considered:** keeping the boss drops as weapon bonuses (fewer level-ups lost);
+  a heal picked up at full health scoring points (as GAME-BONUS-10 does for lives and bombs).
+- **Consequences:** a quarter of the weapon level-ups: from about 8 (1-1) to 23 (1-5) weapon bonuses
+  per World 1 level (D-049) down to about 2 to 6; reaching level 5 takes several levels.
+- **Status:** Proposed
+
+## D-283 — Each level mixes enemy tiers by share of ships (ENM-50)
+- **Context:** the owner asked: "1-1 shall have 80% of tier 1 enemies and 20% of tier 2, gradually
+  more until 1-5 60% tier 1, 40% tier 2. 2-1 60% tier 2, 40% tier 1, 2-5 60% tier 2 40% tier 3 and so
+  on. Each level shall have at least one example of each ship from each tier it has." Until then
+  World N used only tier N, bringing its kinds in one role at a time (D-255).
+- **Decision (owner's choices on the open points):** the share counts enemy ships (a Wasp group is
+  5, filler included, carrier launches not). Worlds 2 and 3 keep their own tier at 60 % and slide the
+  other 40 % linearly from the tier below to the tier above (10 points a level, so the middle levels
+  mix three tiers); World 4 goes from 60 / 40 % (tier 4 / tier 3) to tier 4 only in 4-5; World 1 from
+  80 / 20 % to 60 / 40 %. `tier_mix` gives each level's mix. `compose_beats` gives each beat to the
+  tier furthest below its share (the filler that will follow a beat counted with it); each tier
+  first brings its five kinds once (shooter, laser, missile, carrier, diver: the diver last, its
+  waves being the biggest; a smaller tier one group each), then follows the role cycle. A wave
+  brings no more groups than its tier lacks (the main tier never fewer than written), so a 10 % tier
+  comes as small groups. The level composes its beats around the 10 s quiet stretch before each boss
+  (`plan_beats`), so no beat bringing a kind is dropped there. The filler is the divers and
+  shooters of every tier of the level; 1-1's stays the Hornet only (WLD-1-25: the Wasp shoots).
+  Measured shares are within 5 points of the targets (unit test).
+- **Consequences:** enemy HP per level (waves and filler, summed health) before → after, in
+  thousands: World 1 6.6–11.4 → 7.8–11.0 (harder: tier 2 kinds and every tier 1 kind from 1-1);
+  World 2 20–24 → 14–22 (2-1 lighter with tier 1); World 3 17–22 → 19–30; World 4 41–50 → 27–40
+  (smaller waves: tier 4 waves are capped to the share too). The progression is steadier across
+  worlds; World 4 is easier than before and may need its size factor raised. Ship counts per level
+  change too (1-1 273 → 152, heavier kinds taking beats from Hornet and Scout waves). The per-level
+  phrase tables in the level files no longer apply.
+- **Status:** Proposed

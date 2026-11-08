@@ -10,6 +10,9 @@ them (GAME-BONUS-07); the ship picks one up within `pickupRadius` (GAME-BONUS-08
 GAME-BONUS-03: a destroyed enemy may drop a life (1 %) or a bomb (3 %) bonus instead, drawn first,
 so it never drops two; a mini boss always drops a life (GAME-BONUS-04). At the most, they score
 points (GAME-BONUS-10).
+
+GAME-BONUS-11 (owner, 2026-11-08): 75 % of the weapon bonuses drop as heal bonuses instead, each
+giving back 20 % of the ship's full health.
 """
 
 from game.config.record import record
@@ -21,4 +24,5 @@ BONUS_RULES = record({
     "pickupRadius": 22,
     "special": {"life": 0.01, "bomb": 0.03},
     "overflowPoints": SCORING.overflow,
+    "heal": {"share": 0.75, "amount": 0.2},
 })
