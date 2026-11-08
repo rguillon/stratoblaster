@@ -4,7 +4,17 @@
 from pathlib import Path
 
 import torch
-from ai.brain import FORMAT, Batch, Brain, BrainShape, LearnStats, load_brain, save_brain
+from ai.brain import (
+    FORMAT,
+    SHAPES,
+    SMALL_SHAPE,
+    Batch,
+    Brain,
+    BrainShape,
+    LearnStats,
+    load_brain,
+    save_brain,
+)
 from ai.game_env import MOVES, Action, EpisodeSetup, GameEnv
 from ai.observation import CH, N_CHANNELS, observe
 
@@ -126,3 +136,38 @@ def test_d_275_a_brain_saved_with_a_gru_cell_loads_into_the_gru(tmp_path: Path) 
     loaded, _ = load_brain(path)
     for name, value in brain.state_dict().items():
         assert torch.equal(value, loaded.state_dict()[name])
+
+
+def test_d_302_the_small_brain_has_under_a_hundred_thousand_weights() -> None:
+    big = sum(p.numel() for p in Brain(SHAPES["big"]).parameters())
+    small = sum(p.numel() for p in Brain(SMALL_SHAPE).parameters())
+    assert small < 100_000
+    assert big > 30 * small
+
+
+def test_d_302_the_small_brain_decides_for_a_batch() -> None:
+    brain = Brain(SMALL_SHAPE)
+    decision, memory = brain(_batch(3), brain.initial_memory(3))
+    assert decision.move.shape == (3, len(MOVES))
+    assert memory.shape == (3, SMALL_SHAPE.hidden)
+
+
+def test_d_302_a_small_brain_loads_with_its_shape(tmp_path: Path) -> None:
+    path = tmp_path / "small.pt"
+    save_brain(Brain(SMALL_SHAPE), LearnStats(), path)
+    loaded, _ = load_brain(path)
+    assert loaded.shape == SMALL_SHAPE
+
+
+def test_d_302_a_brain_saved_before_its_convolutions_were_given_has_the_old_two(
+    tmp_path: Path,
+) -> None:
+    brain = Brain(SMALL)
+    path = tmp_path / "old.pt"
+    shape = {"hidden": 32, "field_features": 16, "fovea_features": 16, "state_features": 8}
+    stats = {"updates": 1, "decisions": 0, "episodes": 0, "hours": 0.0, "history": []}
+    torch.save(
+        {"format": FORMAT, "shape": shape, "weights": brain.state_dict(), "stats": stats}, path
+    )
+    loaded, _ = load_brain(path)
+    assert loaded.shape.convs == (32, 64)

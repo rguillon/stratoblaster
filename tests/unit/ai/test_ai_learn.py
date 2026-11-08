@@ -10,7 +10,7 @@ import numpy as np
 import pytest
 import torch
 from ai import learn as learn_module
-from ai.brain import Brain, BrainShape, LearnStats, save_brain
+from ai.brain import SMALL_SHAPE, Brain, BrainShape, LearnStats, save_brain
 from ai.game_env import LEVEL_IDS, SHIP_IDS, WEAPON_IDS, EpisodeSetup
 from ai.game_env import level_seconds as seconds_of
 from ai.learn import (
@@ -140,6 +140,15 @@ def test_d_271_a_log_of_other_columns_is_moved_aside(
     lines = log.read_text().splitlines()
     assert lines[0] == ",".join(LOG_COLUMNS)
     assert len(lines) == 3
+
+
+def test_d_302_a_new_brain_has_the_shape_asked_for(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(learn_module, "BRAIN_FILE", tmp_path / "brain.pt")
+    monkeypatch.setattr(learn_module, "TRAINER_FILE", tmp_path / "trainer.pt")
+    learner = Learner(Settings(), fresh=True, shape=SMALL_SHAPE)
+    assert learner.brain.shape == SMALL_SHAPE
 
 
 def test_d_301_the_workers_play_a_round_and_the_learner_learns_from_it(

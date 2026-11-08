@@ -32,12 +32,25 @@ FORMAT = 1
 
 @dataclass
 class BrainShape:
-    """The sizes of the network's layers."""
+    """The sizes of the network's layers.
+
+    `convs`: the filters of each convolution of the grid encoders, each of stride 2 (a brain saved
+    before had two, of 32 and 64 filters: the default).
+    """
 
     hidden: int = 384
     field_features: int = 256
     fovea_features: int = 256
     state_features: int = 64
+    convs: tuple[int, ...] = (32, 64)
+
+
+# A brain about 36 times smaller (70 thousand weights against 2.5 million, D-302): three
+# convolutions of 16 filters bring each grid down to 3 x 3 before its features, and a memory of 64.
+SMALL_SHAPE = BrainShape(
+    hidden=64, field_features=64, fovea_features=64, state_features=32, convs=(16, 16, 16)
+)
+SHAPES = {"big": BrainShape(), "small": SMALL_SHAPE}
 
 
 @dataclass
@@ -58,24 +71,22 @@ class LearnStats:
     history: list[dict[str, float]] = field(default_factory=list)
 
 
-def _conv_out(size: int) -> int:
-    """Size after two convolutions of stride 2 (kernel 3, padding 1)."""
-    for _ in range(2):
+def _conv_out(size: int, convs: int) -> int:
+    """Size after `convs` convolutions of stride 2 (kernel 3, padding 1)."""
+    for _ in range(convs):
         size = (size + 1) // 2
     return size
 
 
-def _encoder(rows: int, cols: int, features: int) -> nn.Sequential:
-    flat = 64 * _conv_out(rows) * _conv_out(cols)
-    return nn.Sequential(
-        nn.Conv2d(N_CHANNELS, 32, 3, stride=2, padding=1),
-        nn.ReLU(),
-        nn.Conv2d(32, 64, 3, stride=2, padding=1),
-        nn.ReLU(),
-        nn.Flatten(),
-        nn.Linear(flat, features),
-        nn.ReLU(),
-    )
+def _encoder(rows: int, cols: int, features: int, convs: tuple[int, ...]) -> nn.Sequential:
+    layers: list[nn.Module] = []
+    channels = N_CHANNELS
+    for filters in convs:
+        layers += [nn.Conv2d(channels, filters, 3, stride=2, padding=1), nn.ReLU()]
+        channels = filters
+    flat = channels * _conv_out(rows, len(convs)) * _conv_out(cols, len(convs))
+    layers += [nn.Flatten(), nn.Linear(flat, features), nn.ReLU()]
+    return nn.Sequential(*layers)
 
 
 class Batch:
@@ -167,8 +178,8 @@ class Brain(nn.Module):
         super().__init__()
         self.shape = shape if shape is not None else BrainShape()
         s = self.shape
-        self.field_net = _encoder(FIELD_ROWS, FIELD_COLS, s.field_features)
-        self.fovea_net = _encoder(FOVEA_SIZE, FOVEA_SIZE, s.fovea_features)
+        self.field_net = _encoder(FIELD_ROWS, FIELD_COLS, s.field_features, s.convs)
+        self.fovea_net = _encoder(FOVEA_SIZE, FOVEA_SIZE, s.fovea_features, s.convs)
         self.state_net = nn.Sequential(nn.Linear(N_STATE, s.state_features), nn.ReLU())
         joined = s.field_features + s.fovea_features + s.state_features
         self.trunk = nn.Sequential(nn.Linear(joined, s.hidden), nn.ReLU())
@@ -307,7 +318,10 @@ def load_brain(path: Path = BRAIN_FILE) -> tuple[Brain, LearnStats]:
     if saved.get("format") != FORMAT:
         msg = f"{path}: unknown brain format {saved.get('format')}"
         raise ValueError(msg)
-    brain = Brain(BrainShape(**saved["shape"]))
+    shape = dict(saved["shape"])
+    if "convs" in shape:
+        shape["convs"] = tuple(shape["convs"])
+    brain = Brain(BrainShape(**shape))
     weights = saved["weights"]
     widen_inputs(weights)
     _cell_to_gru(weights)

@@ -46,6 +46,7 @@ from ai import DATA, REPO_ROOT, STUBS_VARIABLE, transcrypt_stubs
 from ai.brain import (
     BEST_BRAIN_FILE,
     BRAIN_FILE,
+    SHAPES,
     TRAINER_FILE,
     Batch,
     Brain,
@@ -181,7 +182,8 @@ def _fits(optimizer: dict[str, Any], brain: Brain) -> bool:
 class Learner:
     """The brain, its optimiser and the PPO update."""
 
-    def __init__(self, settings: Settings, fresh: bool) -> None:
+    def __init__(self, settings: Settings, fresh: bool, shape: BrainShape | None = None) -> None:
+        """`shape`: the shape of a new brain (a saved one keeps its own)."""
         self.settings = settings
         self.device = torch.device(settings.device)
         if BRAIN_FILE.exists() and not fresh:
@@ -190,11 +192,11 @@ class Learner:
             except IncompatibleBrainError as error:
                 print(f"{error}\nStarting a new brain instead.")
                 fresh = True
-                self.brain, self.stats = Brain(BrainShape()), LearnStats()
+                self.brain, self.stats = Brain(shape or BrainShape()), LearnStats()
             else:
                 print(f"Resuming the brain of {BRAIN_FILE} ({self.stats.updates} updates)")
         else:
-            self.brain, self.stats = Brain(BrainShape()), LearnStats()
+            self.brain, self.stats = Brain(shape or BrainShape()), LearnStats()
             print("Starting a new brain")
         self.brain.to(self.device)
         self.optimizer = torch.optim.Adam(
@@ -628,14 +630,16 @@ class Workers:
         shutil.rmtree(self._dir, ignore_errors=True)
 
 
-def learn(settings: Settings, minutes: float, fresh: bool, seed: int) -> None:
+def learn(
+    settings: Settings, minutes: float, fresh: bool, seed: int, shape: BrainShape | None = None
+) -> None:
     """Learn for `minutes` (or until Ctrl-C), saving the brain as it goes."""
     if settings.device == "cuda":
         torch.backends.cudnn.benchmark = True
         torch.set_num_threads(2)
     else:
         torch.set_num_threads(max(1, CPUS - settings.workers - settings.server_threads))
-    learner = Learner(settings, fresh)
+    learner = Learner(settings, fresh, shape)
     workers = Workers(settings, learner.brain.shape, seed + learner.stats.updates)
     _introduce(settings, minutes)
     stop = _StopOnCtrlC()
@@ -804,6 +808,12 @@ def main(argv: list[str] | None = None) -> None:
         help="the Python the workers play in (auto: PyPy if installed, else this one)",
     )
     parser.add_argument("--fresh", action="store_true", help="start a new brain")
+    parser.add_argument(
+        "--shape",
+        choices=tuple(SHAPES),
+        default="big",
+        help="the size of a new brain (a saved one keeps its own; D-302)",
+    )
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument(
         "--report-seconds", type=float, default=10.0, help="how often to say how the games went"
@@ -825,7 +835,7 @@ def main(argv: list[str] | None = None) -> None:
             flush=True,
         )
     given["worker_python"] = worker_python
-    learn(replace(settings, **given), args.minutes, args.fresh, args.seed)
+    learn(replace(settings, **given), args.minutes, args.fresh, args.seed, SHAPES[args.shape])
 
 
 if __name__ == "__main__":

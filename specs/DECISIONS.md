@@ -1640,3 +1640,24 @@
   limit, no longer the workers. On a CPU only, the learner is the limit. `make learn` installs
   PyPy 3.12 with uv.
 - **Status:** Proposed
+
+### D-302 — A small brain to try: 70 thousand weights instead of 2.2 million
+- **Date:** 2026-11-08
+- **Requirements:** none (requested by the human: a brain file of tens of kilobytes, like another
+  game's 64 KB `brain.npz`, instead of about 10 MB). Amends D-299.
+- **Context:** the brain had 2.24 million weights (about 9 MB in float32). Most of them were in
+  the two Linear layers after the grid encoders' convolutions (the field and the fovea, still
+  6 x 5 and 6 x 6 cells of 64 filters after two convolutions of stride 2) and in the 384-wide GRU.
+- **Decision:**
+  - `BrainShape.convs` gives the filters of each convolution of the grid encoders (all of stride
+    2). A brain saved without it has the two convolutions of 32 and 64 filters it had.
+  - `SMALL_SHAPE`: three convolutions of 16 filters (each grid down to 3 x 3 before its Linear),
+    64 features for the field, 64 for the fovea, 32 for the state, a memory of 64. It has 69,742
+    weights (about 136 KB in float16), 32 times fewer than the big one.
+  - `make learn LEARN_ARGS="--fresh --shape small"` starts a small brain (`--shape big`, the
+    default, the big one). A saved brain keeps its own shape when learning resumes; `make rate` and
+    `make serve-ai` load either.
+- **Consequences:** an experiment: whether the small brain plays nearly as well as the big one
+  after as many hours of learning is to be measured (`make rate`). If it does, the brain could be
+  saved as float16 weights to make its file smaller still.
+- **Status:** Proposed
