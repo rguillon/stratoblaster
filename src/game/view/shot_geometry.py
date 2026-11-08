@@ -157,3 +157,28 @@ def build_glow_bar(colors: Sequence[Rgb]) -> ColoredGeometry:
             a = (col - 1) * 2
             geo.indices.extend([a, a + 2, a + 3, a, a + 3, a + 1])
     return geo
+
+
+def build_glow_ramp(colors: Sequence[Rgb]) -> ColoredGeometry:
+    """Return a glow bar (see `build_glow_bar`) that fades in along its length.
+
+    Black (nothing, added on) at Y = 0, its colours at Y = 1: put under the start of a beam, it
+    fades the beam in instead of cutting it off square.
+    """
+    geo = build_glow_bar(colors)
+    for vertex in range(0, len(geo.colors) // 4, 2):
+        for k in range(3):
+            geo.colors[4 * vertex + k] = 0
+    return geo
+
+
+def bar_alphas(alphas: Sequence[float], ramp: bool = False) -> list[float]:
+    """Return the alpha of each vertex of a glow bar whose colour `i` has `alphas[i]`.
+
+    In the bar's vertex order (each column bottom then top). A `ramp` is transparent at its bottom.
+    """
+    out: list[float] = []
+    for c in _mirrored_columns(len(alphas)):
+        out.append(0 if ramp else alphas[c])
+        out.append(alphas[c])
+    return out

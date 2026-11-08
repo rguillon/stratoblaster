@@ -47,6 +47,20 @@ SHOT_LOOK = record({
         "widthBonus": 8,
         # Visual width relative to the drawn width (the glow spills around the core).
         "glowWidth": 1.8,
+        # Owner, 2026-11-08 ("the horizontal line is ugly"): the beam fades in over this many px
+        # from where it leaves the ship, under the base glow, instead of starting square.
+        "fadeIn": 18,
+        # Owner, 2026-11-08 ("too transparent"): a blended core under the additive glow, as wide as
+        # the drawn width, hiding the ground behind it as much as its alpha says (centre to edge).
+        "core": {
+            "colors": [
+                [0.9, 0.97, 1],
+                [0.4, 0.7, 1],
+                [0.1, 0.3, 0.9],
+                [0.03, 0.1, 0.45],
+            ],
+            "alphas": [0.95, 0.8, 0.45, 0],
+        },
         # Centre line to edge. Owner, 2026-11-08: more intense (was [0.55, 0.8, 1],
         # [0.12, 0.42, 1], [0.02, 0.1, 0.55]).
         "colors": [

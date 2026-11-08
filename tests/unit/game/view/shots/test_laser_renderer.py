@@ -11,6 +11,7 @@ from game.config.shot_look import SHOT_LOOK
 from game.view.shots import laser_renderer
 from game.view.shots.laser_renderer import (
     LOOK,
+    bar_spans,
     create_laser_renderer,
     drawn_width,
     place_bars,
@@ -41,27 +42,31 @@ def seg(y0: Any, y1: Any, x: Any = 0.0, width: Any = 8.0, hit: Any = False) -> A
     return SimpleNamespace(x=x, y0=y0, y1=y1, width=width, hit=hit)
 
 
-def test_gfx_shot_03_one_bar_per_segment_of_the_beam_from_y0_to_y1() -> None:
-    pool = Pool()
-    place_bars(pool, [seg(0, 10, x=3.0, width=8.0), seg(10, 30, x=4.0, width=4.0)], 1.0)
-    assert pool.shown == [2]
-    first, second = pool.meshes
-    first.position.set.assert_called_with(3.0, 0, 0)
-    first.scaling.set.assert_called_with(drawn_width(8.0) * LOOK.glowWidth, 10, 1)
-    second.position.set.assert_called_with(4.0, 10, 0)
-    second.scaling.set.assert_called_with(drawn_width(4.0) * LOOK.glowWidth, 20, 1)
+def test_gfx_shot_03_the_first_segment_fades_in_then_each_segment_is_a_bar() -> None:
+    """Owner, 2026-11-08: no square start at the ship; a ramp `fadeIn` long, then the bar."""
+    spans = bar_spans([seg(0, 100, x=3.0, width=8.0), seg(100, 130, x=4.0, width=4.0)])
+    fade = LOOK.fadeIn
+    assert spans == [
+        [3.0, 0, fade, drawn_width(8.0), 1],
+        [3.0, fade, 100, drawn_width(8.0), 0],
+        [4.0, 100, 130, drawn_width(4.0), 0],
+    ]
 
 
-def test_gfx_shot_03_level_1_is_drawn_as_wide_as_the_old_level_5() -> None:
-    """Owner, 2026-11-08: the 4 px level 1 beam is drawn like the old 12 px level 5 one."""
-    assert drawn_width(4.0) == 12.0
-    assert drawn_width(12.0) > drawn_width(4.0)
+def test_gfx_shot_03_a_first_segment_shorter_than_the_fade_is_all_ramp() -> None:
+    assert bar_spans([seg(0, 5)]) == [[0.0, 0, 5, drawn_width(8.0), 1]]
 
 
-def test_gfx_shot_03_the_bar_wobbles_with_the_flicker() -> None:
-    pool = Pool()
-    place_bars(pool, [seg(0, 10, width=8.0)], 1.5)
-    pool.meshes[0].scaling.set.assert_called_with(drawn_width(8.0) * LOOK.glowWidth * 1.5, 10, 1)
+def test_gfx_shot_03_bars_and_ramps_are_placed_from_their_pools() -> None:
+    bars = Pool()
+    ramps = Pool()
+    place_bars(bars, ramps, [seg(0, 100, x=3.0, width=8.0)], 1.5, 0.05)
+    assert bars.shown == [1]
+    assert ramps.shown == [1]
+    ramps.meshes[0].position.set.assert_called_with(3.0, 0, 0.05)
+    ramps.meshes[0].scaling.set.assert_called_with(drawn_width(8.0) * 1.5, LOOK.fadeIn, 1)
+    bars.meshes[0].position.set.assert_called_with(3.0, LOOK.fadeIn, 0.05)
+    bars.meshes[0].scaling.set.assert_called_with(drawn_width(8.0) * 1.5, 100 - LOOK.fadeIn, 1)
 
 
 def test_gfx_shot_03_a_contact_glows_only_where_the_beam_stops_on_a_target() -> None:
@@ -113,6 +118,9 @@ def test_gfx_shot_03_the_laser_renderer_draws_a_frame_and_disposes(monkeypatch: 
         return templates[-1]
 
     monkeypatch.setattr(laser_renderer, "additive_template", make)
+    monkeypatch.setattr(
+        laser_renderer, "blended_template", lambda name, geo, _alphas, scene: make(name, geo, scene)
+    )
     monkeypatch.setattr(laser_renderer, "NodePool", lambda _create: Pool())
     handle = create_laser_renderer(MagicMock())
     frame = SimpleNamespace(
@@ -120,7 +128,8 @@ def test_gfx_shot_03_the_laser_renderer_draws_a_frame_and_disposes(monkeypatch: 
         dt_seconds=0.02,
     )
     handle["sync"](frame)
-    assert len(templates) == 4
+    # Glow bar and ramp, core bar and ramp, contact, particle and base glow.
+    assert len(templates) == 7
     handle["dispose"]()
     assert all(t.dispose.called for t in templates)
     assert SHOT_LOOK.laser is LOOK
@@ -131,12 +140,8 @@ def test_the_renderer_object_is_made_in_javascript_only() -> None:
     assert laser_renderer._shot_renderer(lambda _frame: None, lambda: None) is None
 
 
-def test_gfx_shot_03_a_missing_segment_leaves_its_pooled_bar_as_it_was() -> None:
-    pool = Pool()
-    place_bars(pool, [None, seg(0, 10, x=1.0)], 1.0)
-    hole, drawn = pool.meshes
-    hole.position.set.assert_not_called()
-    drawn.position.set.assert_called_once_with(1.0, 0, 0)
+def test_gfx_shot_03_a_missing_segment_draws_nothing() -> None:
+    assert bar_spans([None, seg(10, 30, x=1.0)]) == [[1.0, 10, 30, drawn_width(8.0), 0]]
 
 
 def test_gfx_shot_03_a_missing_particle_leaves_its_pooled_disc_as_it_was() -> None:

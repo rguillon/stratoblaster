@@ -1218,3 +1218,17 @@
   change too (1-1 273 → 152, heavier kinds taking beats from Hornet and Scout waves). The per-level
   phrase tables in the level files no longer apply.
 - **Status:** Proposed
+
+## D-284 — Boss lasers follow the player at 12°/s, from every turret (BOSS-31)
+- **Context:** the owner: "lower the rotating speed of the boss laser following the player,
+  currently it's impossible to evade them". The laser rate (20°/s) applied only to turrets flagged
+  as laser turrets (`turretLaser`, or a mount of kind `laser`); a laser fired from any other turret
+  (a gun turret, BOSS-58 mounts) followed the player at the guns' 150°/s during its warning line and,
+  for a sweeping beam, while it fired.
+- **Decision:** every boss turret gets the laser rate, so while a laser of it shows it turns at
+  `boss_laser_turn` whatever else it carries; the rate goes from 20 to 12°/s (about 63 px/s across
+  at 300 px). The guns keep turning at 150°/s when no laser shows. The `turretLaser` flag in the
+  boss data no longer changes anything.
+- **Consequences:** sweeping beams and laser warning lines can be outrun everywhere; aimed lasers
+  land a little further from a moving player.
+- **Status:** Proposed

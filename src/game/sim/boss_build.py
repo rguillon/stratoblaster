@@ -181,8 +181,11 @@ def mount_specs(design: ConfigRecord) -> list[BossMountSpec]:
     for mount in opt(design.mounts) or []:
         turret = None
         if mount.turret:
-            laser_turn = BOSS_TIMING.laserTurnDeg if mount.kind == "laser" else None
-            turret = BossTurretSpec(mount.at[0], mount.at[1], BOSS_TIMING.turretTurnDeg, laser_turn)
+            # Any turret follows the player at the laser rate while a laser of it shows (BOSS-31,
+            # D-284): a laser fired from a gun turret no longer turns at the guns' rate.
+            turret = BossTurretSpec(
+                mount.at[0], mount.at[1], BOSS_TIMING.turretTurnDeg, BOSS_TIMING.laserTurnDeg
+            )
         result.append(
             BossMountSpec(mount.id, mount.piece, mount.kind, mount_muzzles(mount), turret)
         )
@@ -321,12 +324,12 @@ def _turret_specs(design: ConfigRecord) -> Any:
         guns = design.guns[piece]
         if opt(guns.turret) is None:
             continue
-        laser_turn = BOSS_TIMING.laserTurnDeg if guns.turretLaser else None
+        # Its lasers, whichever turret they fire from, follow at the laser rate (D-284).
         result[piece] = BossTurretSpec(
             guns.turret[0],
             guns.turret[1],
             BOSS_TIMING.turretTurnDeg,
-            laser_turn,
+            BOSS_TIMING.laserTurnDeg,
         )
     return result
 
