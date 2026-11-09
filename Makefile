@@ -179,8 +179,8 @@ learn:
 rate:
 	$(AI_RUN) ai.rate $(RATE_ARGS)
 
-# Tune a level until the brain rates it at TARGET % (D-305): its bullet speed, fire rate and boss
-# health together, written into src/game/config/world_N/difficulty.py.
+# Tune how many enemies a level brings until the brain rates it at TARGET % (D-305, D-307),
+# written into src/game/config/level_enemies.py.
 # `make adjust-level LEVEL=4-4 TARGET=90`; ADJUST_ARGS: more options (`... ai.adjust --help`).
 adjust-level:
 	$(if $(and $(LEVEL),$(TARGET)),,$(error usage: make adjust-level LEVEL=4-4 TARGET=90))

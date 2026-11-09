@@ -268,7 +268,7 @@ class Boss(Enemy):
 
         This is its health bar's full length (BOSS-54).
         """
-        total = 0 if self.core_unarmed else self.core.max_health
+        total = 0 if self.core_unarmed else self.stats.health
         for part in self.parts:
             total += part.max_health
         return total
@@ -294,16 +294,6 @@ class Boss(Enemy):
         if self.vulnerable and (self.core_shielded or self.core_unarmed):
             return self._intact_parts
         return self._targets
-
-    def scale_health(self, factor: float) -> None:
-        """Give its core and every part `factor` times their health, before it arrives.
-
-        A level's boss health (D-305).
-        """
-        self._core_health = self._core_health * factor
-        self.core.max_health = self.core.max_health * factor
-        for part in self.parts:
-            part.scale_health(factor)
 
     def hurt_core(self, value: float) -> None:
         """Set the core's health; at 0 the boss starts blowing up. Used by its `core`."""

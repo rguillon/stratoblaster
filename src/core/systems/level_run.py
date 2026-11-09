@@ -160,7 +160,7 @@ class LevelRun:
             lambda: EnemySpawnArea(screen.width, screen.height, random, None, reach),
             lambda boss: self.enemies.add(boss),
         )
-        self.fights = BossFights(bosses, boss_kinds, boss_rules, hooks, difficulty.boss_health)
+        self.fights = BossFights(bosses, boss_kinds, boss_rules, hooks)
         if options.start_weapons is not None:
             self.arsenal.restore(options.start_weapons)
         if options.checkpoint is not None:

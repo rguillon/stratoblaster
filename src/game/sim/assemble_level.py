@@ -15,42 +15,27 @@ from game.sim.scenery_build import scenery_level
 # __pragma__ ("skip")
 from typing import Any
 
-# Config records (`game/config/record.py`), typed as Any there: a level's scenery, beats, filler,
-# difficulty and bosses.
+# Config records (`game/config/record.py`), typed as Any there: a level's scenery, beats, filler
+# and bosses.
 Beat = Any
 WavePlan = Any
 Filler = Any
 LevelBosses = Any
-Difficulty = Any
 ScenerySource = Any
 # __pragma__ ("noskip")
 
 
 class WorldTables:
-    """What a world gives each of its levels, by level id: its difficulty.
+    """What a world gives each of its levels: its filler and its bosses (keyed by level id)."""
 
-    Its filler and its bosses (`dict`s keyed by the level id).
-    """
-
-    def __init__(
-        self,
-        difficulty: dict[str, Difficulty],
-        fillers: dict[str, Filler],
-        bosses: dict[str, LevelBosses],
-    ) -> None:
-        self.difficulty = difficulty
+    def __init__(self, fillers: dict[str, Filler], bosses: dict[str, LevelBosses]) -> None:
         self.fillers = fillers
         self.bosses = bosses
 
 
-def _difficulty(config: Difficulty) -> EnemyDifficulty:
-    """Return a level's enemy difficulty, as `core/` reads it.
-
-    Its bullet speed and fire rate factors (ENM-22), which its bosses' bullets follow too
-    (WLD-1-23, WLD-1-28, WLD-2-26; each level's in its level file's "Difficulty"), and its bosses'
-    health factor (D-305, set by `make adjust-level`).
-    """
-    return EnemyDifficulty(config.bulletSpeed, config.fireRate, config.bossHealth)
+# Every enemy and boss fires and flies as tuned, in every level: a level is harder only by how
+# many enemies it brings (`LEVEL_ENEMIES`, D-307).
+AS_TUNED = EnemyDifficulty(1, 1)
 
 
 def plan_beats(plan: WavePlan, scenery: ScenerySource, fights: list[LevelBoss]) -> list[Beat]:
@@ -74,15 +59,14 @@ def assemble_level(
 
     Its scenery (`scenery` is its config record, mapped to the core's `SceneryLevel` here), its
     written beats with light groups filling their lulls (WLD-1-21) and nothing new in the stretch
-    before each boss (GAME-LEVEL-05), its difficulty, and its mini boss at the middle and final boss
+    before each boss (GAME-LEVEL-05), and its mini boss at the middle and final boss
     at the end (GAME-LEVEL-04), then its runout. Which bosses and runout are each level's own (the
     "Mini boss", "Final boss" and "Runout" of each level file in `specs/worlds/`).
     """
-    difficulty_config = tables.difficulty.get(level_id)
     filler = tables.fillers.get(level_id)
     bosses = tables.bosses.get(level_id)
-    if difficulty_config is None or filler is None or bosses is None:
-        raise ValueError('No difficulty, filler or boss for "' + level_id + '"')
+    if filler is None or bosses is None:
+        raise ValueError('No filler or boss for "' + level_id + '"')
     level = scenery_level(scenery)
     length = level_length(level)
     fights = [
@@ -96,7 +80,7 @@ def assemble_level(
         level_id,
         level,
         waves,
-        _difficulty(difficulty_config),
+        AS_TUNED,
         fights,
         bosses.runout,
     )

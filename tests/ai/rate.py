@@ -174,11 +174,11 @@ def world_weapon_level(level_id: str) -> int:
 def setups(
     settings: RatingSettings,
     levels: list[str],
-    difficulty: tuple[float, float, float] | None = None,
+    enemies: float | None = None,
 ) -> list[EpisodeSetup]:
     """Return the rating episodes: `settings.episodes` per level, the same loadout for each.
 
-    `difficulty` replaces the levels' own factors (bullet speed, fire rate, boss health, D-305).
+    `enemies` replaces the levels' own enemies factor (D-307).
     """
     return [
         EpisodeSetup(
@@ -194,7 +194,7 @@ def setups(
             ),
             lives=3,
             bombs=3,
-            difficulty=difficulty,
+            enemies=enemies,
         )
         for level_id in levels
         for k in range(settings.episodes)

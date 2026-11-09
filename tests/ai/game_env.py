@@ -12,6 +12,7 @@ game is over, a level takes too long, or the last one is cleared.
 """
 
 import functools
+import importlib
 import math
 from dataclasses import dataclass, field, replace
 from typing import Any
@@ -23,13 +24,15 @@ from core.content.game_level import GameLevel
 from core.entities.muzzle import PlanePoint
 from core.entities.player_ship import find_player_ship, ship_max_speed_px_per_sec
 from core.scenery.scenery_level import level_length
-from core.systems.enemy_world import EnemyDifficulty
 from core.systems.level_run import LevelRun
 from core.systems.level_run_types import LevelControls, LevelRunOptions, RunShip, Supplies
 from core.systems.player_flight import FlightInput
 from core.systems.run_arsenal import WeaponLevels
+from game.config.level_enemies import LEVEL_ENEMIES
 from game.config.scenery_look import PLAYFIELD_CAMERA
+from game.config.wave_plans import level_filler, level_plan
 from game.index import GAME
+from game.sim.assemble_level import WorldTables, assemble_level
 from render.scenery.playfield_framing import frame_playfield, playfield_eye, visible_half_width
 
 STEP_SECONDS = 1 / GAME_PLAY_CONFIG.step_hz
@@ -84,21 +87,24 @@ _LEVELS: dict[str, GameLevel] = {level.id: _playable(level) for level in GAME.ga
 
 
 @functools.cache
-def _tuned_level(level_id: str, factors: tuple[float, float, float]) -> GameLevel:
-    """Return the level with other difficulty factors (bullet speed, fire rate, boss health)."""
-    level = _LEVELS[level_id]
-    return GameLevel(
-        level.id,
-        level.scenery,
-        level.waves,
-        EnemyDifficulty(*factors),
-        level.bosses,
-        level.runout,
+def _tuned_level(level_id: str, enemies: float) -> GameLevel:
+    """Return the level composed again with `enemies` times its composed enemies (D-307)."""
+    world, number = (int(part) for part in level_id.split("-"))
+    sim = importlib.import_module(f"game.sim.world_{world}")
+    tables = WorldTables(
+        {level_id: level_filler(world, number, enemies)}, {level_id: sim.TABLES.bosses[level_id]}
     )
+    plan = level_plan(world, number, enemies)
+    return _playable(assemble_level(level_id, sim.SCENERIES[level_id], plan, tables))
+
+
+def level_enemies(level_id: str) -> float:
+    """Return how many times its composed enemies the level brings (`LEVEL_ENEMIES`, D-307)."""
+    return float(LEVEL_ENEMIES[level_id])
 
 
 def level_difficulty(level_id: str) -> Any:
-    """Return the level's enemy difficulty (`EnemyDifficulty`: bullet speed, fire rate, bosses)."""
+    """Return the level's enemy difficulty (`EnemyDifficulty`: bullet speed and fire rate)."""
     return _LEVELS[level_id].difficulty
 
 
@@ -158,8 +164,8 @@ class EpisodeSetup:
     `start_time` is seconds into the level (the waves before it are skipped); `weapon_levels` the
     level of each weapon (by id), `weapon` the one in use; `lives` and `bombs` the supplies.
     `extra_seconds` is how long past the level's scroll the episode may last (boss fights).
-    `difficulty`, when given, replaces the level's own: its bullet speed, fire rate and boss health
-    factors (`make adjust-level` tries them, D-305); the next level of a campaign has its own.
+    `enemies`, when given, replaces the level's own enemies factor: its waves are composed again
+    with it (`make adjust-level` tries them, D-307); the next level of a campaign has its own.
     """
 
     level_id: str
@@ -171,7 +177,7 @@ class EpisodeSetup:
     bombs: int = 3
     start_time: float = 0.0
     extra_seconds: float = 240.0
-    difficulty: tuple[float, float, float] | None = None
+    enemies: float | None = None
 
 
 @dataclass
@@ -243,10 +249,10 @@ class GameEnv:
 
     @property
     def level(self) -> GameLevel:
-        factors = self.setup.difficulty
-        if factors is None:
+        enemies = self.setup.enemies
+        if enemies is None:
             return _LEVELS[self.setup.level_id]
-        return _tuned_level(self.setup.level_id, factors)
+        return _tuned_level(self.setup.level_id, enemies)
 
     @property
     def length(self) -> float:
@@ -335,7 +341,7 @@ class GameEnv:
             lives=int(supplies.lives) if supplies is not None else self.setup.lives,
             bombs=int(supplies.bombs) if supplies is not None else self.setup.bombs,
             start_time=0.0,
-            difficulty=None,
+            enemies=None,
         )
         self._start_level()
 

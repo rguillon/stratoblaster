@@ -129,11 +129,6 @@ class BossPart:
             self.since_hit = 0
         self._health = next_health
 
-    def scale_health(self, factor: float) -> None:
-        """Give it `factor` times its health, before its boss arrives (D-305)."""
-        self.max_health = self.max_health * factor
-        self._health = self._health * factor
-
     @property
     def destroyed(self) -> bool:
         """Whether its health is used up."""

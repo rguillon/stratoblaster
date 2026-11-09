@@ -7,6 +7,7 @@ import pytest
 from helpers.config_checks import assert_beats_well_formed, enemy_kind_ids
 
 from game.config.enemy_tiers import tier_kinds
+from game.config.level_enemies import LEVEL_ENEMIES
 from game.config.wave_plans import (
     KIND_ENTRY,
     SETTLE,
@@ -158,3 +159,38 @@ def test_each_world_is_harder_than_the_one_before() -> None:
     assert level_plan(1, 1)["gap"][0] > level_plan(2, 1)["gap"][0] > level_plan(4, 1)["gap"][0]
     assert level_plan(3, 1)["growth"] < level_plan(3, 5)["growth"]
     assert level_plan(1, 1)["to"] < level_plan(2, 1)["to"]
+
+
+def _ships(beats: list) -> int:
+    return sum(enemies_of(beat[2], beat[1]) for beat in beats)
+
+
+def test_d_307_every_level_has_its_enemies_factor() -> None:
+    assert sorted(LEVEL_ENEMIES.keys()) == [f"{w}-{n}" for w, n in LEVELS]
+    assert all(0 < LEVEL_ENEMIES[key] <= 4 for key in LEVEL_ENEMIES.keys())
+
+
+@pytest.mark.parametrize(("world", "level"), [(1, 1), (2, 3), (4, 5)])
+def test_d_307_more_enemies_bring_more_ships_in_the_same_waves(world: int, level: int) -> None:
+    """The waves' ships grow with the factor; their kinds stay the level's (ENM-50).
+
+    Not in proportion: bigger waves take longer to come in, so fewer of them fit in the level.
+    """
+    usual = compose_beats(level_plan(world, level, 1))
+    more = compose_beats(level_plan(world, level, 2))
+    fewer = compose_beats(level_plan(world, level, 0.5))
+    assert _ships(fewer) < _ships(usual) < _ships(more)
+    assert _ships(more) > 1.2 * _ships(usual)
+    assert {beat[1] for beat in more} == {beat[1] for beat in usual}
+
+
+def test_d_307_more_enemies_bring_the_filler_more_often() -> None:
+    usual = level_filler(2, 3, 1)
+    more = level_filler(2, 3, 2)
+    assert list(more.maxGap) == pytest.approx([gap / 2 for gap in usual.maxGap])
+    assert list(more.kinds) == list(usual.kinds)
+
+
+def test_d_307_a_level_brings_its_own_factor_by_default() -> None:
+    assert level_plan(4, 4).enemies == LEVEL_ENEMIES["4-4"]
+    assert level_plan(4, 4, 1.7).enemies == 1.7

@@ -15,6 +15,7 @@ import math
 
 from game.config.enemies_veteran import VETERAN_CONFIG
 from game.config.enemy_tiers import ENEMY_TIERS
+from game.config.level_enemies import LEVEL_ENEMIES
 from game.config.record import concat, record
 
 # isort: split
@@ -137,8 +138,19 @@ def kinds_of(world: int, level: int) -> list[str]:
     return kinds
 
 
-def level_plan(world: int, level: int) -> Any:
-    """Return the wave plan of World `world`'s level `level` (1..5): its tiers and pace."""
+def enemies_factor(world: int, level: int, enemies: float | None = None) -> float:
+    """Return how many times its composed enemies a level brings (D-307): `enemies`, or its own."""
+    if enemies is not None:
+        return enemies
+    factor: float = LEVEL_ENEMIES[str(world) + "-" + str(level)]
+    return factor
+
+
+def level_plan(world: int, level: int, enemies: float | None = None) -> Any:
+    """Return the wave plan of World `world`'s level `level` (1..5): its tiers and pace.
+
+    `enemies`: how many times its composed enemies it brings (default: the level's own, D-307).
+    """
     start = 3.4 - 0.2 * (level - 1) - 0.3 * (world - 1)
     return record({
         "from": 4,
@@ -151,7 +163,9 @@ def level_plan(world: int, level: int) -> Any:
         # Each tier's share of the enemies and the order its beats bring its kinds (D-283).
         "tiers": [[pair[1], tier_sequence(pair[0])] for pair in tier_mix(world, level)],
         # The filler, counted with the beats it follows when sharing the enemies out.
-        "filler": level_filler(world, level),
+        "filler": level_filler(world, level, enemies),
+        # How many times its groups each wave brings (D-307).
+        "enemies": enemies_factor(world, level, enemies),
     })
 
 
@@ -269,17 +283,18 @@ def _beat_of(t: float, kind: str, groups: int, phrase: list[Any]) -> list[Any]:
 def _groups(plan: Any, t: float, phrase: list[Any], lacking: float, main: bool) -> int:
     """Return how many groups a beat of `phrase` at `t` brings.
 
-    Its written groups, sized and grown over the level, but no more than its tier lacks
-    (`lacking` ships), so each tier keeps to its share: the main tier's never fewer groups than
-    written, another tier's at least one.
+    Its written groups, sized and grown over the level, times the level's `enemies` (D-307), but no
+    more than its tier lacks (`lacking` ships), so each tier keeps to its share: the main tier's
+    never fewer groups than written (times `enemies`), another tier's at least one.
     """
     count = phrase[1]
     if count > 1:
         count = math.floor(count * plan["size"] + 0.5)
     span = plan["to"] - plan["from"]
-    grown = max(1, math.floor(count * (1 + (plan["growth"] * (t - plan["from"])) / span) + 0.5))
+    growth = 1 + (plan["growth"] * (t - plan["from"])) / span
+    grown = max(1, math.floor(count * growth * plan["enemies"] + 0.5))
     fits = math.floor(lacking / group_size(phrase[0]) / WAVE_DENSITY + 0.5)
-    least = phrase[1] if main else 1
+    least = max(1, math.floor(phrase[1] * plan["enemies"] + 0.5)) if main else 1
     return int(max(1, min(grown, max(least, fits))))
 
 
@@ -363,19 +378,23 @@ FILLER_GAPS: list[dict[int, list[float]]] = [
 ]
 
 
-def level_filler(world: int, level: int) -> Any:
+def level_filler(world: int, level: int, enemies: float | None = None) -> Any:
     """Return the filler of World `world`'s level `level`: its kinds and the gap between groups.
 
     The divers and shooters of each of the level's tiers (D-283); 1-1's only the Hornet, which never
-    shoots, so it stays easy (WLD-1-25).
+    shoots, so it stays easy (WLD-1-25). Its groups come `enemies` times as often (D-307).
     """
+    factor = enemies_factor(world, level, enemies)
     if world == 1 and level == 1:
-        return record({"kinds": [ENEMY_TIERS["1"].kinds.diver], "maxGap": FILLER_GAPS[0][1]})
-    kinds: list[str] = []
-    for pair in tier_mix(world, level):
-        tier_kinds = ENEMY_TIERS[str(pair[0])].kinds
-        kinds = concat(kinds, [tier_kinds.diver, tier_kinds.shooter])
-    return record({"kinds": kinds, "maxGap": FILLER_GAPS[level - 1][world]})
+        gaps = FILLER_GAPS[0][1]
+        kinds = [ENEMY_TIERS["1"].kinds.diver]
+    else:
+        gaps = FILLER_GAPS[level - 1][world]
+        kinds = []
+        for pair in tier_mix(world, level):
+            tier_kinds = ENEMY_TIERS[str(pair[0])].kinds
+            kinds = concat(kinds, [tier_kinds.diver, tier_kinds.shooter])
+    return record({"kinds": kinds, "maxGap": [gaps[0] / factor, gaps[1] / factor]})
 
 
 def world_fillers(world: int) -> Any:

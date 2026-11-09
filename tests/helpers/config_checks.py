@@ -95,24 +95,6 @@ def assert_world_bosses(table: Any, bosses: set[str]) -> None:
         assert entry["runout"] >= 0, level_id
 
 
-def assert_level_difficulty(table: Any) -> None:
-    """Enemy factors per level are positive and no higher than twice the base.
-
-    They never go down from one level to the next (ENM-22; per world WLD-1-23, WLD-2-21, WLD-3-17,
-    WLD-4-19).
-    """
-    previous = None
-    for level_id in sorted(table.keys()):
-        factors = table[level_id]
-        assert 0 < factors["bulletSpeed"] <= 2, level_id
-        assert 0 < factors["fireRate"] <= 2, level_id
-        assert 0 < factors["bossHealth"] <= 2, level_id
-        if previous is not None:
-            assert factors["bulletSpeed"] >= previous["bulletSpeed"], level_id
-            assert factors["fireRate"] >= previous["fireRate"], level_id
-        previous = factors
-
-
 def assert_scenery_level(level: Any, level_number: str) -> None:
     """Assert that a level's scenery is well formed.
 
@@ -217,21 +199,6 @@ def world_bosses_problems(table: Any, bosses: set[str]) -> list[str]:
             problems.append(f"{level_id}: the mini boss is the final boss")
         if not entry["runout"] >= 0:
             problems.append(f"{level_id}: negative run-out {entry['runout']}")
-    return problems
-
-
-def level_difficulty_problems(table: Any) -> list[str]:
-    """Return what is wrong with the enemy factors per level (see `assert_level_difficulty`)."""
-    problems: list[str] = []
-    previous = None
-    for level_id in sorted(table.keys()):
-        factors = table[level_id]
-        for key in ("bulletSpeed", "fireRate"):
-            if not 0 < factors[key] <= 2:
-                problems.append(f"{level_id}: {key} {factors[key]} outside (0, 2]")
-            if previous is not None and factors[key] < previous[key]:
-                problems.append(f"{level_id}: {key} goes down from the level before")
-        previous = factors
     return problems
 
 

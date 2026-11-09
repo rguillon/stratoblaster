@@ -5,16 +5,15 @@ import pytest
 
 from core.scenery.scenery_level import level_length
 from game.config.world_1.bosses import MINI_BOSS_AT, QUIET_BEFORE_BOSS, WORLD_1_BOSSES
-from game.config.world_1.difficulty import WORLD_1_DIFFICULTY
 from game.config.world_1.scenery_coast import LEVEL_1_1
 from game.config.world_1.waves import PLAN_1_1, WORLD_1_FILLERS
 from game.sim.assemble_level import WorldTables, assemble_level, plan_beats
 from game.sim.scenery_build import scenery_level
 
-TABLES = WorldTables(WORLD_1_DIFFICULTY, WORLD_1_FILLERS, WORLD_1_BOSSES)
+TABLES = WorldTables(WORLD_1_FILLERS, WORLD_1_BOSSES)
 
 
-def test_game_level_16_a_level_is_assembled_with_its_scenery_difficulty_and_two_bosses() -> None:
+def test_game_level_16_a_level_is_assembled_with_its_scenery_and_two_bosses() -> None:
     """Also GAME-LEVEL-04: its two bosses."""
     level = assemble_level("1-1", LEVEL_1_1, PLAN_1_1, TABLES)
     assert level.id == "1-1"
@@ -39,17 +38,16 @@ def test_game_level_05_no_wave_starts_in_the_quiet_stretch_before_a_boss() -> No
             assert not (fight.at - quiet < wave["at"] <= fight.at)
 
 
-def test_game_level_16_a_level_without_its_difficulty_filler_or_bosses_is_an_error() -> None:
-    lonely = WorldTables({}, WORLD_1_FILLERS, WORLD_1_BOSSES)
-    with pytest.raises(ValueError, match='No difficulty, filler or boss for "1-1"'):
+def test_game_level_16_a_level_without_its_filler_or_bosses_is_an_error() -> None:
+    lonely = WorldTables({}, WORLD_1_BOSSES)
+    with pytest.raises(ValueError, match='No filler or boss for "1-1"'):
         assemble_level("1-1", LEVEL_1_1, PLAN_1_1, lonely)
 
 
-def test_enm_22_the_difficulty_of_a_level_becomes_the_enemy_difficulty() -> None:
-    """Also WLD-1-28: the bosses' bullets follow it too."""
+def test_d_307_every_level_s_enemies_and_bosses_fire_and_fly_as_tuned() -> None:
     level = assemble_level("1-2", LEVEL_1_1, PLAN_1_1, TABLES)
-    assert level.difficulty.bullet_speed == WORLD_1_DIFFICULTY["1-2"]["bulletSpeed"]
-    assert level.difficulty.fire_rate == WORLD_1_DIFFICULTY["1-2"]["fireRate"]
+    assert level.difficulty.bullet_speed == 1
+    assert level.difficulty.fire_rate == 1
 
 
 def test_game_level_05_the_plan_is_composed_around_the_quiet_stretches() -> None:

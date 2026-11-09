@@ -1737,3 +1737,29 @@
   probabilities differ from the float32 one's by at most 0.0002 and its likeliest move is the same.
   A brain resumed without its trainer file starts from the rounded weights (a negligible change).
 - **Status:** Proposed
+
+### D-307 — Every enemy and boss is the same in every level; levels differ by their enemy count
+- **Date:** 2026-11-09
+- **Requirements:** none (requested by the human: the same fire rate and strength for one enemy in
+  every level, the number of enemies being the only thing that changes). Replaces the per-level
+  factors of ENM-22 (WLD-1-23, WLD-2-21, the levels' "Difficulty"), and the boss health factor
+  of D-305. The specs still give the old factors: the human updates them.
+- **Context:** a level scaled every enemy's and boss's fire rate and bullet speed (×0.8 in 1-1 up
+  to ×1.35 in 4-5), and D-305 added a boss health factor: a kind fought in two levels was not the
+  same enemy.
+- **Decision:**
+  - Every level's `EnemyDifficulty` is 1 and 1 (`AS_TUNED`): enemies and bosses fire and fly as
+    tuned in their own files. The four `world_N/difficulty.py` tables are gone; the engine keeps
+    `EnemyDifficulty` (ENM-22's mechanism, game-agnostic). The boss health factor is removed.
+  - `src/game/config/level_enemies.py` gives each level one factor, `LEVEL_ENEMIES` (1: its waves
+    as `level_plan` composes them, so no level changes until tuned). Each wave brings that many
+    times its groups (the main tier's written groups too) and the filler comes that many times
+    as often; the kinds, the tier mix, the pace and the bosses stay the level's.
+  - `make adjust-level` (D-305) turns that factor alone, from 0.25 to 4, writing it to two
+    decimals into `LEVEL_ENEMIES`. A rating episode composes the level again with the factor it
+    tries (`EpisodeSetup.enemies`; each world's `SCENERIES` by level id).
+- **Consequences:** World 4 is easier and 1-1 to 1-3 harder than before until the factors are
+  tuned (their enemies fire at ×1 instead of ×1.1–1.35 or ×0.8–0.9). The ships do not grow in
+  proportion to the factor: bigger waves take longer to come in, so fewer fit in the level (×2
+  brings about ×1.4 the waves' ships in 1-1, plus twice the filler).
+- **Status:** Proposed
