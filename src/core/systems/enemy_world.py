@@ -63,12 +63,14 @@ class EnemyWorldOptions(EnemyShotsOptions):
 class EnemyDifficulty:
     """How hard the enemies are, as factors on each kind's own values (1 = as tuned).
 
-    Their bullets' speed and how fast their attacks come (ENM-22).
+    Their bullets' speed and how fast their attacks come (ENM-22), and the health of the level's
+    bosses, core and parts (D-305).
     """
 
-    def __init__(self, bullet_speed: float, fire_rate: float) -> None:
+    def __init__(self, bullet_speed: float, fire_rate: float, boss_health: float = 1) -> None:
         self.bullet_speed = bullet_speed
         self.fire_rate = fire_rate
+        self.boss_health = boss_health
 
 
 def _faster(spec: EnemyBulletSpec, factor: float) -> EnemyBulletSpec:

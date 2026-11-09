@@ -171,8 +171,15 @@ def world_weapon_level(level_id: str) -> int:
     return max(1, min(world, MAX_WEAPON_LEVEL))
 
 
-def setups(settings: RatingSettings, levels: list[str]) -> list[EpisodeSetup]:
-    """Return the rating episodes: `settings.episodes` per level, the same loadout for each."""
+def setups(
+    settings: RatingSettings,
+    levels: list[str],
+    difficulty: tuple[float, float, float] | None = None,
+) -> list[EpisodeSetup]:
+    """Return the rating episodes: `settings.episodes` per level, the same loadout for each.
+
+    `difficulty` replaces the levels' own factors (bullet speed, fire rate, boss health, D-305).
+    """
     return [
         EpisodeSetup(
             level_id,
@@ -187,6 +194,7 @@ def setups(settings: RatingSettings, levels: list[str]) -> list[EpisodeSetup]:
             ),
             lives=3,
             bombs=3,
+            difficulty=difficulty,
         )
         for level_id in levels
         for k in range(settings.episodes)
@@ -226,6 +234,17 @@ def _print_table(ratings: list[LevelRating]) -> None:
         )
 
 
+def play_all(
+    every: list[EpisodeSetup], greedy: bool, workers: int, path: Path
+) -> list[EpisodeResult]:
+    """Play every episode with the brain saved at `path`, spread over `workers` processes."""
+    size = group_size(len(every), workers)
+    jobs = [(every[i : i + size], greedy) for i in range(0, len(every), size)]
+    ctx = mp.get_context("spawn")
+    with ctx.Pool(min(workers, len(jobs)), initializer=_init_worker, initargs=(path,)) as pool:
+        return [r for group in pool.imap_unordered(_play, jobs) for r in group]
+
+
 def rate(
     settings: RatingSettings, levels: list[str], workers: int, path: Path
 ) -> list[LevelRating]:
@@ -235,17 +254,13 @@ def rate(
         raise SystemExit(msg)
     _, stats = load_brain(path)
     every = setups(settings, levels)
-    size = group_size(len(every), workers)
-    jobs = [(every[i : i + size], settings.greedy) for i in range(0, len(every), size)]
     print(
         f"Rating {len(levels)} levels x {settings.episodes} episodes with the brain of {path}"
         f" ({stats.updates} updates, {stats.decisions / 1e6:.1f}M decisions,"
         f" {stats.hours:.1f} h of learning)"
     )
     start = time.monotonic()
-    ctx = mp.get_context("spawn")
-    with ctx.Pool(workers, initializer=_init_worker, initargs=(path,)) as pool:
-        results = [r for group in pool.imap_unordered(_play, jobs) for r in group]
+    results = play_all(every, settings.greedy, workers, path)
     ratings = [rate_level(level_id, results) for level_id in levels]
     _print_table(ratings)
     print(f"({time.monotonic() - start:.0f} s)")

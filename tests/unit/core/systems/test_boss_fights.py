@@ -45,6 +45,10 @@ class _Boss:
         self.remaining_health = core + sum(parts)
         self.full_health = core + sum(parts)
         self.gone = False
+        self.scaled: list[float] = []
+
+    def scale_health(self, factor: float) -> None:
+        self.scaled.append(factor)
 
 
 class _Kind:
@@ -68,6 +72,7 @@ def _fights(
     bosses: list[LevelBoss],
     boss: _Boss | None = None,
     rules: BossFightRules | None = None,
+    boss_health: float = 1,
 ) -> tuple[BossFights, ScrollTrack, _Kind, list[_Boss]]:
     fight_boss = boss if boss is not None else _Boss([10])
     kind = _Kind("hulk", fight_boss)
@@ -75,7 +80,7 @@ def _fights(
     hooks = BossFightHooks(lambda: "AREA", added.append)  # type: ignore[arg-type]
     rules = rules if rules is not None else BossFightRules(0, 2)
     track = ScrollTrack(10, 1000)
-    fights = BossFights(bosses, [kind], rules, hooks)  # type: ignore[list-item]
+    fights = BossFights(bosses, [kind], rules, hooks, boss_health)  # type: ignore[list-item]
     return fights, track, kind, added
 
 
@@ -195,6 +200,22 @@ def test_game_level_04_a_boss_must_come_at_a_non_negative_distance() -> None:
     with pytest.raises(ValueError, match="bad distance"):
         validate_level_bosses([LevelBoss("hulk", "mini", -1)], ["hulk"])
     validate_level_bosses([LevelBoss("hulk", "mini", 0)], ["hulk"])
+
+
+def test_d_305_a_boss_arrives_with_the_level_s_boss_health() -> None:
+    boss = _Boss([10])
+    fights, track, _, _ = _fights([LevelBoss("hulk", "final", 50)], boss, boss_health=1.4)
+    _seek(track, 50)
+    fights.step(0.1, track)
+    assert boss.scaled == [1.4]
+
+
+def test_d_305_a_boss_keeps_its_health_at_a_factor_of_one() -> None:
+    boss = _Boss([10])
+    fights, track, _, _ = _fights([LevelBoss("hulk", "final", 50)], boss)
+    _seek(track, 50)
+    fights.step(0.1, track)
+    assert boss.scaled == []
 
 
 def test_game_level_04_creating_the_fights_validates_the_bosses() -> None:

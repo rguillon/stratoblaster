@@ -155,6 +155,7 @@ class BossFights:
         kinds: Sequence[BossKindDefinition],
         rules: BossFightRules,
         hooks: BossFightHooks,
+        boss_health: float = 1,
     ) -> None:
         kind_ids: list[str] = [kind.id for kind in kinds]
         validate_level_bosses(bosses, kind_ids)
@@ -167,6 +168,8 @@ class BossFights:
             self._kinds[kind.id] = kind
         self._rules = rules
         self._hooks = hooks
+        # The level's factor on its bosses' health (D-305).
+        self._boss_health = boss_health
         self._next = 0
         self._fight: _Fight | None = None
 
@@ -268,6 +271,8 @@ class BossFights:
     def _start(self, level: LevelBoss, track: ScrollTrack) -> None:
         self._next += 1
         boss = self._kinds[level.kind].spawn(self._hooks.area())
+        if self._boss_health != 1:
+            boss.scale_health(self._boss_health)
         self._hooks.add(boss)
         self._fight = _Fight(boss, level)
         track.held = True

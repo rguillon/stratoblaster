@@ -106,6 +106,7 @@ def assert_level_difficulty(table: Any) -> None:
         factors = table[level_id]
         assert 0 < factors["bulletSpeed"] <= 2, level_id
         assert 0 < factors["fireRate"] <= 2, level_id
+        assert 0 < factors["bossHealth"] <= 2, level_id
         if previous is not None:
             assert factors["bulletSpeed"] >= previous["bulletSpeed"], level_id
             assert factors["fireRate"] >= previous["fireRate"], level_id

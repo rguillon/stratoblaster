@@ -7,9 +7,9 @@
 from game.config.record import record
 
 WORLD_4_DIFFICULTY = record({
-    "4-1": {"bulletSpeed": 1.1, "fireRate": 1.1},  # LVL-4-1-05
-    "4-2": {"bulletSpeed": 1.15, "fireRate": 1.15},  # LVL-4-2-05
-    "4-3": {"bulletSpeed": 1.2, "fireRate": 1.2},  # LVL-4-3-05
-    "4-4": {"bulletSpeed": 1.3, "fireRate": 1.3},  # LVL-4-4-05
-    "4-5": {"bulletSpeed": 1.35, "fireRate": 1.35},  # LVL-4-5-05
+    "4-1": {"bulletSpeed": 1.1, "fireRate": 1.1, "bossHealth": 1},  # LVL-4-1-05
+    "4-2": {"bulletSpeed": 1.15, "fireRate": 1.15, "bossHealth": 1},  # LVL-4-2-05
+    "4-3": {"bulletSpeed": 1.2, "fireRate": 1.2, "bossHealth": 1},  # LVL-4-3-05
+    "4-4": {"bulletSpeed": 1.3, "fireRate": 1.3, "bossHealth": 1},  # LVL-4-4-05
+    "4-5": {"bulletSpeed": 1.35, "fireRate": 1.35, "bossHealth": 1},  # LVL-4-5-05
 })

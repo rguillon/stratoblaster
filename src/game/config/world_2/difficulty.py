@@ -8,9 +8,9 @@ down.
 from game.config.record import record
 
 WORLD_2_DIFFICULTY = record({
-    "2-1": {"bulletSpeed": 0.9, "fireRate": 0.9},  # LVL-2-1-10
-    "2-2": {"bulletSpeed": 0.95, "fireRate": 0.95},  # LVL-2-2-10
-    "2-3": {"bulletSpeed": 1, "fireRate": 1},  # LVL-2-3-10
-    "2-4": {"bulletSpeed": 1.1, "fireRate": 1.1},  # LVL-2-4-10
-    "2-5": {"bulletSpeed": 1.15, "fireRate": 1.15},  # LVL-2-5-10
+    "2-1": {"bulletSpeed": 0.9, "fireRate": 0.9, "bossHealth": 1},  # LVL-2-1-10
+    "2-2": {"bulletSpeed": 0.95, "fireRate": 0.95, "bossHealth": 1},  # LVL-2-2-10
+    "2-3": {"bulletSpeed": 1, "fireRate": 1, "bossHealth": 1},  # LVL-2-3-10
+    "2-4": {"bulletSpeed": 1.1, "fireRate": 1.1, "bossHealth": 1},  # LVL-2-4-10
+    "2-5": {"bulletSpeed": 1.15, "fireRate": 1.15, "bossHealth": 1},  # LVL-2-5-10
 })

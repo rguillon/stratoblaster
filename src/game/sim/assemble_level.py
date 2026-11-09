@@ -47,9 +47,10 @@ def _difficulty(config: Difficulty) -> EnemyDifficulty:
     """Return a level's enemy difficulty, as `core/` reads it.
 
     Its bullet speed and fire rate factors (ENM-22), which its bosses' bullets follow too
-    (WLD-1-23, WLD-1-28, WLD-2-26; each level's in its level file's "Difficulty").
+    (WLD-1-23, WLD-1-28, WLD-2-26; each level's in its level file's "Difficulty"), and its bosses'
+    health factor (D-305, set by `make adjust-level`).
     """
-    return EnemyDifficulty(config.bulletSpeed, config.fireRate)
+    return EnemyDifficulty(config.bulletSpeed, config.fireRate, config.bossHealth)
 
 
 def plan_beats(plan: WavePlan, scenery: ScenerySource, fights: list[LevelBoss]) -> list[Beat]:

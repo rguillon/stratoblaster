@@ -172,6 +172,17 @@ def test_full_and_remaining_health_count_the_core_and_the_parts(make_boss: Make)
     assert boss.remaining_health == pytest.approx(40 + 4)
 
 
+def test_d_305_scale_health_multiplies_the_core_and_every_part(make_boss: Make) -> None:
+    boss = make_boss(fighting=True)
+    boss.scale_health(1.5)
+    assert boss.core_health == pytest.approx(150)
+    assert boss.core.max_health == pytest.approx(150)
+    assert [part.max_health for part in boss.parts] == pytest.approx([4.5, 6])
+    assert [part.health for part in boss.parts] == pytest.approx([4.5, 6])
+    assert boss.full_health == pytest.approx(1.5 * (100 + 3 + 4))
+    assert boss.remaining_health == pytest.approx(boss.full_health)
+
+
 def test_break_next_destroys_the_parts_then_the_core(make_boss: Make) -> None:
     boss = make_boss(fighting=True)
     boss.break_next()

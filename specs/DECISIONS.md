@@ -1692,3 +1692,33 @@
 - **Consequences:** the ratings of worlds 2 to 4 are not comparable with those made before;
   `ratings.json` records `"weapon_level": null` for them.
 - **Status:** Proposed
+
+### D-305 — `make adjust-level`: tune a level until the brain rates it at a target
+- **Date:** 2026-11-09
+- **Requirements:** none (requested by the human: `make adjust-level 4-4 90` adapts 4-4 until it
+  rates 90 %). Builds on D-289 (`make rate`) and D-304.
+- **Context:** `make rate` measures each level's difficulty with the brain; balancing a level
+  meant editing its factors by hand and rating again. A level's own tuning was its enemies'
+  bullet speed and fire rate (ENM-22); its bosses' health was only written per boss, inside each
+  boss's file.
+- **Decision:**
+  - A level's difficulty gets a third factor, `bossHealth` (`EnemyDifficulty.boss_health`,
+    default 1): when a boss arrives, its core and every part get that many times their health
+    (`Boss.scale_health`, applied by `BossFights`). Every level's is 1 (no change in play).
+  - `make adjust-level LEVEL=4-4 TARGET=90` (`tests/ai/adjust.py`) turns one dial `k` that
+    multiplies the three factors together (k = 1: the level as it is). Each step rates the level
+    as `make rate` does, with the same seeds (two steps differ by `k` alone); `k` grows or shrinks
+    by 1.25 until the target is bracketed, then is interpolated between the closest ratings either
+    side. Episodes start at 16 and double once bracketed, up to 64. It stops within 2 % of the
+    target (or within two standard errors at 64 episodes), after 10 steps at most.
+  - The factors tried reach the episodes through `EpisodeSetup.difficulty`: no file changes during
+    the search. At the end the level's line in `src/game/config/world_N/difficulty.py` is written
+    (factors rounded to 0.01), and the steps are kept in `data/adjust-<level>.json`.
+  - `k` stays within 0.5 … 2 and no factor passes 2 (the config checks' ceiling). When the dial
+    runs out before the target, nothing is written.
+- **Consequences:** the specs' "Difficulty" requirements of each level (e.g. LVL-4-4-05) and the
+  worlds' tunables tables still give the old factors: the tool names those files, and the human
+  updates them. It warns when the new factors make bullet speed or fire rate go down from one
+  level to the next (WLD-N-19), which the unit tests check. A tuned level is tuned for the brain
+  that rated it: a better brain rates every level easier.
+- **Status:** Proposed

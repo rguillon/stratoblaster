@@ -1,8 +1,8 @@
-# Nine targets: setup, check, tests, build, e2e, serve, learn, rate, serve-ai. uv runs the Python
-# tools (ENG-04); Transcrypt compiles src/ to JavaScript and esbuild bundles it. The first target,
-# `setup`, is the default.
+# Ten targets: setup, check, tests, build, e2e, serve, learn, rate, adjust-level, serve-ai. uv runs
+# the Python tools (ENG-04); Transcrypt compiles src/ to JavaScript and esbuild bundles it. The first
+# target, `setup`, is the default.
 
-.PHONY: setup check tests build e2e e2e-build serve learn rate serve-ai FORCE
+.PHONY: setup check tests build e2e e2e-build serve learn rate adjust-level serve-ai FORCE
 
 # The git hooks, ENG-60.
 setup:
@@ -178,6 +178,13 @@ learn:
 
 rate:
 	$(AI_RUN) ai.rate $(RATE_ARGS)
+
+# Tune a level until the brain rates it at TARGET % (D-305): its bullet speed, fire rate and boss
+# health together, written into src/game/config/world_N/difficulty.py.
+# `make adjust-level LEVEL=4-4 TARGET=90`; ADJUST_ARGS: more options (`... ai.adjust --help`).
+adjust-level:
+	$(if $(and $(LEVEL),$(TARGET)),,$(error usage: make adjust-level LEVEL=4-4 TARGET=90))
+	$(AI_RUN) ai.adjust --level $(LEVEL) --target $(TARGET) $(ADJUST_ARGS)
 
 # Watch the brain play the real game in your own browser: a server of the e2e build (D-291) on
 # SERVE_AI_PORT, where the game runs in real time and asks the brain for its moves. Start a level
