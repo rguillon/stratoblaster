@@ -1678,3 +1678,17 @@
   levels may finish last. Rating with `make learn`'s PyPy workers and inference server would be
   faster still (not done).
 - **Status:** Proposed
+
+### D-304 — `make rate` gives the weapons the level of the world
+- **Date:** 2026-11-09
+- **Requirements:** none (requested by the human: in world 2 the player starts with level 2
+  weapons, in world 3 level 3, in world 4 level 4). Amends D-294.
+- **Context:** every level was rated from a fresh start, every weapon at level 1 (D-294). A
+  player reaching world 4 has upgraded weapons: level 1 made the later worlds look harder than
+  they are when played through.
+- **Decision:** a level of world N is rated with every weapon at level N (at most the top level,
+  5). `--weapon-level` still gives every level the same one; `RatingSettings.weapon_level` is
+  `None` (by world) by default. Lives and bombs stay 3 and 3.
+- **Consequences:** the ratings of worlds 2 to 4 are not comparable with those made before;
+  `ratings.json` records `"weapon_level": null` for them.
+- **Status:** Proposed

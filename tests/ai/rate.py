@@ -2,9 +2,10 @@
 """`make rate`: the brain plays every level and rates how hard each one is, as a percentage.
 
 Each level is played `--episodes` times (different seeds: the enemies' random choices differ) from
-its start, with the same loadout for every level: a fresh start, as from the level select with
-nothing kept (3 lives, 3 bombs, every weapon at level 1, more only from the bonuses picked up;
-`--ship` and `--weapon-level` change it), so the ratings compare the levels, not the loadouts.
+its start, with the same loadout for every level of a world: 3 lives, 3 bombs, and every weapon at
+the level of the world (1 in world 1, 2 in world 2, 3 in world 3, 4 in world 4: what a player has
+earned by then, D-304), more only from the bonuses picked up. `--ship` changes the ship, and
+`--weapon-level` gives every level the same weapon level.
 
 An episode's difficulty is `1 - (progress + health left) / 2`:
 
@@ -54,7 +55,8 @@ class RatingSettings:
 
     episodes: int = 8
     ship: str = "balanced"
-    weapon_level: int = 1
+    # Every weapon's level in every level; None: the level of the level's world (D-304).
+    weapon_level: int | None = None
     # Moves drawn from the brain's choices, as it learned to play (seeded: the ratings repeat).
     # Always taking its likeliest move plays worse: a brain still learning spreads its choices, and
     # the likeliest alone can be "hold one direction" (D-292).
@@ -163,6 +165,12 @@ def _play(job: tuple[list[EpisodeSetup], bool]) -> list[EpisodeResult]:
     return play_episodes(_brain, group, greedy)
 
 
+def world_weapon_level(level_id: str) -> int:
+    """Return the weapons' level a level of world N is rated with: N (D-304), at most the top."""
+    world = int(level_id.split("-", maxsplit=1)[0])
+    return max(1, min(world, MAX_WEAPON_LEVEL))
+
+
 def setups(settings: RatingSettings, levels: list[str]) -> list[EpisodeSetup]:
     """Return the rating episodes: `settings.episodes` per level, the same loadout for each."""
     return [
@@ -171,7 +179,12 @@ def setups(settings: RatingSettings, levels: list[str]) -> list[EpisodeSetup]:
             seed=settings.seed + k,
             ship_id=settings.ship,
             weapon=WEAPON_IDS[0],
-            weapon_levels=dict.fromkeys(WEAPON_IDS, settings.weapon_level),
+            weapon_levels=dict.fromkeys(
+                WEAPON_IDS,
+                settings.weapon_level
+                if settings.weapon_level is not None
+                else world_weapon_level(level_id),
+            ),
             lives=3,
             bombs=3,
         )
@@ -258,6 +271,7 @@ def main(argv: list[str] | None = None) -> None:
         type=int,
         choices=range(1, MAX_WEAPON_LEVEL + 1),
         default=RatingSettings.weapon_level,
+        help="every weapon's level in every level (default: the level's world: 1 to 4, D-304)",
     )
     parser.add_argument("--levels", nargs="*", choices=LEVEL_IDS, default=list(LEVEL_IDS))
     parser.add_argument(

@@ -200,8 +200,16 @@ def test_an_episode_difficulty_is_one_less_the_mean_of_progress_and_health_left(
     assert rating.completed == 0.5
 
 
+def test_d_304_the_rating_gives_the_weapons_the_level_of_the_world() -> None:
+    assert RatingSettings().weapon_level is None
+    all_setups = setups(RatingSettings(episodes=1), ["1-1", "2-3", "3-5", "4-1"])
+    assert [s.weapon_levels[WEAPON_IDS[0]] for s in all_setups] == [1, 2, 3, 4]
+    for s in all_setups:
+        assert len(set(s.weapon_levels.values())) == 1
+        assert (s.lives, s.bombs, s.start_time) == (3, 3, 0.0)
+
+
 def test_the_rating_plays_every_level_with_the_same_loadout() -> None:
-    assert RatingSettings().weapon_level == 1  # a fresh start (D-294)
     settings = RatingSettings(episodes=2, weapon_level=4)
     all_setups = setups(settings, ["1-1", "2-3"])
     assert [s.level_id for s in all_setups] == ["1-1", "1-1", "2-3", "2-3"]
