@@ -72,7 +72,6 @@ if TYPE_CHECKING:
     from multiprocessing.connection import Connection
 
 LOG_FILE = DATA / "learn-log.csv"
-HISTORY_KEPT = 2000
 # Games a report needs for its average score to choose the best brain.
 MIN_GAMES_FOR_BEST = 20
 
@@ -179,6 +178,21 @@ def _fits(optimizer: dict[str, Any], brain: Brain) -> bool:
     return True
 
 
+def _exact_weights(brain: Brain, weights: dict[str, Any] | None) -> None:
+    """Give `brain` the float32 weights of the trainer file, if they fit (D-306).
+
+    The brain file keeps float16 weights: learning resumes from the exact ones it was saving.
+    """
+    if not weights:
+        return
+    own = brain.state_dict()
+    if weights.keys() != own.keys() or any(
+        weights[k].shape != own[k].shape for k in own
+    ):  # of another brain (a widened or a new one): the brain file's weights stay
+        return
+    brain.load_state_dict(weights)
+
+
 class Learner:
     """The brain, its optimiser and the PPO update."""
 
@@ -206,6 +220,7 @@ class Learner:
         self.scaler = torch.amp.GradScaler("cuda", enabled=self.mixed)
         if TRAINER_FILE.exists() and not fresh and self.stats.updates > 0:
             saved = torch.load(TRAINER_FILE, map_location="cpu", weights_only=True)
+            _exact_weights(self.brain, saved.get("weights"))
             if _fits(saved["optimizer"], self.brain):
                 self.optimizer.load_state_dict(saved["optimizer"])
             else:  # a brain widened to new channels (`widen_inputs`): its moments start over
@@ -214,7 +229,7 @@ class Learner:
     def save(self) -> None:
         save_brain(self.brain, self.stats, BRAIN_FILE)
         tmp = TRAINER_FILE.with_suffix(".tmp")
-        torch.save({"optimizer": self.optimizer.state_dict()}, tmp)
+        torch.save({"optimizer": self.optimizer.state_dict(), "weights": self.weights()}, tmp)
         tmp.replace(TRAINER_FILE)
 
     def weights(self) -> dict[str, Any]:
@@ -674,8 +689,6 @@ def learn(
                 **_summary(data.episodes),
                 **losses,
             }
-            stats.history.append(row)
-            del stats.history[:-HISTORY_KEPT]
             _log(row)
             if stats.updates % settings.save_every == 0:
                 learner.save()

@@ -1722,3 +1722,18 @@
   level to the next (WLD-N-19), which the unit tests check. A tuned level is tuned for the brain
   that rated it: a better brain rates every level easier.
 - **Status:** Proposed
+
+### D-306 — The brain file keeps float16 weights and no learning history
+- **Date:** 2026-11-09
+- **Requirements:** none (requested by the human: a smaller brain file). Follows D-302.
+- **Context:** the small brain's file (D-302) was 622 KB: 288 KB of float32 weights and 262 KB of
+  learning history (`LearnStats.history`, the last 2 000 updates), which the learning log
+  (`data/learn-log.csv`) already has row by row.
+- **Decision:** `save_brain` writes the weights in float16 and `load_brain` turns them back to
+  float32; `LearnStats` has no `history` (an older file's is ignored when loaded). `make learn`
+  also saves its float32 weights in the trainer file (`brain.trainer.pt`, never committed) and
+  resumes from them when they fit the brain, so its restarts do not round the weights.
+- **Consequences:** the small brain's file is 148 KB. On 30 game states, the float16 brain's move
+  probabilities differ from the float32 one's by at most 0.0002 and its likeliest move is the same.
+  A brain resumed without its trainer file starts from the rounded weights (a negligible change).
+- **Status:** Proposed

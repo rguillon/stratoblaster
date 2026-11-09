@@ -307,6 +307,25 @@ def test_a_widened_brain_resumes_with_its_optimiser_started_over(
     assert (tmp_path / "trainer.pt").exists()
 
 
+def test_d_306_learning_resumes_from_the_trainer_s_exact_weights(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The brain file keeps float16 weights; the trainer file the float32 ones it learned."""
+    monkeypatch.setattr(learn_module, "BRAIN_FILE", tmp_path / "brain.pt")
+    monkeypatch.setattr(learn_module, "TRAINER_FILE", tmp_path / "trainer.pt")
+    learner = Learner(Settings(chunk=4, minibatches=2, epochs=1), fresh=True, shape=SMALL)
+    learner.stats.updates = 1
+    learner.save()
+    resumed = Learner(Settings(chunk=4, minibatches=2, epochs=1), fresh=False)
+    for name, value in learner.brain.state_dict().items():
+        assert torch.equal(value, resumed.brain.state_dict()[name])
+    # Without the trainer file, from the brain file's float16 weights.
+    (tmp_path / "trainer.pt").unlink()
+    rounded = Learner(Settings(chunk=4, minibatches=2, epochs=1), fresh=False)
+    for name, value in learner.brain.state_dict().items():
+        assert torch.equal(value.half().float(), rounded.brain.state_dict()[name])
+
+
 def test_d_271_short_reports_pool_their_games_to_choose_the_best_brain(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:

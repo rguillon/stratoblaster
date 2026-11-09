@@ -10,7 +10,7 @@ Saved under `data/` (`BRAIN_FILE`): the weights and the shape of the network, wi
 learned for.
 """
 
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, fields
 from pathlib import Path
 from typing import Any
 
@@ -68,7 +68,6 @@ class LearnStats:
     best_score: float = 0.0
     # The game that scored the most while learning: score, reached, cleared, decisions, update.
     best_game: dict[str, Any] = field(default_factory=dict)
-    history: list[dict[str, float]] = field(default_factory=list)
 
 
 def _conv_out(size: int, convs: int) -> int:
@@ -264,18 +263,24 @@ class Brain(nn.Module):
 
 
 def save_brain(brain: Brain, stats: LearnStats, path: Path = BRAIN_FILE) -> None:
-    """Save the weights, the network's shape and the learning stats (atomically)."""
+    """Save the weights (in float16, D-306), the network's shape and the learning stats.
+
+    Atomically. Half the size of float32, and it decides the same; `make learn` resumes from the
+    exact float32 weights of its trainer file.
+    """
     path.parent.mkdir(parents=True, exist_ok=True)
     tmp = path.with_suffix(".tmp")
-    torch.save(
-        {
-            "format": FORMAT,
-            "shape": asdict(brain.shape),
-            "weights": {k: v.cpu() for k, v in brain.state_dict().items()},
-            "stats": asdict(stats),
-        },
-        tmp,
-    )
+    weights = {
+        k: v.detach().cpu().half() if v.is_floating_point() else v.detach().cpu()
+        for k, v in brain.state_dict().items()
+    }
+    saved = {
+        "format": FORMAT,
+        "shape": asdict(brain.shape),
+        "weights": weights,
+        "stats": asdict(stats),
+    }
+    torch.save(saved, tmp)
     tmp.replace(path)
 
 
@@ -322,7 +327,7 @@ def load_brain(path: Path = BRAIN_FILE) -> tuple[Brain, LearnStats]:
     if "convs" in shape:
         shape["convs"] = tuple(shape["convs"])
     brain = Brain(BrainShape(**shape))
-    weights = saved["weights"]
+    weights = {k: v.float() if v.is_floating_point() else v for k, v in saved["weights"].items()}
     widen_inputs(weights)
     _cell_to_gru(weights)
     try:
@@ -333,5 +338,7 @@ def load_brain(path: Path = BRAIN_FILE) -> tuple[Brain, LearnStats]:
             " and cannot be used: learn a new brain (`make learn LEARN_ARGS=--fresh`)."
         )
         raise IncompatibleBrainError(msg) from error
-    stats = LearnStats(**saved["stats"])
+    # A brain saved before D-306 also kept its learning history (the learning log has it).
+    known = {f.name for f in fields(LearnStats)}
+    stats = LearnStats(**{k: v for k, v in saved["stats"].items() if k in known})
     return brain, stats

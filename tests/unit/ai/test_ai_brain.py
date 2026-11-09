@@ -1,6 +1,7 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `tests/ai/brain.py`: the network, its memory, saving and loading it."""
 
+from dataclasses import asdict
 from pathlib import Path
 
 import torch
@@ -96,12 +97,37 @@ def test_unroll_replays_the_steps_one_by_one_and_starts_over_at_an_episode_start
 
 def test_a_saved_brain_loads_with_its_weights_and_stats(tmp_path: Path) -> None:
     brain = Brain(SMALL)
-    stats = LearnStats(updates=3, decisions=100, episodes=2, hours=0.5, history=[{"a": 1.0}])
+    stats = LearnStats(updates=3, decisions=100, episodes=2, hours=0.5)
     path = tmp_path / "brain.pt"
     save_brain(brain, stats, path)
     loaded, loaded_stats = load_brain(path)
     assert loaded.shape == SMALL
     assert loaded_stats == stats
+    for name, value in brain.state_dict().items():
+        # Saved in float16 (D-306), loaded back in float32.
+        assert loaded.state_dict()[name].dtype == torch.float32
+        assert torch.equal(value.half().float(), loaded.state_dict()[name])
+
+
+def test_d_306_the_brain_file_keeps_float16_weights(tmp_path: Path) -> None:
+    path = tmp_path / "brain.pt"
+    save_brain(Brain(SMALL_SHAPE), LearnStats(), path)
+    saved = torch.load(path, weights_only=True)
+    assert all(v.dtype == torch.float16 for v in saved["weights"].values())
+    weights = sum(v.numel() for v in saved["weights"].values())
+    assert path.stat().st_size < 2 * weights + 20_000
+
+
+def test_d_306_a_brain_saved_with_its_learning_history_still_loads(tmp_path: Path) -> None:
+    brain = Brain(SMALL)
+    path = tmp_path / "old.pt"
+    stats = {"updates": 4, "decisions": 0, "episodes": 0, "hours": 0.0, "history": [{"a": 1.0}]}
+    torch.save(
+        {"format": FORMAT, "shape": asdict(SMALL), "weights": brain.state_dict(), "stats": stats},
+        path,
+    )
+    loaded, loaded_stats = load_brain(path)
+    assert loaded_stats == LearnStats(updates=4)
     for name, value in brain.state_dict().items():
         assert torch.equal(value, loaded.state_dict()[name])
 
