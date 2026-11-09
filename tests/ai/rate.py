@@ -134,8 +134,9 @@ def play_episode(brain: Brain, setup: EpisodeSetup, greedy: bool) -> EpisodeResu
     return play_episodes(brain, [setup], greedy)[0]
 
 
-# The most episodes a rating worker plays side by side (one batch through the network).
-GROUP = 4
+# The most episodes a rating worker plays side by side (one batch through the network). A call to
+# the network costs nearly the same for 1 episode as for 32 (D-303): the more, the faster.
+GROUP = 32
 
 
 def group_size(episodes: int, workers: int) -> int:

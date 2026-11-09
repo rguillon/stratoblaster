@@ -1661,3 +1661,20 @@
   after as many hours of learning is to be measured (`make rate`). If it does, the brain could be
   saved as float16 weights to make its file smaller still.
 - **Status:** Proposed
+
+### D-303 — `make rate` plays up to 32 episodes side by side in each worker
+- **Date:** 2026-11-09
+- **Requirements:** none (requested by the human: `make rate` is too slow). Amends D-289.
+- **Context:** a rating worker played at most 4 episodes side by side (`GROUP`), and the network
+  was 80 % of its time. On one CPU thread a call to the network costs nearly the same for 1
+  episode as for 32: the big brain 3.3 ms for 4 episodes and 4.5 ms for 32 (0.82 ms an episode
+  against 0.14), the small one (D-302) 0.42 ms an episode against 0.08. A rating plays about a
+  million decisions (8 episodes of 20 levels, about 7 minutes of game each).
+- **Decision:** `GROUP` is 32: with 160 episodes on 8 cores, each worker plays its 20 in one
+  batch. Each episode still draws its moves from its own seeded generator: the ratings repeat.
+- **Consequences:** a decision costs 0.57 ms an episode with the big brain instead of 1.45 (2.5
+  times faster), 0.52 instead of 1.12 with the small one. The network is then 55 % of the time,
+  the simulation and the observation 35 %. Fewer, longer jobs: a worker whose episodes are on long
+  levels may finish last. Rating with `make learn`'s PyPy workers and inference server would be
+  faster still (not done).
+- **Status:** Proposed

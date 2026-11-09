@@ -247,7 +247,8 @@ def test_with_a_gpu_nearly_every_core_plays() -> None:
 
 
 def test_rating_groups_leave_no_worker_idle() -> None:
-    assert group_size(160, 8) == 4
+    assert group_size(160, 8) == 20  # D-303: each worker plays its episodes in one batch
+    assert group_size(1000, 8) == 32
     assert group_size(160, 64) == 3
     assert group_size(10, 64) == 1
 
