@@ -1,8 +1,8 @@
-# Ten targets: setup, check, tests, build, e2e, serve, learn, rate, adjust-level, serve-ai. uv runs
-# the Python tools (ENG-04); Transcrypt compiles src/ to JavaScript and esbuild bundles it. The first
-# target, `setup`, is the default.
+# Eleven targets: setup, check, tests, build, e2e, serve, learn, rate, adjust-level, adjust-levels,
+# serve-ai. uv runs the Python tools (ENG-04); Transcrypt compiles src/ to JavaScript and esbuild
+# bundles it. The first target, `setup`, is the default.
 
-.PHONY: setup check tests build e2e e2e-build serve learn rate adjust-level serve-ai FORCE
+.PHONY: setup check tests build e2e e2e-build serve learn rate adjust-level adjust-levels serve-ai FORCE
 
 # The git hooks, ENG-60.
 setup:
@@ -185,6 +185,13 @@ rate:
 adjust-level:
 	$(if $(and $(LEVEL),$(TARGET)),,$(error usage: make adjust-level LEVEL=4-4 TARGET=90))
 	$(AI_RUN) ai.adjust --level $(LEVEL) --target $(TARGET) $(ADJUST_ARGS)
+
+# Adjust every level in turn, its target rising evenly from FIRST_TARGET % (1-1) to LAST_TARGET %
+# (4-5): a few hours. `make adjust-levels FIRST_TARGET=10 LAST_TARGET=99`.
+FIRST_TARGET ?= 10
+LAST_TARGET ?= 99
+adjust-levels:
+	$(AI_RUN) ai.adjust --all --first $(FIRST_TARGET) --last $(LAST_TARGET) $(ADJUST_ARGS)
 
 # Watch the brain play the real game in your own browser: a server of the e2e build (D-291) on
 # SERVE_AI_PORT, where the game runs in real time and asks the brain for its moves. Start a level

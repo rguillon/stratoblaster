@@ -1763,3 +1763,16 @@
   proportion to the factor: bigger waves take longer to come in, so fewer fit in the level (×2
   brings about ×1.4 the waves' ships in 1-1, plus twice the filler).
 - **Status:** Proposed
+
+### D-308 — `make adjust-levels`: every level adjusted, the targets rising evenly
+- **Date:** 2026-11-09
+- **Requirements:** none (requested by the human: 1-1 at 10 %, the difficulty rising linearly to
+  99 % at 4-5, to run on a faster computer). Builds on D-305 and D-307.
+- **Decision:** `make adjust-levels` (`ai.adjust --all`) adjusts the 20 levels in turn, as
+  `make adjust-level` does one, level k (0..19) aiming at `FIRST_TARGET + k (LAST_TARGET -
+  FIRST_TARGET) / 19` % (defaults 10 and 99: about 4.7 points a level), then prints a summary of
+  each level's target, rating, enemies factor and outcome. A level whose factor runs out is left
+  as it was.
+- **Consequences:** a few hours on 8 cores (1-1 took 6 minutes; later levels are longer, and more
+  of them need the most episodes). The factors fit the brain that rated them.
+- **Status:** Proposed

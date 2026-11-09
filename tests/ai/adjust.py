@@ -2,6 +2,7 @@
 """`make adjust-level`: tune a level's enemy count until the brain rates it at a target (D-305).
 
     uv run python -m ai.adjust --level 4-4 --target 90
+    uv run python -m ai.adjust --all --first 10 --last 99   # `make adjust-levels`: every level
 
 Every enemy and boss is the same in every level (D-307): what a level changes is how many enemies
 it brings, its `LEVEL_ENEMIES` factor (1: its waves as `level_plan` composes them). Each step rates
@@ -24,7 +25,7 @@ import os
 import re
 import time
 from collections.abc import Callable
-from dataclasses import asdict, dataclass, field
+from dataclasses import asdict, dataclass, field, replace
 from pathlib import Path
 
 from ai import DATA, REPO_ROOT, SRC
@@ -238,10 +239,50 @@ def adjust(
     return outcome
 
 
+def linear_targets(first: float, last: float, levels: list[str]) -> list[tuple[str, float]]:
+    """Return each level's target, rising evenly from `first` (first level) to `last` (last)."""
+    if len(levels) == 1:
+        return [(levels[0], first)]
+    step = (last - first) / (len(levels) - 1)
+    return [(level_id, round(first + step * i, 1)) for i, level_id in enumerate(levels)]
+
+
+def adjust_all(
+    targets: list[tuple[str, float]],
+    search: Search,
+    settings: RatingSettings,
+    workers: int,
+    path: Path,
+) -> list[Outcome]:
+    """Adjust each level to its target in turn (`make adjust-levels`), then print a summary."""
+    began = time.monotonic()
+    outcomes = []
+    for level_id, target in targets:
+        print(f"\n=== {level_id}: {target:g}%", flush=True)
+        outcomes.append(adjust(level_id, replace(search, target=target), settings, workers, path))
+    print(f"\n{'Level':<6} {'Target':>7} {'Rated':>7} {'±':>5} {'Enemies':>8}  Outcome")
+    for (level_id, target), outcome in zip(targets, outcomes, strict=True):
+        best = outcome.best
+        written = "" if outcome.status == "saturated" else "written"
+        print(
+            f"{level_id:<6} {target:>6.1f}% {best.rating:>6.1f}% {best.error:>5.1f}"
+            f" {best.enemies:>7g}x  {outcome.status} {written}".rstrip()
+        )
+    print(f"({(time.monotonic() - began) / 60:.0f} min)")
+    return outcomes
+
+
 def main(argv: list[str] | None = None) -> None:
-    parser = argparse.ArgumentParser(description="Tune a level's enemy count to a difficulty.")
-    parser.add_argument("--level", required=True, choices=LEVEL_IDS)
-    parser.add_argument("--target", required=True, type=float, help="difficulty, in percent")
+    parser = argparse.ArgumentParser(description="Tune levels' enemy counts to a difficulty.")
+    parser.add_argument("--level", choices=LEVEL_IDS, help="the level to adjust")
+    parser.add_argument("--target", type=float, help="its difficulty, in percent")
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="adjust every level, from --first %% (1-1) to --last %% (4-5) evenly",
+    )
+    parser.add_argument("--first", type=float, default=10.0, help="--all: the first level's target")
+    parser.add_argument("--last", type=float, default=99.0, help="--all: the last level's target")
     parser.add_argument("--tolerance", type=float, default=Search.tolerance)
     parser.add_argument("--episodes", type=int, default=Search.episodes)
     parser.add_argument("--max-episodes", type=int, default=Search.max_episodes)
@@ -253,10 +294,16 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--workers", type=int, default=os.cpu_count() or 1)
     parser.add_argument("--brain", type=Path, default=BRAIN_FILE)
     args = parser.parse_args(argv)
-    if not 0 < args.target < 100:
-        parser.error("--target is a percentage between 0 and 100")
+    if args.all:
+        targets = linear_targets(args.first, args.last, list(LEVEL_IDS))
+    elif args.level is not None and args.target is not None:
+        targets = [(args.level, args.target)]
+    else:
+        parser.error("give --level and --target, or --all")
+    if not all(0 < target < 100 for _, target in targets):
+        parser.error("targets are percentages between 0 and 100")
     search = Search(
-        args.target,
+        targets[0][1],
         args.tolerance,
         args.episodes,
         max(args.episodes, args.max_episodes),
@@ -265,7 +312,10 @@ def main(argv: list[str] | None = None) -> None:
         args.highest,
     )
     settings = RatingSettings(args.episodes, args.ship, None, args.greedy)
-    adjust(args.level, search, settings, args.workers, args.brain)
+    if args.all:
+        adjust_all(targets, search, settings, args.workers, args.brain)
+    else:
+        adjust(args.level, search, settings, args.workers, args.brain)
 
 
 if __name__ == "__main__":

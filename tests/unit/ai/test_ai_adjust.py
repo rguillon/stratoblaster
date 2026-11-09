@@ -1,6 +1,7 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `tests/ai/adjust.py` (D-305, D-307)."""
 
+import itertools
 import shutil
 from collections.abc import Callable
 from pathlib import Path
@@ -8,8 +9,18 @@ from pathlib import Path
 import numpy as np
 import pytest
 from ai import SRC
-from ai.adjust import Search, Step, next_factor, search_factor, write_factor
-from ai.game_env import EpisodeSetup, GameEnv, level_enemies
+from ai import adjust as adjust_module
+from ai.adjust import (
+    Outcome,
+    Search,
+    Step,
+    adjust_all,
+    linear_targets,
+    next_factor,
+    search_factor,
+    write_factor,
+)
+from ai.game_env import LEVEL_IDS, EpisodeSetup, GameEnv, level_enemies
 from ai.rate import RatingSettings, setups
 
 from game.config.level_enemies import LEVEL_ENEMIES
@@ -96,3 +107,26 @@ def test_d_307_the_factor_is_written_into_the_level_s_line(tmp_path: Path) -> No
     after = path.read_text().splitlines()
     changed = [(a, b) for a, b in zip(before, after, strict=True) if a != b]
     assert changed == [(f'    "4-4": {LEVEL_ENEMIES["4-4"]:g},', '    "4-4": 1.23,')]
+
+
+def test_d_308_the_targets_rise_evenly_from_the_first_level_to_the_last() -> None:
+    targets = linear_targets(10, 99, list(LEVEL_IDS))
+    assert targets[0] == ("1-1", 10)
+    assert targets[-1] == ("4-5", 99)
+    assert [level for level, _ in targets] == list(LEVEL_IDS)
+    steps = [b - a for (_, a), (_, b) in itertools.pairwise(targets)]
+    assert all(abs(step - 89 / 19) < 0.11 for step in steps)
+
+
+def test_d_308_every_level_is_adjusted_in_turn(monkeypatch: pytest.MonkeyPatch) -> None:
+    calls: list[tuple[str, float]] = []
+
+    def fake(level_id: str, search: Search, *_: object) -> Outcome:
+        calls.append((level_id, search.target))
+        return Outcome("reached", Step(1.0, 16, search.target, 1, 1))
+
+    monkeypatch.setattr(adjust_module, "adjust", fake)
+    targets = [("1-1", 10.0), ("1-2", 20.0)]
+    outcomes = adjust_all(targets, Search(0), RatingSettings(), 1, Path("brain.pt"))
+    assert calls == targets
+    assert [o.best.rating for o in outcomes] == [10, 20]
