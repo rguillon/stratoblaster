@@ -4,7 +4,7 @@
 import pytest
 
 from core.scenery.scenery_level import level_length
-from game.config.wave_plans import level_filler, level_plan
+from game.config.wave_plans import level_plan
 from game.config.world_1.bosses import MINI_BOSS_AT, QUIET_BEFORE_BOSS, WORLD_1_BOSSES
 from game.config.world_1.scenery_coast import LEVEL_1_1
 from game.config.world_1.waves import PLAN_1_1, WORLD_1_FILLERS
@@ -71,8 +71,19 @@ def test_d_309_a_level_as_composed_keeps_its_drop_chances() -> None:
 def test_d_309_more_or_fewer_enemies_drop_as_many_bonuses(enemies: float) -> None:
     """The ships times the scale are the ships as composed: as many drops, on average."""
     composed = assemble_level("1-1", LEVEL_1_1, level_plan(1, 1, 1), TABLES)
-    tables = WorldTables({"1-1": level_filler(1, 1, enemies)}, WORLD_1_BOSSES)
-    level = assemble_level("1-1", LEVEL_1_1, level_plan(1, 1, enemies), tables)
+    level = assemble_level("1-1", LEVEL_1_1, level_plan(1, 1, enemies), TABLES)
     assert ships_of(level.waves) != ships_of(composed.waves)
     assert ships_of(level.waves) * level.bonus_scale == pytest.approx(ships_of(composed.waves))
     assert (level.bonus_scale < 1) == (enemies > 1)
+
+
+@pytest.mark.parametrize("enemies", [0.5, 2.0, 3.0])
+def test_d_307_the_factor_multiplies_each_wave_s_groups_and_keeps_its_time(enemies: float) -> None:
+    """The same waves, at the same times, of the same kinds, about `enemies` times the ships."""
+    composed = assemble_level("1-2", LEVEL_1_1, level_plan(1, 2, 1), TABLES)
+    level = assemble_level("1-2", LEVEL_1_1, level_plan(1, 2, enemies), TABLES)
+    assert [(w["at"], w["kind"]) for w in level.waves] == [
+        (w["at"], w["kind"]) for w in composed.waves
+    ]
+    ratio = ships_of(level.waves) / ships_of(composed.waves)
+    assert ratio == pytest.approx(enemies, rel=0.2)

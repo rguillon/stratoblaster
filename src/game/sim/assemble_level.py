@@ -5,7 +5,7 @@ from core.content.game_level import GameLevel
 from core.scenery.scenery_level import level_length
 from core.systems.boss_fights import LevelBoss
 from core.systems.enemy_world import EnemyDifficulty
-from game.config.wave_plans import compose_beats, group_size, level_filler, level_plan
+from game.config.wave_plans import WAVE_DENSITY, compose_beats, group_size, level_plan
 from game.config.world_1.bosses import MINI_BOSS_AT, QUIET_BEFORE_BOSS
 from game.config.world_1.waves import fill, quiet_before, wave_script
 from game.sim.scenery_build import scenery_level
@@ -50,8 +50,13 @@ def plan_beats(plan: WavePlan, scenery: ScenerySource, fights: list[LevelBoss]) 
 
 
 def _waves(scenery: ScenerySource, plan: WavePlan, filler: Filler, fights: list[LevelBoss]) -> Any:
-    """Return the waves of `plan` and `filler`, none in the stretch before a boss."""
-    script = wave_script(scenery.scrollSpeed, fill(plan_beats(plan, scenery, fights), filler))
+    """Return the waves of `plan` and `filler`, none in the stretch before a boss.
+
+    Each wave, and each filler group, brings the plan's `enemies` times its groups (D-307): the
+    beats come when they would at 1, so a level is the same level with more or fewer enemies.
+    """
+    beats = fill(plan_beats(plan, scenery, fights), filler)
+    script = wave_script(scenery.scrollSpeed, beats, WAVE_DENSITY * plan.enemies)
     quiet = QUIET_BEFORE_BOSS * scenery.scrollSpeed
     return quiet_before(script, [fight.at for fight in fights], quiet)
 
@@ -65,7 +70,7 @@ def ships_of(waves: Any) -> float:
 
 
 def bonus_scale(
-    scenery: ScenerySource, plan: WavePlan, waves: Any, fights: list[LevelBoss]
+    scenery: ScenerySource, plan: WavePlan, filler: Filler, waves: Any, fights: list[LevelBoss]
 ) -> float:
     """Return the factor on the enemies' drop chances that keeps the level's bonuses as many.
 
@@ -74,12 +79,7 @@ def bonus_scale(
     """
     if plan.enemies == 1:
         return 1
-    composed = _waves(
-        scenery,
-        level_plan(plan.world, plan.level, 1),
-        level_filler(plan.world, plan.level, 1),
-        fights,
-    )
+    composed = _waves(scenery, level_plan(plan.world, plan.level, 1), filler, fights)
     ships = ships_of(waves)
     return ships_of(composed) / ships if ships > 0 else 1
 
@@ -117,5 +117,5 @@ def assemble_level(
         AS_TUNED,
         fights,
         bosses.runout,
-        bonus_scale(scenery, plan, waves, fights),
+        bonus_scale(scenery, plan, filler, waves, fights),
     )

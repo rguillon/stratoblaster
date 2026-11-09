@@ -3,8 +3,9 @@
 
 Every enemy and every boss is the same in every level: its fire rate, its bullets' speed and its
 health are its own, for the whole game. What makes a level harder is how many enemies it brings:
-each wave's groups and the filler between waves, `enemies` times as many as `level_plan` composes
-(1: as composed). `make adjust-level` tunes these to a target difficulty.
+each wave's groups and each filler group between waves, `enemies` times as many as `level_plan`
+composes (1: as composed), the waves coming when they would at 1. `make adjust-level` tunes these
+to a target difficulty.
 """
 
 from game.config.record import record

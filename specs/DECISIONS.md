@@ -1810,3 +1810,20 @@
 - **Consequences:** a rating's standard error is about 0.6 % for a spread of 6 %, against 1.5 % at
   16: the search is steadier, each step about six times longer than its first steps were.
 - **Status:** Proposed
+
+### D-311 — The enemies factor multiplies each wave once the level is composed
+- **Date:** 2026-11-09
+- **Requirements:** none (reported by the human: `make adjust-level` took more and more enemies and
+  the rating got further from the target). Amends D-307.
+- **Context:** the factor was applied while the level's beats were composed: bigger waves took
+  longer to come in, fewer fitted, and every later beat moved. 1-2 brought 216 ships at ×1, 226 at
+  ×1.4 and 295 at ×1.96, each a differently arranged level; the brain rated them 8.8 %, 9.9 % and
+  4.5 % (100 episodes each).
+- **Decision:** the beats are composed as written whatever the factor, and the factor multiplies
+  the wave script's density (`WAVE_DENSITY × enemies`): each wave, and each filler group, brings
+  that many times its groups at the time it would at ×1 (a lone heavy enemy's extra copies come
+  one after the other, as the density already makes them). `level_filler` no longer takes it.
+- **Consequences:** 1-2 keeps its 42 waves at any factor: 107 ships at ×0.5, 216 at ×1, 380 at
+  ×1.96, 597 at ×3. Rated with the brain (48 episodes each): 0.0 % at ×0.5, 6.5 % at ×1, 17.5 % at
+  ×1.5, 37.6 % at ×2 and 68.5 % at ×3, rising with the factor.
+- **Status:** Proposed

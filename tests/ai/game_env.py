@@ -30,9 +30,9 @@ from core.systems.player_flight import FlightInput
 from core.systems.run_arsenal import WeaponLevels
 from game.config.level_enemies import LEVEL_ENEMIES
 from game.config.scenery_look import PLAYFIELD_CAMERA
-from game.config.wave_plans import level_filler, level_plan
+from game.config.wave_plans import level_plan
 from game.index import GAME
-from game.sim.assemble_level import WorldTables, assemble_level
+from game.sim.assemble_level import assemble_level
 from render.scenery.playfield_framing import frame_playfield, playfield_eye, visible_half_width
 
 STEP_SECONDS = 1 / GAME_PLAY_CONFIG.step_hz
@@ -99,11 +99,8 @@ def _tuned_level(level_id: str, enemies: float) -> GameLevel:
     """Return the level composed again with `enemies` times its composed enemies (D-307)."""
     world, number = (int(part) for part in level_id.split("-"))
     sim = importlib.import_module(f"game.sim.world_{world}")
-    tables = WorldTables(
-        {level_id: level_filler(world, number, enemies)}, {level_id: sim.TABLES.bosses[level_id]}
-    )
     plan = level_plan(world, number, enemies)
-    return _playable(assemble_level(level_id, sim.SCENERIES[level_id], plan, tables))
+    return _playable(assemble_level(level_id, sim.SCENERIES[level_id], plan, sim.TABLES))
 
 
 def level_enemies(level_id: str) -> float:
