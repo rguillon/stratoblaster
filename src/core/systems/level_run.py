@@ -65,6 +65,7 @@ def _default_in_view(width: float, height: float) -> Callable[[float, float], bo
 def _player_systems(
     options: LevelRunOptions,
     reach: tuple[float, float],
+    bonus_scale: float = 1,
 ) -> tuple[BonusWorld | None, PlayerHull | None, PlayerBombs | None]:
     """Return the bonuses, hull and bombs of a run, each only when its rules are given.
 
@@ -83,6 +84,7 @@ def _player_systems(
             options.cull_margin,
             create_rng(seed + 2),
             create_rng(seed + 3),
+            bonus_scale,
         )
     hull: PlayerHull | None = None
     if options.hull is not None:
@@ -144,7 +146,9 @@ class LevelRun:
         bounds = options.bounds
         half = bounds.half_width_at(bounds.min_y)
         self._reach = (bounds.center_x - half, bounds.center_x + half)
-        self.bonuses, self.hull, self.bombs = _player_systems(options, self._reach)
+        self.bonuses, self.hull, self.bombs = _player_systems(
+            options, self._reach, level.bonus_scale
+        )
         flight = flight_of(options)
         self.ship: PlayerFlight = flight.ship
         self.journey: ShipJourney | None = flight.journey

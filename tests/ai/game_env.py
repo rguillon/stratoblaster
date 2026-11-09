@@ -80,7 +80,15 @@ def _playable(level: GameLevel) -> GameLevel:
     waves = [_as_record(w) if isinstance(w, dict) else w for w in level.waves]
     if all(a is b for a, b in zip(waves, level.waves, strict=True)):
         return level
-    return GameLevel(level.id, level.scenery, waves, level.difficulty, level.bosses, level.runout)
+    return GameLevel(
+        level.id,
+        level.scenery,
+        waves,
+        level.difficulty,
+        level.bosses,
+        level.runout,
+        level.bonus_scale,
+    )
 
 
 _LEVELS: dict[str, GameLevel] = {level.id: _playable(level) for level in GAME.game_levels}

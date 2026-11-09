@@ -153,6 +153,8 @@ def level_plan(world: int, level: int, enemies: float | None = None) -> Any:
     """
     start = 3.4 - 0.2 * (level - 1) - 0.3 * (world - 1)
     return record({
+        "world": world,
+        "level": level,
         "from": 4,
         "to": 226 if world == 1 else 292,
         "gap": [start, start * 0.7],

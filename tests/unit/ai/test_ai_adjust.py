@@ -17,6 +17,7 @@ from ai.adjust import (
     adjust_all,
     linear_targets,
     next_factor,
+    rising,
     search_factor,
     write_factor,
 )
@@ -130,3 +131,25 @@ def test_d_308_every_level_is_adjusted_in_turn(monkeypatch: pytest.MonkeyPatch) 
     outcomes = adjust_all(targets, Search(0), RatingSettings(), 1, Path("brain.pt"))
     assert calls == targets
     assert [o.best.rating for o in outcomes] == [10, 20]
+
+
+def test_d_309_the_search_follows_ratings_that_fall_with_more_enemies() -> None:
+    """Were more enemies easier (more bonuses), the search would still find the target."""
+
+    def rate_at(enemies: float, _episodes: int) -> tuple[float, float, float]:
+        return max(0.0, 60 - 30 * (enemies - 1)), 0.0, 0.5
+
+    harder = search_factor(1.0, Search(80), rate_at, _quiet)
+    assert harder.status == "reached"
+    assert harder.best.enemies < 1
+    easier = search_factor(1.0, Search(30), rate_at, _quiet)
+    assert easier.status == "reached"
+    assert easier.best.enemies > 1
+
+
+def test_d_309_the_ratings_direction_is_measured() -> None:
+    up = [Step(1.0, 16, 20, 1, 0), Step(1.4, 16, 30, 1, 0)]
+    down = [Step(1.0, 16, 30, 1, 0), Step(1.4, 16, 20, 1, 0)]
+    assert rising(up)
+    assert not rising(down)
+    assert rising(up[:1])

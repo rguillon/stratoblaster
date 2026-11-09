@@ -1776,3 +1776,28 @@
 - **Consequences:** a few hours on 8 cores (1-1 took 6 minutes; later levels are longer, and more
   of them need the most episodes). The factors fit the brain that rated them.
 - **Status:** Proposed
+
+### D-309 — A level drops as many bonuses whatever its enemy count
+- **Date:** 2026-11-09
+- **Requirements:** none (requested by the human, option 1 of three). Amends GAME-BONUS-02 and
+  GAME-BONUS-03 (a destroyed enemy's chances), which the human updates. Follows D-307.
+- **Context:** an enemy's chance to drop a bonus (weapon, heal, life, bomb) is its own, so twice
+  the enemies dropped about twice the bonuses. Measured with the brain on 3-3 (16 episodes each),
+  more enemies made the level easier: ×0.25 rated 26.1 %, ×0.5 18.3 %, ×1 17.3 %, ×2 16.6 %.
+  `make adjust-level` could not converge: it took more enemies to be harder.
+- **Decision:**
+  - `GameLevel.bonus_scale` (default 1) multiplies every destroyed enemy's chances to drop a
+    bonus, weapon (and so heal), life and bomb alike (`BonusWorld(scale=...)`). A boss part's own
+    chance (BOSS-57) and the mini boss's life (GAME-BONUS-04) are not scaled.
+  - `assemble_level` sets it to the ships the level's waves bring as composed (enemies factor 1)
+    over the ships they bring at its factor: on average the level drops as many bonuses as it
+    did, whatever its factor. A level at factor 1 is unchanged.
+  - The search of `make adjust-level` no longer takes for granted that more enemies are harder:
+    it goes the way its ratings so far go with the factor (least squares), and interpolates
+    between the closest factors rated either side of the target.
+- **Consequences:** 3-3 rates 3.8 % at ×0.25, 2.6 % at ×0.5, 17.3 % at ×1, 39.4 % at ×2 and
+  47.9 % at ×4 (16 episodes each): harder with more enemies, but no more than about 50 % with this
+  brain at the default highest factor (4); the higher targets of `make adjust-levels` (up to 99 %)
+  may run out (`ADJUST_ARGS=--highest 8` lets it try more). Fewer enemies than composed drop more
+  bonuses each.
+- **Status:** Proposed

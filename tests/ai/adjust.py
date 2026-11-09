@@ -9,7 +9,8 @@ it brings, its `LEVEL_ENEMIES` factor (1: its waves as `level_plan` composes the
 the level with that factor, as `make rate` does (same loadout, same seeds every step, so two steps
 differ by the factor alone), then picks the next:
 
-- until the target is bracketed, the factor grows (or shrinks) by `STRIDE`;
+- until the target is bracketed, the factor grows (or shrinks) by `STRIDE`, the way the ratings
+  so far go with it (more enemies are harder, D-309, but it is not taken for granted);
 - then it is interpolated between the closest ratings either side of the target.
 
 The episodes double once the target is bracketed, up to `--max-episodes`. It stops once a rating is
@@ -19,6 +20,7 @@ reaches its bounds before the target, it says so and writes nothing.
 """
 
 import argparse
+import itertools
 import json
 import math
 import os
@@ -75,22 +77,41 @@ class Outcome:
     steps: list[Step] = field(default_factory=list)
 
 
+def rising(steps: list[Step]) -> bool:
+    """Whether the ratings go up with the factor so far (least squares; up until two are known).
+
+    More enemies are harder when they bring no more bonuses (D-309), but the search does not
+    count on it.
+    """
+    if len({s.enemies for s in steps}) < 2:
+        return True
+    mean_x = sum(s.enemies for s in steps) / len(steps)
+    mean_y = sum(s.rating for s in steps) / len(steps)
+    return sum((s.enemies - mean_x) * (s.rating - mean_y) for s in steps) >= 0
+
+
 def next_factor(steps: list[Step], target: float, low: float, high: float) -> float:
-    """Return the next factor to rate (ratings go up with it: more enemies are harder)."""
-    below = [s for s in steps if s.rating < target]
-    above = [s for s in steps if s.rating >= target]
-    if not above:
-        return min(high, max(s.enemies for s in steps) * STRIDE)
-    if not below:
+    """Return the next factor to rate, whichever way the ratings go with it."""
+    up = rising(steps)
+    if not bracketed(steps, target):
+        # All too easy, or all too hard: go the way that changes the rating towards the target.
+        harder = all(s.rating < target for s in steps)
+        more = harder == up
+        if more:
+            return min(high, max(s.enemies for s in steps) * STRIDE)
         return max(low, min(s.enemies for s in steps) / STRIDE)
-    easy = max(below, key=lambda s: s.enemies)
-    hard = min(above, key=lambda s: s.enemies)
-    if easy.enemies >= hard.enemies or hard.rating == easy.rating:
-        # Noise put them the wrong way round: try halfway.
-        return (easy.enemies + hard.enemies) / 2
-    span = hard.enemies - easy.enemies
-    factor = easy.enemies + (target - easy.rating) * span / (hard.rating - easy.rating)
-    return min(max(factor, easy.enemies + MARGIN * span), hard.enemies - MARGIN * span)
+    ordered = sorted(steps, key=lambda s: s.enemies)
+    pairs = [
+        (a, b)
+        for a, b in itertools.pairwise(ordered)
+        if (a.rating < target) != (b.rating < target) and a.enemies < b.enemies
+    ]
+    if not pairs:  # the two sides were rated at the same factor
+        return ordered[0].enemies
+    a, b = min(pairs, key=lambda pair: pair[1].enemies - pair[0].enemies)
+    span = b.enemies - a.enemies
+    factor = a.enemies + (target - a.rating) * span / (b.rating - a.rating)
+    return min(max(factor, a.enemies + MARGIN * span), b.enemies - MARGIN * span)
 
 
 def bracketed(steps: list[Step], target: float) -> bool:
@@ -131,14 +152,9 @@ def search_factor(
             break
         if bracketed(steps, search.target):
             episodes = min(search.max_episodes, episodes * 2)
-        elif (enemies >= high and rating < search.target) or (
-            enemies <= low and rating >= search.target
-        ):
-            status = "saturated"
-            break
         enemies = round(next_factor(steps, search.target, low, high), DECIMALS)
         if any(s.enemies == enemies for s in steps):
-            # The factor cannot get any finer (it is written to two decimals).
+            # The factor cannot get any finer (it is written to two decimals), or is at a bound.
             status = "reached" if bracketed(steps, search.target) else "saturated"
             break
     best = min(steps, key=lambda s: abs(s.rating - search.target))

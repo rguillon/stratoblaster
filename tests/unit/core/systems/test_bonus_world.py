@@ -493,3 +493,39 @@ def test_game_bonus_11_a_heal_bonus_gives_nothing_without_a_hull_or_heal_rules()
     _step(no_heal, dt=0.1)
     assert no_heal.bonuses.collected == 1
     assert no_heal.hull.health == 50
+
+
+def test_d_309_the_level_s_scale_multiplies_an_enemy_s_chance_not_a_boss_part_s() -> None:
+    rules = _rules(per_health=0.1, lo=0.2, hi=0.6)
+    assert drop_chance(rules, _Source(max_health=4), 0.5) == pytest.approx(0.2)
+    assert drop_chance(rules, _Source(drop=0.7), 0.5) == 0.7
+
+
+def test_d_309_a_scaled_world_draws_its_weapon_and_special_bonuses_with_the_scale() -> None:
+    """A draw of 0.3 drops a bonus at 0.4 (a life), not at 0.4 x 0.5 = 0.2 (nothing)."""
+    odds = LifeAndBomb(0.4, 0.4)
+
+    def world(scale: float) -> BonusWorld:
+        return BonusWorld(
+            _rules(per_health=0.04, special=odds),  # a chance of 0.4 at health 10
+            _always(0.3),  # type: ignore[arg-type]
+            (0, 100),
+            10,
+            _always(0.3),  # type: ignore[arg-type]
+            scale=scale,
+        )
+
+    usual = world(1)
+    usual.drop([_Source()], special=lambda _t: True)
+    assert [b.kind for b in usual.bonuses] == ["life"]
+    halved = world(0.5)
+    halved.drop([_Source()], special=lambda _t: True)
+    assert halved.bonuses == []
+
+
+def test_d_309_a_run_s_bonuses_take_the_level_s_scale() -> None:
+    scenery = SimpleNamespace(scroll_speed=10, sections=[SimpleNamespace(seconds=10)])
+    level = GameLevel("L1", scenery, [], EnemyDifficulty(1, 1), None, None, 0.25)  # type: ignore[arg-type]
+    run = _run(level=level, bonuses=_rules(per_health=0.1, lo=0.2, hi=0.6))
+    assert run.bonuses is not None
+    assert run.bonuses.scale == 0.25

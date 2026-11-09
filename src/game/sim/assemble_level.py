@@ -5,7 +5,7 @@ from core.content.game_level import GameLevel
 from core.scenery.scenery_level import level_length
 from core.systems.boss_fights import LevelBoss
 from core.systems.enemy_world import EnemyDifficulty
-from game.config.wave_plans import compose_beats
+from game.config.wave_plans import compose_beats, group_size, level_filler, level_plan
 from game.config.world_1.bosses import MINI_BOSS_AT, QUIET_BEFORE_BOSS
 from game.config.world_1.waves import fill, quiet_before, wave_script
 from game.sim.scenery_build import scenery_level
@@ -49,6 +49,41 @@ def plan_beats(plan: WavePlan, scenery: ScenerySource, fights: list[LevelBoss]) 
     return compose_beats(plan, quiet)
 
 
+def _waves(scenery: ScenerySource, plan: WavePlan, filler: Filler, fights: list[LevelBoss]) -> Any:
+    """Return the waves of `plan` and `filler`, none in the stretch before a boss."""
+    script = wave_script(scenery.scrollSpeed, fill(plan_beats(plan, scenery, fights), filler))
+    quiet = QUIET_BEFORE_BOSS * scenery.scrollSpeed
+    return quiet_before(script, [fight.at for fight in fights], quiet)
+
+
+def ships_of(waves: Any) -> float:
+    """Return how many ships `waves` bring, each group counted with its ships."""
+    total = 0.0
+    for wave in waves:
+        total += wave["count"] * group_size(wave["kind"])
+    return total
+
+
+def bonus_scale(
+    scenery: ScenerySource, plan: WavePlan, waves: Any, fights: list[LevelBoss]
+) -> float:
+    """Return the factor on the enemies' drop chances that keeps the level's bonuses as many.
+
+    As many as with its waves as composed (an enemies factor of 1), whatever its enemies factor:
+    its ships as composed over its ships (D-309).
+    """
+    if plan.enemies == 1:
+        return 1
+    composed = _waves(
+        scenery,
+        level_plan(plan.world, plan.level, 1),
+        level_filler(plan.world, plan.level, 1),
+        fights,
+    )
+    ships = ships_of(waves)
+    return ships_of(composed) / ships if ships > 0 else 1
+
+
 def assemble_level(
     level_id: str,
     scenery: ScenerySource,
@@ -61,7 +96,8 @@ def assemble_level(
     written beats with light groups filling their lulls (WLD-1-21) and nothing new in the stretch
     before each boss (GAME-LEVEL-05), and its mini boss at the middle and final boss
     at the end (GAME-LEVEL-04), then its runout. Which bosses and runout are each level's own (the
-    "Mini boss", "Final boss" and "Runout" of each level file in `specs/worlds/`).
+    "Mini boss", "Final boss" and "Runout" of each level file in `specs/worlds/`). Its enemies drop
+    as many bonuses as with its waves as composed, whatever its enemies factor (D-309).
     """
     filler = tables.fillers.get(level_id)
     bosses = tables.bosses.get(level_id)
@@ -73,9 +109,7 @@ def assemble_level(
         LevelBoss(bosses.mini, "mini", length * MINI_BOSS_AT),
         LevelBoss(bosses.final, "final", length),
     ]
-    script = wave_script(scenery.scrollSpeed, fill(plan_beats(plan, scenery, fights), filler))
-    quiet = QUIET_BEFORE_BOSS * scenery.scrollSpeed
-    waves = quiet_before(script, [fight.at for fight in fights], quiet)
+    waves = _waves(scenery, plan, filler, fights)
     return GameLevel(
         level_id,
         level,
@@ -83,4 +117,5 @@ def assemble_level(
         AS_TUNED,
         fights,
         bosses.runout,
+        bonus_scale(scenery, plan, waves, fights),
     )

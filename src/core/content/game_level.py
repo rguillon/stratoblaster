@@ -26,6 +26,7 @@ class GameLevel:
         difficulty: EnemyDifficulty,
         bosses: list[LevelBoss] | None = None,
         runout: float | None = None,
+        bonus_scale: float = 1,
     ) -> None:
         """`id` is the id of its entry on the level select screen (`LevelEntry.id`).
 
@@ -35,6 +36,9 @@ class GameLevel:
         - `runout`: seconds (at the level's ground speed) of extra ground drawn after the level's
           end, like its last section, for a final boss fight that keeps the ground scrolling
           (GAME-LEVEL-08). Past it, the terrain still goes on.
+        - `bonus_scale`: the factor on every destroyed enemy's chances to drop a bonus (its weapon,
+          heal, life and bomb bonuses; not a boss's own drops), so a level with more enemies than
+          another can drop as many bonuses (D-309).
         """
         self.id = id_
         self.scenery = scenery
@@ -42,6 +46,7 @@ class GameLevel:
         self.difficulty = difficulty
         self.bosses = bosses
         self.runout = runout
+        self.bonus_scale = bonus_scale
 
 
 def find_game_level(levels: list[GameLevel], item_id: str) -> GameLevel | None:
