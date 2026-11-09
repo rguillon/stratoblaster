@@ -74,9 +74,24 @@ def test_d_305_the_search_makes_a_level_easier_too() -> None:
 
 def test_d_305_the_search_says_when_the_factor_runs_out() -> None:
     rate_at, _ = _rater(slope=5)
-    outcome = search_factor(1.0, Search(90), rate_at, _quiet)
+    outcome = search_factor(1.0, Search(90, highest=4), rate_at, _quiet)
     assert outcome.status == "saturated"
-    assert outcome.best.enemies <= Search.highest
+    assert outcome.best.enemies <= 4
+
+
+def test_d_312_more_enemies_have_no_limit_by_default() -> None:
+    """A level that needs ten times its enemies gets them."""
+    rate_at, _ = _rater(slope=5)
+    outcome = search_factor(1.0, Search(65), rate_at, _quiet)
+    assert outcome.status == "reached"
+    assert outcome.best.enemies > 9
+
+
+def test_d_312_more_enemies_stop_at_the_most_steps() -> None:
+    rate_at, calls = _rater(slope=0.1)
+    outcome = search_factor(1.0, Search(90, max_steps=5), rate_at, _quiet)
+    assert outcome.status == "unfinished"
+    assert len(calls) == 5
 
 
 def test_d_305_the_next_factor_interpolates_within_the_bracket() -> None:

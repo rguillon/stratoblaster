@@ -16,8 +16,9 @@ differ by the factor alone), then picks the next:
 Each rating plays `--episodes` episodes (100); they double once the target is bracketed, up to
 `--max-episodes` (100 too: no doubling by default). It stops once a rating is within `--tolerance`
 of the target (or within two standard errors of it at the most episodes), and writes the factor
-into the level's line of `src/game/config/level_enemies.py`. When the factor reaches its bounds
-before the target, it says so and writes nothing.
+into the level's line of `src/game/config/level_enemies.py`. More enemies have no limit (D-312):
+it goes on until the target or `--max-steps`, when it keeps the closest. Fewer stop at `--lowest`
+(a level too hard even then is left as it was).
 """
 
 import argparse
@@ -66,9 +67,11 @@ class Search:
     # the episodes double from a few once the target is bracketed.
     episodes: int = 100
     max_episodes: int = 100
-    max_steps: int = 10
+    # A safety net: the target is reached well before when it can be (D-312).
+    max_steps: int = 20
     lowest: float = 0.25
-    highest: float = 4.0
+    # No limit to the enemies by default (D-312).
+    highest: float = math.inf
 
 
 @dataclass
@@ -307,7 +310,9 @@ def main(argv: list[str] | None = None) -> None:
     parser.add_argument("--max-episodes", type=int, default=Search.max_episodes)
     parser.add_argument("--max-steps", type=int, default=Search.max_steps)
     parser.add_argument("--lowest", type=float, default=Search.lowest, help="least enemies factor")
-    parser.add_argument("--highest", type=float, default=Search.highest, help="most enemies factor")
+    parser.add_argument(
+        "--highest", type=float, default=Search.highest, help="most enemies factor (default: none)"
+    )
     parser.add_argument("--ship", choices=SHIP_IDS, default=RatingSettings.ship)
     parser.add_argument("--greedy", action="store_true")
     parser.add_argument("--workers", type=int, default=os.cpu_count() or 1)

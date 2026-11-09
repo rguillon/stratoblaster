@@ -1827,3 +1827,15 @@
   ×1.96, 597 at ×3. Rated with the brain (48 episodes each): 0.0 % at ×0.5, 6.5 % at ×1, 17.5 % at
   ×1.5, 37.6 % at ×2 and 68.5 % at ×3, rising with the factor.
 - **Status:** Proposed
+
+### D-312 — `make adjust-level` adds enemies without a limit
+- **Date:** 2026-11-09
+- **Requirements:** none (requested by the human: do not stop at ×4, keep adding enemies until the
+  target). Amends D-305 and D-309.
+- **Decision:** the enemies factor has no upper limit by default (`--highest` still sets one);
+  the search goes on until the rating is within the tolerance of the target, or at most
+  `--max-steps` steps, now 20 instead of 10, a safety net for a target the brain never reaches,
+  when the closest factor is written. The lower limit stays 0.25.
+- **Consequences:** a level whose target needs ×10 gets it (about seven steps of ×1.4 from ×1, then
+  the interpolation). Many enemies make long episodes: those steps are the slowest.
+- **Status:** Proposed

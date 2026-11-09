@@ -167,7 +167,7 @@ def _ships(beats: list) -> int:
 
 def test_d_307_every_level_has_its_enemies_factor() -> None:
     assert sorted(LEVEL_ENEMIES.keys()) == [f"{w}-{n}" for w, n in LEVELS]
-    assert all(0 < LEVEL_ENEMIES[key] <= 4 for key in LEVEL_ENEMIES.keys())
+    assert all(LEVEL_ENEMIES[key] > 0 for key in LEVEL_ENEMIES.keys())
 
 
 @pytest.mark.parametrize(("world", "level"), [(1, 1), (2, 3), (4, 5)])
