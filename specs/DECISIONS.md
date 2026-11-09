@@ -1801,3 +1801,12 @@
   may run out (`ADJUST_ARGS=--highest 8` lets it try more). Fewer enemies than composed drop more
   bonuses each.
 - **Status:** Proposed
+
+### D-310 — `make adjust-level` rates with 100 episodes
+- **Date:** 2026-11-09
+- **Requirements:** none (requested by the human: 100 simulations instead of 16). Amends D-305.
+- **Decision:** each rating of `make adjust-level` and `make adjust-levels` plays 100 episodes
+  (`--episodes` and `--max-episodes` both 100: they no longer start at 16 and double up to 64).
+- **Consequences:** a rating's standard error is about 0.6 % for a spread of 6 %, against 1.5 % at
+  16: the search is steadier, each step about six times longer than its first steps were.
+- **Status:** Proposed

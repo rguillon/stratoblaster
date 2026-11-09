@@ -13,10 +13,11 @@ differ by the factor alone), then picks the next:
   so far go with it (more enemies are harder, D-309, but it is not taken for granted);
 - then it is interpolated between the closest ratings either side of the target.
 
-The episodes double once the target is bracketed, up to `--max-episodes`. It stops once a rating is
-within `--tolerance` of the target (or within two standard errors of it at the most episodes), and
-writes the factor into the level's line of `src/game/config/level_enemies.py`. When the factor
-reaches its bounds before the target, it says so and writes nothing.
+Each rating plays `--episodes` episodes (100); they double once the target is bracketed, up to
+`--max-episodes` (100 too: no doubling by default). It stops once a rating is within `--tolerance`
+of the target (or within two standard errors of it at the most episodes), and writes the factor
+into the level's line of `src/game/config/level_enemies.py`. When the factor reaches its bounds
+before the target, it says so and writes nothing.
 """
 
 import argparse
@@ -61,8 +62,10 @@ class Search:
 
     target: float
     tolerance: float = 2.0
-    episodes: int = 16
-    max_episodes: int = 64
+    # Each rating plays 100 episodes (D-310); `--episodes` lower and `--max-episodes` higher let
+    # the episodes double from a few once the target is bracketed.
+    episodes: int = 100
+    max_episodes: int = 100
     max_steps: int = 10
     lowest: float = 0.25
     highest: float = 4.0

@@ -57,7 +57,8 @@ def test_d_305_the_search_reaches_the_target_on_a_steady_rating() -> None:
 
 def test_d_305_the_search_reaches_the_target_through_noise() -> None:
     rate_at, calls = _rater(noise=3.0)
-    outcome = search_factor(1.0, Search(50, max_steps=12), rate_at, _quiet)
+    search = Search(50, episodes=16, max_episodes=64, max_steps=12)
+    outcome = search_factor(1.0, search, rate_at, _quiet)
     assert outcome.status == "reached"
     assert abs(outcome.best.rating - 50) <= 2 * 3.0
     # The episodes double once the target is bracketed.
@@ -153,3 +154,9 @@ def test_d_309_the_ratings_direction_is_measured() -> None:
     assert rising(up)
     assert not rising(down)
     assert rising(up[:1])
+
+
+def test_d_310_each_rating_plays_a_hundred_episodes() -> None:
+    rate_at, calls = _rater(noise=3.0)
+    search_factor(1.0, Search(50), rate_at, _quiet)
+    assert {episodes for _, episodes in calls} == {100}
