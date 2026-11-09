@@ -20,6 +20,9 @@ test-results/
 # The AI player's optimiser state (only to resume `make learn`) and partial saves.
 data/brain.trainer.pt
 data/*.tmp
+# The levels' ratings (`make rate`) and `make adjust-level`'s records: each run's own.
+data/ratings.json
+data/adjust-*.json
 
 # CSV files (e.g. the AI player's learning logs) are never committed.
 *.csv
