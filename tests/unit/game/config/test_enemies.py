@@ -42,7 +42,7 @@ def test_enm_11_a_hit_radius_is_a_fraction_of_half_the_model_size() -> None:
 
 
 def test_enm_16_bullets_carry_the_style_and_speed_given() -> None:
-    assert bullet("dart", 90) == {"speed": 90, "radius": 4, "style": "dart"}
+    assert bullet("dart", 90, 15) == {"speed": 90, "radius": 4, "style": "dart", "damage": 15}
 
 
 def test_enm_07_spawn_margin_is_positive() -> None:
@@ -57,8 +57,9 @@ def test_enm_splitter_09_splitter_pod_is_a_smaller_kind_than_the_splitter() -> N
 def test_enm_splitter_05_the_splitter_is_a_diver_with_no_gun_and_no_path() -> None:
     """Tier 4's diver: dive tunables like a Hornet's, nothing to shoot with."""
     splitter = ENEMY_CONFIG.splitter
-    for name in ("entrySpeed", "stopFraction", "pause", "diveAcceleration", "diveMaxSpeed"):
+    for name in ("entrySpeed", "pause", "diveAcceleration", "diveMaxSpeed"):
         assert splitter[name] > 0, name
+    assert 0 < splitter.stopRange[0] < splitter.stopRange[1] < 1
     for name in ("bullet", "fireInterval", "path", "muzzles"):
         assert name not in splitter, name
 

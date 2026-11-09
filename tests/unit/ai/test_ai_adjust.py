@@ -21,7 +21,7 @@ from ai.adjust import (
     search_factor,
     write_factor,
 )
-from ai.game_env import LEVEL_IDS, EpisodeSetup, GameEnv, level_enemies
+from ai.game_env import LEVEL_IDS, GameEnv, level_enemies
 from ai.rate import RatingSettings, setups
 
 from game.config.level_enemies import LEVEL_ENEMIES
@@ -108,7 +108,7 @@ def test_d_307_the_level_s_factor_comes_from_its_config() -> None:
 def test_d_307_a_rating_episode_plays_with_the_enemies_tried() -> None:
     every = setups(RatingSettings(episodes=1), ["2-3"], 2.0)
     more = GameEnv(every[0]).level
-    usual = GameEnv(EpisodeSetup("2-3")).level
+    usual = GameEnv(setups(RatingSettings(episodes=1), ["2-3"], 1.0)[0]).level
     assert sum(w["count"] for w in more.waves) > 1.2 * sum(w["count"] for w in usual.waves)
     assert more.bosses[0].kind == usual.bosses[0].kind
     assert (more.difficulty.bullet_speed, more.difficulty.fire_rate) == (1, 1)

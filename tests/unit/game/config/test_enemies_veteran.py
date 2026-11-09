@@ -23,4 +23,4 @@ def test_enm_11_veteran_radius_is_a_fraction_of_half_the_model_size() -> None:
 
 
 def test_enm_16_bullet_defaults_to_a_size_of_four() -> None:
-    assert bullet("x", 50) == {"speed": 50, "radius": 4, "style": "x"}
+    assert bullet("x", 50, 20) == {"speed": 50, "radius": 4, "style": "x", "damage": 20}

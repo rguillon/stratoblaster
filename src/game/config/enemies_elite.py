@@ -11,6 +11,7 @@ centre (X right, Y up); `aim` is in radians, clockwise on screen from the nose. 
 import math
 
 from game.config.enemies import ENEMY_UNIT
+from game.config.enemy_tiers import TIER_DAMAGE
 from game.config.record import concat, merge, record
 
 # isort: split
@@ -33,8 +34,11 @@ def radius(size: float) -> float:
 
 
 def bullet(style: str, speed: float) -> Any:
-    """Enemy bullets: colourful glowing balls (ENM-16), styles of `enemy_look`."""
-    return record({"speed": speed, "radius": 4, "style": style})
+    """Enemy bullets: colourful glowing balls (ENM-16), styles of `enemy_look`.
+
+    Every elite kind is tier 4's: its damage (D-314).
+    """
+    return record({"speed": speed, "radius": 4, "style": style, "damage": TIER_DAMAGE["4"].bullet})
 
 
 def along_aim(point: Any, aim: float, length: float) -> list[float]:
@@ -172,17 +176,17 @@ JUGGERNAUT_PLATES = [
 ELITE_CONFIG = record({
     # ENM-HYDRA-11: health, points and hit circle.
     "hydra": {
-        "stats": {"model": "hydra", "radius": 17, "health": 220, "points": 700},
+        "stats": {"model": "hydra", "radius": 17, "health": 275, "points": 700},
         "size": 1.6,
         "entrySpeed": 75,
-        # It stops in the upper third.
-        "stopFraction": 0.74,
+        # Its stop height: one at random in this range (D-313).
+        "stopRange": [0.45, 0.8],
         "stay": 7,
         "exitSpeed": 95,
         # One head fires every `headFireInterval`, in turn, the first after `firstShot`: a burst
         # of `burstCount` bullets `burstGap` apart from the gun on its brow, along the head
         # (ENM-HYDRA-09, owner request 2026-11-05: it swapped weapons with the Juggernaut).
-        "headFireInterval": 0.8,
+        "headFireInterval": 0.6,
         "firstShot": 0.5,
         "burstCount": 3,
         "burstGap": 0.1,
@@ -217,15 +221,22 @@ ELITE_CONFIG = record({
     },
     # ENM-SCISSOR-14: health, points and hit circle.
     "scissor": {
-        "stats": {"model": "scissor", "radius": 14, "health": 240, "points": 800},
+        "stats": {"model": "scissor", "radius": 14, "health": 300, "points": 800},
         "size": 1.8,
         "entrySpeed": 160,
         # It slows down over this distance before its stop point.
         "brakeDistance": 60,
-        "stopFraction": 0.8,
+        # Its stop height: one at random in this range (D-313).
+        "stopRange": [0.5, 0.82],
         "exitSpeed": 190,
         # Each arm's laser: 1 s of warning line, then 2 s of beam while the arms close.
-        "laser": {"warningSeconds": 1, "firingSeconds": 2, "width": 9, "style": "lancer"},
+        "laser": {
+            "warningSeconds": 1,
+            "firingSeconds": 2,
+            "width": 9,
+            "style": "lancer",
+            "damage": TIER_DAMAGE["4"].laser,
+        },
         # How far each arm swings inward while its laser fires.
         "sweep": 15,
         "arms": SCISSOR_ARMS,
@@ -261,16 +272,17 @@ ELITE_CONFIG = record({
     },
     # ENM-JUGGERNAUT-14: health, points and hit circle.
     "juggernaut": {
-        "stats": {"model": "juggernaut", "radius": 20, "health": 320, "points": 1000},
+        "stats": {"model": "juggernaut", "radius": 20, "health": 400, "points": 1000},
         "size": 2,
         "entrySpeed": 55,
-        "stopFraction": 0.74,
+        # Its stop height: one at random in this range (D-313).
+        "stopRange": [0.45, 0.8],
         "drift": 60,
         # Seconds for one left-right drift.
         "driftPeriod": 5,
         "stay": 10,
         "exitSpeed": 80,
-        "fireInterval": 2.5,
+        "fireInterval": 1.8,
         "firstShot": 1.2,
         "spreadCount": 7,
         "spreadSpacing": 9,
@@ -285,7 +297,7 @@ ELITE_CONFIG = record({
         # Each shoulder launcher launches a missile along it every interval (ENM-JUGGERNAUT-10,
         # owner request 2026-11-05: it swapped weapons with the Hydra), a little slower than the
         # Rocketeer's.
-        "cannonInterval": 2.4,
+        "cannonInterval": 1.8,
         "firstBurst": 0.8,
         "missile": {
             "speed": 130,
@@ -294,6 +306,7 @@ ELITE_CONFIG = record({
             "radius": 5,
             "health": 10,
             "style": "rocketeer",
+            "damage": TIER_DAMAGE["4"].missile,
         },
         "cannons": JUGGERNAUT_CANNONS,
         "plates": JUGGERNAUT_PLATES,
@@ -333,7 +346,7 @@ ELITE_CONFIG = record({
     },
     # ENM-HIVE-12: health, points and hit circle.
     "hive": {
-        "stats": {"model": "hive", "radius": radius(2) * 0.8, "health": 420, "points": 900},
+        "stats": {"model": "hive", "radius": radius(2) * 0.8, "health": 525, "points": 900},
         "size": 2,
         "speed": 28,
         # How fast its launch ring turns, degrees per second.
@@ -345,7 +358,7 @@ ELITE_CONFIG = record({
         "port": [0, 14, 9],
         # A launched Splitter flies this far down from the hatch before its pause.
         "launchDrop": 55,
-        "ringInterval": 3,
+        "ringInterval": 2.2,
         "firstRing": 1,
         "ringCount": 12,
         "ringBullet": bullet("orange", 150),

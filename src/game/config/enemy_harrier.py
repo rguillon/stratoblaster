@@ -7,6 +7,7 @@ down the screen (X right, Y up, and a height).
 """
 
 from game.config.enemies import radius
+from game.config.enemy_tiers import TIER_DAMAGE
 from game.config.record import record
 
 # Distance of each launcher from its centre, out on its shoulder pod.
@@ -14,12 +15,13 @@ HARRIER_RAIL = 8
 
 HARRIER_CONFIG = record({
     # ENM-HARRIER-09: health, points and hit circle.
-    "stats": {"model": "harrier", "radius": radius(0.9), "health": 60, "points": 220},
+    "stats": {"model": "harrier", "radius": radius(0.9), "health": 90, "points": 220},
     "size": 0.9,
     "entrySpeed": 260,
     # It slows down over this distance before its stop point.
     "brakeDistance": 90,
-    "stopFraction": 0.78,
+    # Its stop height: one at random in this range (D-313).
+    "stopRange": [0.45, 0.85],
     # How fast it strafes sideways while it holds, and how far from the side edges it turns back.
     "strafeSpeed": 28,
     "strafeMargin": 40,
@@ -43,6 +45,7 @@ HARRIER_CONFIG = record({
         "radius": 4,
         "health": 10,
         "style": "rocketeer",
+        "damage": TIER_DAMAGE["2"].missile,
     },
     "xRange": [0.2, 0.8],
 })

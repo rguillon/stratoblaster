@@ -129,9 +129,9 @@ def test_enm_broodmother_08_the_phantoms_model_is_built_with_every_levels_models
     assert "phantom" in ENEMY_BINDINGS.models
 
 
-def test_enm_broodmother_11_it_has_700_health_and_scores_1200_points() -> None:
+def test_d_314_a_broodmother_has_880_health_and_scores_1200_points() -> None:
     mother = Broodmother(200, 700)
-    assert mother.health == 700
+    assert mother.health == 880
     assert mother.points == 1200
     assert CFG.size == 3
 

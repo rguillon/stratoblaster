@@ -7,6 +7,7 @@ of the playfield height from its bottom (ENM-BROODMOTHER-11).
 
 from game.config.enemies import bullet
 from game.config.enemies_elite import radius
+from game.config.enemy_tiers import TIER_DAMAGE
 from game.config.record import record
 
 BROODMOTHER_CONFIG = record({
@@ -14,7 +15,7 @@ BROODMOTHER_CONFIG = record({
     "stats": {
         "model": "broodmother",
         "radius": radius(3) * 0.8,
-        "health": 700,
+        "health": 880,
         "points": 1200,
     },
     # A flying aircraft carrier, big enough for a Phantom's launch bay in its deck.
@@ -46,7 +47,7 @@ BROODMOTHER_CONFIG = record({
         "turnDeg": 100,
         "fireInterval": 1.6,
         "firstShot": 1,
-        "bullet": bullet("green", 190),
+        "bullet": bullet("green", 190, TIER_DAMAGE["3"].bullet),
     },
     # It stops launching below this height, too close to the player.
     "lastFraction": 0.3,

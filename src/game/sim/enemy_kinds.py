@@ -6,7 +6,6 @@ gameplay depends on their look (ENM-46).
 """
 
 from core.entities.enemy import EnemyKindDefinition
-from core.math.rng import random_in
 from game.config.enemies import ENEMY_CONFIG as C
 from game.config.enemies import ENEMY_SPAWN_MARGIN as MARGIN
 from game.config.enemy_broodmother import BROODMOTHER_CONFIG
@@ -22,8 +21,10 @@ from game.sim.enemies.enemy_helpers import (
     clamp_entry,
     coin,
     pick_x,
+    range_in,
     side_dive_stop_x,
     side_height,
+    stop_height,
     top_x,
 )
 from game.sim.enemies.harrier import Harrier
@@ -87,7 +88,7 @@ def _spawn_hornet(area: EnemySpawnArea) -> list[Enemy]:
         options = hornet_options(C.hornet, y, stop_x)
         return [Hornet(-MARGIN if left else area.width + MARGIN, y, options)]
     x = _entry_x(area, C.hornet.xRange)
-    return [Hornet(x, _top(area), hornet_options(C.hornet, C.hornet.stopFraction * area.height))]
+    return [Hornet(x, _top(area), hornet_options(C.hornet, stop_height(area, C.hornet.stopRange)))]
 
 
 def _spawn_scout(area: EnemySpawnArea) -> list[Enemy]:
@@ -100,19 +101,19 @@ def _spawn_strafer(area: EnemySpawnArea) -> list[Enemy]:
     top = entry.side == "top" if entry is not None else _coin(area)
     if top:
         return [Strafer(_entry_x(area, C.strafer.xRange), _top(area), "top")]
-    left, y = side_pass(area, C.strafer.heightFraction)
+    left, y = side_pass(area, range_in(area.random, C.strafer.heightRange))
     x = -MARGIN if left else area.width + MARGIN
     return [Strafer(x, y, "left" if left else "right")]
 
 
 def _spawn_spinner(area: EnemySpawnArea) -> list[Enemy]:
-    stop_y = random_in(area.random, C.spinner.stopRange[0], C.spinner.stopRange[1]) * area.height
+    stop_y = stop_height(area, C.spinner.stopRange)
     return [Spinner(_entry_x(area, C.spinner.xRange), _top(area), stop_y)]
 
 
 def _spawn_lancer(area: EnemySpawnArea) -> list[Enemy]:
     x = _entry_x(area, C.lancer.xRange)
-    return [Lancer(x, _top(area), C.lancer.stopFraction * area.height)]
+    return [Lancer(x, _top(area), stop_height(area, C.lancer.stopRange))]
 
 
 def _spawn_rocketeer(area: EnemySpawnArea) -> list[Enemy]:
@@ -121,7 +122,7 @@ def _spawn_rocketeer(area: EnemySpawnArea) -> list[Enemy]:
 
 def _spawn_splitter(area: EnemySpawnArea) -> list[Enemy]:
     x = _entry_x(area, C.splitter.xRange)
-    return [Splitter(x, _top(area), C.splitter.stopFraction * area.height)]
+    return [Splitter(x, _top(area), stop_height(area, C.splitter.stopRange))]
 
 
 def _spawn_carrier(area: EnemySpawnArea) -> list[Enemy]:
@@ -130,12 +131,12 @@ def _spawn_carrier(area: EnemySpawnArea) -> list[Enemy]:
 
 def _spawn_harrier(area: EnemySpawnArea) -> list[Enemy]:
     x = _entry_x(area, HARRIER_CONFIG.xRange)
-    return [Harrier(x, _top(area), HARRIER_CONFIG.stopFraction * area.height)]
+    return [Harrier(x, _top(area), stop_height(area, HARRIER_CONFIG.stopRange))]
 
 
 def _spawn_sweeper(area: EnemySpawnArea) -> list[Enemy]:
     x = _entry_x(area, SWEEPER_CONFIG.xRange)
-    return [Sweeper(x, _top(area), SWEEPER_CONFIG.stopFraction * area.height)]
+    return [Sweeper(x, _top(area), stop_height(area, SWEEPER_CONFIG.stopRange))]
 
 
 def _spawn_hatchery(area: EnemySpawnArea) -> list[Enemy]:
@@ -144,7 +145,7 @@ def _spawn_hatchery(area: EnemySpawnArea) -> list[Enemy]:
 
 def _spawn_prism(area: EnemySpawnArea) -> list[Enemy]:
     x = _entry_x(area, PRISM_CONFIG.xRange)
-    return [Prism(x, _top(area), PRISM_CONFIG.stopFraction * area.height)]
+    return [Prism(x, _top(area), stop_height(area, PRISM_CONFIG.stopRange))]
 
 
 def _spawn_broodmother(area: EnemySpawnArea) -> list[Enemy]:

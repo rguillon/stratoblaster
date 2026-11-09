@@ -39,7 +39,7 @@ def test_enm_lancer_03_a_lancer_charges_during_its_warning_and_holds_still() -> 
 
 def test_enm_lancer_07_after_its_laser_a_lancer_goes_on_down_to_its_next_stop_and_fires() -> None:
     ctx = FakeContext()
-    first = CFG.stopFraction * ctx.height
+    first = CFG.stopRange[1] * ctx.height
     lancer = Lancer(200, first, first)
     run_until(lancer, ctx, lambda: lancer.state == "attack", limit=10.0)
     run_until(lancer, ctx, lambda: lancer.state == "move", limit=10.0)

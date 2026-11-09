@@ -124,4 +124,6 @@ class Lancer(Enemy):
 def _laser_spec() -> EnemyLaserSpec:
     """Return the Lancer's laser: a warning line first, then the beam (ENM-LANCER-06, ENM-19)."""
     spec = CFG.laser
-    return EnemyLaserSpec(spec.warningSeconds, spec.firingSeconds, spec.width, spec.style)
+    return EnemyLaserSpec(
+        spec.warningSeconds, spec.firingSeconds, spec.width, spec.style, False, spec.damage
+    )

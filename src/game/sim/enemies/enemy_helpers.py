@@ -5,6 +5,7 @@ import math
 
 from core.entities.enemy import Enemy, EnemyMissileSpec, MissileFlight
 from core.systems.enemy_motion import Path
+from core.systems.enemy_shots import shot_damage
 from core.systems.projectile_motion import turn_towards
 from game.config.weapons import WEAPONS
 
@@ -74,6 +75,7 @@ def missile_spec(missile: Any, up: bool = False) -> EnemyMissileSpec:
         missile.style,
         None,
         missile_flight(up),
+        shot_damage(missile),
     )
 
 
@@ -154,6 +156,15 @@ def top_x(area: EnemySpawnArea, fraction: float) -> float:
 def range_in(random: Random, range_: tuple[float, float]) -> float:
     """Return a random number in `range_` (a [low, high) pair)."""
     return range_[0] + (range_[1] - range_[0]) * random()
+
+
+def stop_height(area: EnemySpawnArea, range_: tuple[float, float]) -> float:
+    """Return a height at a random fraction in `range_` of the area's height (D-313).
+
+    Each enemy of a kind stops at its own height, so a crowd spreads down the playfield instead of
+    lining up along the top.
+    """
+    return range_in(area.random, range_) * area.height
 
 
 def pick_x(random: Random, range_: tuple[float, float], area: EnemySpawnArea) -> float:

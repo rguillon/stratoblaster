@@ -2,7 +2,6 @@
 """The veteran enemy kinds (ENM-01)."""
 
 from core.entities.enemy import EnemyKindDefinition
-from core.math.rng import random_in
 from game.config.enemies import ENEMY_SPAWN_MARGIN as MARGIN
 from game.config.enemies_veteran import VETERAN_CONFIG as C
 from game.sim.enemies.enemy_helpers import (
@@ -11,6 +10,7 @@ from game.sim.enemies.enemy_helpers import (
     pick_x,
     side_dive_stop_x,
     side_height,
+    stop_height,
     top_bounds,
     top_x,
 )
@@ -57,7 +57,7 @@ def _wasp_group(area: EnemySpawnArea) -> list[Enemy]:
         x = -MARGIN if left else area.width + MARGIN
         heights = [y + (i - (group_size - 1) / 2) * group_spacing for i in range(group_size)]
         return [Wasp(x, height, height, stop_x) for height in heights]
-    stop_y = C.wasp.stopFraction * area.height
+    stop_y = stop_height(area, C.wasp.stopRange)
     low, high = top_bounds(area)
     half = ((group_size - 1) * group_spacing) / 2
     middle = min(high - half, max(low + half, _entry_x(area, C.wasp.xRange)))
@@ -69,7 +69,7 @@ def _spawn_mortar(area: EnemySpawnArea) -> list[Enemy]:
 
 
 def _spawn_phantom(area: EnemySpawnArea) -> list[Enemy]:
-    stop_y = random_in(area.random, C.phantom.placeY[0], C.phantom.placeY[1]) * area.height
+    stop_y = stop_height(area, C.phantom.placeY)
     return [Phantom(_entry_x(area, C.phantom.xRange), _top(area), stop_y)]
 
 

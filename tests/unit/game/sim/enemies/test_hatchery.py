@@ -147,8 +147,8 @@ def test_enm_hatchery_08_it_stops_launching_low_on_the_screen() -> None:
     assert hatchery.charge == 0
 
 
-def test_enm_hatchery_09_it_has_400_health_and_scores_700() -> None:
+def test_d_314_a_hatchery_has_450_health_and_scores_700() -> None:
     hatchery = Hatchery(200, 580)
-    assert hatchery.health == 400
+    assert hatchery.health == 450
     assert hatchery.points == 700
     assert hatchery.model == "hatchery"

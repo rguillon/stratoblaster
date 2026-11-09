@@ -1839,3 +1839,54 @@
 - **Consequences:** a level whose target needs ×10 gets it (about seven steps of ×1.4 from ×1, then
   the interpolation). Many enemies make long episodes: those steps are the slowest.
 - **Status:** Proposed
+
+### D-313 — The enemies that stop on the playfield spread down it
+- **Date:** 2026-11-09
+- **Requirements:** none (requested by the human: too many enemies camp in the top quarter of the
+  screen, which shows with more than 20 on it). Departs from the stop heights of ENM-HORNET-04,
+  ENM-STRAFER, ENM-SPINNER, ENM-LANCER, ENM-SPLITTER, ENM-HARRIER, ENM-SWEEPER, ENM-PRISM,
+  ENM-WASP, ENM-PHANTOM-09, ENM-HYDRA, ENM-SCISSOR and ENM-JUGGERNAUT (the human updates the
+  specs).
+- **Context:** every enemy of a kind that stops did so at the same height, nearly all of them
+  between 72 % and 82 % of the playfield's height: a crowd lined up along the top.
+- **Decision:** each such kind stops at a height drawn at random, per enemy (per group for the
+  Wasps), in a range reaching down to the middle of the playfield or below it (`stopRange`;
+  `heightRange` for the Strafer's side pass; `placeY` for the Phantom): Hornet 45–80 %, Strafer
+  40–85 %, Spinner 40–80 %, Lancer's first stop 55–85 %, Splitter 45–75 %, Harrier 45–85 %,
+  Sweeper 45–80 %, Prism 45–80 %, Wasp 50–80 %, Phantom 40–82 %, Hydra 45–80 %, Scissor 50–82 %,
+  Juggernaut 45–80 %. The kinds that cross the screen (Scout, Rocketeer, Mortar, carriers) are
+  unchanged. `enemy_helpers.stop_height` draws them.
+- **Consequences:** a third or more of the stops are below three quarters of the height; none
+  comes below 40 %, out of the player's bottom part. Enemies lower down are closer to the player:
+  the levels are harder, so the enemies factors need re-adjusting (`make adjust-levels`).
+- **Status:** Proposed
+
+### D-314 — Each tier hits harder: shot damage per tier, tougher and faster tiers 2 to 4
+- **Date:** 2026-11-09
+- **Requirements:** none (requested by the human: balance the enemies so the difficulty targets
+  need a reasonable number of enemies). Departs from GAME-LIFE-03 (one damage per shot type for
+  every enemy) and from the health of ENM-STRAFER-07, ENM-SPINNER-07, ENM-SPLITTER-09,
+  ENM-WASP-11, ENM-MORTAR-10, ENM-PHANTOM-13, ENM-HARRIER-09, ENM-SWEEPER-09, ENM-HATCHERY-09,
+  ENM-PRISM-12, ENM-BROODMOTHER-11, ENM-HYDRA-11, ENM-SCISSOR-14, ENM-JUGGERNAUT-14, ENM-HIVE-12,
+  and the fire intervals of ENM-HYDRA, ENM-JUGGERNAUT and ENM-HIVE (the human updates the specs).
+- **Context:** `make adjust-levels` (D-312) needed ×2 to ×3.3 enemies in worlds 2 and 3, ×3 to ×10
+  in 4-1..4-3 and stopped unfinished at ×29 in 4-4 and 4-5. Every shot took 10 (bullet), 20
+  (missile) or 25 (laser) off a 300-health budget, with 2 s of invincibility after each hit: the
+  brain needed about 30 hits, a minute at the very least, to lose, which capped a 400 s level's
+  rating near 92 % whatever the enemy count. Tiers 2 and 3 also died faster against their world's
+  weapon level than tier 1 against level 1.
+- **Decision:**
+  - An enemy shot (bullet, missile, laser; and the bullets a burst makes) may carry its own
+    `damage`; 0 or none keeps the hull's rule (`shot_damage`, core). Bosses keep the rule.
+  - `TIER_DAMAGE` (`enemy_tiers.py`) gives each tier's kinds theirs: bullet / missile / laser
+    10/20/25 (tier 1, as before), 15/25/30 (tier 2), 20/35/40 (tier 3), 40/55/60 (tier 4).
+  - Health ×1.5 for tier 2 (Hatchery ×1.125: 450, to keep GAME-SCORE-03), ×1.25 for tier 3,
+    ×1.25 for tier 4. Tier 4 fires faster: Hydra heads every 0.6 s (0.8), Juggernaut spread every
+    1.8 s (2.5) and missiles every 1.8 s (2.4), Hive rings every 2.2 s (3).
+- **Consequences:** rated by the brain at ×1 enemies, with D-313 (24 episodes each): 1-1 14.7 %,
+  1-5 9.3 %, 2-3 18.6 %, 3-3 45.8 % (tier 4 still as in the first step), then 3-5 72.6 %, 4-1
+  56.1 %, 4-3 76.9 %, 4-5 82.1 %. Against the 10 → 99 % targets that leaves factors of roughly
+  ×0.8 to ×2.5, to be found by `make adjust-levels`. 99 % for 4-5 means the brain loses its three
+  lives in the first 2 % of the level: with 2 s of invincibility per hit and 3 hits a life in
+  tier 4, it cannot fall much below ~5 %, so 4-4 and 4-5 will stay short of 94 % and 99 %.
+- **Status:** Proposed

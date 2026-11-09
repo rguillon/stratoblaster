@@ -32,7 +32,7 @@ def test_enm_prism_05_the_kind_spawns_one_prism_just_above_the_playfield() -> No
     assert len(enemies) == 1
     assert isinstance(enemies[0], Prism)
     assert enemies[0].y > 600
-    assert enemies[0].stop_y == pytest.approx(CFG.stopFraction * 600)
+    assert CFG.stopRange[0] * 600 <= enemies[0].stop_y <= CFG.stopRange[1] * 600
 
 
 def test_enm_prism_05_a_prism_comes_in_and_stops_in_the_upper_third() -> None:
@@ -41,7 +41,6 @@ def test_enm_prism_05_a_prism_comes_in_and_stops_in_the_upper_third() -> None:
     run_until(prism, ctx, lambda: prism.state != "enter", limit=10.0)
     assert prism.y == pytest.approx(470)
     assert prism.state == "attack"
-    assert CFG.stopFraction * 600 > 600 * 2 / 3
 
 
 def test_enm_prism_06_it_shows_two_warning_lines_then_fires_two_straight_lasers() -> None:
@@ -155,9 +154,9 @@ def test_enm_prism_07_the_beam_follows_the_prisms_wing_emitters_and_heading() ->
     assert right.heading == pytest.approx(0.4)
 
 
-def test_enm_prism_12_prism_has_150_health_and_scores_380_points() -> None:
+def test_d_314_a_prism_has_190_health_and_scores_380_points() -> None:
     prism = Prism(200, 300, 300)
-    assert prism.health == 150
+    assert prism.health == 190
     assert prism.points == 380
     assert CFG.size == 1.5
 

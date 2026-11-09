@@ -13,7 +13,13 @@ from core.entities.enemy import (
     EnemyStats,
 )
 from core.math.rng import create_rng
-from core.systems.enemy_world import EnemyBlast, EnemyDifficulty, EnemyWorld, EnemyWorldOptions
+from core.systems.enemy_world import (
+    EnemyBlast,
+    EnemyDifficulty,
+    EnemyWorld,
+    EnemyWorldOptions,
+    _faster,
+)
 
 Action = Callable[["Walker", object, float], None]
 
@@ -213,3 +219,11 @@ def test_enm_18_a_missile_without_a_burst_is_launched_as_it_is() -> None:
     spec = EnemyMissileSpec(5, 90, 1, 3, 4, "rocket")
     world._context.fire_missile(10, 10, 0, spec)  # type: ignore[attr-defined]
     assert world.shots.missiles[0].burst is None
+
+
+def test_d_314_faster_bullets_keep_their_damage() -> None:
+    ring = EnemyBulletSpec(100, 4, "r", None, 30)
+    spec = _faster(EnemyBulletSpec(100, 4, "s", EnemyBurstSpec(1, 4, ring), 20), 1.5)
+    assert (spec.speed, spec.damage) == (150, 20)
+    assert spec.burst is not None
+    assert (spec.burst.bullet.speed, spec.burst.bullet.damage) == (150, 30)

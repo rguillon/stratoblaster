@@ -23,7 +23,7 @@ def test_enm_splitter_05_the_kind_spawns_one_splitter_above_the_top_edge() -> No
 
 
 def test_enm_splitter_05_a_splitter_is_a_tougher_diver_than_a_hornet() -> None:
-    assert CFG.stats.health == 200
+    assert CFG.stats.health == 250
     assert CFG.stats.points == 450
     assert CFG.size > 0.7
 

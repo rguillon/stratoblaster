@@ -4,7 +4,7 @@
 from core.entities.enemy import EnemyKindDefinition
 from game.config.enemies import ENEMY_SPAWN_MARGIN as MARGIN
 from game.config.enemies_elite import ELITE_CONFIG as C
-from game.sim.enemies.enemy_helpers import clamp_entry, pick_x, top_x
+from game.sim.enemies.enemy_helpers import clamp_entry, pick_x, stop_height, top_x
 from game.sim.enemies.hive import Hive
 from game.sim.enemies.hydra import Hydra
 from game.sim.enemies.juggernaut import Juggernaut
@@ -36,17 +36,17 @@ def _entry_x(area: EnemySpawnArea, range_: tuple[float, float]) -> float:
 
 def _spawn_hydra(area: EnemySpawnArea) -> list[Enemy]:
     x = _entry_x(area, C.hydra.xRange)
-    return [Hydra(x, _top(area), C.hydra.stopFraction * area.height)]
+    return [Hydra(x, _top(area), stop_height(area, C.hydra.stopRange))]
 
 
 def _spawn_scissor(area: EnemySpawnArea) -> list[Enemy]:
     x = _entry_x(area, C.scissor.xRange)
-    return [Scissor(x, _top(area), C.scissor.stopFraction * area.height)]
+    return [Scissor(x, _top(area), stop_height(area, C.scissor.stopRange))]
 
 
 def _spawn_juggernaut(area: EnemySpawnArea) -> list[Enemy]:
     x = _entry_x(area, C.juggernaut.xRange)
-    return [Juggernaut(x, _top(area), C.juggernaut.stopFraction * area.height)]
+    return [Juggernaut(x, _top(area), stop_height(area, C.juggernaut.stopRange))]
 
 
 def _spawn_hive(area: EnemySpawnArea) -> list[Enemy]:
