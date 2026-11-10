@@ -205,6 +205,7 @@ class StepInfo:
     progress: float = 0.0
     picked: list[str] = field(default_factory=list)
     bombed: bool = False
+    switched: bool = False
     cleared: str = ""  # the level of a campaign cleared over it (the next one then starts)
     outcome: str = ""  # "", "complete", "over" or "timeout"
 
@@ -217,12 +218,17 @@ class RewardWeights:
     `alive` and the charges for damage only teach it sooner that it scores only while it
     survives. `alive` is worth a point a decision (15 a second of play); the health of a whole
     bar lost costs as much as 2,000 points, a life 2,000 more.
+
+    A bomb set off costs a quarter of a bar (500 points), and a weapon switch a token amount
+    (D-315): the brain bombs when it saves more than that, and switches when it buys something.
     """
 
     score: float = 1.0 / 2000  # per point scored
     alive: float = 0.0005  # per decision played
     damage: float = 1.0  # per bar of health lost
     life: float = 1.0  # per life lost
+    bomb: float = 0.25  # per bomb set off
+    switch: float = 0.002  # per weapon switch
 
 
 class GameEnv:
@@ -389,6 +395,7 @@ class GameEnv:
         dealt_before = run.shots.total_damage
         progress_before = run.track.progress
         bombs_before = run.bombs.fired if run.bombs is not None else 0
+        weapon_before = run.shots.weapon.id
         dx, dy = MOVES[action.move]
         move = FlightInput(dx, dy)
         for i in range(self.frame_skip):
@@ -406,6 +413,7 @@ class GameEnv:
         info.dealt = run.shots.total_damage - dealt_before
         info.progress = run.track.progress - progress_before
         info.bombed = (run.bombs.fired if run.bombs is not None else 0) > bombs_before
+        info.switched = run.shots.weapon.id != weapon_before
         if run.phase == "complete":
             info.outcome = "complete"
         elif run.phase == "over":
@@ -428,6 +436,7 @@ class GameEnv:
         w = self.weights
         reward = w.score * info.score + w.alive
         reward -= w.damage * info.damage / self.max_health
+        reward -= w.bomb * info.bombed + w.switch * info.switched
         return reward - w.life * info.lives_lost
 
 

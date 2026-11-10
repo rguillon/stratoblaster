@@ -56,6 +56,9 @@ FIELD_COLS = round(FIELD_ROWS * WIDTH / HEIGHT)
 FOVEA_SIZE = 21
 FOVEA_CELL = 12.0
 N_STATE = 24
+# Where the state vector holds the bombs left (/5) and whether one is going off (D-315).
+STATE_BOMBS = 6
+STATE_BOMB_ACTIVE = 8
 SPEED_UNIT = 400.0
 LASER_SAMPLE = 6.0
 # The channels of counts (shots, laser samples): at most this many in a cell.

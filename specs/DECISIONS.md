@@ -1890,3 +1890,28 @@
   lives in the first 2 % of the level: with 2 s of invincibility per hit and 3 hits a life in
   tier 4, it cannot fall much below ~5 %, so 4-4 and 4-5 will stay short of 94 % and 99 %.
 - **Status:** Proposed
+
+### D-315 — The brain bombs and switches on purpose
+- **Date:** 2026-11-10
+- **Requirements:** none (requested by the human: the trained brain kept switching weapons and
+  fired every bomb as soon as it had one). Amends D-292 (the bomb and switch are no longer drawn
+  when playing) and D-296 (the reward).
+- **Context:** the entropy bonus counted half of the bomb and switch heads' entropy. Where a press
+  changes nothing (no bomb left, a bomb going off, weapons of equal level), that bonus was the only
+  thing those heads learned from, and it pushed them toward pressing half the time. The habit
+  carried over to the moment a bomb was picked up. A bomb also paid at once in points and cost
+  nothing, and drawing the actions 15 times a second when rated or watched turned any small chance
+  into presses every few seconds.
+- **Decision:**
+  - `mask_bomb` (`tests/ai/brain.py`) rules out "bomb" (logit −1e4) where none can go off. It reads
+    the state vector's bombs left and bomb going off (`STATE_BOMBS`, `STATE_BOMB_ACTIVE`). There
+    the choice is certain: no entropy, no gradient.
+  - The bomb and switch heads count for `SPARE_ENTROPY` (0.1, was 0.5) of the entropy bonus.
+  - `RewardWeights.bomb` = 0.25 per bomb set off (500 points, a quarter of a bar of health) and
+    `RewardWeights.switch` = 0.002 per weapon switch (`StepInfo.switched`).
+  - When playing (`Decision.sample`: `make rate`, `make adjust-level`, `make serve-ai`), the move is
+    still drawn but the bomb and the switch are the likeliest choice. Learning still draws all
+    three.
+- **Consequences:** the brain's shape is unchanged: a trained brain keeps learning from where it
+  is. Ratings change with how the brain plays, so the levels' enemies factors may need adjusting
+  again once it has relearned. A brain that never rates a bomb above 50 % never bombs when played.

@@ -12,12 +12,14 @@ from ai.brain import (
     Batch,
     Brain,
     BrainShape,
+    Decision,
     LearnStats,
     load_brain,
+    mask_bomb,
     save_brain,
 )
 from ai.game_env import MOVES, Action, EpisodeSetup, GameEnv
-from ai.observation import CH, N_CHANNELS, observe
+from ai.observation import CH, N_CHANNELS, N_STATE, STATE_BOMB_ACTIVE, STATE_BOMBS, observe
 
 SMALL = BrainShape(hidden=32, field_features=16, fovea_features=16, state_features=8)
 
@@ -197,3 +199,40 @@ def test_d_302_a_brain_saved_before_its_convolutions_were_given_has_the_old_two(
     )
     loaded, _ = load_brain(path)
     assert loaded.shape.convs == (32, 64)
+
+
+def _state(bombs: float, active: float) -> torch.Tensor:
+    state = torch.zeros(1, N_STATE)
+    state[0, STATE_BOMBS] = bombs
+    state[0, STATE_BOMB_ACTIVE] = active
+    return state
+
+
+def test_d_315_a_bomb_that_cannot_go_off_is_never_chosen() -> None:
+    logits = torch.tensor([[-5.0, 5.0]])
+    for bombs, active in ((0.0, 0.0), (0.4, 1.0)):
+        masked = mask_bomb(logits, _state(bombs, active))
+        bomb = torch.distributions.Categorical(logits=masked)
+        assert bomb.probs[0, 1].item() == 0
+        assert bomb.entropy().item() < 1e-6
+    assert torch.equal(mask_bomb(logits, _state(0.4, 0.0)), logits)
+
+
+def test_d_315_the_brain_masks_the_bomb_from_what_it_sees() -> None:
+    brain = Brain(SMALL)
+    batch = _batch(1)
+    batch.state[:, STATE_BOMBS] = 0
+    decision, _ = brain(batch, brain.initial_memory(1))
+    assert torch.softmax(decision.bomb, -1)[0, 1].item() == 0
+
+
+def test_d_315_playing_draws_the_move_but_takes_the_likeliest_bomb_and_switch() -> None:
+    count = 200
+    move = torch.zeros(count, len(MOVES))
+    bomb = torch.tensor([[0.0, -0.5]]).repeat(count, 1)  # 38 % of a bomb
+    switch = torch.tensor([[-0.5, 0.0]]).repeat(count, 1)  # 62 % of a switch
+    decision = Decision(move, bomb, switch, torch.zeros(count))
+    actions = decision.sample(greedy=False, generator=torch.Generator().manual_seed(1))
+    assert len(set(actions[:, 0].tolist())) > 1
+    assert set(actions[:, 1].tolist()) == {0}
+    assert set(actions[:, 2].tolist()) == {1}

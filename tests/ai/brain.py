@@ -21,13 +21,28 @@ from torch.distributions import Categorical
 
 from ai import DATA
 from ai.game_env import MOVES
-from ai.observation import FIELD_COLS, FIELD_ROWS, FOVEA_SIZE, N_CHANNELS, N_STATE, Observation
+from ai.observation import (
+    FIELD_COLS,
+    FIELD_ROWS,
+    FOVEA_SIZE,
+    N_CHANNELS,
+    N_STATE,
+    STATE_BOMB_ACTIVE,
+    STATE_BOMBS,
+    Observation,
+)
 
 BRAIN_FILE = DATA / "brain.pt"
 # The brain whose games scored best on average while learning (D-295).
 BEST_BRAIN_FILE = DATA / "brain-best.pt"
 TRAINER_FILE = DATA / "brain.trainer.pt"
 FORMAT = 1
+# The bomb and switch heads' share of the entropy bonus (D-315): enough to keep trying them, not so
+# much that pressing them at random pays when they change nothing.
+SPARE_ENTROPY = 0.1
+# The logit given to a bomb that cannot go off (none left, or one going off): never chosen (D-315).
+# Within float16's range, for the learner's mixed precision.
+NO_BOMB = -1e4
 
 
 @dataclass
@@ -137,7 +152,7 @@ class Decision:
 
     def entropy(self) -> Tensor:
         move, bomb, switch = self.distributions()
-        return move.entropy() + 0.5 * (bomb.entropy() + switch.entropy())
+        return move.entropy() + SPARE_ENTROPY * (bomb.entropy() + switch.entropy())
 
     def sample_with_log_prob(
         self, generator: torch.Generator | None = None
@@ -158,16 +173,32 @@ class Decision:
         return torch.stack(picks, dim=-1), total
 
     def sample(self, greedy: bool, generator: torch.Generator | None = None) -> Tensor:
-        """Actions (N, 3), the likeliest ones when `greedy`."""
+        """Actions (N, 3) when playing (rated or watched): the likeliest ones when `greedy`.
+
+        Otherwise the move is drawn (D-292), but the bomb and the switch are always the likeliest
+        (D-315): drawn 15 times a second, a small chance of pressing them is a press every few
+        seconds. Learning draws all three (`sample_with_log_prob`).
+        """
+        bomb, switch = self.bomb.argmax(-1), self.switch.argmax(-1)
         if greedy:
-            return torch.stack(
-                [self.move.argmax(-1), self.bomb.argmax(-1), self.switch.argmax(-1)], dim=-1
-            )
-        picks = [
-            torch.multinomial(torch.softmax(logits, -1), 1, generator=generator).squeeze(-1)
-            for logits in (self.move, self.bomb, self.switch)
-        ]
-        return torch.stack(picks, dim=-1)
+            move = self.move.argmax(-1)
+        else:
+            probs = torch.softmax(self.move, -1)
+            move = torch.multinomial(probs, 1, generator=generator).squeeze(-1)
+        return torch.stack([move, bomb, switch], dim=-1)
+
+
+def mask_bomb(logits: Tensor, state: Tensor) -> Tensor:
+    """Return the bomb head's `logits` with "bomb" ruled out where none can go off (D-315).
+
+    With no bomb left, or one going off, a press does nothing: left to the entropy bonus, the
+    head would learn to press half the time there, and fire every bomb the moment it has one.
+    Ruled out, the choice is certain there (no entropy, no gradient).
+    """
+    state = state.float()
+    blocked = (state[:, STATE_BOMBS] <= 0) | (state[:, STATE_BOMB_ACTIVE] > 0.5)
+    fire = logits[:, 1].masked_fill(blocked, NO_BOMB)
+    return torch.stack([logits[:, 0], fire], dim=-1)
 
 
 class Brain(nn.Module):
@@ -219,10 +250,11 @@ class Brain(nn.Module):
         )
         return self.trunk(joined)
 
-    def heads(self, memory: Tensor) -> Decision:
+    def heads(self, memory: Tensor, state: Tensor) -> Decision:
+        """Return the heads' decision; `state` (N, N_STATE) masks the bomb (D-315)."""
         return Decision(
             self.move_head(memory),
-            self.bomb_head(memory),
+            mask_bomb(self.bomb_head(memory), state),
             self.switch_head(memory),
             self.value_head(memory).squeeze(-1),
         )
@@ -231,7 +263,7 @@ class Brain(nn.Module):
         """One step for N players: their decision and their new memory."""
         _, memory = self.memory(self.encode(batch).unsqueeze(0), memory.unsqueeze(0))
         memory = memory.squeeze(0)
-        return self.heads(memory), memory
+        return self.heads(memory, batch.state), memory
 
     def unroll(self, batch: Batch, memory: Tensor, starts: Tensor, steps: int) -> Decision:
         """Replay sequences of `steps` steps for N players (inputs flattened time-major, T*N).
@@ -259,7 +291,7 @@ class Brain(nn.Module):
                 state = state * keep[t, broken].unsqueeze(0)
                 _, state = self.memory(features[t : t + 1, broken], state.contiguous())
                 outputs[t, broken] = state[0].to(outputs.dtype)
-        return self.heads(outputs.view(steps * count, -1))
+        return self.heads(outputs.view(steps * count, -1), batch.state)
 
 
 def save_brain(brain: Brain, stats: LearnStats, path: Path = BRAIN_FILE) -> None:

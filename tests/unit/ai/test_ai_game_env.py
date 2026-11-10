@@ -60,6 +60,7 @@ def test_switch_and_bomb_act_once_per_decision() -> None:
     _, info = env.step(Action(0, bomb=True, switch=True))
     assert env.run.shots.weapon.id == WEAPON_IDS[1]
     assert info.bombed
+    assert info.switched
     assert env.run.bombs is not None
     assert env.run.bombs.count == 2
 
@@ -88,6 +89,17 @@ def test_d_272_the_reward_is_the_points_scored_and_a_little_for_staying_alive() 
     assert env.reward(hurt) == pytest.approx(w.alive - w.damage / 2)
     lost = StepInfo(damage=env.max_health, lives_lost=1, outcome="over")
     assert env.reward(lost) == pytest.approx(w.alive - w.damage - w.life)
+
+
+def test_d_315_a_bomb_and_a_switch_cost_something() -> None:
+    env = GameEnv(EpisodeSetup("1-1"))
+    w = env.weights
+    assert env.reward(StepInfo(bombed=True)) == pytest.approx(w.alive - w.bomb)
+    assert env.reward(StepInfo(switched=True)) == pytest.approx(w.alive - w.switch)
+    assert w.bomb > 0
+    assert w.switch > 0
+    _, info = env.step(Action(0))
+    assert not info.switched
 
 
 def _clear(env: GameEnv) -> StepInfo:
