@@ -2,7 +2,7 @@
 """`make adjust-level`: tune a level's enemy count until the brain rates it at a target (D-305).
 
     uv run python -m ai.adjust --level 4-4 --target 90
-    uv run python -m ai.adjust --all --first 10 --last 99   # `make adjust-levels`: every level
+    uv run python -m ai.adjust --all --first 10 --last 70   # `make adjust-levels`: every level
 
 Every enemy and boss is the same in every level (D-307): what a level changes is how many enemies
 it brings, its `LEVEL_ENEMIES` factor (1: its waves as `level_plan` composes them). Each step rates
@@ -304,7 +304,7 @@ def main(argv: list[str] | None = None) -> None:
         help="adjust every level, from --first %% (1-1) to --last %% (4-5) evenly",
     )
     parser.add_argument("--first", type=float, default=10.0, help="--all: the first level's target")
-    parser.add_argument("--last", type=float, default=99.0, help="--all: the last level's target")
+    parser.add_argument("--last", type=float, default=70.0, help="--all: the last level's target")
     parser.add_argument("--tolerance", type=float, default=Search.tolerance)
     parser.add_argument("--episodes", type=int, default=Search.episodes)
     parser.add_argument("--max-episodes", type=int, default=Search.max_episodes)

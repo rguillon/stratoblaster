@@ -1915,3 +1915,45 @@
 - **Consequences:** the brain's shape is unchanged: a trained brain keeps learning from where it
   is. Ratings change with how the brain plays, so the levels' enemies factors may need adjusting
   again once it has relearned. A brain that never rates a bomb above 50 % never bombs when played.
+
+### D-316 — The enemies factors set from a scripted player's exposure, for 10 % to 70 %
+- **Date:** 2026-11-10
+- **Requirements:** none (requested by the human: rate the levels without the brain, which is not
+  good enough, and set the enemies so the difficulty follows the targets; the human chose a top
+  of 70 % once told 99 % cannot be reached). Amends D-305 (the default top target).
+- **Context:**
+  - The rating is `1 − (progress + health left) / 2`.
+  - After each hit the ship is invincible for 2 s, so it loses at most one hit's damage every
+    2 s, and 300 health takes at least 8–15 s to lose.
+  - A 99 % rating means losing every life in the first 2 % of the level. Even at 8 times the
+    enemies, 4-2 to 4-5 reach only 80–85 %.
+  - The brain's own ratings asked for ×10.5 at 4-4 and ×28.9 at 4-5.
+- **Method:**
+  - **Exposure:** an unhittable ship, with no bombs and the guns at the world's level (D-304),
+    aims at the nearest target and closes in on bosses. It plays the real simulation and records
+    every hit it would take. At most 60 s of each boss fight is counted, so the turret's slow
+    boss kills don't count against the level.
+  - **Player model:** a player takes a share q of those hits, with the 2 s of invincibility and
+    the balanced ship's 300 health over 3 lives. That gives a rating per episode.
+  - **Calibration:** q = 3.37 % is the share that makes 1-1 at ×1 (the waves as composed) rate
+    about 10 %.
+  - **Fitting:**
+    - Each level's factor is read off its rating against the factor (×0.75 to ×4, 8 seeds), then
+      fitted locally over two more checks (12 and 16 fresh seeds).
+    - 4-1 is kept at ×3.0 rather than ×2.99: below it, rounding takes its tier shares outside
+      ENM-50's tolerance.
+- **Decision:**
+  - The 20 factors run from ×1.13 to ×3.16 (`level_enemies.py`): 216 to 860 ships per level, most
+    in world 2, whose tier 2 enemies are weaker.
+  - On 20 more fresh seeds, every level is within 5 points of its target, the noise between seed
+    sets: 1-1 9.3 %, 2-3 32.9 %, 3-3 44.2 %, 4-1 57.7 %, 4-5 68.2 %.
+  - `make adjust-levels` now aims at 70 % by default (`LAST_TARGET`, `--last`).
+  - The waves are unchanged and every tier keeps its share (ENM-50).
+- **Consequences:**
+  - The percentages are relative to the model player: a better player rates every level lower.
+    Only 1-1 is pinned (10 %).
+  - Rating a level with the brain (`make rate`) gives other numbers.
+  - The model's hit share is the same however dense the screen; a real player is hit more often
+    on a crowded screen, so the later levels may feel harder than their numbers.
+  - The probe scripts were one-off and are not kept in the repository.
+- **Status:** Proposed

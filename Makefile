@@ -187,9 +187,9 @@ adjust-level:
 	$(AI_RUN) ai.adjust --level $(LEVEL) --target $(TARGET) $(ADJUST_ARGS)
 
 # Adjust every level in turn, its target rising evenly from FIRST_TARGET % (1-1) to LAST_TARGET %
-# (4-5): a few hours. `make adjust-levels FIRST_TARGET=10 LAST_TARGET=99`.
+# (4-5): a few hours. `make adjust-levels FIRST_TARGET=10 LAST_TARGET=70`.
 FIRST_TARGET ?= 10
-LAST_TARGET ?= 99
+LAST_TARGET ?= 70
 adjust-levels:
 	$(AI_RUN) ai.adjust --all --first $(FIRST_TARGET) --last $(LAST_TARGET) $(ADJUST_ARGS)
 
