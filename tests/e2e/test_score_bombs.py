@@ -41,7 +41,7 @@ def test_game_score_04_boss_parts_score_a_new_high_score_is_saved_and_shown(
 
     Also UI-OVER-02 ("New high score"), DEV-API-02 (`highScore`) and DEV-API-03 (`score`).
     """
-    open_debug(page, "?level=1-1&boss=final&ship=light")
+    open_debug(page, "?level=1-1&boss=final")
     wait_for_boss(page, "Storm Petrel")
     expect(page.locator(".hud-score-value")).to_have_text("0000000")
     expect(page.locator(".hud-high-score")).to_have_text("HI 0000000")
@@ -63,7 +63,6 @@ def test_game_score_04_boss_parts_score_a_new_high_score_is_saved_and_shown(
     expect(page.locator(".level-complete-high-score")).to_have_text("New high score")
     send_action(page, "confirm")
     expect_state(page, {"screen": "level-select"})
-    send_action(page, "back")
     send_action(page, "back")
     expect_state(page, {"screen": "title"})
     expect(page.locator(".title-high-score")).to_have_text(str(score))
@@ -123,7 +122,7 @@ def test_game_score_06_a_continue_after_the_mini_boss_keeps_the_score_up_to_the_
 
     Also ENG-54 (a game over).
     """
-    open_debug(page, "?level=1-1&boss=mini&ship=light")
+    open_debug(page, "?level=1-1&boss=mini")
     wait_for_boss(page, "Reef Warden")
 
     def press_k_and_count() -> int:

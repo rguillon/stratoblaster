@@ -1,8 +1,8 @@
 # Level select
 
-> **Area:** UI · **Prefix:** `UI-LEVEL` · **Related:** [screen-flow.md](screen-flow.md), [menu-input.md](menu-input.md), [ship-select.md](ship-select.md), [continue-and-game-over.md](continue-and-game-over.md), [../gameplay/level-flow.md](../gameplay/level-flow.md), [../performance.md](../performance.md), [../worlds/world-1/world.md](../worlds/world-1/world.md)
+> **Area:** UI · **Prefix:** `UI-LEVEL` · **Related:** [screen-flow.md](screen-flow.md), [menu-input.md](menu-input.md), [title-screen.md](title-screen.md), [continue-and-game-over.md](continue-and-game-over.md), [../gameplay/level-flow.md](../gameplay/level-flow.md), [../performance.md](../performance.md), [../worlds/world-1/world.md](../worlds/world-1/world.md)
 
-The screen where the player picks a level: a grid of 4 worlds × 5 levels, one row per world. Every
+The screen where the player picks a level, straight after the title's Start: a grid of 4 worlds × 5 levels, one row per world. Every
 level of the game can be played at any time, in any order. The worlds and their levels are in
 [worlds/](../worlds/world-1/world.md).
 
@@ -67,12 +67,12 @@ highlights it; tapping the highlighted cell confirms it.
 
 ### UI-LEVEL-06 — The first level is highlighted on arrival · MUST
 
-Coming from the ship select screen, the first unlocked level (`1-1`) is highlighted.
+Coming from the title screen, the first unlocked level (`1-1`) is highlighted.
 
 **Acceptance criteria**
-- Given `level-select` is opened from the ship select screen, then `1-1` is highlighted.
+- Given `level-select` is opened from the title screen, then `1-1` is highlighted.
 
-*Sources: P01-R07.*
+*Sources: P01-R07, D-326.*
 
 ### UI-LEVEL-07 — After a level, the next one is highlighted · MUST
 
@@ -92,14 +92,16 @@ Coming back from a level's end panel ([continue-and-game-over.md](continue-and-g
 
 ### UI-LEVEL-08 — Confirm starts the level · MUST
 
-Confirming an unlocked level opens the game screen, which starts that level with the chosen ship.
-Back opens the ship select screen.
+Confirming an unlocked level opens the game screen, which starts that level with the game's one
+ship, the Balanced one ([gameplay/player-ship.md](../gameplay/player-ship.md)). Back opens the
+title screen.
 
 **Acceptance criteria**
-- Given `1-1` is confirmed with the heavy ship, then the game screen plays `1-1` with the heavy ship.
+- Given `1-1` is confirmed, then the game screen plays `1-1` with the Balanced ship.
 - Given any level of any world is confirmed, then the game screen starts that level.
+- Given `level-select`, when Back is pressed, then the screen is `title`.
 
-*Sources: P01-R07, P06-R01, P08-R01, P09-R01, P10-R01.*
+*Sources: P01-R07, P06-R01, P08-R01, P09-R01, P10-R01, D-326.*
 
 ### UI-LEVEL-09 — The screen's look · SHOULD
 

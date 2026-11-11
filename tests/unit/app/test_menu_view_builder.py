@@ -21,13 +21,12 @@ from ui.menu_view import (
     LoadingView,
     PauseView,
     SettingsView,
-    ShipSelectView,
     TitleView,
 )
 
 
 def ctx(game: SimpleNamespace | None = None, progress: float = 0.0) -> MenuViewContext:
-    return MenuViewContext(game or make_game(), 1200, "1.0", "abc", 80, progress, 10)
+    return MenuViewContext(game or make_game(), 1200, "1.0", "abc", progress, 10)
 
 
 def state(screen: str, **overrides: object) -> MenuState:
@@ -35,8 +34,7 @@ def state(screen: str, **overrides: object) -> MenuState:
         "screen": screen,
         "selection": 0,
         "selected_id": None,
-        "highlighted_ship_id": "alpha",
-        "chosen_ship_id": None,
+        "ship_id": "alpha",
         "chosen_level_id": None,
         "transitioning": False,
         "level_result": None,
@@ -64,14 +62,6 @@ def test_ui_title_01_the_title_screen_shows_the_high_score_and_the_version() -> 
     assert (view.title, view.high_score, view.selected) == ("STRATOBLASTER", 1200, 1)
     assert (view.version, view.commit) == ("1.0", "abc")
     assert view.start == "Start"
-
-
-def test_ui_ship_02_the_ship_select_has_a_card_per_ship() -> None:
-    view = build_menu_view(state("ship-select", selection=1), ctx())
-    assert isinstance(view, ShipSelectView)
-    assert [card.title for card in view.ships] == ["Alpha", "Beta"]
-    assert view.ships[1].lines[0] == "Speed: fast"
-    assert view.cards_width_percent == 80
 
 
 def test_ui_level_04_the_level_select_marks_the_locked_levels() -> None:
@@ -175,14 +165,14 @@ def dev_ctx() -> MenuViewContext:
         "props": ["hut"],
         "levels": ["1-1", "1-2"],
     }
-    return MenuViewContext(make_game(), 0, "1.0", "abc", 80, 0, 10, labels)
+    return MenuViewContext(make_game(), 0, "1.0", "abc", 0, 10, labels)
 
 
 def test_ui_title_11_the_full_screen_entry_reads_what_confirming_it_does() -> None:
     assert build_menu_view(state("title"), ctx()).fullscreen is None
-    windowed = MenuViewContext(make_game(), 0, "1.0", "abc", 80, 0, 10, None, None, False)
+    windowed = MenuViewContext(make_game(), 0, "1.0", "abc", 0, 10, None, None, False)
     assert build_menu_view(state("title"), windowed).fullscreen == "Full screen"
-    full = MenuViewContext(make_game(), 0, "1.0", "abc", 80, 0, 10, None, None, True)
+    full = MenuViewContext(make_game(), 0, "1.0", "abc", 0, 10, None, None, True)
     assert build_menu_view(state("title"), full).fullscreen == "Exit full screen"
 
 

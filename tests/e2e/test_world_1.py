@@ -27,13 +27,10 @@ from playwright.sync_api import Page, expect
 WORLD_1 = ["1-1", "1-2", "1-3", "1-4", "1-5"]
 
 
-def play_level(page: Page, index: int, ship: int = 0) -> None:
-    """Through the menus to level `index` of World 1, with the ship at `ship` (0 = balanced)."""
+def play_level(page: Page, index: int) -> None:
+    """Through the menus to level `index` of World 1, with the game's one ship."""
     level_id = WORLD_1[index]
     open_game(page)
-    send_action(page, "confirm")
-    for _ in range(ship):
-        send_action(page, "right")
     send_action(page, "confirm")
     expect_state(page, {"screen": "level-select", "selectedId": "1-1"})
     for _ in range(index):
@@ -47,7 +44,6 @@ def play_level(page: Page, index: int, ship: int = 0) -> None:
 def test_wld_1_02_the_world_1_row_shows_1_1_to_1_5_all_unlocked(page: Page) -> None:
     """Also UI-LEVEL-01: the grid's first row."""
     open_game(page)
-    send_action(page, "confirm")
     send_action(page, "confirm")
     expect_state(page, {"screen": "level-select"})
     cells = page.locator(".level-cell")
@@ -81,15 +77,15 @@ def test_ui_level_08_a_level_can_be_confirmed_from_a_fresh_start_and_plays(
     expect_state(page, {"screen": "title", "game": None})
 
 
-def test_game_screen_05_the_heavy_ship_flies_over_1_1_shoots_and_stays_on_screen(
+def test_game_screen_05_the_ship_flies_over_1_1_shoots_and_stays_on_screen(
     page: Page,
 ) -> None:
     """Also GAME-CTRL-01 (arrows, Space, E), GAME-CTRL-05 (shooting is held).
 
     GAME-LEVEL-11 (the ship rises in) and ENG-54 (the player moves and shoots).
     """
-    play_level(page, 0, 1)
-    assert game_state(page)["chosenShipId"] == "heavy"
+    play_level(page, 0)
+    assert game_state(page)["shipId"] == "balanced"
     # The ship rises into the level first (reviewer, 2026-10-28).
     advance(page, 2)
     start = level(page)["player"]
@@ -145,7 +141,7 @@ def test_dev_opt_02_level_1_3_t_120_starts_at_2_00_the_waves_before_it_skipped(p
     state = game_state(page)
     played = state["game"]
     assert state["screen"] == "game"
-    assert state["chosenShipId"] == "balanced"
+    assert state["shipId"] == "balanced"
     assert played["levelId"] == "1-3"
     assert 120 <= played["time"] < 121
     # The first wave after 2:00 comes at 2:10: nothing before it came in. At 2:00, the middle of
@@ -168,8 +164,7 @@ def test_lvl_1_1_13_1_1_ends_once_its_final_boss_is_destroyed(page: Page) -> Non
 
     Also UI-LEVEL-07 (1-2 is highlighted next) and DEV-OPT-09 (K).
     """
-    open_debug(page, "?level=1-1&boss=final&ship=light")
-    assert game_state(page)["chosenShipId"] == "light"
+    open_debug(page, "?level=1-1&boss=final")
     step_until(page, lambda: boss_name(page), lambda n: n == "Storm Petrel")
     # BOSS-05: its health bar shows, with its name (UI-HUD-16).
     expect(page.locator(".boss-bar")).to_be_visible()

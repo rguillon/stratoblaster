@@ -6,10 +6,16 @@ from game.config.record import record
 # Logical pixels per model unit when the player ships are drawn on the playfield (GFX-SHIP-07).
 PLAYER_SHIP_SCALE = 7
 
-# Player ship look (GFX-SHIP-04: shiny grey/blue, blue light behind each reactor). Linear RGB, 0..1.
+# Player ship look (GFX-SHIP-04: satin grey/blue metal in three shades, blue light behind each
+# reactor). Linear RGB, 0..1. D-327: rougher than the mirror metal it was (0.25), so the light rolls
+# smoothly over the hull instead of breaking into hard white spots.
 SHIP_LOOK = record({
-    "hull": {"albedo": [0.56, 0.63, 0.74], "metallic": 0.9, "roughness": 0.25},
-    "accent": {"albedo": [0.16, 0.3, 0.6], "metallic": 0.75, "roughness": 0.3},
+    "hull": {"albedo": [0.6, 0.66, 0.76], "metallic": 0.8, "roughness": 0.42},
+    # Steel for the shoulders' fittings, canards and spinners: a step darker than the hull.
+    "hullMid": {"albedo": [0.4, 0.45, 0.54], "metallic": 0.85, "roughness": 0.45},
+    # Gunmetal for the tails, flaps and fins: the darkest shade.
+    "hullDark": {"albedo": [0.2, 0.23, 0.29], "metallic": 0.85, "roughness": 0.5},
+    "accent": {"albedo": [0.16, 0.3, 0.6], "metallic": 0.75, "roughness": 0.4},
     "canopy": {
         "albedo": [0.03, 0.08, 0.18],
         "metallic": 0.3,
@@ -17,7 +23,6 @@ SHIP_LOOK = record({
         "emissive": [0, 0.06, 0.12],
     },
     "trim": {"albedo": [0.24, 0.28, 0.36], "metallic": 0.85, "roughness": 0.3},
-    "navLight": {"emissive": [0.45, 0.85, 1]},
     "nozzle": {"albedo": [0.18, 0.2, 0.24], "metallic": 1, "roughness": 0.45},
     "reactorCore": {"emissive": [0.35, 0.75, 1]},
     "reactorExhaust": {"emissive": [0.1, 0.45, 1], "alpha": 0.45},

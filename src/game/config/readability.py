@@ -67,8 +67,9 @@ READABILITY = record({
     "effectMaxDuration": 0.6,
     # GFX-TRIM-05: the player ship's glowing edge trim, its built-in rim light (no hitbox
     # marker, GFX-READ-08: reviewer, 2026-10-30, D-194): colour, and width and offset out from
-    # the edges in logical pixels.
-    "playerTrim": {"color": [0.3, 0.9, 1], "width": 0.9, "offset": 0.1},
+    # the edges in logical pixels. Lighter since D-327 (owner: "rework the player's ship
+    # highlight, make it lighter"): thinner (0.9 before) and a paler, softer cyan ([0.3, 0.9, 1]).
+    "playerTrim": {"color": [0.3, 0.72, 0.82], "width": 0.5, "offset": 0.1},
     # GFX-TRIM-06, ENM-47: the enemies' trim is their neon colour `whiten` of the way to white
     # (set for the violet and magenta neon of before D-231, too dark alone on a dark ground),
     # times `strength` (above 1: the trim goes through the scene's tone mapping, which the rim

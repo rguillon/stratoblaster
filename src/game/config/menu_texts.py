@@ -21,8 +21,6 @@ MENU_TEXTS = record({
     "start": "Start",
     # The title's controls hint (UI-TITLE-05).
     "startHint": "Press Space / Enter or tap to start",
-    "chooseShip": "Choose your ship",
-    "chooseShipHint": "◀ ▶ to pick · Enter or tap to go",
     # The level select's heading and hint (UI-LEVEL-09).
     "chooseLevel": "Choose a level",
     "chooseLevelHint": "Arrows to pick · Enter or tap to go",

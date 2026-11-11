@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Renaud Guillon
 """Builds what the menu overlay shows for the current state.
 
-The screens of specs/ui/ (title, ship select, level select, game, pause, settings) and the dev menu,
+The screens of specs/ui/ (title, level select, game, pause, settings) and the dev menu,
 every text from the game (UI-LOOK-10).
 """
 
@@ -31,11 +31,9 @@ from ui.menu_view import (
     PauseQuestion,
     PauseView,
     SettingsView,
-    ShipSelectView,
     SliderView,
     TitleView,
 )
-from ui.ship_caption import ship_caption
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -58,7 +56,6 @@ class MenuViewContext:
         high_score: int,
         version: str,
         commit: str,
-        cards_width_percent: float,
         progress: float,
         volume_steps: int,
         dev_labels: dict[str, list[str]] | None = None,
@@ -71,8 +68,6 @@ class MenuViewContext:
         # Version and short commit hash (ENG-83, UI-TITLE-04).
         self.version = version
         self.commit = commit
-        # Width of the row of ship cards, in % of the screen.
-        self.cards_width_percent = cards_width_percent
         # Loading progress, 0..1.
         self.progress = progress
         # The volume sliders' highest step (UI-SET-02).
@@ -272,8 +267,8 @@ def _fullscreen_label(texts: Any, fullscreen: bool | None) -> str | None:
 def build_menu_view(state: MenuState, ctx: MenuViewContext) -> Any:
     """Return the view of the current screen: one of the classes of `ui/menu_view`.
 
-    The title's (UI-TITLE-01, with the Dev entry under `?dev`: DEV-MENU-01), the ships' cards
-    (UI-SHIP-02)...
+    The title's (UI-TITLE-01, with the Dev entry under `?dev`: DEV-MENU-01), the level select's
+    (UI-LEVEL-01)...
     """
     game = ctx.game
     texts: Any = game.texts
@@ -293,16 +288,6 @@ def build_menu_view(state: MenuState, ctx: MenuViewContext) -> Any:
             ctx.commit,
             DEV_VIEWER_CONFIG.texts.entry if ctx.dev_labels is not None else None,
             _fullscreen_label(texts, ctx.fullscreen),
-        )
-    if screen == "ship-select":
-        ships = [ship_caption(game.player_ships, ship.id) for ship in game.player_ships.ships]
-        return ShipSelectView(
-            texts.chooseShip,
-            texts.chooseShipHint,
-            texts.back,
-            state.selection,
-            ships,
-            ctx.cards_width_percent,
         )
     if screen == "level-select":
         options = [LevelOption(entry.label, not entry.unlocked) for entry in game.levels.levels]

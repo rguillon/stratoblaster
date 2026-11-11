@@ -39,19 +39,17 @@ BUILD_AHEAD_AFTER = 0.6
 class GameDebugOptions:
     """Debug options from the URL (DEV-OPT-01), e.g.
 
-    `?level=1-3&t=120&ship=heavy`: start a level straight away, at a given time, with the playback
-    keys and the FPS / polygons tile. `level_id`; `time` (seconds into the level to start at,
-    DEV-OPT-02); `ship_id` (None: the game's first ship); `boss` (the rank of the mini or final boss
-    to start at instead, DEV-OPT-03, or None); `weather` (False: no weather, DEV-OPT-04; None: the
-    level's own); `time_of_day` (the level at that time of day, DEV-OPT-05, or None); `tiles` (True:
-    the grid of tiles over the districts, DEV-OPT-06).
+    `?level=1-3&t=120`: start a level straight away, at a given time, with the playback keys and
+    the FPS / polygons tile. `level_id`; `time` (seconds into the level to start at, DEV-OPT-02);
+    `boss` (the rank of the mini or final boss to start at instead, DEV-OPT-03, or None); `weather`
+    (False: no weather, DEV-OPT-04; None: the level's own); `time_of_day` (the level at that time of
+    day, DEV-OPT-05, or None); `tiles` (True: the grid of tiles over the districts, DEV-OPT-06).
     """
 
     def __init__(
         self,
         level_id: str,
         time: float,
-        ship_id: str | None,
         boss: str | None,
         weather: bool | None = None,
         time_of_day: str | None = None,
@@ -59,7 +57,6 @@ class GameDebugOptions:
     ) -> None:
         self.level_id = level_id
         self.time = time
-        self.ship_id = ship_id
         self.boss = boss
         self.weather = weather
         self.time_of_day = time_of_day
@@ -173,18 +170,6 @@ def highlighted_level(state: Any) -> str | None:
     return None
 
 
-def ship_of(state: Any) -> str:
-    """Return the ship the flow's levels are flown with.
-
-    The one chosen, or else the one highlighted.
-    """
-    if state.chosen_ship_id is not None:
-        chosen: str = state.chosen_ship_id
-        return chosen
-    highlighted: str = state.highlighted_ship_id
-    return highlighted
-
-
 class GameSession:
     """Starts the level chosen on the game screen, and ends it when the flow leaves it (UI-FLOW-06).
 
@@ -249,7 +234,7 @@ class GameSession:
     def sync(self, state: Any) -> None:
         """Follows the flow's `state`: a level confirmed starts (UI-LEVEL-08), a level left ends."""
         self._highlighted = highlighted_level(state)
-        self._ahead_ship = ship_of(state)
+        self._ahead_ship = state.ship_id
         in_level = state.screen == "game" or state.paused
         level_id = state.chosen_level_id if in_level else None
         # Presses made while paused (e.g. a bomb key) do not carry into the level (UI-PAUSE-04).
@@ -345,7 +330,7 @@ class GameSession:
         self._prefetcher.start(level_id)
         load = self._take_ahead(state, level_id)
         if load is None:
-            load = self._new_load(level_id, ship_of(state), state)
+            load = self._new_load(level_id, state.ship_id, state)
         load.state = state
         self._load = load
         if not self.options.stepped_loading:
@@ -363,7 +348,7 @@ class GameSession:
 
     def _take_ahead(self, state: Any, level_id: str) -> LevelLoad | None:
         """Return the level built ahead on the level select screen, if it is the one confirmed."""
-        usable = self._is_ahead(level_id, ship_of(state)) and not state.resume
+        usable = self._is_ahead(level_id, state.ship_id) and not state.resume
         if not usable:
             self._drop_ahead()
         ahead = self._ahead

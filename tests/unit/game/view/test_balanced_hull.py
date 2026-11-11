@@ -1,0 +1,77 @@
+# Copyright (c) 2026 Renaud Guillon
+"""Unit tests of `src/game/view/balanced_hull.py` (GFX-SHIP-01, D-327)."""
+
+import pytest
+
+from game.view import balanced_hull as hull
+from game.view import balanced_ship as ship
+from game.view.balanced_hull import (
+    STATIONS,
+    TOP_POINTS,
+    hull_section,
+    hull_sections,
+    smooth_max,
+    smooth_stations,
+    top_height,
+)
+
+
+def test_gfx_ship_01_the_smooth_maximum_rounds_the_joint_and_keeps_the_far_values() -> None:
+    assert smooth_max(1, 0, 0.1) == pytest.approx(1)
+    assert smooth_max(0.3, 0.3, 0.1) > 0.3
+    assert smooth_max(0.3, 0.29, 0.1) >= 0.3
+
+
+def test_gfx_ship_01_the_stations_are_kept_and_the_sizes_never_go_negative() -> None:
+    rows = smooth_stations(STATIONS, 3)
+    assert len(rows) == (len(STATIONS) - 1) * 3 + 1
+    for k, station in enumerate(STATIONS):
+        assert rows[k * 3] == pytest.approx(station)
+    assert all(v >= 0 for row in rows for v in row[1:])
+
+
+def test_gfx_ship_01_the_top_is_mirrored_and_meets_the_wings_top_at_the_chine_edge() -> None:
+    station = STATIONS[6]
+    edge = station[hull.CHINE_HALF_WIDTH]
+    assert top_height(station, edge * 0.9999) == pytest.approx(hull.CHINE_EDGE, abs=1e-3)
+    assert top_height(station, edge * 1.01) == 0
+    for x in [0, 0.2, 0.42, 0.6]:
+        assert top_height(station, x) == pytest.approx(top_height(station, -x))
+
+
+def test_gfx_ship_01_the_shoulders_swell_out_of_the_back_without_a_dip() -> None:
+    """Between the body's back and a nacelle shoulder, the fillet keeps the top from sagging."""
+    station = STATIONS[7]
+    back = top_height(station, 0)
+    shoulder = top_height(station, hull.SHOULDER_X)
+    lowest = min(top_height(station, x / 100) for x in range(int(hull.SHOULDER_X * 100) + 1))
+    assert lowest >= min(back, shoulder) * 0.75
+
+
+def test_gfx_ship_01_every_section_has_the_same_ring_the_nose_closes_the_tail_is_cut() -> None:
+    """The nose ends in a point; the tail is cut off over the reactors' nozzles (and capped)."""
+    sections = hull_sections()
+    counts = {len(ring) for _z, ring in sections}
+    assert counts == {TOP_POINTS + 2}
+    assert all(abs(p[0]) < 1e-9 and abs(p[1]) < 1e-9 for p in sections[0][1])
+    tail = sections[-1][1]
+    assert max(p[0] for p in tail) > hull.SHOULDER_X
+
+
+def test_gfx_ship_01_the_back_stands_over_the_intakes_and_nacelles() -> None:
+    """D-327: from the intakes back, the shoulders stay well over the tubes inside them."""
+    intake_top = ship.INTAKE_Y + max(r for _z, r in ship.INTAKE)
+    nacelle_top = ship.REACTOR_Y + ship.REACTOR["radius"] * 1.1
+    # The nacelles run from the intakes' back (their front) to the tail.
+    nacelle_front = ship.INTAKE_Z + ship.INTAKE[0][0]
+    for station in STATIONS[5:]:
+        under = nacelle_top if station[hull.Z] <= nacelle_front else intake_top
+        assert top_height(station, hull.SHOULDER_X) >= under + 0.05, station
+
+
+def test_gfx_ship_01_a_section_runs_over_the_top_then_along_the_belly() -> None:
+    _z, ring = hull_section(STATIONS[6])
+    top = ring[:TOP_POINTS]
+    assert top[0][0] > 0 > top[-1][0]
+    assert all(p[1] >= 0 for p in top)
+    assert all(p[1] < 0 for p in ring[TOP_POINTS:])

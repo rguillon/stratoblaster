@@ -9,7 +9,7 @@ a cyan horizon line under the headings, and nothing that glows. This file fixes 
 palette, the fonts, the selection marks and the logo.
 
 The chrome is quiet so the scenes carry the colour: the chrome logo on the title, the 3D trench and
-the ships behind the menus, the level in play. Panels, entries and texts frame them and never
+the ship behind the menus, the level in play. Panels, entries and texts frame them and never
 compete (no glow, no hue gradient on a panel or a text). The 3D look of the levels is in
 [graphics/](../graphics/art-direction.md); the title's 3D backdrop is in
 [title-screen.md](title-screen.md).
@@ -31,13 +31,12 @@ scaling; 480 × 640 until D-249), so every size in the UI specs is in logical px
 
 The canvas and the overlay share one box, the largest box with the 16:9 logical aspect ratio that
 fits the window, centred, with dark bars (letterbox) on the rest. The menus have the game's aspect
-ratio (D-319): every menu screen, and the 3D scenes behind the menus (the backdrop, the ship select
-stage), are laid in the playfield window (540 × 720, 3:4, [gameplay/screen.md](../gameplay/screen.md)),
-between opaque blue-black side columns with a hairline on the window's edges, as a level is.
-Their cards, sliders and entry lists keep to a column (`menu_column`) inside it. The dev viewer's
-3D views keep the whole box. The overlay is scaled to that box
-with a CSS transform, so the 3D models and their HTML captions line up. The box follows window
-resizes.
+ratio (D-319): every menu screen, and the 3D backdrop behind the menus, are laid in the playfield
+window (540 × 720, 3:4, [gameplay/screen.md](../gameplay/screen.md)), between opaque blue-black
+side columns with a hairline on the window's edges, as a level is. Their sliders and entry lists
+keep to a column (`menu_column`) inside it. The dev viewer's 3D views keep the whole box. The
+overlay is scaled to that box with a CSS transform, so the 3D scene and the HTML over it line up.
+The box follows window resizes.
 
 On a phone (the box scaled under `phone_scale`, such as 0.3 on a 390 × 844 portrait screen), the
 menus, the pause menu, the settings and the end-of-level panels are instead laid out across the
@@ -51,7 +50,7 @@ keeps to the 16:9 box, lined up with the playfield; under a panel it is hidden (
 - At 390 × 844 (portrait phone), the canvas is the 16:9 box and the menus fill the window at their real size (e2e: UI-INPUT-11, UI-SET-03); a level being played keeps its HUD on the box, a pause menu does not (unit tests).
 - Given the window goes from 800 × 600 to 390 × 844, then the menu follows within 5 s (e2e).
 
-*Sources: P01-R13, GD-02, GD-03, ENG-110, D-008, D-249, D-286, D-319.*
+*Sources: P01-R13, GD-02, GD-03, ENG-110, D-008, D-249, D-286, D-319, D-326.*
 
 ### UI-LOOK-03 — Cyan on blue-black · MUST
 
@@ -70,7 +69,7 @@ cyan theme"; synthwave pink D-323 and neon blue/green D-198 before):
 Every other fill is a solid colour: no hue gradient on a panel, a bar or a text.
 
 **Acceptance criteria**
-- Manual check in screenshots of the title, ship select, level select, settings, pause menu and HUD: cyan on blue-black, green only on the lives and the new high score, no magenta, pink or violet.
+- Manual check in screenshots of the title, level select, settings, pause menu and HUD: cyan on blue-black, green only on the lives and the new high score, no magenta, pink or violet.
 
 *Sources: P01-R13, GD-60, D-198.*
 
@@ -107,7 +106,7 @@ shadow keeps them readable over the 3D scene. No text, panel or gauge of the ove
 coloured `box-shadow`, `text-shadow` or `drop-shadow`).
 
 **Acceptance criteria**
-- Manual check: the title, ship select, level select and settings screens have no frame and nothing glowing; each heading has its horizon line.
+- Manual check: the title, level select and settings screens have no frame and nothing glowing; each heading has its horizon line.
 
 *Sources: P01-R13, D-013, D-014, D-103, D-198.*
 
@@ -127,21 +126,19 @@ The selected entry is a solid cyan block with dark text (much lighter than the d
 without a glow, plus a mark that does not rely on colour:
 - title entries and the pause menu's entries: a `▶` before (and on the title a `◀` after), always
   one space from the word;
-- ship cards: a `▲` above the selected card;
 - level cells: a 3 px dashed white outline.
 
 **Acceptance criteria**
 - The selected entry stays identifiable in a greyscale screenshot.
-- e2e: the selected title entry has its `▶`, the selected ship card its visible `▲` (hidden on the others), the selected level cell a dashed outline.
+- e2e: the selected title entry has its `▶`, the selected level cell a dashed outline.
 
-*Sources: P01-R13, D-013, D-014, D-103, D-198.*
+*Sources: P01-R13, D-013, D-014, D-103, D-198, D-326.*
 
 ### UI-LOOK-09 — Readable by kids · MUST
 
-The menus are easy to read for a child: large text for entries and names (entries and ship names
-20 to 32 px, level cells 24 px, headings 32 px, hints 16 px; only the ship stats, the HUD readouts
-and the version are smaller, and no text is under 12 px but the version, 11 px), short words, few
-words per screen. Hints use plain words ("Press Space / Enter or tap to start"). Texts are in
+The menus are easy to read for a child: large text for entries (20 to 32 px, level cells 24 px,
+headings 32 px, hints 16 px; only the HUD readouts and the version are smaller, and no text is under
+12 px but the version, 11 px), short words, few words per screen. Hints use plain words ("Press Space / Enter or tap to start"). Texts are in
 sentence case, at weight 500, 600 for the headings, the entries and the score; letter spacing is at
 most 0.04 em; no italic and no weight over 600 but the logo. Interface texts end without an exclamation mark. Sizes and
 spacing are multiples of 4 px.
@@ -150,7 +147,7 @@ spacing are multiples of 4 px.
 - Manual check at 390 × 844: every menu text can be read without zooming.
 - Unit test of the game texts: no text ends with `!`.
 
-*Sources: P01-R13.*
+*Sources: P01-R13, D-326.*
 
 ### UI-LOOK-10 — Every text comes from the game · MUST
 

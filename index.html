@@ -423,55 +423,6 @@
         color: var(--text-3);
       }
 
-      /* D-249: the menus keep a column about as wide as the old 3:4 screen in the middle of the
-         16:9 one (`--menu-column`), so the cards, sliders and entries are not stretched. */
-      .ship-cards {
-        display: flex;
-        gap: 8px;
-        width: 100%;
-        max-width: var(--menu-column);
-        margin-top: auto;
-      }
-      .ship-card {
-        flex: 1;
-        padding: 8px 4px 12px;
-        font-size: 14px;
-        font-weight: 500;
-        line-height: 20px;
-        opacity: 0.64;
-        transition:
-          background-color 120ms var(--ease),
-          border-color 120ms var(--ease),
-          opacity 120ms var(--ease);
-      }
-      .ship-card:not(.selected) .ship-card-stat {
-        color: var(--text-2);
-      }
-      /* The highlighted ship's marker (UI-SHIP-03). */
-      .ship-card::before {
-        content: '▲';
-        display: block;
-        font-size: 12px;
-        line-height: 16px;
-        visibility: hidden;
-      }
-      .ship-card.selected::before {
-        visibility: visible;
-      }
-      .ship-card.selected {
-        opacity: 1;
-      }
-      .ship-card-name {
-        margin-bottom: 4px;
-        white-space: nowrap;
-        font-size: 24px;
-        font-weight: 600;
-        line-height: 28px;
-      }
-      .ship-select-screen .menu-hint {
-        margin: 16px 0 8px;
-      }
-
       /* The level grid (UI-LEVEL-09): the grid, the status and the hint centred together in the
          height under the heading. */
       .level-grid {

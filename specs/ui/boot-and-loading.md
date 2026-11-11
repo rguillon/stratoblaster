@@ -36,17 +36,16 @@ in large text (22 px) on the dark background.
 
 ### UI-LOAD-03 — A loading screen with real progress · MUST
 
-While the menus' 3D scenes are prepared, a loading screen shows a progress bar that goes from 0 %
+While the menus' 3D scene is prepared, a loading screen shows a progress bar that goes from 0 %
 to 100 % with the real work (ENG-108). The work is a list of steps, and the bar moves after each
-one: build the title backdrop, build the ship select stage, wait until each of the two scenes has
-compiled its shaders, then draw each ship highlighted once (so the first highlight on the ship
-select screen does not stall). The browser paints between two steps, so the bar visibly moves. It
-never goes back.
+one: build the title backdrop, then wait until its scene has compiled its shaders (the ship select
+stage and its warm-up steps went with that screen, D-326). The browser paints between two steps,
+so the bar visibly moves. It never goes back.
 
 **Acceptance criteria**
 - Given a page load, then a progress bar going from 0 % to 100 % is visible before the title screen, with more than two values, in increasing order (e2e).
 
-*Sources: P01-R02, ENG-108, D-008, D-118.*
+*Sources: P01-R02, ENG-108, D-008, D-118, D-326.*
 
 ### UI-LOAD-04 — The title follows by itself · MUST
 
@@ -102,7 +101,7 @@ player to reload the page: there is no reload button.
 
 | Name | Value | Notes |
 |------|-------|-------|
-| Boot loading steps | 5 | `src/app/menu_scenes.py` `prepare_menu_scenes` (backdrop, ships, wait for each scene, highlight each ship) |
+| Boot loading steps | 2 | `src/app/menu_scenes.py` `prepare_menu_scenes` (backdrop, wait for its scene) |
 | `loading_screen_after_ms` | 300 ms | `index.html` `.level-loading` (animation delay 0.3 s, then a 0.15 s fade) |
 | Loading gauge | 320 × 24 px | `index.html` `.loading-bar` |
 | Loading text | "Loading…" | `src/game/config/menu_texts.py` `MENU_TEXTS["loading"]` |

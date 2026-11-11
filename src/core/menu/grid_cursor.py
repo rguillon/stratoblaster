@@ -1,5 +1,5 @@
 # Copyright (c) 2026 Renaud Guillon
-"""Moves a selection index in a grid of entries (UI-SHIP-04, UI-LEVEL-05)."""
+"""Moves a selection index in a grid of entries (UI-TITLE-06, UI-LEVEL-05)."""
 
 import math
 

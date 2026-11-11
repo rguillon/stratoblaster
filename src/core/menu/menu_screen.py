@@ -14,7 +14,6 @@ from typing import Literal
 MenuScreen = Literal[
     "loading",
     "title",
-    "ship-select",
     "level-select",
     "game",
     "pause",
@@ -31,9 +30,8 @@ MenuScreen = Literal[
 # (No annotation: Transcrypt would not export an annotated module-level assignment.)
 MENU_TRANSITIONS = {
     "loading": ["title"],
-    "title": ["ship-select", "settings", "dev"],
-    "ship-select": ["level-select", "title"],
-    "level-select": ["game", "ship-select"],
+    "title": ["level-select", "settings", "dev"],
+    "level-select": ["game", "title"],
     "game": ["pause", "level-select"],
     "pause": ["game", "settings", "title"],
     "settings": ["title", "pause"],

@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Renaud Guillon
 """e2e: the menus with the mouse or taps only.
 
-UI-INPUT-09, UI-INPUT-10, UI-INPUT-12, UI-LEVEL-01, UI-SHIP-07, UI-PAUSE-01, UI-PAUSE-10.
+UI-INPUT-09, UI-INPUT-10, UI-INPUT-12, UI-LEVEL-01, UI-PAUSE-01, UI-PAUSE-10.
 """
 
 from collections.abc import Callable
@@ -14,21 +14,19 @@ TOUCH_PHONE = {"has_touch": True, "viewport": {"width": 390, "height": 844}}
 
 
 def run_flow(page: Page, press: Callable[[Locator], None]) -> None:
-    """Title → ship select → level select → game → pause → back to title with one kind of press.
+    """Title → level select → game → pause → back to title with one kind of press.
 
     One press selects and confirms (UI-INPUT-09, D-287); the Back button goes back (UI-INPUT-10).
     """
     open_game(page)
     press(page.locator(".title-start"))
-    expect_state(page, {"screen": "ship-select", "selectedId": "balanced"})
-    press(page.locator(".ship-card").nth(2))
-    expect_state(page, {"screen": "level-select", "chosenShipId": "light"})
+    expect_state(page, {"screen": "level-select", "selectedId": "1-1", "shipId": "balanced"})
     press(page.locator(".menu-back"))
-    expect_state(page, {"screen": "ship-select", "selectedId": "light"})
-    press(page.locator(".ship-card.selected"))
+    expect_state(page, {"screen": "title", "selectedId": "start"})
+    press(page.locator(".title-start"))
     expect_state(page, {"screen": "level-select", "selectedId": "1-1"})
     press(page.locator(".level-cell").first)
-    expect_state(page, {"screen": "game", "chosenShipId": "light", "chosenLevelId": "1-1"})
+    expect_state(page, {"screen": "game", "shipId": "balanced", "chosenLevelId": "1-1"})
     expect(page.locator(".game-level")).to_have_text("Level 1-1")
     # No Back button and no pause button over the playfield (UI-HUD-09, D-251): Escape pauses
     # (UI-PAUSE-01), then Main menu and Yes, leave, by pointer (UI-PAUSE-10).
@@ -55,8 +53,6 @@ def test_ui_level_01_20_levels_all_unlocked(page: Page) -> None:
     """Also UI-LEVEL-03: no level is locked."""
     open_game(page)
     page.locator(".title-start").click()
-    expect_state(page, {"screen": "ship-select"})
-    page.locator(".ship-card.selected").click()
     expect_state(page, {"screen": "level-select"})
     cells = page.locator(".level-cell")
     expect(cells).to_have_count(20)
@@ -68,15 +64,3 @@ def test_ui_level_01_20_levels_all_unlocked(page: Page) -> None:
     # One click on a level plays it (UI-INPUT-09, D-287).
     cells.nth(16).click()
     expect_state(page, {"screen": "game", "chosenLevelId": "4-2"})
-
-
-def test_ui_ship_07_the_last_chosen_ship_is_highlighted_after_a_reload(page: Page) -> None:
-    open_game(page)
-    page.locator(".title-start").click()
-    expect_state(page, {"screen": "ship-select"})
-    page.locator(".ship-card").nth(2).click()
-    expect_state(page, {"screen": "level-select", "chosenShipId": "light"})
-    page.reload()
-    open_game(page)
-    page.locator(".title-start").click()
-    expect_state(page, {"screen": "ship-select", "selectedId": "light"})

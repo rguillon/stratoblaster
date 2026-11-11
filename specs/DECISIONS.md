@@ -2179,3 +2179,74 @@
   - **Gone:** the city chunk, skyline and rain (`game/view/city_geometry.py` and its test).
 - **Consequences:** the ship select screen, drawn over the backdrop, now has the trench behind it.
 - **Status:** Proposed
+
+### D-326 — One player ship, no ship select screen
+- **Date:** 2026-11-11
+- **Requirements:** GAME-SHIP-01, GAME-SHIP-02, GAME-SHIP-03, GAME-LIFE-01, GAME-WPN-05,
+  UI-FLOW-01, UI-FLOW-02, UI-FLOW-05, UI-TITLE-06, UI-TITLE-09, UI-LEVEL-06, UI-LEVEL-08,
+  UI-INPUT-09, UI-LOOK-08, UI-LOAD-03, PERF-07, DEV-OPT-01, DEV-MENU-12, DEV-API-02, ENG-07,
+  ENG-54; removes UI-SHIP-01 to UI-SHIP-07.
+- **Context:** owner: "now remove the heave and ligh ships, and the ship selection menu, only keep
+  the balanced one."
+- **Decision:**
+  - **One ship:** the game's roster (`game/config/player_ships.py`) holds only the Balanced ship.
+    The engine keeps the `PlayerShipRoster` type and flies its first ship: `MenuFlowOptions` and
+    `MenuState` carry one `ship_id`, which `GameSession` builds the levels with.
+  - **No ship select screen:** `ship-select` leaves `MenuScreen` and `MENU_TRANSITIONS`; Start on
+    the title opens the level select, whose Back returns to the title.
+  - **Gone:** the Heavy and Light ships and their models (`game/view/heavy_ship.py`,
+    `light_ship.py`); the ship select view and screen (`ShipSelectView`,
+    `ui/screens/ship_select_screen.py`), its 3D stage (`render/ship_select_stage.py`,
+    `render/model_showcase.py`) and second menu scene, its tunables (`MENU_CONFIG.ship_select`),
+    texts (`chooseShip`, `chooseShipHint`) and CSS; the ship caption (`ui/ship_caption.py`,
+    `ui/caption_row.py`); the remembered ship (`<gameId>_last_ship` cookie); the backdrop's
+    `showScreen` hook, which only hid its ship on that screen; the `ship=` debug option (and
+    `--ship` / `SHIP=` of `make serve-ai`); the ship-highlight warm-up of the menus' loading.
+  - **Test API:** `highlightedShipId` and `chosenShipId` become one `shipId`.
+- **Consequences:** the menus' loading has two steps (the backdrop, then its shaders). PERF-07 is
+  removed. The dev menu's ships viewer shows the one ship. An old `stratoblaster_last_ship`
+  cookie is left unread. `create_torus` and `camera_fov_mode_horizontal_fixed` in
+  `render/babylon.py` have no caller any more; they stay as Babylon wrappers.
+- **Status:** Proposed
+
+### D-327 — The Balanced ship rebuilt: one blended hull, smooth top, satin metal in three shades
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-04, GFX-SHIP-05, GFX-SHIP-06, GFX-SHIP-09, GFX-TRIM-05.
+- **Context:** owner, in turn:
+  - "rework the ship design to make it look better, more smoth, it's ok to increase polygon count
+    but only on the upper half of the ship";
+  - "add visible cool looking intakes on the reactors";
+  - "rework the player's ship highlight, make it lighter";
+  - "it looks like a bunch of basic shaped put together, smoth the transition between the elements
+    with more complex looking parts";
+  - "remove the ugly ligh spots, make something more smoth, and remove the inter-part transition
+    more, add different shades of metalic".
+- **Decision:**
+  - **Blended hull:** the round fuselage, the dorsal spine and the strakes are replaced by one skin
+    lofted through cross-sections (`render/geometry/section_loft.py`, generic; the ship's sections in
+    `game/view/balanced_hull.py`). Each section's top is the smooth maximum of the fuselage's back,
+    two nacelle shoulders and a chine sweeping into the wing roots, so the joints are fillets. The
+    shoulders stand over the intakes and nacelles, which only show their mouths and nozzles; the
+    tail is cut off square over the nozzles and capped.
+  - **Winding:** every triangle of a loft is wound the same way, the direction chosen once for the
+    whole skin. Chosen triangle by triangle, the inner slopes of the shoulders were turned inwards
+    and culled, which left holes.
+  - **Smooth top, low-poly belly:** the hull, canopy, intakes and nacelles are smooth-shaded on top
+    (24, 16 or 12 facets) over a flat 3-facet belly (`LatheHalves`, `create_smooth_top_lathe_along_z`);
+    hand-set profiles run through Catmull-Rom curves. Budget 4,500 triangles (was 2,000), at least
+    three quarters of each part's on the upper half.
+  - **Intakes:** a hollow, flared hull-metal scoop ahead of each reactor, a blue lip, a dark fan face
+    ringed in blue metal and a spinner.
+  - **No light spots:** the nav lights, the pale blue wing bands and the tail stripes are gone; the
+    only lights left are the reactors. The nav-light helper and material are removed.
+  - **Materials:** satin metal (roughness 0.42 to 0.5, was 0.25) in three shades: silver hull, steel
+    wings, canards and spinners, gunmetal tails, fins and flaps.
+  - **Trim:** the player trim is lighter, 0.5 px wide (was 0.9) in a softer cyan [0.3, 0.72, 0.82].
+- **Consequences:**
+  - The ship is about 3,600 triangles before the trim, counted from its parts (not measured in the
+    browser).
+  - The dev viewer's close-up draws the trim at its game width over a model drawn many times larger,
+    so it looks much heavier there than in play.
+  - The thinner, softer trim is checked against the ship's contrast floor by the readability e2e
+    test (GFX-READ-07, 3:1).
+- **Status:** Proposed

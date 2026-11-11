@@ -20,17 +20,13 @@ def test_ui_input_12_the_whole_flow_with_arrows_enter_space_and_esc(page: Page) 
     """Also UI-FLOW-05: Esc goes back from the level select."""
     open_game(page)
     page.keyboard.press("Enter")
-    expect_state(page, {"screen": "ship-select", "selectedId": "balanced"})
-    page.keyboard.press("ArrowRight")
-    expect_state(page, {"selectedId": "heavy"})
-    page.keyboard.press("Space")
-    expect_state(page, {"screen": "level-select", "selectedId": "1-1", "chosenShipId": "heavy"})
+    expect_state(page, {"screen": "level-select", "selectedId": "1-1", "shipId": "balanced"})
     page.keyboard.press("Escape")
-    expect_state(page, {"screen": "ship-select", "selectedId": "heavy"})
+    expect_state(page, {"screen": "title", "selectedId": "start"})
+    page.keyboard.press("Space")
+    expect_state(page, {"screen": "level-select", "selectedId": "1-1"})
     page.keyboard.press("Enter")
-    expect_state(page, {"screen": "level-select"})
-    page.keyboard.press("Enter")
-    expect_state(page, {"screen": "game", "chosenShipId": "heavy", "chosenLevelId": "1-1"})
+    expect_state(page, {"screen": "game", "shipId": "balanced", "chosenLevelId": "1-1"})
     # UI-PAUSE-05: Backspace does not leave the level; UI-PAUSE-01: Esc pauses and resumes, P too.
     page.keyboard.press("Backspace")
     step(page, 3)
@@ -76,8 +72,6 @@ def test_ui_title_11_the_full_screen_entry_toggles_the_page_and_stays_on_the_tit
 def test_ui_input_04_on_azerty_z_q_s_d_the_wasd_positions_move_the_selection(page: Page) -> None:
     open_game(page)
     page.keyboard.press("Enter")
-    expect_state(page, {"screen": "ship-select"})
-    page.keyboard.press("Enter")
     expect_state(page, {"screen": "level-select", "selectedId": "1-1"})
     press_position(page, "KeyD", "d")
     expect_state(page, {"selectedId": "1-2"})
@@ -98,8 +92,6 @@ def test_ui_input_06_holding_right_moves_once_then_repeats_after_the_repeat_dela
     page: Page,
 ) -> None:
     open_game(page)
-    page.keyboard.press("Enter")
-    expect_state(page, {"screen": "ship-select"})
     page.keyboard.press("Enter")
     expect_state(page, {"screen": "level-select", "selectedId": "1-1"})
     # Exact timings are unit-tested (keyboard menu input).

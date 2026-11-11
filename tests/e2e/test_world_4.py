@@ -25,7 +25,6 @@ def test_wld_4_01_the_world_4_row_shows_4_1_to_4_5_all_unlocked_the_last_row(pag
     """Also UI-LEVEL-01: the grid's last row."""
     open_game(page)
     send_action(page, "confirm")
-    send_action(page, "confirm")
     expect_state(page, {"screen": "level-select"})
     cells = page.locator(".level-cell")
     for i, level_id in enumerate(WORLD_4):
@@ -44,7 +43,6 @@ def test_ui_level_08_a_level_can_be_confirmed_from_the_menu_and_plays(
     Levels' identity and duration: LVL-4-1-01, LVL-4-2-01, LVL-4-3-01, LVL-4-4-01, LVL-4-5-01.
     """
     open_game(page)
-    send_action(page, "confirm")
     send_action(page, "confirm")
     expect_state(page, {"screen": "level-select", "selectedId": "1-1"})
     # Down three rows to World 4, then along it.

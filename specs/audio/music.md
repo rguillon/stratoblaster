@@ -154,7 +154,7 @@ music).
 
 ### AUD-MUSIC-11 — Menu theme · MUST
 
-The menus (title, ship select, level select, the settings opened from the title, and the loading
+The menus (title, level select, the settings opened from the title, and the loading
 of a level) play one menu theme, looping: a full, energetic darksynth track (drums, a pumping octave bass, dark pads, a
 plucked arpeggio, a supersaw lead) at 100 BPM in a minor key on the i–VI–III–VII chords, slower
 than every level, every section full, about as loud as the level tracks. It keeps playing, without
@@ -162,9 +162,9 @@ restarting, when moving between those screens, and fades into the level's track 
 starts. Leaving a level brings it back on the title.
 
 **Acceptance criteria**
-- Given the title, when the player goes to ship select and level select, then the menu theme keeps
-  playing without restarting (unit test).
-- Given the title and ship select, then the track playing is `menu` (e2e).
+- Given the title, when the player goes to level select, then the menu theme keeps playing without
+  restarting (unit test).
+- Given the title and level select, then the track playing is `menu` (e2e).
 - Given a level left from the pause menu, then the menu theme plays on the title (unit test).
 
 *Sources: P12-R08, P12-R11, D-095, D-099, D-100.*

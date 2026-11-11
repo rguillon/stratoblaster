@@ -70,9 +70,10 @@ get none.
 
 ### GFX-TRIM-05 — Player ship trim · MUST
 
-The player ships' trim is cyan (`playerTrim.color`), `playerTrim.width` wide and set
+The player ship's trim is a soft cyan (`playerTrim.color`), `playerTrim.width` wide and set
 `playerTrim.offset` out, in logical pixels on the playfield (divided by the ship scale in model
-units).
+units). It is a light touch, thinner and paler than the enemies' trim (owner, 2026-11-11, D-327:
+"rework the player's ship highlight, make it lighter"), so the smooth hull shows through.
 
 **Acceptance criteria**
 - Given a player ship model, then each of its solid meshes asks for a trim of the player trim
@@ -149,8 +150,8 @@ All in `src/game/config/readability.py` `READABILITY`, sizes in logical pixels.
 
 | Name | Value | Notes |
 |------|-------|-------|
-| `playerTrim.color` | [0.3, 0.9, 1] | cyan, in the player family |
-| `playerTrim.width` / `offset` | 0.9 / 0.1 | divided by `PLAYER_SHIP_SCALE` (7) in model units |
+| `playerTrim.color` | [0.3, 0.72, 0.82] | a soft cyan, in the player family ([0.3, 0.9, 1] until D-327) |
+| `playerTrim.width` / `offset` | 0.5 / 0.1 (width 0.9 until D-327) | divided by `PLAYER_SHIP_SCALE` (7) in model units |
 | `enemyTrim.whiten` | 0.25 | share of the way to white |
 | `enemyTrim.strength` | 2.6 | above 1: survives tone mapping |
 | `enemyTrim.width` / `offset` | 1.4 / 0.1 | |

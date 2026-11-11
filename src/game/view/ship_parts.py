@@ -13,10 +13,13 @@ from game.view.ship_materials import get_ship_materials
 # Not in render/babylon.py yet.
 from render.babylon import (
     create_disc,
-    create_polyhedron,
     new_transform_node,
 )
-from render.geometry.lathe_z import LatheHalves, create_faceted_lathe_along_z
+from render.geometry.lathe_z import (
+    LatheHalves,
+    create_faceted_lathe_along_z,
+    create_smooth_top_lathe_along_z,
+)
 from render.geometry.prism import create_prism
 
 # isort: split
@@ -31,23 +34,18 @@ Scene = Any
 PART_FACETS = 6
 
 
-# Section of fuselages: a smooth, finely faceted top over a low-poly 3-facet belly, keeping each
-# ship under its triangle budget (GFX-SHIP-05).
-BODY_SECTION = LatheHalves(20, 3)
+# Section of fuselages: a smooth top (24 facets, smooth-shaded) over a low-poly 3-facet belly
+# (GFX-SHIP-05): the triangles go where the playfield camera, above the ship, sees them.
+BODY_SECTION = LatheHalves(24, 3)
+# Section of the round parts sitting on the hull (canopy, spine, intakes, nacelles): a smooth top
+# over a 3-facet belly.
+SMOOTH_PART_SECTION = LatheHalves(12, 3)
 
 PLATE_THICKNESS = 0.012
-NAV_LIGHT_SIZE = 0.07
 
 EXHAUST_LENGTH = 0.8  # relative to the nacelle length
 EXHAUST_WIDTH = 1.5  # relative to the nacelle radius
 CORE_RADIUS = 0.8  # relative to the nacelle radius
-
-
-def _polyhedron_options(kind: int, size: float) -> Any:
-    """Options for `CreatePolyhedron`: `{ type, size }`."""
-    options: Any = None
-    __pragma__("js", "{}", "options = {type: kind, size: size};")
-    return options
 
 
 def disc_options(radius: float, tessellation: int) -> Any:
@@ -89,20 +87,6 @@ def plate(
     return mesh
 
 
-def nav_light(name: str, position: Any, parent: Any) -> Any:
-    """Create a small blue light (tagged `light`) at `position` in `parent`'s space.
-
-    With the trim and the flames, it is the only glow round the ship (GFX-SHIP-09).
-    """
-    scene = parent.getScene()
-    # An octahedron (8 triangles): at this size and glowing, it reads as a round light.
-    mesh = create_polyhedron(name, _polyhedron_options(1, NAV_LIGHT_SIZE / 2), scene)
-    mesh.material = get_ship_materials(scene).navLight
-    mesh.position.copyFrom(position)
-    mesh.parent = parent
-    return mesh
-
-
 def faceted_rod(
     name: str,
     size: dict[str, float],
@@ -138,18 +122,18 @@ def _add_reactor_rings(name: str, size: dict[str, float], root: Any) -> None:
     length = size["length"]
     half = radius * 0.09  # half the ring's width and thickness
     for ring, z, scale in [("front", length * 0.3, 1.02), ("rear", -length / 2, 0.9)]:
-        # A polygonal band: an open lathe around the nacelle. Closed loop; the outer side runs
-        # towards +Z so its faces point outward.
+        # A band round the nacelle: an open lathe, its front and back faces and its outer side
+        # (its inner side lies on the nacelle). The outer side runs towards +Z, so its faces point
+        # outward.
         mesh = create_faceted_lathe_along_z(
             name + "-" + ring + "-ring",
             [
-                [half, radius * scale - half],
                 [-half, radius * scale - half],
                 [-half, radius * scale + half],
                 [half, radius * scale + half],
                 [half, radius * scale - half],
             ],
-            PART_FACETS,
+            SMOOTH_PART_SECTION,
             scene,
         )
         mesh.position.z = z
@@ -175,7 +159,9 @@ def build_reactor(name: str, size: dict[str, float], scene: Scene) -> Any:
         [-length / 2, radius * 0.85],
         [-length / 2, 0],
     ]
-    nacelle = create_faceted_lathe_along_z(name + "-nacelle", profile, PART_FACETS, scene)
+    nacelle = create_smooth_top_lathe_along_z(
+        name + "-nacelle", profile, SMOOTH_PART_SECTION, scene
+    )
     nacelle.material = mats.nozzle
     nacelle.parent = root
 
@@ -183,7 +169,7 @@ def build_reactor(name: str, size: dict[str, float], scene: Scene) -> Any:
 
     core = create_disc(
         name + "-core",
-        disc_options(radius * CORE_RADIUS, PART_FACETS),
+        disc_options(radius * CORE_RADIUS, SMOOTH_PART_SECTION.upper),
         scene,
     )
     core.convertToFlatShadedMesh()

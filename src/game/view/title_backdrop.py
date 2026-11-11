@@ -4,7 +4,7 @@
 UI-TITLE-08 for its colours. The balanced ship flies down a trench towards a frontal camera that
 flies backwards ahead of it; the trench scrolls away behind the ship, speed streaks rush past
 faster still, and the ship sways, banks and floats. Everything is generated in code from a fixed
-seed. The ship is hidden on the ship select screen, which shows the ships itself (UI-TITLE-09).
+seed. It shows behind every menu screen (UI-TITLE-09).
 """
 
 import math
@@ -136,8 +136,7 @@ def _set_up_scene(scene: Any) -> None:
 def build_title_backdrop(scene: Any) -> Any:
     """Build the title backdrop in `scene` and return its `MenuBackdrop` handle.
 
-    The handle holds the meshes that must not glow, an `update(dt)` per frame, and
-    `showScreen(screen)`.
+    The handle holds the meshes that must not glow and an `update(dt)` per frame.
     """
     _set_up_scene(scene)
     random = create_rng(LOOK.seed)
@@ -173,12 +172,8 @@ def build_title_backdrop(scene: Any) -> Any:
         pivot.rotation.z = -s.bankRad * math.cos(sway)
         step_model_animations(ship, dt)
 
-    def show_screen(screen: str) -> None:
-        pivot.setEnabled(screen != "ship-select")
-
     # The handle is a JavaScript object: `update` is read by the render layer as a property name.
     backdrop = js_object()
     js_set(backdrop, "glowExcludedMeshes", glow_excluded)
     js_set(backdrop, "update", update_frame)
-    js_set(backdrop, "showScreen", show_screen)
     return backdrop

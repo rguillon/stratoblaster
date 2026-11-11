@@ -1,10 +1,10 @@
 # Title screen
 
-> **Area:** UI · **Prefix:** `UI-TITLE` · **Related:** [screen-flow.md](screen-flow.md), [look-and-layout.md](look-and-layout.md), [settings.md](settings.md), [ship-select.md](ship-select.md), [../dev/dev-menu.md](../dev/dev-menu.md), [../gameplay/scoring.md](../gameplay/scoring.md), [../01-engineering.md](../01-engineering.md)
+> **Area:** UI · **Prefix:** `UI-TITLE` · **Related:** [screen-flow.md](screen-flow.md), [look-and-layout.md](look-and-layout.md), [settings.md](settings.md), [level-select.md](level-select.md), [../dev/dev-menu.md](../dev/dev-menu.md), [../gameplay/scoring.md](../gameplay/scoring.md), [../01-engineering.md](../01-engineering.md)
 
 The first screen after loading: the high score, the game's name as a chrome logo, the Start and
 Settings entries, a short controls hint and the build's version, over a 3D neon trench generated in
-code, the balanced ship racing down it towards the camera, speed streaks rushing past. The same 3D
+code, the game's ship (the Balanced one) racing down it towards the camera, speed streaks rushing past. The same 3D
 backdrop stays behind the other menu screens.
 
 ## Requirements
@@ -81,17 +81,18 @@ A short hint near the bottom tells how to start: "Press Space / Enter or tap to 
 ### UI-TITLE-06 — Moving on the title · MUST
 
 Up and down move between Start, Settings (and Full screen, and Dev); the selection does not wrap.
-Confirming Start opens the ship select screen; Settings opens the settings screen; Full screen
-toggles the page's full screen and stays on the title (UI-TITLE-11); Dev opens the dev menu. Back
-does nothing. Coming back from the settings screen or the dev menu, the entry that opened it is
-still selected; coming back from anywhere else (the ship select screen, or leaving a level), Start
-is selected.
+Confirming Start opens the level select screen (there is no ship to choose, D-326); Settings opens
+the settings screen; Full screen toggles the page's full screen and stays on the title
+(UI-TITLE-11); Dev opens the dev menu. Back does nothing. Coming back from the settings screen or
+the dev menu, the entry that opened it is still selected; coming back from anywhere else (the level
+select screen, or leaving a level), Start is selected.
 
 **Acceptance criteria**
 - Given the title with Start selected, when Down then Confirm are pressed, then the screen is `settings`; when Back is pressed there, then the title shows with Settings selected.
 - Given the title with Settings selected, when Down is pressed without a Dev entry, then Settings stays selected.
+- Given the title with Start selected, when Confirm is pressed, then the screen is `level-select`.
 
-*Sources: P01-R04, P12-R04, P01-R01.*
+*Sources: P01-R04, P12-R04, P01-R01, D-326.*
 
 ### UI-TITLE-07 — The ship racing down a neon trench · SHOULD
 
@@ -131,15 +132,15 @@ of D-323 was undone by D-324).
 
 ### UI-TITLE-09 — The backdrop stays behind the menus · MUST
 
-The backdrop is drawn behind every menu screen: the title, the ship select screen (where its own
-ship is hidden, as that screen shows the ships itself, [ship-select.md](ship-select.md)), the level
-select screen, and the settings screen opened from the title. It is not drawn while a level is
-played or paused, nor during the boot loading screen.
+The backdrop, its ship included, is drawn behind every menu screen: the title, the level select
+screen, and the settings screen opened from the title. It is not drawn while a level is played or
+paused, nor during the boot loading screen.
 
 **Acceptance criteria**
-- Given the ship select screen, then the backdrop's ship is hidden; back on the title, it shows again.
+- Given the title, the level select or the settings screen, then the backdrop is drawn behind it, its ship showing (unit test).
+- Given the boot loading screen, then the backdrop is not drawn (unit test).
 
-*Sources: D-008.*
+*Sources: D-008, D-326.*
 
 ### UI-TITLE-10 — The backdrop keeps 60 FPS · SHOULD
 

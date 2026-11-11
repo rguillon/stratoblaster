@@ -11,7 +11,6 @@ game ignores the debug keys. The options are read once, when the page opens.
 | Option or key | What it does | Requirement |
 |---------------|--------------|-------------|
 | `level=<id>` | Starts that level straight away, debug mode on | DEV-OPT-01 |
-| `ship=<id>` | The ship flown (default: the first ship) | DEV-OPT-01 |
 | `t=<seconds>` | Starts at that time | DEV-OPT-02 |
 | `boss=mini`, `boss=final` | Starts at that boss's arrival | DEV-OPT-03 |
 | `weather=0` | No weather | DEV-OPT-04 |
@@ -28,18 +27,17 @@ game ignores the debug keys. The options are read once, when the page opens.
 ### DEV-OPT-01 — `?level=` starts a level straight away · MUST
 
 With `level=<id>` in the URL (for example `?level=2-4`), the game starts that level as soon as the
-menus have loaded, skipping the title, ship select and level select screens. It is flown with the
-first ship (`balanced`) unless `ship=<id>` names another. Every level of every world is accepted
-(1-1 to 4-5). The `level` option turns debug mode on; the other options of this file only act with
-it. Without `level` (or with an empty one) there are no debug options. A level or ship the game
+menus have loaded, skipping the title and level select screens. It is flown with the game's one
+ship (`balanced`); there is no `ship=` option any more (D-326). Every level of every world is
+accepted (1-1 to 4-5). The `level` option turns debug mode on; the other options of this file only
+act with it. Without `level` (or with an empty one) there are no debug options. A level the game
 does not know starts nothing: the title screen shows.
 
 **Acceptance criteria**
 - Given `?level=1-3`, then level 1-3 is being played, with the balanced ship.
-- Given `?level=2-4&ship=heavy`, then 2-4 is played with the heavy ship.
 - Given no `level` in the URL, then the game opens on its title screen and there is no debug mode.
 
-*Sources: P06-R09, P08-R12, P09-R11, P10-R13.*
+*Sources: P06-R09, P08-R12, P09-R11, P10-R13, D-326.*
 
 ### DEV-OPT-02 — `t=` starts at a time · MUST
 

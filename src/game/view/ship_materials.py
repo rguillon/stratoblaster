@@ -30,10 +30,11 @@ class ShipMaterials:
     def __init__(
         self,
         hull: Any,
+        hullMid: Any,
+        hullDark: Any,
         accent: Any,
         canopy: Any,
         trim: Any,
-        navLight: Any,
         nozzle: Any,
         reactorCore: Any,
         reactorExhaust: Any,
@@ -41,12 +42,13 @@ class ShipMaterials:
         reactorPlasma: Any,
     ) -> None:
         self.hull = hull
+        # Two darker shades of the hull's metal (D-327).
+        self.hullMid = hullMid
+        self.hullDark = hullDark
         self.accent = accent
         self.canopy = canopy
         # Darker metal for panel lines, frames, intakes and barrels.
         self.trim = trim
-        # Small blue lights (wing tips, tails, cannon muzzles).
-        self.navLight = navLight
         self.nozzle = nozzle
         self.reactorCore = reactorCore
         self.reactorExhaust = reactorExhaust
@@ -99,10 +101,11 @@ def _create_ship_materials(scene: Scene) -> ShipMaterials:
     reactor_core.backFaceCulling = False
     return ShipMaterials(
         _metal("ship-hull", SHIP_LOOK.hull, scene),
+        _metal("ship-hull-mid", SHIP_LOOK.hullMid, scene),
+        _metal("ship-hull-dark", SHIP_LOOK.hullDark, scene),
         _metal("ship-accent", SHIP_LOOK.accent, scene),
         canopy,
         _metal("ship-trim", SHIP_LOOK.trim, scene),
-        _light("ship-nav-light", SHIP_LOOK.navLight.emissive, scene),
         _metal("ship-nozzle", SHIP_LOOK.nozzle, scene),
         reactor_core,
         _glow("ship-reactor-exhaust", SHIP_LOOK.reactorExhaust, scene),

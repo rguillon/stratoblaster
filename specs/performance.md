@@ -1,6 +1,6 @@
 # Performance
 
-> **Area:** Performance · **Prefix:** `PERF` · **Related:** [01-engineering.md](01-engineering.md), [dev/perf-tools.md](dev/perf-tools.md), [dev/test-api.md](dev/test-api.md), [ui/boot-and-loading.md](ui/boot-and-loading.md), [ui/ship-select.md](ui/ship-select.md), [ui/level-select.md](ui/level-select.md), [graphics/terrain.md](graphics/terrain.md), [graphics/roads.md](graphics/roads.md), [graphics/props.md](graphics/props.md), [graphics/traffic.md](graphics/traffic.md), [enemies/common.md](enemies/common.md), [bosses/common.md](bosses/common.md)
+> **Area:** Performance · **Prefix:** `PERF` · **Related:** [01-engineering.md](01-engineering.md), [dev/perf-tools.md](dev/perf-tools.md), [dev/test-api.md](dev/test-api.md), [ui/boot-and-loading.md](ui/boot-and-loading.md), [ui/level-select.md](ui/level-select.md), [graphics/terrain.md](graphics/terrain.md), [graphics/roads.md](graphics/roads.md), [graphics/props.md](graphics/props.md), [graphics/traffic.md](graphics/traffic.md), [enemies/common.md](enemies/common.md), [bosses/common.md](bosses/common.md)
 
 The game feels instant: every button press gets visible feedback straight away, a level starts
 within a couple of seconds of being chosen, and play in every level runs without freezes or
@@ -69,8 +69,8 @@ D-179).
 
 Every button and menu action reacts visibly within `input_feedback_ms` of the press, with the
 keyboard, a gamepad or touch: the selection moves, the button shows its pressed state, or the next
-screen (or a loading screen, PERF-10) appears. This covers the title screen, ship select, level
-select, settings, the pause menu and its `Leave the level?` question, and the "Level complete" and
+screen (or a loading screen, PERF-10) appears. This covers the title screen, level select,
+settings, the pause menu and its `Leave the level?` question, and the "Level complete" and
 "Game over" panels.
 
 **Acceptance criteria**
@@ -102,24 +102,18 @@ accepted exception is building the highlighted level ahead on the level select (
 steps may make that screen stutter once, after the highlight has come to rest.
 
 **Acceptance criteria**
-- Given the title, ship select, settings and pause screens, when the player moves around and
+- Given the title, level select, settings and pause screens, when the player moves around and
   confirms, then no frame is over `long_frame_ms`.
 
 *Sources: P13-R02, D-119.*
 
-### PERF-07 — Moving the ship select highlight costs nothing · MUST
+### PERF-07 — Moving the ship select highlight costs nothing · *Removed*
 
-Highlighting another ship on the ship select screen compiles no shader and creates no texture or
-buffer. Each ship has its own key light, which lights only that ship; highlighting a ship only sets
-its light to the spot intensity and the others' to 0, so no material is dirtied. While the menus
-load, behind the loading screen, each ship is drawn once highlighted (from the last to the first),
-so the GPU driver has every highlight state ready before the first press.
+*Removed (2026-11-11, D-326): the ship select screen is gone, the game has one ship. Highlighting
+another ship there compiled no shader (one key light per ship, D-116), and each ship was drawn
+highlighted once while the menus loaded (D-118).*
 
-**Acceptance criteria**
-- Given ship select, when ← or → is pressed for the first time, then no shader is compiled or
-  linked, and the highlight moves within `input_feedback_ms`.
-
-*Sources: P13-R02, D-116, D-118.*
+*Sources: P13-R02, D-116, D-118, D-326.*
 
 ### PERF-08 — Fast level loading · MUST
 
@@ -538,7 +532,8 @@ whether the trim counts is left to the reviewer (D-220), and the four tiers are 
 - Phase 13 found three causes for the reported problems (D-113): road ribbons that checked every
   road of the level against every street at each new chunk (0.8 to 0.9 s per chunk in Worlds 3 and
   4), a level built inside the key press that confirmed it, and shaders recompiled the first time
-  each ship was lit on ship select. PERF-05, PERF-07 and PERF-24 keep them from coming back.
+  each ship was lit on ship select. PERF-05 and PERF-24 keep them from coming back; the ship select
+screen itself is gone (D-326).
 - The ground worker was off for a while during the Python port (D-177) because Transcrypt objects
   cannot be structured-cloned; plain-data messages (D-178) brought it back.
 - The music is scheduled 1.5 s ahead so that a frozen frame leaves no gap: see

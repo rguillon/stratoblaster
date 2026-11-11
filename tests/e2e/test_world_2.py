@@ -35,7 +35,6 @@ def test_wld_2_02_the_world_2_row_shows_2_1_to_2_5_all_unlocked(page: Page) -> N
     """Also UI-LEVEL-01: the grid's second row."""
     open_game(page)
     send_action(page, "confirm")
-    send_action(page, "confirm")
     expect_state(page, {"screen": "level-select"})
     cells = page.locator(".level-cell")
     for i, level_id in enumerate(WORLD_2):
@@ -52,7 +51,6 @@ def test_ui_level_08_a_level_can_be_confirmed_from_a_fresh_start_and_plays(
     And each level's duration (LVL-2-1-02, LVL-2-2-02, LVL-2-3-02, LVL-2-4-02, LVL-2-5-02).
     """
     open_game(page)
-    send_action(page, "confirm")
     send_action(page, "confirm")
     expect_state(page, {"screen": "level-select", "selectedId": "1-1"})
     # Down a row to World 2, then along it.

@@ -172,15 +172,15 @@ model: ◀ ▶, ▲ ▼ and the menu do. Over the menu the wheel scrolls the men
 
 ### DEV-MENU-12 — The ships viewer · MUST
 
-The ships viewer shows each player ship (in the game's order: Balanced, Heavy, Light) at the middle
-of the view, on the playfield of the first level (1-1), over its ground, with its animations (its
-reactor flames).
+The ships viewer shows the player ship (the game's one ship, Balanced, D-326) at the middle of the
+view, on the playfield of the first level (1-1), over its ground, with its animations (its reactor
+flames).
 
 **Acceptance criteria**
-- Given the ships viewer, when the ground of 1-1 is ready, then the first ship shows at the middle
-  of the view in close-up.
+- Given the ships viewer, when the ground of 1-1 is ready, then the ship shows at the middle of the
+  view in close-up.
 
-*Sources: D-199, D-004.*
+*Sources: D-199, D-004, D-326.*
 
 ### DEV-MENU-13 — The enemies viewer · MUST
 

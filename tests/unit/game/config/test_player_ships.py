@@ -4,17 +4,16 @@
 from game.config.player_ships import PLAYER_SHIPS
 
 
-def test_game_ship_01_the_player_can_fly_three_ships_with_distinct_ids() -> None:
+def test_game_ship_01_the_player_flies_one_ship_the_balanced_one() -> None:
     ids = [ship.id for ship in PLAYER_SHIPS.ships]
-    assert ids == ["balanced", "heavy", "light"]
+    assert ids == ["balanced"]
 
 
-def test_game_ship_02_ships_trade_speed_for_health() -> None:
+def test_game_ship_02_its_top_speed_is_the_base_speed() -> None:
     """Also GAME-SHIP-03 (health)."""
-    by_id = {ship.id: ship for ship in PLAYER_SHIPS.ships}
-    assert by_id["heavy"].maxHealth > by_id["balanced"].maxHealth > by_id["light"].maxHealth
-    assert by_id["light"].maxSpeedFactor > by_id["balanced"].maxSpeedFactor
-    assert by_id["heavy"].maxSpeedFactor < by_id["balanced"].maxSpeedFactor
+    (ship,) = PLAYER_SHIPS.ships
+    assert ship.maxSpeedFactor * PLAYER_SHIPS.baseSpeedPxPerSec == 225
+    assert ship.maxHealth == 100
 
 
 def test_game_ship_02_base_speed_is_positive() -> None:

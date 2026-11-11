@@ -36,10 +36,9 @@ pause menu has **Resume**, **Settings** and **Main menu** (which asks before lea
 All the music and sounds are generated in the browser (Web Audio); they start with the first key
 press, tap, click or gamepad button.
 
-Debug options (any build): `?level=1-3&t=120&ship=heavy` starts level 1-3 at 2:00 with the heavy
-ship. With them, F fast-forwards ×4, ← / → jump 10 s, and an FPS / polygons tile shows.
+Debug options (any build): `?level=1-3&t=120` starts level 1-3 at 2:00. With them, F fast-forwards ×4, ← / → jump 10 s, and an FPS / polygons tile shows.
 
-The high score, the last chosen ship and the volumes are kept in cookies (`stratoblaster_high_score`, `stratoblaster_last_ship`, `stratoblaster_music_volume`, `stratoblaster_sfx_volume`).
+The high score and the volumes are kept in cookies (`stratoblaster_high_score`, `stratoblaster_music_volume`, `stratoblaster_sfx_volume`).
 
 ## Requirements
 
@@ -92,9 +91,9 @@ every level 8 times with the same loadout and rates it from 0 % (cleared without
 with an NVIDIA GPU, `make learn AI_TORCH=cuda` learns on the GPU with every CPU core playing (D-289).
 
 `make serve-ai` serves the real game on http://localhost:5174 (`SERVE_AI_PORT`): open it in any
-browser, pick a ship and a level in the menus (or `make serve-ai LEVEL=2-3 SHIP=heavy`), and the
-brain plays every level you start; the menus and panels stay yours. The game runs in real time in
-the browser and asks the brain, in Python, for its keys about 15 times a second (D-291).
+browser, pick a level in the menus (or `make serve-ai LEVEL=2-3`), and the brain plays every level
+you start; the menus and panels stay yours. The game runs in real time in the browser and asks the
+brain, in Python, for its keys about 15 times a second (D-291).
 
 [`node/tests/`](node/tests/) keeps the TypeScript test suite of the game this port came from. Nothing
 runs it: it is the reference for the tests still to port.

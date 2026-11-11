@@ -36,8 +36,7 @@ class FakeApp:
             screen="level-select",
             selection=2,
             selected_id="1-3",
-            highlighted_ship_id="heavy",
-            chosen_ship_id="heavy",
+            ship_id="balanced",
             chosen_level_id=None,
             transitioning=False,
             level_result=result,
@@ -82,8 +81,7 @@ def test_eng_52_the_state_has_the_menus_audio_high_score_loading_and_perf_in_cam
     assert state["screen"] == "level-select"
     assert state["selection"] == 2
     assert state["selectedId"] == "1-3"
-    assert state["highlightedShipId"] == "heavy"
-    assert state["chosenShipId"] == "heavy"
+    assert state["shipId"] == "balanced"
     assert state["chosenLevelId"] is None
     assert state["levelResult"] is None
     assert state["volumes"] == {"music": 6, "sfx": 8}

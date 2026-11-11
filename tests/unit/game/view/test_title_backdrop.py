@@ -130,11 +130,3 @@ def test_ui_title_07_the_ship_faces_the_camera_sways_banks_and_floats(
     assert pivot.rotation.z == pytest.approx(s.bankRad)
     assert backdrop.ship.parent is pivot
     assert backdrop.steps == [(backdrop.ship, t), (backdrop.ship, t)]
-
-
-@pytest.mark.parametrize(("screen", "shown"), [("ship-select", False), ("title", True)])
-def test_ui_title_09_the_ship_is_hidden_on_the_ship_select_screen(
-    backdrop: SimpleNamespace, screen: str, shown: bool
-) -> None:
-    backdrop.handle["showScreen"](screen)
-    backdrop.nodes["title-ship"].setEnabled.assert_called_once_with(shown)

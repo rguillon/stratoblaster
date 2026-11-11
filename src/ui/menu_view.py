@@ -7,12 +7,6 @@ positional constructor arguments in the order listed.
 
 from org.transcrypt.stubs.browser import __pragma__
 
-# isort: split
-# __pragma__ ("skip")
-from ui.caption_row import Caption
-
-# __pragma__ ("noskip")
-
 
 class LoadingView:
     """Loading screen (UI-LOAD-03)."""
@@ -71,26 +65,6 @@ class BackView:
         self.hint = hint
         self.back = back
         self.selected = selected
-
-
-class ShipSelectView(BackView):
-    """Ship select screen (UI-SHIP-02): one card per ship, under its 3D model."""
-
-    kind = "ship-select"
-
-    def __init__(
-        self,
-        heading: str,
-        hint: str,
-        back: str,
-        selected: int,
-        ships: list[Caption],
-        cards_width_percent: float,
-    ) -> None:
-        BackView.__init__(self, heading, hint, back, selected)
-        self.ships = ships
-        # Width of the row of cards, in % of the screen, to line them up with the models.
-        self.cards_width_percent = cards_width_percent
 
 
 class LevelOption:
@@ -338,7 +312,6 @@ __pragma__("skip")
 type MenuView = (
     LoadingView
     | TitleView
-    | ShipSelectView
     | LevelSelectView
     | GameScreenView
     | SettingsView

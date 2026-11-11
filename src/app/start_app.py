@@ -264,14 +264,6 @@ def _nothing() -> None:
     return None
 
 
-def _index_of(items: list[str], item: str | None) -> int:
-    """Return the index of `item` in `items`, or -1 (as JavaScript's `indexOf`)."""
-    for i in range(len(items)):
-        if items[i] == item:
-            return i
-    return -1
-
-
 def performance_now() -> float:
     """Return the browser's clock, in milliseconds (DEV-PERF-01)."""
     now: float = window.performance.now()
@@ -289,15 +281,6 @@ def create_input(options: AppOptions) -> InputHandle:
         bindings: Any = MENU_INPUT_CONFIG
         sources.append(GamepadMenuInput(options.gamepads, bindings))
     return InputHandle(MenuInput(sources), stop)
-
-
-def sync_scenes(scenes: Any, state: MenuState, ship_ids: list[str]) -> None:
-    """Show the screen on the backdrop, behind the menus (UI-TITLE-09), and highlight the ship."""
-    if scenes is None:
-        return
-    # The backdrop handle is a JavaScript object: its callbacks are read by their JS names.
-    scenes.backdrop["showScreen"](state.screen)
-    scenes.stage.select(max(0, _index_of(ship_ids, state.highlighted_ship_id)))
 
 
 def load_menu_scenes(
@@ -362,7 +345,6 @@ def create_menu(
         options.storage,
         MENU_CONFIG.transition_seconds,
         GAME_PLAY_CONFIG.complete_delay,
-        100 / MENU_CONFIG.ship_select.camera.framing_margin,  # The ship cards' width (UI-SHIP-02).
         options.version,
         options.commit,
         on_change,
@@ -425,8 +407,8 @@ def animate_menus(dt: float, loaded: Any, dev: DevSession | None) -> None:
     if dev is not None:
         dev.frame(dt)
     if loaded is not None:
+        # The backdrop handle is a JavaScript object: its callbacks are read by their JS names.
         loaded.backdrop["update"](dt)
-        loaded.stage.update(dt)
 
 
 def draw_menus(loaded: Any, screen: str, dev: DevSession | None) -> None:
@@ -445,7 +427,6 @@ def dispose_scenes(scenes: Any) -> None:
     if scenes is None:
         return
     scenes.backdrop_scene.dispose()
-    scenes.ship_scene.dispose()
 
 
 def run_loop(engine: Any, tick: Any) -> None:
@@ -457,14 +438,11 @@ def run_loop(engine: Any, tick: Any) -> None:
     engine.runRenderLoop(frame)
 
 
-def start_debug_level(menu: MenuController, debug: Any | None, ship_ids: list[str]) -> None:
+def start_debug_level(menu: MenuController, debug: Any | None) -> None:
     """With debug options (DEV-OPT-01), starts their level straight away once loading is over."""
     if debug is None:
         return
-    ship = debug.ship_id
-    if ship is None:
-        ship = ship_ids[0] if len(ship_ids) > 0 else ""
-    menu.play_direct(ship, debug.level_id)
+    menu.play_direct(debug.level_id)
 
 
 def session_options(
@@ -564,7 +542,6 @@ def start_app(engine: Any, game: Any, options: AppOptions) -> RunningApp:
     Returns the handle `main.py` and the test API use.
     """
     clock = FixedStepClock(ENGINE_CONFIG.simulation_hz, int(ENGINE_CONFIG.max_steps_per_frame))
-    ship_ids = [ship.id for ship in game.player_ships.ships]
     input_handle = create_input(options)
     # The menu scenes, once loaded: a one-element list, read and written by the closures.
     scenes_box: list[Any] = [None]
@@ -582,7 +559,6 @@ def start_app(engine: Any, game: Any, options: AppOptions) -> RunningApp:
     dev = create_dev(engine, game, options, audio)
 
     def on_change(state: MenuState) -> None:
-        sync_scenes(scenes_box[0], state, ship_ids)
         session.sync(state)
         if dev is not None:
             dev[0].sync(state)
@@ -597,8 +573,7 @@ def start_app(engine: Any, game: Any, options: AppOptions) -> RunningApp:
 
     def on_loaded(loaded: Any) -> None:
         scenes_box[0] = loaded
-        sync_scenes(loaded, menu.flow.state, ship_ids)
-        start_debug_level(menu, options.debug, ship_ids)
+        start_debug_level(menu, options.debug)
 
     loading = load_menu_scenes(prepared, menu, options, on_loaded)
 

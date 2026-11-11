@@ -30,7 +30,7 @@ def app_version() -> str:
     return found.group(1)
 
 
-def test_eng_54_loading_title_ships_levels_game_pause_resume_back_to_title(
+def test_eng_54_loading_title_levels_game_pause_resume_back_to_title(
     page: Page,
 ) -> None:
     """ENG-54, ENG-109: the Python build runs from the title to a level and back.
@@ -45,9 +45,7 @@ def test_eng_54_loading_title_ships_levels_game_pause_resume_back_to_title(
     expect(page.locator(".title-screen")).to_be_visible(timeout=LOAD_TIMEOUT)
     expect_state(page, {"screen": "title", "selectedId": "start"})
     send_action(page, "confirm")
-    expect_state(page, {"screen": "ship-select", "selectedId": "balanced"})
-    send_action(page, "confirm")
-    expect_state(page, {"screen": "level-select", "selectedId": "1-1", "chosenShipId": "balanced"})
+    expect_state(page, {"screen": "level-select", "selectedId": "1-1", "shipId": "balanced"})
     send_action(page, "confirm")
     expect_state(page, {"screen": "game", "chosenLevelId": "1-1"})
     expect(page.locator(".game-level")).to_have_text("Level 1-1")
@@ -88,9 +86,25 @@ def test_eng_54_loading_title_ships_levels_game_pause_resume_back_to_title(
 
 def test_ui_load_03_a_progress_bar_goes_from_0_to_100_then_the_title_appears(page: Page) -> None:
     """Also UI-LOAD-04: the title follows by itself."""
+    # Loading can end between two polls of `expect` (D-326 left two short steps), so the page
+    # itself notes when the bar is first laid out with a size.
+    page.add_init_script(
+        """(() => {
+            const seen = () => {
+                const bar = document.querySelector('.loading-bar');
+                const box = bar && bar.getBoundingClientRect();
+                if (box && box.width > 0 && box.height > 0) {
+                    window.__loadingBarShown = true;
+                    observer.disconnect();
+                }
+            };
+            const observer = new MutationObserver(seen);
+            observer.observe(document, {childList: true, subtree: true});
+        })();"""
+    )
     page.goto("./")
-    expect(page.locator(".loading-bar")).to_be_visible()
     expect(page.locator(".title-screen")).to_be_visible(timeout=LOAD_TIMEOUT)
+    assert page.evaluate("window.__loadingBarShown === true")
     progress = game_state(page)["loadingProgress"]
     assert progress[0] == 0
     assert progress[-1] == 1

@@ -59,7 +59,6 @@ def test_ui_look_02_the_menu_follows_window_resizes(page: Page) -> None:
 
 
 def test_ui_look_08_the_selected_entry_is_marked_by_more_than_colour(page: Page) -> None:
-    """Also UI-SHIP-03: the highlighted ship card has its marker."""
     open_game(page)
 
     def marker(selector: str, pseudo: str, prop: str) -> str:
@@ -71,10 +70,6 @@ def test_ui_look_08_the_selected_entry_is_marked_by_more_than_colour(page: Page)
 
     assert "▶" in marker(".title-start.selected", "::before", "content")
     page.locator(".title-start").click()
-    expect_state(page, {"screen": "ship-select"})
-    assert marker(".ship-card.selected", "::before", "visibility") == "visible"
-    assert marker(".ship-card:not(.selected) >> nth=0", "::before", "visibility") == "hidden"
-    page.locator(".ship-card.selected").click()
     expect_state(page, {"screen": "level-select"})
     assert marker(".level-cell.selected", "", "outline-style") == "dashed"
 
@@ -83,8 +78,6 @@ def test_ui_input_11_touch_targets_are_at_least_44_css_px_on_a_phone(page: Page)
     page.set_viewport_size({"width": 390, "height": 844})
     open_game(page)
     page.locator(".title-start").click()
-    expect_state(page, {"screen": "ship-select"})
-    page.locator(".ship-card.selected").click()
     expect_state(page, {"screen": "level-select"})
     for target in page.locator(".menu-entry, .menu-back").all():
         box = target.bounding_box()
