@@ -371,3 +371,22 @@ def test_gfx_ship_01_the_reactor_scoops_stand_on_the_nacelle_and_ramp_to_its_bac
         # The faces on the scoop's top face away from the nacelle.
         if all(abs(y) > top - 0.001 for y in ys):
             assert normals[indices[t] * 3 + 1] * up > 0
+
+
+def test_gfx_ship_01_the_reactor_scoops_have_fins_across_their_mouths(
+    scene: Any, monkeypatch: Any
+) -> None:
+    """D-348: flat fins across each scoop's mouth, as the main intakes have; the ramp eases down."""
+    names: list[str] = []
+    real = balanced_ship.panel
+
+    def record(name: str, *args: Any) -> Any:
+        names.append(name)
+        return real(name, *args)
+
+    monkeypatch.setattr(balanced_ship, "panel", record)
+    build_balanced_ship(scene)
+    fins = [n for n in names if "-scoop-" in n and "-fin-" in n]
+    assert len(fins) == 2 * 2 * len(balanced_ship.REACTOR_SCOOP["fins"])
+    heights = [max(p[1] for p in ring) for _z, ring in balanced_ship.scoop_sections(1)]
+    assert heights == sorted(heights, reverse=True)

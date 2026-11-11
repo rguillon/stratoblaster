@@ -2597,3 +2597,17 @@
     just behind the front ring, ramping down to the nacelle's back; a matte black slab is its
     forward-facing mouth. The tails and ventral fins rise out of the ramps.
 - **Consequences:** the ship measures 9,620 triangles.
+
+### D-348 — Smooth, finned secondary intakes
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-05.
+- **Context:** owner: "rework the secondary intakes, smoth them a little and add fins like the
+  others".
+- **Decision:** the reactor scoops are rounded arches in section (a rounded rectangle, corners
+  0.035, 2 points a corner) and smooth-shaded; after a short straight lip, the ramp eases down to
+  the nacelle's back along a half cosine over 4 sections, narrowing by 15%. Three flat steel fins
+  span each matte black mouth, at its middle and 0.28 of its height either side, as the main
+  intakes' fins span their ducts.
+- **Consequences:** the ship measures 10,004 triangles, under the 11,000 budget; the scoops'
+  detail was cut (3 points a corner and 6 ramp sections first gave 10,372) to keep a margin.

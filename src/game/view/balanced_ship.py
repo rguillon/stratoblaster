@@ -29,6 +29,7 @@ from game.view.balanced_hull import (
 from game.view.ship_materials import get_ship_materials
 from game.view.ship_parts import (
     PART_FACETS,
+    PLATE_THICKNESS,
     add_reactor_intake,
     build_reactor,
     disc_options,
@@ -169,6 +170,9 @@ OCTAGON = 8
 # back a ramp sloping down to the nacelle's back. In the nacelle's own units (before its upright
 # stretch, Z from its middle): its front and back, its width at its base, its height at its mouth,
 # how far its base sinks into the nacelle; the mouth's share of its width and height.
+# D-348 (owner: "rework the secondary intakes, smoth them a little and add fins like the others"):
+# a rounded arch, smooth-shaded (`corner`), the ramp easing down over `rampSteps` sections after a
+# short straight `lip`; flat fins across the mouth at these shares of its height from its middle.
 REACTOR_SCOOP: dict[str, Any] = {
     "front": 0.5,
     "back": -1.0,
@@ -176,6 +180,10 @@ REACTOR_SCOOP: dict[str, Any] = {
     "height": 0.1,
     "sink": 0.012,
     "mouth": 0.72,
+    "corner": 0.035,
+    "lip": 0.06,
+    "rampSteps": 4,
+    "fins": [-0.28, 0.0, 0.28],
 }
 
 # The guns under the belly (D-339, owner: "rework the undergun, make a cool looking laser and add
@@ -722,43 +730,56 @@ def _build_tip_reactor(side: str, sign: float, root: Any, scene: Any) -> None:
 def scoop_sections(up: float) -> list[Any]:
     """Return the sections of a main reactor's secondary intake, `up` 1 on top, -1 under (D-347).
 
-    A trapezoid on the nacelle's flat face, full height at its mouth, then a ramp down to the
-    nacelle's back.
+    A rounded arch on the nacelle's flat face (D-348: its corners rounded, smooth-shaded), full
+    height at its mouth, then a ramp easing down to the nacelle's back along a half cosine, a
+    little narrower there.
     """
     scoop = REACTOR_SCOOP
     base = REACTOR["radius"] * math.cos(math.pi / OCTAGON) - scoop["sink"]
     half = scoop["width"] / 2
+    full = scoop["height"] + scoop["sink"]
+    front = scoop["front"]
+    lip = front - scoop["lip"]
+    steps = scoop["rampSteps"]
+    rows = [[front, full, half], [lip, full, half]]
+    for k in range(1, steps + 1):
+        t = k / steps
+        ease = (1 + math.cos(math.pi * t)) / 2
+        z = lip + (scoop["back"] - lip) * t
+        rows.append([z, max(0.004, full * ease), half * (1 - 0.15 * t)])
     sections = []
-    for z, height in [
-        [scoop["front"], scoop["height"] + scoop["sink"]],
-        [scoop["front"] - 0.06, scoop["height"] + scoop["sink"]],
-        [scoop["back"], 0.003],
-    ]:
-        ring = [
-            [half, up * base],
-            [half * 0.84, up * (base + height)],
-            [-half * 0.84, up * (base + height)],
-            [-half, up * base],
-        ]
-        sections.append([z, ring])
+    for row in rows:
+        height = row[1]
+        ring = rounded_rectangle(row[2], height / 2, scoop["corner"], 2)
+        middle = base + height / 2
+        sections.append([row[0], [[p[0], up * (middle + p[1])] for p in ring]])
     return sections
 
 
 def _build_scoop(name: str, up: float, reactor: Any, scene: Any) -> None:
-    """Build a secondary intake on a main reactor's top or bottom, its black mouth ahead (D-347)."""
+    """Build a secondary intake on a main reactor's top or bottom (D-347, D-348).
+
+    A smooth silver arch ramping back to the nacelle's back; its matte black mouth ahead, flat
+    steel fins across it, as the main intakes have.
+    """
     mats = get_ship_materials(scene)
     scoop = REACTOR_SCOOP
-    shell = create_section_loft(name, scoop_sections(up), 0, scene)
+    sections = scoop_sections(up)
+    shell = create_section_loft(name, sections, len(sections[0][1]), scene)
     shell.material = mats.hull
     shell.parent = reactor
-    half = scoop["width"] / 2 * 0.84 * scoop["mouth"]
+    half = scoop["width"] / 2 * scoop["mouth"]
     front = scoop["front"]
     outline = [[-half, front + 0.004], [half, front + 0.004], [half, front - 0.03]]
     outline.append([-half, front - 0.03])
     height = scoop["height"] * scoop["mouth"]
+    middle = REACTOR["radius"] * math.cos(math.pi / OCTAGON) + scoop["height"] / 2
     mouth = panel(name + "-mouth", outline, height, mats.intakeBlack, reactor)
-    base = REACTOR["radius"] * math.cos(math.pi / OCTAGON)
-    mouth.position.y = up * (base + scoop["height"] / 2)
+    mouth.position.y = up * middle
+    fin_outline = [[-half, front + 0.03], [half, front + 0.03], [half, front], [-half, front]]
+    for k, share in enumerate(scoop["fins"]):
+        fin = panel(name + "-fin-" + str(k), fin_outline, PLATE_THICKNESS, mats.hullMid, reactor)
+        fin.position.y = up * (middle + share * height)
 
 
 def build_balanced_ship(scene: Any) -> Any:

@@ -89,7 +89,9 @@ tails and ventral fins standing on the taller nacelles. On the top and the botto
 reactor sits a secondary intake (D-347, owner: "add secondary intake at the top and botton of each
 of the main reactors, with a slope eaching the back of the reactor"): a silver scoop on the
 nacelle's flat face, behind its front ring, its matte black mouth facing forward, its back a ramp
-sloping down to the nacelle's back.
+sloping down to the nacelle's back; a rounded arch in section, smooth-shaded, the ramp easing down
+along a half cosine, three flat steel fins across its mouth (D-348, owner: "rework the secondary
+intakes, smoth them a little and add fins like the others").
 
 No gun stands on top (D-330), and the ship carries no light of its own but its reactors (D-327).
 
@@ -124,7 +126,7 @@ No gun stands on top (D-330), and the ship carries no light of its own but its r
   and meets the wings' plane at the chine's edge (unit tests).
 - The design is validated by eye (manual).
 
-*Sources: P02-R01, D-327, D-328, D-330, D-331, D-332, D-333, D-336, D-337, D-338, D-339, D-340, D-341, D-342, D-343, D-344, D-345, D-346, D-347.*
+*Sources: P02-R01, D-327, D-328, D-330, D-331, D-332, D-333, D-336, D-337, D-338, D-339, D-340, D-341, D-342, D-343, D-344, D-345, D-346, D-347, D-348.*
 
 ### GFX-SHIP-02 — (removed) Heavy ship
 
@@ -157,8 +159,8 @@ than the one before. The metals take the brighter hull light of GFX-ART-08.
 ### GFX-SHIP-05 — Polygon budget · MUST
 
 The player ship is under 11,000 triangles (2,000 until D-327, 4,500 until D-328, 7,000 until
-D-330; measured 9,620 in the browser with its flames, its six reactors and their four finned intakes,
-D-347). The round
+D-330; measured 10,004 in the browser with its flames, its six reactors and their four finned intakes,
+D-348). The round
 parts' extra triangles go on their upper half only, the side the playfield camera sees: the
 canopy 16 over 3; the canopy frame, mostly hidden, 8 over 2; the tip reactors' body, a rounded
 rectangle of 12 points, smooth all round. The tip reactors are rounded
@@ -267,7 +269,7 @@ either side of the tip reactors' body, so it does not cross their intake (D-339)
 | Wing | forward-swept: root x 0.8 (z -0.7 to -1.85), tip x 2.3 (z 0.2 to -0.4, chamfered to 2.25, 0.24) | `balanced_ship.py` `BALANCED_WING` |
 | Reactor section | hexagon (main reactors and tip intakes: octagon turned π/8), corners rounded at 0.3 of the radius, 3 points a corner (rings 2) | `ship_parts.py` `REACTOR_SIDES`, `polygon_turn`, `REACTOR_ROUNDING`, `REACTOR_CORNER_STEPS`, `RING_CORNER_STEPS`; `balanced_ship.py` `OCTAGON` |
 | Reactor intake | straight at 1.0 radius (the nacelle's) to 0.24 ahead, angled in to 0.8 at 0.47; flush with the nacelle; dark duct, its end behind the fan face; fan face at 0.68 radii; 4 horizontal fins at heights ±0.14 and ±0.42, z 0.12 to 0.4, inside a 0.66 duct hexagon | `ship_parts.py` `REACTOR_INTAKE*` |
-| Reactor scoops | top and bottom of each main reactor, z 0.5 to -1.0 of the nacelle, 0.16 wide, 0.1 high at the mouth, sunk 0.012; mouth 0.72 of its size | `balanced_ship.py` `REACTOR_SCOOP` |
+| Reactor scoops | top and bottom of each main reactor, z 0.5 to -1.0 of the nacelle, 0.16 wide, 0.1 high at the mouth, sunk 0.012; corners 0.035; a 0.06 lip then 4 eased ramp sections; mouth 0.72 of its size; fins at -0.28, 0, 0.28 of its height | `balanced_ship.py` `REACTOR_SCOOP` |
 | Intake black | albedo [0.012, 0.012, 0.015], metallic 0, roughness 1 | `SHIP_LOOK["intakeBlack"]` |
 | Tip reactors | x 1.98, y 0.125 and -0.125, z -0.4; radius 0.11, length 1.35 (0.95 until D-340); fins at 45° | `TIP_REACTOR`, `TIP_FIN`, `TIP_FIN_CANT` |
 | Tail cant | 0.2 rad outwards, on the nacelles | `TAIL_CANT` |
