@@ -45,9 +45,18 @@ def _camera(label: str, _scene: Any) -> SimpleNamespace:
     return SimpleNamespace(name=label, fov=0.0, minZ=0.0, maxZ=0.0)
 
 
-def _level(sea_level: float | None, sections: list[tuple[float, float]]) -> SceneryLevel:
+def _level(
+    sea_level: float | None,
+    sections: list[tuple[float, float]],
+    seabeds: list[float | None] | None = None,
+) -> SceneryLevel:
+    beds = seabeds if seabeds is not None else [None] * len(sections)
     relief = [
-        SimpleNamespace(relief=SimpleNamespace(base=base, amplitude=amp)) for base, amp in sections
+        SimpleNamespace(
+            relief=SimpleNamespace(base=base, amplitude=amp),
+            shore=None if bed is None else SimpleNamespace(seabed=bed),
+        )
+        for (base, amp), bed in zip(sections, beds, strict=True)
     ]
     sea = None if sea_level is None else SimpleNamespace(level=sea_level)
     return SimpleNamespace(sections=relief, sea=sea)  # type: ignore[return-value]
@@ -58,9 +67,21 @@ def test_without_a_sea_the_lowest_ground_is_the_lowest_relief() -> None:
     assert lowest_ground(level) == pytest.approx(3)
 
 
-def test_with_a_sea_the_sea_level_is_the_lowest_ground() -> None:
+def test_gfx_cam_05_over_high_ground_the_sea_level_is_the_lowest_ground() -> None:
     level = _level(2, [(10, 4), (20, 2)])
     assert lowest_ground(level) == 2
+
+
+def test_gfx_cam_05_the_sea_bed_seen_through_the_water_is_the_lowest_ground() -> None:
+    """D-320: the ground is generated down to the sea bed, which shows through the water."""
+    level = _level(0, [(-70, 30), (-12, 50)])
+    assert lowest_ground(level) == pytest.approx(-100)
+
+
+def test_gfx_cam_05_a_shore_sea_bed_counts_as_ground() -> None:
+    """D-320: a coast's sea bed (1-2's shore at -55 over land relief at 6 and more)."""
+    level = _level(0, [(16, 10), (24, 10)], [-55, None])
+    assert lowest_ground(level) == pytest.approx(-55)
 
 
 def test_the_stage_camera_sees_twice_the_half_field_of_view_between_its_clips() -> None:

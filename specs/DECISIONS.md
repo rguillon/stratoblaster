@@ -2044,3 +2044,26 @@
 - **Consequences:** the menus' 3D draws about 42 % of the 16:9 pixels. Settings over a paused
   level are now in the window too.
 - **Status:** Proposed
+
+### D-320 — The ground under the water is generated as far as it is seen
+- **Date:** 2026-11-11
+- **Requirements:** GFX-CAM-05, GFX-WATER-02, GFX-WATER-03.
+- **Context:** owner: "on level 1-1, I sometime see slice of water that are not randered on the
+  top of the screen".
+- **Cause:** the stage worked out the ground the camera sees at the water level when a level has
+  water. But the water is see-through (alpha 0.4), and its depth colour is painted on the terrain
+  under it.
+  - The top edge of the screen meets the sea bed further away than the water's surface: 1-1's
+    deep water goes down to −100. In ground units, the far edge is at 672 for the surface and
+    814 for the sea bed.
+  - The ground was generated to 672 plus the 80 margin, rounded up to whole chunks of 320.
+  - Whenever a chunk boundary fell just past 752, up to 62 units at the top had no sea bed. The
+    water there was drawn over the clear colour, a band that came and went with the chunks.
+- **Decision:** `lowest_ground` is the lowest of the relief, the shores' sea beds (1-2's coast at
+  −55 over land relief of 6 and more) and the water level.
+- **Consequences:**
+  - 1-1's ground window grows from 672 to 814 deep, and from ±210 to ±255 across. 1-2's grows to
+    the −55 sea bed.
+  - The terrain chunks are about 13 % wider, and at most one more chunk is kept.
+  - Levels without water are unchanged.
+- **Status:** Proposed

@@ -73,7 +73,10 @@ ground. The stage works out its chunks, props and cars in ground units.
 ### GFX-CAM-05 — The ground the camera sees · MUST
 
 The stage works out the ground the camera sees (its near and far Z and its widest half-width) at the
-level's lowest ground: the water level when the level has water, its lowest relief otherwise. The
+level's lowest ground: the lowest of its relief, its shores' sea beds and its water level. The water
+is see-through, so the sea bed under it is seen too, further up the screen than the water's surface
+at the same place (D-320; until then the window was worked out at the water level, and a band of
+ungenerated ground showed through the water at the top of the screen). The
 terrain is generated over that window plus `margin` (80) on every side, so the camera never sees the
 edge of the generated ground. The camera never sees the sky above the horizon: the sky only lights
 the scene and gives the reflections ([sky-and-light.md](sky-and-light.md)). With the ground drawn
@@ -85,8 +88,10 @@ between D-249 and D-252, ±210 and ±235 in the 540 × 720 window until D-253).
 - Given a level, then the terrain chunks cover the ground window plus the margin on both sides and
   both ends (unit test).
 - Given a level without water, then the window is worked out at its lowest relief, not at 0.
+- Given a level with water over a sea bed lower than it (relief or a shore's sea bed), then the
+  window is worked out at that sea bed (unit test).
 
-*Sources: P04-R01, D-020, D-064, D-147.*
+*Sources: P04-R01, D-020, D-064, D-147, D-320.*
 
 ### GFX-CAM-06 — Near and far planes · MUST
 
