@@ -2717,3 +2717,19 @@
   measures 10,797 triangles. Transcrypt leaves annotated module-level names unexported and has no
   `from package import module as alias`: the cockpit's tunables are plain dicts of numbers,
   imported by name.
+
+### D-355 — The ship's glowing edges sized for the playfield
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-09, GFX-SHIP-07.
+- **Context:** owner: "the player ship glow is not visible in game". The glowing edge strips
+  (D-335) are 0.035 model units across: on the menus' large ship they show and bloom, but on the
+  playfield, at 7 px a unit, they were a quarter of a pixel wide. Measured in a level, they were
+  in the playfield glow layer's rendering group and lit, but too thin to draw or bloom.
+- **Decision:** `build_balanced_ship` takes the strips' width. The playfield's model
+  (`PLAYER_SHIP_MODELS`, also the dev viewer's) is `build_playfield_ship`: its strips
+  `READABILITY.playerGlow.width` (1.8) logical pixels across at the playfield scale, the canopy's
+  sill rails widened in the same ratio. The title backdrop keeps the thin strips. 1.2 px was tried
+  first: the canards and strakes showed, the wings' leading edges hardly.
+- **Consequences:** no change to the triangle count; the dev viewer's close-up shows the
+  playfield's wider strips.

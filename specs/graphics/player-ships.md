@@ -248,7 +248,11 @@ strip along the leading edge of each main wing, body strake (in short strips alo
 D-336) and canard (and the canard's tip), and of each tail and ventral fin (and its tip; D-346,
 owner: "add highlight to the vertical wings too"), half
 on the panel and half out past it, a hair thicker than the panel so it caps the edge seen from
-above and from ahead; and the rails along the canopy's sills (D-354; its frame's rim before). The guns (the
+above and from ahead; and the rails along the canopy's sills (D-354; its frame's rim before). The
+strips are 0.035 model units across on the larger ship of the menus; on the playfield, where the
+ship is about 40 px long, `player_glow_width` logical pixels across, so they show and bloom there
+(D-355, owner: "the player ship glow is not visible in game": a quarter of a pixel, they hardly
+showed); the sill rails widen in the same ratio. The dev viewer shows the playfield's build. The guns (the
 missile launchers, the laser, the miniguns and their fairing) and the reactors' bodies do not glow, but for the
 laser's core and emitter, of the reactors' core light (D-339, D-342). The main wing's strip stops
 either side of the tip reactors' body, so it does not cross their intake (D-339).
@@ -281,6 +285,7 @@ either side of the tip reactors' body, so it does not cross their intake (D-339)
 | `PLAYER_SHIP_SCALE` | 7 px per model unit | `ship_look.py` |
 | Bank | `max_deg` 35°, `ease_per_sec` 8 | `src/config/game_play.py` `ShipRoll(35, 8)` |
 | Triangle budget | 11,000 | GFX-SHIP-05 |
+| `player_glow_width` | 1.8 logical px on the playfield (D-355); 0.035 model units in the menus | `src/game/config/readability.py` `READABILITY.playerGlow`; `balanced_ship.py` `EDGE_GLOW` |
 | Edge glow | emissive [0.25, 0.85, 1]; strips 0.035 wide, the panel's thickness + 0.006 | `ship_look.py` `SHIP_LOOK["edgeGlow"]`; `balanced_ship.py` `EDGE_GLOW` |
 | Sections | hull 9 points over the top, 6 under it, all flat (D-336), canopy 11 over its arch / 2 under (D-354), intakes, nacelles, rings 12 / 3 (upper / lower facets) | `balanced_hull.py` `TOP_POINTS`; `ship_parts.py` `SMOOTH_PART_SECTION`; `balanced_ship.py` |
 | Hull stations | 12 (z 2.75 to -2.45, closed at both ends), each gap cut in 3 | `balanced_hull.py` `STATIONS`, `STATION_STEPS` |

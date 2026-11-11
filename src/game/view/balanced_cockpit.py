@@ -116,9 +116,12 @@ def canopy_sections() -> list[list[Any]]:
     return sections
 
 
-def rail_sections(side: float) -> list[list[Any]]:
-    """Return the sections of the sill rail on `side` (1 right, -1 left), front to back."""
-    width = RAIL["width"]
+def rail_sections(side: float, grow: float = 1.0) -> list[list[Any]]:
+    """Return the sections of the sill rail on `side` (1 right, -1 left), front to back.
+
+    `grow` widens it, as the ship's glowing edges are on the playfield (D-355).
+    """
+    width = RAIL["width"] * grow
     sections: list[list[Any]] = []
     for row in canopy_rows():
         z = row[0]

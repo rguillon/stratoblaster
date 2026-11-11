@@ -8,6 +8,8 @@ from unittest.mock import MagicMock
 import pytest
 from helpers.babylon_stub import stub_babylon
 
+from game.config.readability import READABILITY
+from game.config.ship_look import PLAYER_SHIP_SCALE
 from game.index import GAME
 from game.view import balanced_hull as hull
 from game.view import balanced_ship
@@ -467,3 +469,26 @@ def test_gfx_ship_01_the_minigun_bores_face_the_axis(scene: Any, monkeypatch: An
     assert len(bores) == 12
     for bore in bores:
         bore.flipFaces.assert_called_once_with(True)
+
+
+def test_gfx_ship_09_on_the_playfield_the_glowing_edges_are_wide_enough_to_show(
+    scene: Any, monkeypatch: Any
+) -> None:
+    """D-355: the playfield's ship has its strips some logical pixels across, the menus' thin."""
+    widths: dict[str, float] = {}
+    real = balanced_ship.edge_strip
+
+    def record(name: str, edge: Any, inside: Any, size: Any, *args: Any) -> Any:
+        widths[name] = size["width"]
+        return real(name, edge, inside, size, *args)
+
+    monkeypatch.setattr(balanced_ship, "edge_strip", record)
+    build_balanced_ship(scene)
+    assert set(widths.values()) == {balanced_ship.EDGE_GLOW["width"]}
+    widths.clear()
+    PLAYER_SHIP_MODELS["balanced"](scene)
+    width = READABILITY.playerGlow.width / PLAYER_SHIP_SCALE
+    assert all(w == pytest.approx(width) for w in widths.values())
+    assert widths
+    # At least a logical pixel across on the playfield.
+    assert width * PLAYER_SHIP_SCALE >= 1

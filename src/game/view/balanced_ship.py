@@ -16,6 +16,8 @@ their triangles go on the upper half, which the playfield camera sees (GFX-SHIP-
 
 import math
 
+from game.config.readability import READABILITY
+from game.config.ship_look import PLAYER_SHIP_SCALE
 from game.view.balanced_cockpit import (
     ARCH_POINTS,
     BOW,
@@ -509,14 +511,19 @@ def _build_seam(name: str, z: float, material: Any, parent: Any, scene: Any) -> 
     seam.parent = parent
 
 
-def _build_cockpit(root: Any, scene: Any) -> None:
+def _build_cockpit(root: Any, scene: Any, glow_width: float) -> None:
     """Build the cockpit (D-354): canopy glass, its bow and sill rails, and what shows inside."""
     mats = get_ship_materials(scene)
     glass = create_section_loft("balanced-canopy", canopy_sections(), ARCH_POINTS, scene)
     glass.material = mats.glass
     glass.parent = root
     for side, sign in [("right", 1.0), ("left", -1.0)]:
-        rail = create_section_loft("balanced-canopy-rail-" + side, rail_sections(sign), 0, scene)
+        rail = create_section_loft(
+            "balanced-canopy-rail-" + side,
+            rail_sections(sign, glow_width / EDGE_GLOW["width"]),
+            0,
+            scene,
+        )
         rail.material = mats.edgeGlow
         rail.parent = root
     bow = BOW
@@ -609,7 +616,7 @@ def _centre(outline: list[list[float]]) -> list[float]:
     ]
 
 
-def _build_edge_glow(side: str, sign: float, root: Any, scene: Any) -> None:
+def _build_edge_glow(side: str, sign: float, root: Any, scene: Any, glow_width: float) -> None:
     """Build the glowing leading edges of a side's wing, strake and canard (D-335, D-336).
 
     The extremities glow in place of a trim round the ship: the main wing's leading edge from
@@ -620,8 +627,8 @@ def _build_edge_glow(side: str, sign: float, root: Any, scene: Any) -> None:
     def mirror(points: list[list[float]]) -> list[list[float]]:
         return points if sign > 0 else mirror_x(points)
 
-    wing_size = {"width": EDGE_GLOW["width"], "thickness": EDGE_GLOW["wing"]}
-    canard_size = {"width": EDGE_GLOW["width"], "thickness": EDGE_GLOW["canard"]}
+    wing_size = {"width": glow_width, "thickness": EDGE_GLOW["wing"]}
+    canard_size = {"width": glow_width, "thickness": EDGE_GLOW["canard"]}
     name = "balanced-glow-" + side
     # The main wing's, either side of the tip reactors' body, which it runs through (D-339).
     wing = mirror(BALANCED_WING)
@@ -649,7 +656,7 @@ def _build_edge_glow(side: str, sign: float, root: Any, scene: Any) -> None:
         strip.position.y = CHINE_EDGE - CANARD_THICKNESS / 2
 
 
-def _build_tails(side: str, sign: float, root: Any, scene: Any) -> None:
+def _build_tails(side: str, sign: float, root: Any, scene: Any, glow_width: float) -> None:
     """Build the canted tail on a wing-tip pod's top and the ventral fin under it (D-353)."""
     mats = get_ship_materials(scene)
     pod = TIP_REACTOR
@@ -665,7 +672,9 @@ def _build_tails(side: str, sign: float, root: Any, scene: Any) -> None:
     panel("balanced-tail-" + side + "-panel", TAIL, TAIL_THICKNESS, mats.hullDark, tail)
     # Their leading edge and tip glow, as the wings' do (D-346, owner: "add highlight to the
     # vertical wings too").
-    _glow_edges("balanced-glow-" + side + "-tail", TAIL, TAIL_THICKNESS, mats.edgeGlow, tail)
+    _glow_edges(
+        "balanced-glow-" + side + "-tail", TAIL, TAIL_THICKNESS, glow_width, mats.edgeGlow, tail
+    )
 
     # Ventral fin: same trick, pointing down and outwards.
     fin = new_transform_node("balanced-ventral-" + side, scene)
@@ -674,15 +683,25 @@ def _build_tails(side: str, sign: float, root: Any, scene: Any) -> None:
     fin.parent = root
     panel("balanced-ventral-" + side + "-panel", VENTRAL_FIN, VENTRAL_THICKNESS, mats.hullDark, fin)
     _glow_edges(
-        "balanced-glow-" + side + "-ventral", VENTRAL_FIN, VENTRAL_THICKNESS, mats.edgeGlow, fin
+        "balanced-glow-" + side + "-ventral",
+        VENTRAL_FIN,
+        VENTRAL_THICKNESS,
+        glow_width,
+        mats.edgeGlow,
+        fin,
     )
 
 
 def _glow_edges(
-    name: str, outline: list[list[float]], thickness: float, material: Any, parent: Any
+    name: str,
+    outline: list[list[float]],
+    thickness: float,
+    width: float,
+    material: Any,
+    parent: Any,
 ) -> None:
-    """Lay glowing strips on a fin's leading edge and tip: its first two edges (D-346)."""
-    size = {"width": EDGE_GLOW["width"], "thickness": thickness + 0.006}
+    """Lay glowing strips `width` across on a fin's leading edge and tip: its first two edges."""
+    size = {"width": width, "thickness": thickness + 0.006}
     for k in range(2):
         edge = [outline[k], outline[k + 1]]
         edge_strip(name + "-" + str(k), edge, _centre(outline), size, material, parent)
@@ -872,15 +891,15 @@ def scoop_collar_rings(up: float) -> list[list[list[float]]]:
     return rings
 
 
-def build_balanced_ship(scene: Any) -> Any:
-    """Build the player ship (GFX-SHIP-01)."""
+def build_balanced_ship(scene: Any, glow_width: float = EDGE_GLOW["width"]) -> Any:
+    """Build the player ship (GFX-SHIP-01), its glowing edge strips `glow_width` across."""
     root = new_transform_node("ship-balanced", scene)
     _build_body(root, scene)
-    _build_cockpit(root, scene)
+    _build_cockpit(root, scene, glow_width)
     for side, sign in [("right", 1), ("left", -1)]:
         _build_wing(side, sign, root, scene)
-        _build_tails(side, sign, root, scene)
-        _build_edge_glow(side, sign, root, scene)
+        _build_tails(side, sign, root, scene, glow_width)
+        _build_edge_glow(side, sign, root, scene, glow_width)
         _build_missile_pod(side, sign, root, scene)
         _build_tip_reactor(side, sign, root, scene)
         reactor = build_reactor(
@@ -892,3 +911,20 @@ def build_balanced_ship(scene: Any) -> Any:
         for label, up in [("top", 1), ("bottom", -1)]:
             _build_scoop("balanced-reactor-" + side + "-scoop-" + label, up, reactor, scene)
     return root
+
+
+def playfield_glow_width() -> float:
+    """Return the glowing strips' width on the playfield, in model units (D-355).
+
+    `READABILITY.playerGlow.width` logical pixels at the ship's playfield scale.
+    """
+    width: float = READABILITY.playerGlow.width / PLAYER_SHIP_SCALE
+    return width
+
+
+def build_playfield_ship(scene: Any) -> Any:
+    """Build the player ship for the playfield: its glowing edges wide enough to show (D-355).
+
+    At about 40 px long, the menus' strips would be a quarter of a pixel across.
+    """
+    return build_balanced_ship(scene, playfield_glow_width())

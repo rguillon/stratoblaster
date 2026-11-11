@@ -76,6 +76,10 @@ READABILITY = record({
     # the direct light (sun, lamps) and on the sky's reflections, so they stand out brighter
     # (GFX-ART-08, ENM-36).
     "hullLight": {"direct": 1.8, "environment": 1.8},
+    # D-355 (owner: "the player ship glow is not visible in game"): on the playfield the ship is
+    # about 40 px long, so its glowing edge strips (0.035 model units across) were a quarter of a
+    # pixel wide and hardly showed or bloomed. There they are this many logical pixels across.
+    "playerGlow": {"width": 1.8},
     # The enemy missiles' rim (GFX-SHOT-15): width in logical pixels, and strength.
     "outline": {"width": 0.9, "intensity": 1.2},
 })
