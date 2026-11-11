@@ -477,6 +477,9 @@ def _build_minigun(side: str, sign: float, root: Any, scene: Any) -> None:
     profile = barrel_profile(barrels["length"], barrels["radius"], gun["bore"])
     # The bore, its bottom and wall (the profile's first three points), matte black (owner, D-351:
     # "make the inner part of the minigun mat black"); the muzzle's rim and the outside, metal.
+    # D-352 (owner: "the inside polygons of the gun barrel are not drawn"): the lathe turns a
+    # profile to run towards the nose and faces it outward; the bore's alone already runs that way,
+    # so its wall faced away from the axis and was culled. Turned round, it faces the axis.
     parts = [("-bore", profile[0:3], mats.intakeBlack), ("", profile[2:], mats.trim)]
     for k in range(barrels["count"]):
         angle = 2 * math.pi * k / barrels["count"]
@@ -489,6 +492,8 @@ def _build_minigun(side: str, sign: float, root: Any, scene: Any) -> None:
                 barrels["ring"] * math.sin(angle),
                 barrels["z"],
             )
+            if suffix == "-bore":
+                barrel.flipFaces(True)
             barrel.material = material
             barrel.parent = node
     clamp = gun["clamp"]

@@ -14,7 +14,11 @@ from game.view import balanced_ship
 from game.view.balanced_hull import hull_sections
 from game.view.balanced_ship import build_balanced_ship
 from game.view.player_ship_models import PLAYER_SHIP_MODELS
-from render.geometry.lathe_z import build_smooth_top_lathe_vertex_data, smooth_profile
+from render.geometry.lathe_z import (
+    build_faceted_lathe_vertex_data,
+    build_smooth_top_lathe_vertex_data,
+    smooth_profile,
+)
 from render.geometry.section_loft import build_section_loft
 
 
@@ -432,3 +436,35 @@ def test_gfx_ship_01_a_scoops_collar_rings_its_mouth_and_holds_its_fins(up: int)
     room = scoop["height"] * scoop["mouth"] / 2 * balanced_ship.REACTOR_HEIGHT
     heights = balanced_ship.intake_fin_heights(room)
     assert len(heights) == 3
+
+
+def test_gfx_ship_01_the_minigun_bores_face_the_axis(scene: Any, monkeypatch: Any) -> None:
+    """D-352: the bore's lathe alone faces outward, so the builder turns it round to be seen."""
+    gun = balanced_ship.MINIGUN
+    barrels = gun["barrels"]
+    profile = balanced_ship.barrel_profile(barrels["length"], barrels["radius"], gun["bore"])
+    positions, indices = build_faceted_lathe_vertex_data(profile[0:3], 6)
+    walls = 0
+    for t in range(0, len(indices), 3):
+        a, b, c = (positions[indices[t + k] * 3 : indices[t + k] * 3 + 3] for k in range(3))
+        u = [b[i] - a[i] for i in range(3)]
+        v = [c[i] - a[i] for i in range(3)]
+        # Babylon's front normal: (c - a) x (b - a).
+        n = [v[1] * u[2] - v[2] * u[1], v[2] * u[0] - v[0] * u[2], v[0] * u[1] - v[1] * u[0]]
+        if abs(n[2]) < 1e-12:
+            walls += 1
+            middle = [(a[i] + b[i] + c[i]) / 3 for i in range(2)]
+            assert n[0] * middle[0] + n[1] * middle[1] > 0
+    assert walls > 0
+    meshes: dict[str, Any] = {}
+
+    def lathe(name: str, *_args: Any) -> Any:
+        meshes[name] = MagicMock(name=name)
+        return meshes[name]
+
+    monkeypatch.setattr(balanced_ship, "create_faceted_lathe_along_z", lathe)
+    build_balanced_ship(scene)
+    bores = [m for name, m in meshes.items() if name.endswith("-bore")]
+    assert len(bores) == 12
+    for bore in bores:
+        bore.flipFaces.assert_called_once_with(True)

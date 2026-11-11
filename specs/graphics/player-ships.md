@@ -30,7 +30,8 @@ accent coils before): two gunmetal rails tapering forward into prongs either sid
 core rod, joined at their back by a bridge, a glowing emitter at the core's tip between the
 prongs; a minigun sits in each flank of the fairing, its hull-metal drum half sunk in it as
 a blister, six thick barrels round its axis out ahead of it, each hollow at its muzzle, its bore matte
-black (D-351, owner: "make the inner part of the minigun mat black"), held by a
+black (D-351, owner: "make the inner part of the minigun mat black"), its wall and bottom facing
+the barrel's axis so they are drawn seen from ahead (D-352), held by a
 gunmetal clamp (D-345: "increase the minigun size again, and add hole into the barrels"; D-346:
 "spread the minguns a little more"; D-349: "and spread the minigun more again", the fairing
 widened under the body's flanks, its top corners inside the hull's underside; D-341, owner:

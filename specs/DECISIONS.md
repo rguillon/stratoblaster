@@ -2662,3 +2662,21 @@
   - **Minigun bores:** each barrel is two lathes, the bore (its bottom and wall) in the matte
     black intake material and the rest in trim metal.
 - **Consequences:** the ship measures 10,580 triangles, under the 11,000 budget.
+
+### D-352 — The minigun bores face their barrel's axis
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01.
+- **Context:** owner, after D-351 made the bores matte black: "make the inner part of the
+  minigun mat black" (again), then "it's not a color issue it's a normal issue, the inside
+  polygons of the gun barrel are not drawn". Two attempts were reverted first (a black core and
+  plate between the barrels; an unlit black bore material, 0.7 of the radius).
+- **Cause:** `build_faceted_lathe_vertex_data` turns every profile to run tail to nose and faces it
+  outward. The whole barrel profile (D-345) runs from the bore's bottom to the breech, nose to
+  tail: turned round, its bore wall faced the axis. D-351 cut the bore out as a lathe of its own,
+  whose profile already runs tail to nose: its wall faced away from the axis and was culled, so
+  the background showed through each barrel.
+- **Decision:** the bore's mesh is turned round (`flipFaces(True)`), as the intakes' duct lining
+  is, so its wall faces the axis and its bottom the muzzle; it keeps the matte black and the 0.55
+  bore. A unit test checks the bore lathe alone faces outward and that each of the 12 is turned.
+- **Consequences:** the triangle count is unchanged.
