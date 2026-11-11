@@ -70,12 +70,11 @@ def create_hud(
 ) -> GameHud:
     """Return the in-game HUD in `parent`, for the ship named `ship`, with the game's `texts`.
 
-    One bar at the bottom, taking no input (UI-HUD-01, UI-HUD-11); `on_bomb` is the touch bomb
-    button's.
+    Light readouts in the corners of the playfield window, taking no input (UI-HUD-01,
+    UI-HUD-11); `on_bomb` is the touch bomb button's.
     """
     hud_texts = HudTexts(
         texts.hudHealth,
-        texts.hudWeapon,
         texts.hudLives,
         texts.hudBombs,
         texts.hudScore,

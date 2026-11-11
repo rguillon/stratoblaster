@@ -1957,3 +1957,38 @@
     on a crowded screen, so the later levels may feel harder than their numbers.
   - The probe scripts were one-off and are not kept in the repository.
 - **Status:** Proposed
+
+### D-317 — The HUD back over the playfield: light readouts in the window's corners
+- **Date:** 2026-11-11
+- **Requirements:** UI-HUD-01 to UI-HUD-08, UI-HUD-10, UI-HUD-12, UI-HUD-16, UI-LOOK-05.
+- **Context:** owner: "put back the UI into the gaming area, make it light so it doesnt cover the
+  area too much. Be creative dont just move the existing UI, design a new UI from scratch".
+- **Decision:** the HUD is laid over the 540 × 720 playfield window. It has no panels and no
+  backgrounds: only text outlined in black, and slim gauges, in the window's corners and along
+  its edges, so the level shows through everywhere.
+  - Top left: the score (22 px), its padding zeros drawn dim so the live digits stand out; under
+    it the high score; under that, small and dim, the level played.
+  - Top right: the lives (`♥ N`, green) over the bombs (`● N`, orange).
+  - Top centre, during a boss fight: the boss gauge across the window, 200 × 4 px, filled from
+    the left, with the boss's kind and name above it. It was a 300 px vertical gauge in the left
+    column.
+  - Right edge: the level's progress as a 2 px rail, filled from the bottom in the neon line,
+    with a bright bead where the fill ends. It runs from 104 px to 616 px down the window.
+  - Bottom left: the ship's callsign and `HP n / N` over a 130 × 6 px health bar cut into ten
+    cells. Under 30 % health the bar turns red, the HP text turns red and the window's edges
+    glow red, pulsing (only the glow's opacity is animated).
+  - Bottom right: the weapon's name and one diamond pip per weapon level, lit up to its level.
+    The `· Lv L/N` text and its `hudWeapon` text are gone.
+  - The playfield window, the ship's bounds and every gameplay extent are unchanged (D-263).
+  - The side columns stay opaque blue-black, but empty. They are drawn by the game screen in
+    place of the menus' neon frame, with a cyan hairline on the window's edges. The touch fire
+    and bomb buttons stay in the right column.
+- **Alternatives considered:**
+  - Widening the playfield back to the whole 16:9 screen with the HUD over it: this would undo
+    the content extents of D-263 and the enemy counts the level adjustment fitted to the window
+    (D-307 to D-316). The owner asked about the UI, not the playfield.
+  - Glass panels in the corners: not light.
+- **Consequences:** the ship flies under the bottom corners' readouts, which are thin and stay
+  readable over it. The boss's kind is drawn over the boss's model when the boss stands at the
+  very top.
+- **Status:** Proposed

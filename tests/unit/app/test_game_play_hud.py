@@ -90,7 +90,6 @@ def test_ui_hud_02_a_level_without_a_length_is_complete_on_the_bar() -> None:
 def hud_texts() -> SimpleNamespace:
     return SimpleNamespace(
         hudHealth="HEALTH",
-        hudWeapon=lambda name, level, levels: f"{name} {level}/{levels}",
         hudLives=lambda lives: f"x{lives}",
         hudBombs=lambda bombs: f"B{bombs}",
         hudScore=lambda score: f"SCORE {score}",

@@ -108,7 +108,7 @@ def test_game_bomb_04_r_sets_a_bomb_off_the_enemy_shots_go_the_boss_is_hurt(
     advance(page, 1.1)
     page.keyboard.press("KeyE")
     step(page)
-    expect(page.locator(".hud-weapon")).to_have_text("Laser · Lv 1/5")
+    expect(page.locator(".hud-weapon-name")).to_have_text("Laser")
     assert (game(page) or {})["bombs"] == 2
     # Then `bomb` from the test API.
     send_action(page, "bomb")

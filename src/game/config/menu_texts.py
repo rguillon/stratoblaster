@@ -44,7 +44,6 @@ MENU_TEXTS = record({
     # The HUD's health (UI-HUD-04), lives and bombs (UI-HUD-03), weapon (UI-HUD-06).
     "hudHealth": "HP",
     "hudLives": lambda lives: "♥ " + str(lives),
-    "hudWeapon": lambda weapon, level, levels: weapon + " · Lv " + str(level) + "/" + str(levels),
     "hudBombs": lambda bombs: "● " + str(bombs),
     "hudScore": padded,
     "hudHighScore": lambda score: "HI " + padded(score),

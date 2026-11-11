@@ -75,8 +75,8 @@ Red (`#ff2244`) is used only for danger: low health, the "Game over" panel, lock
 
 The UI palette changes no gameplay colour (enemies, enemy shots, player shots, pickups) and none of
 the levels' 3D look ([graphics/readability.md](../graphics/readability.md)). Over the playfield, the
-UI draws no neon frame or line; the HUD's cyan is only in its side columns, outside the part of
-the playfield the ship flies in ([hud.md](hud.md)).
+UI draws no neon frame or line; the HUD over it is light, outlined text and slim gauges in the
+window's corners and edges ([hud.md](hud.md), D-317).
 
 **Acceptance criteria**
 - Given the game screen, then the menu screens' neon frame and bottom line are not drawn.
