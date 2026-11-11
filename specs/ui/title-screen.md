@@ -2,10 +2,10 @@
 
 > **Area:** UI · **Prefix:** `UI-TITLE` · **Related:** [screen-flow.md](screen-flow.md), [look-and-layout.md](look-and-layout.md), [settings.md](settings.md), [ship-select.md](ship-select.md), [../dev/dev-menu.md](../dev/dev-menu.md), [../gameplay/scoring.md](../gameplay/scoring.md), [../01-engineering.md](../01-engineering.md)
 
-The first screen after loading: the high score, the game's name over a striped sunset sun, the Start and
-Settings entries, a short controls hint and the build's version, over a 3D night city generated in
-code, with the balanced ship floating above the street. The same 3D backdrop stays behind the other
-menu screens.
+The first screen after loading: the high score, the game's name as a chrome logo, the Start and
+Settings entries, a short controls hint and the build's version, over a 3D neon trench generated in
+code, the balanced ship racing down it towards the camera, speed streaks rushing past. The same 3D
+backdrop stays behind the other menu screens.
 
 ## Requirements
 
@@ -93,33 +93,41 @@ is selected.
 
 *Sources: P01-R04, P12-R04, P01-R01.*
 
-### UI-TITLE-07 — A 3D night city behind the menu · SHOULD
+### UI-TITLE-07 — The ship racing down a neon trench · SHOULD
 
-Behind the menu, a 3D scene generated in code: a night street between two rows of dark towers with
-lit windows, neon roof trims and blade signs (with bars as their "text"), dashed lane lines, a flat
-distant skyline in front of a glowing sky, haze that swallows the far street, and falling rain. The
-street scrolls towards the camera at `title_city_scroll_speed` and loops forever. Above the street,
-the balanced player ship floats gently up and down and turns at `title_ship_rotation_speed`. The
-city comes from a fixed seed, so it is the same on every run. No model or texture is downloaded.
+Behind the menu, a 3D scene generated in code (owner, 2026-11-11, D-325; a night city street
+before): the balanced player ship races down a deep trench, seen from the front, its nose towards
+the camera. The camera flies backwards ahead of it, a little above, looking down the trench behind
+it. The trench has a dark floor and two tall walls of panels of uneven depth, with lit slots, a
+neon strip along the foot of each wall, lit ribs across the floor and a dashed guide line down its
+middle; it scrolls away behind the ship at `title_trench_speed` and loops forever, its far end lost
+in haze in front of a glowing sky. Fast speed streaks (`title_streaks`) rush past the ship and the
+camera, faster than the trench, so the ship reads as flying fast. The ship sways from side to side,
+banking into each turn, and floats gently up and down (`title_ship_sway`, `title_ship_float`). The
+trench and the streaks come from a fixed seed, so they are the same on every run. No model or
+texture is downloaded.
 
 **Acceptance criteria**
 - The background is animated and generated in code (no downloaded model or texture).
-- Two builds of the backdrop give the same city (unit test with the seed).
+- Two builds of the trench and of the streaks give the same geometry (unit test with the seed).
+- Unit test: each frame scrolls the trench and the streaks away from the camera, the streaks faster,
+  and both loop; the ship faces the camera, sways, banks into the sway and floats.
 
-*Sources: P01-R05, D-014, D-104.*
+*Sources: P01-R05, D-014, D-104, D-325.*
 
-### UI-TITLE-08 — Dark, at synthwave dusk · MUST
+### UI-TITLE-08 — Dark, in neon blue and green · MUST
 
-The backdrop is dark and follows the menus' synthwave palette
-([look-and-layout.md](look-and-layout.md), D-323): a dim magenta dusk low in the sky through violet
-to near black higher up, a deep violet haze, near-black skyline and violet-grey towers, hot pink,
-violet and cyan windows, signs and trims, pink lane lines, violet rain.
+The backdrop is dark and follows the menus' cyan scheme
+([look-and-layout.md](look-and-layout.md)): a deep blue glow low in the sky through teal to black
+higher up, a deep blue-black haze, near-black trench floor and blue-grey walls, cyan, green and
+blue slots, strips, ribs and guide line, cyan and white streaks (D-198, D-325; the synthwave dusk
+of D-323 was undone by D-324).
 
 **Acceptance criteria**
-- Unit test: the sky, haze and tower colours stay dark and lean violet (blue at least green); the neon colours stay bright.
-- Manual check: no green or teal in the backdrop.
+- Unit test: the sky, haze, floor and wall colours stay dark; the neon and streak colours stay bright.
+- Manual check: no magenta, violet or red in the backdrop.
 
-*Sources: P01-R05, D-012, D-198, D-323.*
+*Sources: P01-R05, D-012, D-198, D-324.*
 
 ### UI-TITLE-09 — The backdrop stays behind the menus · MUST
 
@@ -135,10 +143,11 @@ played or paused, nor during the boot loading screen.
 
 ### UI-TITLE-10 — The backdrop keeps 60 FPS · SHOULD
 
-The title screen keeps 60 FPS on the reference hardware (ENG-101). The city is drawn in a handful of
-draw calls (each stretch of city is two merged, vertex-coloured meshes: its dark structure, kept out
-of the glow, and its lights, which glow). The neon is drawn at `title_neon_intensity`, so the glow
-and the tone mapping do not wash the signs into white blobs.
+The title screen keeps 60 FPS on the reference hardware (ENG-101). The trench is drawn in a handful
+of draw calls (each stretch of trench is two merged, vertex-coloured meshes: its dark structure,
+kept out of the glow, and its lights, which glow; the streaks are one merged mesh per stretch). The
+neon is drawn at `title_neon_intensity`, so the glow and the tone mapping do not wash the lights
+into white blobs.
 
 **Acceptance criteria**
 - Manual check with the FPS tile or the browser performance tools: 60 FPS on the title.
@@ -171,15 +180,16 @@ full screen (an iPhone's Safari), there is no entry.
 
 | Name | Value | Notes |
 |------|-------|-------|
-| `title_city_scroll_speed` | 8 units/s | `src/game/config/title_look.py` `TITLE_LOOK["city"]["scrollSpeed"]` |
-| City stretch length | 200 units | `TITLE_LOOK["city"]["length"]`; two stretches end to end |
-| `title_ship_rotation_speed` | 0.3 rad/s | `TITLE_LOOK["ship"]["rotationSpeedRadPerSec"]` |
-| Ship float | 0.25 units at 0.35 Hz | `TITLE_LOOK["ship"]` `bobAmplitude`, `bobHz` |
-| City seed | 2077 | `TITLE_LOOK["seed"]` |
-| Rain | 260 streaks, falling 30 units/s | `TITLE_LOOK["rain"]` |
-| Fog | 30 to 190 units | `TITLE_LOOK["fog"]` |
+| `title_trench_speed` | 60 units/s | `src/game/config/title_look.py` `TITLE_LOOK["trench"]["speed"]` |
+| Trench stretch | 160 units long, 10 wide, walls 16 high | `TITLE_LOOK["trench"]`; two stretches end to end |
+| `title_streaks` | 220 streaks, 2 to 7 units long, 160 units/s | `TITLE_LOOK["streaks"]`; two stretches of 60 units |
+| `title_ship_sway` | 0.8 units at 0.18 Hz, banking up to 0.35 rad | `TITLE_LOOK["ship"]` `swayAmplitude`, `swayHz`, `bankRad` |
+| `title_ship_float` | 0.2 units at 0.5 Hz | `TITLE_LOOK["ship"]` `bobAmplitude`, `bobHz` |
+| Camera | at (0, 2.4, 10), looking at (0, 0, -30) | `TITLE_LOOK["camera"]`; ahead of the ship, facing it |
+| Trench seed | 2077 | `TITLE_LOOK["seed"]` |
+| Fog | 20 to 140 units | `TITLE_LOOK["fog"]` |
 | `title_neon_intensity` | 0.45 | `TITLE_LOOK["neonIntensity"]` |
-| Colours | see UI-TITLE-08 | `TITLE_LOOK` (`horizon`, `sky.stops`, `skyline`, `city.colors`, `NEON`, `WINDOW_COLORS`) |
+| Colours | see UI-TITLE-08 | `TITLE_LOOK` (`horizon`, `sky.stops`, `trench.colors`, `NEON`, `WINDOW_COLORS`, `streaks.colors`) |
 | `cookie_max_age` | 365 days | `src/config/menu.py` `MENU_CONFIG.cookie_max_age_days` |
 
 ## Notes
@@ -187,6 +197,7 @@ full screen (an iPhone's Safari), there is no entry.
 - For a short time the reviewer had the menu ship replaced by a wireframe, then anime-styled fighter
   pilot; it was reverted to the balanced ship and the pilot code deleted (D-104). The striped sun of
   the synthwave and darksynth looks is gone too.
-- Gap: the unit test that kept the backdrop's sky and towers dark and its neon bright (D-012) did
-  not come over with the Python port; `tests/unit/game/config/test_title_look.py` only checks that
-  the colours are in range.
+- The night city street with its towers, signs, skyline and rain (D-012, D-014) was replaced by the
+  trench (D-325, owner: "I want the ship to move like it is in a trench with a frontal facing
+  camera, no more city background, put fast moving particles making it look like the ship flies
+  fast").

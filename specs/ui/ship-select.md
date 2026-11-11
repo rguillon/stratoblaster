@@ -46,7 +46,7 @@ the ambient light, so they look dimmed), and it stands on a glowing neon ring. I
 **Acceptance criteria**
 - Given a ship is highlighted, then it is bigger and lit, the ring is under it, and its card has the `▲` mark; the others are smaller, darker and their cards faded.
 
-The ring is the menus' hot pink (`#ff4fa0`, D-323).
+The ring is the menus' cyan (`#00e8ff`, D-198, D-324).
 
 *Sources: P01-R06, D-008.*
 

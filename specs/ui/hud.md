@@ -26,7 +26,7 @@ level shows through everywhere (D-317). It holds:
 - at the bottom right, the weapon and its level (UI-HUD-06).
 
 The side columns, `hud_side_width` wide, down the left and right of the screen are opaque
-night violet and empty, with a hairline along the window's edges; nothing of the level is drawn
+blue-black and empty, with a hairline along the window's edges; nothing of the level is drawn
 there (D-252, D-263). The right one holds the touch fire and bomb buttons on touch screens
 (UI-HUD-10). There is no pause button (D-251; the keyboard and the gamepad pause,
 [pause-menu.md](pause-menu.md)).
@@ -40,7 +40,7 @@ there (D-252, D-263). The right one holds the touch fire and bomb buttons on tou
 ### UI-HUD-02 — The level's progress · MUST
 
 A 2 px rail up the right edge of the window fills from the bottom with the share of the level flown,
-in solid hot pink, a near-white bead where the fill ends.
+in solid cyan, a near-white bead where the fill ends.
 
 **Acceptance criteria**
 - Given a level half flown, then the progress rail is half filled (unit test on the value given to the HUD).
@@ -49,7 +49,7 @@ in solid hot pink, a near-white bead where the fill ends.
 
 ### UI-HUD-03 — The lives and the bombs · MUST
 
-The top right corner of the window shows the ship's lives as `♥ N` (hot pink), and under them its
+The top right corner of the window shows the ship's lives as `♥ N` (green), and under them its
 bombs as a count, `● N` (orange), however many there are.
 
 **Acceptance criteria**
@@ -61,7 +61,7 @@ bombs as a count, `● N` (orange), however many there are.
 
 The bottom left corner shows the ship's name (12 px, secondary text colour) and the health, rounded
 up, over the full health, `HP 73 / 100`; under them a health bar `hud_health_bar_width` wide, cut
-into ten cells, filled with the share of health left, in solid player cyan. Under `low_health` of the
+into ten cells, filled with the share of health left, in solid cyan. Under `low_health` of the
 ship's full health the bar and the text turn red and the window's edges glow red, pulsing.
 
 **Acceptance criteria**
@@ -86,7 +86,7 @@ current score, padded the same way. Both change on the frame the points are scor
 
 ### UI-HUD-06 — The weapon and the level played · MUST
 
-The bottom right corner shows the name of the weapon in use (16 px, player cyan, sentence case) and
+The bottom right corner shows the name of the weapon in use (16 px, cyan, sentence case) and
 under it one diamond pip per level of the weapon, lit up to its level. Under the high score, in
 12 px secondary text, the level played (`Level 1-2`).
 

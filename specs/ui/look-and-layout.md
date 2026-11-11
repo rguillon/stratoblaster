@@ -3,12 +3,12 @@
 > **Area:** UI · **Prefix:** `UI-LOOK` · **Related:** [title-screen.md](title-screen.md), [hud.md](hud.md), [menu-input.md](menu-input.md), [boot-and-loading.md](boot-and-loading.md), [../gameplay/screen.md](../gameplay/screen.md), [../graphics/art-direction.md](../graphics/art-direction.md), [../graphics/readability.md](../graphics/readability.md)
 
 The menus, the HUD and the panels are an HTML/CSS overlay over the 3D canvas, laid out at the
-game's logical resolution and scaled to the window. They share one look, retro synthwave made
-clear (D-323): a night-violet ramp, one hot pink accent, a striped sunset sun behind the logo, a pink
-horizon line under the headings, and nothing that glows. This file fixes the layout, the
+game's logical resolution and scaled to the window. They share one look, a cyan neon night made
+clear (D-324): a blue-black ramp, one electric cyan accent, a chrome logo with a hard extruded edge,
+a cyan horizon line under the headings, and nothing that glows. This file fixes the layout, the
 palette, the fonts, the selection marks and the logo.
 
-The chrome is quiet so the scenes carry the colour: the sunset sun on the title, the 3D city and
+The chrome is quiet so the scenes carry the colour: the chrome logo on the title, the 3D trench and
 the ships behind the menus, the level in play. Panels, entries and texts frame them and never
 compete (no glow, no hue gradient on a panel or a text). The 3D look of the levels is in
 [graphics/](../graphics/art-direction.md); the title's 3D backdrop is in
@@ -33,7 +33,7 @@ The canvas and the overlay share one box, the largest box with the 16:9 logical 
 fits the window, centred, with dark bars (letterbox) on the rest. The menus have the game's aspect
 ratio (D-319): every menu screen, and the 3D scenes behind the menus (the backdrop, the ship select
 stage), are laid in the playfield window (540 × 720, 3:4, [gameplay/screen.md](../gameplay/screen.md)),
-between opaque night violet side columns with a hairline on the window's edges, as a level is.
+between opaque blue-black side columns with a hairline on the window's edges, as a level is.
 Their cards, sliders and entry lists keep to a column (`menu_column`) inside it. The dev viewer's
 3D views keep the whole box. The overlay is scaled to that box
 with a CSS transform, so the 3D models and their HTML captions line up. The box follows window
@@ -53,22 +53,24 @@ keeps to the 16:9 box, lined up with the playfield; under a panel it is hidden (
 
 *Sources: P01-R13, GD-02, GD-03, ENG-110, D-008, D-249, D-286, D-319.*
 
-### UI-LOOK-03 — Synthwave night palette · MUST
+### UI-LOOK-03 — Cyan on blue-black · MUST
 
-The overlay uses one night-violet neutral ramp and one accent (owner, 2026-11-11, D-323; was the
-neon blue/green scheme of D-198):
-- **surfaces**: night background `#0c0814`, glass panels `rgba(22, 15, 36, 0.86)`;
+The overlay uses one blue-black neutral ramp and one accent (owner, 2026-11-11, D-324: "put back the
+cyan theme"; synthwave pink D-323 and neon blue/green D-198 before):
+- **surfaces**: blue-black background `#010a10`, glass panels `rgba(4, 18, 28, 0.86)`;
 - **hairlines**: the primary text colour at 12 % opacity for borders, 24 % on hover;
-- **text**, three roles: primary `#f7f1ff`, secondary `#b9abcc`, muted `#7e7192`;
-- **accent**, hot pink `#ff4fa0`, used rarely: the selected entry, the horizon line, the sliders'
-  filled cells, the loading and progress fills, the ship select ring;
-- **player cyan** `#4fd8ff`: the player's own gauges in the HUD (health, weapon pips);
-- **sunset** `#ffd36b → #ff8a4c → #ff4fa0`: only inside the title's sun (UI-LOOK-12).
+- **text**, three roles: primary `#ecfdff`, secondary `#9fbcc4`, muted `#5f7f89`;
+- **accent**, electric cyan `#00e8ff`, used rarely: the selected entry, the horizon line, the
+  sliders' filled cells, the loading and progress fills, the player's gauges in the HUD, the ship
+  select ring;
+- **green** `#3dff9a`: good things only (the lives, a new high score);
+- **chrome** (white, pale cyan, a navy horizon line, cyan): only inside the logo's letters
+  (UI-LOOK-12).
 
 Every other fill is a solid colour: no hue gradient on a panel, a bar or a text.
 
 **Acceptance criteria**
-- Manual check in screenshots of the title, ship select, level select, settings, pause menu and HUD: pink on night violet, the sunset only in the title's sun, no green or cyan chrome.
+- Manual check in screenshots of the title, ship select, level select, settings, pause menu and HUD: cyan on blue-black, green only on the lives and the new high score, no magenta, pink or violet.
 
 *Sources: P01-R13, GD-60, D-198.*
 
@@ -99,7 +101,7 @@ window's corners and edges ([hud.md](hud.md), D-317).
 Entries are glass panels with a 1 px hairline border and 8 px rounded corners; the panels (pause,
 end of level) have 16 px corners. Menu screens have no frame of their own: the hairline on the
 playfield window's edges (UI-LOOK-02) is their only edge. Each heading sits over the **horizon
-line**, the UI's one signature: a 2 px hot pink rule, 48 px wide, under the heading, centred, the
+line**, the UI's one signature: a 2 px cyan rule, 48 px wide, under the heading, centred, the
 same line as the one under the logo. Headings are in sentence case, without a glow; only a soft dark
 shadow keeps them readable over the 3D scene. No text, panel or gauge of the overlay glows (no
 coloured `box-shadow`, `text-shadow` or `drop-shadow`).
@@ -121,7 +123,7 @@ layer over them.
 
 ### UI-LOOK-08 — The selection shows without colour · MUST
 
-The selected entry is a solid hot pink block with dark text (much lighter than the dark panels),
+The selected entry is a solid cyan block with dark text (much lighter than the dark panels),
 without a glow, plus a mark that does not rely on colour:
 - title entries and the pause menu's entries: a `▶` before (and on the title a `◀` after), always
   one space from the word;
@@ -141,7 +143,7 @@ The menus are easy to read for a child: large text for entries and names (entrie
 and the version are smaller, and no text is under 12 px but the version, 11 px), short words, few
 words per screen. Hints use plain words ("Press Space / Enter or tap to start"). Texts are in
 sentence case, at weight 500, 600 for the headings, the entries and the score; letter spacing is at
-most 0.04 em; no italic but the logo. Interface texts end without an exclamation mark. Sizes and
+most 0.04 em; no italic and no weight over 600 but the logo. Interface texts end without an exclamation mark. Sizes and
 spacing are multiples of 4 px.
 
 **Acceptance criteria**
@@ -174,16 +176,17 @@ the game works offline once loaded.
 
 *Sources: P01-R13, D-013, D-014.*
 
-### UI-LOOK-12 — The logo over a striped sun · MUST
+### UI-LOOK-12 — The chrome logo · MUST
 
-The logo is the game's name in bold (700), italic, uppercase condensed letters, solid primary text
-colour with a dark outline, over the horizon line. Behind it, rising from the horizon line, is the
-title's one rich moment: a flat sunset sun (`title_sun_size`), a half disc filled from yellow at
-the top through orange to hot pink, cut by horizontal stripes that thicken towards the horizon.
-Nothing glows or moves.
+The logo is the title's one rich moment (D-324): the game's name in black (900), italic, uppercase
+condensed letters at `title_logo_size`, filled with a cold 80s chrome (white at the top, pale cyan,
+a hard navy horizon line across the middle, cyan, pale cyan at the foot), with a thin pale outline
+and a solid deep teal extruded edge `title_logo_depth` down and to the right (hard, unblurred
+layers, like a cast metal badge). Under it, the horizon line: a 4 px cyan bar, a little narrower
+than the name. Nothing behind it (no sun or emblem); it does not glow or move.
 
 **Acceptance criteria**
-- Manual check: the title logo is solid letters in front of a striped sunset half sun sitting on a pink horizon line; nothing glows or moves.
+- Manual check: the title logo is chrome letters with a hard teal edge over a cyan bar, nothing behind them, nothing glowing or moving.
 
 *Sources: P01-R13, D-103, D-104, D-198.*
 
@@ -220,19 +223,19 @@ fade does not move and the alarm does not pulse.
 | `menu_column` | 560 px, within the 540 px window since D-319 | `index.html` `--menu-column` (UI-LOOK-02, D-249) |
 | Menu window | the playfield window, 540 × 720 at x = 370 | `index.html` `#menu:not(.phone)::before`, `.menu-screen`; `src/app/menu_scenes.py` `window_camera` (D-319) |
 | `phone_scale` | 0.5 CSS px per logical px | `src/ui/stage_fit.py` `PHONE_SCALE`; `index.html` `#menu.phone` (UI-LOOK-02, D-286) |
-| `--pink` | `#ff4fa0`, the one accent | `index.html` `:root` |
-| `--cyan` | `#4fd8ff`, the player's HUD gauges | `index.html` `:root` |
-| `--text` / `--text-2` / `--text-3` | `#f7f1ff` / `#b9abcc` / `#7e7192` | `index.html` `:root` |
+| `--cyan` | `#00e8ff`, the one accent | `index.html` `:root` |
+| `--green` | `#3dff9a`, lives and new high score only | `index.html` `:root` |
+| `--text` / `--text-2` / `--text-3` | `#ecfdff` / `#9fbcc4` / `#5f7f89` | `index.html` `:root` |
 | `--line` / `--line-2` | primary text at 12 % / 24 % | `index.html` `:root`, hairlines |
 | `--red` | `#ff3b47` | `index.html` `:root`, danger only |
 | `--orange` | `#ff9a2e` | `index.html` `:root`, bombs |
-| `--glass` | `rgba(22, 15, 36, 0.86)` | `index.html` `:root` |
-| `--night` / `--letterbox` | `#0c0814` / `#06040a` | `index.html` `:root` |
-| Sunset | `#ffd36b → #ff8a4c → #ff4fa0` | `index.html` `.title-name::before`, the sun only |
+| `--glass` | `rgba(4, 18, 28, 0.86)` | `index.html` `:root` |
+| `--night` / `--letterbox` | `#010a10` / `#000407` | `index.html` `:root` |
+| Chrome | `#ffffff → #d4fbff → #0b3a5a (50 %) → #00e8ff → #c8fbff` | `index.html` `.title-name`, the logo only |
 | Radii | 8 px entries, 16 px panels | `index.html` `--r-control`, `--r-panel` |
-| Horizon line | 2 × 48 px, `--pink` | `index.html` `.menu-heading::after` |
-| `title_sun_size` | 240 × 120 px (a half disc) | `index.html` `.title-name::before` |
-| `title_logo_size` | 48 px | `index.html` `.title-name`; lowered by `src/ui/shrink_to_fit.py` down to 12 px at most |
+| Horizon line | 2 × 48 px, `--cyan` | `index.html` `.menu-heading::after` |
+| `title_logo_depth` | 6 px, `#05607a` to `#022a38` | `index.html` `.title-name` `filter` |
+| `title_logo_size` | 60 px | `index.html` `.title-name`; lowered by `src/ui/shrink_to_fit.py` down to 12 px at most |
 | `menu_hover_duration` | 120 ms, `cubic-bezier(0.2, 0, 0, 1)` | `index.html` `.menu-entry` |
 
 ## Notes
@@ -242,7 +245,9 @@ fade does not move and the alarm does not pulse.
   (D-013, D-014), then the scanlines removed (D-040), then darksynth magenta, violet and blood red
   with a chrome logo over a striped sun (D-103), then the sun removed (D-104), and now neon
   blue/green (D-198), then retro synthwave made clear (D-323, 2026-11-11): a night violet ramp, one
-  pink accent, a striped sun behind the logo, no glows or gradients in the chrome.
+  pink accent, a striped sun behind the logo, no glows or gradients in the chrome; then the same
+  day back to cyan on blue-black with a chrome logo and no sun (D-324, owner: "remove the ugly
+  sun [...] put back a kick ass game name logo, and put back the cyan theme").
   `02-game-design.md` GD-60 still said "darksynth" for the menus and the HUD
   when D-198 was made at the reviewer's request; the 3D art direction is in
   [graphics/art-direction.md](../graphics/art-direction.md).

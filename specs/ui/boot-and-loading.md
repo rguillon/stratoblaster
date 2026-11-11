@@ -60,8 +60,8 @@ When the last loading step is done, the title screen appears without any user ac
 ### UI-LOAD-05 — The loading screen's look · SHOULD
 
 The loading screen shows, centred: the game's "Loading…" text (28 px, sentence case, weight 600),
-a 320 × 8 px gauge (a hairline track with 4 px corners, filled in solid hot pink) and the percent
-under it in muted monospace. Its background is the plain night colour. It does not fade in.
+a 320 × 8 px gauge (a hairline track with 4 px corners, filled in solid cyan) and the percent
+under it in muted monospace. Its background is the plain blue-black. It does not fade in.
 
 **Acceptance criteria**
 - Manual check: the loading screen matches this description ([look-and-layout.md](look-and-layout.md)).

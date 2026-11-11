@@ -153,8 +153,8 @@ MENU_CONFIG = MenuConfig(
         10,
         ShipSelectCamera(-math.pi / 2, 1.2, 1.0, 1.2, 0.6),
         ShipSelectLights(0.25, 2.6, (-0.4, -1, 0.6), 0.8, (0.6, -0.3, -1)),
-        # The menus' hot pink (UI-LOOK-03, `#ff4fa0`, D-323); neon cyan since D-198 before.
-        ShipSelectRing(6.4, 0.12, -1.3, (1, 0.31, 0.63)),
+        # The menus' neon cyan (UI-LOOK-03, `#00e8ff`), was the cyberpunk acid yellow (D-198).
+        ShipSelectRing(6.4, 0.12, -1.3, (0, 0.91, 1)),
     ),
     Environment(
         64,

@@ -116,7 +116,7 @@ If the game is over before the checkpoint, the "Game over" panel is the plain on
 The panels are glass panels with 16 px corners and a hairline border (red for "Game over"): the
 heading in 32 px primary text at weight 600 over the horizon line (red for "Game over"), the level's
 label in 40 px monospace, the enemy count in 20 px secondary text, the score in monospace, and
-`New high score` in hot pink.
+`New high score` in green.
 
 **Acceptance criteria**
 - Manual check: the panels read well over every level's ground.

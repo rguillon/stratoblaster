@@ -6,29 +6,30 @@
     <title>Stratoblaster</title>
     <style>
       /*
-       * Retro synthwave, made clear (owner, 2026-11-11, D-323; was neon blue/green, D-198):
-       * a night-violet ramp, one hot pink accent, a striped sunset sun behind the logo (the title's
-       * one rich moment, UI-LOOK-12) and a pink horizon line under the headings (the signature,
-       * UI-LOOK-06). Nothing in the chrome glows; fills are solid (UI-LOOK-03). Red stays for
-       * danger, orange for the bombs (UI-LOOK-04), player cyan for the player's own gauges. Large
-       * type for kids, sentence case, 4 px grid (UI-LOOK-09). System fonts only (UI-LOOK-11).
+       * Cyan neon night, made clear (owner, 2026-11-11, D-324; synthwave pink D-323, neon
+       * blue/green D-198 before): a blue-black ramp, one electric cyan accent, a cast chrome logo
+       * with a hard teal edge (the title's one rich moment, UI-LOOK-12) and a cyan horizon line
+       * under the headings (the signature, UI-LOOK-06). Nothing in the chrome glows; fills are
+       * solid (UI-LOOK-03). Red stays for danger, orange for the bombs (UI-LOOK-04), green for
+       * good things. Large type for kids, sentence case, 4 px grid (UI-LOOK-09). System fonts
+       * only (UI-LOOK-11).
        */
       :root {
-        --night: #0c0814;
-        --letterbox: #06040a;
-        --glass: rgba(22, 15, 36, 0.86);
-        --glass-2: rgba(38, 27, 58, 0.92);
-        --text: #f7f1ff;
-        --text-2: #b9abcc;
-        --text-3: #7e7192;
-        --line: rgba(247, 241, 255, 0.12);
-        --line-2: rgba(247, 241, 255, 0.24);
-        --pink: #ff4fa0;
-        --on-pink: #1a0a1f;
-        --cyan: #4fd8ff;
+        --night: #010a10;
+        --letterbox: #000407;
+        --glass: rgba(4, 18, 28, 0.86);
+        --glass-2: rgba(10, 34, 48, 0.92);
+        --text: #ecfdff;
+        --text-2: #9fbcc4;
+        --text-3: #5f7f89;
+        --line: rgba(236, 253, 255, 0.12);
+        --line-2: rgba(236, 253, 255, 0.24);
+        --cyan: #00e8ff;
+        --on-accent: #01141c;
+        --green: #3dff9a;
         --red: #ff3b47;
         --orange: #ff9a2e;
-        --outline: 0 1px 2px rgba(6, 4, 10, 0.9), 0 0 2px rgba(6, 4, 10, 0.9);
+        --outline: 0 1px 2px rgba(0, 4, 7, 0.9), 0 0 2px rgba(0, 4, 7, 0.9);
         --r-control: 8px;
         --r-panel: 16px;
         --ease: cubic-bezier(0.2, 0, 0, 1);
@@ -183,17 +184,17 @@
       }
       .menu-entry:focus-visible,
       .menu-back:focus-visible {
-        outline: 2px solid var(--pink);
+        outline: 2px solid var(--cyan);
         outline-offset: 2px;
       }
-      /* Selected entry: a solid hot pink block with dark text, plus its markers, so it shows
+      /* Selected entry: a solid cyan block with dark text, plus its markers, so it shows
          without colour too (much lighter than the dark panels in greyscale, UI-LOOK-08). */
       .menu-entry.selected,
       .menu-entry.selected:hover {
-        border-color: var(--pink);
-        color: var(--on-pink);
+        border-color: var(--cyan);
+        color: var(--on-accent);
         text-shadow: none;
-        background: var(--pink);
+        background: var(--cyan);
       }
       /* Headings over the horizon line, the UI's signature (UI-LOOK-06). */
       .menu-heading,
@@ -217,7 +218,7 @@
         width: 48px;
         height: 2px;
         margin-left: -24px;
-        background: var(--pink);
+        background: var(--cyan);
       }
       .menu-heading {
         margin-top: 64px;
@@ -271,7 +272,7 @@
         }
       }
 
-      /* The loading screen (UI-LOAD-05): the text, a slim pink gauge, the percent, on plain
+      /* The loading screen (UI-LOAD-05): the text, a slim cyan gauge, the percent, on plain
          night. */
       .loading-screen {
         justify-content: center;
@@ -294,7 +295,7 @@
       }
       .loading-fill {
         height: 100%;
-        background: var(--pink);
+        background: var(--cyan);
       }
       .loading-percent {
         font-family: var(--font-tech);
@@ -320,73 +321,55 @@
         font-variant-numeric: tabular-nums;
         color: var(--text);
       }
-      /* The logo (UI-LOOK-12): solid italic capitals on the horizon line, in front of a striped
-         sunset half sun, the title's one rich moment. Nothing glows or moves. */
+      /* The logo (UI-LOOK-12), the title's one rich moment: black italic capitals in a cold 80s
+         chrome (a hard navy horizon across the middle), a thin pale outline and a solid teal
+         edge cast down and right in hard, unblurred layers (`title_logo_depth`, 6 px). It sits
+         on the horizon line, a cyan bar. Nothing behind it; nothing glows or
+         moves. */
       .title-name {
         position: relative;
-        isolation: isolate;
-        margin: 8px 0 0;
-        padding: 88px 24px 12px;
-        /* Sized so the 13-letter "Stratoblaster" fits the screen's width; shrinkToFit() lowers
-           it when the system falls back to a wider font (UI-LOOK-13). */
-        font-size: 48px;
-        font-weight: 700;
+        margin: 24px 0 0;
+        padding: 8px 24px 24px;
+        /* `title_logo_size`; shrinkToFit() lowers it when the system falls back to a wider font
+           (UI-LOOK-13). */
+        font-size: 60px;
+        font-weight: 900;
         font-style: italic;
-        line-height: 48px;
+        line-height: 64px;
         letter-spacing: 0.02em;
         white-space: nowrap;
         text-transform: uppercase;
-        color: var(--text);
-        text-shadow:
-          0 2px 0 var(--on-pink),
-          0 0 2px var(--on-pink);
-      }
-      /* The sun (`title_sun_size`, 240 x 120): yellow at the top through orange to pink, cut by
-         stripes that thicken towards the horizon. */
-      .title-name::before {
-        content: '';
-        position: absolute;
-        z-index: -1;
-        left: 50%;
-        bottom: 14px;
-        width: 240px;
-        height: 120px;
-        margin-left: -120px;
-        border-radius: 120px 120px 0 0;
-        background: linear-gradient(180deg, #ffd36b 0%, #ff8a4c 52%, var(--pink) 100%);
-        -webkit-mask-image: linear-gradient(
+        text-shadow: none;
+        color: transparent;
+        background: linear-gradient(
           180deg,
-          #000 0 44%,
-          transparent 44% 48%,
-          #000 48% 60%,
-          transparent 60% 66%,
-          #000 66% 76%,
-          transparent 76% 84%,
-          #000 84% 90%,
-          transparent 90%
+          #ffffff 0%,
+          #d4fbff 38%,
+          #7fe9f7 49%,
+          #0b3a5a 50%,
+          #05607a 56%,
+          var(--cyan) 72%,
+          #c8fbff 100%
         );
-        mask-image: linear-gradient(
-          180deg,
-          #000 0 44%,
-          transparent 44% 48%,
-          #000 48% 60%,
-          transparent 60% 66%,
-          #000 66% 76%,
-          transparent 76% 84%,
-          #000 84% 90%,
-          transparent 90%
-        );
+        background-size: 100% 64px;
+        background-position: 0 8px;
+        background-repeat: no-repeat;
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-stroke: 1px rgba(236, 253, 255, 0.5);
+        filter: drop-shadow(1px 1px 0 #05607a) drop-shadow(1px 1px 0 #044a5e)
+          drop-shadow(1px 1px 0 #033a4b) drop-shadow(1px 1px 0 #022a38)
+          drop-shadow(1px 1px 0 #022a38) drop-shadow(1px 1px 0 #011a24);
       }
-      /* The horizon line under the logo: the sun sits on it. */
+      /* The horizon line under the logo: a 4 px cyan bar, inset under the letters. */
       .title-name::after {
         content: '';
         position: absolute;
-        left: 50%;
-        bottom: 12px;
-        width: 320px;
-        height: 2px;
-        margin-left: -160px;
-        background: var(--pink);
+        left: 48px;
+        right: 48px;
+        bottom: 8px;
+        height: 4px;
+        background: var(--cyan);
       }
       .title-start,
       .title-settings,
@@ -512,13 +495,13 @@
         font-weight: 600;
         font-variant-numeric: tabular-nums;
       }
-      /* Locked: dim, hazard-striped; selected, a red frame instead of the pink block. */
+      /* Locked: dim, hazard-striped; selected, a red frame instead of the cyan block. */
       .level-cell.locked,
       .level-cell.locked:hover {
         color: var(--text-3);
         border-color: var(--line);
         background:
-          repeating-linear-gradient(-45deg, rgba(126, 113, 146, 0.12) 0 6px, transparent 6px 12px),
+          repeating-linear-gradient(-45deg, rgba(95, 127, 137, 0.14) 0 6px, transparent 6px 12px),
           var(--glass);
         text-shadow: none;
       }
@@ -638,13 +621,13 @@
         white-space: nowrap;
       }
       .hud-lives {
-        color: var(--pink);
+        color: var(--green);
       }
       .hud-bombs {
         color: var(--orange);
       }
       /* Level progress (UI-HUD-02): a hairline rail up the right edge of the window, filled from
-         the bottom in solid pink, a near-white bead where the fill ends: the ship climbing the
+         the bottom in solid cyan, a near-white bead where the fill ends: the ship climbing the
          level. */
       .hud-progress {
         position: absolute;
@@ -659,7 +642,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: var(--pink);
+        background: var(--cyan);
       }
       .hud-progress-fill::after {
         content: '';
@@ -702,7 +685,7 @@
         position: relative;
         width: 130px;
         height: 6px;
-        background: rgba(12, 8, 20, 0.5);
+        background: rgba(1, 10, 16, 0.5);
       }
       .hud-bar::after {
         content: '';
@@ -745,7 +728,7 @@
         height: 6px;
         transform: rotate(45deg);
         border: 1px solid var(--cyan);
-        background: rgba(12, 8, 20, 0.5);
+        background: rgba(1, 10, 16, 0.5);
       }
       .hud-pip.on {
         background: var(--cyan);
@@ -766,7 +749,7 @@
         font-family: var(--font);
         font-size: 16px;
         font-weight: 600;
-        color: var(--on-pink);
+        color: var(--on-accent);
         background: var(--orange);
         border: 2px solid var(--orange);
         text-shadow: none;
@@ -821,7 +804,7 @@
         position: relative;
         height: 4px;
         border: 1px solid var(--red);
-        background: rgba(12, 8, 20, 0.5);
+        background: rgba(1, 10, 16, 0.5);
       }
       .boss-fill {
         position: absolute;
@@ -854,9 +837,9 @@
         font-family: var(--font);
         font-size: 20px;
         font-weight: 600;
-        color: var(--on-pink);
-        background: var(--pink);
-        border: 2px solid var(--pink);
+        color: var(--on-accent);
+        background: var(--cyan);
+        border: 2px solid var(--cyan);
         text-shadow: none;
       }
       @media (pointer: coarse) {
@@ -960,13 +943,13 @@
         background: var(--line);
       }
       .slider-cell.on {
-        background: var(--pink);
+        background: var(--cyan);
       }
       .settings-slider.selected .slider-cell {
-        background: rgba(26, 10, 31, 0.2);
+        background: rgba(1, 20, 28, 0.2);
       }
       .settings-slider.selected .slider-cell.on {
-        background: var(--on-pink);
+        background: var(--on-accent);
       }
       .slider-value {
         font-family: var(--font-tech);
@@ -1019,7 +1002,7 @@
       .level-complete-high-score {
         font-size: 20px;
         font-weight: 600;
-        color: var(--pink);
+        color: var(--green);
       }
       /* The "Game over" panel (UI-OVER-05). */
       .level-complete.game-over,
@@ -1172,9 +1155,9 @@
       }
       /* The group of the prop shown: marked, not filled like the prop itself. */
       .dev-menu .dev-menu-group.selected {
-        color: var(--pink);
+        color: var(--cyan);
         background: var(--glass);
-        border-color: var(--pink);
+        border-color: var(--cyan);
       }
       .dev-hint {
         margin-top: auto;

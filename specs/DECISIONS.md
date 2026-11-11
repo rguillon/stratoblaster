@@ -2136,3 +2136,46 @@
     changed together; the tests of the texts, the ring and the backdrop follow.
   - System fonts still (UI-LOOK-11): the look relies on the condensed stack, as before.
 - **Status:** Proposed
+
+### D-324 — Back to cyan, a chrome logo, no sun
+- **Date:** 2026-11-11
+- **Requirements:** UI-LOOK-03, UI-LOOK-06, UI-LOOK-08, UI-LOOK-12, UI-TITLE-08, UI-SHIP-03,
+  UI-HUD-02 to UI-HUD-04, UI-OVER-09, UI-LOAD-05.
+- **Context:** owner, on D-323: "remove the ugly sun from the main menue, put back a kick ass game
+  name logo, and put back the cyan theme, the pink sucks".
+- **Decision:**
+  - **Palette:** the D-323 structure stays (one ramp, one accent, no glows, solid fills), on a
+    blue-black ramp with electric cyan `#00e8ff` as the accent; green `#3dff9a` for the lives and
+    a new high score.
+  - **Logo:** black italic capitals at 60 px in a cold 80s chrome with a hard navy horizon across
+    the middle, a thin pale outline and a 6 px solid teal edge cast down and right (stacked
+    unblurred drop shadows), over a 4 px cyan bar. The striped sun is gone. It does not glow or
+    move.
+  - **Backdrop and ring:** back to the D-198 neon blue/green city and the cyan ring.
+  - **Kept from D-323:** rounded glass entries, the horizon line under the headings, sentence
+    case, the 4 px grid, the readable HUD, the copy without exclamation marks, still menus.
+- **Consequences:** the D-323 backdrop colours and their test were reverted to the D-198 ones.
+- **Status:** Proposed
+
+### D-325 — The menu backdrop is the ship racing down a neon trench
+- **Date:** 2026-11-11
+- **Requirements:** UI-TITLE-07, UI-TITLE-08, UI-TITLE-10.
+- **Context:** owner: "I want the ship to move like it is in a trench with a frontal facing
+  camera, no more city background, put fast moving particles making it look like the ship flies
+  fast".
+- **Decision:**
+  - **Shot:** the camera flies backwards 10 units ahead of the ship, 2.4 above it, looking back
+    down the trench; the ship's nose points at it. The trench scrolls away behind the ship
+    (60 units/s), so the scenery comes from beside the camera and shrinks into the haze.
+  - **Trench:** generated from the seed, in stretches of 160 units (two end to end, one node):
+    a floor with lit ribs every 10 units and a dashed guide line, two walls 16 high of panels 3 to
+    9 long standing 0 to 1.4 out of the wall, lit slots on about half of them, a neon strip at the
+    foot of each wall. Structure and lights are merged meshes, as the city's were (UI-TITLE-10).
+  - **Speed streaks:** 220 thin quads along the trench, round its axis and facing it, 2 to 7 long,
+    in stretches of 60 units moving away at 160 units/s, faster than the trench, so they read as
+    rushing past. They glow.
+  - **Ship:** sways 0.8 units side to side at 0.18 Hz, banking up to 0.35 rad into the sway, and
+    floats 0.2 units at 0.5 Hz; it no longer turns on itself.
+  - **Gone:** the city chunk, skyline and rain (`game/view/city_geometry.py` and its test).
+- **Consequences:** the ship select screen, drawn over the backdrop, now has the trench behind it.
+- **Status:** Proposed
