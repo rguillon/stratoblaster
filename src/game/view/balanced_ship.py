@@ -18,6 +18,7 @@ their triangles go on the upper half, which the playfield camera sees (GFX-SHIP-
 import math
 
 from game.view.balanced_hull import (
+    BELLY_DEPTH,
     CHINE_EDGE,
     CHINE_HALF_WIDTH,
     hull_section,
@@ -27,7 +28,6 @@ from game.view.balanced_hull import (
 )
 from game.view.ship_materials import get_ship_materials
 from game.view.ship_parts import (
-    REACTOR_ROUNDING,
     add_reactor_intake,
     build_reactor,
     disc_options,
@@ -54,7 +54,6 @@ from render.geometry.lathe_z import (
 )
 from render.geometry.section_loft import (
     create_section_loft,
-    polygon_lathe_sections,
     rounded_rectangle,
 )
 
@@ -162,34 +161,42 @@ REACTOR_HEIGHT = 1.3
 # "make the main reactor octogonal too"); the tip reactors and missile pods stay hexagons.
 OCTAGON = 8
 
-# The gun under the belly (D-339, owner: "rework the undergun, make a cool looking laser and add
-# two miniguns on it's sides"). The laser: its place; its octagonal housing's profile (`[z from
-# its place, radius]`); its barrel, the focusing coils round it (Z from its place) and the glowing
-# emitter at its muzzle (a lathe profile).
-LASER: dict[str, Any] = {
-    "y": -0.255,
-    "z": 0.3,
-    "barrel": {"length": 0.75, "radius": 0.036, "z": 0.85},
-    "coil": {"zs": [0.62, 0.78, 0.94], "radius": 0.052, "half": 0.014},
-}
-LASER_HOUSING = [
-    [0.55, 0],
-    [0.55, 0.07],
-    [0.42, 0.1],
-    [-0.45, 0.1],
-    [-0.6, 0.055],
-    [-0.65, 0],
+# The guns under the belly (D-339, owner: "rework the undergun, make a cool looking laser and add
+# two miniguns on it's sides"; D-340: "make the lazer longer, it should go further than the tip of
+# the ship, and rework those weapons, make them better integrated into the hull"). A faceted keel
+# fairing of hull metal runs along the belly, its top inside the belly so the two read as one;
+# `[z, half width, depth under the belly]`, back to front, closed at both ends.
+GUN_FAIRING = [
+    [-0.8, 0, 0],
+    [-0.45, 0.11, 0.07],
+    [0.3, 0.15, 0.11],
+    [1.3, 0.13, 0.09],
+    [2.0, 0.07, 0.07],
+    [2.3, 0, 0],
 ]
-LASER_EMITTER = [[1.29, 0], [1.25, 0.038], [1.2, 0.052], [1.19, 0]]
-# The miniguns either side of it: their place; the drum; six barrels round its axis, their ring's
-# radius and their middle along Z; the clamp round the barrels.
+# The fairing's section, as shares of its half width: its top, its widest, its bottom; how far
+# down its widest point lies, as a share of its depth.
+GUN_FAIRING_SECTION = {"top": 0.8, "bottom": 0.55, "waist": 0.4}
+# The laser's barrel runs through the fairing and out of its nose, under the ship's nose and well
+# past its tip (2.75): its height, its back and front (Z), its radius; the accent focusing coils
+# on its bare part; the glowing emitter at its muzzle (a lathe profile, Z absolute).
+LASER: dict[str, Any] = {
+    "y": -0.1,
+    "zs": [1.5, 3.1],
+    "radius": 0.028,
+    "coil": {"zs": [2.35, 2.6, 2.85], "radius": 0.042, "half": 0.012},
+}
+LASER_EMITTER = [[3.2, 0], [3.16, 0.034], [3.11, 0.046], [3.1, 0]]
+# The miniguns, one in each flank of the fairing: their drums half sunk in it as blisters, their
+# six barrels out ahead of it. Place; drum; barrels (ring radius, radius, length, middle along Z
+# from the drum's); the clamp round the barrels.
 MINIGUN: dict[str, Any] = {
-    "x": 0.17,
-    "y": -0.215,
-    "z": 0.35,
-    "drum": {"length": 0.36, "radius": 0.052},
-    "barrels": {"count": 6, "ring": 0.028, "radius": 0.01, "length": 0.42, "z": 0.36},
-    "clamp": {"z": 0.45, "radius": 0.045, "half": 0.009},
+    "x": 0.14,
+    "y": -0.17,
+    "z": 0.75,
+    "drum": {"length": 0.75, "radius": 0.05},
+    "barrels": {"count": 6, "ring": 0.026, "radius": 0.009, "length": 0.4, "z": 0.52},
+    "clamp": {"z": 0.55, "radius": 0.042, "half": 0.009},
 }
 
 # Dark panel seams round the body (D-336): their Z, their half width along Z and how much larger
@@ -271,17 +278,17 @@ TIP_REACTOR: dict[str, Any] = {
     "ys": [0.125, -0.125],
     "z": -0.4,
     "radius": 0.11,
-    "length": 0.95,
+    "length": 1.35,
 }
 TIP_BODY: dict[str, Any] = {"halfWidth": 0.125, "halfHeight": 0.255, "corner": 0.1, "steps": 3}
 TIP_INTAKE: dict[str, Any] = {"radius": 0.124, "stretch": 2.05}
 TIP_BODY_PROFILE = [
-    [0.475, 0],
-    [0.475, 0.9],
-    [0.3, 1.0],
-    [-0.28, 1.0],
-    [-0.38, 0.82],
-    [-0.42, 0],
+    [0.675, 0],
+    [0.675, 0.9],
+    [0.5, 1.0],
+    [-0.48, 1.0],
+    [-0.58, 0.82],
+    [-0.62, 0],
 ]
 TIP_FIN = [
     [0, 0.05],
@@ -317,32 +324,51 @@ def _build_body(root: Any, scene: Any) -> None:
         _build_minigun(side, sign, root, scene)
 
 
-def _build_laser(root: Any, scene: Any) -> None:
-    """Build the laser cannon under the belly (D-339).
+def fairing_section(z: float, size: list[float]) -> list[Any]:
+    """Return the gun fairing's section `[z, ring]` at `z` for `[_, half width, depth]`."""
+    half = size[1]
+    depth = size[2]
+    shape = GUN_FAIRING_SECTION
+    # Its top a little inside the belly, so the fairing grows out of it.
+    top = -station_at(z)[BELLY_DEPTH] + 0.02
+    bottom = top - depth - 0.02
+    waist = top - (depth + 0.02) * shape["waist"]
+    ring = [
+        [half * shape["top"], top],
+        [-half * shape["top"], top],
+        [-half, waist],
+        [-half * shape["bottom"], bottom],
+        [half * shape["bottom"], bottom],
+        [half, waist],
+    ]
+    return [z, ring]
 
-    A gunmetal octagonal housing, a long barrel ringed by accent focusing coils and a glowing
-    emitter at its muzzle.
+
+def _build_laser(root: Any, scene: Any) -> None:
+    """Build the keel fairing under the belly and the laser running out of it (D-339, D-340).
+
+    The barrel runs out of the fairing's nose, under the ship's, and past its tip, ringed by accent
+    focusing coils, a glowing emitter at its muzzle.
     """
     mats = get_ship_materials(scene)
+    sections = [fairing_section(f[0], f) for f in GUN_FAIRING]
+    fairing = create_section_loft("balanced-gun-fairing", sections, 0, scene)
+    fairing.material = mats.hull
+    fairing.parent = root
     laser = LASER
-    node = new_transform_node("balanced-laser", scene)
-    node.position.set(0, laser["y"], laser["z"])
-    node.parent = root
-    sections = polygon_lathe_sections(
-        LASER_HOUSING, OCTAGON, REACTOR_ROUNDING, 2, math.pi / OCTAGON
-    )
-    housing = create_section_loft("balanced-laser-housing", sections, 0, scene)
-    housing.material = mats.hullDark
-    housing.parent = node
-    barrel = laser["barrel"]
+    back = laser["zs"][0]
+    front = laser["zs"][1]
     faceted_rod(
         "balanced-laser-barrel",
-        {"length": barrel["length"], "radius": barrel["radius"]},
-        vector3(0, 0, barrel["z"]),
+        {"length": front - back, "radius": laser["radius"]},
+        vector3(0, laser["y"], (front + back) / 2),
         mats.trim,
-        node,
+        root,
         OCTAGON,
     )
+    node = new_transform_node("balanced-laser", scene)
+    node.position.y = laser["y"]
+    node.parent = root
     coil = laser["coil"]
     for k, z in enumerate(coil["zs"]):
         hexagon_band(
@@ -360,7 +386,11 @@ def _build_laser(root: Any, scene: Any) -> None:
 
 
 def _build_minigun(side: str, sign: float, root: Any, scene: Any) -> None:
-    """Build a minigun beside the laser (D-339): a drum, six barrels round its axis, a clamp."""
+    """Build a minigun in a flank of the fairing (D-339, D-340).
+
+    Its drum, of hull metal, half sunk in the fairing as a blister; six barrels round its axis out
+    ahead of it, a clamp round them.
+    """
     mats = get_ship_materials(scene)
     gun = MINIGUN
     name = "balanced-minigun-" + side
@@ -372,7 +402,7 @@ def _build_minigun(side: str, sign: float, root: Any, scene: Any) -> None:
         name + "-drum",
         {"length": drum["length"], "radius": drum["radius"]},
         vector3(0, 0, 0),
-        mats.hullMid,
+        mats.hull,
         node,
         OCTAGON,
     )

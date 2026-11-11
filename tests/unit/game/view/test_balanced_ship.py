@@ -215,10 +215,30 @@ def test_gfx_ship_01_a_laser_with_a_minigun_either_side_under_the_belly(
         assert len(barrels) == 6
     gun = balanced_ship.MINIGUN
     laser = balanced_ship.LASER
-    belly = hull.station_at(laser["z"])[hull.BELLY_DEPTH]
-    assert laser["y"] + balanced_ship.LASER_HOUSING[2][1] <= -belly + 0.02
-    assert gun["y"] + gun["drum"]["radius"] <= -belly + 0.02
-    assert gun["x"] > balanced_ship.LASER_HOUSING[2][1] + gun["drum"]["radius"]
+    # D-340: the laser runs out past the ship's nose tip.
+    nose = hull.STATIONS[0][hull.Z]
+    assert laser["zs"][1] > nose
+    assert balanced_ship.LASER_EMITTER[0][0] > laser["zs"][1]
+    # Out of the fairing's nose, its coils clear under the ship's nose.
+    coil = laser["coil"]
+    for z in coil["zs"]:
+        top = laser["y"] + coil["radius"] + coil["half"]
+        assert top < -hull.station_at(z)[hull.BELLY_DEPTH]
+    # The minigun drums sit in the fairing's flanks: half in, half out.
+    _z, ring = balanced_ship.fairing_section(gun["z"], [gun["z"], 0.14, 0.1])
+    widest = max(p[0] for p in ring)
+    assert gun["x"] - gun["drum"]["radius"] < widest < gun["x"] + gun["drum"]["radius"]
+
+
+def test_gfx_ship_01_the_gun_fairing_grows_out_of_the_belly() -> None:
+    """D-340: the fairing's top lies inside the belly; it closes at both ends."""
+    fairing = balanced_ship.GUN_FAIRING
+    assert fairing[0][1] == 0
+    assert fairing[-1][1] == 0
+    for size in fairing:
+        _z, ring = balanced_ship.fairing_section(size[0], size)
+        top = max(p[1] for p in ring)
+        assert top > -hull.station_at(size[0])[hull.BELLY_DEPTH]
 
 
 def test_gfx_ship_01_the_wings_sit_towards_the_nacelles_back() -> None:

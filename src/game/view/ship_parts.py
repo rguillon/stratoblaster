@@ -60,20 +60,19 @@ RING_CORNER_STEPS = 2
 
 # A reactor's intake (D-330, D-337), at the nacelle's front, in nacelle radii: a hollow rounded
 # hexagon scoop (owner, D-337: "make it start flat, then angled inward a little, and make a better
-# inner part"): its outer skin runs on straight from the nacelle, then angles inward to a thin lip,
-# then its duct turns in and back to the fan face (the profile runs back on itself); the loft's
-# cap closes the duct's end. `[z from the nacelle's front, radius]`.
+# inner part"): its outer skin runs on straight and flush from the nacelle (D-340, owner: "remove
+# the circular bump around the intakes": it stood proud of the nacelle, with an accent band,
+# before), then angles inward to a thin lip, then its duct turns in and back to the fan face
+# (the profile runs back on itself); the loft's cap closes the duct's end. `[z from the
+# nacelle's front, radius]`.
 REACTOR_INTAKE = [
-    [-0.15, 0.9],
-    [0.0, 0.98],
-    [0.24, 0.98],
+    [0.0, 1.0],
+    [0.24, 1.0],
     [0.44, 0.86],
     [0.47, 0.8],
     [0.44, 0.75],
     [0.08, 0.7],
 ]
-# The accent band where the straight part ends and the skin angles in.
-REACTOR_INTAKE_BAND = {"z": 0.24, "radius": 0.98, "half": 0.04}
 # The duct seen through the mouth: a dark lining facing inwards, a hair inside the skin's.
 REACTOR_INTAKE_DUCT = [[0.45, 0.74], [0.3, 0.71], [0.1, 0.68]]
 # The dark fan face, a hair ahead of the duct's end, and the horizontal fins across the duct in
@@ -257,7 +256,7 @@ def add_reactor_intake(
 ) -> Any:
     """Add an intake at `front` along Z of `root`, `sides` round (D-337); return its node.
 
-    A hull-metal scoop, straight then angled in, with an accent band where it turns; inside, a
+    A hull-metal scoop, straight and flush with the nacelle, then angled in; inside, a
     dark duct, a dark fan face and horizontal fins across the duct (D-338).
     """
     scene = root.getScene()
@@ -270,16 +269,6 @@ def add_reactor_intake(
     shell = create_section_loft(name + "-intake-shell", sections, len(sections[0][1]), scene)
     shell.material = mats.hull
     shell.parent = node
-    band = REACTOR_INTAKE_BAND
-    hexagon_band(
-        name + "-intake-band",
-        band["z"] * radius,
-        band["radius"] * radius,
-        band["half"] * radius,
-        mats.accent,
-        node,
-        sides,
-    )
     # The duct's lining: a loft faces outward, turned round it faces the axis, seen through the
     # mouth (the metals cull their back faces).
     duct_profile = [[p[0] * radius, p[1] * radius] for p in REACTOR_INTAKE_DUCT]
@@ -344,9 +333,12 @@ def build_reactor(
     length = size["length"]
     root = new_transform_node(name, scene)
 
+    # With an intake, the nacelle runs on at full size to its front, where the intake's skin
+    # carries it on flush (D-340: no bump round the intake); without one, it closes in.
+    front = radius if intake else radius * 0.75
     profile = [
         [length / 2, 0],
-        [length / 2, radius * 0.75],
+        [length / 2, front],
         [length * 0.3, radius],
         [-length * 0.4, radius * 0.95],
         [-length / 2, radius * 0.85],

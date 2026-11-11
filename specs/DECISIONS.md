@@ -2490,3 +2490,24 @@
     octagonal intake, stretched upright to the body's height, feeds both. `add_reactor_intake` is
     public for it; the intake fins' width follows the octagon.
 - **Consequences:** the ship measures 9,832 triangles, under the 11,000 budget.
+
+### D-340 — Longer tip reactors, flush intakes, a laser past the nose, guns in a keel fairing
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-04, GFX-SHIP-05, GFX-SHIP-09.
+- **Context:** owner: "make the side reactor longer on both side, remove the circular bump around
+  the intakes, make the lazer longer, it should go further than the tip of the ship, and rework
+  those weapons, make them better integrated into the hull". "Side reactors" are read as the tip
+  reactors, as in D-339.
+- **Decision:**
+  - The tip reactors are 1.35 long (0.95), longer at both ends; their body follows to their
+    fronts and to short of their nozzles.
+  - Intakes: their skin starts at the nacelle's full radius, flush, and the nacelle runs on at
+    full size to its front when it has an intake (it closed in to 0.75, so the intake stood proud
+    of it); the accent band at the intake's turn is gone. The nacelles' own front rings stay.
+  - The laser housing is gone: a faceted keel fairing of hull metal (`GUN_FAIRING`), its top 0.02
+    inside the belly, runs from z -0.8 to 2.3. The laser's barrel runs through it and out of its
+    nose, under the ship's, to z 3.1 (the nose tip is at 2.75), its coils on the bare part, the
+    emitter beyond. The miniguns sit in the fairing's flanks, their drums of hull metal half sunk
+    in it as blisters, their barrels out ahead.
+- **Consequences:** the ship measures 9,056 triangles.
