@@ -2662,16 +2662,3 @@
   - **Minigun bores:** each barrel is two lathes, the bore (its bottom and wall) in the matte
     black intake material and the rest in trim metal.
 - **Consequences:** the ship measures 10,580 triangles, under the 11,000 budget.
-
-### D-352 — The minigun's barrel cluster matte black inside
-
-- **Date:** 2026-11-11
-- **Requirements:** GFX-SHIP-01.
-- **Context:** the owner asked again "make the inner part of the minigun mat black" after D-351
-  had made the bores black: between the six barrels, the drum's silver front face and the
-  barrels' inner sides still showed light.
-- **Decision:** two matte black parts in each minigun: a six-sided core on the gun's axis
-  (radius 0.03, just over the barrels' inner sides at 0.027), from the drum's front to 0.04
-  behind the muzzles, and an octagonal plate over the drum's front face, 0.072 out, as wide as
-  the barrel cluster. The barrels' outsides stay trim metal.
-- **Consequences:** 112 more triangles: the ship measures 10,692, under the 11,000 budget.
