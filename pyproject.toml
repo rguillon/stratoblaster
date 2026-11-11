@@ -24,7 +24,12 @@ dev = [
     "pytest-cov>=7.0.0",
     "ty>=0.0.95",
     "deptry>=0.25.1",
+    "numpy>=2.5.4",
 ]
+# torch for the AI player (`tests/ai/`), in one of two builds (D-289): `ai-cpu` (installed by
+# default, CPU-only wheels) or `ai-cuda` (NVIDIA GPUs, CUDA 12.6: `make learn AI_TORCH=cuda`).
+ai-cpu = ["torch>=2.14"]
+ai-cuda = ["torch>=2.14"]
 
 # Ruff lints (ENG-12) and formats (ENG-13); `make check` checks the format without writing.
 [tool.ruff]
@@ -79,6 +84,9 @@ ignore = [  "COM812",   # cause incompatibility with the formatter
               ]
 # The ENG-18 ban on `time` is for core/: the e2e helpers wait in real time.
 "tests/e2e/*" = ["TID251"]
+# The AI player's command-line tools (`make learn`, `make rate`) print their progress, time
+# themselves and draw their episodes at random: not core/'s deterministic simulation (ENG-18).
+"tests/ai/*" = ["T201", "TID251", "S311"]
 # Imports a module in a fresh interpreter (`sys.executable`, a fixed command).
 "tests/unit/core/systems/test_boss_fights.py" = ["S603"]
 # Babylon's own camelCase names (ENG-113).
@@ -96,6 +104,7 @@ ignore = [  "COM812",   # cause incompatibility with the formatter
 "src/app/saved_settings.py" = ["ARG001"]
 "src/app/saved_supplies.py" = ["ARG001"]
 "src/app/saved_weapons.py" = ["ARG001"]
+"src/debug/remote_player.py" = ["ARG001"]
 "src/game/view/audio/game_audio.py" = ["ARG001"]
 "src/game/view/reactor_flame.py" = ["ARG001"]
 "src/game/view/readability_view.py" = ["ARG001"]
@@ -354,3 +363,26 @@ source_modules = [
     "ui",
 ]
 forbidden_modules = ["game"]
+
+# The AI player's torch (`tests/ai/`, D-288, D-289): the CPU-only wheels by default (no CUDA
+# libraries in dev installs or CI), the CUDA 12.6 ones in the `ai-cuda` group (any driver >= 525,
+# GPUs from the GTX 10 / RTX 20 series on). The two groups cannot be installed together.
+[tool.uv]
+default-groups = ["dev", "ai-cpu"]
+conflicts = [[{ group = "ai-cpu" }, { group = "ai-cuda" }]]
+
+[tool.uv.sources]
+torch = [
+    { index = "pytorch-cpu", group = "ai-cpu", marker = "sys_platform == 'linux'" },
+    { index = "pytorch-cu126", group = "ai-cuda", marker = "sys_platform == 'linux'" },
+]
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu126"
+url = "https://download.pytorch.org/whl/cu126"
+explicit = true

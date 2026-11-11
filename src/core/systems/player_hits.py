@@ -3,6 +3,8 @@
 
 import math
 
+from core.systems.enemy_shots import shot_damage
+
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
 # __pragma__ ("skip")
@@ -89,9 +91,14 @@ def _ram_land(enemy: object, damage: float) -> Callable[[], None]:
     return land
 
 
+def _own(damage: float, rule: float) -> float:
+    """Return a shot's own damage, or the hull's `rule` for its kind when it has none (D-314)."""
+    return damage if damage > 0 else rule
+
+
 def _bullet_hits(world: EnemyWorld, rules: HullRules, touches: Touches) -> list[PlayerHit]:
     hits: list[PlayerHit] = [
-        PlayerHit("bullet", rules.damage.bullet, b.x, b.y, _bullet_land(b))
+        PlayerHit("bullet", _own(b.damage, rules.damage.bullet), b.x, b.y, _bullet_land(b))
         for b in world.shots.bullets
         if b.alive and touches(b, b.radius)
     ]
@@ -101,7 +108,7 @@ def _bullet_hits(world: EnemyWorld, rules: HullRules, touches: Touches) -> list[
 def _missile_hits(world: EnemyWorld, rules: HullRules, touches: Touches) -> list[PlayerHit]:
     # A missile shot down by the hit blows up on the next step.
     hits: list[PlayerHit] = [
-        PlayerHit("missile", rules.damage.missile, m.x, m.y, _missile_land(m))
+        PlayerHit("missile", _own(m.damage, rules.damage.missile), m.x, m.y, _missile_land(m))
         for m in world.shots.missiles
         if m.alive and m.health > 0 and m.height <= 0 and touches(m, m.radius)
     ]
@@ -117,7 +124,13 @@ def _laser_hits(
     x = ship.x
     y = ship.y
     hits: list[PlayerHit] = [
-        PlayerHit("laser", rules.damage.laser, x, y, _laser_land(laser, lasers_hit))
+        PlayerHit(
+            "laser",
+            _own(shot_damage(laser.spec), rules.damage.laser),
+            x,
+            y,
+            _laser_land(laser, lasers_hit),
+        )
         for laser in world.shots.lasers
         if laser.phase == "firing"
         and laser not in lasers_hit

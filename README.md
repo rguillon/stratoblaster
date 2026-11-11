@@ -68,6 +68,33 @@ Then open http://localhost:5173. `SERVE_PORT=8000 make serve` picks another port
 | `make build` | Fetches Babylon.js if needed, builds the game into `dist/`                   |
 | `make e2e`   | Builds the e2e game, then runs the end-to-end tests (Playwright, Chromium)  |
 | `make serve` | Builds the game, then serves `dist/` on http://localhost:5173 (`SERVE_PORT`) |
+| `make learn` | The AI player learns the game for `LEARN_MINUTES` (60); resumes `data/brain.pt` |
+| `make rate`  | The AI player rates each level's difficulty, in % (`data/ratings.json`)      |
+| `make serve-ai` | Serves the game on http://localhost:5174, where the AI player plays (`LEVEL=2-3`) |
+
+### The AI player
+
+[`tests/ai/`](tests/ai/) is a neural network (convolutional encoders, a GRU memory) that learns to
+play the game by reinforcement learning (PPO), in pure Python: it runs the game's own simulation as
+fast as the CPU goes, no browser. The games are played under PyPy, about five times faster than
+CPython on the simulation (`make learn` has uv install it; D-301), and the brain learns under
+CPython with PyTorch. It sees the whole playfield and a close-up around the
+ship: the enemies and bosses, the bullets, missiles and lasers, and the weapon, life, bomb and
+healing bonuses. `make learn` trains it: each game it plays, with the balanced ship, starts at
+1-1 with 3 lives and 3 bombs and goes on to the next level with what it earned, until the ship is
+lost, and it learns to score the most (D-295). Every 10 s it says how its games went (score, levels reached); the brain
+whose games scored best on average is kept in `data/brain-best.pt`, and `data/learn-log.csv` logs
+each update. Ctrl-C stops and saves; `LEARN_ARGS=--fresh` starts over. `make rate` then plays
+every level 8 times with the same loadout and rates it from 0 % (cleared without a scratch) to
+100 % (lost at once); the ratings are relative to how well the brain plays. Options:
+`RATE_ARGS="--episodes 16 --weapon-level 2"`, see
+`PYTHONPATH=tests uv run python -m ai.rate --help`. Decision D-288 has the details. On a machine
+with an NVIDIA GPU, `make learn AI_TORCH=cuda` learns on the GPU with every CPU core playing (D-289).
+
+`make serve-ai` serves the real game on http://localhost:5174 (`SERVE_AI_PORT`): open it in any
+browser, pick a ship and a level in the menus (or `make serve-ai LEVEL=2-3 SHIP=heavy`), and the
+brain plays every level you start; the menus and panels stay yours. The game runs in real time in
+the browser and asks the brain, in Python, for its keys about 15 times a second (D-291).
 
 [`node/tests/`](node/tests/) keeps the TypeScript test suite of the game this port came from. Nothing
 runs it: it is the reference for the tests still to port.

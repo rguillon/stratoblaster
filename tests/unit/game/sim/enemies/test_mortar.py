@@ -82,7 +82,7 @@ def test_enm_mortar_09_the_missile_bursts_after_its_fuse_into_a_ring_of_bullets(
     assert spec.burst.bullet.style == "green"
 
 
-def test_enm_mortar_10_a_mortar_has_120_hp_and_scores_350_points() -> None:
+def test_d_314_a_mortar_has_150_hp_and_scores_350_points() -> None:
     mortar = Mortar(200, 400)
-    assert mortar.health == 120
+    assert mortar.health == 150
     assert mortar.points == 350

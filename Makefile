@@ -1,7 +1,8 @@
-# Six targets: setup, check, tests, build, e2e, serve. uv runs the Python tools (ENG-04); Transcrypt
-# compiles src/ to JavaScript and esbuild bundles it. The first target, `setup`, is the default.
+# Eleven targets: setup, check, tests, build, e2e, serve, learn, rate, adjust-level, adjust-levels,
+# serve-ai. uv runs the Python tools (ENG-04); Transcrypt compiles src/ to JavaScript and esbuild
+# bundles it. The first target, `setup`, is the default.
 
-.PHONY: setup check tests build e2e serve FORCE
+.PHONY: setup check tests build e2e e2e-build serve learn rate adjust-level adjust-levels serve-ai FORCE
 
 # The git hooks, ENG-60.
 setup:
@@ -145,6 +146,9 @@ $(E2E_DIST)/js/game.js: $(TRANSCRYPT_OUT)/e2e/.stamp $(DIST_FILES)
 	@grep -q '__GAME_TEST__' $@ || { \
 		echo 'ENG-52: the e2e bundle has no test API' >&2; rm -f $@; exit 1; }
 
+# The e2e build alone (a step of `e2e` and `serve-ai`, ENG-37).
+e2e-build: $(E2E_DIST)/js/game.js
+
 # Chromium for Playwright, installed again only when the locked tools change.
 $(STAMPS)/playwright: uv.lock
 	uv run playwright install $(if $(CI),--with-deps --only-shell,) chromium
@@ -156,3 +160,43 @@ SERVE_PORT ?= 5173
 serve: build
 	@echo 'serving $(DIST)/ on http://localhost:$(SERVE_PORT) (Ctrl-C to stop)'
 	uv run python -m http.server $(SERVE_PORT) --directory $(DIST)
+
+# The AI player (tests/ai/): pure Python, it runs the game's simulation in CPython at full speed.
+# `learn` trains the brain for LEARN_MINUTES (Ctrl-C stops early and saves), resuming the one in
+# data/ if any; `rate` rates the difficulty of each level with it (data/ratings.json). Extra
+# options in LEARN_ARGS / RATE_ARGS (`uv run python -m ai.learn --help`, `... ai.rate --help`).
+# AI_TORCH=cuda installs and uses the CUDA build of torch (an NVIDIA GPU learns, every CPU core
+# plays); the default, cpu, the CPU-only build. The workers play under PyPy, about five times
+# faster than CPython (D-301): `learn` has uv install it (once; it is then found on its own).
+LEARN_MINUTES ?= 60
+AI_TORCH ?= cpu
+AI_PYPY := pypy3.12
+AI_RUN := PYTHONPATH=tests uv run --no-default-groups --group dev --group ai-$(AI_TORCH) python -m
+learn:
+	uv python install --quiet $(AI_PYPY)
+	$(AI_RUN) ai.learn --minutes $(LEARN_MINUTES) $(LEARN_ARGS)
+
+rate:
+	$(AI_RUN) ai.rate $(RATE_ARGS)
+
+# Tune how many enemies a level brings until the brain rates it at TARGET % (D-305, D-307),
+# written into src/game/config/level_enemies.py.
+# `make adjust-level LEVEL=4-4 TARGET=90`; ADJUST_ARGS: more options (`... ai.adjust --help`).
+adjust-level:
+	$(if $(and $(LEVEL),$(TARGET)),,$(error usage: make adjust-level LEVEL=4-4 TARGET=90))
+	$(AI_RUN) ai.adjust --level $(LEVEL) --target $(TARGET) $(ADJUST_ARGS)
+
+# Adjust every level in turn, its target rising evenly from FIRST_TARGET % (1-1) to LAST_TARGET %
+# (4-5): a few hours. `make adjust-levels FIRST_TARGET=10 LAST_TARGET=70`.
+FIRST_TARGET ?= 10
+LAST_TARGET ?= 70
+adjust-levels:
+	$(AI_RUN) ai.adjust --all --first $(FIRST_TARGET) --last $(LAST_TARGET) $(ADJUST_ARGS)
+
+# Watch the brain play the real game in your own browser: a server of the e2e build (D-291) on
+# SERVE_AI_PORT, where the game runs in real time and asks the brain for its moves. Start a level
+# from the menus, or `make serve-ai LEVEL=2-3` (and SHIP=heavy). WATCH_ARGS: more options
+# (`--host 0.0.0.0` to open it from another machine, `--greedy`).
+SERVE_AI_PORT ?= 5174
+serve-ai: e2e-build
+	$(AI_RUN) ai.watch --port $(SERVE_AI_PORT) $(if $(LEVEL),--level $(LEVEL),) $(if $(SHIP),--ship $(SHIP),) $(WATCH_ARGS)

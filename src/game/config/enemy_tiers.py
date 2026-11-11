@@ -83,6 +83,16 @@ ENEMY_TIERS = record({
     },
 })
 
+# How much the shots of each tier's kinds take off the player's health (D-314): a bullet, a missile,
+# a laser beam. Each kind keeps its tier's for the whole game; the tiers of the later worlds hit
+# harder, so a level gets harder with fewer enemies. Ramming stays the hull's rule (`hull.py`).
+TIER_DAMAGE = record({
+    "1": {"bullet": 10, "missile": 20, "laser": 25},
+    "2": {"bullet": 15, "missile": 25, "laser": 30},
+    "3": {"bullet": 20, "missile": 35, "laser": 40},
+    "4": {"bullet": 40, "missile": 55, "laser": 60},
+})
+
 # The models that are not a kind of their own, with the kind they belong to: the pods a Splitter
 # breaks into (ENM-SPLITTER-08).
 MODEL_KIND = {"splitter-pod": "splitter"}

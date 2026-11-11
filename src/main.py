@@ -12,7 +12,7 @@ and the dev viewers are inside it (DEV-MENU-02).
 
 from org.transcrypt.stubs.browser import __pragma__, document, window
 
-from app.debug_options import dev_mode, parse_debug_options
+from app.debug_options import ai_mode, dev_mode, parse_debug_options
 from app.page_audio import AudioOptions, PageVisibility
 from app.page_fullscreen import PageFullscreen
 from app.start_app import AppOptions, start_app
@@ -35,6 +35,8 @@ from typing import Any
 
 # isort: split
 # __pragma__ ("ifdef", "e2e")
+from debug.fresh_start_storage import FreshStartStorage
+from debug.remote_player import ask_json, install_remote_player
 from debug.test_api import install_test_api
 
 # __pragma__ ("endif")
@@ -192,21 +194,36 @@ def fit_to_window(engine: Any, stage: Any, overlay: Any, draw_scale: float) -> N
     fit()
 
 
+def tested() -> bool:
+    """Whether the tests step the app: an e2e build, unless the AI player plays it (D-291).
+
+    `?ai` runs the e2e build in real time, as the production game, with its test API on.
+    """
+    return E2E and not ai_mode(window.location.search)
+
+
 def start_game(engine: Any, draw_scale: float) -> None:
     """Start the game page: the menu, the levels and the audio."""
+    stepped = tested()
     document.title = GAME.title
     overlay = element("menu")
     fit_to_window(engine, element("stage"), overlay, draw_scale)
     # The URL's debug options, in every build (DEV-OPT-01, DEV-OPT-07).
     debug = parse_debug_options(window.location.search)
+    storage: Any = CookieStorage(document, MENU_CONFIG.cookie_max_age_days)
+    __pragma__("ifdef", "e2e")
+    # D-294: the AI player starts every level afresh, and leaves the player's cookies alone.
+    if not stepped:
+        storage = FreshStartStorage(GAME.id)
+    __pragma__("endif")
     options = AppOptions(
         True,
         document,
         overlay,
-        CookieStorage(document, MENU_CONFIG.cookie_max_age_days),
+        storage,
         next_frame,
         # e2e builds have no render loop: the tests step the app (ENG-52, ENG-58, DEV-API-08).
-        not E2E,
+        not stepped,
         APP_VERSION,
         APP_COMMIT,
         window,
@@ -219,11 +236,11 @@ def start_game(engine: Any, draw_scale: float) -> None:
         # PERF-09, PERF-10: levels load in steps, behind a loading screen.
         True,
         # PERF-20: shaders compiled while a level loads; not in e2e builds (ENG-52, DEV-API-10).
-        not E2E,
+        not stepped,
         # PERF-12, PERF-13: the highlighted level is prepared in a worker, and built ahead
         # (D-178); not built ahead in e2e builds (DEV-API-10).
         True,
-        not E2E,
+        not stepped,
         browser_audio(),
         browser_gamepads(window.navigator),
         window,
@@ -237,6 +254,9 @@ def start_game(engine: Any, draw_scale: float) -> None:
     app = start_app(engine, GAME, options)
     __pragma__("ifdef", "e2e")
     install_test_api(window, app)
+    # D-291: the AI player of `make serve-ai`, with `?ai` in the URL.
+    if not stepped:
+        install_remote_player(app, start_interval, ask_json)
     __pragma__("endif")
 
 
@@ -254,12 +274,13 @@ def main() -> None:
     # Antialiasing on; `adaptToDeviceRatio` off and `stencil` on. e2e builds draw fewer pixels,
     # without multisampling (ENGINE_CONFIG.e2e, D-075).
     e2e = ENGINE_CONFIG.e2e
-    antialias = e2e.antialias if E2E else True
+    stepped = tested()
+    antialias = e2e.antialias if stepped else True
     engine = new_engine(canvas, antialias)
     # UI-LOAD-07: a lost WebGL context asks the player to reload, with a button (ENG-110).
     engine.onContextLostObservable.add(show_context_lost)
     # The pixels drawn per stage pixel: set with the fit (D-250).
-    start_game(engine, e2e.render_scale if E2E else 1)
+    start_game(engine, e2e.render_scale if stepped else 1)
 
 
 def is_canvas(el: Any) -> bool:

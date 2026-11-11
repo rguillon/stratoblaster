@@ -61,7 +61,12 @@ class PrismBeam:
 def _laser() -> EnemyLaserSpec:
     """Return the beams' laser: a warning line, then the beam, along the Prism's heading."""
     return EnemyLaserSpec(
-        CFG.laser.warningSeconds, CFG.laser.firingSeconds, CFG.laser.width, CFG.laser.style
+        CFG.laser.warningSeconds,
+        CFG.laser.firingSeconds,
+        CFG.laser.width,
+        CFG.laser.style,
+        False,
+        CFG.laser.damage,
     )
 
 

@@ -9,7 +9,7 @@ can hit. Pure and deterministic.
 from core.entities.enemy import EnemyBulletSpec, EnemyBurstSpec, EnemyMissileSpec
 from core.entities.muzzle import PlanePoint, seen_on_playfield
 from core.entities.shot_target import is_alive
-from core.systems.enemy_shots import EnemyShots, EnemyShotsOptions
+from core.systems.enemy_shots import EnemyShots, EnemyShotsOptions, shot_damage
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -81,8 +81,9 @@ def _faster(spec: EnemyBulletSpec, factor: float) -> EnemyBulletSpec:
             spec.radius,
             spec.style,
             EnemyBurstSpec(burst.after, burst.count, _faster(burst.bullet, factor)),
+            shot_damage(spec),
         )
-    return EnemyBulletSpec(speed, spec.radius, spec.style, None)
+    return EnemyBulletSpec(speed, spec.radius, spec.style, None, shot_damage(spec))
 
 
 class _WorldContext:

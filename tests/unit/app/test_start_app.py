@@ -382,6 +382,9 @@ def test_dev_api_08_the_running_app_hands_on_to_its_parts() -> None:
     assert app.game() is None
     session.play = "play"
     assert app.game() == "play"
+    session.step_watchers = []
+    app.watch_steps(print)
+    assert session.step_watchers == [print]
     app.command("confirm")
     menu.command.assert_called_once_with("confirm")
     app.tick(0.02)

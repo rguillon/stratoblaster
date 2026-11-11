@@ -111,4 +111,6 @@ class Sweeper(Enemy):
 def _sweeping() -> EnemyLaserSpec:
     """Return the Sweeper's laser, whose beam keeps turning with it."""
     spec = CFG.laser
-    return EnemyLaserSpec(spec.warningSeconds, spec.firingSeconds, spec.width, spec.style, True)
+    return EnemyLaserSpec(
+        spec.warningSeconds, spec.firingSeconds, spec.width, spec.style, True, spec.damage
+    )

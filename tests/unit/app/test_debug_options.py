@@ -3,7 +3,7 @@
 # (DEV-OPT-01 to DEV-OPT-06, DEV-MENU-01).
 
 from app import debug_options
-from app.debug_options import dev_mode, parse_debug_options
+from app.debug_options import ai_mode, dev_mode, parse_debug_options
 
 # The JavaScript-only query helpers as the module defines them: the app conftest replaces them with
 # their Python twins for every test, after this module is imported.
@@ -71,6 +71,13 @@ def test_d199_dev_in_the_query_asks_for_the_dev_menu() -> None:
     assert dev_mode("?level=1-1&dev=1")
     assert not dev_mode("")
     assert not dev_mode("?level=1-1")
+
+
+def test_d_266_ai_in_the_query_asks_for_the_ai_player() -> None:
+    assert ai_mode("?ai")
+    assert ai_mode("?ai&level=2-3")
+    assert not ai_mode("")
+    assert not ai_mode("?level=2-3")
 
 
 def test_dev_opt_01_the_query_helpers_are_javascript_only() -> None:

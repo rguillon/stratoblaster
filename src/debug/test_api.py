@@ -15,13 +15,16 @@ JavaScript, and Playwright copies them out of the page.
   (ENG-46: no real timers);
 - `advance(seconds)`: steps by `seconds`, rounded up to whole frames;
 - `readability(share)`: how readable the level's frame is (DEV-API-09), a promise; null off the game
-  screen.
+  screen;
+- `getScene()`: what is on the playfield of the level being played (`debug/play_scene.py`), for
+  the AI player of `make serve-ai` (D-290); null off the game screen.
 """
 
 import math
 
 from org.transcrypt.stubs.browser import __pragma__
 
+from debug.play_scene import play_scene
 from input.menu_action import is_menu_action
 from render.babylon import js_object, js_set
 
@@ -132,6 +135,12 @@ def step_test_frames(app: Any, frames: Any, render: Any) -> None:
     app.step(frames, render is not False)
 
 
+def scene_state(app: Any) -> Any:
+    """`__GAME_TEST__.getScene` (D-290): the playfield of the level played, or None off a level."""
+    play = app.game()
+    return play_scene(play.run) if play is not None else None
+
+
 def frames_in(seconds: float, step_seconds: float) -> int:
     """Whole frames of `step_seconds` that last at least `seconds`."""
     if not seconds >= 0:
@@ -174,10 +183,14 @@ def install_test_api(target: Any, app: Any) -> Any:
     def readability(bright_share: float) -> Any:
         return measure_readability(app, bright_share)
 
+    def get_scene() -> Any:
+        return scene_state(app)
+
     js_set(api, "getState", get_state)
     js_set(api, "sendAction", send_action)
     js_set(api, "step", step)
     js_set(api, "advance", advance)
     js_set(api, "readability", readability)
+    js_set(api, "getScene", get_scene)
     js_set(target, "__GAME_TEST__", api)
     return api

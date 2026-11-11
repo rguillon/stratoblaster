@@ -48,7 +48,7 @@ def test_enm_phantom_09_it_fires_from_each_of_its_places_then_locks_on_and_dives
     assert phantom.stops_left == 0
 
 
-def test_enm_phantom_09_it_flies_on_to_another_place_in_the_upper_half() -> None:
+def test_d_313_a_phantom_flies_on_to_another_place_down_to_below_the_middle() -> None:
     ctx = FakeContext()
     phantom = Phantom(200, 426, 426)
     _until(phantom, ctx, "hold")
@@ -58,7 +58,7 @@ def test_enm_phantom_09_it_flies_on_to_another_place_in_the_upper_half() -> None
     # Somewhere else, far enough from where it fired.
     assert CFG.placeX[0] * ctx.width <= target[0] <= CFG.placeX[1] * ctx.width
     assert CFG.placeY[0] * ctx.height <= target[1] <= CFG.placeY[1] * ctx.height
-    assert ctx.height / 2 < target[1]
+    assert CFG.placeY[0] < 0.5 < CFG.placeY[1]
     assert math.hypot(target[0] - first[0], target[1] - first[1]) >= CFG.moveDistance
     _until(phantom, ctx, "aim")
     assert (phantom.x, phantom.y) == target
@@ -199,3 +199,15 @@ def test_enm_phantom_08_a_phantom_at_rest_on_its_place_settles_without_turning()
     assert phantom.state == "aim"
     assert phantom.heading == 1.0
     assert (phantom.x, phantom.y) == (200, 426)
+
+
+def test_enm_phantom_09_a_place_too_near_is_drawn_again() -> None:
+    ctx = FakeContext()
+    phantom = Phantom(200, 426, 426)
+    _until(phantom, ctx, "hold")
+    here = (phantom.x, phantom.y)
+    far = (here[0] + CFG.moveDistance + 10, here[1])
+    picks = iter([here, here, far])
+    phantom._pick_place = lambda _ctx: next(picks)  # type: ignore[method-assign]
+    _until(phantom, ctx, "fly")
+    assert (phantom.target_x, phantom.target_y) == far

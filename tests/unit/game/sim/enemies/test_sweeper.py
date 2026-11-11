@@ -23,7 +23,7 @@ def test_enm_sweeper_05_the_kind_spawns_a_live_sweeper_just_above_the_playfield(
     assert isinstance(sweeper, Sweeper)
     assert sweeper.health > 0
     assert sweeper.y > 600
-    assert sweeper.stop_y == pytest.approx(CFG.stopFraction * 600)
+    assert CFG.stopRange[0] * 600 <= sweeper.stop_y <= CFG.stopRange[1] * 600
 
 
 def test_enm_sweeper_05_it_stops_in_the_upper_part_and_shows_its_warning() -> None:
@@ -108,8 +108,8 @@ def test_enm_sweeper_07_the_beam_follows_the_barrel_and_heading() -> None:
     assert beam.gone is True
 
 
-def test_enm_sweeper_09_it_has_90_health_and_scores_300() -> None:
+def test_d_314_a_sweeper_has_135_health_and_scores_300() -> None:
     sweeper = Sweeper(200, 470, 470)
-    assert sweeper.health == 90
+    assert sweeper.health == 135
     assert sweeper.points == 300
     assert sweeper.model == "sweeper"

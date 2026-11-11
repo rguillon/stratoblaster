@@ -54,7 +54,9 @@ class ArmBeam:
 
 def _sweeping(spec: Any) -> EnemyLaserSpec:
     """Return the same laser, whose beam keeps turning with its arm."""
-    return EnemyLaserSpec(spec.warningSeconds, spec.firingSeconds, spec.width, spec.style, True)
+    return EnemyLaserSpec(
+        spec.warningSeconds, spec.firingSeconds, spec.width, spec.style, True, spec.damage
+    )
 
 
 class Scissor(JointedEnemy):

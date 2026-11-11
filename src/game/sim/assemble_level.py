@@ -5,7 +5,7 @@ from core.content.game_level import GameLevel
 from core.scenery.scenery_level import level_length
 from core.systems.boss_fights import LevelBoss
 from core.systems.enemy_world import EnemyDifficulty
-from game.config.wave_plans import compose_beats
+from game.config.wave_plans import WAVE_DENSITY, compose_beats, group_size, level_plan
 from game.config.world_1.bosses import MINI_BOSS_AT, QUIET_BEFORE_BOSS
 from game.config.world_1.waves import fill, quiet_before, wave_script
 from game.sim.scenery_build import scenery_level
@@ -15,41 +15,27 @@ from game.sim.scenery_build import scenery_level
 # __pragma__ ("skip")
 from typing import Any
 
-# Config records (`game/config/record.py`), typed as Any there: a level's scenery, beats, filler,
-# difficulty and bosses.
+# Config records (`game/config/record.py`), typed as Any there: a level's scenery, beats, filler
+# and bosses.
 Beat = Any
 WavePlan = Any
 Filler = Any
 LevelBosses = Any
-Difficulty = Any
 ScenerySource = Any
 # __pragma__ ("noskip")
 
 
 class WorldTables:
-    """What a world gives each of its levels, by level id: its difficulty.
+    """What a world gives each of its levels: its filler and its bosses (keyed by level id)."""
 
-    Its filler and its bosses (`dict`s keyed by the level id).
-    """
-
-    def __init__(
-        self,
-        difficulty: dict[str, Difficulty],
-        fillers: dict[str, Filler],
-        bosses: dict[str, LevelBosses],
-    ) -> None:
-        self.difficulty = difficulty
+    def __init__(self, fillers: dict[str, Filler], bosses: dict[str, LevelBosses]) -> None:
         self.fillers = fillers
         self.bosses = bosses
 
 
-def _difficulty(config: Difficulty) -> EnemyDifficulty:
-    """Return a level's enemy difficulty, as `core/` reads it.
-
-    Its bullet speed and fire rate factors (ENM-22), which its bosses' bullets follow too
-    (WLD-1-23, WLD-1-28, WLD-2-26; each level's in its level file's "Difficulty").
-    """
-    return EnemyDifficulty(config.bulletSpeed, config.fireRate)
+# Every enemy and boss fires and flies as tuned, in every level: a level is harder only by how
+# many enemies it brings (`LEVEL_ENEMIES`, D-307).
+AS_TUNED = EnemyDifficulty(1, 1)
 
 
 def plan_beats(plan: WavePlan, scenery: ScenerySource, fights: list[LevelBoss]) -> list[Beat]:
@@ -63,6 +49,41 @@ def plan_beats(plan: WavePlan, scenery: ScenerySource, fights: list[LevelBoss]) 
     return compose_beats(plan, quiet)
 
 
+def _waves(scenery: ScenerySource, plan: WavePlan, filler: Filler, fights: list[LevelBoss]) -> Any:
+    """Return the waves of `plan` and `filler`, none in the stretch before a boss.
+
+    Each wave, and each filler group, brings the plan's `enemies` times its groups (D-307): the
+    beats come when they would at 1, so a level is the same level with more or fewer enemies.
+    """
+    beats = fill(plan_beats(plan, scenery, fights), filler)
+    script = wave_script(scenery.scrollSpeed, beats, WAVE_DENSITY * plan.enemies)
+    quiet = QUIET_BEFORE_BOSS * scenery.scrollSpeed
+    return quiet_before(script, [fight.at for fight in fights], quiet)
+
+
+def ships_of(waves: Any) -> float:
+    """Return how many ships `waves` bring, each group counted with its ships."""
+    total = 0.0
+    for wave in waves:
+        total += wave["count"] * group_size(wave["kind"])
+    return total
+
+
+def bonus_scale(
+    scenery: ScenerySource, plan: WavePlan, filler: Filler, waves: Any, fights: list[LevelBoss]
+) -> float:
+    """Return the factor on the enemies' drop chances that keeps the level's bonuses as many.
+
+    As many as with its waves as composed (an enemies factor of 1), whatever its enemies factor:
+    its ships as composed over its ships (D-309).
+    """
+    if plan.enemies == 1:
+        return 1
+    composed = _waves(scenery, level_plan(plan.world, plan.level, 1), filler, fights)
+    ships = ships_of(waves)
+    return ships_of(composed) / ships if ships > 0 else 1
+
+
 def assemble_level(
     level_id: str,
     scenery: ScenerySource,
@@ -73,29 +94,28 @@ def assemble_level(
 
     Its scenery (`scenery` is its config record, mapped to the core's `SceneryLevel` here), its
     written beats with light groups filling their lulls (WLD-1-21) and nothing new in the stretch
-    before each boss (GAME-LEVEL-05), its difficulty, and its mini boss at the middle and final boss
+    before each boss (GAME-LEVEL-05), and its mini boss at the middle and final boss
     at the end (GAME-LEVEL-04), then its runout. Which bosses and runout are each level's own (the
-    "Mini boss", "Final boss" and "Runout" of each level file in `specs/worlds/`).
+    "Mini boss", "Final boss" and "Runout" of each level file in `specs/worlds/`). Its enemies drop
+    as many bonuses as with its waves as composed, whatever its enemies factor (D-309).
     """
-    difficulty_config = tables.difficulty.get(level_id)
     filler = tables.fillers.get(level_id)
     bosses = tables.bosses.get(level_id)
-    if difficulty_config is None or filler is None or bosses is None:
-        raise ValueError('No difficulty, filler or boss for "' + level_id + '"')
+    if filler is None or bosses is None:
+        raise ValueError('No filler or boss for "' + level_id + '"')
     level = scenery_level(scenery)
     length = level_length(level)
     fights = [
         LevelBoss(bosses.mini, "mini", length * MINI_BOSS_AT),
         LevelBoss(bosses.final, "final", length),
     ]
-    script = wave_script(scenery.scrollSpeed, fill(plan_beats(plan, scenery, fights), filler))
-    quiet = QUIET_BEFORE_BOSS * scenery.scrollSpeed
-    waves = quiet_before(script, [fight.at for fight in fights], quiet)
+    waves = _waves(scenery, plan, filler, fights)
     return GameLevel(
         level_id,
         level,
         waves,
-        _difficulty(difficulty_config),
+        AS_TUNED,
         fights,
         bosses.runout,
+        bonus_scale(scenery, plan, filler, waves, fights),
     )

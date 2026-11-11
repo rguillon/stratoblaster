@@ -52,11 +52,24 @@ INFINITY = float("Infinity")
 EPSILON = 1e-9
 
 
+def shot_damage(spec: object) -> float:
+    """Return a shot spec's own damage, 0 (the hull's rule) when it has none (D-314).
+
+    A kind may hand its config's record over as the spec: one without `damage` (or with `None`,
+    as a record answers for a key it lacks) uses the rule.
+    """
+    if hasattr(spec, "damage"):
+        damage: float | None = spec.damage
+        if damage:
+            return damage
+    return 0
+
+
 class EnemyBullet:
     """An enemy bullet in flight (ENM-16): straight, at constant speed.
 
     `age` is the seconds since it was fired; `burst` is what it bursts into
-    (`EnemyBulletSpec.burst`).
+    (`EnemyBulletSpec.burst`); `damage` its own damage, 0 for the hull's rule (D-314).
     """
 
     def __init__(self) -> None:
@@ -69,6 +82,7 @@ class EnemyBullet:
         self.style = ""
         self.age = 0.0
         self.burst: EnemyBurstSpec | None = None
+        self.damage = 0.0
 
 
 class EnemyMissile:
@@ -95,6 +109,7 @@ class EnemyMissile:
         self.style = ""
         self.age = 0.0
         self.burst: EnemyBurstSpec | None = None
+        self.damage = 0.0
         # WPN-08: seconds left flying straight out of the port, before any turning.
         self.launch = 0.0
         # WPN-09: how high above the plane of play it is (0 on it), and how it gets there: "loft"
@@ -254,6 +269,7 @@ class EnemyShots:
         bullet.radius = spec.radius
         bullet.style = spec.style
         bullet.burst = spec.burst
+        bullet.damage = shot_damage(spec)
         bullet.age = 0
 
     def fire_missile(
@@ -281,6 +297,7 @@ class EnemyShots:
         missile.homing = spec.homing_seconds
         missile.style = spec.style
         missile.burst = spec.burst
+        missile.damage = shot_damage(spec)
         missile.age = 0
         flight = spec.flight
         lofts = flight.loft_seconds > 0

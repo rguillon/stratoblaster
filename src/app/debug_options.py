@@ -33,6 +33,11 @@ def dev_mode(search: str) -> bool:
     return _has_key(search, "dev")
 
 
+def ai_mode(search: str) -> bool:
+    """Whether the query asks for the AI player of `make serve-ai` (`?ai`, D-291; e2e builds)."""
+    return _has_key(search, "ai")
+
+
 def _time_text(search: str) -> float:
     """`Number(query.get('t') ?? '0')`: NaN for text that is not a number."""
     __pragma__("js", "{}", "return Number(new URLSearchParams(search).get('t') ?? '0');")

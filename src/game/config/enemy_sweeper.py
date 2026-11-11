@@ -6,6 +6,7 @@ fractions of the playfield height from its bottom.
 """
 
 from game.config.enemies import ENEMY_UNIT, radius
+from game.config.enemy_tiers import TIER_DAMAGE
 from game.config.record import record
 
 # The tip of its emitter barrel, ahead of its centre.
@@ -13,15 +14,22 @@ SWEEPER_BARREL = 0.62 * ENEMY_UNIT
 
 SWEEPER_CONFIG = record({
     # ENM-SWEEPER-09: health, points and hit circle.
-    "stats": {"model": "sweeper", "radius": radius(1.3) * 0.8, "health": 90, "points": 300},
+    "stats": {"model": "sweeper", "radius": radius(1.3) * 0.8, "health": 135, "points": 300},
     "size": 1.3,
     "entrySpeed": 150,
     # It slows down over this distance before its stop point.
     "brakeDistance": 60,
-    "stopFraction": 0.78,
+    # Its stop height: one at random in this range (D-313).
+    "stopRange": [0.45, 0.8],
     # The warning line shows along the beam's first heading for `warningSeconds`; then the beam
     # turns across `arcDeg` over `firingSeconds` (ENM-SWEEPER-06).
-    "laser": {"warningSeconds": 1, "firingSeconds": 2.2, "width": 9, "style": "lancer"},
+    "laser": {
+        "warningSeconds": 1,
+        "firingSeconds": 2.2,
+        "width": 9,
+        "style": "lancer",
+        "damage": TIER_DAMAGE["2"].laser,
+    },
     "arcDeg": 70,
     # Distance from the centre to the tip of the barrel, and the barrel's front, where the laser
     # leaves from (with a height above the playfield).

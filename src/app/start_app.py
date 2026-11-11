@@ -164,6 +164,10 @@ class RunningApp:
         """Return the level being played, on the game screen."""
         return self._session.play
 
+    def watch_steps(self, watcher: Any) -> None:
+        """Call `watcher(run)` after each step of every level played (D-293)."""
+        self._session.step_watchers.append(watcher)
+
     def command(self, command: MenuCommand) -> None:
         """Send a menu command, as any input device would."""
         self.menu.command(command)

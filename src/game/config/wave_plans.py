@@ -15,6 +15,7 @@ import math
 
 from game.config.enemies_veteran import VETERAN_CONFIG
 from game.config.enemy_tiers import ENEMY_TIERS
+from game.config.level_enemies import LEVEL_ENEMIES
 from game.config.record import concat, record
 
 # isort: split
@@ -137,10 +138,25 @@ def kinds_of(world: int, level: int) -> list[str]:
     return kinds
 
 
-def level_plan(world: int, level: int) -> Any:
-    """Return the wave plan of World `world`'s level `level` (1..5): its tiers and pace."""
+def enemies_factor(world: int, level: int, enemies: float | None = None) -> float:
+    """Return how many times its composed enemies a level brings (D-307): `enemies`, or its own."""
+    if enemies is not None:
+        return enemies
+    factor: float = LEVEL_ENEMIES[str(world) + "-" + str(level)]
+    return factor
+
+
+def level_plan(world: int, level: int, enemies: float | None = None) -> Any:
+    """Return the wave plan of World `world`'s level `level` (1..5): its tiers and pace.
+
+    `enemies`: how many times its composed enemies it brings (default: the level's own, D-307).
+    It is not used here: the level's waves are composed as written, and each then brings `enemies`
+    times its groups (`assemble_level`), so the level keeps its beats whatever its factor.
+    """
     start = 3.4 - 0.2 * (level - 1) - 0.3 * (world - 1)
     return record({
+        "world": world,
+        "level": level,
         "from": 4,
         "to": 226 if world == 1 else 292,
         "gap": [start, start * 0.7],
@@ -152,6 +168,8 @@ def level_plan(world: int, level: int) -> Any:
         "tiers": [[pair[1], tier_sequence(pair[0])] for pair in tier_mix(world, level)],
         # The filler, counted with the beats it follows when sharing the enemies out.
         "filler": level_filler(world, level),
+        # How many times its groups each wave brings, once composed (D-307).
+        "enemies": enemies_factor(world, level, enemies),
     })
 
 

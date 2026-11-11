@@ -8,6 +8,7 @@ centre facing down the screen, X right, Y up, and heights).
 
 from game.config.enemies import ENEMY_UNIT, fan_barrels
 from game.config.enemy_look import ENEMY_LOOK
+from game.config.enemy_tiers import TIER_DAMAGE
 from game.config.record import record
 
 # isort: split
@@ -23,9 +24,9 @@ def radius(size: float) -> float:
     return (size * ENEMY_UNIT * 0.85) / 2
 
 
-def bullet(style: str, speed: float, size: float = 4) -> Any:
-    """Return a glowing bullet of a style of `enemy_look`."""
-    return record({"speed": speed, "radius": size, "style": style})
+def bullet(style: str, speed: float, damage: float, size: float = 4) -> Any:
+    """Return a glowing bullet of a style of `enemy_look`, `damage` its hit (D-314)."""
+    return record({"speed": speed, "radius": size, "style": style, "damage": damage})
 
 
 # The Phantom's five guns (ENM-PHANTOM-03), fanned 12 degrees apart, `PHANTOM_GUN_GAP` apart
@@ -49,15 +50,15 @@ def phantom_barrels() -> list[list[float]]:
 VETERAN_CONFIG = record({
     # ENM-WASP-11: health, points and hit circle.
     "wasp": {
-        "stats": {"model": "wasp", "radius": radius(0.6), "health": 30, "points": 150},
+        "stats": {"model": "wasp", "radius": radius(0.6), "health": 45, "points": 150},
         "size": 0.6,
         # A swarm of drones.
         "groupSize": 5,
         # Distance between two Wasps of a group, side by side.
         "groupSpacing": 34,
         "entrySpeed": 240,
-        # Height where they stop before the dive.
-        "stopFraction": 0.72,
+        # Height where they stop before the dive: one at random in this range per group (D-313).
+        "stopRange": [0.5, 0.8],
         "entryBrake": 480,
         "pause": 0.4,
         "diveAcceleration": 1000,
@@ -66,7 +67,7 @@ VETERAN_CONFIG = record({
         # aimed.
         "fanCount": 3,
         "fanSpacing": 12,
-        "bullet": bullet("orange", 220),
+        "bullet": bullet("orange", 220, TIER_DAMAGE["2"].bullet),
         # The guns of the sensor pod at its nose.
         "muzzles": fan_barrels(3, 12, 1.2, -10.4, 0.8),
         # Range of X of the group's middle Wasp, as fractions of the width.
@@ -74,7 +75,7 @@ VETERAN_CONFIG = record({
     },
     # ENM-MORTAR-10: health, points and hit circle.
     "mortar": {
-        "stats": {"model": "mortar", "radius": radius(1.2) * 0.8, "health": 120, "points": 350},
+        "stats": {"model": "mortar", "radius": radius(1.2) * 0.8, "health": 150, "points": 350},
         "size": 1.2,
         "speed": 40,
         "fireInterval": 3.5,
@@ -88,7 +89,12 @@ VETERAN_CONFIG = record({
             "radius": 8,
             "health": 20,
             "style": "mortar",
-            "burst": {"after": 2.5, "count": 10, "bullet": bullet("green", 130)},
+            "damage": TIER_DAMAGE["3"].missile,
+            "burst": {
+                "after": 2.5,
+                "count": 10,
+                "bullet": bullet("green", 130, TIER_DAMAGE["3"].bullet),
+            },
         },
         # The mouth of the short, wide launcher tube on its raised mount.
         "muzzles": [[0, -12.5, 7]],
@@ -96,7 +102,7 @@ VETERAN_CONFIG = record({
     },
     # ENM-PHANTOM-13: health, points and hit circle.
     "phantom": {
-        "stats": {"model": "phantom", "radius": radius(1) * 0.8, "health": 90, "points": 450},
+        "stats": {"model": "phantom", "radius": radius(1) * 0.8, "health": 110, "points": 450},
         "size": 1,
         "entrySpeed": 150,
         # Between its places it speeds up to `cruiseSpeed` at `acceleration`, its nose turning
@@ -105,9 +111,10 @@ VETERAN_CONFIG = record({
         "acceleration": 260,
         "brake": 300,
         "turnDeg": 240,
-        # Where it flies to and fires from: X across the width, heights in the upper half.
+        # Where it flies to and fires from: X across the width, heights down to below the middle
+        # (D-313).
         "placeX": [0.15, 0.85],
-        "placeY": [0.6, 0.82],
+        "placeY": [0.4, 0.82],
         # Each place at least this far from the one before.
         "moveDistance": 110,
         # It fires from this many places (ENM-PHANTOM-09); after the last it dives.
@@ -123,7 +130,7 @@ VETERAN_CONFIG = record({
         # The spread fired at each place: 5 bullets 12 degrees apart, centred on the player.
         "spreadCount": 5,
         "spreadSpacing": 12,
-        "bullet": bullet("purple", 200),
+        "bullet": bullet("purple", 200, TIER_DAMAGE["3"].bullet),
         # The guns along the front of its wing, spread wide, sunk in it: their ends stick out
         # past the nose and the leading edges.
         "muzzles": phantom_barrels(),

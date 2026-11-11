@@ -1272,4 +1272,688 @@
   `dev-audio`) keep the two steps: picking an item there shows or plays it. The ship and level
   select hints say "tap to go".
 - **Consequences:** a mis-tap on a menu goes straight through (a locked level still only shakes).
+
+### D-288 — An AI player (`tests/ai/`) that learns the game and rates its levels; torch and numpy
+- **Date:** 2026-11-07
+- **Requirements:** none yet (requested by the human: `make learn`, `make rate`; the brain kept in
+  `data/`); ENG-05 (new dev dependencies); ENG-18 (the AI is not `core/`).
+- **Context:** the human wants a neural network that learns to play the game, then rates how hard
+  each level is (as a percentage), to tune the levels' difficulty with it. Pure Python, no
+  JavaScript, as fast as the CPU goes, all of it in a package under `tests/`.
+- **Decision:** the package `tests/ai/` runs the game's own simulation in CPython: `game_env.py`
+  builds a `LevelRun` as `app/game_play.py` does (same playfield, ship, weapons, bonuses, bombs,
+  hull, bosses; the camera framing for the flight bounds and what is on screen; no fly-in journey,
+  a 30 px muzzle offset instead of the one measured on the 3D model), steps it 4 fixed steps
+  (1/60 s) per decision (15 decisions a second), and wraps the wave scripts' plain dicts as
+  attribute records (the browser reads object literals as attributes). The brain sees two grids of
+  16 channels (the whole playfield in 24 x 32 cells, and a 21 x 21 fovea of 12 px cells around the
+  ship): enemies, boss pieces, their health, bullets / missiles (each with their velocity), laser
+  warning lines and beams, the weapon / life / bomb bonuses, the ship, and where it cannot fly; and
+  24 numbers (ship, health, lives, bombs, weapons, progress, boss, difficulty). The network
+  (`brain.py`, about 2.5 M weights): two small convolutional encoders and a state MLP, a GRU (its
+  memory), and heads for the move (9 directions), the bomb, the weapon switch, and the value; fire
+  is always held. It learns by recurrent PPO (`learn.py`): worker processes play 12 episodes each
+  while the learner updates from the previous round (one update late), sequences of 32 decisions
+  replayed through the memory. The curriculum draws the level, a start anywhere in it (60 %), the
+  weapons and their levels, lives, bombs and ship at random. The reward: progress, points, damage
+  dealt and bonuses picked up, minus damage taken, lives lost, bombs used and the game over; plus a
+  completed level. `make rate` plays each level 8 times (seeds 1000…) from its start with the same
+  loadout (Balanced ship, every weapon at level 3, 3 lives, 3 bombs), greedy, and rates an episode
+  `1 - (progress + health left) / 2`; a level's rating is the mean, in percent
+  (`data/ratings.json`). `data/brain.pt` holds the weights and the learning stats,
+  `data/brain.trainer.pt` the optimiser (to resume), `data/learn-log.csv` one line per update.
+- **Dependencies (ENG-05):** `torch` (BSD-3-Clause; the CPU-only wheel, from the PyTorch CPU index
+  on Linux so no CUDA libraries are installed; about 200 MB installed) for the network and its
+  training; `numpy` (BSD-3-Clause, about 40 MB) for the observation grids. Both in the `dev` group:
+  the game itself still has no Python run-time dependency.
+- **Alternatives considered:** driving the browser build through Playwright (real time, and
+  JavaScript); a numpy-only network (no automatic gradients for the GRU); a feed-forward network
+  with stacked frames instead of a memory (the human asked for memory); stable-baselines3 / sb3-
+  contrib's recurrent PPO (one more dependency, and its single-process loop wastes the cores).
+- **Consequences:** about 700 decisions a second on 8 CPU cores (2.5 M an hour; the learner's
+  backward pass is the bottleneck), so a competent brain takes hours to days of `make learn`; the
+  ratings are relative to the brain's skill (a better brain rates every level easier); levels with
+  enemies the CPython run had never met turned up two bugs of the browser game (see the next
+  bullet).
+- **Game bugs found (fixed):** the Harrier fired its missiles with its raw config record (keys
+  `turnRateDeg`, `homingSeconds`) instead of an `EnemyMissileSpec`, and the Lancer its laser with
+  its raw record (`warningSeconds`, `firingSeconds`) instead of an `EnemyLaserSpec`: `core/` read
+  `undefined` in the browser (a NaN turn rate for the missiles; a laser with no warning that never
+  ended). Both now build their spec as the Rocketeer, Sweeper and Scissor do; their unit tests
+  asserted the raw record and now assert the spec.
+- **Spec follow-up (owner's to edit):** ENG-37 lists the public make targets; `learn` and `rate`
+  are new public targets (in `README.md`) and are not in it yet.
+- **Lint:** `tests/ai/*` may `print` (T201), read the clock (TID251) and use `random` (S311): it is
+  a command-line tool, not the deterministic simulation those rules protect.
+- **Status:** Proposed
+
+### D-289 — The AI player learns on an NVIDIA GPU, with every CPU core playing
+- **Date:** 2026-11-07
+- **Requirements:** none (requested by the human: make `make learn` faster on a server with an
+  RTX 2060 and 64 CPU threads); ENG-05 (the CUDA build of torch).
+- **Context:** on a CPU the learner's backward pass is the bottleneck (D-288): a third of the cores
+  play, the learner has the rest. With a GPU the learner is fast, so many more cores can play; a
+  round of 60 workers is then over a gigabyte of observations, too much to pickle through pipes.
+- **Decision:** torch leaves the `dev` group for two groups that cannot be installed together:
+  `ai-cpu` (a default group, the CPU-only wheels: `make check`, `make tests` and CI unchanged) and
+  `ai-cuda` (the CUDA 12.6 wheels, torch 2.14.1: the newest torch with CUDA 12 wheels; any driver
+  >= 525, Turing GPUs included; torch 2.15 has CUDA 13.2 wheels only). `make learn AI_TORCH=cuda`
+  installs and uses it (`make rate` too). `ai.learn --device auto` (the default) learns on the GPU
+  when torch sees one, with every core but two playing 8 episodes each and rounds of 64 decisions. The workers write their rounds into two rollout buffers in shared memory
+  (`/dev/shm` files mapped by every process, in turn: one is played into while the learner learns
+  from the other) and send back only the episodes' summaries; the weights are pickled once a
+  round for all of them. The minibatches are a share of the round (12 an epoch), not a fixed size.
+  `make rate` plays fewer episodes side by side when there are many cores, so none is idle.
+- **Measured** (`glouton`: 2 x Xeon E5-2697A v4, 32 cores / 64 threads, RTX 2060): about 11,000
+  decisions a second (2,800 with the CPU build on the same machine, 600 on an 8-core laptop). The
+  playing is then the bottleneck: a worker alone plays 680 decisions a second, 180 with the 62
+  others (the game's simulation is 52 % of it, the observation 25 %, the network 13 %); the GPU is
+  about a third busy. More episodes per worker (16), fewer workers (31) or 3 epochs a round
+  instead of 2 (8,800 a second: the learner's own CPU work slows the workers) were no faster.
+- **Alternatives considered:** a central inference server on the GPU for the workers (the network
+  is only 13 % of a worker's time); half-precision training (the learner already waits for the
+  workers); CUDA 13.2 wheels (they need a driver >= 580 and give nothing more here).
+- **Consequences:** on the GPU machine `uv run` without the group (as `make tests` does) switches
+  torch back to the CPU build, and `make learn AI_TORCH=cuda` back again (a re-install of a few
+  seconds from uv's cache); the lock file holds both builds. Faster still means a faster game
+  simulation (`src/core/`), which is the game's code, not the AI's.
+- **Status:** Proposed
+
+### D-290 — `make serve-ai`: the brain plays the real game in a browser window
+- **Date:** 2026-11-07
+- **Requirements:** none (requested by the human: open a browser and watch the AI play the level
+  chosen); DEV-API-01 (a sixth test API function); ENG-52 (test API in the e2e build only).
+- **Context:** the brain decides in Python (D-288); the browser game is the JavaScript build.
+  Replaying a Python run in the browser would need the two runtimes to stay bit-identical for
+  minutes (their `sin`/`cos` may differ in the last bit, and the runs would drift apart); the test
+  API's `getState()` gives counts, not where things are.
+- **Decision:** the e2e build's test API gets `getScene()` (`src/debug/play_scene.py`): what is on
+  the playfield of the level played, as plain arrays (the ship, its hull, bombs and weapons, the
+  level's progress, the boss, and the position of each enemy and boss piece, bullet, missile,
+  laser and bonus). `tests/ai/watch.py` serves `dist-e2e/`, opens it in a Chromium window
+  (Playwright, already a dev dependency) and steps it at 60 frames a second (the e2e build only
+  moves when stepped). While a level is played (not paused, not over) it reads the scene every 4
+  frames, the brain decides, and it holds the game's own keys (arrows, Space, R, E) through the
+  page; out of a level it lets go and the human uses the menus. The training builds its
+  observations from the same `play_scene` (its two JavaScript helpers swapped for Python ones), so
+  what the brain sees while watched is exactly what it learned from. `make e2e-build` is now a step
+  of its own (ENG-37 already named it), used by `e2e` and `serve-ai`.
+- **Alternatives considered:** the browser asking a Python server for each move (a change to the
+  game's loop and input for a dev tool); a 2D replay of a Python run drawn on a canvas (not the
+  real game); replaying the moves of a Python run (the runs drift, see the context).
+- **Consequences:** `?level=` (with `make serve-ai LEVEL=...`) starts the level in debug mode
+  (DEV-OPT-01). The watch is as fast as the browser draws: with software WebGL (no GPU) a frame
+  takes some 200 ms (`WATCH_ARGS="--draw-every 4"` draws fewer). The scene of the browser's run
+  comes from the JavaScript simulation, so the brain plays the very game a player plays.
+- **Spec follow-up (owner's to edit):** DEV-API-01 lists five test API functions, now six
+  (`getScene`); ENG-37's public targets lack `learn`, `rate` and `serve-ai`.
+- **Status:** Superseded in part by D-291 (the server and the in-page player replace the
+  Chromium window driven by Playwright; `getScene()` and the shared `play_scene` stay)
+
+### D-291 — `make serve-ai` serves the game; the page asks the brain for its keys
+- **Date:** 2026-11-07
+- **Requirements:** none (requested by the human: no Chromium window of its own, it is slow in
+  WSL; open the game in any browser); ENG-52 (the e2e build only).
+- **Context:** D-290 stepped the game from Python through Playwright, so it needed a Chromium the
+  script launched, which draws with software WebGL under WSL (some 200 ms a frame).
+- **Decision:** `make serve-ai` starts a local HTTP server (`tests/ai/watch.py`, port 5174,
+  `SERVE_AI_PORT`) of the e2e build, which sends `/` on to the game with `?ai` (and `level` and
+  `ship` when given). With `?ai` (`ai_mode`, `app/debug_options.py`) the e2e build runs as the
+  production game does (its own render loop, full render scale, shaders compiled ahead) with its
+  test API on, and `debug/remote_player.py` posts the level played (its id, attempt, time,
+  duration and `play_scene`) to `POST /ai` about every 4 frames (an interval of 4/60 s), one
+  question at a time. The server's brain answers with the key codes to hold, which go to the
+  level's controls (`controls.key`, as the keyboard's do); a held key is sent down again at each
+  answer (no new press: the controls count presses on their transitions), so a lost focus does not
+  leave it let go. Out of a level, while paused or over, or without an answer, every key is let go.
+- **Alternatives considered:** keeping Playwright with the host's Chrome (`channel`), which WSL
+  cannot reach; a WebSocket (one more protocol for 15 small questions a second); synchronous
+  requests (they would stall the page's frame).
+- **Consequences:** the brain decides on the wall clock (every 4/60 s), not every 4 frames, so at
+  a frame rate under 60 it decides more often per frame than it learned; an answer reaches the
+  game one frame or so after its question. `--host 0.0.0.0` serves it to other machines (glouton).
+  The production bundle has none of it (the `ifdef e2e` block; `make build` checks
+  `__GAME_TEST__` is absent).
+- **Status:** Proposed
+
+### D-292 — The AI player draws its moves (not the likeliest one) when watched and rating
+- **Date:** 2026-11-07
+- **Requirements:** none (the human saw the brain hold the ship in the bottom-left corner, firing
+  missiles only, in `make serve-ai`).
+- **Context:** the brain (1.8 h of learning) is a policy: a probability over its 9 moves, still
+  wide (its first decision of 1-1: 60 % south-west, the rest spread). `serve-ai` and `make rate`
+  played its likeliest move only, which turned that into "hold south-west". Measured on 1-1, 1-4,
+  2-3, 3-1 and 4-2 (two seeds, missiles at level 3): camping in the corner reaches 71 % of the level
+  and completes none; random moves 83 %, 60 % completed; the brain's likeliest moves 100 %, 90 %
+  completed with 4.7 lives' worth of damage; its moves drawn 100 %, all completed, 2.2 lives'
+  worth. It sees and dodges; its likeliest move alone hides it.
+- **Decision:** `make serve-ai` and `make rate` draw the moves as the brain learned to play
+  (`--greedy` for the likeliest). A rating episode draws from a generator of its own, seeded by the
+  episode, so the ratings are the same however episodes are batched or how many cores there are.
+  Ratings made before (`data/ratings.json`) used the likeliest moves.
+- **Finding (for the game's balance):** the brain switches to the missiles and keeps them. With
+  random moves (no aiming), at level 3 on the same levels with three seeds: bullets reach 36 % of
+  the level (50 kills, none completed), the laser 33 % (29 kills, none), the missiles 81 % (242
+  kills, 60 % completed). Homing missiles need no aiming; whether they are too strong is the owner's
+  call (GAME-WPN).
+- **Status:** Proposed
+
+### D-293 — The watched brain decides every 4 steps, and taps its bomb and switch keys
+- **Date:** 2026-11-07
+- **Requirements:** none (the human saw the brain stay in the bottom-left corner in
+  `make serve-ai`, not dodging and not picking up bonuses).
+- **Context:** the same brain, fed the same scenes, moved over the whole screen in the Python game
+  and stayed in the corner in the browser (the scenes were checked equal, to the bullets'
+  coordinates). Two differences with how it learned: (1) D-291 asked on the wall clock, so with a
+  slow drawing many steps passed between two decisions (some 23 instead of 4 in a headless
+  browser); (2) a decision to switch weapon (or to set a bomb off) is one press of E (R) in
+  learning, but the page held E down: one press for all the decisions after. The brain wants to
+  switch at the start of a level until it has the missiles (99 % at its first decision) and keeps
+  to its opening (down-left) meanwhile: with one press it never got there.
+- **Decision:** the game session calls `step_watchers` after each step of a level (with the audio;
+  `RunningApp.watch_steps`); the remote player asks after every 4th step and waits for the answer
+  (a synchronous request: the page waits a few milliseconds for the brain), so the keys apply from
+  the next step, as in learning, however fast the page draws. The answer is `[hold, tap]`: the
+  arrows and Space are held; E and R are tapped (down and up before the next step: one press each
+  decision that chooses one). The interval only lets the keys go out of a level.
+- **Consequences:** in a headless browser the brain now moves over the whole screen, takes the
+  missiles within 4 s and sets bombs off, as in the Python game. It still goes back to the corner
+  often: after under 2 hours of learning, that is how it plays. A browser warns that synchronous
+  requests are deprecated on the main thread (e2e build with `?ai` only).
+- **Status:** Proposed
+
+### D-294 — The AI player starts every level afresh, apart from the player's save
+- **Date:** 2026-11-07
+- **Requirements:** none (requested by the human: in `make serve-ai` the brain started with 60
+  bombs and every weapon at level 5; it must start with 3 lives, 3 bombs and level 1 weapons, and
+  get more only from the bonuses it picks up). GAME-WPN-15 and GAME-LIFE-12 (what is kept from a
+  level to the next) do not apply to it.
+- **Context:** the page kept the weapons and supplies of the levels completed before in its
+  cookies, which every port of `localhost` shares: the AI's page read the player's save (and its
+  own wins piled up in it), and wrote the AI's into the player's.
+- **Decision:** with `?ai`, the page's storage is a `FreshStartStorage` (`src/debug/`, e2e builds
+  only): in memory, for the page's life, never keeping the weapons and supplies. Every level then
+  starts as from the level select with nothing kept; a Continue after a game over still starts from
+  the checkpoint (its weapons, GAME-LIFE-11). The volumes, last ship and high score are kept for
+  the page's life only. `make rate` rates with the same fresh start (every weapon at level 1, was
+  3; `--weapon-level` changes it), and the learning episodes that start at a level's start (40 %)
+  have it too (3 lives, 3 bombs, the first weapon at level 1); those that start in the middle keep
+  loadouts that vary.
+- **Consequences:** checked in a browser with a saved 60 bombs and level 5 weapons: the normal page
+  starts with them, the `?ai` page with 3 lives, 3 bombs and the bullet at level 1. Ratings made
+  before were with level 3 weapons.
+- **Status:** Proposed
+
+### D-295 — The brain learns on whole games, from 1-1 until the ship is lost, for the best score
+- **Date:** 2026-11-07
+- **Requirements:** none (requested by the human: learning games start at 1-1 with 3 lives and 3
+  bombs, go on to the next level when one is cleared with the weapons, lives and bombs earned,
+  until death or the last level (4-5) is cleared; the best score is the criterion; `make learn`'s
+  output easier to understand). Replaces the curriculum of D-288 and D-294.
+- **Decision:** `GameEnv(setup, campaign=LEVEL_IDS)`: when a level is cleared, the next starts
+  (a new `LevelRun`, full health) with the weapon in use, the weapon levels, the lives and the
+  bombs the cleared one ended with (GAME-WPN-15, GAME-LIFE-12), a seed of its own and its own time
+  limit (its length + 240 s); the episode ends at a game over, a level over its limit, or 4-5
+  cleared. Every learning episode is such a game, with the balanced ship only; no more starts in
+  the middle of a level. The reward is the points scored (1 per 2000), nothing else: progress,
+  damage, lives, bombs and bonuses pay only through the points they lead to (a life lost ends the
+  scoring sooner). `gamma` 0.998 (was 0.995): about 30 s of play ahead. The brain whose games
+  scored best on average over at least 20 games (one report's or more) is saved in
+  `data/brain-best.pt` (`LearnStats.best_score`). `make learn` now says, every 10 s (`--report-seconds`), in words:
+  the games ended and how (game over, too slow, all cleared), their average and best score, the
+  levels cleared and the furthest reached, and the best average so far; the per-update numbers
+  (losses, entropy, KL) go to `data/learn-log.csv` only, with new columns (an older log is moved
+  to `learn-log.old.csv`). `make rate` and `make serve-ai` are unchanged (one level at a time).
+- **Consequences:** the brain trained before resumes, but its value estimates were for the old
+  reward: the first minutes relearn them. Later levels come up only once the brain gets that far,
+  so they are learned late. Games last until the ship is lost: early reports can have no game
+  ended yet.
+- **Status:** Proposed
+
+### D-296 — Faster learning: a cheaper view, and a little reward for staying alive
+- **Date:** 2026-11-07
+- **Requirements:** none (requested by the human: speed up the learning, by learning on the GPU
+  machine, a faster observation, and a reward for staying alive). Amends D-295's reward.
+- **Context:** a worker spent about 43 % of its time in the game, 32 % in the network and 20 %
+  building what the brain sees; within that, a third went to the walls of the fovea (the camera
+  framing worked out row by row) and most of the rest to drawing each shot in three channels.
+- **Decision:** the fovea's walls are worked out for every row at once
+  (`_Bounds.half_widths_at`, the same sums as `half_width_at`); each shot is placed once for its
+  three channels; an enemy's cells are worked out once for its body and its health. The
+  observation is the same, cell for cell (checked on 420 scenes of 7 levels), in about half the
+  time (156 to 83 µs on the laptop). The reward adds 0.0005 a decision played (a point of score
+  each, 15 a second), and charges 1 per bar of health lost and 1 per life lost (2,000 points
+  each): the brain learns sooner that it scores only while it survives. The best brain is still
+  chosen on the score alone.
+- **Consequences:** about 10 % more moves a second per worker. The values the brain expects
+  change again with the reward: its first minutes relearn them.
+- **Status:** Proposed
+
+### D-297 — A faster simulation for the AI player, the game played exactly as before
+- **Date:** 2026-11-07
+- **Requirements:** none (requested by the human: speed up the game's simulation for learning).
+- **Context:** in CPython the simulation's time is spread over many small functions; the player's
+  shots (moving them, and testing each against every target) were the largest share (about a
+  quarter), then the enemies and bosses.
+- **Decision:** the shots' hit test reads the shot's fields once and a target's health directly
+  (`ShotWorld._collide`); the AI's on-screen test reads the camera's constants once
+  (`_Bounds.in_view`, the same sums in the same order); a config record read in CPython is
+  `dict.get` itself (`_Fields.__getattr__`, CPython only). The browser's game is unchanged in
+  behaviour.
+- **Consequences:** about 6.5 % more simulation steps a second (53 to 50 µs a step on the
+  laptop). The same 30,000 decisions over the 20 levels play out identically (a fingerprint of
+  every decision's state). The rest of the time is spread thin over the game's logic: larger
+  gains need another approach (the network on the GPU, fewer decisions a second).
+- **Status:** Proposed
+
+### D-298 — With a GPU, one inference server decides for every worker
+- **Date:** 2026-11-07
+- **Requirements:** none (requested by the human: run the brain on the GPU for the workers, to
+  learn faster).
+- **Context:** each worker ran its own copy of the brain on its CPU core, for batches of 8
+  episodes: about a third of its time.
+- **Decision:** with `--inference server` (the default with a GPU), one process
+  (`tests/ai/inference.py`) holds the brain on the learner's device and the memory of every
+  episode. A worker (`ServedPlayer`) writes what its episodes see into the shared rollout and asks
+  "decide for episodes a to b at step t"; the server batches every question waiting, decides, and
+  writes the actions, log-probabilities, values and memories into the rollout, then answers. Only
+  those small messages go through the pipes. A worker's episodes are in two groups, so it plays
+  one while the server decides for the other. The value after a round's last decision comes from
+  what the episodes see then (`next_*` arrays of the rollout buffer). The learner sends the server
+  the weights before each round, as it did to the workers; the learner and the server take a core
+  each (workers: the CPU threads less 3). On a CPU only, the workers still decide themselves.
+  The server draws the actions and their log-probabilities without building PyTorch's
+  distributions (`Decision.sample_with_log_prob`), gathers what the episodes see into pinned
+  memory (one copy each to the GPU), and brings what it decided back in one copy: its first
+  version spent 8 ms a batch on that and held glouton at the same 10,000 decisions a second.
+- **Consequences:** the same decisions as the brain would make, step by step (a unit test replays
+  them). On the laptop (8 threads, the server on the CPU) 1,884 decisions a second against 1,639.
+  On glouton's GPU, the server alone answers batches of 30 questions (120 episodes) in 3.2 ms
+  (was 7.7): about 38,000 decisions a second, more than the workers can play.
+- **Status:** Proposed
+
+### D-299 — A faster learner: whole sequences through cuDNN's GRU, and mixed precision
+- **Date:** 2026-11-07
+- **Requirements:** none (requested by the human: use glouton's idle CPU and GPU).
+- **Context:** with the inference server (D-298) and 16 episodes a worker, glouton played about
+  15,600 decisions a second, its CPUs 40 % busy: the workers played a round faster than the
+  learner learned from the one before (1.9 s an update), and waited. The learner replayed the
+  memory step by step (a `GRUCell`, 32 small steps forward and backward each minibatch).
+- **Decision:** the memory is an `nn.GRU` (cuDNN's on a GPU): the learner replays every sequence
+  in which no episode starts after its first step in one call, the others step by step as before.
+  A brain saved with the `GRUCell` loads into it (the same weights, renamed; its optimiser's state
+  fits). With a GPU the learner computes in half precision where it is safe (autocast, the losses
+  scaled), the losses in full precision, and reads them once an update rather than once a
+  minibatch. With a GPU, 16 episodes a worker and rounds of 32 decisions are the defaults.
+- **Consequences:** an update of 31,232 decisions takes 1.1 s on glouton instead of 1.5 (both
+  measured beside a running learner). The same decisions, step by step (unit test).
+- **Status:** Proposed
+
+### D-300 — `make learn` reports the games in progress and the best game so far
+- **Date:** 2026-11-07
+- **Requirements:** none (requested by the human: more explicit reports, with the best game so
+  far).
+- **Decision:** after each round every worker sends, with the games that ended, how each game it
+  is playing stands (`GameProgress`: level, levels cleared, score, moves). Each report (every
+  10 s) now says: the games being played (how many, their average moves, play time and score,
+  how many got past 1-1, the furthest level), the one leading now, the games that ended since the
+  last report and how, and the best game since learning started (score, level reached, levels
+  cleared, play time, how it ended, at which update). The best game is kept in the brain's stats
+  (`LearnStats.best_game`), so it survives a restart.
+- **Status:** Proposed
+
+### D-301 — The workers play under PyPy; what the brain sees is built in pure Python
+- **Date:** 2026-11-08
+- **Requirements:** none (requested by the human: simulate a whole level in seconds, not in about
+  real time, "go with PyPy"). Amends D-288, D-298.
+- **Context:** the game's simulation took about 50 µs a step in CPython (a 5-minute level is
+  about 1 s of CPU), yet each game played about as fast as real time while learning: every worker
+  played 16 games, built a numpy observation and waited for the brain every 4 steps, beside 61
+  other workers on 32 hyperthreaded cores. Measured on a whole level with no brain (1-1, 4-5):
+  PyPy 3.12 plays the same steps 4.7 to 5 times faster once its JIT is warm (the same scores to
+  the point); the Transcrypt JavaScript under Node is slower than CPython. PyPy has no PyTorch,
+  and its numpy is slow.
+- **Decision:**
+  - The workers are `python -m ai.play_worker` processes of PyPy (`--worker-python`, default
+    PyPy 3.12 when `uv python find` sees it, else the learner's CPython), started with
+    `subprocess`. They import no numpy and no torch: `game_env.py`, `episodes.py`, `sight.py`,
+    `layout.py` and `play_worker.py` are pure Python (a unit test checks it).
+  - The brain always decides in the inference server (D-298), on the GPU or the CPU: the
+    in-worker brain is gone. On a CPU, half the cores play and a quarter decide.
+  - What the brain sees is built in pure Python (`sight.py`): the non-zero cells of each grid,
+    which a worker writes into the shared rollout file with `struct.pack_into` on an `mmap` (under
+    PyPy several times faster than a `memoryview`'s items). `observation.py` makes numpy arrays of
+    them for `make rate`, `make serve-ai` and the tests. The two views agree to 2.4e-7 with the
+    numpy one they replace (1,200 scenes of four levels).
+  - The rollout file's layout is computed once in pure Python (`layout.py`), for numpy and for the
+    `mmap` alike.
+  - The learner and the server talk to a worker through `multiprocessing` pipes whose file
+    descriptors the worker inherits (PyPy and CPython frame their messages alike); the reports are
+    dataclasses both runtimes import (`episodes.py`).
+  - The field grid is 18 x 24 square cells of 30 px, for the 3:4 playfield of D-263 (it was 32 x
+    24 for 1000 x 720). Brains saved before cannot be loaded: `make learn` starts a new one, and
+    `make rate` / `make serve-ai` say so.
+- **Consequences:** on the laptop (one worker, 16 games, warm JIT) a worker plays about 9,000
+  decisions a second against 3,200 in CPython (2.8 times: the simulation 3 times, the sight 2.8
+  times faster); PyPy's JIT takes a few minutes to warm up. With the GPU, the inference server
+  (about 38,000 decisions a second, D-298) and the learner (about 28,000, D-299) become the
+  limit, no longer the workers. On a CPU only, the learner is the limit. `make learn` installs
+  PyPy 3.12 with uv.
+- **Status:** Proposed
+
+### D-302 — A small brain to try: 70 thousand weights instead of 2.2 million
+- **Date:** 2026-11-08
+- **Requirements:** none (requested by the human: a brain file of tens of kilobytes, like another
+  game's 64 KB `brain.npz`, instead of about 10 MB). Amends D-299.
+- **Context:** the brain had 2.24 million weights (about 9 MB in float32). Most of them were in
+  the two Linear layers after the grid encoders' convolutions (the field and the fovea, still
+  6 x 5 and 6 x 6 cells of 64 filters after two convolutions of stride 2) and in the 384-wide GRU.
+- **Decision:**
+  - `BrainShape.convs` gives the filters of each convolution of the grid encoders (all of stride
+    2). A brain saved without it has the two convolutions of 32 and 64 filters it had.
+  - `SMALL_SHAPE`: three convolutions of 16 filters (each grid down to 3 x 3 before its Linear),
+    64 features for the field, 64 for the fovea, 32 for the state, a memory of 64. It has 69,742
+    weights (about 136 KB in float16), 32 times fewer than the big one.
+  - `make learn LEARN_ARGS="--fresh --shape small"` starts a small brain (`--shape big`, the
+    default, the big one). A saved brain keeps its own shape when learning resumes; `make rate` and
+    `make serve-ai` load either.
+- **Consequences:** an experiment: whether the small brain plays nearly as well as the big one
+  after as many hours of learning is to be measured (`make rate`). If it does, the brain could be
+  saved as float16 weights to make its file smaller still.
+- **Status:** Proposed
+
+### D-303 — `make rate` plays up to 32 episodes side by side in each worker
+- **Date:** 2026-11-09
+- **Requirements:** none (requested by the human: `make rate` is too slow). Amends D-289.
+- **Context:** a rating worker played at most 4 episodes side by side (`GROUP`), and the network
+  was 80 % of its time. On one CPU thread a call to the network costs nearly the same for 1
+  episode as for 32: the big brain 3.3 ms for 4 episodes and 4.5 ms for 32 (0.82 ms an episode
+  against 0.14), the small one (D-302) 0.42 ms an episode against 0.08. A rating plays about a
+  million decisions (8 episodes of 20 levels, about 7 minutes of game each).
+- **Decision:** `GROUP` is 32: with 160 episodes on 8 cores, each worker plays its 20 in one
+  batch. Each episode still draws its moves from its own seeded generator: the ratings repeat.
+- **Consequences:** a decision costs 0.57 ms an episode with the big brain instead of 1.45 (2.5
+  times faster), 0.52 instead of 1.12 with the small one. The network is then 55 % of the time,
+  the simulation and the observation 35 %. Fewer, longer jobs: a worker whose episodes are on long
+  levels may finish last. Rating with `make learn`'s PyPy workers and inference server would be
+  faster still (not done).
+- **Status:** Proposed
+
+### D-304 — `make rate` gives the weapons the level of the world
+- **Date:** 2026-11-09
+- **Requirements:** none (requested by the human: in world 2 the player starts with level 2
+  weapons, in world 3 level 3, in world 4 level 4). Amends D-294.
+- **Context:** every level was rated from a fresh start, every weapon at level 1 (D-294). A
+  player reaching world 4 has upgraded weapons: level 1 made the later worlds look harder than
+  they are when played through.
+- **Decision:** a level of world N is rated with every weapon at level N (at most the top level,
+  5). `--weapon-level` still gives every level the same one; `RatingSettings.weapon_level` is
+  `None` (by world) by default. Lives and bombs stay 3 and 3.
+- **Consequences:** the ratings of worlds 2 to 4 are not comparable with those made before;
+  `ratings.json` records `"weapon_level": null` for them.
+- **Status:** Proposed
+
+### D-305 — `make adjust-level`: tune a level until the brain rates it at a target
+- **Date:** 2026-11-09
+- **Requirements:** none (requested by the human: `make adjust-level 4-4 90` adapts 4-4 until it
+  rates 90 %). Builds on D-289 (`make rate`) and D-304.
+- **Context:** `make rate` measures each level's difficulty with the brain; balancing a level
+  meant editing its factors by hand and rating again. A level's own tuning was its enemies'
+  bullet speed and fire rate (ENM-22); its bosses' health was only written per boss, inside each
+  boss's file.
+- **Decision:**
+  - A level's difficulty gets a third factor, `bossHealth` (`EnemyDifficulty.boss_health`,
+    default 1): when a boss arrives, its core and every part get that many times their health
+    (`Boss.scale_health`, applied by `BossFights`). Every level's is 1 (no change in play).
+  - `make adjust-level LEVEL=4-4 TARGET=90` (`tests/ai/adjust.py`) turns one dial `k` that
+    multiplies the three factors together (k = 1: the level as it is). Each step rates the level
+    as `make rate` does, with the same seeds (two steps differ by `k` alone); `k` grows or shrinks
+    by 1.25 until the target is bracketed, then is interpolated between the closest ratings either
+    side. Episodes start at 16 and double once bracketed, up to 64. It stops within 2 % of the
+    target (or within two standard errors at 64 episodes), after 10 steps at most.
+  - The factors tried reach the episodes through `EpisodeSetup.difficulty`: no file changes during
+    the search. At the end the level's line in `src/game/config/world_N/difficulty.py` is written
+    (factors rounded to 0.01), and the steps are kept in `data/adjust-<level>.json`.
+  - `k` stays within 0.5 … 2 and no factor passes 2 (the config checks' ceiling). When the dial
+    runs out before the target, nothing is written.
+- **Consequences:** the specs' "Difficulty" requirements of each level (e.g. LVL-4-4-05) and the
+  worlds' tunables tables still give the old factors: the tool names those files, and the human
+  updates them. It warns when the new factors make bullet speed or fire rate go down from one
+  level to the next (WLD-N-19), which the unit tests check. A tuned level is tuned for the brain
+  that rated it: a better brain rates every level easier.
+- **Status:** Proposed
+
+### D-306 — The brain file keeps float16 weights and no learning history
+- **Date:** 2026-11-09
+- **Requirements:** none (requested by the human: a smaller brain file). Follows D-302.
+- **Context:** the small brain's file (D-302) was 622 KB: 288 KB of float32 weights and 262 KB of
+  learning history (`LearnStats.history`, the last 2 000 updates), which the learning log
+  (`data/learn-log.csv`) already has row by row.
+- **Decision:** `save_brain` writes the weights in float16 and `load_brain` turns them back to
+  float32; `LearnStats` has no `history` (an older file's is ignored when loaded). `make learn`
+  also saves its float32 weights in the trainer file (`brain.trainer.pt`, never committed) and
+  resumes from them when they fit the brain, so its restarts do not round the weights.
+- **Consequences:** the small brain's file is 148 KB. On 30 game states, the float16 brain's move
+  probabilities differ from the float32 one's by at most 0.0002 and its likeliest move is the same.
+  A brain resumed without its trainer file starts from the rounded weights (a negligible change).
+- **Status:** Proposed
+
+### D-307 — Every enemy and boss is the same in every level; levels differ by their enemy count
+- **Date:** 2026-11-09
+- **Requirements:** none (requested by the human: the same fire rate and strength for one enemy in
+  every level, the number of enemies being the only thing that changes). Replaces the per-level
+  factors of ENM-22 (WLD-1-23, WLD-2-21, the levels' "Difficulty"), and the boss health factor
+  of D-305. The specs still give the old factors: the human updates them.
+- **Context:** a level scaled every enemy's and boss's fire rate and bullet speed (×0.8 in 1-1 up
+  to ×1.35 in 4-5), and D-305 added a boss health factor: a kind fought in two levels was not the
+  same enemy.
+- **Decision:**
+  - Every level's `EnemyDifficulty` is 1 and 1 (`AS_TUNED`): enemies and bosses fire and fly as
+    tuned in their own files. The four `world_N/difficulty.py` tables are gone; the engine keeps
+    `EnemyDifficulty` (ENM-22's mechanism, game-agnostic). The boss health factor is removed.
+  - `src/game/config/level_enemies.py` gives each level one factor, `LEVEL_ENEMIES` (1: its waves
+    as `level_plan` composes them, so no level changes until tuned). Each wave brings that many
+    times its groups (the main tier's written groups too) and the filler comes that many times
+    as often; the kinds, the tier mix, the pace and the bosses stay the level's.
+  - `make adjust-level` (D-305) turns that factor alone, from 0.25 to 4, writing it to two
+    decimals into `LEVEL_ENEMIES`. A rating episode composes the level again with the factor it
+    tries (`EpisodeSetup.enemies`; each world's `SCENERIES` by level id).
+- **Consequences:** World 4 is easier and 1-1 to 1-3 harder than before until the factors are
+  tuned (their enemies fire at ×1 instead of ×1.1–1.35 or ×0.8–0.9). The ships do not grow in
+  proportion to the factor: bigger waves take longer to come in, so fewer fit in the level (×2
+  brings about ×1.4 the waves' ships in 1-1, plus twice the filler).
+- **Status:** Proposed
+
+### D-308 — `make adjust-levels`: every level adjusted, the targets rising evenly
+- **Date:** 2026-11-09
+- **Requirements:** none (requested by the human: 1-1 at 10 %, the difficulty rising linearly to
+  99 % at 4-5, to run on a faster computer). Builds on D-305 and D-307.
+- **Decision:** `make adjust-levels` (`ai.adjust --all`) adjusts the 20 levels in turn, as
+  `make adjust-level` does one, level k (0..19) aiming at `FIRST_TARGET + k (LAST_TARGET -
+  FIRST_TARGET) / 19` % (defaults 10 and 99: about 4.7 points a level), then prints a summary of
+  each level's target, rating, enemies factor and outcome. A level whose factor runs out is left
+  as it was.
+- **Consequences:** a few hours on 8 cores (1-1 took 6 minutes; later levels are longer, and more
+  of them need the most episodes). The factors fit the brain that rated them.
+- **Status:** Proposed
+
+### D-309 — A level drops as many bonuses whatever its enemy count
+- **Date:** 2026-11-09
+- **Requirements:** none (requested by the human, option 1 of three). Amends GAME-BONUS-02 and
+  GAME-BONUS-03 (a destroyed enemy's chances), which the human updates. Follows D-307.
+- **Context:** an enemy's chance to drop a bonus (weapon, heal, life, bomb) is its own, so twice
+  the enemies dropped about twice the bonuses. Measured with the brain on 3-3 (16 episodes each),
+  more enemies made the level easier: ×0.25 rated 26.1 %, ×0.5 18.3 %, ×1 17.3 %, ×2 16.6 %.
+  `make adjust-level` could not converge: it took more enemies to be harder.
+- **Decision:**
+  - `GameLevel.bonus_scale` (default 1) multiplies every destroyed enemy's chances to drop a
+    bonus, weapon (and so heal), life and bomb alike (`BonusWorld(scale=...)`). A boss part's own
+    chance (BOSS-57) and the mini boss's life (GAME-BONUS-04) are not scaled.
+  - `assemble_level` sets it to the ships the level's waves bring as composed (enemies factor 1)
+    over the ships they bring at its factor: on average the level drops as many bonuses as it
+    did, whatever its factor. A level at factor 1 is unchanged.
+  - The search of `make adjust-level` no longer takes for granted that more enemies are harder:
+    it goes the way its ratings so far go with the factor (least squares), and interpolates
+    between the closest factors rated either side of the target.
+- **Consequences:** 3-3 rates 3.8 % at ×0.25, 2.6 % at ×0.5, 17.3 % at ×1, 39.4 % at ×2 and
+  47.9 % at ×4 (16 episodes each): harder with more enemies, but no more than about 50 % with this
+  brain at the default highest factor (4); the higher targets of `make adjust-levels` (up to 99 %)
+  may run out (`ADJUST_ARGS=--highest 8` lets it try more). Fewer enemies than composed drop more
+  bonuses each.
+- **Status:** Proposed
+
+### D-310 — `make adjust-level` rates with 100 episodes
+- **Date:** 2026-11-09
+- **Requirements:** none (requested by the human: 100 simulations instead of 16). Amends D-305.
+- **Decision:** each rating of `make adjust-level` and `make adjust-levels` plays 100 episodes
+  (`--episodes` and `--max-episodes` both 100: they no longer start at 16 and double up to 64).
+- **Consequences:** a rating's standard error is about 0.6 % for a spread of 6 %, against 1.5 % at
+  16: the search is steadier, each step about six times longer than its first steps were.
+- **Status:** Proposed
+
+### D-311 — The enemies factor multiplies each wave once the level is composed
+- **Date:** 2026-11-09
+- **Requirements:** none (reported by the human: `make adjust-level` took more and more enemies and
+  the rating got further from the target). Amends D-307.
+- **Context:** the factor was applied while the level's beats were composed: bigger waves took
+  longer to come in, fewer fitted, and every later beat moved. 1-2 brought 216 ships at ×1, 226 at
+  ×1.4 and 295 at ×1.96, each a differently arranged level; the brain rated them 8.8 %, 9.9 % and
+  4.5 % (100 episodes each).
+- **Decision:** the beats are composed as written whatever the factor, and the factor multiplies
+  the wave script's density (`WAVE_DENSITY × enemies`): each wave, and each filler group, brings
+  that many times its groups at the time it would at ×1 (a lone heavy enemy's extra copies come
+  one after the other, as the density already makes them). `level_filler` no longer takes it.
+- **Consequences:** 1-2 keeps its 42 waves at any factor: 107 ships at ×0.5, 216 at ×1, 380 at
+  ×1.96, 597 at ×3. Rated with the brain (48 episodes each): 0.0 % at ×0.5, 6.5 % at ×1, 17.5 % at
+  ×1.5, 37.6 % at ×2 and 68.5 % at ×3, rising with the factor.
+- **Status:** Proposed
+
+### D-312 — `make adjust-level` adds enemies without a limit
+- **Date:** 2026-11-09
+- **Requirements:** none (requested by the human: do not stop at ×4, keep adding enemies until the
+  target). Amends D-305 and D-309.
+- **Decision:** the enemies factor has no upper limit by default (`--highest` still sets one);
+  the search goes on until the rating is within the tolerance of the target, or at most
+  `--max-steps` steps, now 20 instead of 10, a safety net for a target the brain never reaches,
+  when the closest factor is written. The lower limit stays 0.25.
+- **Consequences:** a level whose target needs ×10 gets it (about seven steps of ×1.4 from ×1, then
+  the interpolation). Many enemies make long episodes: those steps are the slowest.
+- **Status:** Proposed
+
+### D-313 — The enemies that stop on the playfield spread down it
+- **Date:** 2026-11-09
+- **Requirements:** none (requested by the human: too many enemies camp in the top quarter of the
+  screen, which shows with more than 20 on it). Departs from the stop heights of ENM-HORNET-04,
+  ENM-STRAFER, ENM-SPINNER, ENM-LANCER, ENM-SPLITTER, ENM-HARRIER, ENM-SWEEPER, ENM-PRISM,
+  ENM-WASP, ENM-PHANTOM-09, ENM-HYDRA, ENM-SCISSOR and ENM-JUGGERNAUT (the human updates the
+  specs).
+- **Context:** every enemy of a kind that stops did so at the same height, nearly all of them
+  between 72 % and 82 % of the playfield's height: a crowd lined up along the top.
+- **Decision:** each such kind stops at a height drawn at random, per enemy (per group for the
+  Wasps), in a range reaching down to the middle of the playfield or below it (`stopRange`;
+  `heightRange` for the Strafer's side pass; `placeY` for the Phantom): Hornet 45–80 %, Strafer
+  40–85 %, Spinner 40–80 %, Lancer's first stop 55–85 %, Splitter 45–75 %, Harrier 45–85 %,
+  Sweeper 45–80 %, Prism 45–80 %, Wasp 50–80 %, Phantom 40–82 %, Hydra 45–80 %, Scissor 50–82 %,
+  Juggernaut 45–80 %. The kinds that cross the screen (Scout, Rocketeer, Mortar, carriers) are
+  unchanged. `enemy_helpers.stop_height` draws them.
+- **Consequences:** a third or more of the stops are below three quarters of the height; none
+  comes below 40 %, out of the player's bottom part. Enemies lower down are closer to the player:
+  the levels are harder, so the enemies factors need re-adjusting (`make adjust-levels`).
+- **Status:** Proposed
+
+### D-314 — Each tier hits harder: shot damage per tier, tougher and faster tiers 2 to 4
+- **Date:** 2026-11-09
+- **Requirements:** none (requested by the human: balance the enemies so the difficulty targets
+  need a reasonable number of enemies). Departs from GAME-LIFE-03 (one damage per shot type for
+  every enemy) and from the health of ENM-STRAFER-07, ENM-SPINNER-07, ENM-SPLITTER-09,
+  ENM-WASP-11, ENM-MORTAR-10, ENM-PHANTOM-13, ENM-HARRIER-09, ENM-SWEEPER-09, ENM-HATCHERY-09,
+  ENM-PRISM-12, ENM-BROODMOTHER-11, ENM-HYDRA-11, ENM-SCISSOR-14, ENM-JUGGERNAUT-14, ENM-HIVE-12,
+  and the fire intervals of ENM-HYDRA, ENM-JUGGERNAUT and ENM-HIVE (the human updates the specs).
+- **Context:** `make adjust-levels` (D-312) needed ×2 to ×3.3 enemies in worlds 2 and 3, ×3 to ×10
+  in 4-1..4-3 and stopped unfinished at ×29 in 4-4 and 4-5. Every shot took 10 (bullet), 20
+  (missile) or 25 (laser) off a 300-health budget, with 2 s of invincibility after each hit: the
+  brain needed about 30 hits, a minute at the very least, to lose, which capped a 400 s level's
+  rating near 92 % whatever the enemy count. Tiers 2 and 3 also died faster against their world's
+  weapon level than tier 1 against level 1.
+- **Decision:**
+  - An enemy shot (bullet, missile, laser; and the bullets a burst makes) may carry its own
+    `damage`; 0 or none keeps the hull's rule (`shot_damage`, core). Bosses keep the rule.
+  - `TIER_DAMAGE` (`enemy_tiers.py`) gives each tier's kinds theirs: bullet / missile / laser
+    10/20/25 (tier 1, as before), 15/25/30 (tier 2), 20/35/40 (tier 3), 40/55/60 (tier 4).
+  - Health ×1.5 for tier 2 (Hatchery ×1.125: 450, to keep GAME-SCORE-03), ×1.25 for tier 3,
+    ×1.25 for tier 4. Tier 4 fires faster: Hydra heads every 0.6 s (0.8), Juggernaut spread every
+    1.8 s (2.5) and missiles every 1.8 s (2.4), Hive rings every 2.2 s (3).
+- **Consequences:** rated by the brain at ×1 enemies, with D-313 (24 episodes each): 1-1 14.7 %,
+  1-5 9.3 %, 2-3 18.6 %, 3-3 45.8 % (tier 4 still as in the first step), then 3-5 72.6 %, 4-1
+  56.1 %, 4-3 76.9 %, 4-5 82.1 %. Against the 10 → 99 % targets that leaves factors of roughly
+  ×0.8 to ×2.5, to be found by `make adjust-levels`. 99 % for 4-5 means the brain loses its three
+  lives in the first 2 % of the level: with 2 s of invincibility per hit and 3 hits a life in
+  tier 4, it cannot fall much below ~5 %, so 4-4 and 4-5 will stay short of 94 % and 99 %.
+- **Status:** Proposed
+
+### D-315 — The brain bombs and switches on purpose
+- **Date:** 2026-11-10
+- **Requirements:** none (requested by the human: the trained brain kept switching weapons and
+  fired every bomb as soon as it had one). Amends D-292 (the bomb and switch are no longer drawn
+  when playing) and D-296 (the reward).
+- **Context:** the entropy bonus counted half of the bomb and switch heads' entropy. Where a press
+  changes nothing (no bomb left, a bomb going off, weapons of equal level), that bonus was the only
+  thing those heads learned from, and it pushed them toward pressing half the time. The habit
+  carried over to the moment a bomb was picked up. A bomb also paid at once in points and cost
+  nothing, and drawing the actions 15 times a second when rated or watched turned any small chance
+  into presses every few seconds.
+- **Decision:**
+  - `mask_bomb` (`tests/ai/brain.py`) rules out "bomb" (logit −1e4) where none can go off. It reads
+    the state vector's bombs left and bomb going off (`STATE_BOMBS`, `STATE_BOMB_ACTIVE`). There
+    the choice is certain: no entropy, no gradient.
+  - The bomb and switch heads count for `SPARE_ENTROPY` (0.1, was 0.5) of the entropy bonus.
+  - `RewardWeights.bomb` = 0.25 per bomb set off (500 points, a quarter of a bar of health) and
+    `RewardWeights.switch` = 0.002 per weapon switch (`StepInfo.switched`).
+  - When playing (`Decision.sample`: `make rate`, `make adjust-level`, `make serve-ai`), the move is
+    still drawn but the bomb and the switch are the likeliest choice. Learning still draws all
+    three.
+- **Consequences:** the brain's shape is unchanged: a trained brain keeps learning from where it
+  is. Ratings change with how the brain plays, so the levels' enemies factors may need adjusting
+  again once it has relearned. A brain that never rates a bomb above 50 % never bombs when played.
+
+### D-316 — The enemies factors set from a scripted player's exposure, for 10 % to 70 %
+- **Date:** 2026-11-10
+- **Requirements:** none (requested by the human: rate the levels without the brain, which is not
+  good enough, and set the enemies so the difficulty follows the targets; the human chose a top
+  of 70 % once told 99 % cannot be reached). Amends D-305 (the default top target).
+- **Context:**
+  - The rating is `1 − (progress + health left) / 2`.
+  - After each hit the ship is invincible for 2 s, so it loses at most one hit's damage every
+    2 s, and 300 health takes at least 8–15 s to lose.
+  - A 99 % rating means losing every life in the first 2 % of the level. Even at 8 times the
+    enemies, 4-2 to 4-5 reach only 80–85 %.
+  - The brain's own ratings asked for ×10.5 at 4-4 and ×28.9 at 4-5.
+- **Method:**
+  - **Exposure:** an unhittable ship, with no bombs and the guns at the world's level (D-304),
+    aims at the nearest target and closes in on bosses. It plays the real simulation and records
+    every hit it would take. At most 60 s of each boss fight is counted, so the turret's slow
+    boss kills don't count against the level.
+  - **Player model:** a player takes a share q of those hits, with the 2 s of invincibility and
+    the balanced ship's 300 health over 3 lives. That gives a rating per episode.
+  - **Calibration:** q = 3.37 % is the share that makes 1-1 at ×1 (the waves as composed) rate
+    about 10 %.
+  - **Fitting:**
+    - Each level's factor is read off its rating against the factor (×0.75 to ×4, 8 seeds), then
+      fitted locally over two more checks (12 and 16 fresh seeds).
+    - 4-1 is kept at ×3.0 rather than ×2.99: below it, rounding takes its tier shares outside
+      ENM-50's tolerance.
+- **Decision:**
+  - The 20 factors run from ×1.13 to ×3.16 (`level_enemies.py`): 216 to 860 ships per level, most
+    in world 2, whose tier 2 enemies are weaker.
+  - On 20 more fresh seeds, every level is within 5 points of its target, the noise between seed
+    sets: 1-1 9.3 %, 2-3 32.9 %, 3-3 44.2 %, 4-1 57.7 %, 4-5 68.2 %.
+  - `make adjust-levels` now aims at 70 % by default (`LAST_TARGET`, `--last`).
+  - The waves are unchanged and every tier keeps its share (ENM-50).
+- **Consequences:**
+  - The percentages are relative to the model player: a better player rates every level lower.
+    Only 1-1 is pinned (10 %).
+  - Rating a level with the brain (`make rate`) gives other numbers.
+  - The model's hit share is the same however dense the screen; a real player is hit more often
+    on a crowded screen, so the later levels may feel harder than their numbers.
+  - The probe scripts were one-off and are not kept in the repository.
 - **Status:** Proposed

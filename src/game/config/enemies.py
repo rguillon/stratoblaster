@@ -8,6 +8,7 @@ Distances in logical pixels, speeds in px/s, times in seconds, angles in degrees
 
 import math
 
+from game.config.enemy_tiers import TIER_DAMAGE
 from game.config.record import record
 
 # isort: split
@@ -34,9 +35,12 @@ def radius(size: float) -> float:
 ENEMY_SPAWN_MARGIN = 60
 
 
-def bullet(style: str, speed: float) -> Any:
-    """Enemy bullets: colourful glowing balls (ENM-16). The style keys the look in `enemy_look`."""
-    return record({"speed": speed, "radius": 4, "style": style})
+def bullet(style: str, speed: float, damage: float) -> Any:
+    """Enemy bullets: colourful glowing balls (ENM-16). The style keys the look in `enemy_look`.
+
+    `damage`: what one takes off the player's health, its kind's tier's (`TIER_DAMAGE`, D-314).
+    """
+    return record({"speed": speed, "radius": 4, "style": style, "damage": damage})
 
 
 # `muzzles` (phase 7 review): where the shots leave from, the tips of the barrels the models draw
@@ -95,8 +99,8 @@ ENEMY_CONFIG = record({
         "stats": {"model": "hornet", "radius": radius(0.7), "health": 20, "points": 100},
         "size": 0.7,
         "entrySpeed": 220,
-        # Height where it stops before diving.
-        "stopFraction": 0.72,
+        # Heights where it stops before diving: one at random in this range (D-313).
+        "stopRange": [0.45, 0.8],
         # Deceleration into the stop: about 0.45 s and 55 px of braking from the entry speed.
         "entryBrake": 440,
         "pause": 0.5,
@@ -113,7 +117,7 @@ ENEMY_CONFIG = record({
         "fireInterval": 1.5,
         # Delay before the first shot once on the playfield.
         "firstShot": 0.6,
-        "bullet": bullet("red", 210),
+        "bullet": bullet("red", 210, TIER_DAMAGE["1"].bullet),
         # The nose gun (ENM-SCOUT-03).
         # Its gun's tip: a 9 px barrel from the turret's pivot, behind the wings' roots (D-276).
         "muzzles": [[0, -7.8, 4.9]],
@@ -126,30 +130,30 @@ ENEMY_CONFIG = record({
         "stats": {
             "model": "strafer",
             "radius": radius(1.2) * 0.75,
-            "health": 40,
+            "health": 60,
             "points": 150,
         },
         "size": 1.2,
         "speed": 150,
-        # Height of its side pass, in the top third.
-        "heightFraction": 0.8,
+        # Height of its side pass: one at random in this range (D-313).
+        "heightRange": [0.4, 0.85],
         # Range of X of its vertical pass from the top, as fractions of the width.
         "xRange": [0.12, 0.88],
         "fireInterval": 1,
         "fanCount": 3,
         "fanSpacing": 15,
-        "bullet": bullet("magenta", 200),
+        "bullet": bullet("magenta", 200, TIER_DAMAGE["2"].bullet),
         # Three guns on each side of its body (ENM-STRAFER-03, WPN-04): the three of the side facing
         # down the screen fire, one shot each.
         "muzzles": strafer_barrels(),
     },
     # ENM-SPINNER-07: health and points.
     "spinner": {
-        "stats": {"model": "spinner", "radius": radius(1), "health": 60, "points": 200},
+        "stats": {"model": "spinner", "radius": radius(1), "health": 75, "points": 200},
         "size": 1,
         "entrySpeed": 130,
-        # It stops at a random height between these (the upper half).
-        "stopRange": [0.62, 0.8],
+        # It stops at a random height between these, down to below the middle (D-313).
+        "stopRange": [0.4, 0.8],
         "idleSpin": 60,
         "firingSpin": 110,
         "fireDuration": 3,
@@ -159,7 +163,7 @@ ENEMY_CONFIG = record({
         # Distance of the pods from the centre.
         "podRadius": 0.45 * ENEMY_UNIT,
         "exitSpeed": 150,
-        "bullet": bullet("orange", 160),
+        "bullet": bullet("orange", 160, TIER_DAMAGE["3"].bullet),
         # The pods' muzzles: each bullet leaves outwards from the pod facing its way.
         "muzzles": [
             [0, -SPINNER_MUZZLE, 0, 0],
@@ -179,12 +183,19 @@ ENEMY_CONFIG = record({
         "cruiseSpeed": 140,
         "acceleration": 120,
         "brake": 150,
-        # Its first stop, as a fraction of the height; each next stop is `stepFraction` of the
-        # height lower, none under `lastStopFraction` (it leaves through the bottom instead).
-        "stopFraction": 0.8,
+        # Its first stop, a fraction of the height at random in `stopRange` (D-313); each next stop
+        # is `stepFraction` of the height lower, none under `lastStopFraction` (it leaves through
+        # the bottom instead).
+        "stopRange": [0.55, 0.85],
         "stepFraction": 0.25,
         "lastStopFraction": 0.25,
-        "laser": {"warningSeconds": 1, "firingSeconds": 1.5, "width": 10, "style": "lancer"},
+        "laser": {
+            "warningSeconds": 1,
+            "firingSeconds": 1.5,
+            "width": 10,
+            "style": "lancer",
+            "damage": TIER_DAMAGE["1"].laser,
+        },
         # Distance from the centre to the emitter at the nose.
         "emitterOffset": LANCER_NOSE,
         # The front of the emitter, where the laser leaves from.
@@ -220,17 +231,18 @@ ENEMY_CONFIG = record({
             "radius": 5,
             "health": 10,
             "style": "rocketeer",
+            "damage": TIER_DAMAGE["1"].missile,
         },
         "xRange": [0.2, 0.8],
     },
     # ENM-SPLITTER-09: health and points. Tier 4's diver (ENM-SPLITTER-05): like a Hornet, but
     # bigger and tougher, and it never shoots.
     "splitter": {
-        "stats": {"model": "splitter", "radius": radius(1), "health": 200, "points": 450},
+        "stats": {"model": "splitter", "radius": radius(1), "health": 250, "points": 450},
         "size": 1,
         "entrySpeed": 150,
-        # Height where it stops before diving, in the upper half.
-        "stopFraction": 0.7,
+        # Height where it stops before diving: one at random in this range (D-313).
+        "stopRange": [0.45, 0.75],
         # Deceleration into the stop.
         "entryBrake": 300,
         "pause": 0.7,

@@ -6,11 +6,12 @@ the playfield height from its bottom.
 """
 
 from game.config.enemies import bullet, radius
+from game.config.enemy_tiers import TIER_DAMAGE
 from game.config.record import record
 
 HATCHERY_CONFIG = record({
     # ENM-HATCHERY-09: health, points and hit circle.
-    "stats": {"model": "hatchery", "radius": radius(2.2) * 0.8, "health": 400, "points": 700},
+    "stats": {"model": "hatchery", "radius": radius(2.2) * 0.8, "health": 450, "points": 700},
     "size": 2.2,
     "speed": 32,
     # A Wasp from each bay every `launchInterval`, the first after `firstLaunch`.
@@ -37,7 +38,7 @@ HATCHERY_CONFIG = record({
         "turnDeg": 110,
         "fireInterval": 1.8,
         "firstShot": 1.2,
-        "bullet": bullet("green", 190),
+        "bullet": bullet("green", 190, TIER_DAMAGE["2"].bullet),
     },
     # It stops launching below this height, too close to the player (ENM-HATCHERY-08).
     "lastLaunchFraction": 0.3,

@@ -111,15 +111,16 @@ class Bonus:
         self.kind = kind
 
 
-def drop_chance(rules: BonusRules, target: DropSource) -> float:
+def drop_chance(rules: BonusRules, target: DropSource, scale: float = 1) -> float:
     """Return the chance (0..1) that destroying `target` drops a bonus.
 
-    Its own chance if it has one (a boss's part, BOSS-57), the rules' otherwise.
+    Its own chance if it has one (a boss's part, BOSS-57), the rules' otherwise, times the level's
+    `scale` (D-309).
     """
     if target.drop_chance is not None:
         return target.drop_chance
     chance = rules.chance
-    return min(chance.max, max(chance.min, chance.per_health * target.max_health))
+    return scale * min(chance.max, max(chance.min, chance.per_health * target.max_health))
 
 
 class BonusWorld:
@@ -138,6 +139,7 @@ class BonusWorld:
         cull_margin: float,
         special_random: Random | None = None,
         heal_random: Random | None = None,
+        scale: float = 1,
     ) -> None:
         """`reach`: the X range the ship can reach: bonuses drop within it.
 
@@ -145,7 +147,8 @@ class BonusWorld:
         the life and bomb draws come from (GAME-BONUS-03): a source of their own, so the weapon
         bonuses drop as they did without them. `random` when None. `heal_random`: where the draw
         that turns a weapon bonus into a heal bonus comes from (GAME-BONUS-11), a source of its own
-        too; `special_random` when None.
+        too; `special_random` when None. `scale`: the level's factor on the enemies' chances to drop
+        a bonus, weapon, life and bomb alike (`GameLevel.bonus_scale`, D-309).
         """
         self.rules = rules
         self._random = random
@@ -153,6 +156,7 @@ class BonusWorld:
         self._cull_margin = cull_margin
         self._special_random = special_random if special_random is not None else random
         self._heal_random = heal_random if heal_random is not None else self._special_random
+        self.scale = scale
         self.bonuses: list[Bonus] = []
         # Bonuses picked up during the last step.
         self.picked: list[Bonus] = []
@@ -191,11 +195,11 @@ class BonusWorld:
         draws stay as without the others. A weapon bonus then turns into a heal bonus with the heal
         share (GAME-BONUS-11).
         """
-        weapon = self._random() < drop_chance(self.rules, target)
+        weapon = self._random() < drop_chance(self.rules, target, self.scale)
         odds = self.rules.special if special else None
-        if odds and self._special_random() < odds.life:
+        if odds and self._special_random() < odds.life * self.scale:
             return "life"
-        if odds and self._special_random() < odds.bomb:
+        if odds and self._special_random() < odds.bomb * self.scale:
             return "bomb"
         if not weapon:
             return None

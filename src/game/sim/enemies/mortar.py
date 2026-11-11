@@ -29,9 +29,12 @@ def mortar_missile() -> EnemyMissileSpec:
         missile.health,
         missile.style,
         EnemyBurstSpec(
-            burst.after, burst.count, EnemyBulletSpec(ring.speed, ring.radius, ring.style)
+            burst.after,
+            burst.count,
+            EnemyBulletSpec(ring.speed, ring.radius, ring.style, None, ring.damage),
         ),
         missile_flight(False),
+        missile.damage,
     )
 
 

@@ -3,7 +3,6 @@
 
 from core.content.game_level import GameLevel
 from game.config.world_1.bosses import WORLD_1_BOSSES
-from game.config.world_1.difficulty import WORLD_1_DIFFICULTY
 from game.config.world_1.scenery_coast import LEVEL_1_1, LEVEL_1_2
 from game.config.world_1.scenery_country import LEVEL_1_3
 from game.config.world_1.scenery_desert import LEVEL_1_4, LEVEL_1_5
@@ -27,7 +26,15 @@ Beat = Any
 # __pragma__ ("noskip")
 
 
-TABLES = WorldTables(WORLD_1_DIFFICULTY, WORLD_1_FILLERS, WORLD_1_BOSSES)
+TABLES = WorldTables(WORLD_1_FILLERS, WORLD_1_BOSSES)
+# Each level's scenery, by level id (to compose a level again with other enemies, D-307).
+SCENERIES = {
+    "1-1": LEVEL_1_1,
+    "1-2": LEVEL_1_2,
+    "1-3": LEVEL_1_3,
+    "1-4": LEVEL_1_4,
+    "1-5": LEVEL_1_5,
+}
 
 
 def _level(level_id: str, scenery: Any, plan: Any) -> GameLevel:

@@ -23,7 +23,7 @@ def test_enm_harrier_05_the_kind_spawns_a_live_harrier_just_above_the_playfield(
     assert isinstance(harrier, Harrier)
     assert harrier.health > 0
     assert harrier.y > 600
-    assert harrier.stop_y == pytest.approx(CFG.stopFraction * 600)
+    assert CFG.stopRange[0] * 600 <= harrier.stop_y <= CFG.stopRange[1] * 600
 
 
 def test_enm_harrier_05_it_brakes_and_holds_in_the_upper_third() -> None:
@@ -124,8 +124,8 @@ def test_enm_harrier_07_a_long_frame_never_launches_more_than_its_missiles() -> 
     assert len(ctx.missiles) == CFG.missiles
 
 
-def test_enm_harrier_09_it_has_60_health_and_scores_220() -> None:
+def test_d_314_a_harrier_has_90_health_and_scores_220() -> None:
     harrier = Harrier(200, 470, 470)
-    assert harrier.health == 60
+    assert harrier.health == 90
     assert harrier.points == 220
     assert harrier.model == "harrier"

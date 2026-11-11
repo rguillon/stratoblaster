@@ -163,15 +163,18 @@ class EnemyBulletSpec:
         radius: float,
         style: str,
         burst: EnemyBurstSpec | None = None,
+        damage: float = 0,
     ) -> None:
         """`style` is the look of the bullet, a key the game's enemy shot renderer knows.
 
-        `burst` makes a bullet that bursts (phase 8), when given.
+        `burst` makes a bullet that bursts (phase 8), when given. `damage` is what it takes off the
+        player's health, 0 for the hull's rule for bullets (D-314).
         """
         self.speed = speed
         self.radius = radius
         self.style = style
         self.burst = burst
+        self.damage = damage
 
 
 class MissileFlight:
@@ -213,12 +216,14 @@ class EnemyMissileSpec:
         style: str,
         burst: EnemyBurstSpec | None = None,
         flight: MissileFlight | None = None,
+        damage: float = 0,
     ) -> None:
         """`turn_rate_deg` is in degrees a second.
 
         `homing_seconds` is how long it homes on the player before it flies straight on. `burst`
         makes a missile that bursts into a ring of bullets once `burst.after` seconds have passed
-        since its launch (ENM-MORTAR-09), unless it was shot down first.
+        since its launch (ENM-MORTAR-09), unless it was shot down first. `damage` is what it takes
+        off the player's health, 0 for the hull's rule for missiles (D-314).
         """
         self.speed = speed
         self.turn_rate_deg = turn_rate_deg
@@ -228,6 +233,7 @@ class EnemyMissileSpec:
         self.style = style
         self.burst = burst
         self.flight = flight if flight is not None else MissileFlight(0, 0, 0)
+        self.damage = damage
 
     def with_burst(self, burst: EnemyBurstSpec | None) -> "EnemyMissileSpec":
         """Return this spec with another `burst`."""
@@ -240,6 +246,7 @@ class EnemyMissileSpec:
             self.style,
             burst,
             self.flight,
+            self.damage,
         )
 
 
@@ -256,17 +263,21 @@ class EnemyLaserSpec:
         width: float,
         style: str,
         sweeps: bool = False,
+        damage: float = 0,
     ) -> None:
         """`width` is the width of the beam.
 
         `sweeps`: whether the beam keeps turning with its owner while it fires (ENM-32: lasers on
         moving parts); otherwise it keeps the heading its owner had when it started firing.
+        `damage` is what the beam takes off the player's health, 0 for the hull's rule for lasers
+        (D-314).
         """
         self.warning_seconds = warning_seconds
         self.firing_seconds = firing_seconds
         self.width = width
         self.style = style
         self.sweeps = sweeps
+        self.damage = damage
 
 
 class EnemyStats:

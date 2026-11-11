@@ -24,10 +24,10 @@ class _Fields(dict):  # type: ignore[type-arg]  # a dict of fields keyed by name
     """A record whose fields read as attributes, as they do in the browser.
 
     A field the record lacks reads as None, as an absent field reads as undefined there.
+    `dict.get` itself, not a method calling it: the AI player reads records in its hottest loops.
     """
 
-    def __getattr__(self, key: str) -> Any:
-        return self.get(key)
+    __getattr__ = dict.get
 
 
 def fields_of(obj: Any) -> dict[str, Any]:

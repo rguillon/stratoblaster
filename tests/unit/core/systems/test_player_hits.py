@@ -160,3 +160,34 @@ def test_boss_16_a_boss_part_that_is_out_of_reach_is_no_collision() -> None:
     world = _world()
     world.enemies = [_Boss(0, 0, [_enemy(50, 50)])]
     assert find_player_hits(_Ship(), RULES, world, set()) == []
+
+
+def test_d_314_a_shot_with_its_own_damage_takes_that_off() -> None:
+    world = _world()
+    world.shots.fire_bullet(0, 4, 0, EnemyBulletSpec(0, 2, "s", None, 25))
+    world.shots.fire_missile(0, 4, 0, EnemyMissileSpec(0, 0, 0, 2, 5, "m", None, None, 40))
+    world.shots.fire_laser(
+        _Owner(PlanePoint(0, 10), math.pi), EnemyLaserSpec(0, 1, 4, "b", False, 35)
+    )
+    world.shots.step(0.1, 0, 0)
+    hits = find_player_hits(_Ship(), RULES, world, set())
+    assert sorted((h.kind, h.damage) for h in hits) == [
+        ("bullet", 25),
+        ("laser", 35),
+        ("missile", 40),
+    ]
+
+
+def test_d_314_a_config_record_without_damage_keeps_the_hull_s_rule() -> None:
+    world = _world()
+    world.shots.fire_bullet(0, 4, 0, SimpleNamespace(speed=0, radius=2, style="s", burst=None))  # type: ignore[arg-type]
+    hits = find_player_hits(_Ship(), RULES, world, set())
+    assert [(h.kind, h.damage) for h in hits] == [("bullet", 10)]
+
+
+def test_d_314_a_record_answering_none_for_damage_keeps_the_hull_s_rule() -> None:
+    world = _world()
+    spec = SimpleNamespace(speed=0, radius=2, style="s", burst=None, damage=None)
+    world.shots.fire_bullet(0, 4, 0, spec)  # type: ignore[arg-type]
+    hits = find_player_hits(_Ship(), RULES, world, set())
+    assert [(h.kind, h.damage) for h in hits] == [("bullet", 10)]
