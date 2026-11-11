@@ -227,8 +227,11 @@ def test_gfx_ship_01_a_laser_with_a_minigun_either_side_under_the_belly(
     build_balanced_ship(scene)
     assert "balanced-laser-core" in rods
     for side in ["right", "left"]:
-        barrels = [n for n in lathes if n.startswith("balanced-minigun-" + side + "-barrel-")]
+        prefix = "balanced-minigun-" + side + "-barrel-"
+        barrels = [n for n in lathes if n.startswith(prefix) and not n.endswith("-bore")]
         assert len(barrels) == 6
+        # D-351: each with its bore, matte black, apart.
+        assert len([n for n in lathes if n.startswith(prefix) and n.endswith("-bore")]) == 6
     gun = balanced_ship.MINIGUN
     laser = balanced_ship.LASER
     # D-340: the laser runs out past the ship's nose tip.
@@ -391,7 +394,8 @@ def test_gfx_ship_01_the_reactor_scoops_have_fins_across_their_mouths(
     monkeypatch.setattr(balanced_ship, "panel", record)
     build_balanced_ship(scene)
     fins = [n for n in names if "-scoop-" in n and "-fin-" in n]
-    assert len(fins) == 2 * 2 * len(balanced_ship.REACTOR_SCOOP["fins"])
+    # D-351: three fins fit the mouth at the intakes' spacing.
+    assert len(fins) == 2 * 2 * 3
     heights = [max(p[1] for p in ring) for _z, ring in balanced_ship.scoop_sections(1)]
     assert heights == sorted(heights, reverse=True)
 
@@ -404,3 +408,27 @@ def test_gfx_ship_01_the_fairing_meets_the_hull_under_its_flanks() -> None:
         _z, ring = balanced_ship.fairing_section(size[0], size)
         x, y = ring[0]
         assert y > hull.underside_height(hull.station_at(size[0]), x)
+
+
+@pytest.mark.parametrize("up", [1, -1])
+def test_gfx_ship_01_a_scoops_collar_rings_its_mouth_and_holds_its_fins(up: int) -> None:
+    """D-351: the mouth inside the collar's outer ring; the fins' ends in the collar's wall."""
+    outer, mouth, lining = balanced_ship.scoop_collar_rings(up)
+    assert len(outer) == len(mouth) == len(lining)
+    scoop = balanced_ship.REACTOR_SCOOP
+
+    def extent(ring: list[list[float]]) -> tuple[float, float, float]:
+        ys = [p[1] * up for p in ring]
+        return max(p[0] for p in ring), min(ys), max(ys)
+
+    o_half, o_low, o_high = extent(outer)
+    m_half, m_low, m_high = extent(mouth)
+    l_half, l_low, l_high = extent(lining)
+    assert o_low < m_low < l_low < l_high < m_high < o_high
+    assert m_half < o_half
+    assert l_half < m_half
+    fin_half = scoop["width"] / 2 * (1 + scoop["mouth"]) / 2
+    assert m_half < fin_half < o_half
+    room = scoop["height"] * scoop["mouth"] / 2 * balanced_ship.REACTOR_HEIGHT
+    heights = balanced_ship.intake_fin_heights(room)
+    assert len(heights) == 3

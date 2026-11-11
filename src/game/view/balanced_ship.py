@@ -37,6 +37,7 @@ from game.view.ship_parts import (
     edge_strip,
     faceted_rod,
     hexagon_band,
+    intake_fin_heights,
     intake_fin_thickness,
     mirror_x,
     panel,
@@ -181,11 +182,11 @@ REACTOR_SCOOP: dict[str, Any] = {
     "width": 0.16,
     "height": 0.1,
     "sink": 0.012,
-    "mouth": 0.72,
+    "mouth": 0.8,
     "corner": 0.035,
     "lip": 0.06,
     "rampSteps": 4,
-    "fins": [-0.28, 0.0, 0.28],
+    "collar": 0.04,
 }
 
 # The guns under the belly (D-339, owner: "rework the undergun, make a cool looking laser and add
@@ -474,18 +475,22 @@ def _build_minigun(side: str, sign: float, root: Any, scene: Any) -> None:
     )
     barrels = gun["barrels"]
     profile = barrel_profile(barrels["length"], barrels["radius"], gun["bore"])
+    # The bore, its bottom and wall (the profile's first three points), matte black (owner, D-351:
+    # "make the inner part of the minigun mat black"); the muzzle's rim and the outside, metal.
+    parts = [("-bore", profile[0:3], mats.intakeBlack), ("", profile[2:], mats.trim)]
     for k in range(barrels["count"]):
         angle = 2 * math.pi * k / barrels["count"]
-        barrel = create_faceted_lathe_along_z(
-            name + "-barrel-" + str(k), profile, PART_FACETS, scene
-        )
-        barrel.position.set(
-            barrels["ring"] * math.cos(angle),
-            barrels["ring"] * math.sin(angle),
-            barrels["z"],
-        )
-        barrel.material = mats.trim
-        barrel.parent = node
+        for suffix, part, material in parts:
+            barrel = create_faceted_lathe_along_z(
+                name + "-barrel-" + str(k) + suffix, part, PART_FACETS, scene
+            )
+            barrel.position.set(
+                barrels["ring"] * math.cos(angle),
+                barrels["ring"] * math.sin(angle),
+                barrels["z"],
+            )
+            barrel.material = material
+            barrel.parent = node
     clamp = gun["clamp"]
     hexagon_band(name + "-clamp", clamp["z"], clamp["radius"], clamp["half"], mats.hullDark, node)
 
@@ -765,8 +770,9 @@ def scoop_sections(up: float) -> list[Any]:
 def _build_scoop(name: str, up: float, reactor: Any, scene: Any) -> None:
     """Build a secondary intake on a main reactor's top or bottom (D-347, D-348).
 
-    A smooth silver arch ramping back to the nacelle's back; its matte black mouth ahead, flat
-    steel fins across it, as the main intakes have.
+    A smooth silver arch ramping back to the nacelle's back. Ahead of it a short silver collar
+    rings its matte black mouth (D-351), steel fins across it merging into the collar's wall, as the
+    main intakes' fins merge into their rings: the same size and spacing as theirs (D-350, D-351).
     """
     mats = get_ship_materials(scene)
     scoop = REACTOR_SCOOP
@@ -774,22 +780,57 @@ def _build_scoop(name: str, up: float, reactor: Any, scene: Any) -> None:
     shell = create_section_loft(name, sections, len(sections[0][1]), scene)
     shell.material = mats.hull
     shell.parent = reactor
-    half = scoop["width"] / 2 * scoop["mouth"]
+    outer = scoop_collar_rings(up)
     front = scoop["front"]
-    outline = [[-half, front + 0.004], [half, front + 0.004], [half, front - 0.03]]
-    outline.append([-half, front - 0.03])
-    height = scoop["height"] * scoop["mouth"]
-    middle = REACTOR["radius"] * math.cos(math.pi / OCTAGON) + scoop["height"] / 2
-    mouth = panel(name + "-mouth", outline, height, mats.intakeBlack, reactor)
-    mouth.position.y = up * middle
-    # The same size as every intake's fins (D-350), in the nacelle's stretched frame.
-    fin_front = front + 0.03
+    rim = front + scoop["collar"]
+    collar = [[front, outer[0]], [rim, outer[0]], [rim, outer[1]], [front, outer[1]]]
+    ring = create_section_loft(name + "-collar", collar, 0, scene)
+    ring.material = mats.hull
+    ring.parent = reactor
+    # The black lining: a loft faces outward, turned round it faces the mouth's middle; its back
+    # end, ahead of the scoop's front face, is the mouth's black face.
+    lining = [[rim - 0.001, outer[2]], [front + 0.002, outer[2]]]
+    duct = create_section_loft(name + "-duct", lining, 0, scene)
+    duct.flipFaces(True)
+    duct.material = mats.intakeBlack
+    duct.parent = reactor
+    # The fins: their ends halfway into the collar's side walls.
+    half = scoop["width"] / 2 * (1 + scoop["mouth"]) / 2
+    fin_front = rim - 0.002
     fin_back = fin_front - INTAKE_FIN_SIZE["depth"]
     fin_outline = [[-half, fin_front], [half, fin_front], [half, fin_back], [-half, fin_back]]
     thickness = intake_fin_thickness(REACTOR_HEIGHT)
-    for k, share in enumerate(scoop["fins"]):
+    middle = scoop_mouth_middle()
+    room = scoop["height"] * scoop["mouth"] / 2 * REACTOR_HEIGHT
+    for k, height in enumerate(intake_fin_heights(room)):
         fin = panel(name + "-fin-" + str(k), fin_outline, thickness, mats.hullMid, reactor)
-        fin.position.y = up * (middle + share * height)
+        fin.position.y = up * (middle + height / REACTOR_HEIGHT)
+
+
+def scoop_mouth_middle() -> float:
+    """Return the height of a scoop's mouth's middle over the nacelle's axis (D-347)."""
+    middle: float = REACTOR["radius"] * math.cos(math.pi / OCTAGON) + REACTOR_SCOOP["height"] / 2
+    return middle
+
+
+def scoop_collar_rings(up: float) -> list[list[list[float]]]:
+    """Return a scoop collar's outer ring, its mouth's ring and its lining's, a hair inside (D-351).
+
+    The outer ring is the scoop's front section; the mouth's, the same arch shrunk to `mouth` of
+    it round the mouth's middle; all with the same number of points.
+    """
+    scoop = REACTOR_SCOOP
+    outer = scoop_sections(up)[0][1]
+    share = scoop["mouth"]
+    middle = scoop_mouth_middle()
+    corner = scoop["corner"] * share
+    rings = [outer]
+    for grow in [1.0, 0.96]:
+        half_width = scoop["width"] / 2 * share * grow
+        half_height = scoop["height"] * share / 2 * grow
+        shape = rounded_rectangle(half_width, half_height, corner * grow, 2)
+        rings.append([[p[0], up * (middle + p[1])] for p in shape])
+    return rings
 
 
 def build_balanced_ship(scene: Any) -> Any:

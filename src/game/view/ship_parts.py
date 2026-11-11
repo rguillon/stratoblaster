@@ -78,20 +78,20 @@ REACTOR_INTAKE = [
 # when they lay in one plane (D-341).
 REACTOR_INTAKE_DUCT = [[0.45, 0.74], [0.3, 0.71], [0.04, 0.67]]
 # The dark fan face, a hair ahead of the duct's end, and the horizontal fins across the duct in
-# front of it (owner, D-338: "replace the central helix by horizontal fins in the reactors"):
-# their heights, front and back (Z), each as wide as the duct's hexagon at its height.
+# front of it (owner, D-338: "replace the central helix by horizontal fins in the reactors"). In
+# nacelle radii: the fins' front, just behind the lip's (0.47); how far out their ends reach, into
+# the ring's wall between its lining and its skin, so they merge into the ring (owner, D-351:
+# "make the fins merge into the outer ring on all reactors"); the room they have, the duct
+# lining's radius.
 REACTOR_INTAKE_FAN = {"z": 0.1, "radius": 0.68}
-REACTOR_INTAKE_FINS: dict[str, Any] = {
-    "ys": [-0.42, -0.14, 0.14, 0.42],
-    "zs": [0.12, 0.4],
-    "duct": 0.66,
-}
+REACTOR_INTAKE_FINS: dict[str, Any] = {"front": 0.46, "ring": 0.8, "room": 0.71}
 # Every intake's fins (the main reactors', the wing tips', the secondary scoops') are this thick
 # and this deep in model units, whatever the size of the intake and the stretch of its frame
 # (owner: "equalize the size of the fins between the different intakes", D-350): only their width
-# follows the mouth they span. The depth runs back from the fins' front (`zs[1]` above); it is the
-# most the small wing-tip intakes hold ahead of their fan face.
-INTAKE_FIN_SIZE = {"thickness": 0.016, "depth": 0.035}
+# follows the mouth they span. The depth runs back from the fins' front; it is the most the small
+# wing-tip intakes hold ahead of their fan face. D-351 ("equalize the spacing too"): they stand
+# `spacing` apart, one in the middle, as many as the mouth holds.
+INTAKE_FIN_SIZE = {"thickness": 0.016, "depth": 0.035, "spacing": 0.038}
 
 
 def disc_options(radius: float, tessellation: int) -> Any:
@@ -304,18 +304,36 @@ def add_reactor_intake(
     return node
 
 
-def intake_fin_half_width(y: float, sides: int = REACTOR_SIDES) -> float:
-    """Half width of an intake fin at height `y` (in nacelle radii): the duct's polygon there.
-
-    The hexagon has a corner on each side (+X, -X) and a flat top and bottom: each side narrows by
-    1 / sqrt(3) of the height. The octagon (D-339) has flat sides, top and bottom, `cos(pi / 8)`
-    of the radius out, and its slanted sides cut the corners.
-    """
-    duct: float = REACTOR_INTAKE_FINS["duct"]
+def polygon_flat(sides: int) -> float:
+    """Return how far out a reactor polygon's flat top lies, as a share of its radius."""
     if sides == 8:
-        flat = duct * math.cos(math.pi / 8)
+        return math.cos(math.pi / 8)
+    return math.sqrt(3) / 2
+
+
+def intake_fin_half_width(y: float, sides: int = REACTOR_SIDES) -> float:
+    """Half width of an intake fin at height `y` (in nacelle radii): the ring's polygon there.
+
+    Its ends lie in the ring's wall (D-351). The hexagon has a corner on each side (+X, -X) and a
+    flat top and bottom: each side narrows by 1 / sqrt(3) of the height. The octagon (D-339) has
+    flat sides, top and bottom, `cos(pi / 8)` of the radius out, its slanted sides cutting the
+    corners.
+    """
+    ring: float = REACTOR_INTAKE_FINS["ring"]
+    if sides == 8:
+        flat = ring * math.cos(math.pi / 8)
         return min(flat, flat * math.sqrt(2) - abs(y))
-    return duct - abs(y) / math.sqrt(3)
+    return ring - abs(y) / math.sqrt(3)
+
+
+def intake_fin_heights(room: float) -> list[float]:
+    """Return the fins' heights round a mouth's middle, in model units (D-351).
+
+    `spacing` apart, one in the middle, as many as fit within `room` of it, thickness included.
+    """
+    size = INTAKE_FIN_SIZE
+    count = int((room - size["thickness"] / 2) / size["spacing"] + 1e-9)
+    return [k * size["spacing"] for k in range(-count, count + 1)]
 
 
 def intake_fin_thickness(stretch: float) -> float:
@@ -329,14 +347,17 @@ def _add_intake_fins(
 ) -> None:
     """Add the horizontal fins across the intake's duct, in front of its fan face (D-338)."""
     fins = REACTOR_INTAKE_FINS
-    front = fins["zs"][1] * radius
+    front = fins["front"] * radius
     back = front - INTAKE_FIN_SIZE["depth"]
     thickness = intake_fin_thickness(stretch)
-    for k, y in enumerate(fins["ys"]):
-        half = intake_fin_half_width(y, sides) * radius
+    # The room in model units: the duct's flat top, stretched as the frame is.
+    room = fins["room"] * polygon_flat(sides) * radius * stretch
+    for k, height in enumerate(intake_fin_heights(room)):
+        y = height / stretch
+        half = intake_fin_half_width(y / radius, sides) * radius
         outline = [[-half, front], [half, front], [half, back], [-half, back]]
         fin = panel(name + "-intake-fin-" + str(k), outline, thickness, material, parent)
-        fin.position.y = y * radius
+        fin.position.y = y
 
 
 def build_reactor(

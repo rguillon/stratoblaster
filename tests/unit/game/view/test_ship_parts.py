@@ -1,6 +1,7 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/ship_parts.py`."""
 
+import itertools
 import math
 from typing import Any
 from unittest.mock import MagicMock
@@ -99,15 +100,18 @@ def test_gfx_ship_01_an_intake_has_a_lined_duct_and_horizontal_fins(monkeypatch:
     ship_parts.add_reactor_intake("r", 0.2, 1.0, MagicMock(name="root"))
     meshes["r-intake-duct"].flipFaces.assert_called_once_with(True)
     assert lathes == []
-    ys = ship_parts.REACTOR_INTAKE_FINS["ys"]
-    assert len(fins) == len(ys)
-    for k, y in enumerate(ys):
+    room = ship_parts.REACTOR_INTAKE_FINS["room"] * math.sqrt(3) / 2 * 0.2
+    heights = ship_parts.intake_fin_heights(room)
+    assert len(fins) == len(heights)
+    for k, height in enumerate(heights):
         outline = fins["r-intake-fin-" + str(k)]
         half = max(p[0] for p in outline)
-        assert half == pytest.approx(ship_parts.intake_fin_half_width(y) * 0.2)
-        # Inside the duct's hexagon at that height, which narrows towards its flat top and bottom.
-        assert half < 0.2 * (ship_parts.REACTOR_INTAKE_DUCT[-1][1] - abs(y) / math.sqrt(3))
+        assert half == pytest.approx(ship_parts.intake_fin_half_width(height / 0.2) * 0.2)
         assert min(p[0] for p in outline) == pytest.approx(-half)
+        # D-351: the ends lie in the ring's wall: out of the duct's lining, inside the lip's skin.
+        y = abs(height) / 0.2
+        assert half > 0.2 * (ship_parts.REACTOR_INTAKE_DUCT[0][1] - y / math.sqrt(3))
+        assert half < 0.2 * (0.86 - y / math.sqrt(3))
 
 
 def test_gfx_ship_01_the_intake_ducts_end_lies_behind_its_fan_face() -> None:
@@ -136,8 +140,22 @@ def test_gfx_ship_01_every_intakes_fins_have_one_size_whatever_the_stretch(
     monkeypatch.setattr(ship_parts, "panel", panel)
     ship_parts.add_reactor_intake("r", 0.124, 0.0, MagicMock(name="root"), 8, stretch)
     size = ship_parts.INTAKE_FIN_SIZE
-    assert thicknesses == pytest.approx([size["thickness"]] * 4)
-    assert depths == pytest.approx([size["depth"]] * 4)
+    count = len(thicknesses)
+    assert count >= 3
+    assert thicknesses == pytest.approx([size["thickness"]] * count)
+    assert depths == pytest.approx([size["depth"]] * count)
     # The depth stays ahead of the smallest intake's fan face.
-    front = ship_parts.REACTOR_INTAKE_FINS["zs"][1] * 0.124
+    front = ship_parts.REACTOR_INTAKE_FINS["front"] * 0.124
     assert front - size["depth"] > ship_parts.REACTOR_INTAKE_FAN["z"] * 0.124
+
+
+def test_gfx_ship_01_the_fins_stand_one_spacing_apart_round_the_middle() -> None:
+    """D-351: one in the middle, the same spacing in every intake, as many as the room holds."""
+    size = ship_parts.INTAKE_FIN_SIZE
+    heights = ship_parts.intake_fin_heights(0.1876)
+    assert len(heights) == 9
+    assert heights[len(heights) // 2] == 0
+    gaps = {round(b - a, 9) for a, b in itertools.pairwise(heights)}
+    assert gaps == {size["spacing"]}
+    assert max(heights) + size["thickness"] / 2 <= 0.1876
+    assert ship_parts.intake_fin_heights(0.04) == [0.0]

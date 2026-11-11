@@ -29,7 +29,8 @@ tip, runs the laser (D-342, owner: "review the laze design, the rings sucks"; a 
 accent coils before): two gunmetal rails tapering forward into prongs either side of a glowing
 core rod, joined at their back by a bridge, a glowing emitter at the core's tip between the
 prongs; a minigun sits in each flank of the fairing, its hull-metal drum half sunk in it as
-a blister, six thick barrels round its axis out ahead of it, each hollow at its muzzle, held by a
+a blister, six thick barrels round its axis out ahead of it, each hollow at its muzzle, its bore matte
+black (D-351, owner: "make the inner part of the minigun mat black"), held by a
 gunmetal clamp (D-345: "increase the minigun size again, and add hole into the barrels"; D-346:
 "spread the minguns a little more"; D-349: "and spread the minigun more again", the fairing
 widened under the body's flanks, its top corners inside the hull's underside; D-341, owner:
@@ -95,7 +96,13 @@ along a half cosine, three flat steel fins across its mouth (D-348, owner: "rewo
 intakes, smoth them a little and add fins like the others"). Every intake's fins, the main reactors', the
 wing tips' and the secondary scoops', have one size: 0.016 model units thick and 0.035 deep,
 whatever the intake's size and its frame's upright stretch; only their width follows the mouth
-they span (D-350, owner: "equalize the size of the fins between the different intakes").
+they span (D-350, owner: "equalize the size of the fins between the different intakes"). They
+stand 0.038 apart in every intake, one in the middle of the mouth, as many as it holds (nine in
+the main and tip intakes, three in a scoop), and their ends sink into the ring round the mouth,
+so the fins merge into it (D-351, owner: "Equalize the spacing too, and make the fins merge into
+the outer ring on all reactors"): in the main and tip intakes they reach into the lip's wall; a
+scoop's mouth is ringed by a short silver collar, 0.04 deep, lined in matte black, its fins
+running into the collar's walls.
 
 No gun stands on top (D-330), and the ship carries no light of its own but its reactors (D-327).
 

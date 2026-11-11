@@ -2638,3 +2638,27 @@
   shallower to match. Their widths still follow each mouth.
 - **Consequences:** measured in the dev viewer, all fourteen fins on a side are 0.016 × 0.035.
   The triangle count is unchanged.
+
+### D-351 — Intake fins evenly spaced and merging into their rings; black minigun bores
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01.
+- **Context:** owner: "Equalize the spacing too, and make the fins merge into the outer ring on
+  all reactors", then "and make the inner part of the minigun mat black". After D-350 the fins
+  had one size but not one spacing (0.08 apart in the main intakes, 0.071 in the tip intakes,
+  0.026 in the scoops), and they stopped short of the rings: the main and tip intakes' fins
+  ended at the duct lining, behind the lip; the scoops' stood out in front of a flat black slab.
+- **Decision:**
+  - **Spacing:** `intake_fin_heights` lays the fins 0.038 apart in model units round the
+    mouth's middle, as many as fit the room (the duct lining's flat top, or a scoop mouth's
+    half height, stretched as the frame is): nine in the main and tip intakes, three in a scoop.
+  - **Into the ring:** the main and tip intakes' fins come forward to just behind the lip (0.46
+    radii) and reach out to 0.8 radii, inside the ring's wall (lining 0.71 to 0.75, skin 0.86 or
+    more).
+  - **Scoops:** the black slab gives way to a short silver collar (0.04 deep) round the mouth,
+    lofted from the scoop's front section in to its mouth, lined in matte black (a flipped loft
+    whose back end is the mouth's black face). The fins span the collar, their ends halfway into
+    its side walls. The mouth is 0.8 of the scoop (0.72), so its three fins fit.
+  - **Minigun bores:** each barrel is two lathes, the bore (its bottom and wall) in the matte
+    black intake material and the rest in trim metal.
+- **Consequences:** the ship measures 10,580 triangles, under the 11,000 budget.
