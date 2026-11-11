@@ -249,9 +249,10 @@ CANOPY_MID_Z = 1.08
 # its front well ahead of the leading edge so the playfield camera sees its seven missiles' tips
 # in their dark launch face; an accent band behind its front, two small fins at 45° under its
 # tapered tail. Its axis's place; its profile (`[z, radius]`, from its axis's middle). D-343
-# (owner: "make the missile pods hexagonal, higher and make them go trough the wings"): a crisp
-# hexagon, flat-shaded with barely rounded corners, stretched upright (`stretch`), its axis in the
-# wing's plane so the wing runs through it; no pylon (it hung under the wing on one before).
+# (owner: "make the missile pods hexagonal, higher and make them go trough the wings"; D-344:
+# "make the missile pods octogonal"): a crisp octagon, flat on top, bottom and sides, flat-shaded
+# with barely rounded corners, stretched upright (`stretch`), its axis in the wing's plane so the
+# wing runs through it; no pylon (it hung under the wing on one before).
 MISSILE_POD: dict[str, Any] = {"x": 1.3, "y": 0.0, "z": -0.4, "stretch": 1.35}
 MISSILE_POD_ROUNDING = 0.08
 MISSILE_POD_PROFILE = [
@@ -594,21 +595,27 @@ def _build_missile_pod(side: str, sign: float, root: Any, scene: Any) -> None:
     node.position.set(sign * pod["x"], pod["y"], pod["z"])
     node.scaling.y = pod["stretch"]
     node.parent = root
-    sections = polygon_lathe_sections(MISSILE_POD_PROFILE, 6, MISSILE_POD_ROUNDING, 2)
+    sections = polygon_lathe_sections(
+        MISSILE_POD_PROFILE, OCTAGON, MISSILE_POD_ROUNDING, 2, math.pi / OCTAGON
+    )
     shell = create_section_loft(name + "-pod", sections, 0, scene)
     shell.material = mats.hullMid
     shell.parent = node
     front = MISSILE_POD_PROFILE[0][0]
-    face = create_disc(name + "-face", disc_options(MISSILE_FACE["radius"], 6), scene)
+    face = create_disc(name + "-face", disc_options(MISSILE_FACE["radius"], OCTAGON), scene)
     face.convertToFlatShadedMesh()
-    # A disc faces -Z: turned round, it faces forward, a hair ahead of the pod's front.
+    # A disc faces -Z: turned round, it faces forward, a hair ahead of the pod's front; turned as
+    # the pod's octagon is.
     face.rotation.y = math.pi
+    face.rotation.z = math.pi / OCTAGON
     face.position.z = front + 0.003
     face.material = mats.trim
     face.parent = node
     _build_missile_tips(name, front + 0.003, mats.accent, node)
     band = MISSILE_BAND
-    hexagon_band(name + "-band", band["z"], band["radius"], band["half"], mats.accent, node)
+    hexagon_band(
+        name + "-band", band["z"], band["radius"], band["half"], mats.accent, node, OCTAGON
+    )
     fin = MISSILE_FIN if sign > 0 else mirror_x(MISSILE_FIN)
     for label, turn in [("outer", -math.pi / 4), ("inner", -3 * math.pi / 4)]:
         fin_node = new_transform_node(name + "-fin-" + label, scene)

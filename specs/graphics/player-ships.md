@@ -60,8 +60,9 @@ connecting them"), a tall rounded rectangle in section, from their fronts to sho
 nozzles, and one octagonal intake at its front, stretched upright to the body's height, feeds both
 (D-339, owner: "merge the two lateral intales into a single octogonal intake"; an intake each
 before). A missile launcher runs through each wing (D-330; D-343, owner: "make the missile pods
-hexagonal, higher and make them go trough the wings"; it hung under the wing on a pylon before): a
-steel hexagon pod with crisp, barely rounded corners, flat-shaded, 1.35 times taller than wide,
+hexagonal, higher and make them go trough the wings"; it hung under the wing on a pylon before;
+D-344: "make the missile pods octogonal"): a steel octagon pod, flat on top, bottom and sides,
+with crisp, barely rounded corners, flat-shaded, 1.35 times taller than wide,
 its axis in the wing's plane, an accent band behind its front, two small fins at 45° under its tapered tail,
 its front out ahead of the leading edge, so the playfield camera sees the seven accent missile
 tips in its dark launch face.
@@ -115,7 +116,7 @@ No gun stands on top (D-330), and the ship carries no light of its own but its r
   and meets the wings' plane at the chine's edge (unit tests).
 - The design is validated by eye (manual).
 
-*Sources: P02-R01, D-327, D-328, D-330, D-331, D-332, D-333, D-336, D-337, D-338, D-339, D-340, D-341, D-342, D-343.*
+*Sources: P02-R01, D-327, D-328, D-330, D-331, D-332, D-333, D-336, D-337, D-338, D-339, D-340, D-341, D-342, D-343, D-344.*
 
 ### GFX-SHIP-02 — (removed) Heavy ship
 
@@ -148,13 +149,14 @@ than the one before. The metals take the brighter hull light of GFX-ART-08.
 ### GFX-SHIP-05 — Polygon budget · MUST
 
 The player ship is under 11,000 triangles (2,000 until D-327, 4,500 until D-328, 7,000 until
-D-330; measured 8,692 in the browser with its flames, its six reactors and their four finned intakes,
-D-343). The round
+D-330; measured 8,824 in the browser with its flames, its six reactors and their four finned intakes,
+D-344). The round
 parts' extra triangles go on their upper half only, the side the playfield camera sees: the
 canopy 16 over 3; the canopy frame, mostly hidden, 8 over 2; the tip reactors' body, a rounded
-rectangle of 12 points, smooth all round. The reactors and missile pods are rounded
+rectangle of 12 points, smooth all round. The tip reactors are rounded
 hexagons, 3 points a corner (18 round), their rings 2 (12 round); the main reactors and the tip
-intakes octagons (24 round, rings 16). The gun fairing is 6 flat facets round; the laser and the miniguns' drums are 8-sided, the
+intakes octagons (24 round, rings 16); the missile pods crisp flat-shaded octagons, 2 points a
+corner (16 round). The gun fairing is 6 flat facets round; the laser and the miniguns' drums are 8-sided, the
 miniguns' barrels 6 and the missile tips 4. The central body is flat facets all round (D-336): 8 across the top,
 7 round the underside, under a thousand triangles.
 
@@ -263,7 +265,7 @@ either side of the tip reactors' body, so it does not cross their intake (D-339)
 | Gun fairing | z -0.8 to 2.3, up to 0.15 half wide and 0.11 under the belly, its top 0.02 inside it | `GUN_FAIRING`, `GUN_FAIRING_SECTION` |
 | Laser | at y -0.1; glowing core z 2.1 to 3.06 (nose tip 2.75), radius 0.012; rails 0.034 thick, x 0.02 to 0.052, z 2.0 to prongs at 3.2; bridge z 2.0 to 2.2; emitter to 3.13 | `LASER`, `LASER_RAIL`, `LASER_BRIDGE`, `LASER_EMITTER` |
 | Miniguns | at x ±0.15, y -0.18, z 0.75; drum 0.8 long, radius 0.066, of hull metal; 6 six-sided barrels of radius 0.016 on a 0.036 ring, 0.46 long (D-341) | `MINIGUN` |
-| Missile pods | through the wing at x 1.3, y 0, z -0.4; hexagon, radius 0.1, corners rounded 0.08, 1.35 times taller, 1.16 long; 7 tips | `MISSILE_POD`, `MISSILE_POD_ROUNDING`, `MISSILE_POD_PROFILE`, `MISSILE_TIPS` |
+| Missile pods | through the wing at x 1.3, y 0, z -0.4; octagon, radius 0.1, corners rounded 0.08, 1.35 times taller, 1.16 long; 7 tips | `MISSILE_POD`, `MISSILE_POD_ROUNDING`, `MISSILE_POD_PROFILE`, `MISSILE_TIPS` |
 
 ## Notes
 

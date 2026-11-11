@@ -2548,3 +2548,13 @@
   under it before), so the wing runs through them. Their pylon is gone; band, launch face, missile
   tips and tail fins stay.
 - **Consequences:** the ship measures 8,692 triangles.
+
+### D-344 — Octagonal missile pods
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-05.
+- **Context:** owner: "sorry, make the missile pods octogonal" (after D-343's hexagons).
+- **Decision:** the pods, their band and their launch face are octagons turned π/8, flat on top,
+  bottom and sides, as the main reactors are; still crisp, flat-shaded, 1.35 times taller than
+  wide, through the wing.
+- **Consequences:** the ship measures 8,824 triangles.

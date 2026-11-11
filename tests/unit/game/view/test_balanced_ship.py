@@ -91,7 +91,7 @@ def test_gfx_ship_01_the_flaps_and_panel_lines_lie_on_the_wing() -> None:
 
 
 def test_gfx_ship_01_the_missile_pods_run_through_the_wings_their_tips_in_view() -> None:
-    """D-330, D-343: through the wing, between root and tip; the front ahead of the leading edge."""
+    """D-330, D-343, D-344: through the wing, root to tip; the front ahead of the leading edge."""
     assert not hasattr(balanced_ship, "CANNON")
     pod = balanced_ship.MISSILE_POD
     profile = balanced_ship.MISSILE_POD_PROFILE
@@ -101,7 +101,7 @@ def test_gfx_ship_01_the_missile_pods_run_through_the_wings_their_tips_in_view()
     assert pod["x"] + radius < wing[2][0]
     # The wing runs through it: its flat top above the wing's top face, its bottom below; taller
     # than wide.
-    half_height = radius * math.cos(math.pi / 6) * pod["stretch"]
+    half_height = radius * math.cos(math.pi / 8) * pod["stretch"]
     assert pod["y"] + half_height > balanced_ship.WING_THICKNESS / 2
     assert pod["y"] - half_height < -balanced_ship.WING_THICKNESS / 2
     assert half_height > radius
