@@ -239,7 +239,7 @@ MINIGUN: dict[str, Any] = {
     "z": 0.75,
     "drum": {"length": 0.9, "radius": 0.085},
     "barrels": {"count": 6, "ring": 0.048, "radius": 0.021, "length": 0.5, "z": 0.65},
-    "bore": {"radius": 0.7, "depth": 0.06},
+    "bore": {"radius": 0.55, "depth": 0.06},
     "clamp": {"z": 0.68, "radius": 0.078, "half": 0.014},
 }
 
@@ -475,10 +475,9 @@ def _build_minigun(side: str, sign: float, root: Any, scene: Any) -> None:
     )
     barrels = gun["barrels"]
     profile = barrel_profile(barrels["length"], barrels["radius"], gun["bore"])
-    # The bore, its bottom and wall (the profile's first three points), black (owner, D-351:
-    # "make the inner part of the minigun mat black"; D-352: "I want the bullet holes on the
-    # barrels to be black", unlit so nothing greys it); the muzzle's rim and the outside, metal.
-    parts = [("-bore", profile[0:3], mats.bore), ("", profile[2:], mats.trim)]
+    # The bore, its bottom and wall (the profile's first three points), matte black (owner, D-351:
+    # "make the inner part of the minigun mat black"); the muzzle's rim and the outside, metal.
+    parts = [("-bore", profile[0:3], mats.intakeBlack), ("", profile[2:], mats.trim)]
     for k in range(barrels["count"]):
         angle = 2 * math.pi * k / barrels["count"]
         for suffix, part, material in parts:

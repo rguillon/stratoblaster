@@ -29,10 +29,3 @@ def test_gfx_ship_04_a_scene_keeps_its_ship_materials(monkeypatch: Any) -> None:
     assert isinstance(made, ship_materials.ShipMaterials)
     monkeypatch.setattr(ship_materials, "_cached_materials", lambda _scene: made)
     assert ship_materials.get_ship_materials(scene) is made
-
-
-def test_gfx_ship_01_the_bores_are_unlit_pure_black(materials: Any) -> None:
-    """D-352: no light nor sky reflection greys the barrels' bullet holes."""
-    bore = materials.bore
-    assert bore.disableLighting is True
-    assert bore is not materials.intakeBlack
