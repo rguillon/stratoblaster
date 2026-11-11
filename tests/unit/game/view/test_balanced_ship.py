@@ -65,11 +65,6 @@ def test_gfx_ship_05_the_hull_puts_its_triangles_on_the_upper_half() -> None:
     assert upper / (len(indices) / 3) >= 0.75
 
 
-def test_gfx_ship_05_the_booster_casings_put_their_triangles_on_the_upper_half() -> None:
-    """D-328: the back boosters' casings are smooth on top, like the other round parts."""
-    assert _upper_share(balanced_ship.BOOSTER_CASING, SMOOTH_PART_SECTION) >= 0.75
-
-
 def test_gfx_ship_01_the_wings_are_cranked_and_swept_back() -> None:
     """D-328: the tip's leading edge lies behind the root's, and sweeps less past the kink."""
     root, kink, tip = balanced_ship.BALANCED_WING[:3]
@@ -80,10 +75,7 @@ def test_gfx_ship_01_the_wings_are_cranked_and_swept_back() -> None:
 
 
 def test_gfx_ship_01_the_pack_sits_on_the_ship() -> None:
-    """D-328: the boosters ride on the back, between the shoulders; the cannon on the right one."""
-    booster = balanced_ship.BOOSTER_AT
-    outer = booster["x"] + balanced_ship.BOOSTER_CASING[3][1]
-    assert outer < balanced_ship.ARMOUR_XS[1]
+    """D-328: the cannon on the right armour plate, the missile pods on the wings."""
     assert balanced_ship.ARMOUR_XS[0] < balanced_ship.CANNON["x"] < balanced_ship.ARMOUR_XS[1]
     pod = balanced_ship.MISSILE_POD
     assert balanced_ship.BALANCED_WING[0][0] < pod["xs"][0] < pod["xs"][1]

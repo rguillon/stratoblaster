@@ -18,8 +18,12 @@ existing design): a long pointed nose, a framed bubble canopy set forward, a bro
 canards, leading-edge extensions, intakes feeding two big engine nacelles that run out past the
 tail, cranked wings swept back (the leading edge sweeps less past a kink halfway out; a square-cut
 tip) with flap and panel lines, canted twin tails, ventral fins and a gun pod under the belly. The
-pack on top: two booster engines on the back either side of the centre line, each a steel casing
-with an accent band and its own reactor and flame; a gunmetal armour plate laid over each nacelle
+pack on top: two booster engines on the back either side of the centre line, each a hump of the
+hull's own skin with an accent band laid across it and its own reactor and flame (owner: "rework
+the blend between the inner and outer reactors so they dont just looks like tubes put next to
+each other"): the humps swell out of the back behind the cockpit and blend through fillets into
+the back and the nacelle shoulders, and the hull runs aft to one engine block whose tail face
+wraps all four engines, their nozzles coming out of it together; a gunmetal armour plate laid over each nacelle
 shoulder, following the hull; a silver missile pod on each wing root, an accent stripe on top and
 six launch tubes in its dark front face, the missiles' accent tips showing; and a long rail cannon
 on the right shoulder, a gunmetal housing on a mount, its barrel between two accent rails, reaching
@@ -49,7 +53,9 @@ centre. The mouths face forward, so the frontal menu camera looks straight into 
 - Given the Balanced model, then its wing tips' leading edges are behind their roots (swept
   back), sweeping less outboard of the kink, and it has two reactors, each with an intake ahead of
   it (a shell, a lip, a fan face, a glowing fan ring and a spinner) (unit tests).
-- Given the pack, then the boosters sit on the back inside the armour plates, the cannon over the
+- Given the hull, then the booster humps stand over the back and over their engines, and its tail
+  face lies just ahead of all four nozzles (unit tests).
+- Given the pack, then the cannon over the
   right plate, the missile pods on the wings between root and tip, and each armour plate's top
   follows the hull a thickness over it (unit tests).
 - Given a smooth-top lathe or the lofted hull, then its top's vertices share one normal pointing
@@ -73,9 +79,8 @@ Removed with the Light ship (D-326).
 
 The player ship's materials are made once per scene: a grey/blue physically based metal in three
 shades (D-327, owner: "add different shades of metalic"): a light silver **hull** (the blended
-hull, the intake shells, the missile pods), a mid **steel** (the wings, canards, spinners and
-booster casings) and a dark **gunmetal** (the tails, ventral fins, flaps, panel lines, armour plates
-and the cannon's housing); a blue accent metal (the intake lips and fan rings, the booster bands,
+hull, the intake shells, the missile pods), a mid **steel** (the wings, canards and spinners) and a dark **gunmetal** (the tails, ventral fins, flaps, panel lines, armour plates
+and the cannon's housing); a blue accent metal (the intake lips and fan rings, the bands across the booster humps,
 the pods' stripes and missile tips, the cannon's rails), a dark canopy with a faint blue glow, a darker trim metal (frames, barrels) and a dark metal
 nozzle. The metals are satin, not mirrors (owner: "remove the ugly light spots, make something
 more smoth"): metallic at least 0.7, roughness 0.4 to 0.55, so the light rolls smoothly over the
@@ -91,11 +96,11 @@ than the one before. The metals take the brighter hull light of GFX-ART-08.
 
 ### GFX-SHIP-05 — Polygon budget · MUST
 
-The player ship is under 7,000 triangles (2,000 until D-327, 4,500 until D-328; measured 6,398 in
+The player ship is under 7,000 triangles (2,000 until D-327, 4,500 until D-328; measured 6,752 in
 the browser with its flames, D-328). The extra triangles go on its upper half only, the side the
-playfield camera sees: the hull's sections have 24 facets across the top and 3 under the belly, the
-canopy 16 over 3, the intakes, nacelles, booster casings and their rings 12 over 3; the canopy
-frame, mostly hidden, 8 over 2; the armour plates lie wholly on top. The gun pod under the belly and
+playfield camera sees: the hull's sections have 30 facets across the top and 3 under the belly, the
+canopy 16 over 3, the intakes, nacelles and their rings 12 over 3; the canopy
+frame, mostly hidden, 8 over 2; the armour plates and booster bands lie wholly on top. The gun pod under the belly and
 the cannon's housing and barrel keep 6 sides, the missile tips 4.
 
 **Acceptance criteria**
@@ -171,14 +176,15 @@ lights since D-327). There is no other outline or halo round it, and no hitbox m
 | `PLAYER_SHIP_SCALE` | 7 px per model unit | `ship_look.py` |
 | Bank | `max_deg` 35°, `ease_per_sec` 8 | `src/config/game_play.py` `ShipRoll(35, 8)` |
 | Triangle budget | 7,000 | GFX-SHIP-05 |
-| Sections | hull 24 / 3, canopy 16 / 3, intakes, nacelles, rings 12 / 3, canopy frame 8 / 2 (upper / lower facets) | `balanced_hull.py` `TOP_POINTS`; `ship_parts.py` `SMOOTH_PART_SECTION`; `balanced_ship.py` |
-| Hull stations | 11, each gap cut in 3 | `balanced_hull.py` `STATIONS`, `STATION_STEPS` |
+| Sections | hull 30 / 3, canopy 16 / 3, intakes, nacelles, rings 12 / 3, canopy frame 8 / 2 (upper / lower facets) | `balanced_hull.py` `TOP_POINTS`; `ship_parts.py` `SMOOTH_PART_SECTION`; `balanced_ship.py` |
+| Hull stations | 12 (to the tail face at z -2.0), each gap cut in 3 | `balanced_hull.py` `STATIONS`, `STATION_STEPS` |
 | `hull_fillet` | 0.1 model units | `balanced_hull.py` `FILLET` |
 | Shoulders | at x = ±0.42, 0.22 half wide | `balanced_hull.py` `SHOULDER_X`, `SHOULDER_HALF_WIDTH` |
 | `profile_steps` | 3 | `balanced_ship.py` `PROFILE_STEPS` |
 | Wing | cranked, swept back: root x 0.4, kink x 1.2, tip x 2.05 to 2.1 | `balanced_ship.py` `BALANCED_WING` |
 | Nacelles | radius 0.22, length 2.0, centre z -1.15 | `REACTOR`, `REACTOR_Z` |
-| Boosters | at x ±0.18, y 0.3, z -0.95; casing radius 0.12; engine radius 0.1, length 0.5 | `BOOSTER_AT`, `BOOSTER_CASING`, `BOOSTER_ENGINE` |
+| Booster humps | at x ±0.18, 0.17 half wide, up to 0.42 high | `balanced_hull.py` `BOOSTER_X`, `BOOSTER_HALF_WIDTH`, `STATIONS` |
+| Booster engines | y 0.28, z -1.85; radius 0.09, length 0.5 | `balanced_ship.py` `BOOSTER_ENGINE` |
 | Armour plates | x 0.29 to 0.57, z 0.35 to -0.6, 0.035 thick, 9 points across | `ARMOUR_XS`, `ARMOUR_ZS`, `ARMOUR_THICKNESS`, `ARMOUR_POINTS` |
 | Missile pods | x 0.84 to 1.18, z -0.15 to -0.86, 0.15 high; 3 × 2 tubes | `MISSILE_POD`, `MISSILE_TUBES` |
 | Rail cannon | x 0.43; housing 0.95 long; barrel 1.7 long; rails 1.5 long | `CANNON` |

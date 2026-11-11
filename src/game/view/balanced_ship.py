@@ -3,13 +3,14 @@
 
 An original design. A long, flat lifting body with a slim nose and a bubble canopy set forward;
 wide cranked wings swept back, a kink halfway out; two big engine nacelles fed by intakes on the
-hull's flanks, running out past its tail; canted twin tails and ventral fins; canards; a gun pod
-under the belly. The pack on top: two booster engines on the back, an armour plate laid over each
-nacelle shoulder, a missile pod on each wing root, its six launch tubes facing forward, and a long
-rail cannon on the right shoulder.
+hull's flanks; canted twin tails and ventral fins; canards; a gun pod under the belly. The pack
+on top: two booster engines in humps swelling out of the hull's back (one engine block with the
+nacelles, all four nozzles out of its tail face), an armour plate laid over each nacelle shoulder,
+a missile pod on each wing root, its six launch tubes facing forward, and a long rail cannon on the
+right shoulder.
 
 Model units: nose towards +Z, about 4.8 units long. The hull is one blended skin
-(`balanced_hull.py`); the hull, canopy, intakes, nacelles, boosters and armour have a smooth-shaded
+(`balanced_hull.py`); the hull, canopy, intakes, nacelles and armour have a smooth-shaded
 top over a low-poly faceted belly: the triangles go on the upper half, which the playfield camera
 sees (GFX-SHIP-05).
 """
@@ -17,6 +18,7 @@ sees (GFX-SHIP-05).
 import math
 
 from game.view.balanced_hull import (
+    BOOSTER_X,
     TOP_POINTS,
     hull_sections,
     plate_sections,
@@ -148,20 +150,16 @@ CANOPY_FRAME_SECTION = LatheHalves(8, 2)
 # Middle of the canopy along Z, for scaling the frame around it.
 CANOPY_MID_Z = 1.08
 
-# The back boosters: a casing (`[z, radius]` in its own frame, nose cone ahead), its place on the
-# back either side of the centre line, and the engine at its back, its nozzle out behind the casing.
-BOOSTER_CASING = [
-    [0.75, 0],
-    [0.6, 0.07],
-    [0.35, 0.115],
-    [-0.5, 0.12],
-    [-0.7, 0.11],
-    [-0.7, 0],
-]
-BOOSTER_AT = {"x": 0.18, "y": 0.3, "z": -0.95}
-BOOSTER_ENGINE = {"radius": 0.1, "length": 0.5, "z": -0.85}
-# The accent band round each casing.
-BOOSTER_BAND = {"z": 0.25, "half": 0.03}
+# The back boosters' engines, inside the hull's booster humps (D-328: the humps swell out of the
+# back, no tube stands apart), their nozzles out of the tail face beside the nacelles'.
+BOOSTER_ENGINE = {"y": 0.28, "z": -1.85, "radius": 0.09, "length": 0.5}
+# The accent band laid across each hump, following it.
+BOOSTER_BAND: dict[str, Any] = {
+    "xs": [0.04, 0.32],
+    "zs": [-0.85, -0.97],
+    "thickness": 0.012,
+    "points": 9,
+}
 
 # The armour plates over the nacelle shoulders: across, front to back, and their thickness.
 ARMOUR_XS = [0.29, 0.57]
@@ -339,23 +337,19 @@ def _build_tails(side: str, sign: float, root: Any, scene: Any) -> None:
 
 
 def _build_booster(side: str, sign: float, root: Any, scene: Any) -> None:
-    """Build a booster engine on the back: a steel casing, an accent band, a reactor behind."""
+    """Build a booster: an accent band across its hump on the hull, its reactor at the tail."""
     mats = get_ship_materials(scene)
     name = "balanced-booster-" + side
-    node = new_transform_node(name, scene)
-    node.position.set(sign * BOOSTER_AT["x"], BOOSTER_AT["y"], BOOSTER_AT["z"])
-    node.parent = root
-    casing = create_smooth_top_lathe_along_z(
-        name + "-casing", BOOSTER_CASING, SMOOTH_PART_SECTION, scene
-    )
-    casing.material = mats.hullMid
-    casing.parent = node
     band = BOOSTER_BAND
-    _band(name + "-band", band["z"], BOOSTER_CASING[3][1], band["half"], mats.accent, node)
+    xs = band["xs"] if sign > 0 else [-band["xs"][1], -band["xs"][0]]
+    sections = plate_sections(xs, band["zs"], band["thickness"], band["points"])
+    stripe = create_section_loft(name + "-band", sections, band["points"], scene)
+    stripe.material = mats.accent
+    stripe.parent = root
     engine = BOOSTER_ENGINE
     reactor = build_reactor(name + "-reactor", engine, scene)
-    reactor.position.z = engine["z"]
-    reactor.parent = node
+    reactor.position.set(sign * BOOSTER_X, engine["y"], engine["z"])
+    reactor.parent = root
 
 
 def _build_armour(side: str, sign: float, root: Any, scene: Any) -> None:

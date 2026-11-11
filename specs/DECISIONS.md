@@ -2262,13 +2262,18 @@
   - wings cranked and swept back (they were forward-swept), with gunmetal panel lines;
   - nacelles longer (2.0) and further back, their back third and nozzles out past the tail;
   - an assault pack on top:
-    - two back boosters (steel casing, accent band, own reactor and flame);
+    - two back boosters, each with its own reactor and flame (first steel tubes on the back;
+      then, owner: "rework the blend between the inner and outer reactors so they dont just
+      looks like tubes put next to each other", humps of the hull's skin: a `BOOSTER_HEIGHT`
+      column in the stations, blended by the same smooth maximum as the shoulders, an accent
+      band lofted across each; the hull runs on to z -2.0, one engine block whose tail face
+      wraps the four engines; 31 points across the top, half evenly spaced, for the humps);
     - a conformal gunmetal armour plate over each nacelle shoulder, lofted from the hull's own
       top (`plate_sections`, `station_at` in `balanced_hull.py`);
     - a silver missile pod on each wing root, six forward launch tubes with accent tips;
     - a rail cannon on the right shoulder, its barrel between two accent rails;
   - the paint stays the project's three metal shades with blue accents.
-- **Consequences:** the ship measures 6,398 triangles in the browser with its flames (3,996
+- **Consequences:** the ship measures 6,752 triangles in the browser with its flames (3,996
   before; the trim adds about 200); the GFX-SHIP-05 budget goes from 4,500 to 7,000. The pack's
   triangles are all on the ship's top, seen from the playfield camera. The cannon makes the ship
   asymmetric; the hitbox is unchanged (gameplay is not touched).

@@ -98,3 +98,26 @@ def test_gfx_ship_01_an_armour_plate_lies_on_the_hull() -> None:
             assert y < top_height(station, x)
         assert ring[0][0] == pytest.approx(0.55)
         assert ring[4][0] == pytest.approx(0.3)
+
+
+def test_gfx_ship_01_the_booster_humps_rise_out_of_the_back_and_cover_their_engines() -> None:
+    """D-328: the boosters are humps of the hull's skin, not tubes on it, their engines inside."""
+    engine = ship.BOOSTER_ENGINE
+    back_end = engine["z"] + engine["length"] / 2
+    station = hull.station_at(-1.0)
+    assert top_height(station, hull.BOOSTER_X) > top_height(station, 0) + 0.1
+    for z in [back_end, -1.9, -1.99]:
+        station = hull.station_at(z)
+        for dx in [-0.06, 0, 0.06]:
+            # The engine's top, round its axis.
+            top = engine["y"] + (engine["radius"] ** 2 - dx * dx) ** 0.5
+            assert top_height(station, hull.BOOSTER_X + dx) > top, (z, dx)
+
+
+def test_gfx_ship_01_the_tail_face_wraps_all_four_engines() -> None:
+    """D-328: one engine block: the hull runs to the nozzles, the engines just out behind it."""
+    tail_z = STATIONS[-1][hull.Z]
+    nacelle_end = ship.REACTOR_Z - ship.REACTOR["length"] / 2
+    booster_end = ship.BOOSTER_ENGINE["z"] - ship.BOOSTER_ENGINE["length"] / 2
+    for end in [nacelle_end, booster_end]:
+        assert 0 < tail_z - end <= 0.2
