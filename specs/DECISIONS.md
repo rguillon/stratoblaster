@@ -2693,3 +2693,27 @@
   so their roots run along the pod. The pods' two 45° fins (`TIP_FIN`, D-330) are gone.
 - **Consequences:** the ship measures 10,532 triangles. The main nacelles' secondary scoops
   (D-347) no longer have the tails rising out of their ramps.
+
+### D-354 — A longer, blunt nose and a fighter's cockpit
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-05, GFX-SHIP-07, GFX-SHIP-09.
+- **Context:** owner: "rework the central part, make the nose longer, less pointy, and make a
+  better realistic looking cockpit".
+- **Decision:**
+  - **Nose:** the body's nose runs 0.55 further (tip at 3.3); the stations behind the tip swell
+    fast, so it ends in a blunt, rounded radome, with a panel seam at its joint (2.75). The front
+    stations were redrawn with as many as before, so the faceted body stays under a thousand
+    triangles (D-336). The laser and the gun fairing's front move 0.55 forward with it, so the
+    laser still reaches past the tip (D-340); the laser sits 0.02 lower, under the fuller nose.
+  - **Cockpit** (`balanced_cockpit.py`): the round bubble on its glowing frame gives way to a
+    canopy lofted along the ship on the deck: each section an arch whose feet sit on the hull's
+    top, closing just under it; a low, raked windscreen rising to a dark bow (eight segments over
+    the arch), the peak just behind, then a long fall into the spine. Its glass is a new
+    see-through material (`SHIP_LOOK.glass`, alpha 0.45). Under it: a dark floor, the instrument
+    hood, an ejection seat with its headrest and the pilot's helmet with a dark visor. The cockpit
+    keeps its glow (D-335) as rails along both sills.
+- **Consequences:** the ship is 5.75 long (5.2), about 40 px on the playfield (GFX-SHIP-07); it
+  measures 10,797 triangles. Transcrypt leaves annotated module-level names unexported and has no
+  `from package import module as alias`: the cockpit's tunables are plain dicts of numbers,
+  imported by name.

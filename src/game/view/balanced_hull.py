@@ -31,12 +31,13 @@ SPINE = 5
 # `[z, body half width, deck height, belly depth, chine half width, spine]`, nose to tail. D-332:
 # long and slim; D-336: the chines widen from the canards into strakes out to the nacelles (their
 # inner corner at 0.58 across) and close in behind them; a spine ridge runs from the canopy's back
-# to the tail.
+# to the tail. D-354 (owner: "make the nose longer, less pointy"): the nose runs 0.55 further, to
+# 3.3, and is blunt: it swells fast behind its tip, a rounded radome rather than a needle.
 STATIONS = [
-    [2.75, 0, 0, 0, 0, 0],
-    [2.45, 0.04, 0.035, 0.03, 0.045, 0],
-    [2.0, 0.09, 0.075, 0.06, 0.1, 0],
-    [1.5, 0.15, 0.12, 0.1, 0.17, 0],
+    [3.3, 0, 0, 0, 0, 0],
+    [3.22, 0.05, 0.043, 0.038, 0.055, 0],
+    [2.85, 0.12, 0.1, 0.083, 0.13, 0],
+    [1.6, 0.182, 0.148, 0.122, 0.21, 0],
     [1.0, 0.2, 0.16, 0.13, 0.25, 0],
     [0.5, 0.24, 0.19, 0.15, 0.38, 0.02],
     [0.0, 0.26, 0.2, 0.16, 0.57, 0.04],

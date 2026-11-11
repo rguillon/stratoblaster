@@ -27,6 +27,9 @@ SHIP_LOOK = record({
     # The inside of the intakes, matte black (D-347, owner: "make the back of the reactor intake
     # mat black"): no metal, fully rough, so it takes no highlight.
     "intakeBlack": {"albedo": [0.012, 0.012, 0.015], "metallic": 0, "roughness": 1},
+    # The canopy's tinted glass (D-354): see-through, the cockpit showing under it, with the sky's
+    # reflections over it.
+    "glass": {"albedo": [0.02, 0.07, 0.14], "metallic": 0.2, "roughness": 0.06, "alpha": 0.45},
     "reactorCore": {"emissive": [0.35, 0.75, 1]},
     # GFX-SHIP-09 (D-335, owner: "remove the highlight as an outter layer for the player's ship,
     # instead make it look like it's the extremities of the wings and cockpit that are glowing"):

@@ -17,10 +17,15 @@ variable fighter "with full upgrades", in the genre but copying no existing desi
 5.2 model units long (4.8 until D-332).
 
 **Central body** (owner, D-332: "make the central body longer and thiner, the central body had no
-back reactor"): a long, slim fuselage, a needle nose swelling into the cockpit, widest behind it
-(0.52 across), tapering to a point at the tail; nothing comes out of its back. A framed bubble
-canopy set forward, a teardrop with its peak ahead of its middle, its front rounded off rather than
-pointed (D-346, owner: "make the cockpit tip less pointy"); canards. Under the belly
+back reactor"): a long, slim fuselage, widest behind the cockpit (0.52 across), tapering to a
+point at the tail; nothing comes out of its back. Its nose is long and blunt (D-354, owner: "make
+the nose longer, less pointy": 0.55 longer, to 3.3, swelling fast behind its tip into a rounded
+radome, a panel seam at its joint; a needle before). The cockpit is a fighter's (D-354: "make a
+better realistic looking cockpit"; a round bubble on a glowing frame before): a canopy lofted along
+the ship on the deck, each section an arch on its sill, a low raked windscreen rising to a dark
+bow, the peak just behind it, then a long fall into the spine; tinted see-through glass over a dark
+floor, the instrument hood under the windscreen, an ejection seat with its headrest and the
+pilot's helmet with a dark visor; glowing rails along both sills; canards. Under the belly
 (D-339, owner: "rework the undergun, make a cool looking laser and add two miniguns on it's
 sides"; D-340: "make the lazer longer, it should go further than the tip of the ship, and rework
 those weapons, make them better integrated into the hull"): a faceted keel fairing of hull metal
@@ -173,10 +178,10 @@ than the one before. The metals take the brighter hull light of GFX-ART-08.
 ### GFX-SHIP-05 — Polygon budget · MUST
 
 The player ship is under 11,000 triangles (2,000 until D-327, 4,500 until D-328, 7,000 until
-D-330; measured 10,004 in the browser with its flames, its six reactors and their four finned intakes,
+D-330; measured 10,797 in the browser (D-354; 10,004 at D-348) with its flames, its six reactors and their four finned intakes,
 D-348). The round
 parts' extra triangles go on their upper half only, the side the playfield camera sees: the
-canopy 16 over 3; the canopy frame, mostly hidden, 8 over 2; the tip reactors' body, a rounded
+canopy 11 points over its arch, 2 under the sill; the tip reactors' body, a rounded
 rectangle of 12 points, smooth all round. The tip reactors are rounded
 hexagons, 3 points a corner (18 round), their rings 2 (12 round); the main reactors and the tip
 intakes octagons (24 round, rings 16); the missile pods crisp flat-shaded octagons, 2 points a
@@ -210,11 +215,11 @@ own phase, so no two flicker in step. The core and flame bloom in the glow layer
 ### GFX-SHIP-07 — Size and heading on the playfield · SHOULD
 
 On the playfield the ship is drawn `PLAYER_SHIP_SCALE` logical pixels per model unit, nose up the
-screen; the Balanced ship is then about 36 px long (34 until D-332), the length `L` other specs
-measure in.
+screen; the Balanced ship is then about 40 px long (34 until D-332, 36 until D-354), the length
+`L` other specs measure in.
 
 **Acceptance criteria**
-- Given the Balanced ship on the playfield, then it is about 36 px long, nose towards the top.
+- Given the Balanced ship on the playfield, then it is about 40 px long, nose towards the top.
 
 *Sources: D-015.*
 
@@ -243,7 +248,7 @@ strip along the leading edge of each main wing, body strake (in short strips alo
 D-336) and canard (and the canard's tip), and of each tail and ventral fin (and its tip; D-346,
 owner: "add highlight to the vertical wings too"), half
 on the panel and half out past it, a hair thicker than the panel so it caps the edge seen from
-above and from ahead; and the canopy's frame, whose rim shows round the canopy. The guns (the
+above and from ahead; and the rails along the canopy's sills (D-354; its frame's rim before). The guns (the
 missile launchers, the laser, the miniguns and their fairing) and the reactors' bodies do not glow, but for the
 laser's core and emitter, of the reactors' core light (D-339, D-342). The main wing's strip stops
 either side of the tip reactors' body, so it does not cross their intake (D-339).
@@ -251,8 +256,8 @@ either side of the tip reactors' body, so it does not cross their intake (D-339)
 **Acceptance criteria**
 - Given the ship model, then it has no trim; the main wings', strakes', canards', tails' and ventral
   fins' leading edges
-  have a glowing strip, none of the guns do, and the canopy's frame is of the glowing material (unit
-  tests).
+  have a glowing strip, none of the guns do, and the canopy's sill rails are of the glowing
+  material (unit tests).
 - Given the ship in play, then it shows its glowing edges and flames and nothing else round it
   (manual).
 
@@ -266,7 +271,9 @@ either side of the tip reactors' body, so it does not cross their intake (D-339)
 | Steel | albedo [0.4, 0.45, 0.54], metallic 0.85, roughness 0.45 | `SHIP_LOOK["hullMid"]` |
 | Gunmetal | albedo [0.2, 0.23, 0.29], metallic 0.85, roughness 0.5 | `SHIP_LOOK["hullDark"]` |
 | Accent | albedo [0.16, 0.3, 0.6], metallic 0.75, roughness 0.4 | `SHIP_LOOK["accent"]` |
-| Canopy | albedo [0.03, 0.08, 0.18], emissive [0, 0.06, 0.12] | `SHIP_LOOK["canopy"]` |
+| Canopy glass | albedo [0.02, 0.07, 0.14], metallic 0.2, roughness 0.06, alpha 0.45 (D-354) | `SHIP_LOOK["glass"]` |
+| Cockpit | canopy z 1.72 to 0.46, up to 0.104 half wide and 0.128 over the sill; bow at 1.42; helmet at 0.93 | `balanced_cockpit.py` |
+| Visor, intake fans | albedo [0.03, 0.08, 0.18], emissive [0, 0.06, 0.12] | `SHIP_LOOK["canopy"]` |
 | Reactor core / exhaust / flame / plasma | [0.35, 0.75, 1] / [0.1, 0.45, 1] α 0.45 / [0.55, 0.85, 1] α 0.75 / [0.3, 0.7, 1] α 0.6 | `SHIP_LOOK` |
 | Flame flicker | length ±0.14, width ±0.06, brightness ±0.2; 5.3, 11.7, 19.1 Hz | `REACTOR_FLAME` in `ship_look.py` |
 | Inner flame | 0.6 length, 0.55 width of the exhaust cone | `REACTOR_FLAME` |
@@ -275,7 +282,7 @@ either side of the tip reactors' body, so it does not cross their intake (D-339)
 | Bank | `max_deg` 35°, `ease_per_sec` 8 | `src/config/game_play.py` `ShipRoll(35, 8)` |
 | Triangle budget | 11,000 | GFX-SHIP-05 |
 | Edge glow | emissive [0.25, 0.85, 1]; strips 0.035 wide, the panel's thickness + 0.006 | `ship_look.py` `SHIP_LOOK["edgeGlow"]`; `balanced_ship.py` `EDGE_GLOW` |
-| Sections | hull 9 points over the top, 6 under it, all flat (D-336), canopy 16 / 3, intakes, nacelles, rings 12 / 3, canopy frame 8 / 2 (upper / lower facets) | `balanced_hull.py` `TOP_POINTS`; `ship_parts.py` `SMOOTH_PART_SECTION`; `balanced_ship.py` |
+| Sections | hull 9 points over the top, 6 under it, all flat (D-336), canopy 11 over its arch / 2 under (D-354), intakes, nacelles, rings 12 / 3 (upper / lower facets) | `balanced_hull.py` `TOP_POINTS`; `ship_parts.py` `SMOOTH_PART_SECTION`; `balanced_ship.py` |
 | Hull stations | 12 (z 2.75 to -2.45, closed at both ends), each gap cut in 3 | `balanced_hull.py` `STATIONS`, `STATION_STEPS` |
 | Hull facets | chine root 1.1, shoulder 0.8, deck edge 0.4 of the body's half width; shoulder at 0.75 of the deck's height | `balanced_hull.py` `CHINE_ROOT`, `SHOULDER`, `DECK_EDGE`, `SHOULDER_HEIGHT` |
 | Body details | seams at z 1.7, 0.55, -0.75, -1.75 (0.024 wide, 2% proud); 3 vents a side, x 0.34-0.5 from z -0.15 | `balanced_ship.py` `SEAM_ZS`, `SEAM`, `VENTS` |
@@ -291,7 +298,7 @@ either side of the tip reactors' body, so it does not cross their intake (D-339)
 | Strakes | the body's chines, 0.64 half wide from z -0.4 to -1.2, 0.63 at -1.9; glowing edge from z 0.85 to -0.3 | `balanced_hull.py` `STATIONS`; `balanced_ship.py` `STRAKE_EDGE_ZS` |
 | Tip reactors' body | rounded rectangle 0.125 x 0.255 half, corners 0.1; z 0.675 to -0.62 from the reactors' middle; one octagonal intake, radius 0.124, stretched 2.05 upright | `TIP_BODY`, `TIP_BODY_PROFILE`, `TIP_INTAKE` |
 | Gun fairing | z -0.8 to 2.3, up to 0.21 half wide and 0.11 under the belly, its top 0.02 inside the belly and its top corners 0.02 inside the hull's underside (D-349) | `GUN_FAIRING`, `GUN_FAIRING_SECTION` |
-| Laser | at y -0.1; glowing core z 2.1 to 3.06 (nose tip 2.75), radius 0.012; rails 0.034 thick, x 0.02 to 0.052, z 2.0 to prongs at 3.2; bridge z 2.0 to 2.2; emitter to 3.13 | `LASER`, `LASER_RAIL`, `LASER_BRIDGE`, `LASER_EMITTER` |
+| Laser | at y -0.12; glowing core z 2.65 to 3.61 (nose tip 3.3, D-354), radius 0.012; rails 0.034 thick, x 0.02 to 0.052, z 2.55 to prongs at 3.75; bridge z 2.55 to 2.75; emitter to 3.68 | `LASER`, `LASER_RAIL`, `LASER_BRIDGE`, `LASER_EMITTER` |
 | Miniguns | at x ±0.27 (D-349), y -0.195, z 0.75; drum 0.9 long, radius 0.085, of hull metal; 6 six-sided barrels of radius 0.021 on a 0.048 ring, 0.5 long, each with a bore of 0.55 its radius, 0.06 deep (D-345, D-346) | `MINIGUN` |
 | Missile pods | through the wing at x 1.3, y 0, z -0.4; octagon, radius 0.1, corners rounded 0.08, 1.35 times taller, 1.16 long; 7 tips | `MISSILE_POD`, `MISSILE_POD_ROUNDING`, `MISSILE_POD_PROFILE`, `MISSILE_TIPS` |
 

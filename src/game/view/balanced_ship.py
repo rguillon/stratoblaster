@@ -16,6 +16,20 @@ their triangles go on the upper half, which the playfield camera sees (GFX-SHIP-
 
 import math
 
+from game.view.balanced_cockpit import (
+    ARCH_POINTS,
+    BOW,
+    HELMET,
+    HOOD,
+    HOOD_ZS,
+    SEAT,
+    SEAT_ZS,
+    bow_segments,
+    canopy_sections,
+    floor_height,
+    floor_sections,
+    rail_sections,
+)
 from game.view.balanced_hull import (
     BELLY_DEPTH,
     CHINE_EDGE,
@@ -52,8 +66,6 @@ from render.babylon import (
 from render.geometry.lathe_z import (
     LatheHalves,
     create_faceted_lathe_along_z,
-    create_smooth_top_lathe_along_z,
-    smooth_profile,
 )
 from render.geometry.section_loft import (
     create_section_loft,
@@ -202,32 +214,33 @@ GUN_FAIRING = [
     [-0.45, 0.14, 0.07],
     [0.3, 0.21, 0.11],
     [1.3, 0.19, 0.09],
-    [2.0, 0.08, 0.07],
-    [2.3, 0, 0],
+    [2.55, 0.08, 0.07],
+    [2.85, 0, 0],
 ]
 # The fairing's section, as shares of its half width: its top, its widest, its bottom; how far
 # down its widest point lies, as a share of its depth.
 GUN_FAIRING_SECTION = {"top": 0.8, "bottom": 0.55, "waist": 0.4}
 # The laser (D-342, owner: "review the laze design, the rings sucks"; a barrel ringed by accent
-# coils before): out of the fairing's nose and past the ship's tip (2.75), two gunmetal rails
+# coils before): out of the fairing's nose and past the ship's tip (3.3, D-354: everything 0.55
+# further forward with the longer nose), two gunmetal rails
 # taper forward into prongs either side of a glowing core rod, joined at their back by a bridge;
 # a glowing emitter at the core's tip, between the prongs. Its height; the core (Z back and front,
 # radius); the right rail's planform (mirrored left) and thickness; the bridge's planform; the
 # emitter (a lathe profile, Z absolute).
 LASER: dict[str, Any] = {
-    "y": -0.1,
-    "core": {"zs": [2.1, 3.06], "radius": 0.012},
+    "y": -0.12,
+    "core": {"zs": [2.65, 3.61], "radius": 0.012},
     "railThickness": 0.034,
 }
 LASER_RAIL = [
-    [0.02, 2.0],
-    [0.052, 2.0],
-    [0.052, 2.85],
-    [0.03, 3.2],
-    [0.02, 3.0],
+    [0.02, 2.55],
+    [0.052, 2.55],
+    [0.052, 3.4],
+    [0.03, 3.75],
+    [0.02, 3.55],
 ]
-LASER_BRIDGE = [[-0.052, 2.0], [0.052, 2.0], [0.052, 2.2], [-0.052, 2.2]]
-LASER_EMITTER = [[3.13, 0], [3.1, 0.022], [3.06, 0.03], [3.05, 0]]
+LASER_BRIDGE = [[-0.052, 2.55], [0.052, 2.55], [0.052, 2.75], [-0.052, 2.75]]
+LASER_EMITTER = [[3.68, 0], [3.65, 0.022], [3.61, 0.03], [3.6, 0]]
 # The miniguns, one in each flank of the fairing: their drums half sunk in it as blisters, their
 # six barrels out ahead of it. Place; drum; barrels (ring radius, radius, length, middle along Z
 # from the drum's); the clamp round the barrels. D-341 (owner: "increase ther size of the
@@ -248,7 +261,8 @@ MINIGUN: dict[str, Any] = {
 
 # Dark panel seams round the body (D-336): their Z, their half width along Z and how much larger
 # than the body's section they are.
-SEAM_ZS = [1.7, 0.55, -0.75, -1.75]
+# D-354: the radome's joint, behind the blunt nose.
+SEAM_ZS = [2.75, 1.85, 0.4, -0.75, -1.75]
 SEAM: dict[str, Any] = {"half": 0.012, "grow": 1.02}
 # Dark vents on the strakes, in front of and behind the wing roots (right side; mirrored left).
 VENTS = [
@@ -264,23 +278,11 @@ VENTS = [
 # Segments of each hand-set profile are cut into this many along a smooth curve.
 PROFILE_STEPS = 3
 
-# Canopy profile, `[z, radius]`: a teardrop bubble, its peak ahead of its middle; its front
-# rounded off (D-346, owner: "make the cockpit tip less pointy"; it came to a point at 1.45).
-CANOPY = [
-    [1.42, 0],
-    [1.41, 0.045],
-    [1.37, 0.08],
-    [1.28, 0.102],
-    [1.15, 0.11],
-    [0.95, 0.105],
-    [0.8, 0.06],
-    [0.7, 0],
-]
-# The canopy's smooth top: finer than the other parts, it is the shiniest thing on the ship.
-CANOPY_SECTION = LatheHalves(16, 3)
-CANOPY_FRAME_SECTION = LatheHalves(8, 2)
-# Middle of the canopy along Z, for scaling the frame around it.
-CANOPY_MID_Z = 1.08
+# The cockpit is `balanced_cockpit.py`'s (D-354: a fighter's canopy on the deck; a teardrop bubble
+# with a glowing frame under it before). The pilot's helmet and its visor, lathe profiles in units
+# of the helmet's radius (`[z, radius]`, nose to tail).
+HELMET_PROFILE = [[1.0, 0.0], [0.7, 0.71], [0.0, 1.0], [-0.7, 0.71], [-1.0, 0.0]]
+VISOR_PROFILE = [[1.08, 0.0], [0.62, 0.86], [0.2, 1.06]]
 
 # A missile launcher under each wing (owner, 2026-11-11: "rework the missiles pods, make them
 # look cool, and under the wings", D-330): a rounded hexagon pod, as the reactors, hung on a pylon,
@@ -508,28 +510,66 @@ def _build_seam(name: str, z: float, material: Any, parent: Any, scene: Any) -> 
 
 
 def _build_cockpit(root: Any, scene: Any) -> None:
-    """Build the bubble canopy and its frame."""
+    """Build the cockpit (D-354): canopy glass, its bow and sill rails, and what shows inside."""
     mats = get_ship_materials(scene)
-    # The frame is the canopy profile, a bit larger and longer.
-    frame_profile = [
-        [CANOPY_MID_Z + (point[0] - CANOPY_MID_Z) * 1.2, point[1] * 1.2] for point in CANOPY
-    ]
-    # Mostly hidden under the canopy: only its rim shows, so it stays coarse.
-    frame = create_smooth_top_lathe_along_z(
-        "balanced-canopy-frame", frame_profile, CANOPY_FRAME_SECTION, scene
-    )
-    frame.scaling.y = 0.8
-    frame.position.y = 0.15
-    # The frame's rim glows round the canopy (D-335: the cockpit glows, as the wings' edges do).
-    frame.material = mats.edgeGlow
-    frame.parent = root
+    glass = create_section_loft("balanced-canopy", canopy_sections(), ARCH_POINTS, scene)
+    glass.material = mats.glass
+    glass.parent = root
+    for side, sign in [("right", 1.0), ("left", -1.0)]:
+        rail = create_section_loft("balanced-canopy-rail-" + side, rail_sections(sign), 0, scene)
+        rail.material = mats.edgeGlow
+        rail.parent = root
+    bow = BOW
+    half_width = bow["width"] / 2
+    outline_z = [[-1.0, -half_width], [1.0, -half_width], [1.0, half_width], [-1.0, half_width]]
+    for k, (x, y, angle, length) in enumerate(bow_segments()):
+        node = new_transform_node("balanced-canopy-bow-" + str(k), scene)
+        node.position.set(x, y, bow["z"])
+        node.rotation.z = angle
+        node.parent = root
+        outline = [[p[0] * length / 2, p[1]] for p in outline_z]
+        panel(node.name + "-panel", outline, bow["thickness"], mats.hullDark, node)
+    _build_cockpit_inside(root, scene)
 
-    canopy = create_smooth_top_lathe_along_z(
-        "balanced-canopy", smooth_profile(CANOPY, PROFILE_STEPS), CANOPY_SECTION, scene
-    )
-    canopy.position.y = 0.17
-    canopy.material = mats.canopy
-    canopy.parent = root
+
+def _build_cockpit_inside(root: Any, scene: Any) -> None:
+    """Build what shows under the glass: the floor, the hood, the seat and the pilot's helmet."""
+    mats = get_ship_materials(scene)
+    floor = create_section_loft("balanced-cockpit-floor", floor_sections(), 0, scene)
+    floor.material = mats.intakeBlack
+    floor.parent = root
+    hood = HOOD
+    hood_floor = floor_height(HOOD_ZS[1])
+    outline = [[-hood["half"], HOOD_ZS[0]], [hood["half"], HOOD_ZS[0]]]
+    outline.append([hood["half"], HOOD_ZS[1]])
+    outline.append([-hood["half"], HOOD_ZS[1]])
+    mesh = panel("balanced-cockpit-hood", outline, hood["height"], mats.hullDark, root)
+    mesh.position.y = hood_floor + hood["height"] / 2
+    seat = SEAT
+    seat_floor = floor_height(SEAT_ZS[0])
+    for part, half, height in [
+        ("seat", seat["half"], seat["height"]),
+        ("headrest", seat["headHalf"], seat["headHeight"]),
+    ]:
+        outline = [[-half, SEAT_ZS[0]], [half, SEAT_ZS[0]], [half, SEAT_ZS[1]]]
+        outline.append([-half, SEAT_ZS[1]])
+        mesh = panel("balanced-cockpit-" + part, outline, height, mats.hullDark, root)
+        mesh.position.y = seat_floor + height / 2
+    helmet = HELMET
+    radius = helmet["radius"]
+    centre = floor_height(helmet["z"]) + helmet["y"]
+    parts: list[tuple[str, list[list[float]], Any]] = [
+        ("helmet", HELMET_PROFILE, mats.hull),
+        ("visor", VISOR_PROFILE, mats.canopy),
+    ]
+    for part, profile, material in parts:
+        scaled = [[p[0] * radius, p[1] * radius] for p in profile]
+        mesh = create_faceted_lathe_along_z(
+            "balanced-cockpit-" + part, scaled, LatheHalves(8, 3), scene
+        )
+        mesh.position.set(0, centre, helmet["z"])
+        mesh.material = material
+        mesh.parent = root
 
 
 def _build_wing(side: str, sign: float, root: Any, scene: Any) -> None:

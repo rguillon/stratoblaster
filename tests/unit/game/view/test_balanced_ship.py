@@ -17,7 +17,6 @@ from game.view.player_ship_models import PLAYER_SHIP_MODELS
 from render.geometry.lathe_z import (
     build_faceted_lathe_vertex_data,
     build_smooth_top_lathe_vertex_data,
-    smooth_profile,
 )
 from render.geometry.section_loft import build_section_loft
 
@@ -43,22 +42,6 @@ def _upper_share(profile: list[list[float]], halves: Any) -> float:
         y = sum(positions[indices[t + k] * 3 + 1] for k in range(3))
         upper += 1 if y >= 0 else 0
     return upper / (len(indices) / 3)
-
-
-@pytest.mark.parametrize(
-    ("profile", "halves"),
-    [
-        (
-            smooth_profile(balanced_ship.CANOPY, balanced_ship.PROFILE_STEPS),
-            balanced_ship.CANOPY_SECTION,
-        ),
-    ],
-)
-def test_gfx_ship_05_the_round_parts_put_their_triangles_on_the_upper_half(
-    profile: list[list[float]], halves: Any
-) -> None:
-    """D-327: at least three quarters of each round part's triangles are over the upper half."""
-    assert _upper_share(profile, halves) >= 0.75
 
 
 def test_gfx_ship_05_the_faceted_hull_stays_cheap() -> None:
@@ -137,10 +120,10 @@ def test_gfx_ship_01_the_body_has_seams_and_vents_on_its_strakes() -> None:
 
 
 def test_gfx_ship_01_the_central_body_is_long_and_slim_with_no_reactor_at_its_back() -> None:
-    """D-332: 5.2 long, closing to a point at the tail; about half as wide as before."""
+    """D-332: closing to a point at the tail; D-354: 5.75 long, the nose 0.55 longer than 5.2."""
     nose = hull.STATIONS[0]
     tail = hull.STATIONS[-1]
-    assert nose[hull.Z] - tail[hull.Z] == pytest.approx(5.2)
+    assert nose[hull.Z] - tail[hull.Z] == pytest.approx(5.75)
     assert all(v == 0 for v in tail[1:])
     assert max(s[hull.BODY_HALF_WIDTH] for s in hull.STATIONS) <= 0.3
     # The nacelles' nozzles are well clear of the body's centre line.
@@ -334,20 +317,22 @@ def test_gfx_ship_09_the_player_ship_has_no_trim_round_it() -> None:
     assert GAME.view.player_ship_models is PLAYER_SHIP_MODELS
 
 
-def test_gfx_ship_09_the_canopy_frame_glows(scene: Any, monkeypatch: Any) -> None:
-    """D-335: the cockpit's rim glows: the canopy frame is of the glowing material."""
+def test_gfx_ship_09_the_canopy_sills_glow(scene: Any, monkeypatch: Any) -> None:
+    """D-335, D-354: the cockpit glows along its sill rails; the canopy is of tinted glass."""
     meshes: dict[str, Any] = {}
 
-    def lathe(name: str, *_args: Any) -> Any:
+    def loft(name: str, *_args: Any) -> Any:
         meshes[name] = MagicMock(name=name)
         return meshes[name]
 
-    monkeypatch.setattr(balanced_ship, "create_smooth_top_lathe_along_z", lathe)
+    monkeypatch.setattr(balanced_ship, "create_section_loft", loft)
     materials = MagicMock(name="materials")
     monkeypatch.setattr(balanced_ship, "get_ship_materials", lambda _scene: materials)
     build_balanced_ship(scene)
-    assert meshes["balanced-canopy-frame"].material is materials.edgeGlow
-    assert meshes["balanced-canopy"].material is materials.canopy
+    for side in ["right", "left"]:
+        assert meshes["balanced-canopy-rail-" + side].material is materials.edgeGlow
+    assert meshes["balanced-canopy"].material is materials.glass
+    assert meshes["balanced-cockpit-floor"].material is materials.intakeBlack
 
 
 def test_gfx_ship_01_the_main_reactors_are_taller_than_wide(scene: Any, monkeypatch: Any) -> None:
@@ -378,14 +363,6 @@ def test_gfx_ship_01_the_minigun_barrels_are_hollow_at_their_muzzles() -> None:
     assert profile[2] == pytest.approx([0.25, 0.01])
     assert profile[3] == pytest.approx([0.25, 0.02])
     assert profile[-1] == pytest.approx([-0.25, 0])
-
-
-def test_gfx_ship_01_the_canopy_front_is_rounded_off() -> None:
-    """D-346: the canopy's front closes over a short, steep end, not to a point."""
-    front = balanced_ship.CANOPY[0]
-    near = balanced_ship.CANOPY[1]
-    assert front[1] == 0
-    assert near[1] / (front[0] - near[0]) > 2
 
 
 @pytest.mark.parametrize("up", [1, -1])
