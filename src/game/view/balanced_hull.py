@@ -154,3 +154,44 @@ def hull_section(station: list[float]) -> list[Any]:
 def hull_sections() -> list[list[Any]]:
     """Return the hull's sections, nose to tail."""
     return [hull_section(s) for s in smooth_stations(STATIONS, STATION_STEPS)]
+
+
+def station_at(z: float) -> list[float]:
+    """Return the hull's sizes at `z`, between the smoothed stations (nose to tail)."""
+    rows = smooth_stations(STATIONS, STATION_STEPS)
+    if z >= rows[0][Z]:
+        return list(rows[0])
+    for i in range(len(rows) - 1):
+        a = rows[i]
+        b = rows[i + 1]
+        if b[Z] <= z:
+            t = (a[Z] - z) / (a[Z] - b[Z])
+            return [a[c] + (b[c] - a[c]) * t for c in range(len(a))]
+    return list(rows[len(rows) - 1])
+
+
+def plate_sections(
+    xs: list[float], zs: list[float], thickness: float, count: int
+) -> list[list[Any]]:
+    """Return the sections of a plate lying on the hull's top, from `xs[1]` over to `xs[0]`.
+
+    Conformal: its top follows the hull `thickness` above it, its underside sinks a hair into the
+    skin, so it reads as armour laid on the hull, not a flat slab floating over it. `zs` is its
+    front and back; each ring has `count` top points (the smooth part), then the underside back.
+    """
+    sections: list[list[Any]] = []
+    steps = max(2, int((zs[0] - zs[1]) / 0.1 + 0.5))
+    for s in range(steps + 1):
+        z = zs[0] + (zs[1] - zs[0]) * s / steps
+        station = station_at(z)
+        top: list[list[float]] = []
+        under: list[list[float]] = []
+        for i in range(count):
+            x = xs[1] + (xs[0] - xs[1]) * i / (count - 1)
+            surface = top_height(station, x)
+            top.append([x, surface + thickness])
+            under.insert(0, [x, surface - 0.01])
+        ring = list(top)
+        ring.extend(under)
+        sections.append([z, ring])
+    return sections

@@ -12,12 +12,19 @@ are in [GAME-SHIP](../gameplay/player-ship.md).
 
 ### GFX-SHIP-01 — Balanced ship · MUST
 
-The Balanced ship is inspired by the Macross Delta VF-31J: a long pointed nose, a framed bubble
-canopy, a broad back, canards, leading-edge extensions, intakes feeding two reactors,
-forward-swept wings (the tip's leading edge ahead of the root's) with flap lines, canted twin
-tails, ventral fins and a gun pod under the belly. It carries no light of its own but its reactors
-(D-327: the nav lights, the pale blue wing bands and the tail stripes are gone). It is
-about 4.8 model units long.
+The Balanced ship is a heavy variable fighter carrying a full assault pack, an original design
+(owner, 2026-11-11, D-328: a variable fighter "with full upgrades", in the genre but copying no
+existing design): a long pointed nose, a framed bubble canopy set forward, a broad flat back,
+canards, leading-edge extensions, intakes feeding two big engine nacelles that run out past the
+tail, cranked wings swept back (the leading edge sweeps less past a kink halfway out; a square-cut
+tip) with flap and panel lines, canted twin tails, ventral fins and a gun pod under the belly. The
+pack on top: two booster engines on the back either side of the centre line, each a steel casing
+with an accent band and its own reactor and flame; a gunmetal armour plate laid over each nacelle
+shoulder, following the hull; a silver missile pod on each wing root, an accent stripe on top and
+six launch tubes in its dark front face, the missiles' accent tips showing; and a long rail cannon
+on the right shoulder, a gunmetal housing on a mount, its barrel between two accent rails, reaching
+almost to the nose. It carries no light of its own but its reactors (D-327: the nav lights, the
+pale blue wing bands and the tail stripes are gone). It is about 4.8 model units long.
 
 Its hull is one blended skin, not a set of basic shapes put together (owner, 2026-11-11, D-327:
 "rework the ship design to make it look better, more smoth" and "it looks like a bunch of basic
@@ -39,9 +46,12 @@ mouth; its duct turns in and runs back to a dark fan face ringed in blue metal, 
 centre. The mouths face forward, so the frontal menu camera looks straight into them.
 
 **Acceptance criteria**
-- Given the Balanced model, then its wing tips' leading edges are ahead of their roots
-  (forward-swept), and it has two reactors, each with an intake ahead of it (a shell, a lip, a fan
-  face, a glowing fan ring and a spinner).
+- Given the Balanced model, then its wing tips' leading edges are behind their roots (swept
+  back), sweeping less outboard of the kink, and it has two reactors, each with an intake ahead of
+  it (a shell, a lip, a fan face, a glowing fan ring and a spinner) (unit tests).
+- Given the pack, then the boosters sit on the back inside the armour plates, the cannon over the
+  right plate, the missile pods on the wings between root and tip, and each armour plate's top
+  follows the hull a thickness over it (unit tests).
 - Given a smooth-top lathe or the lofted hull, then its top's vertices share one normal pointing
   outward, each belly triangle has a single normal, and its triangles face outward (unit tests).
 - Given the hull at the widest stations, then its top between the back and a shoulder never dips
@@ -63,9 +73,10 @@ Removed with the Light ship (D-326).
 
 The player ship's materials are made once per scene: a grey/blue physically based metal in three
 shades (D-327, owner: "add different shades of metalic"): a light silver **hull** (the blended
-hull, the intake shells), a mid **steel** (the wings, canards and spinners) and a dark
-**gunmetal** (the tails, ventral fins and flaps); a blue accent metal (the intake lips and fan
-rings), a dark canopy with a faint blue glow, a darker trim metal (frames, barrels) and a dark metal
+hull, the intake shells, the missile pods), a mid **steel** (the wings, canards, spinners and
+booster casings) and a dark **gunmetal** (the tails, ventral fins, flaps, panel lines, armour plates
+and the cannon's housing); a blue accent metal (the intake lips and fan rings, the booster bands,
+the pods' stripes and missile tips, the cannon's rails), a dark canopy with a faint blue glow, a darker trim metal (frames, barrels) and a dark metal
 nozzle. The metals are satin, not mirrors (owner: "remove the ugly light spots, make something
 more smoth"): metallic at least 0.7, roughness 0.4 to 0.55, so the light rolls smoothly over the
 hull instead of breaking into hard white spots. Each shade is more blue than red, and each darker
@@ -80,13 +91,15 @@ than the one before. The metals take the brighter hull light of GFX-ART-08.
 
 ### GFX-SHIP-05 — Polygon budget · MUST
 
-The player ship is under 4,500 triangles (2,000 until D-327). The extra triangles go on its upper
-half only, the side the playfield camera sees: the hull's sections have 24 facets across the top and
-3 under the belly, the canopy 16 over 3, the intakes, nacelles and their rings 12 over 3; the
-canopy frame, mostly hidden, 8 over 2. The gun pod under the belly keeps 6 sides.
+The player ship is under 7,000 triangles (2,000 until D-327, 4,500 until D-328; measured 6,398 in
+the browser with its flames, D-328). The extra triangles go on its upper half only, the side the
+playfield camera sees: the hull's sections have 24 facets across the top and 3 under the belly, the
+canopy 16 over 3, the intakes, nacelles, booster casings and their rings 12 over 3; the canopy
+frame, mostly hidden, 8 over 2; the armour plates lie wholly on top. The gun pod under the belly and
+the cannon's housing and barrel keep 6 sides, the missile tips 4.
 
 **Acceptance criteria**
-- Given the player ship model, then it has fewer than 4,500 triangles (manual: the dev ship viewer's
+- Given the player ship model, then it has fewer than 7,000 triangles (manual: the dev ship viewer's
   polygon count).
 - Given the hull and its round parts, then at least three quarters of their triangles lie over the
   upper half (unit tests).
@@ -95,7 +108,7 @@ canopy frame, mostly hidden, 8 over 2. The gun pod under the belly keeps 6 sides
 
 ### GFX-SHIP-06 — Reactors with a living blue flame · MUST
 
-Each of the ship's two reactors is a metal nacelle with a smooth top (GFX-SHIP-05), ring bands, a
+Each of the ship's reactors (two in the nacelles, one behind each booster, D-328) is a metal nacelle with a smooth top (GFX-SHIP-05), ring bands, a
 blue self-lit core at its nozzle and an animated blue flame behind it: an outer exhaust cone, a
 shorter, hotter inner cone, and plasma puffs that flow from the nozzle down the exhaust, shrinking
 and fading. The flame's length, width and brightness flicker (mixed sines), each reactor with its
@@ -157,16 +170,24 @@ lights since D-327). There is no other outline or halo round it, and no hitbox m
 | Puffs | 3, 1.8 exhaust lengths/s, 1.1 nacelle radius | `REACTOR_FLAME` |
 | `PLAYER_SHIP_SCALE` | 7 px per model unit | `ship_look.py` |
 | Bank | `max_deg` 35°, `ease_per_sec` 8 | `src/config/game_play.py` `ShipRoll(35, 8)` |
-| Triangle budget | 4,500 | GFX-SHIP-05 |
+| Triangle budget | 7,000 | GFX-SHIP-05 |
 | Sections | hull 24 / 3, canopy 16 / 3, intakes, nacelles, rings 12 / 3, canopy frame 8 / 2 (upper / lower facets) | `balanced_hull.py` `TOP_POINTS`; `ship_parts.py` `SMOOTH_PART_SECTION`; `balanced_ship.py` |
 | Hull stations | 11, each gap cut in 3 | `balanced_hull.py` `STATIONS`, `STATION_STEPS` |
 | `hull_fillet` | 0.1 model units | `balanced_hull.py` `FILLET` |
 | Shoulders | at x = ±0.42, 0.22 half wide | `balanced_hull.py` `SHOULDER_X`, `SHOULDER_HALF_WIDTH` |
 | `profile_steps` | 3 | `balanced_ship.py` `PROFILE_STEPS` |
+| Wing | cranked, swept back: root x 0.4, kink x 1.2, tip x 2.05 to 2.1 | `balanced_ship.py` `BALANCED_WING` |
+| Nacelles | radius 0.22, length 2.0, centre z -1.15 | `REACTOR`, `REACTOR_Z` |
+| Boosters | at x ±0.18, y 0.3, z -0.95; casing radius 0.12; engine radius 0.1, length 0.5 | `BOOSTER_AT`, `BOOSTER_CASING`, `BOOSTER_ENGINE` |
+| Armour plates | x 0.29 to 0.57, z 0.35 to -0.6, 0.035 thick, 9 points across | `ARMOUR_XS`, `ARMOUR_ZS`, `ARMOUR_THICKNESS`, `ARMOUR_POINTS` |
+| Missile pods | x 0.84 to 1.18, z -0.15 to -0.86, 0.15 high; 3 × 2 tubes | `MISSILE_POD`, `MISSILE_TUBES` |
+| Rail cannon | x 0.43; housing 0.95 long; barrel 1.7 long; rails 1.5 long | `CANNON` |
 
 ## Notes
 
-- The ship models were designed as references "inspired by" their models, not replicas; they were
+- The ship is an original design (D-328): it takes the genre's traits (a variable fighter with
+  big leg-like nacelles and an add-on weapons pack), not any existing design's shapes or colours.
+- The ship models were first designed as references "inspired by" their models, not replicas; they were
   validated by eye in phase 2. The Heavy (a B-2 style flying wing) and the Light (a four-winged
   tandem interceptor) were removed with the ship select screen (D-326).
 - The ships were first shown on a `player_ship/` viewer page, removed with the other debug pages

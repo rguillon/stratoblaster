@@ -75,3 +75,26 @@ def test_gfx_ship_01_a_section_runs_over_the_top_then_along_the_belly() -> None:
     assert top[0][0] > 0 > top[-1][0]
     assert all(p[1] >= 0 for p in top)
     assert all(p[1] < 0 for p in ring[TOP_POINTS:])
+
+
+def test_gfx_ship_01_station_at_gives_each_station_and_blends_between() -> None:
+    station = STATIONS[6]
+    assert hull.station_at(station[hull.Z]) == pytest.approx(station)
+    between = hull.station_at((STATIONS[6][hull.Z] + STATIONS[7][hull.Z]) / 2)
+    assert STATIONS[7][hull.Z] < between[hull.Z] < STATIONS[6][hull.Z]
+
+
+def test_gfx_ship_01_an_armour_plate_lies_on_the_hull() -> None:
+    """D-328: its top follows the hull a thickness over it; its underside sinks into the skin."""
+    sections = hull.plate_sections([0.3, 0.55], [0.3, -0.5], 0.04, 5)
+    assert sections[0][0] == pytest.approx(0.3)
+    assert sections[-1][0] == pytest.approx(-0.5)
+    for z, ring in sections:
+        assert len(ring) == 10
+        station = hull.station_at(z)
+        for x, y in ring[:5]:
+            assert y == pytest.approx(top_height(station, x) + 0.04)
+        for x, y in ring[5:]:
+            assert y < top_height(station, x)
+        assert ring[0][0] == pytest.approx(0.55)
+        assert ring[4][0] == pytest.approx(0.3)

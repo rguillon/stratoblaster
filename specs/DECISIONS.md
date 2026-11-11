@@ -2250,3 +2250,25 @@
   - The thinner, softer trim is checked against the ship's contrast floor by the readability e2e
     test (GFX-READ-07, 3:1).
 - **Status:** Proposed
+
+### D-328 — The player ship redesigned as a heavy variable fighter with an assault pack
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-04, GFX-SHIP-05, GFX-SHIP-06.
+- **Context:** the owner asked to rewrite the ship to look like a specific, well-known anime
+  variable fighter with its full upgrade pack, to tune it later so it would not infringe. A copy
+  of that design was declined; the owner agreed to an original design in the same genre.
+- **Decision:** keep the blended hull, canopy, intakes and tails of D-327, and change:
+  - wings cranked and swept back (they were forward-swept), with gunmetal panel lines;
+  - nacelles longer (2.0) and further back, their back third and nozzles out past the tail;
+  - an assault pack on top:
+    - two back boosters (steel casing, accent band, own reactor and flame);
+    - a conformal gunmetal armour plate over each nacelle shoulder, lofted from the hull's own
+      top (`plate_sections`, `station_at` in `balanced_hull.py`);
+    - a silver missile pod on each wing root, six forward launch tubes with accent tips;
+    - a rail cannon on the right shoulder, its barrel between two accent rails;
+  - the paint stays the project's three metal shades with blue accents.
+- **Consequences:** the ship measures 6,398 triangles in the browser with its flames (3,996
+  before; the trim adds about 200); the GFX-SHIP-05 budget goes from 4,500 to 7,000. The pack's
+  triangles are all on the ship's top, seen from the playfield camera. The cannon makes the ship
+  asymmetric; the hitbox is unchanged (gameplay is not touched).
