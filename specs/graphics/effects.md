@@ -41,12 +41,16 @@ within their life. Each spark is a diamond of few triangles.
 ### GFX-FX-03 — Missile impact blast · MUST
 
 Where a player missile hits, a cyan glowing disc of `radiusFactor` times the missile's blast radius
-swells and fades over `duration`, in the player family.
+swells and fades over `duration`, in the player family, and a little explosion goes off there: a
+missile's layered blast (GFX-FX-05, GFX-FX-06) of the missile's blast radius (D-321). Bullets and
+the laser, which have no blast radius, make no explosion.
 
 **Acceptance criteria**
 - Given a missile impact, then a disc grows there and is gone after `duration` (unit tests).
+- Given a missile impact, then a missile blast of its blast radius goes off where it hit; given a
+  bullet impact, then none (unit tests).
 
-*Sources: P03-R03, P14-R02.*
+*Sources: P03-R03, P14-R02, D-321.*
 
 ### GFX-FX-04 — Hits on the player · MUST
 

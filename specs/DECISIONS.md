@@ -2067,3 +2067,21 @@
   - The terrain chunks are about 13 % wider, and at most one more chunk is kept.
   - Levels without water are unchanged.
 - **Status:** Proposed
+
+### D-321 — A little explosion where a missile hits
+- **Date:** 2026-11-11
+- **Requirements:** GFX-FX-03, GFX-FX-05, GFX-FX-06.
+- **Context:** owner: "add a little explosion when a missile hits an enemy".
+- **Decision:**
+  - **What it adds:** each player-missile impact (a shot impact with a blast radius) also sets
+    off the engine's missile blast where it hit, the size of the missile's blast radius (10 px):
+    a small fireball, ring, debris and embers, shrunk by `missileScale`.
+  - **What stays:** the cyan impact disc stays.
+  - **Not affected:** bullets and the laser have no blast radius and keep their sparks.
+  - **Code:** the blasts are made in `app/hit_blasts.py` (`impact_blasts`), beside the hits on
+    the player, from the impacts the step already reports. The simulation is unchanged.
+- **Consequences:**
+  - A missile volley at level 5 sets off up to five small blasts at once. They are counted
+    against the blast particle caps like any other.
+  - Missile hits on a shielded core (blocked) explode too: the missile still detonates.
+- **Status:** Proposed

@@ -17,7 +17,7 @@ from app.game_play_hud import (
     hud_frame,
 )
 from app.game_play_state import level_state
-from app.hit_blasts import hit_blasts
+from app.hit_blasts import hit_blasts, impact_blasts
 from app.level_prepare import level_of, scenery_with_runout
 from app.level_scene import LevelSceneOptions, build_level_scene, compile_shaders, sky_state
 from app.rate_meter import RateMeter
@@ -336,6 +336,7 @@ class GamePlay:
             if self.run.bonuses is not None:
                 picked.extend(self.run.bonuses.picked)
             blasts.extend(hit_blasts(self.run.hits, self.run.ship))
+            blasts.extend(impact_blasts(self.run.impacts))
         track = self.run.track
         # The scroll, drawn between two steps (ENG-100).
         distance = self._previous + (track.distance - self._previous) * advance.alpha
