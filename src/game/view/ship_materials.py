@@ -42,6 +42,7 @@ class ShipMaterials:
         reactorPlasma: Any,
         edgeGlow: Any = None,
         intakeBlack: Any = None,
+        bore: Any = None,
     ) -> None:
         self.hull = hull
         # Two darker shades of the hull's metal (D-327).
@@ -60,6 +61,8 @@ class ShipMaterials:
         self.edgeGlow = edgeGlow
         # The matte black inside the intakes (D-347).
         self.intakeBlack = intakeBlack
+        # Unlit pure black for the barrels' bores: no light nor reflection greys them (D-352).
+        self.bore = bore
 
 
 def _rgb_color(rgb: Any) -> Any:
@@ -121,6 +124,7 @@ def _create_ship_materials(scene: Scene) -> ShipMaterials:
         _glow("ship-reactor-plasma", SHIP_LOOK.reactorPlasma, scene),
         edge_glow,
         _metal("ship-intake-black", SHIP_LOOK.intakeBlack, scene),
+        _light("ship-bore", [0, 0, 0], scene),
     )
 
 

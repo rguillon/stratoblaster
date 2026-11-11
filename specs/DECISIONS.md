@@ -2662,3 +2662,18 @@
   - **Minigun bores:** each barrel is two lathes, the bore (its bottom and wall) in the matte
     black intake material and the rest in trim metal.
 - **Consequences:** the ship measures 10,580 triangles, under the 11,000 budget.
+
+### D-352 — The minigun bores pure black and wider
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01.
+- **Context:** owner, after D-351: "and make the inner part of the minigun mat black" (again),
+  then "not the part betweel the barrels, I want the bullet holes on the barrels to be bkacl".
+  A first attempt filled the barrel cluster's inside with black (a core between the barrels and
+  a plate over the drum's front); it was reverted. The bores were matte black already (D-351),
+  but in the ship's PBR light (the hull light's 1.8 times the sky's reflections) they read grey,
+  and at 0.55 of the barrel's radius, small.
+- **Decision:** the bores take a new `bore` material: unlit, pure black (`ShipMaterials.bore`),
+  so neither the lights nor the sky reflect in them; and they are wider, 0.7 of the barrel's
+  radius, a thin metal rim round each.
+- **Consequences:** the triangle count is unchanged.
