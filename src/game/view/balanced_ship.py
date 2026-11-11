@@ -25,6 +25,7 @@ from game.view.balanced_hull import (
     hull_sections,
     station_at,
     top_height,
+    underside_height,
 )
 from game.view.ship_materials import get_ship_materials
 from game.view.ship_parts import (
@@ -193,10 +194,10 @@ REACTOR_SCOOP: dict[str, Any] = {
 # `[z, half width, depth under the belly]`, back to front, closed at both ends.
 GUN_FAIRING = [
     [-0.8, 0, 0],
-    [-0.45, 0.11, 0.07],
-    [0.3, 0.15, 0.11],
-    [1.3, 0.13, 0.09],
-    [2.0, 0.07, 0.07],
+    [-0.45, 0.14, 0.07],
+    [0.3, 0.21, 0.11],
+    [1.3, 0.19, 0.09],
+    [2.0, 0.08, 0.07],
     [2.3, 0, 0],
 ]
 # The fairing's section, as shares of its half width: its top, its widest, its bottom; how far
@@ -228,9 +229,10 @@ LASER_EMITTER = [[3.13, 0], [3.1, 0.022], [3.06, 0.03], [3.05, 0]]
 # miniguns, and make their cannons thicker"): larger drums, thicker six-sided barrels. D-345
 # ("increase the minigun size again, and add hole into the barrels"): larger again, each barrel
 # hollow at its muzzle, a bore of `bore.radius` of the barrel's, `bore.depth` deep. D-346 ("spread
-# the minguns a little more"): 0.21 out from the centre line (0.17 before).
+# the minguns a little more"): 0.21 out from the centre line (0.17 before). D-349 ("and spread the
+# minigun more again"): 0.27, the fairing widened under the body's flanks to keep them half in it.
 MINIGUN: dict[str, Any] = {
-    "x": 0.21,
+    "x": 0.27,
     "y": -0.195,
     "z": 0.75,
     "drum": {"length": 0.9, "radius": 0.085},
@@ -374,13 +376,16 @@ def fairing_section(z: float, size: list[float]) -> list[Any]:
     half = size[1]
     depth = size[2]
     shape = GUN_FAIRING_SECTION
-    # Its top a little inside the belly, so the fairing grows out of it.
-    top = -station_at(z)[BELLY_DEPTH] + 0.02
+    # Its top a little inside the belly, so the fairing grows out of it; its top corners a little
+    # inside the hull's underside where they reach out under its flanks (D-349).
+    station = station_at(z)
+    top = -station[BELLY_DEPTH] + 0.02
+    corner = max(top, underside_height(station, half * shape["top"]) + 0.02)
     bottom = top - depth - 0.02
     waist = top - (depth + 0.02) * shape["waist"]
     ring = [
-        [half * shape["top"], top],
-        [-half * shape["top"], top],
+        [half * shape["top"], corner],
+        [-half * shape["top"], corner],
         [-half, waist],
         [-half * shape["bottom"], bottom],
         [half * shape["bottom"], bottom],

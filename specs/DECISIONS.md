@@ -2611,3 +2611,13 @@
   intakes' fins span their ducts.
 - **Consequences:** the ship measures 10,004 triangles, under the 11,000 budget; the scoops'
   detail was cut (3 points a corner and 6 ramp sections first gave 10,372) to keep a margin.
+
+### D-349 — Miniguns spread further, a wider gun fairing
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01.
+- **Context:** owner: "and spread the minigun more again".
+- **Decision:** the miniguns sit 0.27 out from the centre line (0.21). To keep their drums half in
+  the fairing's flanks, the fairing widens (up to 0.21 half wide, 0.15 before); where its top
+  corners reach out under the body's flanks they rise to 0.02 inside the hull's underside
+  (`underside_height`, `balanced_hull.py`), so no gap opens between fairing and hull.

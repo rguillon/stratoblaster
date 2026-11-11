@@ -240,7 +240,7 @@ def test_gfx_ship_01_a_laser_with_a_minigun_either_side_under_the_belly(
     for _x, z in rail:
         assert top < -hull.station_at(z)[hull.BELLY_DEPTH]
     # The minigun drums sit in the fairing's flanks: half in, half out.
-    _z, ring = balanced_ship.fairing_section(gun["z"], [gun["z"], 0.14, 0.1])
+    _z, ring = balanced_ship.fairing_section(gun["z"], [gun["z"], 0.2, 0.1])
     widest = max(p[0] for p in ring)
     assert gun["x"] - gun["drum"]["radius"] < widest < gun["x"] + gun["drum"]["radius"]
 
@@ -390,3 +390,13 @@ def test_gfx_ship_01_the_reactor_scoops_have_fins_across_their_mouths(
     assert len(fins) == 2 * 2 * len(balanced_ship.REACTOR_SCOOP["fins"])
     heights = [max(p[1] for p in ring) for _z, ring in balanced_ship.scoop_sections(1)]
     assert heights == sorted(heights, reverse=True)
+
+
+def test_gfx_ship_01_the_fairing_meets_the_hull_under_its_flanks() -> None:
+    """D-349: the widened fairing's top corners lie inside the hull's underside, not under it."""
+    for size in balanced_ship.GUN_FAIRING:
+        if size[1] == 0:
+            continue
+        _z, ring = balanced_ship.fairing_section(size[0], size)
+        x, y = ring[0]
+        assert y > hull.underside_height(hull.station_at(size[0]), x)

@@ -167,6 +167,28 @@ def hull_section(station: list[float]) -> list[Any]:
     return [station[Z], ring]
 
 
+def underside_height(station: list[float], x: float) -> float:
+    """Height of the hull's underside at `x` (either side), at a station.
+
+    Along its flat belly, its flanks and its chines' undersides; the chine's edge past them.
+    """
+    _z, ring = hull_section(station)
+    under = ring[TOP_POINTS:]
+    side = abs(x)
+    # The right half, from the belly's corner out to the chine's edge.
+    points = [under[3], under[4], under[5]]
+    if side <= points[0][0]:
+        return float(points[0][1])
+    for k in range(len(points) - 1):
+        inner = points[k]
+        outer = points[k + 1]
+        if side <= outer[0]:
+            span = outer[0] - inner[0]
+            t = (side - inner[0]) / span if span > 0 else 1
+            return float(inner[1] + (outer[1] - inner[1]) * t)
+    return float(points[len(points) - 1][1])
+
+
 def hull_sections() -> list[list[Any]]:
     """Return the hull's sections, nose to tail."""
     return [hull_section(s) for s in smooth_stations(STATIONS, STATION_STEPS)]

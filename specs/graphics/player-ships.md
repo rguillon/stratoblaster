@@ -31,7 +31,8 @@ core rod, joined at their back by a bridge, a glowing emitter at the core's tip 
 prongs; a minigun sits in each flank of the fairing, its hull-metal drum half sunk in it as
 a blister, six thick barrels round its axis out ahead of it, each hollow at its muzzle, held by a
 gunmetal clamp (D-345: "increase the minigun size again, and add hole into the barrels"; D-346:
-"spread the minguns a little more"; D-341, owner:
+"spread the minguns a little more"; D-349: "and spread the minigun more again", the fairing
+widened under the body's flanks, its top corners inside the hull's underside; D-341, owner:
 "increase ther size of the miniguns, and make their cannons thicker"). It is one skin (D-327: "smoth the transition between the elements"), a loft through
 cross-sections whose sizes follow smooth curves through hand-set stations, and it is faceted
 (D-336, owner: "rework the central part, it's too round, add more details, make a better
@@ -126,7 +127,7 @@ No gun stands on top (D-330), and the ship carries no light of its own but its r
   and meets the wings' plane at the chine's edge (unit tests).
 - The design is validated by eye (manual).
 
-*Sources: P02-R01, D-327, D-328, D-330, D-331, D-332, D-333, D-336, D-337, D-338, D-339, D-340, D-341, D-342, D-343, D-344, D-345, D-346, D-347, D-348.*
+*Sources: P02-R01, D-327, D-328, D-330, D-331, D-332, D-333, D-336, D-337, D-338, D-339, D-340, D-341, D-342, D-343, D-344, D-345, D-346, D-347, D-348, D-349.*
 
 ### GFX-SHIP-02 — (removed) Heavy ship
 
@@ -276,9 +277,9 @@ either side of the tip reactors' body, so it does not cross their intake (D-339)
 | Nacelles | at x ±0.8, y -0.02, centre z -0.95; radius 0.22, length 2.0, 1.3 times taller than wide; with intakes | `REACTOR`, `REACTOR_HEIGHT`, `REACTOR_OFFSET_X`, `REACTOR_Y`, `REACTOR_Z` |
 | Strakes | the body's chines, 0.64 half wide from z -0.4 to -1.2, 0.63 at -1.9; glowing edge from z 0.85 to -0.3 | `balanced_hull.py` `STATIONS`; `balanced_ship.py` `STRAKE_EDGE_ZS` |
 | Tip reactors' body | rounded rectangle 0.125 x 0.255 half, corners 0.1; z 0.675 to -0.62 from the reactors' middle; one octagonal intake, radius 0.124, stretched 2.05 upright | `TIP_BODY`, `TIP_BODY_PROFILE`, `TIP_INTAKE` |
-| Gun fairing | z -0.8 to 2.3, up to 0.15 half wide and 0.11 under the belly, its top 0.02 inside it | `GUN_FAIRING`, `GUN_FAIRING_SECTION` |
+| Gun fairing | z -0.8 to 2.3, up to 0.21 half wide and 0.11 under the belly, its top 0.02 inside the belly and its top corners 0.02 inside the hull's underside (D-349) | `GUN_FAIRING`, `GUN_FAIRING_SECTION` |
 | Laser | at y -0.1; glowing core z 2.1 to 3.06 (nose tip 2.75), radius 0.012; rails 0.034 thick, x 0.02 to 0.052, z 2.0 to prongs at 3.2; bridge z 2.0 to 2.2; emitter to 3.13 | `LASER`, `LASER_RAIL`, `LASER_BRIDGE`, `LASER_EMITTER` |
-| Miniguns | at x ±0.21, y -0.195, z 0.75; drum 0.9 long, radius 0.085, of hull metal; 6 six-sided barrels of radius 0.021 on a 0.048 ring, 0.5 long, each with a bore of 0.55 its radius, 0.06 deep (D-345, D-346) | `MINIGUN` |
+| Miniguns | at x ±0.27 (D-349), y -0.195, z 0.75; drum 0.9 long, radius 0.085, of hull metal; 6 six-sided barrels of radius 0.021 on a 0.048 ring, 0.5 long, each with a bore of 0.55 its radius, 0.06 deep (D-345, D-346) | `MINIGUN` |
 | Missile pods | through the wing at x 1.3, y 0, z -0.4; octagon, radius 0.1, corners rounded 0.08, 1.35 times taller, 1.16 long; 7 tips | `MISSILE_POD`, `MISSILE_POD_ROUNDING`, `MISSILE_POD_PROFILE`, `MISSILE_TIPS` |
 
 ## Notes

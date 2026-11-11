@@ -12,6 +12,7 @@ from game.view.balanced_hull import (
     smooth_stations,
     top_height,
     top_ring,
+    underside_height,
 )
 
 
@@ -71,3 +72,17 @@ def test_gfx_ship_01_station_at_gives_each_station_and_blends_between() -> None:
     assert hull.station_at(station[hull.Z]) == pytest.approx(station)
     between = hull.station_at((STATIONS[6][hull.Z] + STATIONS[7][hull.Z]) / 2)
     assert STATIONS[7][hull.Z] < between[hull.Z] < STATIONS[6][hull.Z]
+
+
+def test_gfx_ship_01_the_underside_runs_from_the_belly_out_to_the_chine_edge() -> None:
+    """D-349: flat under the belly, rising along the flanks to the chine's edge."""
+    station = STATIONS[7]
+    assert underside_height(station, 0) == pytest.approx(-station[hull.BELLY_DEPTH])
+    edge = station[hull.CHINE_HALF_WIDTH]
+    assert underside_height(station, edge) == pytest.approx(-hull.chine_edge(station))
+    assert underside_height(station, 0.2) == pytest.approx(underside_height(station, -0.2))
+    assert (
+        underside_height(station, 0)
+        < underside_height(station, 0.2)
+        < underside_height(station, edge)
+    )
