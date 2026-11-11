@@ -241,6 +241,12 @@ MINIGUN: dict[str, Any] = {
     "barrels": {"count": 6, "ring": 0.048, "radius": 0.021, "length": 0.5, "z": 0.65},
     "bore": {"radius": 0.55, "depth": 0.06},
     "clamp": {"z": 0.68, "radius": 0.078, "half": 0.014},
+    # D-352 (owner, again: "make the inner part of the minigun mat black"): the inside of the
+    # barrel cluster is matte black, so the gaps between the barrels read dark: a core between the
+    # barrels, touching their inner sides, from the drum to just behind the muzzles (`back`
+    # behind them), and a plate over the drum's front face as wide as the cluster.
+    "core": {"radius": 0.03, "back": 0.04},
+    "plate": {"radius": 0.072, "thickness": 0.004},
 }
 
 # Dark panel seams round the body (D-336): their Z, their half width along Z and how much larger
@@ -456,7 +462,8 @@ def _build_minigun(side: str, sign: float, root: Any, scene: Any) -> None:
     """Build a minigun in a flank of the fairing (D-339, D-340).
 
     Its drum, of hull metal, half sunk in the fairing as a blister; six barrels round its axis out
-    ahead of it, hollow at their muzzles (D-345), a clamp round them.
+    ahead of it, hollow at their muzzles (D-345), a clamp round them; the cluster's inside, the
+    bores, the core between the barrels and the plate behind them, matte black (D-351, D-352).
     """
     mats = get_ship_materials(scene)
     gun = MINIGUN
@@ -491,6 +498,27 @@ def _build_minigun(side: str, sign: float, root: Any, scene: Any) -> None:
             )
             barrel.material = material
             barrel.parent = node
+    # The cluster's matte black inside (D-352).
+    drum_front = drum["length"] / 2
+    muzzle = barrels["z"] + barrels["length"] / 2
+    core = gun["core"]
+    faceted_rod(
+        name + "-core",
+        {"length": muzzle - core["back"] - drum_front, "radius": core["radius"]},
+        vector3(0, 0, (drum_front + muzzle - core["back"]) / 2),
+        mats.intakeBlack,
+        node,
+        PART_FACETS,
+    )
+    plate = gun["plate"]
+    faceted_rod(
+        name + "-plate",
+        {"length": plate["thickness"], "radius": plate["radius"]},
+        vector3(0, 0, drum_front + plate["thickness"] / 2),
+        mats.intakeBlack,
+        node,
+        OCTAGON,
+    )
     clamp = gun["clamp"]
     hexagon_band(name + "-clamp", clamp["z"], clamp["radius"], clamp["half"], mats.hullDark, node)
 

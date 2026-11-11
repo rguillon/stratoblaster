@@ -432,3 +432,15 @@ def test_gfx_ship_01_a_scoops_collar_rings_its_mouth_and_holds_its_fins(up: int)
     room = scoop["height"] * scoop["mouth"] / 2 * balanced_ship.REACTOR_HEIGHT
     heights = balanced_ship.intake_fin_heights(room)
     assert len(heights) == 3
+
+
+def test_gfx_ship_01_the_minigun_clusters_inside_is_filled_dark() -> None:
+    """D-352: the black core touches the barrels' inner sides and ends behind their muzzles."""
+    gun = balanced_ship.MINIGUN
+    barrels = gun["barrels"]
+    inner_side = barrels["ring"] - barrels["radius"]
+    assert gun["core"]["radius"] > inner_side
+    assert gun["core"]["radius"] < barrels["ring"]
+    assert gun["core"]["back"] > gun["bore"]["depth"] * 0.5
+    assert gun["plate"]["radius"] >= barrels["ring"] + barrels["radius"]
+    assert gun["plate"]["radius"] < gun["drum"]["radius"]
