@@ -54,9 +54,13 @@ tips in its dark launch face.
 **Reactors:** every reactor is a rounded hexagon (D-330: "make the ship reactor rounded
 hexagons"): its nacelle, rings, core and flame have six sides, the nacelle's corners rounded. Each
 has a visible intake at its front (owner: "add visible cool looking intakes on the reactors", "add
-intake to the reactors"): a flared rounded hexagon scoop in hull metal with an accent lip, its duct
-running back to a dark fan face, a spinner at its centre; the mouths face forward, so the frontal
-menu camera looks straight into them.
+intake to the reactors"): a rounded hexagon scoop in hull metal that runs on straight from the
+nacelle, then angles inward a little to a thin lip (D-337, owner: "make it start flat, then angled
+inward a little, and make a better inner part"), an accent band where it turns; inside, a dark
+duct lining, a dark fan face with ten pitched steel blades and a pointed accent spinner; the mouths
+face forward, so the frontal menu camera looks straight into them. The two main reactors are taller
+than wide (D-337: "make the main reactors higher"): their section stretched 1.3 times upright, the
+tails and ventral fins standing on the taller nacelles.
 
 No gun stands on top (D-330), and the ship carries no light of its own but its reactors (D-327).
 
@@ -73,6 +77,9 @@ No gun stands on top (D-330), and the ship carries no light of its own but its r
   tests).
 - Given a rounded hexagon or rounded rectangle section, then its points lie inside the sharp
   shape, its sides where the sharp shape's are (unit tests).
+- Given a reactor's intake, then its skin runs straight then angles inward to its lip, its duct
+  lining faces the axis, and its fan has its blades round a spinner; the main reactors are taller
+  than wide (unit tests).
 - Given each missile pod, then it hangs wholly under its wing, between root and tip, its front
   out ahead of the leading edge; no cannon (unit tests).
 - Given a smooth-top lathe or a lofted skin, then its top's vertices share one normal pointing
@@ -81,7 +88,7 @@ No gun stands on top (D-330), and the ship carries no light of its own but its r
   and meets the wings' plane at the chine's edge (unit tests).
 - The design is validated by eye (manual).
 
-*Sources: P02-R01, D-327, D-328, D-330, D-331, D-332, D-333, D-336.*
+*Sources: P02-R01, D-327, D-328, D-330, D-331, D-332, D-333, D-336, D-337.*
 
 ### GFX-SHIP-02 — (removed) Heavy ship
 
@@ -95,11 +102,11 @@ Removed with the Light ship (D-326).
 
 The player ship's materials are made once per scene: a grey/blue physically based metal in three
 shades (D-327, owner: "add different shades of metalic"): a light silver **hull** (the blended
-body, the intake shells), a mid **steel** (the wings, canards, spinners, missile
+body, the intake shells), a mid **steel** (the wings, canards, fan blades, missile
 pods and the tip reactors' body) and a dark **gunmetal** (the tails, ventral fins, flaps, panel
-lines, the body's seams and vents, the missile pylons and fins, the tip reactors' fins); a blue accent metal (the intake lips,
+lines, the body's seams and vents, the missile pylons and fins, the tip reactors' fins); a blue accent metal (the intake bands and spinners,
 the reactors' rings, the missile pods' bands and missile tips), a dark canopy with a faint blue glow, a darker trim metal (frames, barrels, launch faces) and a dark
-metal nozzle. The metals are satin, not mirrors (owner: "remove the ugly light spots, make something
+metal nozzle (and intake ducts). The metals are satin, not mirrors (owner: "remove the ugly light spots, make something
 more smoth"): metallic at least 0.7, roughness 0.4 to 0.55, so the light rolls smoothly over the
 hull instead of breaking into hard white spots. Each shade is more blue than red, and each darker
 than the one before. The metals take the brighter hull light of GFX-ART-08.
@@ -114,7 +121,7 @@ than the one before. The metals take the brighter hull light of GFX-ART-08.
 ### GFX-SHIP-05 — Polygon budget · MUST
 
 The player ship is under 11,000 triangles (2,000 until D-327, 4,500 until D-328, 7,000 until
-D-330; measured 7,908 in the browser with its flames and its six reactors, D-336). The round
+D-330; measured 9,564 in the browser with its flames, its six reactors and their bladed intakes, D-337). The round
 parts' extra triangles go on their upper half only, the side the playfield camera sees: the
 canopy 16 over 3; the canopy frame, mostly hidden, 8 over 2; the tip reactors' body, a rounded
 rectangle of 12 points, smooth all round. The reactors and missile pods are rounded
@@ -216,10 +223,10 @@ missile launchers and the gun pod) and the reactors' bodies do not glow.
 | `profile_steps` | 3 | `balanced_ship.py` `PROFILE_STEPS` |
 | Wing | forward-swept: root x 0.8 (z -0.7 to -1.85), tip x 1.9 (z -0.05 to -0.75) | `balanced_ship.py` `BALANCED_WING` |
 | Reactor section | hexagon, corners rounded at 0.3 of the radius, 3 points a corner (rings 2) | `ship_parts.py` `REACTOR_SIDES`, `REACTOR_ROUNDING`, `REACTOR_CORNER_STEPS`, `RING_CORNER_STEPS` |
-| Reactor intake | flared scoop to 1.02 radii, lip, fan at 0.68 radii, spinner | `ship_parts.py` `REACTOR_INTAKE*` |
+| Reactor intake | straight at 0.98 radii to 0.24 ahead, angled in to 0.8 at 0.47; band at the turn; dark duct; fan at 0.68 radii with 10 blades pitched 0.6 rad; accent spinner | `ship_parts.py` `REACTOR_INTAKE*` |
 | Tip reactors | x 1.98, y 0.125 and -0.125, z -0.4; radius 0.11, length 0.95; fins at 45° | `TIP_REACTOR`, `TIP_FIN`, `TIP_FIN_CANT` |
 | Tail cant | 0.2 rad outwards, on the nacelles | `TAIL_CANT` |
-| Nacelles | at x ±0.8, y -0.02, centre z -0.95; radius 0.22, length 2.0; with intakes | `REACTOR`, `REACTOR_OFFSET_X`, `REACTOR_Y`, `REACTOR_Z` |
+| Nacelles | at x ±0.8, y -0.02, centre z -0.95; radius 0.22, length 2.0, 1.3 times taller than wide; with intakes | `REACTOR`, `REACTOR_HEIGHT`, `REACTOR_OFFSET_X`, `REACTOR_Y`, `REACTOR_Z` |
 | Strakes | the body's chines, 0.64 half wide from z -0.4 to -1.2, 0.63 at -1.9; glowing edge from z 0.85 to -0.3 | `balanced_hull.py` `STATIONS`; `balanced_ship.py` `STRAKE_EDGE_ZS` |
 | Tip reactors' body | rounded rectangle 0.125 x 0.255 half, corners 0.1; z 0.36 to -0.42 from the reactors' middle | `TIP_BODY`, `TIP_BODY_PROFILE` |
 | Missile pods | under the wing at x 1.3, y -0.2, z -0.4; radius 0.1, 1.16 long; 7 tips | `MISSILE_POD`, `MISSILE_POD_PROFILE`, `MISSILE_TIPS` |

@@ -220,3 +220,22 @@ def test_gfx_ship_09_the_canopy_frame_glows(scene: Any, monkeypatch: Any) -> Non
     build_balanced_ship(scene)
     assert meshes["balanced-canopy-frame"].material is materials.edgeGlow
     assert meshes["balanced-canopy"].material is materials.canopy
+
+
+def test_gfx_ship_01_the_main_reactors_are_taller_than_wide(scene: Any, monkeypatch: Any) -> None:
+    """D-337: the main nacelles are stretched upright, the tip reactors are not."""
+    reactors: dict[str, Any] = {}
+
+    def reactor(name: str, *_args: Any) -> Any:
+        reactors[name] = MagicMock(name=name)
+        reactors[name].scaling.y = 1
+        return reactors[name]
+
+    monkeypatch.setattr(balanced_ship, "build_reactor", reactor)
+    build_balanced_ship(scene)
+    assert balanced_ship.REACTOR_HEIGHT > 1
+    for side in ["right", "left"]:
+        assert reactors["balanced-reactor-" + side].scaling.y == balanced_ship.REACTOR_HEIGHT
+    tips = [m for name, m in reactors.items() if "-tip-" in name or "tip" in name]
+    assert tips
+    assert all(m.scaling.y == 1 for m in tips)

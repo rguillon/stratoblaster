@@ -2440,3 +2440,20 @@
 - **Consequences:** the hull drops from about 1,700 triangles to under a thousand (the ship
   measures 7,908 with its flames); the unit test that the hull's triangles sit on its upper half is
   replaced by a budget, the facets being flat both sides.
+
+### D-337 — Intakes straight then angled in, with a bladed fan; taller main reactors
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-04, GFX-SHIP-05.
+- **Context:** owner: "rework the reactor intake, make it start flag, then angled inward a little,
+  and make a better inner part. Also make the main reactors higher (they wont be 'square'
+  anymore)". "flag" is read as "flat": the skin starts straight.
+- **Decision:**
+  - The intake's skin runs on straight from the nacelle (0.98 radii), then angles inward to a thin
+    lip (0.8 radii); the accent band moves from the lip to the turn.
+  - Inside: a dark duct lining (a loft turned round with `flipFaces`, since the metals cull back
+    faces), the dark fan face, ten steel blades pitched 0.6 rad, and a pointed accent spinner.
+  - The main reactors are scaled 1.3 times upright (`REACTOR_HEIGHT`), flame and intake with them;
+    the tails and ventral fins follow the taller nacelle. The tip reactors keep their section.
+- **Consequences:** the ship measures 9,564 triangles (under the 11,000 budget), the blades and
+  ducts of six intakes adding about 1,650.

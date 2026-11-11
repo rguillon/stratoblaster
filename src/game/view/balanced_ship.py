@@ -149,6 +149,8 @@ REACTOR_OFFSET_X = 0.8
 REACTOR_Y = -0.02
 REACTOR_Z = -0.95
 REACTOR = {"radius": 0.22, "length": 2.0}
+# Taller than wide (owner, D-337: "make the main reactors higher"): their height over their width.
+REACTOR_HEIGHT = 1.3
 
 # Dark panel seams round the body (D-336): their Z, their half width along Z and how much larger
 # than the body's section they are.
@@ -388,7 +390,7 @@ def _build_tails(side: str, sign: float, root: Any, scene: Any) -> None:
     """Build the canted tail on a nacelle's top and the ventral fin under it."""
     mats = get_ship_materials(scene)
     radius = REACTOR["radius"]
-    top = REACTOR_Y + radius * math.cos(math.pi / 6)
+    top = REACTOR_Y + radius * math.cos(math.pi / 6) * REACTOR_HEIGHT
     tail = new_transform_node("balanced-tail-" + side, scene)
     tail.position.set(sign * REACTOR_OFFSET_X, top - 0.02, 0)
     # Stand the panel up (X becomes height), then cant it outwards.
@@ -398,7 +400,7 @@ def _build_tails(side: str, sign: float, root: Any, scene: Any) -> None:
 
     # Ventral fin: same trick, pointing down and outwards.
     fin = new_transform_node("balanced-ventral-" + side, scene)
-    fin.position.set(sign * REACTOR_OFFSET_X, REACTOR_Y - radius * 0.8, 0)
+    fin.position.set(sign * REACTOR_OFFSET_X, REACTOR_Y - radius * 0.8 * REACTOR_HEIGHT, 0)
     fin.rotation.z = -math.pi / 2 + sign * VENTRAL_CANT
     fin.parent = root
     panel("balanced-ventral-" + side + "-panel", VENTRAL_FIN, 0.04, mats.hullDark, fin)
@@ -503,5 +505,6 @@ def build_balanced_ship(scene: Any) -> Any:
         _build_tip_reactor(side, sign, root, scene)
         reactor = build_reactor("balanced-reactor-" + side, REACTOR, scene, True)
         reactor.position.set(sign * REACTOR_OFFSET_X, REACTOR_Y, REACTOR_Z)
+        reactor.scaling.y = REACTOR_HEIGHT
         reactor.parent = root
     return root

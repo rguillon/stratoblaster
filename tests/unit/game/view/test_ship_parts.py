@@ -58,3 +58,33 @@ def test_gfx_ship_09_an_edge_strip_lies_across_the_edge_half_out_past_it(monkeyp
     zs = sorted({round(p[1], 9) for p in outline})
     assert zs == [0.9, 1.1]
     assert sorted({p[0] for p in outline}) == [0, 2]
+
+
+def test_gfx_ship_01_an_intake_runs_straight_then_angles_in_to_its_lip() -> None:
+    """D-337: the skin starts straight from the nacelle, then narrows to the lip."""
+    intake = ship_parts.REACTOR_INTAKE
+    lip = max(range(len(intake)), key=lambda k: intake[k][0])
+    straight = [p for p in intake[:lip] if p[0] >= 0]
+    assert straight[0][1] == straight[1][1]
+    assert intake[lip][1] < straight[-1][1]
+    radii = [p[1] for p in intake[1 : lip + 1]]
+    assert radii == sorted(radii, reverse=True)
+
+
+def test_gfx_ship_01_an_intake_has_a_lined_duct_blades_and_a_spinner(monkeypatch: Any) -> None:
+    """D-337: the duct lining is turned to face the axis; the fan has its blades."""
+    stub_babylon(monkeypatch, ship_parts)
+    meshes: dict[str, Any] = {}
+
+    def loft(name: str, *_args: Any) -> Any:
+        meshes[name] = MagicMock(name=name)
+        return meshes[name]
+
+    monkeypatch.setattr(ship_parts, "create_section_loft", loft)
+    blades: list[str] = []
+    monkeypatch.setattr(
+        ship_parts, "panel", lambda name, *_args: blades.append(name) or MagicMock(name=name)
+    )
+    ship_parts._add_reactor_intake("r", 0.2, 1.0, MagicMock(name="root"))
+    meshes["r-intake-duct"].flipFaces.assert_called_once_with(True)
+    assert len(blades) == ship_parts.REACTOR_INTAKE_BLADES["count"]
