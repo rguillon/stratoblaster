@@ -188,9 +188,20 @@ def faceted_rod(
     return mesh
 
 
-def _hexagon_sections(profile: list[list[float]], steps: int) -> list[Any]:
-    """Return the sections of a body round Z with the reactors' rounded hexagon section."""
-    return polygon_lathe_sections(profile, REACTOR_SIDES, REACTOR_ROUNDING, steps)
+def polygon_turn(sides: int) -> float:
+    """Return how far a reactor polygon is turned round Z so it lies with a flat side on top.
+
+    A hexagon with a corner on +X already does; an octagon (D-339) is turned an eighth of a half
+    turn, so its top, bottom and sides are flat.
+    """
+    return math.pi / sides if sides % 4 == 0 else 0.0
+
+
+def _hexagon_sections(
+    profile: list[list[float]], steps: int, sides: int = REACTOR_SIDES
+) -> list[Any]:
+    """Return the sections of a body round Z with a reactor's rounded polygon section."""
+    return polygon_lathe_sections(profile, sides, REACTOR_ROUNDING, steps, polygon_turn(sides))
 
 
 def hexagon_body(name: str, profile: list[list[float]], material: Any, parent: Any) -> Any:
@@ -207,7 +218,13 @@ def hexagon_body(name: str, profile: list[list[float]], material: Any, parent: A
 
 
 def hexagon_band(
-    name: str, z: float, radius: float, half: float, material: Any, parent: Any
+    name: str,
+    z: float,
+    radius: float,
+    half: float,
+    material: Any,
+    parent: Any,
+    sides: int = REACTOR_SIDES,
 ) -> Any:
     """Create a band round the Z axis at `z`, a rounded hexagon `radius` out, `2 * half` wide.
 
@@ -217,7 +234,7 @@ def hexagon_band(
     inner = radius - half
     outer = radius + half
     profile = [[-half, inner], [-half, outer], [half, outer], [half, inner]]
-    sections = _hexagon_sections(profile, RING_CORNER_STEPS)
+    sections = _hexagon_sections(profile, RING_CORNER_STEPS, sides)
     mesh = create_section_loft(name, sections, 0, parent.getScene())
     mesh.position.z = z
     mesh.material = material
@@ -225,18 +242,20 @@ def hexagon_band(
     return mesh
 
 
-def _add_reactor_rings(name: str, size: dict[str, float], root: Any) -> None:
+def _add_reactor_rings(name: str, size: dict[str, float], root: Any, sides: int) -> None:
     """Accent rings around the front of the nacelle and its nozzle, rounded hexagons as it is."""
     radius = size["radius"]
     length = size["length"]
     half = radius * 0.09  # half the ring's width and thickness
     accent = get_ship_materials(root.getScene()).accent
     for ring, z, scale in [("front", length * 0.3, 1.02), ("rear", -length / 2, 0.9)]:
-        hexagon_band(name + "-" + ring + "-ring", z, radius * scale, half, accent, root)
+        hexagon_band(name + "-" + ring + "-ring", z, radius * scale, half, accent, root, sides)
 
 
-def _add_reactor_intake(name: str, radius: float, front: float, root: Any) -> None:
-    """Add an intake at the nacelle's `front` (D-337).
+def add_reactor_intake(
+    name: str, radius: float, front: float, root: Any, sides: int = REACTOR_SIDES
+) -> Any:
+    """Add an intake at `front` along Z of `root`, `sides` round (D-337); return its node.
 
     A hull-metal scoop, straight then angled in, with an accent band where it turns; inside, a
     dark duct, a dark fan face and horizontal fins across the duct (D-338).
@@ -247,7 +266,7 @@ def _add_reactor_intake(name: str, radius: float, front: float, root: Any) -> No
     node.position.z = front
     node.parent = root
     profile = [[p[0] * radius, p[1] * radius] for p in REACTOR_INTAKE]
-    sections = _hexagon_sections(profile, REACTOR_CORNER_STEPS)
+    sections = _hexagon_sections(profile, REACTOR_CORNER_STEPS, sides)
     shell = create_section_loft(name + "-intake-shell", sections, len(sections[0][1]), scene)
     shell.material = mats.hull
     shell.parent = node
@@ -259,49 +278,62 @@ def _add_reactor_intake(name: str, radius: float, front: float, root: Any) -> No
         band["half"] * radius,
         mats.accent,
         node,
+        sides,
     )
     # The duct's lining: a loft faces outward, turned round it faces the axis, seen through the
     # mouth (the metals cull their back faces).
     duct_profile = [[p[0] * radius, p[1] * radius] for p in REACTOR_INTAKE_DUCT]
-    duct_sections = _hexagon_sections(duct_profile, REACTOR_CORNER_STEPS)
+    duct_sections = _hexagon_sections(duct_profile, REACTOR_CORNER_STEPS, sides)
     duct = create_section_loft(name + "-intake-duct", duct_sections, 0, scene)
     duct.flipFaces(True)
     duct.material = mats.nozzle
     duct.parent = node
     fan = REACTOR_INTAKE_FAN
-    face = create_disc(name + "-intake-fan", disc_options(fan["radius"] * radius, 6), scene)
+    face = create_disc(name + "-intake-fan", disc_options(fan["radius"] * radius, sides), scene)
     face.convertToFlatShadedMesh()
-    # A disc faces -Z: turned round, it faces the mouth.
+    # A disc faces -Z: turned round, it faces the mouth (and turned as the duct's polygon is).
     face.rotation.y = math.pi
+    face.rotation.z = polygon_turn(sides)
     face.position.z = fan["z"] * radius
     face.material = mats.canopy
     face.parent = node
-    _add_intake_fins(name, radius, mats.hullMid, node)
+    _add_intake_fins(name, radius, mats.hullMid, node, sides)
+    return node
 
 
-def intake_fin_half_width(y: float) -> float:
-    """Half width of an intake fin at height `y` (in nacelle radii): the duct's hexagon there.
+def intake_fin_half_width(y: float, sides: int = REACTOR_SIDES) -> float:
+    """Half width of an intake fin at height `y` (in nacelle radii): the duct's polygon there.
 
-    The hexagon has a corner on each side (+X, -X) and a flat top and bottom: its width shrinks
-    by 2 / sqrt(3) of the height.
+    The hexagon has a corner on each side (+X, -X) and a flat top and bottom: each side narrows by
+    1 / sqrt(3) of the height. The octagon (D-339) has flat sides, top and bottom, `cos(pi / 8)`
+    of the radius out, and its slanted sides cut the corners.
     """
     duct: float = REACTOR_INTAKE_FINS["duct"]
+    if sides == 8:
+        flat = duct * math.cos(math.pi / 8)
+        return min(flat, flat * math.sqrt(2) - abs(y))
     return duct - abs(y) / math.sqrt(3)
 
 
-def _add_intake_fins(name: str, radius: float, material: Any, parent: Any) -> None:
+def _add_intake_fins(name: str, radius: float, material: Any, parent: Any, sides: int) -> None:
     """Add the horizontal fins across the intake's duct, in front of its fan face (D-338)."""
     fins = REACTOR_INTAKE_FINS
     front = fins["zs"][1] * radius
     back = fins["zs"][0] * radius
     for k, y in enumerate(fins["ys"]):
-        half = intake_fin_half_width(y) * radius
+        half = intake_fin_half_width(y, sides) * radius
         outline = [[-half, front], [half, front], [half, back], [-half, back]]
         fin = panel(name + "-intake-fin-" + str(k), outline, PLATE_THICKNESS, material, parent)
         fin.position.y = y * radius
 
 
-def build_reactor(name: str, size: dict[str, float], scene: Scene, intake: bool = False) -> Any:
+def build_reactor(
+    name: str,
+    size: dict[str, float],
+    scene: Scene,
+    intake: bool = False,
+    sides: int = REACTOR_SIDES,
+) -> Any:
     """Build a reactor centred on its origin, thrusting towards -Z: a rounded hexagon nacelle.
 
     Plus a glowing blue core at the nozzle and an animated blue flame behind it (GFX-SHIP-06), and
@@ -320,15 +352,19 @@ def build_reactor(name: str, size: dict[str, float], scene: Scene, intake: bool 
         [-length / 2, radius * 0.85],
         [-length / 2, 0],
     ]
-    hexagon_body(name + "-nacelle", profile, mats.nozzle, root)
+    sections = _hexagon_sections(profile, REACTOR_CORNER_STEPS, sides)
+    nacelle = create_section_loft(name + "-nacelle", sections, len(sections[0][1]), scene)
+    nacelle.material = mats.nozzle
+    nacelle.parent = root
 
-    _add_reactor_rings(name, size, root)
+    _add_reactor_rings(name, size, root, sides)
     if intake:
-        _add_reactor_intake(name, radius, length / 2, root)
+        add_reactor_intake(name, radius, length / 2, root, sides)
 
     # A hexagon, its corners on the nacelle's (a disc's first corner is on +X too).
-    core = create_disc(name + "-core", disc_options(radius * CORE_RADIUS, REACTOR_SIDES), scene)
+    core = create_disc(name + "-core", disc_options(radius * CORE_RADIUS, sides), scene)
     core.convertToFlatShadedMesh()
+    core.rotation.z = polygon_turn(sides)
     core.position.z = -length / 2 - 0.01
     core.material = mats.reactorCore
     core.parent = root
@@ -338,7 +374,7 @@ def build_reactor(name: str, size: dict[str, float], scene: Scene, intake: bool 
         "length": length * EXHAUST_LENGTH,
         "diameter": radius * EXHAUST_WIDTH,
         "puffDiameter": radius * REACTOR_FLAME.puffSize,
-        "sides": PART_FACETS,
+        "sides": sides,
     }
     build_reactor_flame(name, flame_size, root)
     return root

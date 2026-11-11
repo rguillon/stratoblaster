@@ -96,7 +96,7 @@ def test_gfx_ship_01_an_intake_has_a_lined_duct_and_horizontal_fins(monkeypatch:
         "create_faceted_lathe_along_z",
         lambda name, *_args: lathes.append(name) or MagicMock(name=name),
     )
-    ship_parts._add_reactor_intake("r", 0.2, 1.0, MagicMock(name="root"))
+    ship_parts.add_reactor_intake("r", 0.2, 1.0, MagicMock(name="root"))
     meshes["r-intake-duct"].flipFaces.assert_called_once_with(True)
     assert lathes == []
     ys = ship_parts.REACTOR_INTAKE_FINS["ys"]

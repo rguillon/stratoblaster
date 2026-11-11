@@ -27,7 +27,8 @@ from game.view.balanced_hull import (
 )
 from game.view.ship_materials import get_ship_materials
 from game.view.ship_parts import (
-    PART_FACETS,
+    REACTOR_ROUNDING,
+    add_reactor_intake,
     build_reactor,
     disc_options,
     edge_strip,
@@ -51,7 +52,11 @@ from render.geometry.lathe_z import (
     create_smooth_top_lathe_along_z,
     smooth_profile,
 )
-from render.geometry.section_loft import create_section_loft, rounded_rectangle
+from render.geometry.section_loft import (
+    create_section_loft,
+    polygon_lathe_sections,
+    rounded_rectangle,
+)
 
 # isort: split
 # __pragma__ ("skip")
@@ -63,13 +68,15 @@ Scene = Any
 
 # Right main wing (X > 0), forward-swept (owner, 2026-11-11, D-330: "make the wings front
 # sided"): the tip's leading edge well ahead of the root's, the trailing edge swept forward too, a
-# square-cut tip carrying the twin reactors. Its root lies in the nacelle (D-332), towards its back
-# (D-333, owner: "move the wings more to the back"; 0.6 further forward before).
+# square-cut tip with a chamfered front corner. Its root lies in the nacelle (D-332), towards its
+# back (D-333, owner: "move the wings more to the back"; 0.6 further forward before). Its tip runs
+# on past the twin tip reactors (D-339, owner: "make the wings go a little beyond the side
+# reactors"; it stopped at 1.9, under them, before).
 BALANCED_WING = [
     [0.8, -0.7],
-    [1.8, -0.05],
-    [1.9, -0.05],
-    [1.9, -0.75],
+    [2.25, 0.2425],
+    [2.3, 0.2],
+    [2.3, -0.4],
     [0.8, -1.85],
 ]
 # D-336: the stub wings joining the body to the nacelles (D-332) are now the body's own strakes
@@ -151,6 +158,39 @@ REACTOR_Z = -0.95
 REACTOR = {"radius": 0.22, "length": 2.0}
 # Taller than wide (owner, D-337: "make the main reactors higher"): their height over their width.
 REACTOR_HEIGHT = 1.3
+# The main reactors and the tip intakes are octagons, flat on top, bottom and sides (D-339, owner:
+# "make the main reactor octogonal too"); the tip reactors and missile pods stay hexagons.
+OCTAGON = 8
+
+# The gun under the belly (D-339, owner: "rework the undergun, make a cool looking laser and add
+# two miniguns on it's sides"). The laser: its place; its octagonal housing's profile (`[z from
+# its place, radius]`); its barrel, the focusing coils round it (Z from its place) and the glowing
+# emitter at its muzzle (a lathe profile).
+LASER: dict[str, Any] = {
+    "y": -0.255,
+    "z": 0.3,
+    "barrel": {"length": 0.75, "radius": 0.036, "z": 0.85},
+    "coil": {"zs": [0.62, 0.78, 0.94], "radius": 0.052, "half": 0.014},
+}
+LASER_HOUSING = [
+    [0.55, 0],
+    [0.55, 0.07],
+    [0.42, 0.1],
+    [-0.45, 0.1],
+    [-0.6, 0.055],
+    [-0.65, 0],
+]
+LASER_EMITTER = [[1.29, 0], [1.25, 0.038], [1.2, 0.052], [1.19, 0]]
+# The miniguns either side of it: their place; the drum; six barrels round its axis, their ring's
+# radius and their middle along Z; the clamp round the barrels.
+MINIGUN: dict[str, Any] = {
+    "x": 0.17,
+    "y": -0.215,
+    "z": 0.35,
+    "drum": {"length": 0.36, "radius": 0.052},
+    "barrels": {"count": 6, "ring": 0.028, "radius": 0.01, "length": 0.42, "z": 0.36},
+    "clamp": {"z": 0.45, "radius": 0.045, "half": 0.009},
+}
 
 # Dark panel seams round the body (D-336): their Z, their half width along Z and how much larger
 # than the body's section they are.
@@ -223,6 +263,9 @@ MISSILE_FIN = [
 # connecting them"): one steel body wraps both, a tall rounded rectangle in section, their intakes
 # and nozzles out at its ends. The reactors' X, their heights (upper, lower), middle along Z and
 # size; the body's section and its profile (`[z from the reactors' middle, scale of the section]`).
+# D-339 (owner: "merge the two lateral intales into a single octogonal intake"): the body runs on
+# to the reactors' fronts, where one octagonal intake, stretched upright to the body's height,
+# feeds both: its radius and its stretch.
 TIP_REACTOR: dict[str, Any] = {
     "x": 1.98,
     "ys": [0.125, -0.125],
@@ -231,10 +274,11 @@ TIP_REACTOR: dict[str, Any] = {
     "length": 0.95,
 }
 TIP_BODY: dict[str, Any] = {"halfWidth": 0.125, "halfHeight": 0.255, "corner": 0.1, "steps": 3}
+TIP_INTAKE: dict[str, Any] = {"radius": 0.124, "stretch": 2.05}
 TIP_BODY_PROFILE = [
-    [0.36, 0],
-    [0.33, 0.8],
-    [0.24, 1.0],
+    [0.475, 0],
+    [0.475, 0.9],
+    [0.3, 1.0],
     [-0.28, 1.0],
     [-0.38, 0.82],
     [-0.42, 0],
@@ -250,7 +294,7 @@ TIP_FIN_THICKNESS = 0.03
 
 
 def _build_body(root: Any, scene: Any) -> None:
-    """Build the slim central body, its seams and vents, and the gun pod under it."""
+    """Build the slim central body, its seams and vents, and the guns under it."""
     mats = get_ship_materials(scene)
     body_root = new_transform_node("balanced-body-root", scene)
     body_root.parent = root
@@ -268,14 +312,87 @@ def _build_body(root: Any, scene: Any) -> None:
             name = "balanced-vent-" + side + "-" + str(k)
             plate(name, outline, y, mats.hullDark, body_root)
 
-    faceted_rod(
-        "balanced-gun-pod",
-        {"length": 1.7, "radius": 0.065},
-        vector3(0, -0.22, 0.2),
-        mats.trim,
-        root,
-        PART_FACETS,
+    _build_laser(root, scene)
+    for side, sign in [("right", 1), ("left", -1)]:
+        _build_minigun(side, sign, root, scene)
+
+
+def _build_laser(root: Any, scene: Any) -> None:
+    """Build the laser cannon under the belly (D-339).
+
+    A gunmetal octagonal housing, a long barrel ringed by accent focusing coils and a glowing
+    emitter at its muzzle.
+    """
+    mats = get_ship_materials(scene)
+    laser = LASER
+    node = new_transform_node("balanced-laser", scene)
+    node.position.set(0, laser["y"], laser["z"])
+    node.parent = root
+    sections = polygon_lathe_sections(
+        LASER_HOUSING, OCTAGON, REACTOR_ROUNDING, 2, math.pi / OCTAGON
     )
+    housing = create_section_loft("balanced-laser-housing", sections, 0, scene)
+    housing.material = mats.hullDark
+    housing.parent = node
+    barrel = laser["barrel"]
+    faceted_rod(
+        "balanced-laser-barrel",
+        {"length": barrel["length"], "radius": barrel["radius"]},
+        vector3(0, 0, barrel["z"]),
+        mats.trim,
+        node,
+        OCTAGON,
+    )
+    coil = laser["coil"]
+    for k, z in enumerate(coil["zs"]):
+        hexagon_band(
+            "balanced-laser-coil-" + str(k),
+            z,
+            coil["radius"],
+            coil["half"],
+            mats.accent,
+            node,
+            OCTAGON,
+        )
+    emitter = create_faceted_lathe_along_z("balanced-laser-emitter", LASER_EMITTER, OCTAGON, scene)
+    emitter.material = mats.reactorCore
+    emitter.parent = node
+
+
+def _build_minigun(side: str, sign: float, root: Any, scene: Any) -> None:
+    """Build a minigun beside the laser (D-339): a drum, six barrels round its axis, a clamp."""
+    mats = get_ship_materials(scene)
+    gun = MINIGUN
+    name = "balanced-minigun-" + side
+    node = new_transform_node(name, scene)
+    node.position.set(sign * gun["x"], gun["y"], gun["z"])
+    node.parent = root
+    drum = gun["drum"]
+    faceted_rod(
+        name + "-drum",
+        {"length": drum["length"], "radius": drum["radius"]},
+        vector3(0, 0, 0),
+        mats.hullMid,
+        node,
+        OCTAGON,
+    )
+    barrels = gun["barrels"]
+    for k in range(barrels["count"]):
+        angle = 2 * math.pi * k / barrels["count"]
+        faceted_rod(
+            name + "-barrel-" + str(k),
+            {"length": barrels["length"], "radius": barrels["radius"]},
+            vector3(
+                barrels["ring"] * math.cos(angle),
+                barrels["ring"] * math.sin(angle),
+                barrels["z"],
+            ),
+            mats.trim,
+            node,
+            4,
+        )
+    clamp = gun["clamp"]
+    hexagon_band(name + "-clamp", clamp["z"], clamp["radius"], clamp["half"], mats.hullDark, node)
 
 
 def _build_seam(name: str, z: float, material: Any, parent: Any, scene: Any) -> None:
@@ -366,8 +483,14 @@ def _build_edge_glow(side: str, sign: float, root: Any, scene: Any) -> None:
     wing_size = {"width": EDGE_GLOW["width"], "thickness": EDGE_GLOW["wing"]}
     canard_size = {"width": EDGE_GLOW["width"], "thickness": EDGE_GLOW["canard"]}
     name = "balanced-glow-" + side
+    # The main wing's, either side of the tip reactors' body, which it runs through (D-339).
     wing = mirror(BALANCED_WING)
-    edge_strip(name + "-wing", [wing[0], wing[1]], _centre(wing), wing_size, mats.edgeGlow, root)
+    gap = [TIP_REACTOR["x"] - TIP_BODY["halfWidth"], TIP_REACTOR["x"] + TIP_BODY["halfWidth"]]
+    inner = mirror([[gap[0], _leading_edge(gap[0])]])[0]
+    outer = mirror([[gap[1], _leading_edge(gap[1])]])[0]
+    centre = _centre(wing)
+    edge_strip(name + "-wing", [wing[0], inner], centre, wing_size, mats.edgeGlow, root)
+    edge_strip(name + "-wing-tip", [outer, wing[1]], centre, wing_size, mats.edgeGlow, root)
     # The strake's leading edge, one strip between each two of its points (D-336).
     strake = mirror([[station_at(z)[CHINE_HALF_WIDTH], z] for z in STRAKE_EDGE_ZS])
     for k in range(len(strake) - 1):
@@ -390,7 +513,7 @@ def _build_tails(side: str, sign: float, root: Any, scene: Any) -> None:
     """Build the canted tail on a nacelle's top and the ventral fin under it."""
     mats = get_ship_materials(scene)
     radius = REACTOR["radius"]
-    top = REACTOR_Y + radius * math.cos(math.pi / 6) * REACTOR_HEIGHT
+    top = REACTOR_Y + radius * math.cos(math.pi / OCTAGON) * REACTOR_HEIGHT
     tail = new_transform_node("balanced-tail-" + side, scene)
     tail.position.set(sign * REACTOR_OFFSET_X, top - 0.02, 0)
     # Stand the panel up (X becomes height), then cant it outwards.
@@ -470,7 +593,7 @@ def _build_tip_reactor(side: str, sign: float, root: Any, scene: Any) -> None:
     fin = TIP_FIN if sign > 0 else mirror_x(TIP_FIN)
     for k, (label, up) in enumerate([("upper", 1), ("lower", -1)]):
         y = pod["ys"][k]
-        reactor = build_reactor(name + "-reactor-" + label, pod, scene, True)
+        reactor = build_reactor(name + "-reactor-" + label, pod, scene)
         reactor.position.set(x, y, pod["z"])
         reactor.parent = root
         node = new_transform_node(name + "-fin-" + label, scene)
@@ -490,6 +613,12 @@ def _build_tip_reactor(side: str, sign: float, root: Any, scene: Any) -> None:
     shell = create_section_loft(name + "-body", sections, len(ring), scene)
     shell.material = mats.hullMid
     shell.parent = root
+    # One octagonal intake for both reactors, at the body's front.
+    intake = new_transform_node(name + "-intake-root", scene)
+    intake.position.set(x, middle, pod["z"] + pod["length"] / 2)
+    intake.scaling.y = TIP_INTAKE["stretch"]
+    intake.parent = root
+    add_reactor_intake(name, TIP_INTAKE["radius"], 0, intake, OCTAGON)
 
 
 def build_balanced_ship(scene: Any) -> Any:
@@ -503,7 +632,7 @@ def build_balanced_ship(scene: Any) -> Any:
         _build_edge_glow(side, sign, root, scene)
         _build_missile_pod(side, sign, root, scene)
         _build_tip_reactor(side, sign, root, scene)
-        reactor = build_reactor("balanced-reactor-" + side, REACTOR, scene, True)
+        reactor = build_reactor("balanced-reactor-" + side, REACTOR, scene, True, OCTAGON)
         reactor.position.set(sign * REACTOR_OFFSET_X, REACTOR_Y, REACTOR_Z)
         reactor.scaling.y = REACTOR_HEIGHT
         reactor.parent = root

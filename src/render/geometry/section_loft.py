@@ -175,13 +175,16 @@ def create_section_loft(label: str, sections: list[Section], smooth_count: int, 
     return mesh
 
 
-def rounded_polygon(sides: int, radius: float, rounding: float, steps: int) -> list[list[float]]:
+def rounded_polygon(
+    sides: int, radius: float, rounding: float, steps: int, turn: float = 0.0
+) -> list[list[float]]:
     """Return a regular polygon's outline with rounded corners, as `[x, y]` points round the origin.
 
     `sides` corners, the first on +X, `radius` from the centre to a corner as if it were sharp;
     each corner is rounded by an arc of `steps` points (2 or more) whose radius is `rounding` times
     `radius`, tangent to both sides, so the sides stay where the sharp polygon's are. Counter
-    clockwise. A `radius` of 0 gives every point at the origin (a closed end of a loft).
+    clockwise. A `radius` of 0 gives every point at the origin (a closed end of a loft). `turn`
+    turns it counter clockwise round the origin (rad): `pi / 8` lays an octagon's sides flat.
     """
     half = math.pi / sides
     arc = rounding * radius
@@ -189,7 +192,7 @@ def rounded_polygon(sides: int, radius: float, rounding: float, steps: int) -> l
     centre = radius - arc / math.cos(half)
     ring: list[list[float]] = []
     for k in range(sides):
-        corner = 2 * math.pi * k / sides
+        corner = 2 * math.pi * k / sides + turn
         cx = centre * math.cos(corner)
         cy = centre * math.sin(corner)
         for s in range(steps):
@@ -199,13 +202,13 @@ def rounded_polygon(sides: int, radius: float, rounding: float, steps: int) -> l
 
 
 def polygon_lathe_sections(
-    profile: list[list[float]], sides: int, rounding: float, steps: int
+    profile: list[list[float]], sides: int, rounding: float, steps: int, turn: float = 0.0
 ) -> list[Section]:
     """Return the sections of a body round the Z axis with a rounded polygon section.
 
     `profile` as a lathe's (`[z, radius]` points); each section is `rounded_polygon` at that radius.
     """
-    return [[p[0], rounded_polygon(sides, p[1], rounding, steps)] for p in profile]
+    return [[p[0], rounded_polygon(sides, p[1], rounding, steps, turn)] for p in profile]
 
 
 def rounded_rectangle(

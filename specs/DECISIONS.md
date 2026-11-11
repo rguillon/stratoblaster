@@ -2468,3 +2468,25 @@
   the duct's hexagon at its height (`intake_fin_half_width`: the hexagon, with a corner each side,
   narrows by 1/sqrt(3) of the height on each side). They follow the main reactors' upright stretch.
 - **Consequences:** the ship drops to 8,952 triangles.
+
+### D-339 — Longer wings, a laser and two miniguns, one octagonal tip intake, octagonal main reactors
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-05, GFX-SHIP-09.
+- **Context:** owner: "make the wings go a little beyond the side reactors, and rework the
+  undergun, make a cool looking laser and add two miniguns on it's sides", then "and merge the two
+  lateral intales into a single octogonal intake, make the main reactor octogonal too".
+- **Decision:**
+  - The wing's tip moves from x 1.9 to 2.3, past the tip reactors' body (outer side at 2.105),
+    its leading and trailing edges carried on along their sweep, its front corner chamfered. Its
+    glowing leading edge is two strips, either side of the tip reactors' body.
+  - The gun pod is replaced by a laser (octagonal gunmetal housing, barrel, three accent coils, an
+    emitter of the reactors' core light at the muzzle) and a minigun each side (steel drum, six
+    barrels on a ring, a gunmetal clamp).
+  - `rounded_polygon` and `polygon_lathe_sections` take a `turn`; reactor parts take a number of
+    sides (`polygon_turn`: octagons turned π/8 so they lie flat on top and at the sides). The main
+    reactors are octagons: nacelle, rings, core, flame and intake.
+  - The tip reactors lose their own intakes; their body runs on to their fronts, where one
+    octagonal intake, stretched upright to the body's height, feeds both. `add_reactor_intake` is
+    public for it; the intake fins' width follows the octagon.
+- **Consequences:** the ship measures 9,832 triangles, under the 11,000 budget.

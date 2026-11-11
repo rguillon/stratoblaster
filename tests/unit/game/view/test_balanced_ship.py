@@ -71,16 +71,16 @@ def test_gfx_ship_01_the_wings_are_forward_swept() -> None:
 
 
 def test_gfx_ship_01_twin_reactors_sit_one_over_the_other_on_each_wing_tip() -> None:
-    """D-331: one above the wing's plane, one below, not overlapping; the fins canted 45°."""
+    """D-331, D-339: one over the other, the fins canted 45°; the wing runs on past them."""
     pod = balanced_ship.TIP_REACTOR
     tip = balanced_ship.BALANCED_WING[2]
-    assert tip[0] < pod["x"] < tip[0] + pod["radius"]
+    body = balanced_ship.TIP_BODY
+    assert pod["x"] + body["halfWidth"] < tip[0] < pod["x"] + body["halfWidth"] + 0.3
     upper, lower = pod["ys"]
     assert upper > 0 > lower
     assert upper - lower >= 2 * pod["radius"]
-    tip_front = balanced_ship.BALANCED_WING[2][1]
-    tip_back = balanced_ship.BALANCED_WING[3][1]
-    assert tip_back < pod["z"] < tip_front
+    x = pod["x"]
+    assert balanced_ship._trailing_edge(x) < pod["z"] < balanced_ship._leading_edge(x)
     assert pytest.approx(math.pi / 4) == balanced_ship.TIP_FIN_CANT
 
 
@@ -151,7 +151,7 @@ def test_gfx_trim_the_tails_lean_out_no_further_than_the_nacelles_edge() -> None
 
 
 def test_gfx_ship_01_one_body_wraps_each_wing_tips_twin_reactors() -> None:
-    """D-332: its section round both reactors, its ends short of their intakes and nozzles."""
+    """D-332, D-339: its section round both reactors, from their fronts to short of the nozzles."""
     pod = balanced_ship.TIP_REACTOR
     body = balanced_ship.TIP_BODY
     radius = pod["radius"]
@@ -160,8 +160,65 @@ def test_gfx_ship_01_one_body_wraps_each_wing_tips_twin_reactors() -> None:
     assert body["halfHeight"] > pod["ys"][0] - middle + radius * math.cos(math.pi / 6)
     front = max(z for z, _k in balanced_ship.TIP_BODY_PROFILE)
     back = min(z for z, _k in balanced_ship.TIP_BODY_PROFILE)
-    assert front < pod["length"] / 2
+    assert front == pytest.approx(pod["length"] / 2)
     assert back > -pod["length"] / 2
+
+
+def test_gfx_ship_01_one_octagonal_intake_feeds_both_tip_reactors(
+    scene: Any, monkeypatch: Any
+) -> None:
+    """D-339: the tip reactors have no intakes of their own; one octagon, the body's height."""
+    intakes: list[list[Any]] = []
+    monkeypatch.setattr(
+        balanced_ship,
+        "add_reactor_intake",
+        lambda name, radius, _front, _parent, sides: intakes.append([name, radius, sides]),
+    )
+    reactors: dict[str, list[Any]] = {}
+
+    def reactor(name: str, _size: Any, _scene: Any, *rest: Any) -> Any:
+        reactors[name] = list(rest)
+        return MagicMock(name=name)
+
+    monkeypatch.setattr(balanced_ship, "build_reactor", reactor)
+    build_balanced_ship(scene)
+    assert sorted(i[0] for i in intakes) == ["balanced-tip-left", "balanced-tip-right"]
+    assert all(i[2] == 8 for i in intakes)
+    intake = balanced_ship.TIP_INTAKE
+    flat = intake["radius"] * math.cos(math.pi / 8)
+    body = balanced_ship.TIP_BODY
+    assert flat == pytest.approx(body["halfWidth"], abs=0.02)
+    assert flat * intake["stretch"] == pytest.approx(body["halfHeight"], abs=0.03)
+    for name, rest in reactors.items():
+        if "-tip-" in name:
+            assert rest == []
+        else:
+            assert rest == [True, balanced_ship.OCTAGON]
+
+
+def test_gfx_ship_01_a_laser_with_a_minigun_either_side_under_the_belly(
+    scene: Any, monkeypatch: Any
+) -> None:
+    """D-339: the laser on the centre line, a minigun of six barrels each side, all under it."""
+    rods: dict[str, Any] = {}
+    real = balanced_ship.faceted_rod
+
+    def rod(name: str, size: Any, position: Any, *rest: Any) -> Any:
+        rods[name] = position
+        return real(name, size, position, *rest)
+
+    monkeypatch.setattr(balanced_ship, "faceted_rod", rod)
+    build_balanced_ship(scene)
+    assert "balanced-laser-barrel" in rods
+    for side in ["right", "left"]:
+        barrels = [n for n in rods if n.startswith("balanced-minigun-" + side + "-barrel-")]
+        assert len(barrels) == 6
+    gun = balanced_ship.MINIGUN
+    laser = balanced_ship.LASER
+    belly = hull.station_at(laser["z"])[hull.BELLY_DEPTH]
+    assert laser["y"] + balanced_ship.LASER_HOUSING[2][1] <= -belly + 0.02
+    assert gun["y"] + gun["drum"]["radius"] <= -belly + 0.02
+    assert gun["x"] > balanced_ship.LASER_HOUSING[2][1] + gun["drum"]["radius"]
 
 
 def test_gfx_ship_01_the_wings_sit_towards_the_nacelles_back() -> None:

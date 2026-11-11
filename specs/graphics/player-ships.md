@@ -19,8 +19,11 @@ variable fighter "with full upgrades", in the genre but copying no existing desi
 **Central body** (owner, D-332: "make the central body longer and thiner, the central body had no
 back reactor"): a long, slim fuselage, a needle nose swelling into the cockpit, widest behind it
 (0.52 across), tapering to a point at the tail; nothing comes out of its back. A framed bubble
-canopy set forward, a teardrop with its peak ahead of its middle; canards; a gun pod under the
-belly. It is one skin (D-327: "smoth the transition between the elements"), a loft through
+canopy set forward, a teardrop with its peak ahead of its middle; canards. Under the belly
+(D-339, owner: "rework the undergun, make a cool looking laser and add two miniguns on it's
+sides"): a laser cannon, a gunmetal octagonal housing and a long barrel ringed by three accent
+focusing coils, a glowing emitter at its muzzle; either side of it a minigun, a steel drum and
+six barrels round its axis held by a gunmetal clamp. It is one skin (D-327: "smoth the transition between the elements"), a loft through
 cross-sections whose sizes follow smooth curves through hand-set stations, and it is faceted
 (D-336, owner: "rework the central part, it's too round, add more details, make a better
 connection with the wings"): each section is flat facets, flat-shaded so their edges read crisp: a
@@ -38,27 +41,33 @@ their length. Each carries a canted tail on its top, leaning no further out than
 edge, and a ventral fin under it.
 
 **Wings:** forward-swept (D-330: "make the wings front sided"; the tip's leading and trailing
-edges ahead of the root's, a square-cut tip), running out of the nacelles towards their back
+edges ahead of the root's, a square-cut tip with a chamfered front corner, running on a little
+past the tip reactors, D-339: "make the wings go a little beyond the side reactors"), running out
+of the nacelles towards their back
 (D-333: "move the wings more to the back"), with flap and panel lines. The canards lie with their
 top face at the body's chine edge, as the wings do, so their trim runs on from the body's beside
 the cockpit (D-333: "lower the front wings so their highlight is aligned to the cockpit one").
 Each tip carries twin reactors one over the other (D-330, D-331), one above the wing's plane
-and one below, each with its own intake and a small gunmetal fin at 45°, the upper one's up and
-out, the lower one's down and out; one steel body wraps both (D-332: "add more body to the wings
-reactors, connecting them"), a tall rounded rectangle in section, their intakes and nozzles out at
-its ends. A missile launcher hangs under each wing (D-330): a steel rounded hexagon pod on a
+and one below, each with a small gunmetal fin at 45°, the upper one's up and out, the lower
+one's down and out; one steel body wraps both (D-332: "add more body to the wings reactors,
+connecting them"), a tall rounded rectangle in section, from their fronts to short of their
+nozzles, and one octagonal intake at its front, stretched upright to the body's height, feeds both
+(D-339, owner: "merge the two lateral intales into a single octogonal intake"; an intake each
+before). A missile launcher hangs under each wing (D-330): a steel rounded hexagon pod on a
 gunmetal pylon, an accent band behind its front, two small fins at 45° under its tapered tail,
 its front out ahead of the leading edge, so the playfield camera sees the seven accent missile
 tips in its dark launch face.
 
-**Reactors:** every reactor is a rounded hexagon (D-330: "make the ship reactor rounded
-hexagons"): its nacelle, rings, core and flame have six sides, the nacelle's corners rounded. Each
-has a visible intake at its front (owner: "add visible cool looking intakes on the reactors", "add
-intake to the reactors"): a rounded hexagon scoop in hull metal that runs on straight from the
+**Reactors:** every reactor is a rounded polygon (D-330: "make the ship reactor rounded
+hexagons"): its nacelle, rings, core and flame have the same sides, the nacelle's corners rounded.
+The main reactors are octagons, flat on top, bottom and sides (D-339, owner: "make the main reactor
+octogonal too"); the tip reactors stay hexagons. The main reactors and the tip pairs have a
+visible intake at their front (owner: "add visible cool looking intakes on the reactors", "add
+intake to the reactors"): a rounded polygon scoop in hull metal, of the reactor's sides, that runs on straight from the
 nacelle, then angles inward a little to a thin lip (D-337, owner: "make it start flat, then angled
 inward a little, and make a better inner part"), an accent band where it turns; inside, a dark
 duct lining and a dark fan face, with four flat horizontal steel fins across the duct in front of
-it, each as wide as the duct's hexagon at its height (D-338, owner: "replace the central helix by
+it, each as wide as the duct's polygon at its height (D-338, owner: "replace the central helix by
 horizontal fins in the reactors"; ten fan blades round a spinner before); the mouths
 face forward, so the frontal menu camera looks straight into them. The two main reactors are taller
 than wide (D-337: "make the main reactors higher"): their section stretched 1.3 times upright, the
@@ -68,9 +77,12 @@ No gun stands on top (D-330), and the ship carries no light of its own but its r
 
 **Acceptance criteria**
 - Given the Balanced model, then its wing tips' leading and trailing edges are ahead of their
-  roots (forward-swept), the wing's root in the nacelle; twin reactors one over the other at each
-  wing tip, wrapped in one body short of their intakes and nozzles, their fins canted 45° (unit
-  tests).
+  roots (forward-swept), the wing's root in the nacelle and its tip a little past the tip
+  reactors' body; twin reactors one over the other at each wing tip, wrapped in one body from
+  their fronts to short of their nozzles, one octagonal intake as wide and tall as the body feeding
+  both, their fins canted 45°; the main reactors octagons with intakes (unit tests).
+- Given the guns under the belly, then a laser lies on the centre line and a minigun of six
+  barrels either side of it, all under the belly (unit tests).
 - Given the main reactors, then the body's strakes reach into them from their front to the wing
   roots' back, the body itself under half as wide as the gap between them, and the tails lean no
   further out than the nacelle's edge (unit tests).
@@ -91,7 +103,7 @@ No gun stands on top (D-330), and the ship carries no light of its own but its r
   and meets the wings' plane at the chine's edge (unit tests).
 - The design is validated by eye (manual).
 
-*Sources: P02-R01, D-327, D-328, D-330, D-331, D-332, D-333, D-336, D-337, D-338.*
+*Sources: P02-R01, D-327, D-328, D-330, D-331, D-332, D-333, D-336, D-337, D-338, D-339.*
 
 ### GFX-SHIP-02 — (removed) Heavy ship
 
@@ -124,12 +136,14 @@ than the one before. The metals take the brighter hull light of GFX-ART-08.
 ### GFX-SHIP-05 — Polygon budget · MUST
 
 The player ship is under 11,000 triangles (2,000 until D-327, 4,500 until D-328, 7,000 until
-D-330; measured 8,952 in the browser with its flames, its six reactors and their finned intakes, D-338). The round
+D-330; measured 9,832 in the browser with its flames, its six reactors and their four finned intakes,
+D-339). The round
 parts' extra triangles go on their upper half only, the side the playfield camera sees: the
 canopy 16 over 3; the canopy frame, mostly hidden, 8 over 2; the tip reactors' body, a rounded
 rectangle of 12 points, smooth all round. The reactors and missile pods are rounded
-hexagons, 3 points a corner (18 round), their rings 2 (12 round). The gun pod under the belly keeps
-6 sides, the missile tips 4. The central body is flat facets all round (D-336): 8 across the top,
+hexagons, 3 points a corner (18 round), their rings 2 (12 round); the main reactors and the tip
+intakes octagons (24 round, rings 16). The laser and the miniguns' drums are 8-sided, the
+miniguns' barrels and the missile tips 4. The central body is flat facets all round (D-336): 8 across the top,
 7 round the underside, under a thousand triangles.
 
 **Acceptance criteria**
@@ -191,7 +205,9 @@ strip along the leading edge of each main wing, body strake (in short strips alo
 D-336) and canard (and the canard's tip), half
 on the panel and half out past it, a hair thicker than the panel so it caps the edge seen from
 above and from ahead; and the canopy's frame, whose rim shows round the canopy. The guns (the
-missile launchers and the gun pod) and the reactors' bodies do not glow.
+missile launchers, the laser and the miniguns) and the reactors' bodies do not glow, but for the
+laser's emitter at its muzzle, of the reactors' core light (D-339). The main wing's strip stops
+either side of the tip reactors' body, so it does not cross their intake (D-339).
 
 **Acceptance criteria**
 - Given the ship model, then it has no trim; the main wings', strakes' and canards' leading edges
@@ -224,14 +240,16 @@ missile launchers and the gun pod) and the reactors' bodies do not glow.
 | Hull facets | chine root 1.1, shoulder 0.8, deck edge 0.4 of the body's half width; shoulder at 0.75 of the deck's height | `balanced_hull.py` `CHINE_ROOT`, `SHOULDER`, `DECK_EDGE`, `SHOULDER_HEIGHT` |
 | Body details | seams at z 1.7, 0.55, -0.75, -1.75 (0.024 wide, 2% proud); 3 vents a side, x 0.34-0.5 from z -0.15 | `balanced_ship.py` `SEAM_ZS`, `SEAM`, `VENTS` |
 | `profile_steps` | 3 | `balanced_ship.py` `PROFILE_STEPS` |
-| Wing | forward-swept: root x 0.8 (z -0.7 to -1.85), tip x 1.9 (z -0.05 to -0.75) | `balanced_ship.py` `BALANCED_WING` |
-| Reactor section | hexagon, corners rounded at 0.3 of the radius, 3 points a corner (rings 2) | `ship_parts.py` `REACTOR_SIDES`, `REACTOR_ROUNDING`, `REACTOR_CORNER_STEPS`, `RING_CORNER_STEPS` |
+| Wing | forward-swept: root x 0.8 (z -0.7 to -1.85), tip x 2.3 (z 0.2 to -0.4, chamfered to 2.25, 0.24) | `balanced_ship.py` `BALANCED_WING` |
+| Reactor section | hexagon (main reactors and tip intakes: octagon turned π/8), corners rounded at 0.3 of the radius, 3 points a corner (rings 2) | `ship_parts.py` `REACTOR_SIDES`, `polygon_turn`, `REACTOR_ROUNDING`, `REACTOR_CORNER_STEPS`, `RING_CORNER_STEPS`; `balanced_ship.py` `OCTAGON` |
 | Reactor intake | straight at 0.98 radii to 0.24 ahead, angled in to 0.8 at 0.47; band at the turn; dark duct; fan face at 0.68 radii; 4 horizontal fins at heights ±0.14 and ±0.42, z 0.12 to 0.4, inside a 0.66 duct hexagon | `ship_parts.py` `REACTOR_INTAKE*` |
 | Tip reactors | x 1.98, y 0.125 and -0.125, z -0.4; radius 0.11, length 0.95; fins at 45° | `TIP_REACTOR`, `TIP_FIN`, `TIP_FIN_CANT` |
 | Tail cant | 0.2 rad outwards, on the nacelles | `TAIL_CANT` |
 | Nacelles | at x ±0.8, y -0.02, centre z -0.95; radius 0.22, length 2.0, 1.3 times taller than wide; with intakes | `REACTOR`, `REACTOR_HEIGHT`, `REACTOR_OFFSET_X`, `REACTOR_Y`, `REACTOR_Z` |
 | Strakes | the body's chines, 0.64 half wide from z -0.4 to -1.2, 0.63 at -1.9; glowing edge from z 0.85 to -0.3 | `balanced_hull.py` `STATIONS`; `balanced_ship.py` `STRAKE_EDGE_ZS` |
-| Tip reactors' body | rounded rectangle 0.125 x 0.255 half, corners 0.1; z 0.36 to -0.42 from the reactors' middle | `TIP_BODY`, `TIP_BODY_PROFILE` |
+| Tip reactors' body | rounded rectangle 0.125 x 0.255 half, corners 0.1; z 0.475 to -0.42 from the reactors' middle; one octagonal intake, radius 0.124, stretched 2.05 upright | `TIP_BODY`, `TIP_BODY_PROFILE`, `TIP_INTAKE` |
+| Laser | at y -0.255, z 0.3; housing radius 0.1, z -0.65 to 0.55; barrel 0.75 long, radius 0.036; coils at 0.62, 0.78, 0.94; emitter at 1.19 to 1.29 | `LASER`, `LASER_HOUSING`, `LASER_EMITTER` |
+| Miniguns | at x ±0.17, y -0.215, z 0.35; drum 0.36 long, radius 0.052; 6 barrels on a 0.028 ring, 0.42 long | `MINIGUN` |
 | Missile pods | under the wing at x 1.3, y -0.2, z -0.4; radius 0.1, 1.16 long; 7 tips | `MISSILE_POD`, `MISSILE_POD_PROFILE`, `MISSILE_TIPS` |
 
 ## Notes
