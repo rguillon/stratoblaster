@@ -2582,3 +2582,18 @@
   - The canopy's front closes over a short, steep end (from 1.42 to 1.41 it reaches 0.045 across)
     instead of a point at 1.45; its glowing frame follows.
 - **Consequences:** the ship measures 9,476 triangles.
+
+### D-347 — Matte black intakes; secondary scoops on the main reactors
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-04, GFX-SHIP-05.
+- **Context:** owner: "make the back of the reactor intake mat black, and add secondary intake at
+  the top and botton of each of the main reactors, with a slope eaching the back of the reactor".
+- **Decision:**
+  - A matte black material (`SHIP_LOOK.intakeBlack`: no metal, roughness 1) for every intake's
+    duct lining and fan face (the fan face was the canopy's glass, the lining the nozzle metal).
+  - Each main reactor gets a scoop on its top and bottom flat faces (`REACTOR_SCOOP`), built in the
+    nacelle's own units so it follows the upright stretch: a silver trapezoid loft, full height
+    just behind the front ring, ramping down to the nacelle's back; a matte black slab is its
+    forward-facing mouth. The tails and ventral fins rise out of the ramps.
+- **Consequences:** the ship measures 9,620 triangles.

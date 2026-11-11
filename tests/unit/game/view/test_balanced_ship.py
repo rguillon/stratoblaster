@@ -353,3 +353,21 @@ def test_gfx_ship_01_the_canopy_front_is_rounded_off() -> None:
     near = balanced_ship.CANOPY[1]
     assert front[1] == 0
     assert near[1] / (front[0] - near[0]) > 2
+
+
+@pytest.mark.parametrize("up", [1, -1])
+def test_gfx_ship_01_the_reactor_scoops_stand_on_the_nacelle_and_ramp_to_its_back(up: int) -> None:
+    """D-347: full height at the mouth, down to the nacelle at its back; faces turned outward."""
+    sections = balanced_ship.scoop_sections(up)
+    scoop = balanced_ship.REACTOR_SCOOP
+    assert sections[0][0] == scoop["front"]
+    assert sections[-1][0] == pytest.approx(-balanced_ship.REACTOR["length"] / 2)
+    heights = [max(abs(p[1]) for p in ring) for _z, ring in sections]
+    assert heights[0] > heights[-1]
+    positions, indices, normals = build_section_loft(sections, 0)
+    top = max(abs(positions[k * 3 + 1]) for k in range(len(positions) // 3))
+    for t in range(0, len(indices), 3):
+        ys = [positions[indices[t + k] * 3 + 1] for k in range(3)]
+        # The faces on the scoop's top face away from the nacelle.
+        if all(abs(y) > top - 0.001 for y in ys):
+            assert normals[indices[t] * 3 + 1] * up > 0

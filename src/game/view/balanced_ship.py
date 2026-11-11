@@ -163,6 +163,20 @@ REACTOR_HEIGHT = 1.3
 # The main reactors and the tip intakes are octagons, flat on top, bottom and sides (D-339, owner:
 # "make the main reactor octogonal too"); the tip reactors and missile pods stay hexagons.
 OCTAGON = 8
+# A secondary intake on the top and the bottom of each main reactor (D-347, owner: "add secondary
+# intake at the top and botton of each of the main reactors, with a slope eaching the back of the
+# reactor"): a silver scoop on the nacelle's flat face, its matte black mouth facing forward, its
+# back a ramp sloping down to the nacelle's back. In the nacelle's own units (before its upright
+# stretch, Z from its middle): its front and back, its width at its base, its height at its mouth,
+# how far its base sinks into the nacelle; the mouth's share of its width and height.
+REACTOR_SCOOP: dict[str, Any] = {
+    "front": 0.5,
+    "back": -1.0,
+    "width": 0.16,
+    "height": 0.1,
+    "sink": 0.012,
+    "mouth": 0.72,
+}
 
 # The guns under the belly (D-339, owner: "rework the undergun, make a cool looking laser and add
 # two miniguns on it's sides"; D-340: "make the lazer longer, it should go further than the tip of
@@ -705,6 +719,48 @@ def _build_tip_reactor(side: str, sign: float, root: Any, scene: Any) -> None:
     add_reactor_intake(name, TIP_INTAKE["radius"], 0, intake, OCTAGON)
 
 
+def scoop_sections(up: float) -> list[Any]:
+    """Return the sections of a main reactor's secondary intake, `up` 1 on top, -1 under (D-347).
+
+    A trapezoid on the nacelle's flat face, full height at its mouth, then a ramp down to the
+    nacelle's back.
+    """
+    scoop = REACTOR_SCOOP
+    base = REACTOR["radius"] * math.cos(math.pi / OCTAGON) - scoop["sink"]
+    half = scoop["width"] / 2
+    sections = []
+    for z, height in [
+        [scoop["front"], scoop["height"] + scoop["sink"]],
+        [scoop["front"] - 0.06, scoop["height"] + scoop["sink"]],
+        [scoop["back"], 0.003],
+    ]:
+        ring = [
+            [half, up * base],
+            [half * 0.84, up * (base + height)],
+            [-half * 0.84, up * (base + height)],
+            [-half, up * base],
+        ]
+        sections.append([z, ring])
+    return sections
+
+
+def _build_scoop(name: str, up: float, reactor: Any, scene: Any) -> None:
+    """Build a secondary intake on a main reactor's top or bottom, its black mouth ahead (D-347)."""
+    mats = get_ship_materials(scene)
+    scoop = REACTOR_SCOOP
+    shell = create_section_loft(name, scoop_sections(up), 0, scene)
+    shell.material = mats.hull
+    shell.parent = reactor
+    half = scoop["width"] / 2 * 0.84 * scoop["mouth"]
+    front = scoop["front"]
+    outline = [[-half, front + 0.004], [half, front + 0.004], [half, front - 0.03]]
+    outline.append([-half, front - 0.03])
+    height = scoop["height"] * scoop["mouth"]
+    mouth = panel(name + "-mouth", outline, height, mats.intakeBlack, reactor)
+    base = REACTOR["radius"] * math.cos(math.pi / OCTAGON)
+    mouth.position.y = up * (base + scoop["height"] / 2)
+
+
 def build_balanced_ship(scene: Any) -> Any:
     """Build the player ship (GFX-SHIP-01)."""
     root = new_transform_node("ship-balanced", scene)
@@ -720,4 +776,6 @@ def build_balanced_ship(scene: Any) -> Any:
         reactor.position.set(sign * REACTOR_OFFSET_X, REACTOR_Y, REACTOR_Z)
         reactor.scaling.y = REACTOR_HEIGHT
         reactor.parent = root
+        for label, up in [("top", 1), ("bottom", -1)]:
+            _build_scoop("balanced-reactor-" + side + "-scoop-" + label, up, reactor, scene)
     return root

@@ -259,7 +259,7 @@ def add_reactor_intake(
     """Add an intake at `front` along Z of `root`, `sides` round (D-337); return its node.
 
     A hull-metal scoop, straight and flush with the nacelle, then angled in; inside, a
-    dark duct, a dark fan face and horizontal fins across the duct (D-338).
+    matte black duct (D-347), a dark fan face and horizontal fins across the duct (D-338).
     """
     scene = root.getScene()
     mats = get_ship_materials(scene)
@@ -277,7 +277,7 @@ def add_reactor_intake(
     duct_sections = _hexagon_sections(duct_profile, REACTOR_CORNER_STEPS, sides)
     duct = create_section_loft(name + "-intake-duct", duct_sections, 0, scene)
     duct.flipFaces(True)
-    duct.material = mats.nozzle
+    duct.material = mats.intakeBlack
     duct.parent = node
     fan = REACTOR_INTAKE_FAN
     face = create_disc(name + "-intake-fan", disc_options(fan["radius"] * radius, sides), scene)
@@ -286,7 +286,7 @@ def add_reactor_intake(
     face.rotation.y = math.pi
     face.rotation.z = polygon_turn(sides)
     face.position.z = fan["z"] * radius
-    face.material = mats.canopy
+    face.material = mats.intakeBlack
     face.parent = node
     _add_intake_fins(name, radius, mats.hullMid, node, sides)
     return node

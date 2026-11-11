@@ -24,6 +24,9 @@ SHIP_LOOK = record({
     },
     "trim": {"albedo": [0.24, 0.28, 0.36], "metallic": 0.85, "roughness": 0.3},
     "nozzle": {"albedo": [0.18, 0.2, 0.24], "metallic": 1, "roughness": 0.45},
+    # The inside of the intakes, matte black (D-347, owner: "make the back of the reactor intake
+    # mat black"): no metal, fully rough, so it takes no highlight.
+    "intakeBlack": {"albedo": [0.012, 0.012, 0.015], "metallic": 0, "roughness": 1},
     "reactorCore": {"emissive": [0.35, 0.75, 1]},
     # GFX-SHIP-09 (D-335, owner: "remove the highlight as an outter layer for the player's ship,
     # instead make it look like it's the extremities of the wings and cockpit that are glowing"):
