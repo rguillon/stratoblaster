@@ -148,6 +148,8 @@ VENTRAL_FIN = [
 # vertical, outwards: their tips stay inside the nacelle's edge seen from above (D-330), so the
 # trim runs along that edge unbroken.
 TAIL_CANT = 0.2
+TAIL_THICKNESS = 0.05
+VENTRAL_THICKNESS = 0.04
 VENTRAL_CANT = 0.55  # rad from vertical, outwards
 # The main reactors: nacelles standing out from the body (D-332: "spead the two main reactors";
 # at 0.42, inside the hull's shoulders, before), joined to it by its strakes (D-336), their middle
@@ -201,14 +203,18 @@ LASER_EMITTER = [[3.13, 0], [3.1, 0.022], [3.06, 0.03], [3.05, 0]]
 # The miniguns, one in each flank of the fairing: their drums half sunk in it as blisters, their
 # six barrels out ahead of it. Place; drum; barrels (ring radius, radius, length, middle along Z
 # from the drum's); the clamp round the barrels. D-341 (owner: "increase ther size of the
-# miniguns, and make their cannons thicker"): larger drums, thicker six-sided barrels.
+# miniguns, and make their cannons thicker"): larger drums, thicker six-sided barrels. D-345
+# ("increase the minigun size again, and add hole into the barrels"): larger again, each barrel
+# hollow at its muzzle, a bore of `bore.radius` of the barrel's, `bore.depth` deep. D-346 ("spread
+# the minguns a little more"): 0.21 out from the centre line (0.17 before).
 MINIGUN: dict[str, Any] = {
-    "x": 0.15,
-    "y": -0.18,
+    "x": 0.21,
+    "y": -0.195,
     "z": 0.75,
-    "drum": {"length": 0.8, "radius": 0.066},
-    "barrels": {"count": 6, "ring": 0.036, "radius": 0.016, "length": 0.46, "z": 0.58},
-    "clamp": {"z": 0.6, "radius": 0.06, "half": 0.012},
+    "drum": {"length": 0.9, "radius": 0.085},
+    "barrels": {"count": 6, "ring": 0.048, "radius": 0.021, "length": 0.5, "z": 0.65},
+    "bore": {"radius": 0.55, "depth": 0.06},
+    "clamp": {"z": 0.68, "radius": 0.078, "half": 0.014},
 }
 
 # Dark panel seams round the body (D-336): their Z, their half width along Z and how much larger
@@ -229,10 +235,13 @@ VENTS = [
 # Segments of each hand-set profile are cut into this many along a smooth curve.
 PROFILE_STEPS = 3
 
-# Canopy profile, `[z, radius]`: a teardrop bubble, its peak ahead of its middle.
+# Canopy profile, `[z, radius]`: a teardrop bubble, its peak ahead of its middle; its front
+# rounded off (D-346, owner: "make the cockpit tip less pointy"; it came to a point at 1.45).
 CANOPY = [
-    [1.45, 0],
-    [1.33, 0.065],
+    [1.42, 0],
+    [1.41, 0.045],
+    [1.37, 0.08],
+    [1.28, 0.102],
     [1.15, 0.11],
     [0.95, 0.105],
     [0.8, 0.06],
@@ -394,11 +403,31 @@ def _build_laser(root: Any, scene: Any) -> None:
     emitter.parent = node
 
 
+def barrel_profile(length: float, radius: float, bore: dict[str, float]) -> list[list[float]]:
+    """Return a hollow barrel's lathe profile (`[z, radius]`, centred on its middle) (D-345).
+
+    From the bore's bottom out to its wall, forward along it to the muzzle, out over the muzzle's
+    rim, back along the outside and in over the breech: the lathe turns the bore's wall to face
+    the axis, so the hole reads from ahead.
+    """
+    front = length / 2
+    inner = radius * bore["radius"]
+    bottom = front - bore["depth"]
+    return [
+        [bottom, 0],
+        [bottom, inner],
+        [front, inner],
+        [front, radius],
+        [-front, radius],
+        [-front, 0],
+    ]
+
+
 def _build_minigun(side: str, sign: float, root: Any, scene: Any) -> None:
     """Build a minigun in a flank of the fairing (D-339, D-340).
 
     Its drum, of hull metal, half sunk in the fairing as a blister; six barrels round its axis out
-    ahead of it, a clamp round them.
+    ahead of it, hollow at their muzzles (D-345), a clamp round them.
     """
     mats = get_ship_materials(scene)
     gun = MINIGUN
@@ -416,20 +445,19 @@ def _build_minigun(side: str, sign: float, root: Any, scene: Any) -> None:
         OCTAGON,
     )
     barrels = gun["barrels"]
+    profile = barrel_profile(barrels["length"], barrels["radius"], gun["bore"])
     for k in range(barrels["count"]):
         angle = 2 * math.pi * k / barrels["count"]
-        faceted_rod(
-            name + "-barrel-" + str(k),
-            {"length": barrels["length"], "radius": barrels["radius"]},
-            vector3(
-                barrels["ring"] * math.cos(angle),
-                barrels["ring"] * math.sin(angle),
-                barrels["z"],
-            ),
-            mats.trim,
-            node,
-            PART_FACETS,
+        barrel = create_faceted_lathe_along_z(
+            name + "-barrel-" + str(k), profile, PART_FACETS, scene
         )
+        barrel.position.set(
+            barrels["ring"] * math.cos(angle),
+            barrels["ring"] * math.sin(angle),
+            barrels["z"],
+        )
+        barrel.material = mats.trim
+        barrel.parent = node
     clamp = gun["clamp"]
     hexagon_band(name + "-clamp", clamp["z"], clamp["radius"], clamp["half"], mats.hullDark, node)
 
@@ -558,14 +586,30 @@ def _build_tails(side: str, sign: float, root: Any, scene: Any) -> None:
     # Stand the panel up (X becomes height), then cant it outwards.
     tail.rotation.z = math.pi / 2 - sign * TAIL_CANT
     tail.parent = root
-    panel("balanced-tail-" + side + "-panel", TAIL, 0.05, mats.hullDark, tail)
+    panel("balanced-tail-" + side + "-panel", TAIL, TAIL_THICKNESS, mats.hullDark, tail)
+    # Their leading edge and tip glow, as the wings' do (D-346, owner: "add highlight to the
+    # vertical wings too").
+    _glow_edges("balanced-glow-" + side + "-tail", TAIL, TAIL_THICKNESS, mats.edgeGlow, tail)
 
     # Ventral fin: same trick, pointing down and outwards.
     fin = new_transform_node("balanced-ventral-" + side, scene)
     fin.position.set(sign * REACTOR_OFFSET_X, REACTOR_Y - radius * 0.8 * REACTOR_HEIGHT, 0)
     fin.rotation.z = -math.pi / 2 + sign * VENTRAL_CANT
     fin.parent = root
-    panel("balanced-ventral-" + side + "-panel", VENTRAL_FIN, 0.04, mats.hullDark, fin)
+    panel("balanced-ventral-" + side + "-panel", VENTRAL_FIN, VENTRAL_THICKNESS, mats.hullDark, fin)
+    _glow_edges(
+        "balanced-glow-" + side + "-ventral", VENTRAL_FIN, VENTRAL_THICKNESS, mats.edgeGlow, fin
+    )
+
+
+def _glow_edges(
+    name: str, outline: list[list[float]], thickness: float, material: Any, parent: Any
+) -> None:
+    """Lay glowing strips on a fin's leading edge and tip: its first two edges (D-346)."""
+    size = {"width": EDGE_GLOW["width"], "thickness": thickness + 0.006}
+    for k in range(2):
+        edge = [outline[k], outline[k + 1]]
+        edge_strip(name + "-" + str(k), edge, _centre(outline), size, material, parent)
 
 
 def _build_missile_tips(name: str, front: float, material: Any, parent: Any) -> None:

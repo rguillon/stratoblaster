@@ -212,10 +212,18 @@ def test_gfx_ship_01_a_laser_with_a_minigun_either_side_under_the_belly(
         return real(name, size, position, *rest)
 
     monkeypatch.setattr(balanced_ship, "faceted_rod", rod)
+    lathes: list[str] = []
+    real_lathe = balanced_ship.create_faceted_lathe_along_z
+
+    def lathe(name: str, *args: Any) -> Any:
+        lathes.append(name)
+        return real_lathe(name, *args)
+
+    monkeypatch.setattr(balanced_ship, "create_faceted_lathe_along_z", lathe)
     build_balanced_ship(scene)
     assert "balanced-laser-core" in rods
     for side in ["right", "left"]:
-        barrels = [n for n in rods if n.startswith("balanced-minigun-" + side + "-barrel-")]
+        barrels = [n for n in lathes if n.startswith("balanced-minigun-" + side + "-barrel-")]
         assert len(barrels) == 6
     gun = balanced_ship.MINIGUN
     laser = balanced_ship.LASER
@@ -280,7 +288,10 @@ def test_gfx_ship_09_the_wings_canards_and_canopy_glow_not_the_guns(
     monkeypatch.setattr(balanced_ship, "edge_strip", record)
     build_balanced_ship(scene)
     for side in ["right", "left"]:
-        for part in ["wing", "strake-0", "strake-4", "canard-0", "canard-1"]:
+        # D-346: the tails and ventral fins too, their leading edge and tip.
+        parts = ["wing", "strake-0", "strake-4", "canard-0", "canard-1"]
+        parts.extend(["tail-0", "tail-1", "ventral-0", "ventral-1"])
+        for part in parts:
             assert "balanced-glow-" + side + "-" + part in names
     assert not any("missile" in n or "gun" in n for n in names)
 
@@ -323,3 +334,22 @@ def test_gfx_ship_01_the_main_reactors_are_taller_than_wide(scene: Any, monkeypa
     tips = [m for name, m in reactors.items() if "-tip-" in name or "tip" in name]
     assert tips
     assert all(m.scaling.y == 1 for m in tips)
+
+
+def test_gfx_ship_01_the_minigun_barrels_are_hollow_at_their_muzzles() -> None:
+    """D-345: the profile runs in from the muzzle's rim to a bore, then out round the barrel."""
+    bore = {"radius": 0.5, "depth": 0.06}
+    profile = balanced_ship.barrel_profile(0.5, 0.02, bore)
+    assert profile[0] == pytest.approx([0.25 - 0.06, 0])
+    assert profile[1] == pytest.approx([0.19, 0.01])
+    assert profile[2] == pytest.approx([0.25, 0.01])
+    assert profile[3] == pytest.approx([0.25, 0.02])
+    assert profile[-1] == pytest.approx([-0.25, 0])
+
+
+def test_gfx_ship_01_the_canopy_front_is_rounded_off() -> None:
+    """D-346: the canopy's front closes over a short, steep end, not to a point."""
+    front = balanced_ship.CANOPY[0]
+    near = balanced_ship.CANOPY[1]
+    assert front[1] == 0
+    assert near[1] / (front[0] - near[0]) > 2

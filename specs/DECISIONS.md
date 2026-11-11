@@ -2558,3 +2558,27 @@
   bottom and sides, as the main reactors are; still crisp, flat-shaded, 1.35 times taller than
   wide, through the wing.
 - **Consequences:** the ship measures 8,824 triangles.
+
+### D-345 — Bigger miniguns, hollow barrels
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-05.
+- **Context:** owner: "increase the minigun size again, and add hole into the barrels".
+- **Decision:** drums of radius 0.085, 0.9 long; barrels of radius 0.021 on a 0.048 ring, 0.5
+  long. Each barrel is a lathe whose profile runs in from the muzzle's rim to a bore (0.55 of its
+  radius, 0.06 deep) and back out round the barrel (`barrel_profile`), so the bore's wall faces
+  the axis and the hole reads from ahead.
+
+### D-346 — Miniguns spread, glowing fins, a rounded canopy front
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-05, GFX-SHIP-09.
+- **Context:** owner: "spread the minguns a little more, add highlight to the vertical wings too and
+  make the cockpit tip less pointy".
+- **Decision:**
+  - The miniguns sit 0.21 out from the centre line (0.17), still half in the fairing's flanks.
+  - The tails and ventral fins get glowing strips on their leading edge and tip (`_glow_edges`),
+    as the wings and canards have.
+  - The canopy's front closes over a short, steep end (from 1.42 to 1.41 it reaches 0.045 across)
+    instead of a point at 1.45; its glowing frame follows.
+- **Consequences:** the ship measures 9,476 triangles.
