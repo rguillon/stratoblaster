@@ -1,12 +1,12 @@
 # Copyright (c) 2026 Renaud Guillon
-"""The Balanced ship's blended hull (GFX-SHIP-01, D-327).
+"""The Balanced ship's central body (GFX-SHIP-01, D-327, D-332).
 
-One skin instead of a fuselage, a spine, strakes and side pods put together: each cross-section's
-top is the smooth union of the fuselage's rounded back, the two nacelle shoulders running from the
-intakes to the reactors, the two booster humps on the back (D-328), and a thin chine that flares
-out into the wing roots (the leading-edge extensions). Where they meet, a smooth maximum rounds the
-joint into a fillet, so the shoulders and humps swell out of the back and the chine sweeps into
-the wings. The belly is three flat facets.
+A long, slim fuselage lofted through cross-sections: each section's top is the smooth union of the
+fuselage's rounded back and a thin chine along its flanks, whose edge stands as high as the wings'
+and stub wings' top faces, so they run out of it flush. Where back and chine meet, a smooth maximum
+rounds the joint into a fillet. The belly is three flat facets. It closes to a point at both ends:
+nothing comes out of its back (owner, D-332: "the central body had no back reactor"); the reactors
+are the nacelles out on the stub wings and the pairs on the wing tips.
 
 Stations along the ship give each part's size; between them the sizes follow smooth curves.
 Model units: nose towards +Z, Y up.
@@ -26,50 +26,36 @@ BODY_HALF_WIDTH = 1
 BODY_HEIGHT = 2
 BELLY_DEPTH = 3
 CHINE_HALF_WIDTH = 4
-SHOULDER_HEIGHT = 5
-BOOSTER_HEIGHT = 6
 
-# `[z, body half width, body height, belly depth, chine half width, shoulder height, booster
-# height]`, nose to tail. The chine follows the old strakes' leading edge out to the wing roots;
-# the shoulders rise behind the intake mouths and run on over the nacelles, standing well over the
-# intakes' and nacelles' tops so these never show through: only the intake mouths at the front and
-# the nozzles behind the tail show (D-327). Behind the cockpit the back widens to meet the
-# shoulders into one broad back. D-328: two booster humps swell out of the back behind the
-# cockpit and run to the tail, over the boosters' engines; the hull runs aft to one engine block
-# wrapping the nacelles and the boosters, all four nozzles coming out of its tail face together.
-# D-330: aft, the chine stands out past the nacelles' widest (0.64), so they never peek out from
-# under the hull's edge seen from above (the edge trim then broke into dashes along the flanks).
+# `[z, body half width, body height, belly depth, chine half width]`, nose to tail. D-332 (owner:
+# "make the central body longer and thiner"): longer (z 2.75 to -2.45, 4.8 before) and about half
+# as wide (0.56 across at its widest, 1.4 with the nacelle shoulders before), a needle nose
+# swelling into the cockpit, widest behind it, tapering to a point at the tail.
 STATIONS = [
-    [2.45, 0, 0, 0, 0, 0, 0],
-    [2.2, 0.05, 0.04, 0.035, 0.05, 0, 0],
-    [1.8, 0.11, 0.085, 0.07, 0.11, 0, 0],
-    [1.3, 0.18, 0.13, 0.11, 0.21, 0, 0],
-    [0.8, 0.26, 0.18, 0.14, 0.42, 0.06, 0],
-    [0.4, 0.32, 0.22, 0.16, 0.6, 0.2, 0],
-    [0.0, 0.38, 0.25, 0.17, 0.66, 0.26, 0.12],
-    [-0.5, 0.4, 0.25, 0.17, 0.7, 0.27, 0.38],
-    [-1.0, 0.38, 0.23, 0.15, 0.7, 0.26, 0.42],
-    [-1.4, 0.32, 0.2, 0.12, 0.7, 0.25, 0.42],
-    [-1.72, 0.28, 0.18, 0.1, 0.7, 0.24, 0.41],
-    [-2.0, 0.24, 0.16, 0.08, 0.69, 0.22, 0.39],
+    [2.75, 0, 0, 0, 0],
+    [2.45, 0.04, 0.035, 0.03, 0.045],
+    [2.0, 0.09, 0.075, 0.06, 0.1],
+    [1.5, 0.15, 0.12, 0.1, 0.17],
+    [1.0, 0.21, 0.17, 0.13, 0.25],
+    [0.5, 0.25, 0.21, 0.15, 0.3],
+    [0.0, 0.28, 0.23, 0.16, 0.33],
+    [-0.6, 0.28, 0.23, 0.16, 0.33],
+    [-1.2, 0.25, 0.2, 0.14, 0.3],
+    [-1.8, 0.18, 0.15, 0.1, 0.22],
+    [-2.2, 0.1, 0.09, 0.06, 0.12],
+    [-2.45, 0, 0, 0, 0],
 ]
 # Each gap between stations is cut into this many sections.
 STATION_STEPS = 3
-# Points across the top, from one chine edge to the other (the smooth half): half evenly spaced
-# (the booster humps and their valleys need points in the middle), half crowding at the edges
-# where the chine turns down fastest.
-TOP_POINTS = 31
-# Where the shoulders run, their half width, and the chine's thickness at the body.
-SHOULDER_X = 0.42
-SHOULDER_HALF_WIDTH = 0.26
-# Where the booster humps run, and their half width.
-BOOSTER_X = 0.18
-BOOSTER_HALF_WIDTH = 0.17
-CHINE_THICKNESS = 0.06
+# Points across the top, from one chine edge to the other (the smooth half): half evenly spaced,
+# half crowding at the edges where the chine turns down fastest.
+TOP_POINTS = 25
+# The chine's thickness at the body.
+CHINE_THICKNESS = 0.05
 # The chine's edge stands as high as the wing's top face, so the wings run out of it flush.
 CHINE_EDGE = 0.035
 # How wide the fillets are: the smooth maximum's blend.
-FILLET = 0.15
+FILLET = 0.1
 # The belly's corners, as a share of the body's half width.
 BELLY_CORNER = 0.7
 
@@ -91,19 +77,15 @@ def _cap(x: float, half_width: float, height: float) -> float:
 def top_height(station: list[float], x: float) -> float:
     """Height of the hull's top at `x` (either side), at a station."""
     side = abs(x)
-    body = _cap(side, station[BODY_HALF_WIDTH], station[BODY_HEIGHT])
-    shoulder = _cap(side - SHOULDER_X, SHOULDER_HALF_WIDTH, station[SHOULDER_HEIGHT])
-    booster = _cap(side - BOOSTER_X, BOOSTER_HALF_WIDTH, station[BOOSTER_HEIGHT])
     chine_half = station[CHINE_HALF_WIDTH]
-    chine = CHINE_THICKNESS * max(0, 1 - side / chine_half) if chine_half > 0 else 0
-    height = smooth_max(
-        smooth_max(smooth_max(body, shoulder, FILLET), booster, FILLET), chine, FILLET
-    )
     if chine_half <= side:
         return 0
-    # Towards the chine's edge the top eases down to the wing's top face (nothing at the nose,
-    # where the chine is as narrow as the body).
-    edge = CHINE_EDGE * min(1, chine_half / SHOULDER_X)
+    body = _cap(side, station[BODY_HALF_WIDTH], station[BODY_HEIGHT])
+    chine = CHINE_THICKNESS * max(0, 1 - side / chine_half)
+    height = smooth_max(body, chine, FILLET)
+    # Towards the chine's edge the top eases down to the wings' top face (less at the nose and the
+    # tail, where the chine is narrow).
+    edge = CHINE_EDGE * min(1, chine_half / 0.3)
     taper = min(1, (chine_half - side) / FILLET)
     return edge + (height - edge) * taper
 
@@ -183,30 +165,3 @@ def station_at(z: float) -> list[float]:
             t = (a[Z] - z) / (a[Z] - b[Z])
             return [a[c] + (b[c] - a[c]) * t for c in range(len(a))]
     return list(rows[len(rows) - 1])
-
-
-def plate_sections(
-    xs: list[float], zs: list[float], thickness: float, count: int
-) -> list[list[Any]]:
-    """Return the sections of a plate lying on the hull's top, from `xs[1]` over to `xs[0]`.
-
-    Conformal: its top follows the hull `thickness` above it, its underside sinks a hair into the
-    skin, so it reads as armour laid on the hull, not a flat slab floating over it. `zs` is its
-    front and back; each ring has `count` top points (the smooth part), then the underside back.
-    """
-    sections: list[list[Any]] = []
-    steps = max(2, int((zs[0] - zs[1]) / 0.1 + 0.5))
-    for s in range(steps + 1):
-        z = zs[0] + (zs[1] - zs[0]) * s / steps
-        station = station_at(z)
-        top: list[list[float]] = []
-        under: list[list[float]] = []
-        for i in range(count):
-            x = xs[1] + (xs[0] - xs[1]) * i / (count - 1)
-            surface = top_height(station, x)
-            top.append([x, surface + thickness])
-            under.insert(0, [x, surface - 0.01])
-        ring = list(top)
-        ring.extend(under)
-        sections.append([z, ring])
-    return sections

@@ -244,6 +244,14 @@ def _dev_view(state: MenuState, ctx: MenuViewContext) -> Any:
         end = starts[g + 1] if g + 1 < len(starts) else len(groups)
         place = str(index - starts[g] + 1) + " / " + str(end - starts[g])
         position = groups[index] + " · " + place
+    shown: list[DevChoice] | None = menu
+    if len(labels) == 1 and hint == texts.models_hint:
+        # D-333 (owner: "in the dev view, for the player ship, remove the menu, there is only one
+        # ship"): a model viewer with a single model shows it alone: no menu, no place in a list,
+        # nothing to step to in the hint.
+        shown = None
+        position = ""
+        hint = texts.single_hint
     columns = DEV_MENU_COLUMNS.get(viewer, DEFAULT_DEV_MENU_COLUMNS)
     modes = None
     if viewer in DEV_MODE_VIEWERS:
@@ -252,7 +260,7 @@ def _dev_view(state: MenuState, ctx: MenuViewContext) -> Any:
             for i, mode in enumerate(DEV_VIEW_MODES)
         ]
     return DevViewerView(
-        texts.labels[viewer], hint, back, index, item, position, scrub, menu, columns, modes
+        texts.labels[viewer], hint, back, index, item, position, scrub, shown, columns, modes
     )
 
 

@@ -1,12 +1,9 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/balanced_hull.py` (GFX-SHIP-01, D-327)."""
 
-import math
-
 import pytest
 
 from game.view import balanced_hull as hull
-from game.view import balanced_ship as ship
 from game.view.balanced_hull import (
     STATIONS,
     TOP_POINTS,
@@ -41,34 +38,13 @@ def test_gfx_ship_01_the_top_is_mirrored_and_meets_the_wings_top_at_the_chine_ed
         assert top_height(station, x) == pytest.approx(top_height(station, -x))
 
 
-def test_gfx_ship_01_the_shoulders_swell_out_of_the_back_without_a_dip() -> None:
-    """Between the body's back and a nacelle shoulder, the fillet keeps the top from sagging."""
-    station = STATIONS[7]
-    back = top_height(station, 0)
-    shoulder = top_height(station, hull.SHOULDER_X)
-    lowest = min(top_height(station, x / 100) for x in range(int(hull.SHOULDER_X * 100) + 1))
-    assert lowest >= min(back, shoulder) * 0.75
-
-
-def test_gfx_ship_01_every_section_has_the_same_ring_the_nose_closes_the_tail_is_cut() -> None:
-    """The nose ends in a point; the tail is cut off over the reactors' nozzles (and capped)."""
+def test_gfx_ship_01_every_section_has_the_same_ring_and_both_ends_close() -> None:
+    """D-332: the nose and the tail end in a point: nothing comes out of the body's back."""
     sections = hull_sections()
     counts = {len(ring) for _z, ring in sections}
     assert counts == {TOP_POINTS + 2}
-    assert all(abs(p[0]) < 1e-9 and abs(p[1]) < 1e-9 for p in sections[0][1])
-    tail = sections[-1][1]
-    assert max(p[0] for p in tail) > hull.SHOULDER_X
-
-
-def test_gfx_ship_01_the_back_stands_over_the_intakes_and_nacelles() -> None:
-    """D-327: from the intakes back, the shoulders stay well over the tubes inside them."""
-    intake_top = ship.INTAKE_Y + max(r for _z, r in ship.INTAKE)
-    nacelle_top = ship.REACTOR_Y + ship.REACTOR["radius"] * 1.1
-    # The nacelles run from the intakes' back (their front) to the tail.
-    nacelle_front = ship.INTAKE_Z + ship.INTAKE[0][0]
-    for station in STATIONS[5:]:
-        under = nacelle_top if station[hull.Z] <= nacelle_front else intake_top
-        assert top_height(station, hull.SHOULDER_X) >= under + 0.05, station
+    for end in [sections[0][1], sections[-1][1]]:
+        assert all(abs(p[0]) < 1e-9 and abs(p[1]) < 1e-9 for p in end)
 
 
 def test_gfx_ship_01_a_section_runs_over_the_top_then_along_the_belly() -> None:
@@ -84,52 +60,3 @@ def test_gfx_ship_01_station_at_gives_each_station_and_blends_between() -> None:
     assert hull.station_at(station[hull.Z]) == pytest.approx(station)
     between = hull.station_at((STATIONS[6][hull.Z] + STATIONS[7][hull.Z]) / 2)
     assert STATIONS[7][hull.Z] < between[hull.Z] < STATIONS[6][hull.Z]
-
-
-def test_gfx_ship_01_an_armour_plate_lies_on_the_hull() -> None:
-    """D-328: its top follows the hull a thickness over it; its underside sinks into the skin."""
-    sections = hull.plate_sections([0.3, 0.55], [0.3, -0.5], 0.04, 5)
-    assert sections[0][0] == pytest.approx(0.3)
-    assert sections[-1][0] == pytest.approx(-0.5)
-    for z, ring in sections:
-        assert len(ring) == 10
-        station = hull.station_at(z)
-        for x, y in ring[:5]:
-            assert y == pytest.approx(top_height(station, x) + 0.04)
-        for x, y in ring[5:]:
-            assert y < top_height(station, x)
-        assert ring[0][0] == pytest.approx(0.55)
-        assert ring[4][0] == pytest.approx(0.3)
-
-
-def test_gfx_ship_01_the_humps_rise_out_of_the_back() -> None:
-    """D-328: the humps are the hull's own skin, swelling out of its back."""
-    station = hull.station_at(-1.0)
-    assert top_height(station, hull.BOOSTER_X) > top_height(station, 0) + 0.1
-
-
-def test_gfx_ship_01_the_tail_face_lies_just_ahead_of_the_nozzles() -> None:
-    """D-328: one engine block: the hull runs to the nozzles, the nacelles just out behind it."""
-    tail_z = STATIONS[-1][hull.Z]
-    nacelle_end = ship.REACTOR_Z - ship.REACTOR["length"] / 2
-    assert 0 < tail_z - nacelle_end <= 0.2
-    assert not hasattr(ship, "BOOSTER_ENGINE")
-
-
-def test_gfx_trim_the_nacelles_stay_under_the_hulls_edge_seen_from_above() -> None:
-    """D-330: aft, the chine is wider than the nacelles, so the trim runs unbroken."""
-    widest = ship.REACTOR_OFFSET_X + ship.REACTOR["radius"]
-    # The nacelle is at its widest from 0.3 of its length ahead of its middle (`build_reactor`).
-    full = ship.REACTOR_Z + ship.REACTOR["length"] * 0.3
-    for z, _ring in hull_sections():
-        if z <= full:
-            assert hull.station_at(z)[hull.CHINE_HALF_WIDTH] >= widest + 0.04, z
-
-
-def test_gfx_trim_the_tails_lean_out_no_further_than_the_hulls_edge() -> None:
-    """D-330: seen from above, the canted tails stay inside the hull's outline."""
-    span = max(x for x, _z in ship.TAIL)
-    root_x = 0.38
-    tip_x = root_x + span * math.sin(ship.TAIL_CANT)
-    for _x, z in ship.TAIL:
-        assert tip_x < hull.station_at(z)[hull.CHINE_HALF_WIDTH] - 0.03

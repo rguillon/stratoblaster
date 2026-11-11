@@ -206,3 +206,27 @@ def polygon_lathe_sections(
     `profile` as a lathe's (`[z, radius]` points); each section is `rounded_polygon` at that radius.
     """
     return [[p[0], rounded_polygon(sides, p[1], rounding, steps)] for p in profile]
+
+
+def rounded_rectangle(
+    half_width: float, half_height: float, radius: float, steps: int
+) -> list[list[float]]:
+    """Return a rectangle's outline with rounded corners, as `[x, y]` points round the origin.
+
+    `half_width` and `half_height` to its sides, each corner an arc of `steps` points (2 or more)
+    of `radius` (at most the smaller half). Counter clockwise, from the right side's top end.
+    """
+    r = min(radius, half_width, half_height)
+    centres = [
+        [half_width - r, half_height - r],
+        [-half_width + r, half_height - r],
+        [-half_width + r, -half_height + r],
+        [half_width - r, -half_height + r],
+    ]
+    ring: list[list[float]] = []
+    for k in range(4):
+        start = k * math.pi / 2
+        for s in range(steps):
+            angle = start + (math.pi / 2) * s / (steps - 1)
+            ring.append([centres[k][0] + r * math.cos(angle), centres[k][1] + r * math.sin(angle)])
+    return ring

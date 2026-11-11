@@ -13,6 +13,7 @@ from render.geometry.section_loft import (
     create_section_loft,
     polygon_lathe_sections,
     rounded_polygon,
+    rounded_rectangle,
 )
 
 
@@ -151,3 +152,17 @@ def test_eng_a_polygon_lathe_is_a_section_per_profile_point() -> None:
     positions, indices, _normals = build_section_loft(sections, 18)
     assert len(indices) == len(positions) // 3
     assert len(indices) > 0
+
+
+def test_eng_a_rounded_rectangle_keeps_its_sides_and_rounds_its_corners() -> None:
+    """D-332: 4 corners of `steps` points, inside the sharp rectangle, touching its sides."""
+    ring = rounded_rectangle(0.12, 0.25, 0.1, 3)
+    assert len(ring) == 12
+    for x, y in ring:
+        assert abs(x) <= 0.12 + 1e-9
+        assert abs(y) <= 0.25 + 1e-9
+    assert max(x for x, _y in ring) == pytest.approx(0.12)
+    assert max(y for _x, y in ring) == pytest.approx(0.25)
+    # A corner's middle point lies on its arc, inside the sharp corner.
+    assert ring[1][0] < 0.12
+    assert ring[1][1] < 0.25

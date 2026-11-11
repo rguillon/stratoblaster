@@ -2350,3 +2350,53 @@
     of the tail face between the nacelles (D-328); they are removed. The humps on the back stay,
     as the hull's shape, with their accent bands.
 - **Consequences:** six reactors; 9,498 triangles measured in the browser (10,398 before).
+
+### D-332 — A slim central body, the main reactors out on stub wings, a body round the tip reactors
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-04, GFX-SHIP-05, GFX-SHIP-07.
+- **Context:** owner: "add more body to the wings reactors, connecting them, spead the two main
+  reactors, adding pieces of wings that connect them to the central body. make the central body
+  longer and thiner, the central body had no back reactor".
+- **Decision:**
+  - **Central body:** `balanced_hull.py` keeps only the fuselage and its chine (the nacelle
+    shoulders and the humps are gone): 5.2 long (4.8 before), 0.66 across at its chine (1.4),
+    closed to a point at the tail, no reactor at its back. The armour plates and the hump bands,
+    which lay on the shoulders and humps, went with them, as did `plate_sections`.
+  - **Main reactors:** at x ±0.8 (0.42 inside the shoulders before), their middle at the wings'
+    plane, each with the rounded hexagon intake of `build_reactor` (the oval intakes ahead of
+    them are gone). A stub wing joins each to the body; the main wing now runs out of the
+    nacelle; the twin tails (cant 0.2 rad, inside the nacelle's edge seen from above) and the
+    ventral fins stand on the nacelles.
+  - **Tip reactors:** one steel body wraps each pair, a loft of a tall rounded rectangle
+    (`rounded_rectangle`, generic), short of their intakes and nozzles; the blade between them is
+    gone.
+  - The missile launchers move out to x 1.3, between the nacelle and the tip.
+- **Consequences:** 8,196 triangles measured in the browser (9,498 before). The ship is about
+  36 px long on the playfield (34 before; GFX-SHIP-07); its hitbox is unchanged.
+
+### D-333 — The wings further back, the canards at the chine's height, the ship viewer without a menu
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, DEV-MENU-05, DEV-MENU-07.
+- **Context:** owner: "move the wings more to the back", "lower the front wings so their highlight
+  is aligned to the cockpit one", and "in the dev view, for the player ship, remove the menu,
+  there is only one ship".
+- **Decision:**
+  - The main wings move 0.6 back, their root's middle now behind the nacelle's, the trailing
+    edge still inside it; the tip reactors and the missile launchers move with them.
+  - "The front wings" were read as the canards, beside the cockpit. Their top face now lies at the
+    body's chine edge (0.035, as the wings'), 0.045 lower than before, so their trim runs on from
+    the body's.
+  - A model viewer with a single item shows no menu, no place in a list (`1 / 1`), and a hint
+    without "next" (`single_hint`). The bosses and levels viewers keep their own controls.
+
+### D-334 — The ships viewer loads no ground
+
+- **Date:** 2026-11-11
+- **Requirements:** DEV-MENU-08, DEV-MENU-12.
+- **Context:** owner: "and dont load a ground in the dev view for the player ship".
+- **Decision:** the ships viewer is one of the groundless viewers, with the enemies and bosses:
+  its scene is `build_model_scene` (the level's light and sky reflections, the playfield camera
+  and layer, over a plain dark backdrop), built at once, with no wait for the ground worker. Only
+  the levels viewer still loads a level's ground.

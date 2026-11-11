@@ -37,6 +37,7 @@ class DevViewerTexts:
         sounds_hint: str = "",
         music_hint: str = "",
         playing: str = "",
+        single_hint: str = "",
     ) -> None:
         # The title screen's entry.
         self.entry = entry
@@ -59,6 +60,8 @@ class DevViewerTexts:
         # The hints of the sounds and music viewers (DEV-MENU-19, DEV-MENU-20).
         self.sounds_hint = sounds_hint
         self.music_hint = music_hint
+        # The hint of a model viewer with a single item: no menu, nothing to step to (D-333).
+        self.single_hint = single_hint
         # The audio viewers' status line, before what plays.
         self.playing = playing
 
@@ -204,6 +207,7 @@ DEV_VIEWER_CONFIG = DevViewerConfig(
         "Arrows or tap: play a sound · Hold a button: repeat it · Enter: play it again · Esc: back",
         "◀ ▶ or tap: play a track · ▲ ▼: group · Enter: play it again · Esc: back",
         "Playing: ",
+        "Wheel: zoom · Drag: turn · Enter: close-up / game size · Esc: back",
     ),
     0.01,
     DevPropStageConfig(

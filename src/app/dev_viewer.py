@@ -3,7 +3,8 @@
 
 Every viewer shows a level's scene built as a level is (`build_level_scene`, with the game's lights,
 glow and rims). The player ships, the enemies and the bosses stand on its playfield, at the middle
-of the view, over the first level's ground; the enemies and bosses live their own lives (their
+of the view, with no level's ground (D-334; the enemies and bosses since D-199); the enemies and
+bosses live their own lives (their
 moves turn them, their turrets, limbs and rings move) pinned at the middle. A level's scenery shows
 at the time the wheel scrubs to. The close-up narrows the camera's field of view: the model and the
 ground are magnified together (DEV-MENU-09). The props are not shown over a level: they stand
@@ -287,7 +288,7 @@ class DevViewer:
             self._drop_scene()
             self._host = item.host
         if self._view is None:
-            # The enemies and bosses are shown with no ground: nothing to wait for.
+            # The ships, enemies and bosses are shown with no ground: nothing to wait for.
             if not self._groundless() and not prepare_level(self.game, item.host):
                 return
             self._build_scene(item.host)
@@ -301,8 +302,12 @@ class DevViewer:
         self._animate(dt)
 
     def _groundless(self) -> bool:
-        """Whether the viewer shows its models with no level's ground (enemies and bosses)."""
-        return self.viewer in ("enemies", "bosses")
+        """Whether the viewer shows its models with no level's ground.
+
+        The player ships (D-334, owner: "dont load a ground in the dev view for the player ship"),
+        the enemies and the bosses.
+        """
+        return self.viewer in ("ships", "enemies", "bosses")
 
     def _game_view(self) -> bool:
         """Whether the enemy or boss is on the game's playfield, as in a level (DEV-MENU-21)."""

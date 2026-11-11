@@ -8,10 +8,10 @@ from unittest.mock import MagicMock
 import pytest
 from helpers.babylon_stub import stub_babylon
 
+from game.view import balanced_hull as hull
 from game.view import balanced_ship
 from game.view.balanced_hull import TOP_POINTS, hull_sections
 from game.view.balanced_ship import build_balanced_ship
-from game.view.ship_parts import SMOOTH_PART_SECTION
 from render.geometry.lathe_z import build_smooth_top_lathe_vertex_data, smooth_profile
 from render.geometry.section_loft import build_section_loft
 
@@ -46,7 +46,6 @@ def _upper_share(profile: list[list[float]], halves: Any) -> float:
             smooth_profile(balanced_ship.CANOPY, balanced_ship.PROFILE_STEPS),
             balanced_ship.CANOPY_SECTION,
         ),
-        (balanced_ship.INTAKE, SMOOTH_PART_SECTION),
     ],
 )
 def test_gfx_ship_05_the_round_parts_put_their_triangles_on_the_upper_half(
@@ -106,3 +105,71 @@ def test_gfx_ship_01_the_missile_pods_hang_under_the_wings_their_tips_in_view() 
     assert pod["y"] + radius < -balanced_ship.WING_THICKNESS / 2
     front = pod["z"] + profile[0][0]
     assert front > balanced_ship._leading_edge(pod["x"] + radius) + 0.2
+
+
+def test_gfx_ship_01_the_main_reactors_stand_out_from_the_slim_body() -> None:
+    """D-332: the nacelles stand clear of the body, a stub wing reaching from one into the other."""
+    widest_body = max(s[hull.CHINE_HALF_WIDTH] for s in hull.STATIONS)
+    radius = balanced_ship.REACTOR["radius"]
+    inner = balanced_ship.REACTOR_OFFSET_X - radius
+    assert inner > widest_body + 0.2
+    stub = balanced_ship.STUB_WING
+    for x, z in stub:
+        station = hull.station_at(z)
+        # Each end inside the body's chine or the nacelle.
+        assert x < station[hull.CHINE_HALF_WIDTH] or inner < x < balanced_ship.REACTOR_OFFSET_X
+    # The main wing's root lies in the nacelle.
+    assert balanced_ship.BALANCED_WING[0][0] == pytest.approx(balanced_ship.REACTOR_OFFSET_X)
+
+
+def test_gfx_ship_01_the_central_body_is_long_and_slim_with_no_reactor_at_its_back() -> None:
+    """D-332: 5.2 long, closing to a point at the tail; about half as wide as before."""
+    nose = hull.STATIONS[0]
+    tail = hull.STATIONS[-1]
+    assert nose[hull.Z] - tail[hull.Z] == pytest.approx(5.2)
+    assert all(v == 0 for v in tail[1:])
+    assert max(s[hull.CHINE_HALF_WIDTH] for s in hull.STATIONS) <= 0.35
+    # The nacelles' nozzles are well clear of the body's centre line.
+    assert balanced_ship.REACTOR_OFFSET_X - balanced_ship.REACTOR["radius"] > 0.5
+
+
+def test_gfx_trim_the_tails_lean_out_no_further_than_the_nacelles_edge() -> None:
+    """D-330, D-332: seen from above, the canted tails stay inside their nacelle's outline."""
+    span = max(x for x, _z in balanced_ship.TAIL)
+    tip_x = balanced_ship.REACTOR_OFFSET_X + span * math.sin(balanced_ship.TAIL_CANT)
+    assert tip_x < balanced_ship.REACTOR_OFFSET_X + balanced_ship.REACTOR["radius"] - 0.03
+    front = balanced_ship.REACTOR_Z + balanced_ship.REACTOR["length"] / 2
+    back = balanced_ship.REACTOR_Z - balanced_ship.REACTOR["length"] / 2
+    assert all(back < z < front for _x, z in balanced_ship.TAIL)
+
+
+def test_gfx_ship_01_one_body_wraps_each_wing_tips_twin_reactors() -> None:
+    """D-332: its section round both reactors, its ends short of their intakes and nozzles."""
+    pod = balanced_ship.TIP_REACTOR
+    body = balanced_ship.TIP_BODY
+    radius = pod["radius"]
+    middle = (pod["ys"][0] + pod["ys"][1]) / 2
+    assert body["halfWidth"] > radius
+    assert body["halfHeight"] > pod["ys"][0] - middle + radius * math.cos(math.pi / 6)
+    front = max(z for z, _k in balanced_ship.TIP_BODY_PROFILE)
+    back = min(z for z, _k in balanced_ship.TIP_BODY_PROFILE)
+    assert front < pod["length"] / 2
+    assert back > -pod["length"] / 2
+
+
+def test_gfx_ship_01_the_wings_sit_towards_the_nacelles_back() -> None:
+    """D-333: the wing root's middle behind the nacelle's, its trailing edge still inside it."""
+    root_front = balanced_ship.BALANCED_WING[0][1]
+    root_back = balanced_ship.BALANCED_WING[4][1]
+    middle = balanced_ship.REACTOR_Z
+    back = middle - balanced_ship.REACTOR["length"] / 2
+    assert (root_front + root_back) / 2 < middle
+    assert back < root_back
+
+
+def test_gfx_trim_the_canards_top_lies_at_the_bodys_chine_edge() -> None:
+    """D-333: the canards' trim runs on from the body's beside the cockpit."""
+    root_x = balanced_ship.CANARD[0][0]
+    for _x, z in balanced_ship.CANARD:
+        assert root_x < hull.station_at(z)[hull.CHINE_HALF_WIDTH]
+    assert pytest.approx(hull.CHINE_EDGE) == balanced_ship.CHINE_EDGE
