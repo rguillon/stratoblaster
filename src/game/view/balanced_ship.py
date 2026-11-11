@@ -1,13 +1,13 @@
 # Copyright (c) 2026 Renaud Guillon
-"""The player ship (GFX-SHIP-01, D-328): a heavy variable fighter carrying a full assault pack.
+"""The player ship (GFX-SHIP-01, D-328, D-330): a heavy variable fighter with an assault pack.
 
 An original design. A long, flat lifting body with a slim nose and a bubble canopy set forward;
-wide cranked wings swept back, a kink halfway out; two big engine nacelles fed by intakes on the
-hull's flanks; canted twin tails and ventral fins; canards; a gun pod under the belly. The pack
-on top: two booster engines in humps swelling out of the hull's back (one engine block with the
-nacelles, all four nozzles out of its tail face), an armour plate laid over each nacelle shoulder,
-a missile pod on each wing root, its six launch tubes facing forward, and a long rail cannon on the
-right shoulder.
+wide forward-swept wings, a reactor pod on each tip with two small fins at 45°; two big engine
+nacelles fed by intakes on the hull's flanks; canted twin tails and ventral fins; canards; a gun
+pod under the belly. Every reactor is a rounded hexagon. The pack on top: two booster engines in
+humps swelling out of the hull's back (one engine block with the nacelles, all four nozzles out of
+its tail face), an armour plate laid over each nacelle shoulder, and a missile pod on each wing
+root, its six launch tubes facing forward.
 
 Model units: nose towards +Z, about 4.8 units long. The hull is one blended skin
 (`balanced_hull.py`); the hull, canopy, intakes, nacelles and armour have a smooth-shaded
@@ -22,8 +22,6 @@ from game.view.balanced_hull import (
     TOP_POINTS,
     hull_sections,
     plate_sections,
-    station_at,
-    top_height,
 )
 from game.view.ship_materials import get_ship_materials
 from game.view.ship_parts import (
@@ -32,6 +30,8 @@ from game.view.ship_parts import (
     build_reactor,
     disc_options,
     faceted_rod,
+    hexagon_band,
+    hexagon_body,
     mirror_x,
     panel,
     plate,
@@ -59,30 +59,52 @@ Scene = Any
 # __pragma__ ("noskip")
 
 
-# Right main wing (X > 0): a cranked arrow, swept back, the leading edge sweeping less past the
-# kink, a square-cut tip.
+# Right main wing (X > 0), forward-swept (owner, 2026-11-11, D-330: "make the wings front
+# sided"): the tip's leading edge well ahead of the root's, the trailing edge swept forward too, a
+# square-cut tip carrying a reactor pod.
 BALANCED_WING = [
-    [0.4, 0.35],
-    [1.2, -0.3],
-    [2.05, -0.78],
-    [2.1, -1.0],
-    [1.3, -1.0],
-    [0.4, -1.1],
+    [0.4, 0.05],
+    [1.8, 0.55],
+    [1.9, 0.55],
+    [1.9, -0.15],
+    [0.4, -1.05],
 ]
 WING_THICKNESS = 0.07
-# Trailing-edge flap line, on the wing's top.
+
+
+def _leading_edge(x: float) -> float:
+    """Return the Z of the right wing's leading edge at `x`, from its root to its tip."""
+    root = BALANCED_WING[0]
+    tip = BALANCED_WING[1]
+    return root[1] + (x - root[0]) * (tip[1] - root[1]) / (tip[0] - root[0])
+
+
+def _trailing_edge(x: float) -> float:
+    """Return the Z of the right wing's trailing edge at `x`, from its root to its tip."""
+    root = BALANCED_WING[4]
+    tip = BALANCED_WING[3]
+    return root[1] + (x - root[0]) * (tip[1] - root[1]) / (tip[0] - root[0])
+
+
+# The trailing-edge flap: a band `FLAP_DEPTH` deep along the trailing edge, on the wing's top.
+FLAP_XS = [0.5, 1.8]
+FLAP_DEPTH = 0.13
 WING_FLAP = [
-    [0.5, -0.95],
-    [1.3, -0.88],
-    [1.95, -0.88],
-    [1.98, -0.99],
-    [1.3, -0.99],
-    [0.5, -1.08],
+    [FLAP_XS[0], _trailing_edge(FLAP_XS[0]) + 0.01],
+    [FLAP_XS[1], _trailing_edge(FLAP_XS[1]) + 0.01],
+    [FLAP_XS[1], _trailing_edge(FLAP_XS[1]) + FLAP_DEPTH],
+    [FLAP_XS[0], _trailing_edge(FLAP_XS[0]) + FLAP_DEPTH],
 ]
-# Gunmetal panel lines on the wing's top: along the kink's chord, and a strip near the tip.
+# Gunmetal panel lines on the wing's top, chordwise from the leading edge to the flap.
+WING_LINE_XS = [1.35, 1.65]
 WING_LINES = [
-    [[1.2, -0.3], [1.23, -0.3], [1.33, -0.88], [1.3, -0.88]],
-    [[1.75, -0.62], [1.78, -0.6], [1.8, -0.88], [1.77, -0.88]],
+    [
+        [x, _leading_edge(x) - 0.02],
+        [x + 0.03, _leading_edge(x + 0.03) - 0.02],
+        [x + 0.03, _trailing_edge(x + 0.03) + FLAP_DEPTH],
+        [x, _trailing_edge(x) + FLAP_DEPTH],
+    ]
+    for x in WING_LINE_XS
 ]
 CANARD = [
     [0.22, 1.12],
@@ -102,7 +124,9 @@ VENTRAL_FIN = [
     [0.38, -1.4],
     [0, -1.35],
 ]
-TAIL_CANT = 0.4  # rad from vertical, outwards
+# rad from vertical, outwards: the tips stay inside the hull's edge seen from above (D-330), so
+# the trim runs along that edge unbroken.
+TAIL_CANT = 0.3
 VENTRAL_CANT = 0.55  # rad from vertical, outwards
 REACTOR_OFFSET_X = 0.42
 # The nacelles sit low, inside the hull's shoulders, and run out past its tail, their back third
@@ -167,26 +191,58 @@ ARMOUR_ZS = [0.35, -0.6]
 ARMOUR_THICKNESS = 0.035
 ARMOUR_POINTS = 9
 
-# A missile pod on each wing root: across, front and back (on the wing's top), its height; the
-# six launch tubes in its front face, three across in two rows, their missiles' tips.
-MISSILE_POD: dict[str, Any] = {"xs": [0.84, 1.18], "zs": [-0.15, -0.86], "height": 0.15}
-MISSILE_TUBES: dict[str, Any] = {
-    "xs": [-0.11, 0, 0.11],
-    "ys": [0.04, 0.105],
-    "radius": 0.032,
-    "tip": 0.05,
-}
+# A missile launcher under each wing (owner, 2026-11-11: "rework the missiles pods, make them
+# look cool, and under the wings", D-330): a rounded hexagon pod, as the reactors, hung on a pylon,
+# its front well ahead of the leading edge so the playfield camera sees its seven missiles' tips
+# in their dark launch face; an accent band behind its front, two small fins at 45° under its
+# tapered tail. Its axis's place; its profile (`[z, radius]`, from its axis's middle).
+MISSILE_POD: dict[str, Any] = {"x": 1.15, "y": -0.2, "z": 0.2}
+MISSILE_POD_PROFILE = [
+    [0.58, 0],
+    [0.58, 0.085],
+    [0.53, 0.1],
+    [-0.3, 0.1],
+    [-0.5, 0.065],
+    [-0.58, 0],
+]
+# The band; the launch face; seven tubes (one in the middle, six round it), their missiles' tips.
+MISSILE_BAND: dict[str, Any] = {"z": 0.4, "radius": 0.1, "half": 0.018}
+MISSILE_FACE: dict[str, Any] = {"radius": 0.08}
+MISSILE_TIPS: dict[str, Any] = {"ring": 0.05, "radius": 0.02, "length": 0.07}
+# The pylon up to the wing's underside: its half width across, its front and back (Z from the
+# pod's middle).
+MISSILE_PYLON: dict[str, Any] = {"half": 0.012, "zs": [0.25, -0.25]}
+# The tail fins: span along X from the axis, Z from the pod's middle; canted 45° under it, one
+# outwards, one inwards.
+MISSILE_FIN = [
+    [0, -0.22],
+    [0.17, -0.4],
+    [0.17, -0.52],
+    [0, -0.5],
+]
 
-# The rail cannon on the right shoulder: its housing on the armour, the barrel between two rails,
-# the muzzle band. Z of each part's middle; the housing's height over the shoulder's top.
-CANNON: dict[str, Any] = {
-    "x": 0.43,
-    "housing": {"length": 0.95, "radius": 0.075, "z": -0.1},
-    "lift": 0.11,
-    "barrel": {"length": 1.7, "radius": 0.03, "z": 1.2},
-    "rail": {"length": 1.5, "width": 0.022, "height": 0.08, "gap": 0.05},
-    "muzzle": {"radius": 0.045, "half": 0.03},
+# Twin reactors on each wing tip (owner: "add two reactors on the tip of each wing, with 45° lil
+# wings on each", then "make it a dual reactor on the tip of each wing, and add intake to the
+# reactors", D-330): side by side along the tip's chord, each with an intake, joined by a fairing;
+# the outer one carries two small fins, out from its back half at 45° above and below the wing's
+# plane. The reactors' X (inner, outer), their height, middle along Z and size; the fairing's
+# thickness. A fin's planform: span along X from the reactor's axis, Z from its middle.
+TIP_REACTOR: dict[str, Any] = {
+    "xs": [1.97, 2.2],
+    "y": 0,
+    "z": 0.2,
+    "radius": 0.11,
+    "length": 0.95,
 }
+TIP_FAIRING_THICKNESS = 0.05
+TIP_FIN = [
+    [0, 0.05],
+    [0.34, -0.22],
+    [0.34, -0.38],
+    [0, -0.32],
+]
+TIP_FIN_CANT = math.pi / 4
+TIP_FIN_THICKNESS = 0.03
 
 
 def _build_body(root: Any, scene: Any) -> None:
@@ -362,93 +418,86 @@ def _build_armour(side: str, sign: float, root: Any, scene: Any) -> None:
     armour.parent = root
 
 
+def _build_missile_tips(name: str, front: float, material: Any, parent: Any) -> None:
+    """Add the seven missiles' tips poking out of a launch face at `front`.
+
+    One in the middle, six round it, between the hexagon's corners.
+    """
+    tips = MISSILE_TIPS
+    profile = [[tips["length"], 0], [0, tips["radius"]], [0, 0]]
+    places = [[0.0, 0.0]]
+    for k in range(6):
+        angle = math.pi / 6 + k * math.pi / 3
+        places.append([tips["ring"] * math.cos(angle), tips["ring"] * math.sin(angle)])
+    for k, place in enumerate(places):
+        tip = create_faceted_lathe_along_z(name + "-tip-" + str(k), profile, 4, parent.getScene())
+        tip.position.set(place[0], place[1], front)
+        tip.material = material
+        tip.parent = parent
+
+
 def _build_missile_pod(side: str, sign: float, root: Any, scene: Any) -> None:
-    """Build a missile pod on a wing root: a silver box, six tubes in front, an accent stripe."""
+    """Build the missile launcher under a wing: pod, launch face, missiles, band, pylon, fins."""
     mats = get_ship_materials(scene)
     pod = MISSILE_POD
     name = "balanced-missiles-" + side
     node = new_transform_node(name, scene)
-    node.position.y = WING_THICKNESS / 2 + pod["height"] / 2
+    node.position.set(sign * pod["x"], pod["y"], pod["z"])
     node.parent = root
-    xs = [sign * pod["xs"][0], sign * pod["xs"][1]]
-    front = pod["zs"][0]
-    back = pod["zs"][1]
-    outline = [[xs[0], front], [xs[1], front], [xs[1], back], [xs[0], back]]
-    panel(name + "-box", outline, pod["height"], mats.hull, node)
-    # The accent stripe along its top.
-    middle = (xs[0] + xs[1]) / 2
-    stripe = [[middle - 0.03, front - 0.08], [middle + 0.03, front - 0.08]]
-    stripe.append([middle + 0.03, back + 0.06])
-    stripe.append([middle - 0.03, back + 0.06])
-    plate(name + "-stripe", stripe, pod["height"] / 2, mats.accent, node)
-    # The dark face the tubes open in, then a missile's tip in each.
-    tubes = MISSILE_TUBES
-    face = [[xs[0] + sign * 0.015, front], [xs[1] - sign * 0.015, front]]
-    face.append([xs[1] - sign * 0.015, front + 0.01])
-    face.append([xs[0] + sign * 0.015, front + 0.01])
-    panel(name + "-face", face, pod["height"] - 0.03, mats.trim, node)
-    tip = [[tubes["tip"], 0], [0, tubes["radius"]], [0, 0]]
-    for row, y in enumerate(tubes["ys"]):
-        for column, dx in enumerate(tubes["xs"]):
-            missile = create_faceted_lathe_along_z(
-                name + "-tip-" + str(row) + "-" + str(column), tip, 4, scene
-            )
-            missile.position.set(middle + dx, y - pod["height"] / 2, front + 0.01)
-            missile.material = mats.accent
-            missile.parent = node
+    hexagon_body(name + "-pod", MISSILE_POD_PROFILE, mats.hullMid, node)
+    front = MISSILE_POD_PROFILE[0][0]
+    face = create_disc(name + "-face", disc_options(MISSILE_FACE["radius"], 6), scene)
+    face.convertToFlatShadedMesh()
+    # A disc faces -Z: turned round, it faces forward, a hair ahead of the pod's front.
+    face.rotation.y = math.pi
+    face.position.z = front + 0.003
+    face.material = mats.trim
+    face.parent = node
+    _build_missile_tips(name, front + 0.003, mats.accent, node)
+    band = MISSILE_BAND
+    hexagon_band(name + "-band", band["z"], band["radius"], band["half"], mats.accent, node)
+    # The pylon: a thin blade from the pod's flat top up to the wing's underside.
+    pylon = MISSILE_PYLON
+    top = MISSILE_POD_PROFILE[3][1] * math.cos(math.pi / 6)
+    height = -WING_THICKNESS / 2 - pod["y"] - top + 0.01
+    outline = [[-pylon["half"], pylon["zs"][0]], [pylon["half"], pylon["zs"][0]]]
+    outline.append([pylon["half"], pylon["zs"][1]])
+    outline.append([-pylon["half"], pylon["zs"][1]])
+    blade = panel(name + "-pylon", outline, height, mats.hullDark, node)
+    blade.position.y = top + height / 2 - 0.005
+    fin = MISSILE_FIN if sign > 0 else mirror_x(MISSILE_FIN)
+    for label, turn in [("outer", -math.pi / 4), ("inner", -3 * math.pi / 4)]:
+        fin_node = new_transform_node(name + "-fin-" + label, scene)
+        fin_node.rotation.z = sign * turn
+        fin_node.parent = node
+        panel(name + "-fin-" + label + "-panel", fin, 0.025, mats.hullDark, fin_node)
 
 
-def _build_cannon(root: Any, scene: Any) -> None:
-    """Build the rail cannon on the right shoulder: housing, barrel, twin rails, muzzle band."""
+def _build_tip_reactor(side: str, sign: float, root: Any, scene: Any) -> None:
+    """Build the twin reactors on a wing tip, their fairing, and the outer one's 45° fins."""
     mats = get_ship_materials(scene)
-    cannon = CANNON
-    housing = cannon["housing"]
-    x = cannon["x"]
-    shoulder = top_height(station_at(housing["z"]), x) + ARMOUR_THICKNESS
-    node = new_transform_node("balanced-cannon", scene)
-    node.position.set(x, shoulder + cannon["lift"], 0)
-    node.parent = root
-    # The mount, from the armour up to the housing.
-    mount = [[-0.04, housing["z"] + 0.3], [0.04, housing["z"] + 0.3]]
-    mount.append([0.04, housing["z"] - 0.3])
-    mount.append([-0.04, housing["z"] - 0.3])
-    mount_mesh = panel("balanced-cannon-mount", mount, cannon["lift"], mats.hullDark, node)
-    mount_mesh.position.y = -cannon["lift"] / 2
-    faceted_rod(
-        "balanced-cannon-housing",
-        {"length": housing["length"], "radius": housing["radius"]},
-        vector3(0, 0, housing["z"]),
-        mats.hullDark,
-        node,
-        PART_FACETS,
-    )
-    barrel = cannon["barrel"]
-    faceted_rod(
-        "balanced-cannon-barrel",
-        {"length": barrel["length"], "radius": barrel["radius"]},
-        vector3(0, 0, barrel["z"]),
-        mats.trim,
-        node,
-        PART_FACETS,
-    )
-    rail = cannon["rail"]
-    front = barrel["z"] + barrel["length"] / 2
-    for k, side in enumerate([-1, 1]):
-        inner = side * rail["gap"]
-        outer = side * (rail["gap"] + rail["width"])
-        outline = [[inner, front - 0.05], [outer, front - 0.05]]
-        outline.append([outer, front - 0.05 - rail["length"]])
-        outline.append([inner, front - 0.05 - rail["length"]])
-        panel("balanced-cannon-rail-" + str(k), outline, rail["height"], mats.accent, node)
-    muzzle = cannon["muzzle"]
-    _band(
-        "balanced-cannon-muzzle",
-        front - muzzle["half"],
-        muzzle["radius"],
-        muzzle["half"],
-        mats.hullDark,
-        node,
-    )
+    pod = TIP_REACTOR
+    name = "balanced-tip-" + side
+    xs = [sign * x for x in pod["xs"]]
+    for k, x in enumerate(xs):
+        reactor = build_reactor(name + "-reactor-" + str(k), pod, scene, True)
+        reactor.position.set(x, pod["y"], pod["z"])
+        reactor.parent = root
+    # The fairing between them, along their middle.
+    half = pod["length"] * 0.3
+    fairing = [[xs[0], pod["z"] + half], [xs[1], pod["z"] + half]]
+    fairing.append([xs[1], pod["z"] - half])
+    fairing.append([xs[0], pod["z"] - half])
+    web = panel(name + "-fairing", fairing, TIP_FAIRING_THICKNESS, mats.hullMid, root)
+    web.position.y = pod["y"]
+    fin = TIP_FIN if sign > 0 else mirror_x(TIP_FIN)
+    for label, up in [("upper", 1), ("lower", -1)]:
+        node = new_transform_node(name + "-fin-" + label, scene)
+        node.position.set(xs[1], pod["y"], pod["z"])
+        # The fin's span turns from outwards (along X) to 45° above or below the wing's plane.
+        node.rotation.z = sign * up * TIP_FIN_CANT
+        node.parent = root
+        panel(name + "-fin-" + label + "-panel", fin, TIP_FIN_THICKNESS, mats.hullDark, node)
 
 
 def build_balanced_ship(scene: Any) -> Any:
@@ -463,8 +512,8 @@ def build_balanced_ship(scene: Any) -> Any:
         _build_booster(side, sign, root, scene)
         _build_armour(side, sign, root, scene)
         _build_missile_pod(side, sign, root, scene)
+        _build_tip_reactor(side, sign, root, scene)
         reactor = build_reactor("balanced-reactor-" + side, REACTOR, scene)
         reactor.position.set(sign * REACTOR_OFFSET_X, REACTOR_Y, REACTOR_Z)
         reactor.parent = root
-    _build_cannon(root, scene)
     return root

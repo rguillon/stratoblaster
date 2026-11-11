@@ -34,6 +34,10 @@ _STRAIGHT = 0.94
 _PAIR = 2
 # Edges in a row turning by less than this (cosine, about 15°) are drawn as one ribbon.
 _MERGE = 0.966
+# Each edge is tested for cover at this many points along it, so an edge partly covered by
+# another part keeps its trim where it is not (D-330: a whole edge used to be dropped when its
+# middle was covered, leaving gaps where a fin or a wing crossed a hull's edge).
+_COVER_SAMPLES = 8
 
 
 class TrimOptions:
@@ -204,15 +208,44 @@ def silhouette_edges(
         out = _outward(a, b, inner)
         if out is None:
             continue
-        dx = b[0] - a[0]
-        dz = b[2] - a[2]
-        probe = max(math.sqrt(dx * dx + dz * dz) * 0.01, 1e-4)
-        mx = (a[0] + b[0]) / 2 + out[0] * probe
-        mz = (a[2] + b[2]) / 2 + out[2] * probe
-        if grid.covers(mx, mz):
-            continue
-        result.append(TrimEdge(a, b, out))
+        result.extend(_uncovered_parts(a, b, out, grid))
     return result
+
+
+def _lerp(a: Vec3, b: Vec3, t: float) -> Vec3:
+    return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
+
+
+def _uncovered_parts(a: Vec3, b: Vec3, out: Vec3, grid: _Grid) -> list[TrimEdge]:
+    """Return the parts of edge `a`-`b` that no triangle of `grid` lies just outside of.
+
+    The edge is probed at `_COVER_SAMPLES` points, just outside it; each run of uncovered probes
+    gives a part of the edge, from its first probe's share of the edge to its last's (the whole
+    edge, its own ends, when no probe is covered).
+    """
+    dx = b[0] - a[0]
+    dz = b[2] - a[2]
+    probe = max(math.sqrt(dx * dx + dz * dz) * 0.01, 1e-4)
+    free: list[bool] = []
+    for i in range(_COVER_SAMPLES):
+        t = (i + 0.5) / _COVER_SAMPLES
+        x = a[0] + dx * t + out[0] * probe
+        z = a[2] + dz * t + out[2] * probe
+        free.append(not grid.covers(x, z))
+    parts: list[TrimEdge] = []
+    start = -1
+    for i in range(_COVER_SAMPLES + 1):
+        open_here = i < _COVER_SAMPLES and free[i]
+        if open_here and start < 0:
+            start = i
+        elif not open_here and start >= 0:
+            t0 = start / _COVER_SAMPLES
+            t1 = i / _COVER_SAMPLES
+            p0 = a if start == 0 else _lerp(a, b, t0)
+            p1 = b if i == _COVER_SAMPLES else _lerp(a, b, t1)
+            parts.append(TrimEdge(p0, p1, out))
+            start = -1
+    return parts
 
 
 def _along(p: Vec3, out: Vec3, k: float) -> Vec3:

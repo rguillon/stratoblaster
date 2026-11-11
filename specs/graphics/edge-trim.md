@@ -26,8 +26,10 @@ mesh is drawn a second time as an outline.
 ### GFX-TRIM-02 — Traced along the top-view silhouette · SHOULD
 
 An edge is traced when it borders exactly one up-facing triangle (the Y of its unit normal at least
-`min_up`), and when no up-facing triangle of the same trim group lies just outside it, seen from
-above. Seen from above, these edges stay the silhouette however the model turns about the vertical
+`min_up`), where no up-facing triangle of the same trim group lies just outside it, seen from
+above: it is probed at several points along it, and only its covered parts are left out (D-330: a
+whole edge was dropped when its middle was covered, leaving gaps where a fin or a wing crossed a
+hull's edge). Seen from above, these edges stay the silhouette however the model turns about the vertical
 axis (enemies and bosses do nothing else), and the 35° playfield camera is close enough to that.
 Vertices are matched by position, so flat-shaded solids (each face its own vertices) and meshes with
 shared vertices give the same edges.
@@ -35,6 +37,7 @@ shared vertices give the same edges.
 **Acceptance criteria**
 - Given a box, then its four top edges are traced, each with its outward direction (unit test).
 - Given two boxes side by side in one group, then the edges they share are not traced (unit test).
+- Given an edge half covered by another part, then its other half is still traced (unit test).
 - Given the same solid with shared and with per-face vertices, then the same edges are traced (unit
   test).
 

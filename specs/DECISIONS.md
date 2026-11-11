@@ -2304,3 +2304,34 @@
   draws only in the playfield's viewport, and the render scale cap (D-250) follows the larger
   scale. The dev viewer's 3D views, which use the whole stage, are cropped at the sides in such a
   window.
+
+### D-330 — Rounded hexagon reactors, forward-swept wings with twin tip reactors, launchers under the wings, an unbroken trim
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-04, GFX-SHIP-05, GFX-SHIP-06, GFX-TRIM-02.
+- **Context:** owner: "make the ship reactor rounded hexagons, make the wings front sided, add two
+  reactors on the tip of each wing, with 45° lil wings on each and remove the gun on top of the
+  ship. Also rework the ship highlight, it doesnt follow the wings geometry correctly"; then
+  "rework the missiles pods, make them look cool, and under the wings" and "make it a dual reactor
+  on the tip of each wing, and add intake to the reactors".
+- **Decision:**
+  - **Rounded hexagons:** `rounded_polygon` and `polygon_lathe_sections` (generic, in
+    `section_loft.py`) loft a body round Z with a rounded polygon section. Every reactor's nacelle
+    (smooth-shaded), rings (flat) and core are hexagons; the flame already was.
+  - **Wings:** forward-swept, the tip pulled in to x 1.9; flap and panel lines follow the edges.
+  - **Tip reactors:** two side by side on each tip, a steel fairing between them, each with a
+    rounded hexagon intake (`build_reactor(..., intake=True)`); the outer one has two fins at 45°.
+    "Two reactors on the tip of each wing" was read as a pair per tip.
+  - **Gun on top:** the rail cannon is removed.
+  - **Missile launchers:** under each wing on a pylon, rounded hexagon pods, their fronts out
+    ahead of the leading edge with seven missile tips in a dark launch face; fins at 45° under the
+    tail.
+  - **Trim:** two causes of the broken outline.
+    - The trim dropped a whole edge when its middle was covered by another part; it now probes
+      each edge at 8 points and keeps the uncovered parts (GFX-TRIM-02, generic).
+    - The nacelles peeked out from under the hull's edge, and the canted tails leaned past it,
+      so the hull's and their outlines took turns: the aft chine is now 0.69 to 0.7 wide (the
+      nacelles reach 0.64) and the tails cant 0.3 rad (0.4 before), their tips inside the edge.
+- **Consequences:** the ship measures 10,398 triangles in the browser (6,752 before): eight
+  reactors with their flames, two launchers. The GFX-SHIP-05 budget goes from 7,000 to 11,000.
+  Gameplay and the hitbox are unchanged.

@@ -8,7 +8,12 @@ from typing import Any
 import pytest
 
 from render.geometry import section_loft
-from render.geometry.section_loft import build_section_loft, create_section_loft
+from render.geometry.section_loft import (
+    build_section_loft,
+    create_section_loft,
+    polygon_lathe_sections,
+    rounded_polygon,
+)
 
 
 def _ring(radius: float, count: int = 8, height: float = 1) -> list[list[float]]:
@@ -120,3 +125,29 @@ def test_gfx_ship_01_a_hollow_keeps_its_faces_wound_like_the_rest() -> None:
         on_the_skin = len({p0[2], p1[2], p2[2]}) > 1
         if on_the_skin and middle_y > 0.2:
             assert front_y > 0
+
+
+def test_eng_rounded_polygon_rounds_the_corners_and_keeps_the_sides() -> None:
+    """D-330: a rounded hexagon: 3 points a corner, inside the sharp one, its sides kept."""
+    ring = rounded_polygon(6, 1.0, 0.3, 3)
+    assert len(ring) == 18
+    apothem = math.cos(math.pi / 6)
+    for x, y in ring:
+        assert math.hypot(x, y) <= 1.0 + 1e-9
+        assert math.hypot(x, y) >= apothem - 1e-9
+    # The tangent points lie on the sharp hexagon's sides: at the apothem, square to them.
+    first = ring[0]
+    side_normal = [math.cos(-math.pi / 6), math.sin(-math.pi / 6)]
+    assert first[0] * side_normal[0] + first[1] * side_normal[1] == pytest.approx(apothem)
+    # The middle of the first corner's arc is on +X, short of the sharp corner.
+    assert ring[1][1] == pytest.approx(0)
+    assert ring[1][0] < 1.0
+    assert all(p == pytest.approx([0, 0]) for p in rounded_polygon(6, 0, 0.3, 3))
+
+
+def test_eng_a_polygon_lathe_is_a_section_per_profile_point() -> None:
+    sections = polygon_lathe_sections([[1, 0], [0.5, 0.2], [0, 0]], 6, 0.3, 3)
+    assert [z for z, _ring in sections] == [1, 0.5, 0]
+    positions, indices, _normals = build_section_loft(sections, 18)
+    assert len(indices) == len(positions) // 3
+    assert len(indices) > 0

@@ -1,6 +1,8 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/balanced_hull.py` (GFX-SHIP-01, D-327)."""
 
+import math
+
 import pytest
 
 from game.view import balanced_hull as hull
@@ -121,3 +123,22 @@ def test_gfx_ship_01_the_tail_face_wraps_all_four_engines() -> None:
     booster_end = ship.BOOSTER_ENGINE["z"] - ship.BOOSTER_ENGINE["length"] / 2
     for end in [nacelle_end, booster_end]:
         assert 0 < tail_z - end <= 0.2
+
+
+def test_gfx_trim_the_nacelles_stay_under_the_hulls_edge_seen_from_above() -> None:
+    """D-330: aft, the chine is wider than the nacelles, so the trim runs unbroken."""
+    widest = ship.REACTOR_OFFSET_X + ship.REACTOR["radius"]
+    # The nacelle is at its widest from 0.3 of its length ahead of its middle (`build_reactor`).
+    full = ship.REACTOR_Z + ship.REACTOR["length"] * 0.3
+    for z, _ring in hull_sections():
+        if z <= full:
+            assert hull.station_at(z)[hull.CHINE_HALF_WIDTH] >= widest + 0.04, z
+
+
+def test_gfx_trim_the_tails_lean_out_no_further_than_the_hulls_edge() -> None:
+    """D-330: seen from above, the canted tails stay inside the hull's outline."""
+    span = max(x for x, _z in ship.TAIL)
+    root_x = 0.38
+    tip_x = root_x + span * math.sin(ship.TAIL_CANT)
+    for _x, z in ship.TAIL:
+        assert tip_x < hull.station_at(z)[hull.CHINE_HALF_WIDTH] - 0.03

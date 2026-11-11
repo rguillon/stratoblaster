@@ -37,6 +37,8 @@ BOOSTER_HEIGHT = 6
 # shoulders into one broad back. D-328: two booster humps swell out of the back behind the
 # cockpit and run to the tail, over the boosters' engines; the hull runs aft to one engine block
 # wrapping the nacelles and the boosters, all four nozzles coming out of its tail face together.
+# D-330: aft, the chine stands out past the nacelles' widest (0.64), so they never peek out from
+# under the hull's edge seen from above (the edge trim then broke into dashes along the flanks).
 STATIONS = [
     [2.45, 0, 0, 0, 0, 0, 0],
     [2.2, 0.05, 0.04, 0.035, 0.05, 0, 0],
@@ -45,11 +47,11 @@ STATIONS = [
     [0.8, 0.26, 0.18, 0.14, 0.42, 0.06, 0],
     [0.4, 0.32, 0.22, 0.16, 0.6, 0.2, 0],
     [0.0, 0.38, 0.25, 0.17, 0.66, 0.26, 0.12],
-    [-0.5, 0.4, 0.25, 0.17, 0.68, 0.27, 0.38],
-    [-1.0, 0.38, 0.23, 0.15, 0.66, 0.26, 0.42],
-    [-1.4, 0.32, 0.2, 0.12, 0.64, 0.25, 0.42],
-    [-1.72, 0.28, 0.18, 0.1, 0.63, 0.24, 0.41],
-    [-2.0, 0.24, 0.16, 0.08, 0.6, 0.22, 0.39],
+    [-0.5, 0.4, 0.25, 0.17, 0.7, 0.27, 0.38],
+    [-1.0, 0.38, 0.23, 0.15, 0.7, 0.26, 0.42],
+    [-1.4, 0.32, 0.2, 0.12, 0.7, 0.25, 0.42],
+    [-1.72, 0.28, 0.18, 0.1, 0.7, 0.24, 0.41],
+    [-2.0, 0.24, 0.16, 0.08, 0.69, 0.22, 0.39],
 ]
 # Each gap between stations is cut into this many sections.
 STATION_STEPS = 3

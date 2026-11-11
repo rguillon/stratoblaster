@@ -16,6 +16,8 @@ triangle would turn round the faces of a hollow (the inner slope of a shoulder f
 line), and the renderer would cull them, leaving holes.
 """
 
+import math
+
 from render.babylon import apply_vertex_data, new_mesh, vertex_data_of
 from render.geometry.vec3 import cross, norm
 
@@ -171,3 +173,36 @@ def create_section_loft(label: str, sections: list[Section], smooth_count: int, 
     mesh = new_mesh(label, scene)
     apply_vertex_data(vertex_data_of(positions, indices, normals), mesh)
     return mesh
+
+
+def rounded_polygon(sides: int, radius: float, rounding: float, steps: int) -> list[list[float]]:
+    """Return a regular polygon's outline with rounded corners, as `[x, y]` points round the origin.
+
+    `sides` corners, the first on +X, `radius` from the centre to a corner as if it were sharp;
+    each corner is rounded by an arc of `steps` points (2 or more) whose radius is `rounding` times
+    `radius`, tangent to both sides, so the sides stay where the sharp polygon's are. Counter
+    clockwise. A `radius` of 0 gives every point at the origin (a closed end of a loft).
+    """
+    half = math.pi / sides
+    arc = rounding * radius
+    # The arc's centre, on the corner's bisector, `arc` from both sides.
+    centre = radius - arc / math.cos(half)
+    ring: list[list[float]] = []
+    for k in range(sides):
+        corner = 2 * math.pi * k / sides
+        cx = centre * math.cos(corner)
+        cy = centre * math.sin(corner)
+        for s in range(steps):
+            angle = corner - half + 2 * half * s / (steps - 1)
+            ring.append([cx + arc * math.cos(angle), cy + arc * math.sin(angle)])
+    return ring
+
+
+def polygon_lathe_sections(
+    profile: list[list[float]], sides: int, rounding: float, steps: int
+) -> list[Section]:
+    """Return the sections of a body round the Z axis with a rounded polygon section.
+
+    `profile` as a lathe's (`[z, radius]` points); each section is `rounded_polygon` at that radius.
+    """
+    return [[p[0], rounded_polygon(sides, p[1], rounding, steps)] for p in profile]

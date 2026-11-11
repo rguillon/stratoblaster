@@ -1,6 +1,7 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/balanced_ship.py` (GFX-SHIP-01)."""
 
+import math
 from typing import Any
 from unittest.mock import MagicMock
 
@@ -65,18 +66,43 @@ def test_gfx_ship_05_the_hull_puts_its_triangles_on_the_upper_half() -> None:
     assert upper / (len(indices) / 3) >= 0.75
 
 
-def test_gfx_ship_01_the_wings_are_cranked_and_swept_back() -> None:
-    """D-328: the tip's leading edge lies behind the root's, and sweeps less past the kink."""
-    root, kink, tip = balanced_ship.BALANCED_WING[:3]
-    assert tip[1] < kink[1] < root[1]
-    inner = (root[1] - kink[1]) / (kink[0] - root[0])
-    outer = (kink[1] - tip[1]) / (tip[0] - kink[0])
-    assert outer < inner
+def test_gfx_ship_01_the_wings_are_forward_swept() -> None:
+    """D-330: the tip's leading and trailing edges lie ahead of the root's."""
+    wing = balanced_ship.BALANCED_WING
+    assert wing[1][1] > wing[0][1]
+    assert wing[3][1] > wing[4][1]
 
 
-def test_gfx_ship_01_the_pack_sits_on_the_ship() -> None:
-    """D-328: the cannon on the right armour plate, the missile pods on the wings."""
-    assert balanced_ship.ARMOUR_XS[0] < balanced_ship.CANNON["x"] < balanced_ship.ARMOUR_XS[1]
+def test_gfx_ship_01_twin_reactors_sit_on_each_wing_tip() -> None:
+    """D-330: two reactors side by side at the tip, along its chord; the fins canted 45°."""
+    pod = balanced_ship.TIP_REACTOR
+    tip = balanced_ship.BALANCED_WING[2]
+    inner, outer = pod["xs"]
+    assert tip[0] < inner < tip[0] + pod["radius"]
+    # Side by side, not overlapping.
+    assert outer - inner >= 2 * pod["radius"]
+    tip_front = balanced_ship.BALANCED_WING[2][1]
+    tip_back = balanced_ship.BALANCED_WING[3][1]
+    assert tip_back < pod["z"] < tip_front
+    assert pytest.approx(math.pi / 4) == balanced_ship.TIP_FIN_CANT
+
+
+def test_gfx_ship_01_the_flaps_and_panel_lines_lie_on_the_wing() -> None:
+    for outline in [balanced_ship.WING_FLAP, *balanced_ship.WING_LINES]:
+        for x, z in outline:
+            assert balanced_ship._trailing_edge(x) <= z <= balanced_ship._leading_edge(x), (x, z)
+
+
+def test_gfx_ship_01_the_missile_pods_hang_under_the_wings_their_tips_in_view() -> None:
+    """D-330: under the wing, between root and tip; the front out ahead of the leading edge."""
+    assert not hasattr(balanced_ship, "CANNON")
     pod = balanced_ship.MISSILE_POD
-    assert balanced_ship.BALANCED_WING[0][0] < pod["xs"][0] < pod["xs"][1]
-    assert pod["xs"][1] < balanced_ship.BALANCED_WING[2][0]
+    profile = balanced_ship.MISSILE_POD_PROFILE
+    radius = max(r for _z, r in profile)
+    wing = balanced_ship.BALANCED_WING
+    assert wing[0][0] < pod["x"] - radius
+    assert pod["x"] + radius < wing[2][0]
+    # Wholly under the wing's underside.
+    assert pod["y"] + radius < -balanced_ship.WING_THICKNESS / 2
+    front = pod["z"] + profile[0][0]
+    assert front > balanced_ship._leading_edge(pod["x"] + radius) + 0.2
