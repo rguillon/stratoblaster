@@ -199,3 +199,15 @@ def test_enm_phantom_08_a_phantom_at_rest_on_its_place_settles_without_turning()
     assert phantom.state == "aim"
     assert phantom.heading == 1.0
     assert (phantom.x, phantom.y) == (200, 426)
+
+
+def test_enm_phantom_09_a_place_too_near_is_drawn_again() -> None:
+    ctx = FakeContext()
+    phantom = Phantom(200, 426, 426)
+    _until(phantom, ctx, "hold")
+    here = (phantom.x, phantom.y)
+    far = (here[0] + CFG.moveDistance + 10, here[1])
+    picks = iter([here, here, far])
+    phantom._pick_place = lambda _ctx: next(picks)  # type: ignore[method-assign]
+    _until(phantom, ctx, "fly")
+    assert (phantom.target_x, phantom.target_y) == far
