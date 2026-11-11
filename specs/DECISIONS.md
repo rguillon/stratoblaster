@@ -2511,3 +2511,16 @@
     emitter beyond. The miniguns sit in the fairing's flanks, their drums of hull metal half sunk
     in it as blisters, their barrels out ahead.
 - **Consequences:** the ship measures 9,056 triangles.
+
+### D-341 — Bigger miniguns with thicker barrels; no depth fight in the intakes
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-05.
+- **Context:** owner: "increase ther size of the miniguns, and make their cannons thicker", "there
+  are two polygons fighting for Z on the inside of the reactor intakes".
+- **Decision:**
+  - The miniguns' drums grow to radius 0.066 and 0.8 long (0.05, 0.75); their barrels are
+    six-sided, radius 0.016 (0.009, four-sided), on a 0.036 ring, 0.46 long; the clamp follows.
+  - The intake's duct lining ended at the fan face's depth, so its end cap and the fan face lay in
+    one plane and fought for depth. The lining now ends 0.06 radii behind the fan face.
+- **Consequences:** the ship measures 9,152 triangles.

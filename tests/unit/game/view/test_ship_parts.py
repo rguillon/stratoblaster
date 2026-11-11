@@ -108,3 +108,9 @@ def test_gfx_ship_01_an_intake_has_a_lined_duct_and_horizontal_fins(monkeypatch:
         # Inside the duct's hexagon at that height, which narrows towards its flat top and bottom.
         assert half < 0.2 * (ship_parts.REACTOR_INTAKE_DUCT[-1][1] - abs(y) / math.sqrt(3))
         assert min(p[0] for p in outline) == pytest.approx(-half)
+
+
+def test_gfx_ship_01_the_intake_ducts_end_lies_behind_its_fan_face() -> None:
+    """D-341: the duct's end cap and the fan face are not in one plane (they fought for depth)."""
+    duct_end = min(z for z, _r in ship_parts.REACTOR_INTAKE_DUCT)
+    assert duct_end < ship_parts.REACTOR_INTAKE_FAN["z"] - 0.03

@@ -74,7 +74,9 @@ REACTOR_INTAKE = [
     [0.08, 0.7],
 ]
 # The duct seen through the mouth: a dark lining facing inwards, a hair inside the skin's.
-REACTOR_INTAKE_DUCT = [[0.45, 0.74], [0.3, 0.71], [0.1, 0.68]]
+# Its back end lies behind the fan face: the duct's cap there and the fan face fought for depth
+# when they lay in one plane (D-341).
+REACTOR_INTAKE_DUCT = [[0.45, 0.74], [0.3, 0.71], [0.04, 0.67]]
 # The dark fan face, a hair ahead of the duct's end, and the horizontal fins across the duct in
 # front of it (owner, D-338: "replace the central helix by horizontal fins in the reactors"):
 # their heights, front and back (Z), each as wide as the duct's hexagon at its height.

@@ -28,6 +28,7 @@ from game.view.balanced_hull import (
 )
 from game.view.ship_materials import get_ship_materials
 from game.view.ship_parts import (
+    PART_FACETS,
     add_reactor_intake,
     build_reactor,
     disc_options,
@@ -189,14 +190,15 @@ LASER: dict[str, Any] = {
 LASER_EMITTER = [[3.2, 0], [3.16, 0.034], [3.11, 0.046], [3.1, 0]]
 # The miniguns, one in each flank of the fairing: their drums half sunk in it as blisters, their
 # six barrels out ahead of it. Place; drum; barrels (ring radius, radius, length, middle along Z
-# from the drum's); the clamp round the barrels.
+# from the drum's); the clamp round the barrels. D-341 (owner: "increase ther size of the
+# miniguns, and make their cannons thicker"): larger drums, thicker six-sided barrels.
 MINIGUN: dict[str, Any] = {
-    "x": 0.14,
-    "y": -0.17,
+    "x": 0.15,
+    "y": -0.18,
     "z": 0.75,
-    "drum": {"length": 0.75, "radius": 0.05},
-    "barrels": {"count": 6, "ring": 0.026, "radius": 0.009, "length": 0.4, "z": 0.52},
-    "clamp": {"z": 0.55, "radius": 0.042, "half": 0.009},
+    "drum": {"length": 0.8, "radius": 0.066},
+    "barrels": {"count": 6, "ring": 0.036, "radius": 0.016, "length": 0.46, "z": 0.58},
+    "clamp": {"z": 0.6, "radius": 0.06, "half": 0.012},
 }
 
 # Dark panel seams round the body (D-336): their Z, their half width along Z and how much larger
@@ -419,7 +421,7 @@ def _build_minigun(side: str, sign: float, root: Any, scene: Any) -> None:
             ),
             mats.trim,
             node,
-            4,
+            PART_FACETS,
         )
     clamp = gun["clamp"]
     hexagon_band(name + "-clamp", clamp["z"], clamp["radius"], clamp["half"], mats.hullDark, node)
