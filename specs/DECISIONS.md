@@ -2400,3 +2400,22 @@
   its scene is `build_model_scene` (the level's light and sky reflections, the playfield camera
   and layer, over a plain dark backdrop), built at once, with no wait for the ground worker. Only
   the levels viewer still loads a level's ground.
+
+### D-335 — No trim round the player ship: its wings', canards' and cockpit's edges glow
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-09, GFX-TRIM-01, GFX-TRIM-05, GFX-READ-07.
+- **Context:** owner: "remove the highlight as an outter layer for the player's ship, instead make
+  it look like it's the extremities of the wings and cockpit that are glowing, no highlight on the
+  guns".
+- **Decision:**
+  - The player ship models get no edge trim (`trimmed_ships` and `READABILITY.playerTrim` are
+    gone; the enemies and bosses keep theirs).
+  - A self-lit cyan material, `edgeGlow` (`SHIP_LOOK.edgeGlow`), blooming in the glow layer:
+    `edge_strip` (`ship_parts.py`) lays a thin strip across a panel's edge, half on it and half out
+    past it, a hair thicker so it caps the edge from above and from ahead. The main wings', stub
+    wings' and canards' leading edges (and the canards' tips) get one; the canopy's frame takes
+    the material, so its rim glows round the cockpit.
+  - The missile launchers, the gun pod and the reactors' bodies get none.
+- **Consequences:** the readability probe's player contrast (GFX-READ-07, 3:1) now rests on the
+  silver hull, the glowing edges and the flames; the e2e checks it in four levels.

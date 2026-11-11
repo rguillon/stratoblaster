@@ -2,7 +2,8 @@
 
 > **Area:** Graphics · **Prefix:** `GFX-TRIM` · **Related:** [readability.md](readability.md), [art-direction.md](art-direction.md), [player-ships.md](player-ships.md), [shots.md](shots.md), [../enemies/common.md](../enemies/common.md), [../bosses/common.md](../bosses/common.md)
 
-Every player ship, enemy and boss has a glowing edge trim built into its geometry: thin self-lit
+Every enemy and boss has a glowing edge trim built into its geometry (the player ship had one
+until D-335; its edges glow instead, [GFX-SHIP-09](player-ships.md)): thin self-lit
 ribbons just outside the edges the model shows from above. It is the "rim light" that makes the
 ship and the enemies stand out from the ground ([GFX-READ](readability.md)). It replaced, at the
 reviewer's request, the rim outline that drew each mesh a second time, fatter. Shots get no trim:
@@ -10,14 +11,14 @@ the enemy missiles keep that rim outline ([GFX-SHOT](shots.md)).
 
 ## Requirements
 
-### GFX-TRIM-01 — A glowing trim built into every ship, enemy and boss · MUST
+### GFX-TRIM-01 — A glowing trim built into every enemy and boss · MUST
 
-Each player ship, enemy and boss model gets a self-lit trim as part of its own geometry, along its
+Each enemy and boss model gets a self-lit trim as part of its own geometry, along its
 silhouette seen from above. It is their rim light (GFX-READ-07, GFX-READ-09). No ship, enemy or boss
 mesh is drawn a second time as an outline.
 
 **Acceptance criteria**
-- Given each player ship model, then it is built with a trim in the player colour (unit test).
+- Given the player ship model, then it is built with no trim (D-335, unit test).
 - Given each enemy and boss model, then it is built with a trim in its rim colour.
 - Given a level in play, then no ship, enemy or boss mesh has Babylon's outline turned on.
 
@@ -67,23 +68,18 @@ get none.
 **Acceptance criteria**
 - Given a trimmed mesh, then its trim is its child (unit test).
 - Given a flame or glow mesh of a model, then it gets no trim (unit test).
-- Given the player ship blinking while invincible, then its trim blinks with it.
+- Given an enemy or boss hit and flashing, then its trim flashes with it.
 
 *Sources: D-220, P14-R03.*
 
-### GFX-TRIM-05 — Player ship trim · MUST
+### GFX-TRIM-05 — (removed) Player ship trim
 
-The player ship's trim is a soft cyan (`playerTrim.color`), `playerTrim.width` wide and set
-`playerTrim.offset` out, in logical pixels on the playfield (divided by the ship scale in model
-units). It is a light touch, thinner and paler than the enemies' trim (owner, 2026-11-11, D-327:
-"rework the player's ship highlight, make it lighter"), so the smooth hull shows through.
+The player ship has no trim since D-335 (owner, 2026-11-11: "remove the highlight as an outter
+layer for the player's ship, instead make it look like it's the extremities of the wings and
+cockpit that are glowing, no highlight on the guns"): its wings', canards' and canopy's edges glow
+instead (GFX-SHIP-09). Until then it was a soft cyan ribbon round its silhouette (D-220, D-327).
 
-**Acceptance criteria**
-- Given a player ship model, then each of its solid meshes asks for a trim of the player trim
-  colour, and the trim options are the player trim's width and offset over the ship scale (unit
-  test).
-
-*Sources: D-220, P14-R03.*
+*Sources: D-220, P14-R03, D-327, D-335.*
 
 ### GFX-TRIM-06 — Enemy and boss trim · MUST
 
@@ -153,8 +149,6 @@ All in `src/game/config/readability.py` `READABILITY`, sizes in logical pixels.
 
 | Name | Value | Notes |
 |------|-------|-------|
-| `playerTrim.color` | [0.3, 0.72, 0.82] | a soft cyan, in the player family ([0.3, 0.9, 1] until D-327) |
-| `playerTrim.width` / `offset` | 0.5 / 0.1 (width 0.9 until D-327) | divided by `PLAYER_SHIP_SCALE` (7) in model units |
 | `enemyTrim.whiten` | 0.25 | share of the way to white |
 | `enemyTrim.strength` | 2.6 | above 1: survives tone mapping |
 | `enemyTrim.width` / `offset` | 1.4 / 0.1 | |

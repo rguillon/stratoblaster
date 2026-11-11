@@ -40,6 +40,7 @@ class ShipMaterials:
         reactorExhaust: Any,
         reactorFlame: Any,
         reactorPlasma: Any,
+        edgeGlow: Any = None,
     ) -> None:
         self.hull = hull
         # Two darker shades of the hull's metal (D-327).
@@ -54,6 +55,8 @@ class ShipMaterials:
         self.reactorExhaust = reactorExhaust
         self.reactorFlame = reactorFlame
         self.reactorPlasma = reactorPlasma
+        # The glowing edges of the wings, the canards and the canopy (D-335).
+        self.edgeGlow = edgeGlow
 
 
 def _rgb_color(rgb: Any) -> Any:
@@ -99,6 +102,8 @@ def _create_ship_materials(scene: Scene) -> ShipMaterials:
     canopy.emissiveColor = _rgb_color(SHIP_LOOK.canopy.emissive)
     reactor_core = _light("ship-reactor-core", SHIP_LOOK.reactorCore.emissive, scene)
     reactor_core.backFaceCulling = False
+    edge_glow = _light("ship-edge-glow", SHIP_LOOK.edgeGlow.emissive, scene)
+    edge_glow.backFaceCulling = False
     return ShipMaterials(
         _metal("ship-hull", SHIP_LOOK.hull, scene),
         _metal("ship-hull-mid", SHIP_LOOK.hullMid, scene),
@@ -111,6 +116,7 @@ def _create_ship_materials(scene: Scene) -> ShipMaterials:
         _glow("ship-reactor-exhaust", SHIP_LOOK.reactorExhaust, scene),
         _glow("ship-reactor-flame", SHIP_LOOK.reactorFlame, scene),
         _glow("ship-reactor-plasma", SHIP_LOOK.reactorPlasma, scene),
+        edge_glow,
     )
 
 

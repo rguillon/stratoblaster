@@ -25,6 +25,11 @@ SHIP_LOOK = record({
     "trim": {"albedo": [0.24, 0.28, 0.36], "metallic": 0.85, "roughness": 0.3},
     "nozzle": {"albedo": [0.18, 0.2, 0.24], "metallic": 1, "roughness": 0.45},
     "reactorCore": {"emissive": [0.35, 0.75, 1]},
+    # GFX-SHIP-09 (D-335, owner: "remove the highlight as an outter layer for the player's ship,
+    # instead make it look like it's the extremities of the wings and cockpit that are glowing"):
+    # the self-lit cyan of the wings' and canards' leading edges and of the canopy's frame, in
+    # place of the edge trim round the ship; it blooms in the glow layer.
+    "edgeGlow": {"emissive": [0.25, 0.85, 1]},
     "reactorExhaust": {"emissive": [0.1, 0.45, 1], "alpha": 0.45},
     # Hot inner flame, shorter and whiter than the exhaust cone around it.
     "reactorFlame": {"emissive": [0.55, 0.85, 1], "alpha": 0.75},

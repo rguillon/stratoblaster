@@ -164,14 +164,25 @@ hitbox and the shots are unchanged.
 
 ### GFX-SHIP-09 — How the ship glows · MUST
 
-The ship's glow is its own lights: its cyan edge trim (GFX-TRIM-05) and its reactor flames (no nav
-lights since D-327). There is no other outline or halo round it, and no hitbox marker
-(GFX-READ-08).
+The ship's glow is its own lights: its glowing extremities and its reactor flames (no nav lights
+since D-327). There is no outline, trim or halo round it (D-335, owner: "remove the highlight as an
+outter layer for the player's ship, instead make it look like it's the extremities of the wings and
+cockpit that are glowing, no highlight on the guns"), and no hitbox marker (GFX-READ-08).
+
+The extremities glow a self-lit cyan (`SHIP_LOOK.edgeGlow`), which blooms in the glow layer: a thin
+strip along the leading edge of each main wing, stub wing and canard (and the canard's tip), half
+on the panel and half out past it, a hair thicker than the panel so it caps the edge seen from
+above and from ahead; and the canopy's frame, whose rim shows round the canopy. The guns (the
+missile launchers and the gun pod) and the reactors' bodies do not glow.
 
 **Acceptance criteria**
-- Given the ship in play, then it shows its trim and flames and nothing else round it.
+- Given the ship model, then it has no trim; the main wings', stub wings' and canards' leading edges
+  have a glowing strip, none of the guns do, and the canopy's frame is of the glowing material (unit
+  tests).
+- Given the ship in play, then it shows its glowing edges and flames and nothing else round it
+  (manual).
 
-*Sources: D-220, P14-R03, D-194, D-327.*
+*Sources: D-220, P14-R03, D-194, D-327, D-335.*
 
 ## Tunable values
 
@@ -189,6 +200,7 @@ lights since D-327). There is no other outline or halo round it, and no hitbox m
 | `PLAYER_SHIP_SCALE` | 7 px per model unit | `ship_look.py` |
 | Bank | `max_deg` 35°, `ease_per_sec` 8 | `src/config/game_play.py` `ShipRoll(35, 8)` |
 | Triangle budget | 11,000 | GFX-SHIP-05 |
+| Edge glow | emissive [0.25, 0.85, 1]; strips 0.035 wide, the panel's thickness + 0.006 | `ship_look.py` `SHIP_LOOK["edgeGlow"]`; `balanced_ship.py` `EDGE_GLOW` |
 | Sections | hull 24 / 3, canopy 16 / 3, intakes, nacelles, rings 12 / 3, canopy frame 8 / 2 (upper / lower facets) | `balanced_hull.py` `TOP_POINTS`; `ship_parts.py` `SMOOTH_PART_SECTION`; `balanced_ship.py` |
 | Hull stations | 12 (z 2.75 to -2.45, closed at both ends), each gap cut in 3 | `balanced_hull.py` `STATIONS`, `STATION_STEPS` |
 | `hull_fillet` | 0.1 model units | `balanced_hull.py` `FILLET` |

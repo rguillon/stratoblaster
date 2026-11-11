@@ -102,6 +102,40 @@ def panel(
     return mesh
 
 
+def edge_strip(
+    name: str,
+    edge: list[list[float]],
+    inside: list[float],
+    size: dict[str, float],
+    material: Any,
+    parent: Any,
+) -> Any:
+    """Create a thin strip along a panel's edge, from `edge[0]` to `edge[1]` (planform points).
+
+    It lies across the edge, half on the panel and half out past it (away from `inside`, a point
+    of the panel), `size["width"]` wide and `size["thickness"]` thick, so it caps the edge seen
+    from above and from ahead: a glowing edge (D-335).
+    """
+    a = edge[0]
+    b = edge[1]
+    dx = b[0] - a[0]
+    dz = b[1] - a[1]
+    length = math.sqrt(dx * dx + dz * dz)
+    nx = dz / length
+    nz = -dx / length
+    if nx * (inside[0] - a[0]) + nz * (inside[1] - a[1]) > 0:
+        nx = -nx
+        nz = -nz
+    half = size["width"] / 2
+    outline = [
+        [a[0] - nx * half, a[1] - nz * half],
+        [b[0] - nx * half, b[1] - nz * half],
+        [b[0] + nx * half, b[1] + nz * half],
+        [a[0] + nx * half, a[1] + nz * half],
+    ]
+    return panel(name, outline, size["thickness"], material, parent)
+
+
 def plate(
     name: str,
     outline: list[Any],

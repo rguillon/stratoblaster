@@ -22,6 +22,7 @@ from game.view.ship_parts import (
     PART_FACETS,
     build_reactor,
     disc_options,
+    edge_strip,
     faceted_rod,
     hexagon_band,
     hexagon_body,
@@ -119,6 +120,9 @@ CANARD = [
 # (D-333, owner: "lower the front wings so their highlight is aligned to the cockpit one"; 0.045
 # higher before, their trim above the body's).
 CANARD_THICKNESS = 0.04
+# The glowing leading edges (D-335): the strip's width across the edge and its thickness, a hair
+# thicker than the panel it caps.
+EDGE_GLOW = {"width": 0.035, "wing": WING_THICKNESS + 0.006, "canard": CANARD_THICKNESS + 0.006}
 TAIL = [
     [0, -0.75],
     [0.85, -1.35],
@@ -259,7 +263,8 @@ def _build_cockpit(root: Any, scene: Any) -> None:
     )
     frame.scaling.y = 0.8
     frame.position.y = 0.15
-    frame.material = mats.trim
+    # The frame's rim glows round the canopy (D-335: the cockpit glows, as the wings' edges do).
+    frame.material = mats.edgeGlow
     frame.parent = root
 
     canopy = create_smooth_top_lathe_along_z(
@@ -298,6 +303,45 @@ def _build_wing(side: str, sign: float, root: Any, scene: Any) -> None:
     canard = panel("balanced-canard-" + side, mirror(CANARD), CANARD_THICKNESS, mats.hullMid, wing)
     # Its top face at the body's chine edge, so its trim runs on from the body's (D-333).
     canard.position.y = CHINE_EDGE - CANARD_THICKNESS / 2
+
+
+def _centre(outline: list[list[float]]) -> list[float]:
+    """Return the middle of a planform outline's points."""
+    return [
+        sum(p[0] for p in outline) / len(outline),
+        sum(p[1] for p in outline) / len(outline),
+    ]
+
+
+def _build_edge_glow(side: str, sign: float, root: Any, scene: Any) -> None:
+    """Build the glowing leading edges of a side's wing, stub wing and canard (D-335).
+
+    The extremities glow in place of a trim round the ship: the main wing's leading edge from
+    root to tip, the stub wing's, and the canard's leading edge and tip. The guns get none.
+    """
+    mats = get_ship_materials(scene)
+
+    def mirror(points: list[list[float]]) -> list[list[float]]:
+        return points if sign > 0 else mirror_x(points)
+
+    wing_size = {"width": EDGE_GLOW["width"], "thickness": EDGE_GLOW["wing"]}
+    canard_size = {"width": EDGE_GLOW["width"], "thickness": EDGE_GLOW["canard"]}
+    name = "balanced-glow-" + side
+    for label, outline, k in [("wing", BALANCED_WING, 0), ("stub", STUB_WING, 0)]:
+        points = mirror(outline)
+        edge = [points[k], points[k + 1]]
+        edge_strip(name + "-" + label, edge, _centre(points), wing_size, mats.edgeGlow, root)
+    canard = mirror(CANARD)
+    for k in range(2):
+        strip = edge_strip(
+            name + "-canard-" + str(k),
+            [canard[k], canard[k + 1]],
+            _centre(canard),
+            canard_size,
+            mats.edgeGlow,
+            root,
+        )
+        strip.position.y = CHINE_EDGE - CANARD_THICKNESS / 2
 
 
 def _build_tails(side: str, sign: float, root: Any, scene: Any) -> None:
@@ -414,6 +458,7 @@ def build_balanced_ship(scene: Any) -> Any:
     for side, sign in [("right", 1), ("left", -1)]:
         _build_wing(side, sign, root, scene)
         _build_tails(side, sign, root, scene)
+        _build_edge_glow(side, sign, root, scene)
         _build_missile_pod(side, sign, root, scene)
         _build_tip_reactor(side, sign, root, scene)
         reactor = build_reactor("balanced-reactor-" + side, REACTOR, scene, True)

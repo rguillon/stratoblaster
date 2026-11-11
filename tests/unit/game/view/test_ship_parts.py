@@ -38,3 +38,23 @@ def test_a_plate_lies_above_its_parent_by_its_offset(monkeypatch: Any) -> None:
     )
     mesh = ship_parts.plate("trim", [[0, 0], [1, 0], [1, 1]], 0.05, MagicMock(), MagicMock())
     assert mesh.position.y == 0.05
+
+
+def test_gfx_ship_09_an_edge_strip_lies_across_the_edge_half_out_past_it(monkeypatch: Any) -> None:
+    """D-335: the glowing strip caps the edge, half on the panel, half out away from it."""
+    stub_babylon(monkeypatch, ship_parts)
+    made: list[Any] = []
+
+    def fake_prism(_name: str, outline: Any, thickness: float, _scene: Any) -> Any:
+        made.append((outline, thickness))
+        return MagicMock(name="prism")
+
+    monkeypatch.setattr(ship_parts, "create_prism", fake_prism)
+    size = {"width": 0.2, "thickness": 0.08}
+    # An edge along X at z = 1, the panel behind it (z < 1).
+    ship_parts.edge_strip("glow", [[0, 1], [2, 1]], [1, 0], size, MagicMock(), MagicMock())
+    outline, thickness = made[0]
+    assert thickness == 0.08
+    zs = sorted({round(p[1], 9) for p in outline})
+    assert zs == [0.9, 1.1]
+    assert sorted({p[0] for p in outline}) == [0, 2]

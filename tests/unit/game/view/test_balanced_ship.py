@@ -8,10 +8,12 @@ from unittest.mock import MagicMock
 import pytest
 from helpers.babylon_stub import stub_babylon
 
+from game.index import GAME
 from game.view import balanced_hull as hull
 from game.view import balanced_ship
 from game.view.balanced_hull import TOP_POINTS, hull_sections
 from game.view.balanced_ship import build_balanced_ship
+from game.view.player_ship_models import PLAYER_SHIP_MODELS
 from render.geometry.lathe_z import build_smooth_top_lathe_vertex_data, smooth_profile
 from render.geometry.section_loft import build_section_loft
 
@@ -173,3 +175,43 @@ def test_gfx_trim_the_canards_top_lies_at_the_bodys_chine_edge() -> None:
     for _x, z in balanced_ship.CANARD:
         assert root_x < hull.station_at(z)[hull.CHINE_HALF_WIDTH]
     assert pytest.approx(hull.CHINE_EDGE) == balanced_ship.CHINE_EDGE
+
+
+def test_gfx_ship_09_the_wings_canards_and_canopy_glow_not_the_guns(
+    scene: Any, monkeypatch: Any
+) -> None:
+    """D-335: glowing leading edges on the wings, stub wings and canards; none on the guns."""
+    names: list[str] = []
+    real = balanced_ship.edge_strip
+
+    def record(name: str, *args: Any) -> Any:
+        names.append(name)
+        return real(name, *args)
+
+    monkeypatch.setattr(balanced_ship, "edge_strip", record)
+    build_balanced_ship(scene)
+    for side in ["right", "left"]:
+        for part in ["wing", "stub", "canard-0", "canard-1"]:
+            assert "balanced-glow-" + side + "-" + part in names
+    assert not any("missile" in n or "gun" in n for n in names)
+
+
+def test_gfx_ship_09_the_player_ship_has_no_trim_round_it() -> None:
+    """D-335: the game's ship models are the bare ones, no edge trim wrapped round them."""
+    assert GAME.view.player_ship_models is PLAYER_SHIP_MODELS
+
+
+def test_gfx_ship_09_the_canopy_frame_glows(scene: Any, monkeypatch: Any) -> None:
+    """D-335: the cockpit's rim glows: the canopy frame is of the glowing material."""
+    meshes: dict[str, Any] = {}
+
+    def lathe(name: str, *_args: Any) -> Any:
+        meshes[name] = MagicMock(name=name)
+        return meshes[name]
+
+    monkeypatch.setattr(balanced_ship, "create_smooth_top_lathe_along_z", lathe)
+    materials = MagicMock(name="materials")
+    monkeypatch.setattr(balanced_ship, "get_ship_materials", lambda _scene: materials)
+    build_balanced_ship(scene)
+    assert meshes["balanced-canopy-frame"].material is materials.edgeGlow
+    assert meshes["balanced-canopy"].material is materials.canopy
