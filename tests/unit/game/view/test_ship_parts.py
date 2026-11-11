@@ -1,9 +1,11 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/view/ship_parts.py`."""
 
+import math
 from typing import Any
 from unittest.mock import MagicMock
 
+import pytest
 from helpers.babylon_stub import stub_babylon
 
 from game.view import ship_parts
@@ -71,8 +73,8 @@ def test_gfx_ship_01_an_intake_runs_straight_then_angles_in_to_its_lip() -> None
     assert radii == sorted(radii, reverse=True)
 
 
-def test_gfx_ship_01_an_intake_has_a_lined_duct_blades_and_a_spinner(monkeypatch: Any) -> None:
-    """D-337: the duct lining is turned to face the axis; the fan has its blades."""
+def test_gfx_ship_01_an_intake_has_a_lined_duct_and_horizontal_fins(monkeypatch: Any) -> None:
+    """D-337, D-338: the duct lining faces the axis; flat fins span it, no fan blades or spinner."""
     stub_babylon(monkeypatch, ship_parts)
     meshes: dict[str, Any] = {}
 
@@ -81,10 +83,28 @@ def test_gfx_ship_01_an_intake_has_a_lined_duct_blades_and_a_spinner(monkeypatch
         return meshes[name]
 
     monkeypatch.setattr(ship_parts, "create_section_loft", loft)
-    blades: list[str] = []
+    fins: dict[str, Any] = {}
+
+    def panel(name: str, outline: list[list[float]], *_args: Any) -> Any:
+        fins[name] = outline
+        return MagicMock(name=name)
+
+    monkeypatch.setattr(ship_parts, "panel", panel)
+    lathes: list[str] = []
     monkeypatch.setattr(
-        ship_parts, "panel", lambda name, *_args: blades.append(name) or MagicMock(name=name)
+        ship_parts,
+        "create_faceted_lathe_along_z",
+        lambda name, *_args: lathes.append(name) or MagicMock(name=name),
     )
     ship_parts._add_reactor_intake("r", 0.2, 1.0, MagicMock(name="root"))
     meshes["r-intake-duct"].flipFaces.assert_called_once_with(True)
-    assert len(blades) == ship_parts.REACTOR_INTAKE_BLADES["count"]
+    assert lathes == []
+    ys = ship_parts.REACTOR_INTAKE_FINS["ys"]
+    assert len(fins) == len(ys)
+    for k, y in enumerate(ys):
+        outline = fins["r-intake-fin-" + str(k)]
+        half = max(p[0] for p in outline)
+        assert half == pytest.approx(ship_parts.intake_fin_half_width(y) * 0.2)
+        # Inside the duct's hexagon at that height, which narrows towards its flat top and bottom.
+        assert half < 0.2 * (ship_parts.REACTOR_INTAKE_DUCT[-1][1] - abs(y) / math.sqrt(3))
+        assert min(p[0] for p in outline) == pytest.approx(-half)

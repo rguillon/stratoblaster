@@ -2457,3 +2457,14 @@
     the tails and ventral fins follow the taller nacelle. The tip reactors keep their section.
 - **Consequences:** the ship measures 9,564 triangles (under the 11,000 budget), the blades and
   ducts of six intakes adding about 1,650.
+
+### D-338 — Horizontal fins in the intakes in place of the fan blades
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-04, GFX-SHIP-05.
+- **Context:** owner: "replace the central helix by horizontal fins in the reactors".
+- **Decision:** the fan blades and the spinner (D-337) are gone. Four flat steel fins span each
+  intake's duct in front of its dark fan face, at ±0.14 and ±0.42 nacelle radii, each as wide as
+  the duct's hexagon at its height (`intake_fin_half_width`: the hexagon, with a corner each side,
+  narrows by 1/sqrt(3) of the height on each side). They follow the main reactors' upright stretch.
+- **Consequences:** the ship drops to 8,952 triangles.

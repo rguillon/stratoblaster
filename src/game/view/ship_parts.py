@@ -76,18 +76,15 @@ REACTOR_INTAKE = [
 REACTOR_INTAKE_BAND = {"z": 0.24, "radius": 0.98, "half": 0.04}
 # The duct seen through the mouth: a dark lining facing inwards, a hair inside the skin's.
 REACTOR_INTAKE_DUCT = [[0.45, 0.74], [0.3, 0.71], [0.1, 0.68]]
-# The dark fan face, a hair ahead of the duct's end; its blades (count, from and to radius,
-# chord, pitch in rad) and the pointed spinner in front of them.
+# The dark fan face, a hair ahead of the duct's end, and the horizontal fins across the duct in
+# front of it (owner, D-338: "replace the central helix by horizontal fins in the reactors"):
+# their heights, front and back (Z), each as wide as the duct's hexagon at its height.
 REACTOR_INTAKE_FAN = {"z": 0.1, "radius": 0.68}
-REACTOR_INTAKE_BLADES: dict[str, Any] = {
-    "count": 10,
-    "inner": 0.2,
-    "outer": 0.66,
-    "chord": 0.09,
-    "pitch": 0.6,
-    "z": 0.16,
+REACTOR_INTAKE_FINS: dict[str, Any] = {
+    "ys": [-0.42, -0.14, 0.14, 0.42],
+    "zs": [0.12, 0.4],
+    "duct": 0.66,
 }
-REACTOR_INTAKE_SPINNER = [[0.1, 0.24], [0.2, 0.2], [0.3, 0.1], [0.36, 0]]
 
 
 def disc_options(radius: float, tessellation: int) -> Any:
@@ -242,7 +239,7 @@ def _add_reactor_intake(name: str, radius: float, front: float, root: Any) -> No
     """Add an intake at the nacelle's `front` (D-337).
 
     A hull-metal scoop, straight then angled in, with an accent band where it turns; inside, a
-    dark duct, a dark fan face with its blades and a pointed spinner.
+    dark duct, a dark fan face and horizontal fins across the duct (D-338).
     """
     scene = root.getScene()
     mats = get_ship_materials(scene)
@@ -279,32 +276,29 @@ def _add_reactor_intake(name: str, radius: float, front: float, root: Any) -> No
     face.position.z = fan["z"] * radius
     face.material = mats.canopy
     face.parent = node
-    _add_fan_blades(name, radius, mats.hullMid, node)
-    spinner_profile = [[p[0] * radius, p[1] * radius] for p in REACTOR_INTAKE_SPINNER]
-    spinner = create_faceted_lathe_along_z(name + "-intake-spinner", spinner_profile, 6, scene)
-    spinner.material = mats.accent
-    spinner.parent = node
+    _add_intake_fins(name, radius, mats.hullMid, node)
 
 
-def _add_fan_blades(name: str, radius: float, material: Any, parent: Any) -> None:
-    """Add the fan's blades round the spinner, each a thin pitched panel out from the hub."""
-    scene = parent.getScene()
-    blades = REACTOR_INTAKE_BLADES
-    inner = blades["inner"] * radius
-    outer = blades["outer"] * radius
-    half = blades["chord"] * radius / 2
-    # Along X, its chord along Z (a panel's planform), then pitched round its own length.
-    outline = [[inner, half], [outer, half * 1.3], [outer, -half * 1.3], [inner, -half]]
-    count = blades["count"]
-    for k in range(count):
-        hub = new_transform_node(name + "-intake-blade-" + str(k), scene)
-        hub.position.z = blades["z"] * radius
-        hub.rotation.z = 2 * math.pi * k / count
-        hub.parent = parent
-        blade = panel(
-            name + "-intake-blade-" + str(k) + "-panel", outline, PLATE_THICKNESS, material, hub
-        )
-        blade.rotation.x = blades["pitch"]
+def intake_fin_half_width(y: float) -> float:
+    """Half width of an intake fin at height `y` (in nacelle radii): the duct's hexagon there.
+
+    The hexagon has a corner on each side (+X, -X) and a flat top and bottom: its width shrinks
+    by 2 / sqrt(3) of the height.
+    """
+    duct: float = REACTOR_INTAKE_FINS["duct"]
+    return duct - abs(y) / math.sqrt(3)
+
+
+def _add_intake_fins(name: str, radius: float, material: Any, parent: Any) -> None:
+    """Add the horizontal fins across the intake's duct, in front of its fan face (D-338)."""
+    fins = REACTOR_INTAKE_FINS
+    front = fins["zs"][1] * radius
+    back = fins["zs"][0] * radius
+    for k, y in enumerate(fins["ys"]):
+        half = intake_fin_half_width(y) * radius
+        outline = [[-half, front], [half, front], [half, back], [-half, back]]
+        fin = panel(name + "-intake-fin-" + str(k), outline, PLATE_THICKNESS, material, parent)
+        fin.position.y = y * radius
 
 
 def build_reactor(name: str, size: dict[str, float], scene: Scene, intake: bool = False) -> Any:
