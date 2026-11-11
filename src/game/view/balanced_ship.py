@@ -29,14 +29,15 @@ from game.view.balanced_hull import (
 )
 from game.view.ship_materials import get_ship_materials
 from game.view.ship_parts import (
+    INTAKE_FIN_SIZE,
     PART_FACETS,
-    PLATE_THICKNESS,
     add_reactor_intake,
     build_reactor,
     disc_options,
     edge_strip,
     faceted_rod,
     hexagon_band,
+    intake_fin_thickness,
     mirror_x,
     panel,
     plate,
@@ -729,7 +730,7 @@ def _build_tip_reactor(side: str, sign: float, root: Any, scene: Any) -> None:
     intake.position.set(x, middle, pod["z"] + pod["length"] / 2)
     intake.scaling.y = TIP_INTAKE["stretch"]
     intake.parent = root
-    add_reactor_intake(name, TIP_INTAKE["radius"], 0, intake, OCTAGON)
+    add_reactor_intake(name, TIP_INTAKE["radius"], 0, intake, OCTAGON, TIP_INTAKE["stretch"])
 
 
 def scoop_sections(up: float) -> list[Any]:
@@ -781,9 +782,13 @@ def _build_scoop(name: str, up: float, reactor: Any, scene: Any) -> None:
     middle = REACTOR["radius"] * math.cos(math.pi / OCTAGON) + scoop["height"] / 2
     mouth = panel(name + "-mouth", outline, height, mats.intakeBlack, reactor)
     mouth.position.y = up * middle
-    fin_outline = [[-half, front + 0.03], [half, front + 0.03], [half, front], [-half, front]]
+    # The same size as every intake's fins (D-350), in the nacelle's stretched frame.
+    fin_front = front + 0.03
+    fin_back = fin_front - INTAKE_FIN_SIZE["depth"]
+    fin_outline = [[-half, fin_front], [half, fin_front], [half, fin_back], [-half, fin_back]]
+    thickness = intake_fin_thickness(REACTOR_HEIGHT)
     for k, share in enumerate(scoop["fins"]):
-        fin = panel(name + "-fin-" + str(k), fin_outline, PLATE_THICKNESS, mats.hullMid, reactor)
+        fin = panel(name + "-fin-" + str(k), fin_outline, thickness, mats.hullMid, reactor)
         fin.position.y = up * (middle + share * height)
 
 
@@ -798,7 +803,9 @@ def build_balanced_ship(scene: Any) -> Any:
         _build_edge_glow(side, sign, root, scene)
         _build_missile_pod(side, sign, root, scene)
         _build_tip_reactor(side, sign, root, scene)
-        reactor = build_reactor("balanced-reactor-" + side, REACTOR, scene, True, OCTAGON)
+        reactor = build_reactor(
+            "balanced-reactor-" + side, REACTOR, scene, True, OCTAGON, REACTOR_HEIGHT
+        )
         reactor.position.set(sign * REACTOR_OFFSET_X, REACTOR_Y, REACTOR_Z)
         reactor.scaling.y = REACTOR_HEIGHT
         reactor.parent = root

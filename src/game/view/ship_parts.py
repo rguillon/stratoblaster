@@ -86,6 +86,12 @@ REACTOR_INTAKE_FINS: dict[str, Any] = {
     "zs": [0.12, 0.4],
     "duct": 0.66,
 }
+# Every intake's fins (the main reactors', the wing tips', the secondary scoops') are this thick
+# and this deep in model units, whatever the size of the intake and the stretch of its frame
+# (owner: "equalize the size of the fins between the different intakes", D-350): only their width
+# follows the mouth they span. The depth runs back from the fins' front (`zs[1]` above); it is the
+# most the small wing-tip intakes hold ahead of their fan face.
+INTAKE_FIN_SIZE = {"thickness": 0.016, "depth": 0.035}
 
 
 def disc_options(radius: float, tessellation: int) -> Any:
@@ -254,12 +260,18 @@ def _add_reactor_rings(name: str, size: dict[str, float], root: Any, sides: int)
 
 
 def add_reactor_intake(
-    name: str, radius: float, front: float, root: Any, sides: int = REACTOR_SIDES
+    name: str,
+    radius: float,
+    front: float,
+    root: Any,
+    sides: int = REACTOR_SIDES,
+    stretch: float = 1.0,
 ) -> Any:
     """Add an intake at `front` along Z of `root`, `sides` round (D-337); return its node.
 
     A hull-metal scoop, straight and flush with the nacelle, then angled in; inside, a
     matte black duct (D-347), a dark fan face and horizontal fins across the duct (D-338).
+    `stretch` is how much `root`'s frame is stretched upright, so the fins keep their size (D-350).
     """
     scene = root.getScene()
     mats = get_ship_materials(scene)
@@ -288,7 +300,7 @@ def add_reactor_intake(
     face.position.z = fan["z"] * radius
     face.material = mats.intakeBlack
     face.parent = node
-    _add_intake_fins(name, radius, mats.hullMid, node, sides)
+    _add_intake_fins(name, radius, mats.hullMid, node, sides, stretch)
     return node
 
 
@@ -306,15 +318,24 @@ def intake_fin_half_width(y: float, sides: int = REACTOR_SIDES) -> float:
     return duct - abs(y) / math.sqrt(3)
 
 
-def _add_intake_fins(name: str, radius: float, material: Any, parent: Any, sides: int) -> None:
+def intake_fin_thickness(stretch: float) -> float:
+    """Return an intake fin's thickness in a frame stretched upright by `stretch` (D-350)."""
+    thickness: float = INTAKE_FIN_SIZE["thickness"] / stretch
+    return thickness
+
+
+def _add_intake_fins(
+    name: str, radius: float, material: Any, parent: Any, sides: int, stretch: float
+) -> None:
     """Add the horizontal fins across the intake's duct, in front of its fan face (D-338)."""
     fins = REACTOR_INTAKE_FINS
     front = fins["zs"][1] * radius
-    back = fins["zs"][0] * radius
+    back = front - INTAKE_FIN_SIZE["depth"]
+    thickness = intake_fin_thickness(stretch)
     for k, y in enumerate(fins["ys"]):
         half = intake_fin_half_width(y, sides) * radius
         outline = [[-half, front], [half, front], [half, back], [-half, back]]
-        fin = panel(name + "-intake-fin-" + str(k), outline, PLATE_THICKNESS, material, parent)
+        fin = panel(name + "-intake-fin-" + str(k), outline, thickness, material, parent)
         fin.position.y = y * radius
 
 
@@ -324,6 +345,7 @@ def build_reactor(
     scene: Scene,
     intake: bool = False,
     sides: int = REACTOR_SIDES,
+    stretch: float = 1.0,
 ) -> Any:
     """Build a reactor centred on its origin, thrusting towards -Z: a rounded hexagon nacelle.
 
@@ -353,7 +375,7 @@ def build_reactor(
 
     _add_reactor_rings(name, size, root, sides)
     if intake:
-        add_reactor_intake(name, radius, length / 2, root, sides)
+        add_reactor_intake(name, radius, length / 2, root, sides, stretch)
 
     # A hexagon, its corners on the nacelle's (a disc's first corner is on +X too).
     core = create_disc(name + "-core", disc_options(radius * CORE_RADIUS, sides), scene)

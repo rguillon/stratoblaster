@@ -92,7 +92,10 @@ of the main reactors, with a slope eaching the back of the reactor"): a silver s
 nacelle's flat face, behind its front ring, its matte black mouth facing forward, its back a ramp
 sloping down to the nacelle's back; a rounded arch in section, smooth-shaded, the ramp easing down
 along a half cosine, three flat steel fins across its mouth (D-348, owner: "rework the secondary
-intakes, smoth them a little and add fins like the others").
+intakes, smoth them a little and add fins like the others"). Every intake's fins, the main reactors', the
+wing tips' and the secondary scoops', have one size: 0.016 model units thick and 0.035 deep,
+whatever the intake's size and its frame's upright stretch; only their width follows the mouth
+they span (D-350, owner: "equalize the size of the fins between the different intakes").
 
 No gun stands on top (D-330), and the ship carries no light of its own but its reactors (D-327).
 

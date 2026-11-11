@@ -2621,3 +2621,20 @@
   the fairing's flanks, the fairing widens (up to 0.21 half wide, 0.15 before); where its top
   corners reach out under the body's flanks they rise to 0.02 inside the hull's underside
   (`underside_height`, `balanced_hull.py`), so no gap opens between fairing and hull.
+
+### D-350 — One size for every intake's fins
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01.
+- **Context:** owner: "equalize the size of the fins between the different intakes". The fins
+  were sized in each intake's own frame: their thickness was stretched with it (the main
+  reactors 1.3 times upright, the tip intakes 2.05) and their depth scaled with the intake's
+  radius. Measured in model units: the main intakes' 0.016 thick and 0.062 deep, the tip
+  intakes' 0.025 and 0.035, the secondary scoops' 0.016 and 0.03.
+- **Decision:** `INTAKE_FIN_SIZE` (`ship_parts.py`): every intake fin is 0.016 thick and 0.035
+  deep in model units. The intake builders take their frame's upright `stretch` and divide the
+  thickness by it (`intake_fin_thickness`); the depth runs back from the fins' front. 0.035 is
+  the most the small tip intakes hold ahead of their fan face; the main intakes' fins get
+  shallower to match. Their widths still follow each mouth.
+- **Consequences:** measured in the dev viewer, all fourteen fins on a side are 0.016 × 0.035.
+  The triangle count is unchanged.

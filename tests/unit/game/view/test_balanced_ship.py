@@ -176,7 +176,11 @@ def test_gfx_ship_01_one_octagonal_intake_feeds_both_tip_reactors(
     monkeypatch.setattr(
         balanced_ship,
         "add_reactor_intake",
-        lambda name, radius, _front, _parent, sides: intakes.append([name, radius, sides]),
+        lambda name, radius, _front, _parent, sides, _stretch=1.0: intakes.append([
+            name,
+            radius,
+            sides,
+        ]),
     )
     reactors: dict[str, list[Any]] = {}
 
@@ -197,7 +201,7 @@ def test_gfx_ship_01_one_octagonal_intake_feeds_both_tip_reactors(
         if "-tip-" in name:
             assert rest == []
         else:
-            assert rest == [True, balanced_ship.OCTAGON]
+            assert rest == [True, balanced_ship.OCTAGON, balanced_ship.REACTOR_HEIGHT]
 
 
 def test_gfx_ship_01_a_laser_with_a_minigun_either_side_under_the_belly(

@@ -114,3 +114,30 @@ def test_gfx_ship_01_the_intake_ducts_end_lies_behind_its_fan_face() -> None:
     """D-341: the duct's end cap and the fan face are not in one plane (they fought for depth)."""
     duct_end = min(z for z, _r in ship_parts.REACTOR_INTAKE_DUCT)
     assert duct_end < ship_parts.REACTOR_INTAKE_FAN["z"] - 0.03
+
+
+@pytest.mark.parametrize("stretch", [1.0, 1.3, 2.05])
+def test_gfx_ship_01_every_intakes_fins_have_one_size_whatever_the_stretch(
+    monkeypatch: Any, stretch: float
+) -> None:
+    """D-350: the fins are as thick and deep in any intake; only their width varies."""
+    thicknesses: list[float] = []
+    depths: list[float] = []
+
+    def panel(name: str, outline: Any, thickness: float, *_args: Any) -> Any:
+        if "-fin-" in name:
+            thicknesses.append(thickness * stretch)
+            depths.append(max(p[1] for p in outline) - min(p[1] for p in outline))
+        return MagicMock(name=name)
+
+    stub_babylon(monkeypatch, ship_parts)
+    monkeypatch.setattr(ship_parts, "get_ship_materials", lambda _scene: MagicMock())
+    monkeypatch.setattr(ship_parts, "create_section_loft", lambda name, *_a: MagicMock(name=name))
+    monkeypatch.setattr(ship_parts, "panel", panel)
+    ship_parts.add_reactor_intake("r", 0.124, 0.0, MagicMock(name="root"), 8, stretch)
+    size = ship_parts.INTAKE_FIN_SIZE
+    assert thicknesses == pytest.approx([size["thickness"]] * 4)
+    assert depths == pytest.approx([size["depth"]] * 4)
+    # The depth stays ahead of the smallest intake's fan face.
+    front = ship_parts.REACTOR_INTAKE_FINS["zs"][1] * 0.124
+    assert front - size["depth"] > ship_parts.REACTOR_INTAKE_FAN["z"] * 0.124
