@@ -2,8 +2,9 @@
 
 > **Area:** Worlds · **Prefix:** `LVL-1-1` · **Related:** [World 1](world.md), [1-2 Green coast](1-2-green-coast.md), [Reef Warden](../../bosses/mini/1-1-reef-warden.md), [Storm Petrel](../../bosses/final/1-1-storm-petrel.md), [level flow](../../gameplay/level-flow.md), [terrain](../../graphics/terrain.md), [water](../../graphics/water.md), [sky and light](../../graphics/sky-and-light.md)
 
-The first level of the game, and the easiest: midday over a clear turquoise sea, with small wooded
-islands and reefs, and the first green coast in the last 30 seconds. Tier 1's kinds come a
+The first level of the game, and the easiest: midday over a clear turquoise sea, starting over big
+rocky islands crossed by roads, then small wooded islands and reefs, and the first green coast in
+the last 30 seconds. Tier 1's kinds come a
 few at a time, a fifth of the enemies from tier 2; the Reef Warden waits at the middle and the Storm Petrel at the end.
 It is meant to be easy, even for a kid.
 
@@ -54,7 +55,7 @@ amplitude, features about that wide across):
 
 | # | Section | Seconds | Relief | What it shows |
 |---|---------|---------|--------|---------------|
-| 1 | open sea | 35 | −70 ± 30, 520 | Deep open water: nothing rises above the sea. |
+| 1 | rocky islands | 35 | −2 ± 55, 1 100 | Big wooded islands across the screen, with rocky faces and roads, between sea channels (D-318). |
 | 2 | reefs | 40 | −24 ± 48, 520 | Shallow reefs, a few breaking the surface as small islands. |
 | 3 | islands | 45 | −12 ± 50, 520 | Small green islands, wooded, with beaches. |
 | 4 | deep water | 30 | −70 ± 30, 520 | Deep open water again. |
@@ -63,7 +64,7 @@ amplitude, features about that wide across):
 
 **Acceptance criteria**
 - Given 1-1, then its sections are these, in this order, with these seconds (unit test on the data).
-- Manual visual validation: `?level=1-1&t=0` open sea, `&t=90` islands, `&t=215` the first coast.
+- Manual visual validation: `?level=1-1&t=0` rocky islands with roads, `&t=90` islands, `&t=215` the first coast.
 
 *Sources: P06-R05, D-109.*
 
@@ -84,22 +85,26 @@ with some sand (0.2). 1-2 begins on this green coast (WLD-1-08).
 
 No building stands on the islands (their building density is 0): the only habitations of 1-1 are
 the fishing village (the `fishing` group: docks) and the coast homes of its final coast, at building
-density 0.5. 1-1 has one main road (World 1's others otherwise, WLD-1-15), laid on land only.
+density 0.5. 1-1 has World 1's two main roads (WLD-1-15), laid on land only: they cross the rocky
+islands at its start and the final coast (D-318; one main road until then).
 
 **Acceptance criteria**
 - Given 1-1 placed with its seed, then every building stands in its last section or the blend into it (unit test).
 
-*Sources: P06-R05, P06-R06, D-207.*
+*Sources: P06-R05, P06-R06, D-207, D-318.*
 
 #### LVL-1-1-07 — Wooded islands · MUST
 
 The islands and the coast grow living woods on their grass (tree density 1, the living trees,
-WLD-1-14).
+WLD-1-14). The rocky islands at the start of the level also carry World 1's hills with one rocky
+face (WLD-1-31), their faces `rock_spacing` apart, wider than on the land, so the roads find long
+runs between them (D-318).
 
 **Acceptance criteria**
-- Manual visual validation: the islands and the coast are wooded.
+- Manual visual validation: the islands and the coast are wooded; the first islands show rocky faces.
+- Given 1-1, then its first section has scarps and its other sea sections none (unit test).
 
-*Sources: D-212, D-214.*
+*Sources: D-212, D-214, D-318.*
 
 ### Waves
 
@@ -198,6 +203,8 @@ Petrel's chase.
 | fog | 1 000 → 2 600 | the base look's |
 | sea | level 0; colour (0.02, 0.2, 0.32); shallows (0.1, 0.62, 0.6) | `LEVEL_1_1.sea`, `TERRAIN.shore` |
 | shore | x −40 ± 90, every 1 800 units; beach 240; sea bed −55 | `GREEN_COAST` |
+| rocky islands | relief −2 ± 55, 1 100 across; scarps 30 high, `rock_spacing` 1 000 apart | `ROCKY_ISLANDS` (D-318) |
+| main roads | 2 (1 until D-318) | `LEVEL_1_1.roads` |
 | max_gap | 4.5 s → 3 s | `src/game/config/world_1/waves.py` `WORLD_1_FILLERS["1-1"]` |
 | bullet_speed_factor / fire_rate_factor | 0.8 / 0.8 | `src/game/config/world_1/difficulty.py` |
 | written | beats composed from the plan and its tier mix (D-283); waves, groups, enemies and HP after fill and density: to be measured again | `src/game/config/wave_plans.py` `level_plan(1, 1)`, `tier_mix(1, 1)`; density 2 (D-249) |
@@ -208,3 +215,5 @@ Petrel's chase.
 
 - Before D-207 a few lone huts and masts stood on the islands, scattered like plants; they went with
   the World 1 props.
+- Until D-318 the level opened on 35 s of deep open water (−70 ± 30, nothing above the sea), and had
+  only one main road.

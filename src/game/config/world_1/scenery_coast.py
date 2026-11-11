@@ -132,10 +132,20 @@ FARMLAND = green(
     },
 )
 
+# The start of 1-1 (D-318, owner: "add more island with roads and rocks at the start of level
+# 1-1"): big islands, broad enough for the roads to cross them from one side of the screen to
+# the other, each with a few rocky faces. The faces are far apart (1 000 units, not World 1's 340)
+# so the roads find long runs between them; the sea is low enough that 1-1 stays at least 80 %
+# water (WLD-1-06).
+ROCKY_ISLANDS = merge(
+    water("rocky islands", 35, -2, 55),
+    {"relief": smooth(-2, 55, 1100, 5), "scarps": scarps(30, 1000)},
+)
+
 # 1-1, Open sea (LVL-1-1-04): sea almost all the way, small green islands and reefs, a coast at
 # the end.
 OPEN_SEA = [
-    water("open sea", 35, -70, 30),
+    ROCKY_ISLANDS,
     water("reefs", 40, -24, 48),
     water("islands", 45, -12, 50),
     water("deep water", 30, -70, 30),
@@ -187,7 +197,8 @@ GREEN_COAST_LEVEL = [
 ]
 
 # 1-1 (LVL-1-1-01, LVL-1-1-02): open sea, the first coast in the last 30 s, at World 1's fastest
-# ground speed (WLD-1-04); a sea level (LVL-1-1-05) and one main road only (LVL-1-1-06).
+# ground speed (WLD-1-04); a sea level (LVL-1-1-05) and two main roads, for the rocky islands
+# (LVL-1-1-06, D-318).
 LEVEL_1_1 = record({
     "id": "world-1-1",
     "name": "1-1 Open sea",
@@ -196,7 +207,7 @@ LEVEL_1_1 = record({
     "transition": 420,
     "sections": OPEN_SEA,
     "sea": {"level": 0},
-    "roads": merge(WORLD_1_ROADS, {"mainRoads": 1}),
+    "roads": merge(WORLD_1_ROADS, {"mainRoads": 2}),
     "props": WORLD_1_PROPS,
 })
 

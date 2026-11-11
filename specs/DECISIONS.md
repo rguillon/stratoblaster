@@ -1993,6 +1993,32 @@
   readable over it. The boss's kind is drawn over the boss's model when the boss stands at the
   very top.
 
+### D-318 — 1-1 opens on big rocky islands crossed by roads
+- **Date:** 2026-11-11
+- **Requirements:** LVL-1-1-04, LVL-1-1-06, LVL-1-1-07, WLD-1-06, WLD-1-15, WLD-1-31.
+- **Context:** owner: "add more island with roads and rocks at the start of level 1-1".
+- **Decision:** 1-1's first section, "open sea" (35 s of deep water, −70 ± 30), becomes
+  "rocky islands" (`ROCKY_ISLANDS`), and 1-1 now has World 1's two main roads (it had one).
+  - **Relief:** −2 ± 55, features about 1 100 units across: big wooded islands between sea
+    channels.
+  - **Rocks:** World 1's scarps, 30 high, with their crag blocks.
+  - Seconds, surface, trees and no buildings are unchanged.
+- **Why these numbers:** roads only lie on land and must end off screen (GFX-ROAD-03,
+  GFX-ROAD-04), so small islands carry none. Scarps at World 1's usual 340 units cut the land
+  into strips the roads cannot cross. Measured in the first 35 s (road points 8 units apart, on
+  screen):
+  - islands at +4 ± 50 with scarps 340 apart: 85 points, and 1-1 fell to 78 % sea (under
+    WLD-1-06's 80 %);
+  - no scarps: 180 points, but no rocks;
+  - scarps 1 000 apart, the chosen shape: 296 points (253 on the main roads, 43 on paths), and
+    81.9 % sea over the whole level;
+  - one main road instead of two, same shape: 214 points.
+- **Consequences:**
+  - The two main roads also run on the final green coast, a second road in the fishing
+    village's section.
+  - No building stands before the coast (checked: 65 buildings, all in the coast).
+  - The wave plan, the enemies and the level's length are unchanged: the scenery is only drawn.
+
 ### D-319 — The menus in the game's 3:4 window
 - **Date:** 2026-11-11
 - **Requirements:** UI-LOOK-02, UI-SHIP-01, UI-SHIP-02.

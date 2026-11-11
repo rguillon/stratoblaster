@@ -33,7 +33,10 @@ def test_wld_1_03_level_sections_have_positive_lengths(level: Any) -> None:
 
 
 def test_wld_1_31_the_sea_has_no_hills_but_the_coast_and_the_land_do() -> None:
-    for section in LEVEL_1_1.sections[:-1]:
+    """Also LVL-1-1-04 (D-318): the rocky islands at the start of 1-1 have rocky faces."""
+    assert LEVEL_1_1.sections[0]["name"] == "rocky islands"
+    assert LEVEL_1_1.sections[0]["scarps"] is not None
+    for section in LEVEL_1_1.sections[1:-1]:
         assert section.get("scarps") is None, section["name"]
     assert LEVEL_1_1.sections[-1]["scarps"] is not None
     for section in LEVEL_1_2.sections:

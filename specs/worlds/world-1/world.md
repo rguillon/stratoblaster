@@ -69,7 +69,7 @@ shows: in the level files):
 
 | Level | Sea | Land | Habitations |
 |-------|-----|------|-------------|
-| 1-1 | Almost all sea, with small wooded green islands and reefs. The first coast comes in the last 30 s. | Small islands, then a green coast with beaches. | None on the islands; a fishing village and coast homes on the final coast. |
+| 1-1 | Almost all sea: big rocky islands with roads at the start, then small wooded green islands and reefs. The first coast comes in the last 30 s. | Rocky islands, small islands, then a green coast with beaches. | None on the islands; a fishing village and coast homes on the final coast. |
 | 1-2 | It starts along the coast, with beaches and bays; the sea is gone after the first 110 s. | Green coastal land, then green meadows, groves and farmland, wooded. | Coastal villages along the coast road, then villages and farms. |
 | 1-3 | No sea. | Farmland, woods and green hills; in the last minute the grass turns yellow, then dry. | Farms, villages and a market town with streets. |
 | 1-4 | No sea. | Dry grassland, then the red desert: scrub, rock, a cracked dry lake, an oasis, a canyon and mesas. | Dry-land villages, desert homes and outposts, an oasis town and a desert town with streets. |
@@ -208,7 +208,7 @@ are placed and drawn: [props.md](../../graphics/props.md).
 #### WLD-1-15 — Roads, lone buildings and hamlets · MUST
 
 The World 1 levels use one road layout ([roads.md](../../graphics/roads.md)): two main roads, one
-of them a two-by-two highway (one main road only in 1-1), paths branching off them, and no road
+of them a two-by-two highway, paths branching off them, and no road
 crossing another (only a path joining a road). A few lone buildings stand away from the roads, and
 hamlets of 5 to 9 buildings come from time to time in sections with buildings and no street grid.
 The towns are street grids on tiles.
@@ -226,7 +226,8 @@ Ireland: the sections of open land (the green coast, the meadows, groves, farmla
 hills, the drying grass, the scrubland, the desert outskirts and the rocky pass) carry `scarps`
 (GFX-TERRAIN-19), their faces all looking the same way (`SCARP_ANGLE`, 125° from +Z: towards +X, where the sun
 is, and a little towards the camera), short (`SCARP_FACE`, 8 % of a cycle) and their crests falling to nothing between the
-hills; the farmland's are lower. The towns on street grids, the dry lake, the canyon, the mesas, the
+hills; the farmland's are lower. The rocky islands at the start of 1-1 carry them too, further
+apart (LVL-1-1-07, D-318). The towns on street grids, the dry lake, the canyon, the mesas, the
 buttes and the sea have none. The looks draw the steep ground as rock sooner than the base look
 (`steepSlope`): grey crags (`CRAG`) on the green levels from a slope of 0.045 (17°, full rock from
 26°), the red mesa rock on the dry levels from 0.06 (20°, full from 30°), with less noise on the
@@ -473,7 +474,7 @@ bosses share one boss track (`boss-1`), faster and tenser, in the same instrumen
 | level_duration | 240 s ± 10 s (every level is exactly 240 s) | WLD-1-03; sections' `seconds` in `src/game/config/world_1/scenery_*.py` |
 | ground_speed 1-1 / 1-2 / 1-3 / 1-4 / 1-5 | 70 / 65 / 60 / 60 / 60 units/s | WLD-1-04; `LEVEL_1_x.scrollSpeed` |
 | section_transition | 420 units | sections blend over this length; `transition` |
-| sea_share 1-1 / 1-2 / 1-3 / 1-4 / 1-5 | ≥ 80 % / ≤ 50 % / 0 / 0 / 0 | WLD-1-06; measured 90 % / 18 % (ground under the sea level, x −240…240, each level's seed); 1-1 has 210 s of water sections, 1-2 110 s of shore sections |
+| sea_share 1-1 / 1-2 / 1-3 / 1-4 / 1-5 | ≥ 80 % / ≤ 50 % / 0 / 0 / 0 | WLD-1-06; measured 82 % / 18 % (ground under the sea level, x −240…240, each level's seed; 1-1 was 90 % before its rocky islands, D-318); 1-1 has 210 s of water sections, 1-2 110 s of shore sections |
 | cover_share (lush / sandy) | 0.71 / 0.03 · 0.92 / 0.08 · 0.79 / 0 · 0.07 / 0.69 · 0.08 / 0.84 | WLD-1-07; share of section time, 1-1 … 1-5 |
 | sun_elevation 1-1 / 1-2 / 1-3 / 1-4 / 1-5 | 72° / 55° / 35° / 14° / 8° | WLD-1-16; `src/game/config/world_1/looks.py` |
 | time_of_day 1-1 / 1-2 / 1-3 / 1-4 / 1-5 | midday / early afternoon / late afternoon / sunset / dusk | WLD-1-16 |
@@ -491,7 +492,7 @@ bosses share one boss track (`boss-1`), faster and tenser, in the same instrumen
 | final_fight_time 1-1 → 1-5 | 50–70 s → 90–120 s | WLD-1-29; measured 59 / 72 / 82 / 92 / 104 s (D-055, same) |
 | music_tempo | 128–140 BPM; the boss track 20–30 BPM faster | WLD-1-30; `src/game/view/audio/music_styles.py` `WORLD_STYLES[1]` |
 | hamlets / lone buildings | hamlets every 700–1 400 units, 5–9 buildings within 32, 2 apart, 18 from the roads; lone buildings one per 150-unit square at chance 0.15 × density, 18 from the roads | WLD-1-15; `src/game/config/world_1/props.py` `WORLD_1_PROPS` |
-| roads | 2 main roads (1-1: 1), spread 200, paths every 260–560 units, no crossing within 30 | WLD-1-15; `WORLD_1_ROADS` |
+| roads | 2 main roads (1-1 too since D-318), spread 200, paths every 260–560 units, no crossing within 30 | WLD-1-15; `WORLD_1_ROADS` |
 | world tone | 0.55 | the ground and props darkened for readability ([readability.md](../../graphics/readability.md)) |
 
 ## Notes
