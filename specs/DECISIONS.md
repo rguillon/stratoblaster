@@ -2419,3 +2419,24 @@
   - The missile launchers, the gun pod and the reactors' bodies get none.
 - **Consequences:** the readability probe's player contrast (GFX-READ-07, 3:1) now rests on the
   silver hull, the glowing edges and the flames; the e2e checks it in four levels.
+
+### D-336 — A faceted central body whose strakes join the nacelles
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-04, GFX-SHIP-05, GFX-SHIP-09.
+- **Context:** owner: "rework the central part, it's too round, add more details, make a better
+  connection with the wings".
+- **Decision:**
+  - The body's sections are flat facets, flat-shaded (the loft's smooth part is 0): a spine ridge
+    (a new station column, from behind the canopy to the tail), a flat deck, bevelled shoulders,
+    flat chines at the wings' top face, flat flanks and belly. The elliptic back and the smooth
+    maximum's fillet are gone.
+  - The chines widen behind the canards into flat strakes reaching the nacelles (0.64 half wide)
+    from their front to their back, in place of the separate stub wings: the body itself joins the
+    nacelles, so wing, strake and body are one flat surface at one height. The strakes' leading
+    edge glows in short strips along its curve, as the stub wings' did.
+  - Details in gunmetal: four seams round the body (thin bands of its section, 2% proud) and three
+    vents on each strake ahead of the wing roots.
+- **Consequences:** the hull drops from about 1,700 triangles to under a thousand (the ship
+  measures 7,908 with its flames); the unit test that the hull's triangles sit on its upper half is
+  replaced by a budget, the facets being flat both sides.

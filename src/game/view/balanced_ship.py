@@ -1,22 +1,30 @@
 # Copyright (c) 2026 Renaud Guillon
 """The player ship (GFX-SHIP-01, D-328, D-330, D-332): a heavy variable fighter.
 
-An original design. A long, slim central body with a needle nose and a bubble canopy set forward,
-closing to a point at its tail, with no reactor at its back; canards; a gun pod under its belly.
-Two big rounded hexagon reactor nacelles stand out either side, each with its intake, joined to
-the body by a stub wing and carrying a canted tail and a ventral fin. From each nacelle a
+An original design. A long, slim, faceted central body with a needle nose and a bubble canopy set
+forward, a spine ridge, dark seams and vents, closing to a point at its tail, with no reactor at its
+back; canards; a gun pod under its belly. Two big rounded hexagon reactor nacelles stand out either
+side, each with its intake, joined to the body by its strakes (D-336) and carrying a canted tail
+and a ventral fin. From each nacelle a
 forward-swept wing runs out to twin reactors one over the other on its tip, wrapped in one body,
 each with its intake and a fin at 45°. A missile launcher hangs under each wing, its seven
 missiles' tips out ahead of the leading edge.
 
 Model units: nose towards +Z, about 5.2 units long. The body is one blended skin
-(`balanced_hull.py`); the body, canopy, nacelles and pods are smooth-shaded on top: the triangles
-go on the upper half, which the playfield camera sees (GFX-SHIP-05).
+(`balanced_hull.py`), flat-shaded facets; the canopy, nacelles and pods are smooth-shaded on top:
+their triangles go on the upper half, which the playfield camera sees (GFX-SHIP-05).
 """
 
 import math
 
-from game.view.balanced_hull import CHINE_EDGE, TOP_POINTS, hull_sections
+from game.view.balanced_hull import (
+    CHINE_EDGE,
+    CHINE_HALF_WIDTH,
+    hull_section,
+    hull_sections,
+    station_at,
+    top_height,
+)
 from game.view.ship_materials import get_ship_materials
 from game.view.ship_parts import (
     PART_FACETS,
@@ -64,15 +72,9 @@ BALANCED_WING = [
     [1.9, -0.75],
     [0.8, -1.85],
 ]
-# The stub wing joining the central body to the nacelle (owner, D-332: "spead the two main
-# reactors, adding pieces of wings that connect them to the central body"): from inside the body's
-# chine out into the nacelle, along the nacelle's length.
-STUB_WING = [
-    [0.15, 0.2],
-    [0.62, -0.05],
-    [0.62, -1.75],
-    [0.1, -2.0],
-]
+# D-336: the stub wings joining the body to the nacelles (D-332) are now the body's own strakes
+# (`balanced_hull.py`). Their glowing leading edge follows the strakes' curve, at these Z.
+STRAKE_EDGE_ZS = [0.85, 0.6, 0.35, 0.1, -0.1, -0.3]
 WING_THICKNESS = 0.07
 
 
@@ -140,13 +142,28 @@ VENTRAL_FIN = [
 # trim runs along that edge unbroken.
 TAIL_CANT = 0.2
 VENTRAL_CANT = 0.55  # rad from vertical, outwards
-# The main reactors: nacelles standing out from the body, on the stub wings (D-332: "spead the two
-# main reactors"; at 0.42, inside the hull's shoulders, before), their middle at the wings' plane,
-# each with its intake.
+# The main reactors: nacelles standing out from the body (D-332: "spead the two main reactors";
+# at 0.42, inside the hull's shoulders, before), joined to it by its strakes (D-336), their middle
+# at the wings' plane, each with its intake.
 REACTOR_OFFSET_X = 0.8
 REACTOR_Y = -0.02
 REACTOR_Z = -0.95
 REACTOR = {"radius": 0.22, "length": 2.0}
+
+# Dark panel seams round the body (D-336): their Z, their half width along Z and how much larger
+# than the body's section they are.
+SEAM_ZS = [1.7, 0.55, -0.75, -1.75]
+SEAM: dict[str, Any] = {"half": 0.012, "grow": 1.02}
+# Dark vents on the strakes, in front of and behind the wing roots (right side; mirrored left).
+VENTS = [
+    [
+        [0.34, -0.15 - 0.12 * k],
+        [0.5, -0.15 - 0.12 * k],
+        [0.5, -0.21 - 0.12 * k],
+        [0.34, -0.21 - 0.12 * k],
+    ]
+    for k in range(3)
+]
 
 # Segments of each hand-set profile are cut into this many along a smooth curve.
 PROFILE_STEPS = 3
@@ -231,14 +248,23 @@ TIP_FIN_THICKNESS = 0.03
 
 
 def _build_body(root: Any, scene: Any) -> None:
-    """Build the slim central body and the gun pod under it."""
+    """Build the slim central body, its seams and vents, and the gun pod under it."""
     mats = get_ship_materials(scene)
     body_root = new_transform_node("balanced-body-root", scene)
     body_root.parent = root
-    # One skin, smooth on top: the first `TOP_POINTS` of each section are its upper half.
-    body = create_section_loft("balanced-body", hull_sections(), TOP_POINTS, scene)
+    # One faceted skin (D-336): every face flat-shaded, so the facets' edges read crisp.
+    body = create_section_loft("balanced-body", hull_sections(), 0, scene)
     body.material = mats.hull
     body.parent = body_root
+    for k, z in enumerate(SEAM_ZS):
+        _build_seam("balanced-seam-" + str(k), z, mats.hullDark, body_root, scene)
+    for side, sign in [("right", 1), ("left", -1)]:
+        for k, vent in enumerate(VENTS):
+            outline = vent if sign > 0 else mirror_x(vent)
+            middle = _centre(vent)
+            y = top_height(station_at(middle[1]), middle[0])
+            name = "balanced-vent-" + side + "-" + str(k)
+            plate(name, outline, y, mats.hullDark, body_root)
 
     faceted_rod(
         "balanced-gun-pod",
@@ -248,6 +274,18 @@ def _build_body(root: Any, scene: Any) -> None:
         root,
         PART_FACETS,
     )
+
+
+def _build_seam(name: str, z: float, material: Any, parent: Any, scene: Any) -> None:
+    """Build a dark panel seam round the body at `z`: a thin band of its section, a bit larger."""
+    sections = []
+    for dz in [SEAM["half"], -SEAM["half"]]:
+        _z, ring = hull_section(station_at(z + dz))
+        grown = [[p[0] * SEAM["grow"], p[1] * SEAM["grow"]] for p in ring]
+        sections.append([z + dz, grown])
+    seam = create_section_loft(name, sections, 0, scene)
+    seam.material = material
+    seam.parent = parent
 
 
 def _build_cockpit(root: Any, scene: Any) -> None:
@@ -276,9 +314,9 @@ def _build_cockpit(root: Any, scene: Any) -> None:
 
 
 def _build_wing(side: str, sign: float, root: Any, scene: Any) -> None:
-    """Build a forward-swept main wing, its flap and panel lines, the stub wing and the canard.
+    """Build a forward-swept main wing, its flap and panel lines, and the canard.
 
-    The main wing runs out of the nacelle; the stub wing joins the nacelle to the body (D-332).
+    The main wing runs out of the nacelle; the body's strakes join the nacelle to the body (D-336).
     """
     mats = get_ship_materials(scene)
 
@@ -299,7 +337,6 @@ def _build_wing(side: str, sign: float, root: Any, scene: Any) -> None:
     for k, line in enumerate(WING_LINES):
         name = "balanced-wing-" + side + "-line-" + str(k)
         plate(name, mirror(line), WING_THICKNESS / 2, mats.hullDark, wing)
-    panel("balanced-stub-" + side, mirror(STUB_WING), WING_THICKNESS, mats.hullMid, wing)
     canard = panel("balanced-canard-" + side, mirror(CANARD), CANARD_THICKNESS, mats.hullMid, wing)
     # Its top face at the body's chine edge, so its trim runs on from the body's (D-333).
     canard.position.y = CHINE_EDGE - CANARD_THICKNESS / 2
@@ -314,10 +351,10 @@ def _centre(outline: list[list[float]]) -> list[float]:
 
 
 def _build_edge_glow(side: str, sign: float, root: Any, scene: Any) -> None:
-    """Build the glowing leading edges of a side's wing, stub wing and canard (D-335).
+    """Build the glowing leading edges of a side's wing, strake and canard (D-335, D-336).
 
     The extremities glow in place of a trim round the ship: the main wing's leading edge from
-    root to tip, the stub wing's, and the canard's leading edge and tip. The guns get none.
+    root to tip, the body's strake's, and the canard's leading edge and tip. The guns get none.
     """
     mats = get_ship_materials(scene)
 
@@ -327,10 +364,13 @@ def _build_edge_glow(side: str, sign: float, root: Any, scene: Any) -> None:
     wing_size = {"width": EDGE_GLOW["width"], "thickness": EDGE_GLOW["wing"]}
     canard_size = {"width": EDGE_GLOW["width"], "thickness": EDGE_GLOW["canard"]}
     name = "balanced-glow-" + side
-    for label, outline, k in [("wing", BALANCED_WING, 0), ("stub", STUB_WING, 0)]:
-        points = mirror(outline)
-        edge = [points[k], points[k + 1]]
-        edge_strip(name + "-" + label, edge, _centre(points), wing_size, mats.edgeGlow, root)
+    wing = mirror(BALANCED_WING)
+    edge_strip(name + "-wing", [wing[0], wing[1]], _centre(wing), wing_size, mats.edgeGlow, root)
+    # The strake's leading edge, one strip between each two of its points (D-336).
+    strake = mirror([[station_at(z)[CHINE_HALF_WIDTH], z] for z in STRAKE_EDGE_ZS])
+    for k in range(len(strake) - 1):
+        edge = [strake[k], strake[k + 1]]
+        edge_strip(name + "-strake-" + str(k), edge, [0, -0.6], wing_size, mats.edgeGlow, root)
     canard = mirror(CANARD)
     for k in range(2):
         strip = edge_strip(

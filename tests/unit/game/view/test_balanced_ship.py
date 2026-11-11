@@ -11,7 +11,7 @@ from helpers.babylon_stub import stub_babylon
 from game.index import GAME
 from game.view import balanced_hull as hull
 from game.view import balanced_ship
-from game.view.balanced_hull import TOP_POINTS, hull_sections
+from game.view.balanced_hull import hull_sections
 from game.view.balanced_ship import build_balanced_ship
 from game.view.player_ship_models import PLAYER_SHIP_MODELS
 from render.geometry.lathe_z import build_smooth_top_lathe_vertex_data, smooth_profile
@@ -57,14 +57,10 @@ def test_gfx_ship_05_the_round_parts_put_their_triangles_on_the_upper_half(
     assert _upper_share(profile, halves) >= 0.75
 
 
-def test_gfx_ship_05_the_hull_puts_its_triangles_on_the_upper_half() -> None:
-    """D-327: at least three quarters of the blended hull's triangles are over the upper half."""
-    positions, indices, _normals = build_section_loft(hull_sections(), TOP_POINTS)
-    upper = 0
-    for t in range(0, len(indices), 3):
-        y = sum(positions[indices[t + k] * 3 + 1] for k in range(3))
-        upper += 1 if y >= 0 else 0
-    assert upper / (len(indices) / 3) >= 0.75
+def test_gfx_ship_05_the_faceted_hull_stays_cheap() -> None:
+    """D-336: the faceted body, every face flat, keeps well under a thousand triangles."""
+    _positions, indices, _normals = build_section_loft(hull_sections(), 0)
+    assert len(indices) / 3 < 1000
 
 
 def test_gfx_ship_01_the_wings_are_forward_swept() -> None:
@@ -109,19 +105,28 @@ def test_gfx_ship_01_the_missile_pods_hang_under_the_wings_their_tips_in_view() 
     assert front > balanced_ship._leading_edge(pod["x"] + radius) + 0.2
 
 
-def test_gfx_ship_01_the_main_reactors_stand_out_from_the_slim_body() -> None:
-    """D-332: the nacelles stand clear of the body, a stub wing reaching from one into the other."""
-    widest_body = max(s[hull.CHINE_HALF_WIDTH] for s in hull.STATIONS)
+def test_gfx_ship_01_the_strakes_join_the_body_to_the_nacelles() -> None:
+    """D-336: the body's chines widen into strakes reaching the nacelles, along the wing roots."""
     radius = balanced_ship.REACTOR["radius"]
     inner = balanced_ship.REACTOR_OFFSET_X - radius
-    assert inner > widest_body + 0.2
-    stub = balanced_ship.STUB_WING
-    for x, z in stub:
-        station = hull.station_at(z)
-        # Each end inside the body's chine or the nacelle.
-        assert x < station[hull.CHINE_HALF_WIDTH] or inner < x < balanced_ship.REACTOR_OFFSET_X
-    # The main wing's root lies in the nacelle.
+    front = balanced_ship.REACTOR_Z + balanced_ship.REACTOR["length"] / 2
+    for z in [front - 0.2, balanced_ship.BALANCED_WING[0][1], balanced_ship.BALANCED_WING[4][1]]:
+        assert hull.station_at(z)[hull.CHINE_HALF_WIDTH] > inner
+    # The body itself stays slim; the main wing's root lies in the nacelle.
+    assert max(s[hull.BODY_HALF_WIDTH] for s in hull.STATIONS) < inner / 2
     assert balanced_ship.BALANCED_WING[0][0] == pytest.approx(balanced_ship.REACTOR_OFFSET_X)
+
+
+def test_gfx_ship_01_the_body_has_seams_and_vents_on_its_strakes() -> None:
+    """D-336: the seams lie along the body, the vents on the flat of the strakes."""
+    nose = hull.STATIONS[0][hull.Z]
+    tail = hull.STATIONS[-1][hull.Z]
+    assert all(tail < z < nose for z in balanced_ship.SEAM_ZS)
+    for vent in balanced_ship.VENTS:
+        for x, z in vent:
+            station = hull.station_at(z)
+            assert station[hull.BODY_HALF_WIDTH] * hull.CHINE_ROOT < x
+            assert x < station[hull.CHINE_HALF_WIDTH]
 
 
 def test_gfx_ship_01_the_central_body_is_long_and_slim_with_no_reactor_at_its_back() -> None:
@@ -130,7 +135,7 @@ def test_gfx_ship_01_the_central_body_is_long_and_slim_with_no_reactor_at_its_ba
     tail = hull.STATIONS[-1]
     assert nose[hull.Z] - tail[hull.Z] == pytest.approx(5.2)
     assert all(v == 0 for v in tail[1:])
-    assert max(s[hull.CHINE_HALF_WIDTH] for s in hull.STATIONS) <= 0.35
+    assert max(s[hull.BODY_HALF_WIDTH] for s in hull.STATIONS) <= 0.3
     # The nacelles' nozzles are well clear of the body's centre line.
     assert balanced_ship.REACTOR_OFFSET_X - balanced_ship.REACTOR["radius"] > 0.5
 
@@ -180,7 +185,7 @@ def test_gfx_trim_the_canards_top_lies_at_the_bodys_chine_edge() -> None:
 def test_gfx_ship_09_the_wings_canards_and_canopy_glow_not_the_guns(
     scene: Any, monkeypatch: Any
 ) -> None:
-    """D-335: glowing leading edges on the wings, stub wings and canards; none on the guns."""
+    """D-335: glowing leading edges on the wings, strakes and canards; none on the guns."""
     names: list[str] = []
     real = balanced_ship.edge_strip
 
@@ -191,7 +196,7 @@ def test_gfx_ship_09_the_wings_canards_and_canopy_glow_not_the_guns(
     monkeypatch.setattr(balanced_ship, "edge_strip", record)
     build_balanced_ship(scene)
     for side in ["right", "left"]:
-        for part in ["wing", "stub", "canard-0", "canard-1"]:
+        for part in ["wing", "strake-0", "strake-4", "canard-0", "canard-1"]:
             assert "balanced-glow-" + side + "-" + part in names
     assert not any("missile" in n or "gun" in n for n in names)
 
