@@ -9,18 +9,25 @@ from e2e.menu_helpers import expect_state, open_game, poll
 from playwright.sync_api import Page, expect
 
 
-def _assert_fitted_16_9(page: Page, selector: str, width: int, height: int) -> None:
+def _assert_fitted(page: Page, selector: str, width: int, height: int) -> None:
+    """Check the box keeps the stage's 16:9 ratio, its 540 x 720 playfield window fitted.
+
+    As large as it can be: the side columns round it may run past the window (GAME-SCREEN-02).
+    """
     box = page.locator(selector).bounding_box()
     assert box, f"{selector} has no box"
-    assert box["x"] >= 0
-    assert box["y"] >= 0
-    assert box["x"] + box["width"] <= width + 1
-    assert box["y"] + box["height"] <= height + 1
     assert box["width"] / box["height"] == pytest.approx(1280 / 720, abs=0.005)
-    assert max(box["width"] / width, box["height"] / height) > 0.99
+    scale = box["width"] / 1280
+    left = box["x"] + 370 * scale
+    right = left + 540 * scale
+    assert left >= -1
+    assert box["y"] >= -1
+    assert right <= width + 1
+    assert box["y"] + box["height"] <= height + 1
+    assert max(540 * scale / width, 720 * scale / height) > 0.99
 
 
-@pytest.mark.parametrize(("width", "height"), [(800, 600), (1920, 1080)])
+@pytest.mark.parametrize(("width", "height"), [(800, 600), (1000, 900), (1920, 1080)])
 def test_ui_look_02_the_menu_is_fully_visible_not_cropped_not_stretched(
     page: Page, width: int, height: int
 ) -> None:
@@ -28,15 +35,15 @@ def test_ui_look_02_the_menu_is_fully_visible_not_cropped_not_stretched(
     page.set_viewport_size({"width": width, "height": height})
     open_game(page)
     for selector in ["#stage", "#menu"]:
-        _assert_fitted_16_9(page, selector, width, height)
+        _assert_fitted(page, selector, width, height)
     expect(page.locator(".title-version")).to_be_in_viewport(ratio=1)
 
 
 def test_ui_look_02_on_a_phone_the_menu_fills_the_window_over_the_16_9_stage(page: Page) -> None:
-    """D-286: at 390 x 844 the stage is the 16:9 box, the menus take the whole window."""
+    """D-286: at 390 x 844 the stage's playfield fills the width, the menus the whole window."""
     page.set_viewport_size({"width": 390, "height": 844})
     open_game(page)
-    _assert_fitted_16_9(page, "#stage", 390, 844)
+    _assert_fitted(page, "#stage", 390, 844)
     box = page.locator("#menu").bounding_box()
     assert box
     assert box["x"] == pytest.approx(0, abs=1)

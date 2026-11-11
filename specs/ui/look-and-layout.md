@@ -29,8 +29,10 @@ scaling; 480 × 640 until D-249), so every size in the UI specs is in logical px
 
 ### UI-LOOK-02 — Fitted to the window, never cropped or stretched · MUST
 
-The canvas and the overlay share one box, the largest box with the 16:9 logical aspect ratio that
-fits the window, centred, with dark bars (letterbox) on the rest. The menus have the game's aspect
+The canvas and the overlay share one box with the 16:9 logical aspect ratio, fitted so its
+playfield window is as large as the window allows, centred (GAME-SCREEN-02, D-329): dark bars
+(letterbox) on the rest, or, in a window narrower than 16:9, the side columns running past its
+edges. The menus have the game's aspect
 ratio (D-319): every menu screen, and the 3D backdrop behind the menus, are laid in the playfield
 window (540 × 720, 3:4, [gameplay/screen.md](../gameplay/screen.md)), between opaque blue-black
 side columns with a hairline on the window's edges, as a level is. Their sliders and entry lists
@@ -38,11 +40,13 @@ keep to a column (`menu_column`) inside it. The dev viewer's 3D views keep the w
 overlay is scaled to that box with a CSS transform, so the 3D scene and the HTML over it line up.
 The box follows window resizes.
 
-On a phone (the box scaled under `phone_scale`, such as 0.3 on a 390 × 844 portrait screen), the
+On a phone (the whole box would be scaled under `phone_scale`, such as 0.3 on a 390 × 844
+portrait screen), the
 menus, the pause menu, the settings and the end-of-level panels are instead laid out across the
 whole window at their real size (one CSS pixel per logical pixel), over the 16:9 canvas, so they stay
 readable and their touch targets keep their size (UI-INPUT-11). The HUD of a level being played
-keeps to the 16:9 box, lined up with the playfield; under a panel it is hidden (D-286).
+keeps to the box, lined up with the playfield, which fills the phone's width (D-329); under a
+panel it is hidden (D-286).
 
 **Acceptance criteria**
 - At window sizes 800 × 600 and 1920 × 1080, the menu is fully visible, not cropped, not stretched (16:9 within 0.5 %), and fills the window's width or height.

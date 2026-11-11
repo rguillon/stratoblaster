@@ -2277,3 +2277,30 @@
   before; the trim adds about 200); the GFX-SHIP-05 budget goes from 4,500 to 7,000. The pack's
   triangles are all on the ship's top, seen from the playfield camera. The cannon makes the ship
   asymmetric; the hitbox is unchanged (gameplay is not touched).
+
+### D-329 — The playfield window, not the whole 16:9 stage, is fitted to the browser window
+
+- **Date:** 2026-11-11
+- **Requirements:** GAME-SCREEN-02, UI-LOOK-02, ENG-110.
+- **Context:** owner: "the display area get small for no good reason when I play with the
+  browser size". Since D-317 and D-319 everything is drawn and laid out in the 540 × 720
+  playfield window, but the fit still kept the whole 1280 × 720 stage in view. A window narrower
+  than 16:9 shrank the playfield to make room for the opaque side columns: at 1000 × 900 it was
+  421 × 562 px where 675 × 900 fits.
+- **Decision:** `fit_stage` takes the game's playfield window. Its scale is the largest at which
+  the playfield window fits (not the stage), the stage keeps its ratio and is placed so the window
+  is centred. The stage's sides may run past the browser window's edges, clipped by `body`'s
+  `overflow: hidden`. A window wide enough for the whole stage still shows it, centred, as before.
+  A game without a playfield window fits the whole stage.
+  - The phone layout (D-286) is still measured on the scale the whole stage would have
+    (`StageFit.whole_scale`), so the same windows get it; their HUD and playfield are bigger now
+    (0.72 instead of 0.3 on a 390 × 844 phone).
+  - The touch fire and bomb buttons sat in the right side column, now possibly cropped: the fit
+    tells the overlay how much of that column is in view (`--side-room`, `StageFit.side_room`).
+    The buttons keep to its part in view, and move into the window's lower right corner, above
+    the weapon readout, when less than 140 logical px of it is left (`narrow-sides`, as on a
+    phone).
+- **Consequences:** in a narrow window, the canvas is wider than the browser window; the 3D still
+  draws only in the playfield's viewport, and the render scale cap (D-250) follows the larger
+  scale. The dev viewer's 3D views, which use the whole stage, are cropped at the sides in such a
+  window.

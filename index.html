@@ -39,6 +39,9 @@
            the level is drawn; since D-317 the HUD is laid over the window, the columns are empty
            but for the touch buttons (UI-HUD-01). */
         --hud-side: 370px;
+        /* How much of the right side column is in view (D-329): all of it unless the window
+           crops it; set by the stage fit. */
+        --side-room: var(--hud-side);
         --font:
           'Bahnschrift', 'DIN Alternate', 'Roboto Condensed', 'Arial Narrow', 'Segoe UI', system-ui,
           sans-serif;
@@ -685,12 +688,13 @@
         background: var(--cyan);
       }
       /* Touch bomb button (UI-HUD-10), above the fire button in the right side column (outside
-         the window this HUD is laid over), only on touch screens. */
+         the window this HUD is laid over), only on touch screens; against the column's part in
+         view when the window crops it, inside the window when too little is left (D-329). */
       .hud-bomb-button {
         display: none;
         position: absolute;
         z-index: 5;
-        right: calc(24px - var(--hud-side));
+        right: calc(24px - var(--side-room));
         bottom: 160px;
         width: 92px;
         height: 92px;
@@ -706,6 +710,16 @@
         text-shadow: none;
         pointer-events: auto;
         touch-action: none;
+      }
+      /* Too little of the column in view: both buttons in the window's lower right corner, above
+         the weapon readout (D-329). */
+      #menu.narrow-sides .hud-bomb-button {
+        right: 24px;
+        bottom: 200px;
+      }
+      #menu.narrow-sides .game-fire {
+        right: calc(var(--hud-side) + 24px);
+        bottom: 80px;
       }
       .hud-bomb-button.empty {
         opacity: 0.36;
@@ -774,11 +788,11 @@
         opacity: 0.8;
       }
       /* Touch fire button, at the foot of the right column, only on touch screens (keyboard and
-         gamepad have their own). */
+         gamepad have their own); placed as the bomb button (D-329). */
       .game-fire {
         display: none;
         position: absolute;
-        right: 24px;
+        right: calc(var(--hud-side) - var(--side-room) + 24px);
         bottom: 40px;
         width: 92px;
         height: 92px;
