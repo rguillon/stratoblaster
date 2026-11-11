@@ -142,13 +142,16 @@ MENU_CONFIG = MenuConfig(
     0.25,
     365,
     0.1,
+    # D-319: in the 3:4 menu window the ships are closer (7 -> 6) and framed with more room
+    # (1.05 -> 1.2), so the outer ships' rings stay in view at about the size they had in 16:9;
+    # the camera aims higher (target -1.2 -> 0.6), so the ships sit lower, nearer their cards.
     ShipSelect(
-        7,
+        6,
         0.5,
         1.2,
         0.7,
         10,
-        ShipSelectCamera(-math.pi / 2, 1.2, 1.0, 1.05, -1.2),
+        ShipSelectCamera(-math.pi / 2, 1.2, 1.0, 1.2, 0.6),
         ShipSelectLights(0.25, 2.6, (-0.4, -1, 0.6), 0.8, (0.6, -0.3, -1)),
         # The menus' neon cyan (UI-LOOK-03, `#00e8ff`), was the cyberpunk acid yellow (D-198).
         ShipSelectRing(6.4, 0.12, -1.3, (0, 0.91, 1)),

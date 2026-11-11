@@ -98,6 +98,30 @@
         height: 100dvh !important;
         transform: none !important;
       }
+      /* The menus have the game's aspect ratio (D-319, owner: "make the main menues the same aspect
+         ratio as the game"): every screen is laid out in the 540 x 720 playfield window in the
+         middle of the stage, where the menus' 3D scenes are drawn too, between opaque side
+         columns, the same round a level (UI-LOOK-02, D-317). The game screen keeps the whole
+         stage (its HUD is laid over the window itself), the dev viewer's 3D views the whole
+         stage, a phone's menus the whole window (D-286). */
+      #menu:not(.phone):not(:has(.dev-viewer-screen))::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: linear-gradient(
+          90deg,
+          var(--black) calc(var(--hud-side) - 1px),
+          rgba(0, 232, 255, 0.45) calc(var(--hud-side) - 1px) var(--hud-side),
+          transparent var(--hud-side) calc(100% - var(--hud-side)),
+          rgba(0, 232, 255, 0.45) calc(100% - var(--hud-side)) calc(100% - var(--hud-side) + 1px),
+          var(--black) calc(100% - var(--hud-side) + 1px)
+        );
+      }
+      #menu:not(.phone) .menu-screen:not(.game-screen, .dev-viewer-screen) {
+        left: var(--hud-side);
+        right: var(--hud-side);
+      }
       #menu.phone .level-cell {
         width: 60px;
         height: 60px;
@@ -524,22 +548,10 @@
       .game-screen::after {
         content: none;
       }
-      /* No screen frame over the playfield either: the frame's place takes the empty side columns
-         round the playfield window, opaque blue-black (nothing of the level is drawn there,
-         D-252), with a hairline on the window's edges (D-317). */
+      /* No screen frame over the playfield either; the empty side columns round the playfield
+         window are `#menu`'s, as round the menus (D-317, D-319). */
       .game-screen::before {
-        inset: 0;
-        border: none;
-        border-image: none;
-        box-shadow: none;
-        background: linear-gradient(
-          90deg,
-          var(--black) calc(var(--hud-side) - 1px),
-          rgba(0, 232, 255, 0.35) calc(var(--hud-side) - 1px) var(--hud-side),
-          transparent var(--hud-side) calc(100% - var(--hud-side)),
-          rgba(0, 232, 255, 0.35) calc(100% - var(--hud-side)) calc(100% - var(--hud-side) + 1px),
-          var(--black) calc(100% - var(--hud-side) + 1px)
-        );
+        content: none;
       }
       /* In-game HUD (D-317, owner: the UI back in the playing area, light, designed afresh): no
          panels and no backgrounds, only outlined text and slim gauges in the corners of the

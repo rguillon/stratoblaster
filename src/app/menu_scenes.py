@@ -2,7 +2,7 @@
 """The 3D scenes behind the menus: the game's backdrop, and the ship select stage over it."""
 
 from config.menu import MENU_CONFIG
-from render.babylon import js_object, js_set, new_scene
+from render.babylon import js_object, js_set, new_scene, new_viewport
 from render.environment.showcase_environment_visual import (
     ShowcaseEnvironmentOptions,
     apply_showcase_environment,
@@ -74,12 +74,26 @@ def _environment_options() -> Any:
     )
 
 
+def window_camera(scene: Any, game: Any) -> None:
+    """Draw `scene` only in the game's playfield window, as a level is (UI-LOOK-02, D-319).
+
+    The menus then have the game's aspect ratio. A game without a playfield window keeps the
+    whole screen.
+    """
+    viewport = game.playfield.viewport
+    camera = scene.activeCamera
+    if viewport is None or camera is None:
+        return
+    camera.viewport = new_viewport(viewport[0], viewport[1], viewport[2], viewport[3])
+
+
 def _build_backdrop(built: _Built, engine: Any, game: Any, environment: bool) -> None:
     built.backdrop_scene = new_scene(engine)
     metadata = js_object()
     js_set(metadata, "gameId", game.id)
     js_set(built.backdrop_scene, "metadata", metadata)
     built.backdrop = game.view.menu_backdrop(built.backdrop_scene)
+    window_camera(built.backdrop_scene, game)
     if not environment:
         return
     glow = apply_showcase_environment(built.backdrop_scene, _environment_options())
@@ -93,6 +107,7 @@ def _build_ships(built: _Built, engine: Any, game: Any, environment: bool) -> No
     # Drawn over the backdrop: keep its colours, clear only depth.
     js_set(built.ship_scene, "autoClear", False)
     built.stage = ShipSelectStage(built.ship_scene, _ship_models(game), _stage_options())
+    window_camera(built.ship_scene, game)
     if environment:
         apply_showcase_environment(built.ship_scene, _environment_options())
 

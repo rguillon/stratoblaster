@@ -218,7 +218,7 @@ with a red glow; the notches are white. Red marks the danger ([look-and-layout.m
 
 | Name | Value | Notes |
 |------|-------|-------|
-| `hud_side_width` | 370 px (the whole height; 200 px between D-251 and D-252, 140 px between D-253 and D-263); empty since D-317 | `index.html` `--hud-side`, `.game-screen::before`; the playfield window's `left`, `src/game/config/game.py` (D-252, D-263) |
+| `hud_side_width` | 370 px (the whole height; 200 px between D-251 and D-252, 140 px between D-253 and D-263); empty since D-317 | `index.html` `--hud-side`, `#menu::before` (D-319); the playfield window's `left`, `src/game/config/game.py` (D-252, D-263) |
 | Ship bottom margin | 20 px (half the ship's length; 78 px while the bar was at the bottom) | `src/config/game_play.py` `GAME_PLAY_CONFIG.ship_margin.bottom` |
 | `low_health` | 30 % | `src/ui/game_hud.py` `LOW_HEALTH` |
 | `hud_health_bar_width` | 130 px × 6 px, ten cells of 11 px with 2 px gaps (116 × 9 px in the left column, D-253 to D-317) | `index.html` `.hud-bar` |

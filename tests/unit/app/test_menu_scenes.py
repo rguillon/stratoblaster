@@ -23,6 +23,7 @@ class FakeScene:
         self.metadata: Any = None
         self.autoClear = True
         self.ready = "ready:" + label
+        self.activeCamera = SimpleNamespace(viewport=None)
 
     def render(self) -> None:
         self.renders += 1
@@ -89,6 +90,7 @@ def babylon(monkeypatch: pytest.MonkeyPatch) -> Babylon:
     monkeypatch.setattr(menu_scenes, "js_object", dict)
     monkeypatch.setattr(menu_scenes, "js_set", _js_set)
     monkeypatch.setattr(menu_scenes, "ShipSelectStage", FakeStage)
+    monkeypatch.setattr(menu_scenes, "new_viewport", lambda *box: box)
     return fake
 
 
@@ -100,7 +102,10 @@ def _beta(_scene: Any) -> str:
     return "beta-model"
 
 
-def make_game(models: dict[str, Any] | None = None) -> SimpleNamespace:
+def make_game(
+    models: dict[str, Any] | None = None,
+    viewport: tuple[float, float, float, float] | None = None,
+) -> SimpleNamespace:
     backdrop = SimpleNamespace(glowExcludedMeshes=["sky", "sun"])
 
     def menu_backdrop(scene: FakeScene) -> Any:
@@ -109,6 +114,7 @@ def make_game(models: dict[str, Any] | None = None) -> SimpleNamespace:
 
     return SimpleNamespace(
         id="strato",
+        playfield=SimpleNamespace(viewport=viewport),
         player_ships=SimpleNamespace(
             ships=[SimpleNamespace(id="alpha"), SimpleNamespace(id="beta")]
         ),
@@ -159,6 +165,17 @@ def test_ui_load_03_with_the_environment_both_scenes_are_lit_and_the_backdrop_gl
     assert options.glow is MENU_CONFIG.glow
     # The backdrop's own meshes stay out of its glow.
     assert babylon.glows[0].excluded == ["sky", "sun"]
+
+
+def test_ui_look_02_the_menu_scenes_draw_in_the_playfield_window(babylon: Babylon) -> None:
+    """D-319: the menus have the game's aspect ratio, their 3D drawn where a level is."""
+    run_tasks(prepare_menu_scenes("engine", make_game(viewport=(0.25, 0, 0.5, 1)), False).tasks)
+    assert [scene.activeCamera.viewport for scene in babylon.scenes] == [(0.25, 0, 0.5, 1)] * 2
+
+
+def test_ui_look_02_without_a_playfield_window_the_menus_take_the_screen(babylon: Babylon) -> None:
+    run_tasks(prepare_menu_scenes("engine", make_game(), False).tasks)
+    assert [scene.activeCamera.viewport for scene in babylon.scenes] == [None, None]
 
 
 def test_perf_07_each_ship_is_drawn_highlighted_once_while_loading(babylon: Babylon) -> None:

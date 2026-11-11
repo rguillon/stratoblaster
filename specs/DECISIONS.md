@@ -1980,8 +1980,9 @@
   - Bottom right: the weapon's name and one diamond pip per weapon level, lit up to its level.
     The `· Lv L/N` text and its `hudWeapon` text are gone.
   - The playfield window, the ship's bounds and every gameplay extent are unchanged (D-263).
-  - The side columns stay opaque blue-black, but empty. They are drawn by the game screen in
-    place of the menus' neon frame, with a cyan hairline on the window's edges. The touch fire
+  - The side columns stay opaque blue-black, but empty, with a cyan hairline on the window's
+    edges; the game screen draws no neon frame. Since D-319 the columns are drawn by `#menu`
+    for every screen. The touch fire
     and bomb buttons stay in the right column.
 - **Alternatives considered:**
   - Widening the playfield back to the whole 16:9 screen with the HUD over it: this would undo
@@ -1991,4 +1992,29 @@
 - **Consequences:** the ship flies under the bottom corners' readouts, which are thin and stay
   readable over it. The boss's kind is drawn over the boss's model when the boss stands at the
   very top.
+
+### D-319 — The menus in the game's 3:4 window
+- **Date:** 2026-11-11
+- **Requirements:** UI-LOOK-02, UI-SHIP-01, UI-SHIP-02.
+- **Context:** owner: "make the main menues the same aspect ratio as the game".
+- **Decision:**
+  - **Same window as a level:** the menus use the 540 × 720 playfield window (D-263).
+    - The cameras of the menu backdrop and of the ship select stage draw only in it, through
+      the game's playfield viewport (`window_camera`). A game without a playfield window keeps
+      the whole screen.
+    - Every menu screen is laid out in the window.
+    - `#menu` draws the same opaque blue-black side columns as round a level, with a cyan
+      hairline on the window's edges.
+  - **Kept out:** the game screen keeps the whole stage: its HUD is laid over the window itself
+    (D-317). The side columns round a level are now `#menu`'s too, the game screen's own copy
+    of them (D-317) is gone. The
+    dev viewer's 3D views keep the whole stage. A phone's menus keep the whole window (D-286).
+  - **Ship select:** the camera keeps its fixed horizontal field of view, so the three ships
+    still span the window. To keep the outer ships' neon rings in view (they were already
+    clipped at 16:9):
+    - the ships are closer: spacing 7 → 6;
+    - the framing has more room: margin 1.05 → 1.2 (the cards' row follows it);
+    - the camera aims higher (target −1.2 → 0.6), so the ships sit nearer their cards.
+- **Consequences:** the menus' 3D draws about 42 % of the 16:9 pixels. Settings over a paused
+  level are now in the window too.
 - **Status:** Proposed
