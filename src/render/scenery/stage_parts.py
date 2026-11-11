@@ -33,10 +33,20 @@ def _min_of(values: Sequence[float]) -> float:
 
 
 def lowest_ground(level: SceneryLevel) -> float:
-    """Lowest ground of a level: its sea, or the lowest relief (GFX-CAM-05, GFX-WATER-02)."""
+    """Lowest ground the camera can see in a level (GFX-CAM-05, GFX-WATER-02).
+
+    Its lowest relief, its shores' sea beds, and its water level. The water is see-through
+    (GFX-WATER-03), so the sea bed under it shows: the ground is worked out down to the sea bed,
+    not at the water's surface, or the top of the screen would show past the ground generated
+    (a band of nothing under the water, D-320).
+    """
     lows = [s.relief.base - s.relief.amplitude for s in level.sections]
+    for section in level.sections:
+        shore = section.shore
+        if shore is not None:
+            lows.append(shore.seabed)
     if level.sea is not None:
-        return level.sea.level
+        lows.append(level.sea.level)
     return _min_of(lows)
 
 

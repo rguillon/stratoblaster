@@ -4,16 +4,15 @@
 from helpers.dom import FakeDocument, FakeEvent
 
 from ui.boss_bar import BossBarFrame
-from ui.game_hud import GameHud, HudFrame, HudSetup, HudTexts
+from ui.game_hud import GameHud, HudFrame, HudSetup, HudTexts, split_lead
 
 
 def texts() -> HudTexts:
     return HudTexts(
         health="HEALTH",
-        weapon=lambda name, level, levels: f"{name} Lv {level}/{levels}",
         lives=lambda lives: f"x{lives}",
         bombs=lambda bombs: f"B{bombs}",
-        score=lambda score: f"SCORE {score}",
+        score=lambda score: f"{score:07d}",
         high_score=lambda score: f"HI {score}",
         bomb=lambda bombs: f"BOMB {bombs}",
     )
@@ -54,19 +53,46 @@ def test_ui_hud_04_the_low_health_warning_shows_under_30_percent() -> None:
     hud.update(frame(health=2.5))
     bar = hud.root.querySelector(".hud-bar-fill")
     assert bar.classList.contains("low")
+    assert hud.root.classList.contains("hud-low")
     hud.update(frame(health=5))
     assert not bar.classList.contains("low")
+    assert not hud.root.classList.contains("hud-low")
 
 
 def test_ui_hud_01_the_weapon_lives_progress_and_score_are_written() -> None:
-    """Each part of the bar: UI-HUD-02, UI-HUD-03, UI-HUD-05, UI-HUD-06."""
+    """Each readout: UI-HUD-02, UI-HUD-03, UI-HUD-05, UI-HUD-06."""
     hud, _ = make_hud()
     hud.update(frame())
-    assert hud.root.querySelector(".hud-weapon").textContent == "Bullet Lv 1/5"
+    assert hud.root.querySelector(".hud-weapon-name").textContent == "Bullet"
     assert hud.root.querySelector(".hud-lives").textContent == "x3"
-    assert hud.root.querySelector(".hud-progress-fill").style.width == "50.0%"
-    assert hud.root.querySelector(".hud-score-value").textContent == "SCORE 100"
+    assert hud.root.querySelector(".hud-progress-fill").style.height == "50.0%"
+    assert hud.root.querySelector(".hud-score-lead").textContent == "0000"
+    assert hud.root.querySelector(".hud-score-digits").textContent == "100"
     assert hud.root.querySelector(".hud-high-score").textContent == "HI 100"
+
+
+def test_ui_hud_05_the_padding_zeros_are_split_from_the_digits() -> None:
+    assert split_lead("0012340") == ["00", "12340"]
+    assert split_lead("0000000") == ["000000", "0"]
+    assert split_lead("1234567") == ["", "1234567"]
+
+
+def test_ui_hud_06_the_weapon_has_one_pip_per_level_lit_up_to_its_level() -> None:
+    hud, _ = make_hud()
+    hud.update(frame(weapon_level=2, weapon_levels=5))
+    pips = hud.root.querySelectorAll(".hud-pip")
+    assert [pip.classList.contains("on") for pip in pips] == [True, True, False, False, False]
+    hud.update(frame(weapon_level=3, weapon_levels=5))
+    pips = hud.root.querySelectorAll(".hud-pip")
+    assert sum(pip.classList.contains("on") for pip in pips) == 3
+
+
+def test_ui_hud_06_unchanged_pips_are_not_rebuilt() -> None:
+    hud, _ = make_hud()
+    hud.update(frame())
+    first = hud.root.querySelector(".hud-pip")
+    hud.update(frame(score=200))
+    assert hud.root.querySelector(".hud-pip") is first
 
 
 def test_ui_hud_05_the_high_score_line_is_the_best_of_the_two() -> None:
@@ -138,20 +164,16 @@ def test_ui_hud_01_dispose_removes_the_hud() -> None:
     assert hud.root.parentElement is None
 
 
-def test_ui_hud_01_the_hud_is_two_side_columns_the_readouts_down_the_left_one() -> None:
-    """D-251: the left column holds the readouts in order.
-
-    The right one is empty and keeps the playfield in the middle.
-    """
+def test_ui_hud_01_the_readouts_are_in_the_corners_of_the_playfield_window() -> None:
+    """D-317: no side columns; the readouts sit, panel-less, over the playfield window."""
     hud, _ = make_hud()
-    panels = hud.root.querySelectorAll(".hud-panel")
-    assert len(panels) == 2
-    left, right = panels
-    assert [child.className for child in left.children] == [
+    assert [child.className for child in hud.root.children] == [
+        "hud-score",
+        "hud-stock",
         "hud-progress",
         "hud-health",
-        "hud-score",
         "hud-weapon",
+        "boss-bar",
     ]
-    assert right.className == "hud-panel hud-panel-right"
-    assert len(right.children) == 0
+    assert hud.root.querySelector(".hud-panel") is None
+    assert hud.root.querySelector(".hud-ship").textContent == "Ship A"

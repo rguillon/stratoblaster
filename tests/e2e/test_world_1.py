@@ -74,7 +74,7 @@ def test_ui_level_08_a_level_can_be_confirmed_from_a_fresh_start_and_plays(
     # Phase 6 review: a HUD with the ship's health and the weapon level; no kills since the
     # reviewer's rework (2026-10-28).
     expect(page.locator(".hud-health-text")).to_have_text("HP 100 / 100")
-    expect(page.locator(".hud-weapon")).to_have_text("Bullet · Lv 1/5")
+    expect(page.locator(".hud-weapon-name")).to_have_text("Bullet")
     expect(page.locator(".hud-destroyed")).to_have_count(0)
     expect(page.locator(".menu-back")).to_have_count(0)
     leave_level(page)
@@ -103,10 +103,10 @@ def test_game_screen_05_the_heavy_ship_flies_over_1_1_shoots_and_stays_on_screen
     # Phase 6 review: E (by position) switches to the next weapon.
     page.keyboard.press("KeyE")
     step(page)
-    expect(page.locator(".hud-weapon")).to_have_text("Laser · Lv 1/5")
+    expect(page.locator(".hud-weapon-name")).to_have_text("Laser")
     page.keyboard.press("KeyE")
     step(page)
-    expect(page.locator(".hud-weapon")).to_have_text("Missile · Lv 1/5")
+    expect(page.locator(".hud-weapon-name")).to_have_text("Missile")
     page.keyboard.up("Space")
     page.keyboard.up("ArrowUp")
     # Pushed against the left edge for a while, it stops there, inside the playfield.

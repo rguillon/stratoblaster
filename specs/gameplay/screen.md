@@ -4,7 +4,7 @@
 
 The game is a vertical shoot 'em up played on a fixed, landscape logical screen of 1280 × 720
 pixels (16:9: a full HD screen at ×1.5), scaled to fit the window. The playfield is a 1000 × 720
-window in the middle of that screen, between the HUD's side columns: a flat plane at flight
+window in the middle of that screen, between two empty side columns: a flat plane at flight
 altitude over which the level's ground scrolls down, drawn nowhere else. This file fixes the
 logical resolution, how it is fitted to the window, the coordinate conventions, what part of the
 playfield the screen shows, where the ship may fly and what is removed off screen. The camera
@@ -18,7 +18,7 @@ layout in [ui/](../ui/).
 The game is laid out on a logical screen of **1280 × 720** pixels (landscape, 16:9, a full HD
 screen at ×1.5; it was 480 × 640, portrait, until D-249). The playfield is a **540 × 720** window
 (3:4, the original ratio) in the middle of the screen, from x = 370 to 910 of it (D-252, D-263;
-1000 × 720 between D-253 and D-263): the level is drawn and played there and nowhere else; the HUD's side columns fill the rest
+1000 × 720 between D-253 and D-263): the level is drawn and played there and nowhere else, the HUD laid over it; empty side columns fill the rest
 ([ui/hud.md](../ui/hud.md)). Every gameplay position, size, distance and speed is in logical
 pixels (`px`) of the playfield: X to the right, Y up, the origin at the bottom-left corner of the
 playfield window. Angles are in degrees from forward (+Y), positive to the right. The logical
@@ -81,7 +81,7 @@ this test (which targets the player can hit, what a bomb reaches).
 ### GAME-SCREEN-05 — Where the ship may fly · MUST
 
 The player ship flies only inside what the playfield window shows, within these margins
-(`ship_margin`): at least 18 px inside the width seen at its height (the HUD's side columns are
+(`ship_margin`): at least 18 px inside the width seen at its height (the side columns are
 outside the window, [ui/hud.md](../ui/hud.md)), no lower than y = 20 (half its length: its model
 stays on screen; it was y = 78 while the HUD had a bar along the bottom, D-155 to D-251), and no
 higher than 200 px below the top edge (y = 520). Pushed against an edge, the ship stops there: its

@@ -99,11 +99,11 @@ ignored (Balanced is highlighted).
 | Name | Value | Notes |
 |------|-------|-------|
 | `ship_select_rotation_speed` | 0.5 rad/s | `src/config/menu.py` `MENU_CONFIG.ship_select.rotation_speed_rad_per_sec` |
-| Ship spacing | 7 units | `MENU_CONFIG.ship_select.spacing` |
+| Ship spacing | 6 units (7 until D-319) | `MENU_CONFIG.ship_select.spacing` |
 | `highlight_scale` / `dim_scale` | 1.2 / 0.7 | `MENU_CONFIG.ship_select`; eased at 10 /s (`scale_ease_per_sec`) |
 | Lights | ambient 0.25, key 2.6, rim 0.8 | `MENU_CONFIG.ship_select.lights` |
 | Ring | 6.4 units across, 0.12 thick, colour `(1, 0.92, 0.05)` | `MENU_CONFIG.ship_select.ring` |
-| Camera | framing margin 1.05, horizontal FOV 1.0 | `MENU_CONFIG.ship_select.camera`; the cards' row width is 100 / 1.05 % |
+| Camera | framing margin 1.2, horizontal FOV 1.0, target height 0.6 (1.05 and −1.2 until D-319) | `MENU_CONFIG.ship_select.camera`; the cards' row width is 100 / 1.2 % |
 | Faded cards | 60 % opacity | `index.html` `.ship-card` |
 | `cookie_max_age` | 365 days | `MENU_CONFIG.cookie_max_age_days` |
 

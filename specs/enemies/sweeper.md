@@ -57,14 +57,18 @@ shows.
 
 #### ENM-SWEEPER-06 — A warning line first · MUST
 
-As it stops, the Sweeper turns its barrel to the first edge of the arc: the one away from the
-player's side (the beam will sweep towards the player and past). A warning line shows along it for
+While it brakes, the Sweeper turns its barrel smoothly (eased in and out over its
+`brakeDistance`) to the first edge of the arc: the one away from the player's side as it starts
+braking (the beam will sweep towards the player and past). It reaches that edge as it stops (D-322;
+it used to turn there at once on stopping). A warning line shows along it for
 `laser.warningSeconds` while the charge light fills, without moving.
 
 **Acceptance criteria**
 - Given a Sweeper that stops, then its heading stays put for the warning and the charge goes 0 to 1.
+- Given a Sweeper coming in, then its heading goes from straight down to the first edge while it
+  brakes, by less than 3° a frame at 60 fps (unit test).
 
-*Sources: tier 2 brief, ENM-19.*
+*Sources: tier 2 brief, ENM-19, D-322.*
 
 #### ENM-SWEEPER-07 — The beam sweeps across a 70° arc · MUST
 

@@ -132,7 +132,8 @@ def test_the_cliff_rules_are_built_from_the_config() -> None:
 
 def test_a_section_without_scarps_has_none() -> None:
     """GFX-TERRAIN-19: an omitted optional feature."""
-    section = scenery_level(LEVEL_1_1).sections[0]
+    # The reefs: 1-1 starts on rocky islands (D-318).
+    section = scenery_level(LEVEL_1_1).sections[1]
     assert section.scarps is None
 
 

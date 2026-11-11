@@ -1,7 +1,8 @@
 # Copyright (c) 2026 Renaud Guillon
-"""The boss health bar (BOSS-05, UI-HUD-12): a slim gauge up the left edge of the playfield,.
+"""The boss health bar (BOSS-05, UI-HUD-12): a slim gauge across the top of the playfield window.
 
-The boss's kind and name written along it and the health of its parts filling it from the bottom.
+The boss's kind and name written over it and the health of its parts filling it from the left
+(D-317).
 """
 
 from org.transcrypt.stubs.browser import window
@@ -34,9 +35,9 @@ def _percent(share: float) -> str:
 
 
 class BossBar:
-    """The boss health bar (UI-HUD-12): the boss's kind and name written along it,.
+    """The boss health bar (UI-HUD-12): the boss's kind and name written over it.
 
-    The health of its core and parts together filling it from the bottom, with a notch at the end of
+    The health of its core and parts together filling it from the left, with a notch at the end of
     each part's share. Hidden while no boss is fought (UI-HUD-14); the page is touched only on
     changes.
     """
@@ -75,7 +76,7 @@ class BossBar:
             return
         self._rank.textContent = frame.rank
         self._name.textContent = frame.name
-        self._fill.style.height = _percent(frame.share)
+        self._fill.style.width = _percent(frame.share)
         self._set_notches(frame.notches)
 
     def _set_notches(self, notches: list[float]) -> None:
@@ -86,6 +87,6 @@ class BossBar:
         nodes: list[Any] = []
         for at in notches:
             notch = element(self._doc, "div", "boss-notch")
-            notch.style.bottom = _percent(at)
+            notch.style.left = _percent(at)
             nodes.append(notch)
         replace_children(self._notches, nodes)

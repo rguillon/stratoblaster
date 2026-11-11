@@ -1957,3 +1957,150 @@
     on a crowded screen, so the later levels may feel harder than their numbers.
   - The probe scripts were one-off and are not kept in the repository.
 - **Status:** Proposed
+
+### D-317 — The HUD back over the playfield: light readouts in the window's corners
+- **Date:** 2026-11-11
+- **Requirements:** UI-HUD-01 to UI-HUD-08, UI-HUD-10, UI-HUD-12, UI-HUD-16, UI-LOOK-05.
+- **Context:** owner: "put back the UI into the gaming area, make it light so it doesnt cover the
+  area too much. Be creative dont just move the existing UI, design a new UI from scratch".
+- **Decision:** the HUD is laid over the 540 × 720 playfield window. It has no panels and no
+  backgrounds: only text outlined in black, and slim gauges, in the window's corners and along
+  its edges, so the level shows through everywhere.
+  - Top left: the score (22 px), its padding zeros drawn dim so the live digits stand out; under
+    it the high score; under that, small and dim, the level played.
+  - Top right: the lives (`♥ N`, green) over the bombs (`● N`, orange).
+  - Top centre, during a boss fight: the boss gauge across the window, 200 × 4 px, filled from
+    the left, with the boss's kind and name above it. It was a 300 px vertical gauge in the left
+    column.
+  - Right edge: the level's progress as a 2 px rail, filled from the bottom in the neon line,
+    with a bright bead where the fill ends. It runs from 104 px to 616 px down the window.
+  - Bottom left: the ship's callsign and `HP n / N` over a 130 × 6 px health bar cut into ten
+    cells. Under 30 % health the bar turns red, the HP text turns red and the window's edges
+    glow red, pulsing (only the glow's opacity is animated).
+  - Bottom right: the weapon's name and one diamond pip per weapon level, lit up to its level.
+    The `· Lv L/N` text and its `hudWeapon` text are gone.
+  - The playfield window, the ship's bounds and every gameplay extent are unchanged (D-263).
+  - The side columns stay opaque blue-black, but empty, with a cyan hairline on the window's
+    edges; the game screen draws no neon frame. Since D-319 the columns are drawn by `#menu`
+    for every screen. The touch fire
+    and bomb buttons stay in the right column.
+- **Alternatives considered:**
+  - Widening the playfield back to the whole 16:9 screen with the HUD over it: this would undo
+    the content extents of D-263 and the enemy counts the level adjustment fitted to the window
+    (D-307 to D-316). The owner asked about the UI, not the playfield.
+  - Glass panels in the corners: not light.
+- **Consequences:** the ship flies under the bottom corners' readouts, which are thin and stay
+  readable over it. The boss's kind is drawn over the boss's model when the boss stands at the
+  very top.
+
+### D-318 — 1-1 opens on big rocky islands crossed by roads
+- **Date:** 2026-11-11
+- **Requirements:** LVL-1-1-04, LVL-1-1-06, LVL-1-1-07, WLD-1-06, WLD-1-15, WLD-1-31.
+- **Context:** owner: "add more island with roads and rocks at the start of level 1-1".
+- **Decision:** 1-1's first section, "open sea" (35 s of deep water, −70 ± 30), becomes
+  "rocky islands" (`ROCKY_ISLANDS`), and 1-1 now has World 1's two main roads (it had one).
+  - **Relief:** −2 ± 55, features about 1 100 units across: big wooded islands between sea
+    channels.
+  - **Rocks:** World 1's scarps, 30 high, with their crag blocks.
+  - Seconds, surface, trees and no buildings are unchanged.
+- **Why these numbers:** roads only lie on land and must end off screen (GFX-ROAD-03,
+  GFX-ROAD-04), so small islands carry none. Scarps at World 1's usual 340 units cut the land
+  into strips the roads cannot cross. Measured in the first 35 s (road points 8 units apart, on
+  screen):
+  - islands at +4 ± 50 with scarps 340 apart: 85 points, and 1-1 fell to 78 % sea (under
+    WLD-1-06's 80 %);
+  - no scarps: 180 points, but no rocks;
+  - scarps 1 000 apart, the chosen shape: 296 points (253 on the main roads, 43 on paths), and
+    81.9 % sea over the whole level;
+  - one main road instead of two, same shape: 214 points.
+- **Consequences:**
+  - The two main roads also run on the final green coast, a second road in the fishing
+    village's section.
+  - No building stands before the coast (checked: 65 buildings, all in the coast).
+  - The wave plan, the enemies and the level's length are unchanged: the scenery is only drawn.
+
+### D-319 — The menus in the game's 3:4 window
+- **Date:** 2026-11-11
+- **Requirements:** UI-LOOK-02, UI-SHIP-01, UI-SHIP-02.
+- **Context:** owner: "make the main menues the same aspect ratio as the game".
+- **Decision:**
+  - **Same window as a level:** the menus use the 540 × 720 playfield window (D-263).
+    - The cameras of the menu backdrop and of the ship select stage draw only in it, through
+      the game's playfield viewport (`window_camera`). A game without a playfield window keeps
+      the whole screen.
+    - Every menu screen is laid out in the window.
+    - `#menu` draws the same opaque blue-black side columns as round a level, with a cyan
+      hairline on the window's edges.
+  - **Kept out:** the game screen keeps the whole stage: its HUD is laid over the window itself
+    (D-317). The side columns round a level are now `#menu`'s too, the game screen's own copy
+    of them (D-317) is gone. The
+    dev viewer's 3D views keep the whole stage. A phone's menus keep the whole window (D-286).
+  - **Ship select:** the camera keeps its fixed horizontal field of view, so the three ships
+    still span the window. To keep the outer ships' neon rings in view (they were already
+    clipped at 16:9):
+    - the ships are closer: spacing 7 → 6;
+    - the framing has more room: margin 1.05 → 1.2 (the cards' row follows it);
+    - the camera aims higher (target −1.2 → 0.6), so the ships sit nearer their cards.
+- **Consequences:** the menus' 3D draws about 42 % of the 16:9 pixels. Settings over a paused
+  level are now in the window too.
+- **Status:** Proposed
+
+### D-320 — The ground under the water is generated as far as it is seen
+- **Date:** 2026-11-11
+- **Requirements:** GFX-CAM-05, GFX-WATER-02, GFX-WATER-03.
+- **Context:** owner: "on level 1-1, I sometime see slice of water that are not randered on the
+  top of the screen".
+- **Cause:** the stage worked out the ground the camera sees at the water level when a level has
+  water. But the water is see-through (alpha 0.4), and its depth colour is painted on the terrain
+  under it.
+  - The top edge of the screen meets the sea bed further away than the water's surface: 1-1's
+    deep water goes down to −100. In ground units, the far edge is at 672 for the surface and
+    814 for the sea bed.
+  - The ground was generated to 672 plus the 80 margin, rounded up to whole chunks of 320.
+  - Whenever a chunk boundary fell just past 752, up to 62 units at the top had no sea bed. The
+    water there was drawn over the clear colour, a band that came and went with the chunks.
+- **Decision:** `lowest_ground` is the lowest of the relief, the shores' sea beds (1-2's coast at
+  −55 over land relief of 6 and more) and the water level.
+- **Consequences:**
+  - 1-1's ground window grows from 672 to 814 deep, and from ±210 to ±255 across. 1-2's grows to
+    the −55 sea bed.
+  - The terrain chunks are about 13 % wider, and at most one more chunk is kept.
+  - Levels without water are unchanged.
+- **Status:** Proposed
+
+### D-321 — A little explosion where a missile hits
+- **Date:** 2026-11-11
+- **Requirements:** GFX-FX-03, GFX-FX-05, GFX-FX-06.
+- **Context:** owner: "add a little explosion when a missile hits an enemy".
+- **Decision:**
+  - **What it adds:** each player-missile impact (a shot impact with a blast radius) also sets
+    off the engine's missile blast where it hit, the size of the missile's blast radius (10 px):
+    a small fireball, ring, debris and embers, shrunk by `missileScale`.
+  - **What stays:** the cyan impact disc stays.
+  - **Not affected:** bullets and the laser have no blast radius and keep their sparks.
+  - **Code:** the blasts are made in `app/hit_blasts.py` (`impact_blasts`), beside the hits on
+    the player, from the impacts the step already reports. The simulation is unchanged.
+- **Consequences:**
+  - A missile volley at level 5 sets off up to five small blasts at once. They are counted
+    against the blast particle caps like any other.
+  - Missile hits on a shielded core (blocked) explode too: the missile still detonates.
+- **Status:** Proposed
+
+### D-322 — The Sweeper turns to its first edge while it brakes
+- **Date:** 2026-11-11
+- **Requirements:** ENM-SWEEPER-05, ENM-SWEEPER-06.
+- **Context:** owner: "fix Sweeper animation: it starts straight but imediatly turns 45° then start
+  shooting the laser, make the animation smoth".
+- **Cause:** the Sweeper came in pointing straight down and, on the step it stopped, its heading
+  was set to the arc's first edge, 35° to the side. The model jumped there in one frame.
+- **Decision:**
+  - **The turn:** it turns while it brakes (the last `brakeDistance`, 60 px, about 1.2 s). The
+    heading goes from straight down to the first edge, eased in and out with the share of the
+    brake covered. It is at the edge as it stops.
+  - **The side:** it picks the side (away from the player) as it starts braking, not on
+    stopping.
+  - **Unchanged:** the warning, the sweep at a steady rate and the timing of the attack.
+- **Consequences:**
+  - The player's side is read about a second earlier than before.
+  - A Sweeper spawned already inside its brake distance (only in tests) still turns at once.
+- **Status:** Proposed

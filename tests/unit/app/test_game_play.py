@@ -22,6 +22,7 @@ from config.game_controls import GAME_CONTROLS_CONFIG
 from config.game_play import GAME_PLAY_CONFIG as CFG
 from core.entities.player_ship import PlayerShipDefinition, PlayerShipRoster
 from core.systems.level_run_types import LandedHit
+from core.systems.shot_world import ShotImpact
 
 # The nose of the ship's model, past its pivot (GAME-WPN-05).
 NOSE = 30.0
@@ -538,22 +539,28 @@ def test_eng_100_the_scroll_is_drawn_between_two_steps(env: Env) -> None:
 
 
 def test_gfx_fx_01_the_blasts_impacts_and_hits_of_the_steps_are_drawn(env: Env) -> None:
-    """Also GFX-FX-04: a hit that cost a life blows up at the ship."""
+    """Also GFX-FX-04 (a hit that cost a life blows up at the ship) and GFX-FX-03.
+
+    D-321: a missile hit blows up a little where it hit; a bullet hit does not.
+    """
     play, _ = make_play()
     run = env.runs[0]
     run.blasts = ["enemy-blast"]
-    run.impacts = ["impact"]
+    missile = ShotImpact("missile", 50, 60, 10, False)
+    bullet = ShotImpact("bullet", 70, 80, 0, False)
+    run.impacts = [missile, bullet]
     run.hits = [LandedHit("bullet", 10, 20, "hit"), LandedHit("bullet", 0, 0, "life")]
     play.frame(0.05)
     frame = env.shots[0].drawn[-1]
     assert frame.enemies is run.enemies
     assert frame.shots == "shot-world"
-    assert frame.impacts == ["impact"] * 3
+    assert frame.impacts == [missile, bullet] * 3
     assert frame.dt == 0.05
     sparks = [blast for blast in frame.blasts if blast != "enemy-blast"]
-    assert len(sparks) == 6
+    assert len(sparks) == 9
     assert (sparks[0].kind, sparks[0].x, sparks[0].y) == ("missile", 10, 20)
     assert (sparks[1].kind, sparks[1].x, sparks[1].y) == ("enemy", 240.0, 90.0)
+    assert (sparks[2].kind, sparks[2].x, sparks[2].y, sparks[2].radius) == ("missile", 50, 60, 10)
     assert frame.blasts.count("enemy-blast") == 3
 
 

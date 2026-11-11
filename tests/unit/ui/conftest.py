@@ -10,7 +10,7 @@ import importlib
 import pytest
 from helpers import js_window
 
-DOM_MODULES = ["ui.boss_bar", "ui.level_loading", "ui.screens.elements"]
+DOM_MODULES = ["ui.boss_bar", "ui.game_hud", "ui.level_loading", "ui.screens.elements"]
 
 
 @pytest.fixture(autouse=True)

@@ -25,9 +25,12 @@ scaling; 480 × 640 until D-249), so every size in the UI specs is in logical px
 ### UI-LOOK-02 — Fitted to the window, never cropped or stretched · MUST
 
 The canvas and the overlay share one box, the largest box with the 16:9 logical aspect ratio that
-fits the window, centred, with dark bars (letterbox) on the rest. The menus' cards, sliders and
-entry lists keep to a column (`menu_column`) in the middle of the screen, so they are not stretched
-across it. The overlay is scaled to that box
+fits the window, centred, with dark bars (letterbox) on the rest. The menus have the game's aspect
+ratio (D-319): every menu screen, and the 3D scenes behind the menus (the backdrop, the ship select
+stage), are laid in the playfield window (540 × 720, 3:4, [gameplay/screen.md](../gameplay/screen.md)),
+between opaque blue-black side columns with a thin cyan line on the window's edges, as a level is.
+Their cards, sliders and entry lists keep to a column (`menu_column`) inside it. The dev viewer's
+3D views keep the whole box. The overlay is scaled to that box
 with a CSS transform, so the 3D models and their HTML captions line up. The box follows window
 resizes.
 
@@ -39,10 +42,11 @@ keeps to the 16:9 box, lined up with the playfield; under a panel it is hidden (
 
 **Acceptance criteria**
 - At window sizes 800 × 600 and 1920 × 1080, the menu is fully visible, not cropped, not stretched (16:9 within 0.5 %), and fills the window's width or height.
+- Given the menu scenes of a game with a playfield window, then their cameras draw only in it (unit test); manual check: every menu screen sits in the 3:4 window, between the side columns.
 - At 390 × 844 (portrait phone), the canvas is the 16:9 box and the menus fill the window at their real size (e2e: UI-INPUT-11, UI-SET-03); a level being played keeps its HUD on the box, a pause menu does not (unit tests).
 - Given the window goes from 800 × 600 to 390 × 844, then the menu follows within 5 s (e2e).
 
-*Sources: P01-R13, GD-02, GD-03, ENG-110, D-008, D-249, D-286.*
+*Sources: P01-R13, GD-02, GD-03, ENG-110, D-008, D-249, D-286, D-319.*
 
 ### UI-LOOK-03 — Neon blue/green palette · MUST
 
@@ -75,8 +79,8 @@ Red (`#ff2244`) is used only for danger: low health, the "Game over" panel, lock
 
 The UI palette changes no gameplay colour (enemies, enemy shots, player shots, pickups) and none of
 the levels' 3D look ([graphics/readability.md](../graphics/readability.md)). Over the playfield, the
-UI draws no neon frame or line; the HUD's cyan is only in its side columns, outside the part of
-the playfield the ship flies in ([hud.md](hud.md)).
+UI draws no neon frame or line; the HUD over it is light, outlined text and slim gauges in the
+window's corners and edges ([hud.md](hud.md), D-317).
 
 **Acceptance criteria**
 - Given the game screen, then the menu screens' neon frame and bottom line are not drawn.
@@ -194,7 +198,8 @@ Under the system's "reduce motion" setting, the logo's glow and the hints' pulse
 | Name | Value | Notes |
 |------|-------|-------|
 | Logical resolution | 1280 × 720 | `src/game/config/game.py` `GAME_CONFIG.screen` (GD-02, D-249) |
-| `menu_column` | 560 px | `index.html` `--menu-column` (UI-LOOK-02, D-249) |
+| `menu_column` | 560 px, within the 540 px window since D-319 | `index.html` `--menu-column` (UI-LOOK-02, D-249) |
+| Menu window | the playfield window, 540 × 720 at x = 370 | `index.html` `#menu:not(.phone)::before`, `.menu-screen`; `src/app/menu_scenes.py` `window_camera` (D-319) |
 | `phone_scale` | 0.5 CSS px per logical px | `src/ui/stage_fit.py` `PHONE_SCALE`; `index.html` `#menu.phone` (UI-LOOK-02, D-286) |
 | `--neon` | `#00e8ff` | `index.html` `:root` |
 | `--accent` | `#3dff9a` | `index.html` `:root` |

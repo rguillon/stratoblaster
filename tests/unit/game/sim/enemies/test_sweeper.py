@@ -1,6 +1,7 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/game/sim/enemies/sweeper.py`."""
 
+import itertools
 import math
 
 import pytest
@@ -113,3 +114,23 @@ def test_d_314_a_sweeper_has_135_health_and_scores_300() -> None:
     assert sweeper.health == 135
     assert sweeper.points == 300
     assert sweeper.model == "sweeper"
+
+
+def test_enm_sweeper_06_it_turns_to_the_first_edge_smoothly_while_it_brakes() -> None:
+    """D-322: no jump of the heading; it reaches the first edge as it stops."""
+    ctx = FakeContext()
+    ctx.player_x = 300
+    sweeper = Sweeper(200, 700, 470)
+    headings = [sweeper.heading]
+    while sweeper.state == "enter":
+        run(sweeper, ctx, 1 / 60)
+        headings.append(sweeper.heading)
+    # Straight down until it brakes, then a turn of half the arc, in small steps only.
+    assert headings[0] == pytest.approx(math.pi)
+    steps = [abs(b - a) for a, b in itertools.pairwise(headings)]
+    assert max(steps) < math.radians(3)
+    # It ends on the left edge (the player to its right), the warning holding it there.
+    assert sweeper.heading == pytest.approx(math.pi + ARC / 2)
+    held = sweeper.heading
+    run(sweeper, ctx, CFG.laser.warningSeconds / 2)
+    assert sweeper.heading == pytest.approx(held)
