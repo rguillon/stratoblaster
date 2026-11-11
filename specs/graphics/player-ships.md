@@ -59,8 +59,10 @@ one's down and out; one steel body wraps both (D-332: "add more body to the wing
 connecting them"), a tall rounded rectangle in section, from their fronts to short of their
 nozzles, and one octagonal intake at its front, stretched upright to the body's height, feeds both
 (D-339, owner: "merge the two lateral intales into a single octogonal intake"; an intake each
-before). A missile launcher hangs under each wing (D-330): a steel rounded hexagon pod on a
-gunmetal pylon, an accent band behind its front, two small fins at 45° under its tapered tail,
+before). A missile launcher runs through each wing (D-330; D-343, owner: "make the missile pods
+hexagonal, higher and make them go trough the wings"; it hung under the wing on a pylon before): a
+steel hexagon pod with crisp, barely rounded corners, flat-shaded, 1.35 times taller than wide,
+its axis in the wing's plane, an accent band behind its front, two small fins at 45° under its tapered tail,
 its front out ahead of the leading edge, so the playfield camera sees the seven accent missile
 tips in its dark launch face.
 
@@ -104,15 +106,16 @@ No gun stands on top (D-330), and the ship carries no light of its own but its r
   lining faces the axis, and flat horizontal fins span the duct inside its hexagon, with no fan
   blades or spinner; the main reactors are taller
   than wide (unit tests).
-- Given each missile pod, then it hangs wholly under its wing, between root and tip, its front
-  out ahead of the leading edge; no cannon (unit tests).
+- Given each missile pod, then the wing runs through it, its top above the wing and its bottom
+  below, taller than wide, between root and tip, its front out ahead of the leading edge; no
+  cannon (unit tests).
 - Given a smooth-top lathe or a lofted skin, then its top's vertices share one normal pointing
   outward, each belly triangle has a single normal, and its triangles face outward (unit tests).
 - Given the hull, then its top is mirrored, rises facet by facet from the flat strake to the spine
   and meets the wings' plane at the chine's edge (unit tests).
 - The design is validated by eye (manual).
 
-*Sources: P02-R01, D-327, D-328, D-330, D-331, D-332, D-333, D-336, D-337, D-338, D-339, D-340, D-341, D-342.*
+*Sources: P02-R01, D-327, D-328, D-330, D-331, D-332, D-333, D-336, D-337, D-338, D-339, D-340, D-341, D-342, D-343.*
 
 ### GFX-SHIP-02 — (removed) Heavy ship
 
@@ -128,7 +131,7 @@ The player ship's materials are made once per scene: a grey/blue physically base
 shades (D-327, owner: "add different shades of metalic"): a light silver **hull** (the blended
 body, the intake shells), a mid **steel** (the wings, canards, intake fins, missile
 pods and the tip reactors' body) and a dark **gunmetal** (the tails, ventral fins, flaps, panel
-lines, the body's seams and vents, the missile pylons and fins, the tip reactors' fins); a blue accent metal (the
+lines, the body's seams and vents, the missile fins, the tip reactors' fins); a blue accent metal (the
 reactors' rings, the missile pods' bands and missile tips), a dark canopy with a faint blue glow, a darker trim metal (frames, barrels, launch faces) and a dark
 metal nozzle (and intake ducts). The metals are satin, not mirrors (owner: "remove the ugly light spots, make something
 more smoth"): metallic at least 0.7, roughness 0.4 to 0.55, so the light rolls smoothly over the
@@ -145,8 +148,8 @@ than the one before. The metals take the brighter hull light of GFX-ART-08.
 ### GFX-SHIP-05 — Polygon budget · MUST
 
 The player ship is under 11,000 triangles (2,000 until D-327, 4,500 until D-328, 7,000 until
-D-330; measured 9,152 in the browser with its flames, its six reactors and their four finned intakes,
-D-341). The round
+D-330; measured 8,692 in the browser with its flames, its six reactors and their four finned intakes,
+D-343). The round
 parts' extra triangles go on their upper half only, the side the playfield camera sees: the
 canopy 16 over 3; the canopy frame, mostly hidden, 8 over 2; the tip reactors' body, a rounded
 rectangle of 12 points, smooth all round. The reactors and missile pods are rounded
@@ -260,7 +263,7 @@ either side of the tip reactors' body, so it does not cross their intake (D-339)
 | Gun fairing | z -0.8 to 2.3, up to 0.15 half wide and 0.11 under the belly, its top 0.02 inside it | `GUN_FAIRING`, `GUN_FAIRING_SECTION` |
 | Laser | at y -0.1; glowing core z 2.1 to 3.06 (nose tip 2.75), radius 0.012; rails 0.034 thick, x 0.02 to 0.052, z 2.0 to prongs at 3.2; bridge z 2.0 to 2.2; emitter to 3.13 | `LASER`, `LASER_RAIL`, `LASER_BRIDGE`, `LASER_EMITTER` |
 | Miniguns | at x ±0.15, y -0.18, z 0.75; drum 0.8 long, radius 0.066, of hull metal; 6 six-sided barrels of radius 0.016 on a 0.036 ring, 0.46 long (D-341) | `MINIGUN` |
-| Missile pods | under the wing at x 1.3, y -0.2, z -0.4; radius 0.1, 1.16 long; 7 tips | `MISSILE_POD`, `MISSILE_POD_PROFILE`, `MISSILE_TIPS` |
+| Missile pods | through the wing at x 1.3, y 0, z -0.4; hexagon, radius 0.1, corners rounded 0.08, 1.35 times taller, 1.16 long; 7 tips | `MISSILE_POD`, `MISSILE_POD_ROUNDING`, `MISSILE_POD_PROFILE`, `MISSILE_TIPS` |
 
 ## Notes
 

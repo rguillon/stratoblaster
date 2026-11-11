@@ -35,7 +35,6 @@ from game.view.ship_parts import (
     edge_strip,
     faceted_rod,
     hexagon_band,
-    hexagon_body,
     mirror_x,
     panel,
     plate,
@@ -55,6 +54,7 @@ from render.geometry.lathe_z import (
 )
 from render.geometry.section_loft import (
     create_section_loft,
+    polygon_lathe_sections,
     rounded_rectangle,
 )
 
@@ -248,8 +248,12 @@ CANOPY_MID_Z = 1.08
 # look cool, and under the wings", D-330): a rounded hexagon pod, as the reactors, hung on a pylon,
 # its front well ahead of the leading edge so the playfield camera sees its seven missiles' tips
 # in their dark launch face; an accent band behind its front, two small fins at 45° under its
-# tapered tail. Its axis's place; its profile (`[z, radius]`, from its axis's middle).
-MISSILE_POD: dict[str, Any] = {"x": 1.3, "y": -0.2, "z": -0.4}
+# tapered tail. Its axis's place; its profile (`[z, radius]`, from its axis's middle). D-343
+# (owner: "make the missile pods hexagonal, higher and make them go trough the wings"): a crisp
+# hexagon, flat-shaded with barely rounded corners, stretched upright (`stretch`), its axis in the
+# wing's plane so the wing runs through it; no pylon (it hung under the wing on one before).
+MISSILE_POD: dict[str, Any] = {"x": 1.3, "y": 0.0, "z": -0.4, "stretch": 1.35}
+MISSILE_POD_ROUNDING = 0.08
 MISSILE_POD_PROFILE = [
     [0.58, 0],
     [0.58, 0.085],
@@ -262,9 +266,6 @@ MISSILE_POD_PROFILE = [
 MISSILE_BAND: dict[str, Any] = {"z": 0.4, "radius": 0.1, "half": 0.018}
 MISSILE_FACE: dict[str, Any] = {"radius": 0.08}
 MISSILE_TIPS: dict[str, Any] = {"ring": 0.05, "radius": 0.02, "length": 0.07}
-# The pylon up to the wing's underside: its half width across, its front and back (Z from the
-# pod's middle).
-MISSILE_PYLON: dict[str, Any] = {"half": 0.012, "zs": [0.0, -0.4]}
 # The tail fins: span along X from the axis, Z from the pod's middle; canted 45° under it, one
 # outwards, one inwards.
 MISSILE_FIN = [
@@ -585,14 +586,18 @@ def _build_missile_tips(name: str, front: float, material: Any, parent: Any) -> 
 
 
 def _build_missile_pod(side: str, sign: float, root: Any, scene: Any) -> None:
-    """Build the missile launcher under a wing: pod, launch face, missiles, band, pylon, fins."""
+    """Build the missile launcher through a wing: pod, launch face, missiles, band, fins."""
     mats = get_ship_materials(scene)
     pod = MISSILE_POD
     name = "balanced-missiles-" + side
     node = new_transform_node(name, scene)
     node.position.set(sign * pod["x"], pod["y"], pod["z"])
+    node.scaling.y = pod["stretch"]
     node.parent = root
-    hexagon_body(name + "-pod", MISSILE_POD_PROFILE, mats.hullMid, node)
+    sections = polygon_lathe_sections(MISSILE_POD_PROFILE, 6, MISSILE_POD_ROUNDING, 2)
+    shell = create_section_loft(name + "-pod", sections, 0, scene)
+    shell.material = mats.hullMid
+    shell.parent = node
     front = MISSILE_POD_PROFILE[0][0]
     face = create_disc(name + "-face", disc_options(MISSILE_FACE["radius"], 6), scene)
     face.convertToFlatShadedMesh()
@@ -604,15 +609,6 @@ def _build_missile_pod(side: str, sign: float, root: Any, scene: Any) -> None:
     _build_missile_tips(name, front + 0.003, mats.accent, node)
     band = MISSILE_BAND
     hexagon_band(name + "-band", band["z"], band["radius"], band["half"], mats.accent, node)
-    # The pylon: a thin blade from the pod's flat top up to the wing's underside.
-    pylon = MISSILE_PYLON
-    top = MISSILE_POD_PROFILE[3][1] * math.cos(math.pi / 6)
-    height = -WING_THICKNESS / 2 - pod["y"] - top + 0.01
-    outline = [[-pylon["half"], pylon["zs"][0]], [pylon["half"], pylon["zs"][0]]]
-    outline.append([pylon["half"], pylon["zs"][1]])
-    outline.append([-pylon["half"], pylon["zs"][1]])
-    blade = panel(name + "-pylon", outline, height, mats.hullDark, node)
-    blade.position.y = top + height / 2 - 0.005
     fin = MISSILE_FIN if sign > 0 else mirror_x(MISSILE_FIN)
     for label, turn in [("outer", -math.pi / 4), ("inner", -3 * math.pi / 4)]:
         fin_node = new_transform_node(name + "-fin-" + label, scene)

@@ -2536,3 +2536,15 @@
   core light) ends in a glowing emitter. From above, the core reads as a thin bright line between
   two dark ones ahead of the nose.
 - **Consequences:** the ship measures 8,812 triangles.
+
+### D-343 — Missile pods: crisp, taller hexagons through the wings
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-04, GFX-SHIP-05.
+- **Context:** owner: "make the missile pods hexagonal, higher and make them go trough the wings".
+  "Higher" is read as taller, as for the main reactors (D-337).
+- **Decision:** the pods are flat-shaded hexagons with barely rounded corners (0.08 of the radius,
+  0.3 before, smooth-shaded), stretched 1.35 times upright, their axis in the wing's plane (0.2
+  under it before), so the wing runs through them. Their pylon is gone; band, launch face, missile
+  tips and tail fins stay.
+- **Consequences:** the ship measures 8,692 triangles.
