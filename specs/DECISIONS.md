@@ -2085,3 +2085,22 @@
     against the blast particle caps like any other.
   - Missile hits on a shielded core (blocked) explode too: the missile still detonates.
 - **Status:** Proposed
+
+### D-322 — The Sweeper turns to its first edge while it brakes
+- **Date:** 2026-11-11
+- **Requirements:** ENM-SWEEPER-05, ENM-SWEEPER-06.
+- **Context:** owner: "fix Sweeper animation: it starts straight but imediatly turns 45° then start
+  shooting the laser, make the animation smoth".
+- **Cause:** the Sweeper came in pointing straight down and, on the step it stopped, its heading
+  was set to the arc's first edge, 35° to the side. The model jumped there in one frame.
+- **Decision:**
+  - **The turn:** it turns while it brakes (the last `brakeDistance`, 60 px, about 1.2 s). The
+    heading goes from straight down to the first edge, eased in and out with the share of the
+    brake covered. It is at the edge as it stops.
+  - **The side:** it picks the side (away from the player) as it starts braking, not on
+    stopping.
+  - **Unchanged:** the warning, the sweep at a steady rate and the timing of the attack.
+- **Consequences:**
+  - The player's side is read about a second earlier than before.
+  - A Sweeper spawned already inside its brake distance (only in tests) still turns at once.
+- **Status:** Proposed
