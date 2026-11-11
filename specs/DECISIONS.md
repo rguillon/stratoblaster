@@ -2335,3 +2335,18 @@
 - **Consequences:** the ship measures 10,398 triangles in the browser (6,752 before): eight
   reactors with their flames, two launchers. The GFX-SHIP-05 budget goes from 7,000 to 11,000.
   Gameplay and the hitbox are unchanged.
+
+### D-331 — The tip reactors one over the other; no reactors between the nacelles
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-05, GFX-SHIP-06.
+- **Context:** owner: "make the wings reactor on of top the other, not side by side, and remove
+  the central tony reactors".
+- **Decision:**
+  - Each wing tip's twin reactors stand one over the other (at y ±0.125, x 1.98), joined by an
+    upright fairing; each carries one fin at 45°, the upper one's up and out, the lower one's down
+    and out (an X seen from the front).
+  - "The central tony reactors" was read as the two small booster reactors whose nozzles came out
+    of the tail face between the nacelles (D-328); they are removed. The humps on the back stay,
+    as the hull's shape, with their accent bands.
+- **Consequences:** six reactors; 9,498 triangles measured in the browser (10,398 before).

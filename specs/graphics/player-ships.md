@@ -22,18 +22,20 @@ outline seen from above, ventral fins and a gun pod under the belly.
 
 Every reactor is a rounded hexagon (owner, D-330: "make the ship reactor rounded hexagons"): its
 nacelle, rings, core and flame have six sides, the nacelle's corners rounded. Each wing tip carries
-twin reactors side by side (owner: "add two reactors on the tip of each wing, with 45° lil wings on
-each", then "make it a dual reactor on the tip of each wing, and add intake to the reactors"), each
-with its own intake (a flared rounded hexagon scoop, an accent lip, a dark fan face and a spinner),
-joined by a steel fairing, the outer one carrying two small gunmetal fins at 45° above and below
-the wing's plane.
+twin reactors one over the other (owner: "add two reactors on the tip of each wing, with 45° lil
+wings on each", "make it a dual reactor on the tip of each wing, and add intake to the reactors",
+then, D-331, "make the wings reactor on of top the other, not side by side"), one above the wing's
+plane and one below, each with its own intake (a flared rounded hexagon scoop, an accent lip, a
+dark fan face and a spinner), joined by an upright steel fairing, each carrying a small gunmetal
+fin at 45°, the upper one's up and out, the lower one's down and out.
 
-The pack: two booster engines on the back either side of the centre line, each a hump of the
-hull's own skin with an accent band laid across it and its own reactor and flame (owner: "rework
-the blend between the inner and outer reactors so they dont just looks like tubes put next to
-each other"): the humps swell out of the back behind the cockpit and blend through fillets into
-the back and the nacelle shoulders, and the hull runs aft to one engine block whose tail face
-wraps the four engines, their nozzles coming out of it together; a gunmetal armour plate laid over
+The pack: two humps of the hull's own skin on the back either side of the centre line, an accent
+band laid across each (owner: "rework the blend between the inner and outer reactors so they dont
+just looks like tubes put next to each other", D-328): they swell out of the back behind the
+cockpit and blend through fillets into the back and the nacelle shoulders, and the hull runs aft to
+one engine block whose tail face wraps the nacelles, their nozzles coming out of it (the small
+booster reactors the humps held, between the nacelles, were removed, D-331: "remove the central
+tony reactors"); a gunmetal armour plate laid over
 each nacelle shoulder, following the hull; and a missile launcher under each wing (owner: "rework
 the missiles pods, make them look cool, and under the wings"): a steel rounded hexagon pod hung on
 a gunmetal pylon, an accent band behind its front, two small fins at 45° under its tapered tail,
@@ -64,12 +66,12 @@ centre. The mouths face forward, so the frontal menu camera looks straight into 
 **Acceptance criteria**
 - Given the Balanced model, then its wing tips' leading and trailing edges are ahead of their
   roots (forward-swept); it has two nacelles, each with an intake ahead of it (a shell, a lip, a
-  fan face, a glowing fan ring and a spinner), and twin reactors side by side at each wing tip,
-  their fins canted 45° (unit tests).
+  fan face, a glowing fan ring and a spinner), and twin reactors one over the other at each wing
+  tip, their fins canted 45° (unit tests).
 - Given a rounded hexagon section, then its points lie between the hexagon's sides and corners,
   its sides where the sharp hexagon's are (unit test).
-- Given the hull, then the booster humps stand over the back and over their engines, and its tail
-  face lies just ahead of all four nozzles (unit tests).
+- Given the hull, then the humps stand over the back, and its tail face lies just ahead of the
+  nacelles' nozzles; there are no reactors between them (unit tests).
 - Given the pack, then each missile pod hangs wholly under its wing, between root and tip, its
   front out ahead of the leading edge; no cannon; each armour plate's top follows the hull a
   thickness over it (unit tests).
@@ -82,7 +84,7 @@ centre. The mouths face forward, so the frontal menu camera looks straight into 
   (unit tests).
 - The design is validated by eye (manual).
 
-*Sources: P02-R01, D-327, D-328, D-330.*
+*Sources: P02-R01, D-327, D-328, D-330, D-331.*
 
 ### GFX-SHIP-02 — (removed) Heavy ship
 
@@ -99,7 +101,7 @@ shades (D-327, owner: "add different shades of metalic"): a light silver **hull*
 hull, the intake shells), a mid **steel** (the wings, canards, spinners, missile pods and the tip
 reactors' fairings) and a dark **gunmetal** (the tails, ventral fins, flaps, panel lines, armour
 plates, the missile pylons and fins, the tip reactors' fins); a blue accent metal (the intake lips
-and fan rings, the bands across the booster humps, the missile pods' bands and missile tips), a
+and fan rings, the bands across the humps, the missile pods' bands and missile tips), a
 dark canopy with a faint blue glow, a darker trim metal (frames, barrels, launch faces) and a dark
 metal nozzle. The metals are satin, not mirrors (owner: "remove the ugly light spots, make something
 more smoth"): metallic at least 0.7, roughness 0.4 to 0.55, so the light rolls smoothly over the
@@ -116,10 +118,10 @@ than the one before. The metals take the brighter hull light of GFX-ART-08.
 ### GFX-SHIP-05 — Polygon budget · MUST
 
 The player ship is under 11,000 triangles (2,000 until D-327, 4,500 until D-328, 7,000 until
-D-330; measured 10,398 in the browser with its flames and its eight reactors, D-330). The extra triangles go on its upper half only, the side the
+D-330; measured 9,498 in the browser with its flames and its six reactors, D-331). The extra triangles go on its upper half only, the side the
 playfield camera sees: the hull's sections have 30 facets across the top and 3 under the belly, the
 canopy 16 over 3, the intakes, nacelles and their rings 12 over 3; the canopy
-frame, mostly hidden, 8 over 2; the armour plates and booster bands lie wholly on top. The reactors and missile pods are rounded
+frame, mostly hidden, 8 over 2; the armour plates and hump bands lie wholly on top. The reactors and missile pods are rounded
 hexagons, 3 points a corner (18 round), their rings 2 (12 round). The gun pod under the belly keeps
 6 sides, the missile tips 4.
 
@@ -133,8 +135,7 @@ hexagons, 3 points a corner (18 round), their rings 2 (12 round). The gun pod un
 
 ### GFX-SHIP-06 — Reactors with a living blue flame · MUST
 
-Each of the ship's eight reactors (two in the nacelles, one behind each booster, D-328, two on each
-wing tip, D-330) is a rounded hexagon metal nacelle with a smooth top (GFX-SHIP-05), ring bands, a
+Each of the ship's six reactors (two in the nacelles, two on each wing tip, D-330, D-331) is a rounded hexagon metal nacelle with a smooth top (GFX-SHIP-05), ring bands, a
 blue self-lit core at its nozzle and an animated blue flame behind it: an outer exhaust cone, a
 shorter, hotter inner cone, and plasma puffs that flow from the nozzle down the exhaust, shrinking
 and fading. The flame's length, width and brightness flicker (mixed sines), each reactor with its
@@ -205,11 +206,10 @@ lights since D-327). There is no other outline or halo round it, and no hitbox m
 | Wing | forward-swept: root x 0.4 (z 0.05 to -1.05), tip x 1.9 (z 0.55 to -0.15) | `balanced_ship.py` `BALANCED_WING` |
 | Reactor section | hexagon, corners rounded at 0.3 of the radius, 3 points a corner (rings 2) | `ship_parts.py` `REACTOR_SIDES`, `REACTOR_ROUNDING`, `REACTOR_CORNER_STEPS`, `RING_CORNER_STEPS` |
 | Reactor intake | flared scoop to 1.02 radii, lip, fan at 0.68 radii, spinner | `ship_parts.py` `REACTOR_INTAKE*` |
-| Tip reactors | x 1.97 and 2.2, z 0.2; radius 0.11, length 0.95; fins at 45° | `TIP_REACTOR`, `TIP_FIN`, `TIP_FIN_CANT` |
+| Tip reactors | x 1.98, y 0.125 and -0.125, z 0.2; radius 0.11, length 0.95; fins at 45° | `TIP_REACTOR`, `TIP_FIN`, `TIP_FIN_CANT` |
 | Tail cant | 0.3 rad outwards | `TAIL_CANT` |
 | Nacelles | radius 0.22, length 2.0, centre z -1.15 | `REACTOR`, `REACTOR_Z` |
-| Booster humps | at x ±0.18, 0.17 half wide, up to 0.42 high | `balanced_hull.py` `BOOSTER_X`, `BOOSTER_HALF_WIDTH`, `STATIONS` |
-| Booster engines | y 0.28, z -1.85; radius 0.09, length 0.5 | `balanced_ship.py` `BOOSTER_ENGINE` |
+| Humps | at x ±0.18, 0.17 half wide, up to 0.42 high | `balanced_hull.py` `BOOSTER_X`, `BOOSTER_HALF_WIDTH`, `STATIONS` |
 | Armour plates | x 0.29 to 0.57, z 0.35 to -0.6, 0.035 thick, 9 points across | `ARMOUR_XS`, `ARMOUR_ZS`, `ARMOUR_THICKNESS`, `ARMOUR_POINTS` |
 | Missile pods | under the wing at x 1.15, y -0.2, z 0.2; radius 0.1, 1.16 long; 7 tips | `MISSILE_POD`, `MISSILE_POD_PROFILE`, `MISSILE_TIPS` |
 

@@ -18,7 +18,6 @@ sees (GFX-SHIP-05).
 import math
 
 from game.view.balanced_hull import (
-    BOOSTER_X,
     TOP_POINTS,
     hull_sections,
     plate_sections,
@@ -174,10 +173,9 @@ CANOPY_FRAME_SECTION = LatheHalves(8, 2)
 # Middle of the canopy along Z, for scaling the frame around it.
 CANOPY_MID_Z = 1.08
 
-# The back boosters' engines, inside the hull's booster humps (D-328: the humps swell out of the
-# back, no tube stands apart), their nozzles out of the tail face beside the nacelles'.
-BOOSTER_ENGINE = {"y": 0.28, "z": -1.85, "radius": 0.09, "length": 0.5}
-# The accent band laid across each hump, following it.
+# The accent band laid across each of the hull's humps on the back (D-328; their engines, the
+# small reactors between the nacelles, were removed, D-331: owner, "remove the central tony
+# reactors"), following it.
 BOOSTER_BAND: dict[str, Any] = {
     "xs": [0.04, 0.32],
     "zs": [-0.85, -0.97],
@@ -223,13 +221,14 @@ MISSILE_FIN = [
 
 # Twin reactors on each wing tip (owner: "add two reactors on the tip of each wing, with 45° lil
 # wings on each", then "make it a dual reactor on the tip of each wing, and add intake to the
-# reactors", D-330): side by side along the tip's chord, each with an intake, joined by a fairing;
-# the outer one carries two small fins, out from its back half at 45° above and below the wing's
-# plane. The reactors' X (inner, outer), their height, middle along Z and size; the fairing's
-# thickness. A fin's planform: span along X from the reactor's axis, Z from its middle.
+# reactors", D-330, and "make the wings reactor on of top the other, not side by side", D-331):
+# one over the other, each with an intake, joined by an upright fairing; each carries a small fin
+# out from its back half at 45°, the upper one's above the wing's plane, the lower one's below it.
+# The reactors' X, their heights (upper, lower), middle along Z and size; the fairing's thickness.
+# A fin's planform: span along X from the reactor's axis, Z from its middle.
 TIP_REACTOR: dict[str, Any] = {
-    "xs": [1.97, 2.2],
-    "y": 0,
+    "x": 1.98,
+    "ys": [0.125, -0.125],
     "z": 0.2,
     "radius": 0.11,
     "length": 0.95,
@@ -392,20 +391,15 @@ def _build_tails(side: str, sign: float, root: Any, scene: Any) -> None:
     panel("balanced-ventral-" + side + "-panel", VENTRAL_FIN, 0.04, mats.hullDark, fin)
 
 
-def _build_booster(side: str, sign: float, root: Any, scene: Any) -> None:
-    """Build a booster: an accent band across its hump on the hull, its reactor at the tail."""
+def _build_hump_band(side: str, sign: float, root: Any, scene: Any) -> None:
+    """Build the accent band laid across a hump on the hull's back."""
     mats = get_ship_materials(scene)
-    name = "balanced-booster-" + side
     band = BOOSTER_BAND
     xs = band["xs"] if sign > 0 else [-band["xs"][1], -band["xs"][0]]
     sections = plate_sections(xs, band["zs"], band["thickness"], band["points"])
-    stripe = create_section_loft(name + "-band", sections, band["points"], scene)
+    stripe = create_section_loft("balanced-hump-" + side + "-band", sections, band["points"], scene)
     stripe.material = mats.accent
     stripe.parent = root
-    engine = BOOSTER_ENGINE
-    reactor = build_reactor(name + "-reactor", engine, scene)
-    reactor.position.set(sign * BOOSTER_X, engine["y"], engine["z"])
-    reactor.parent = root
 
 
 def _build_armour(side: str, sign: float, root: Any, scene: Any) -> None:
@@ -474,30 +468,31 @@ def _build_missile_pod(side: str, sign: float, root: Any, scene: Any) -> None:
 
 
 def _build_tip_reactor(side: str, sign: float, root: Any, scene: Any) -> None:
-    """Build the twin reactors on a wing tip, their fairing, and the outer one's 45° fins."""
+    """Build the twin reactors on a wing tip, one over the other, their fairing and 45° fins."""
     mats = get_ship_materials(scene)
     pod = TIP_REACTOR
     name = "balanced-tip-" + side
-    xs = [sign * x for x in pod["xs"]]
-    for k, x in enumerate(xs):
-        reactor = build_reactor(name + "-reactor-" + str(k), pod, scene, True)
-        reactor.position.set(x, pod["y"], pod["z"])
-        reactor.parent = root
-    # The fairing between them, along their middle.
-    half = pod["length"] * 0.3
-    fairing = [[xs[0], pod["z"] + half], [xs[1], pod["z"] + half]]
-    fairing.append([xs[1], pod["z"] - half])
-    fairing.append([xs[0], pod["z"] - half])
-    web = panel(name + "-fairing", fairing, TIP_FAIRING_THICKNESS, mats.hullMid, root)
-    web.position.y = pod["y"]
+    x = sign * pod["x"]
     fin = TIP_FIN if sign > 0 else mirror_x(TIP_FIN)
-    for label, up in [("upper", 1), ("lower", -1)]:
+    for k, (label, up) in enumerate([("upper", 1), ("lower", -1)]):
+        y = pod["ys"][k]
+        reactor = build_reactor(name + "-reactor-" + label, pod, scene, True)
+        reactor.position.set(x, y, pod["z"])
+        reactor.parent = root
         node = new_transform_node(name + "-fin-" + label, scene)
-        node.position.set(xs[1], pod["y"], pod["z"])
+        node.position.set(x, y, pod["z"])
         # The fin's span turns from outwards (along X) to 45° above or below the wing's plane.
         node.rotation.z = sign * up * TIP_FIN_CANT
         node.parent = root
         panel(name + "-fin-" + label + "-panel", fin, TIP_FIN_THICKNESS, mats.hullDark, node)
+    # The upright fairing between them, along their middle: a blade standing from one to the other.
+    half = pod["length"] * 0.3
+    width = TIP_FAIRING_THICKNESS / 2
+    fairing = [[x - width, pod["z"] + half], [x + width, pod["z"] + half]]
+    fairing.append([x + width, pod["z"] - half])
+    fairing.append([x - width, pod["z"] - half])
+    web = panel(name + "-fairing", fairing, pod["ys"][0] - pod["ys"][1], mats.hullMid, root)
+    web.position.y = (pod["ys"][0] + pod["ys"][1]) / 2
 
 
 def build_balanced_ship(scene: Any) -> Any:
@@ -509,7 +504,7 @@ def build_balanced_ship(scene: Any) -> Any:
         _build_intake(side, sign, root, scene)
         _build_wing(side, sign, root, scene)
         _build_tails(side, sign, root, scene)
-        _build_booster(side, sign, root, scene)
+        _build_hump_band(side, sign, root, scene)
         _build_armour(side, sign, root, scene)
         _build_missile_pod(side, sign, root, scene)
         _build_tip_reactor(side, sign, root, scene)

@@ -73,14 +73,14 @@ def test_gfx_ship_01_the_wings_are_forward_swept() -> None:
     assert wing[3][1] > wing[4][1]
 
 
-def test_gfx_ship_01_twin_reactors_sit_on_each_wing_tip() -> None:
-    """D-330: two reactors side by side at the tip, along its chord; the fins canted 45°."""
+def test_gfx_ship_01_twin_reactors_sit_one_over_the_other_on_each_wing_tip() -> None:
+    """D-331: one above the wing's plane, one below, not overlapping; the fins canted 45°."""
     pod = balanced_ship.TIP_REACTOR
     tip = balanced_ship.BALANCED_WING[2]
-    inner, outer = pod["xs"]
-    assert tip[0] < inner < tip[0] + pod["radius"]
-    # Side by side, not overlapping.
-    assert outer - inner >= 2 * pod["radius"]
+    assert tip[0] < pod["x"] < tip[0] + pod["radius"]
+    upper, lower = pod["ys"]
+    assert upper > 0 > lower
+    assert upper - lower >= 2 * pod["radius"]
     tip_front = balanced_ship.BALANCED_WING[2][1]
     tip_back = balanced_ship.BALANCED_WING[3][1]
     assert tip_back < pod["z"] < tip_front
