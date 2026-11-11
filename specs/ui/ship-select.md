@@ -24,8 +24,9 @@ drawn over the menu backdrop, whose own ship is hidden on this screen
 
 ### UI-SHIP-02 — A card under each ship · MUST
 
-Under each ship, a card gives its name and its stats: its speed (its factor of the base speed and
-its top speed in px/s, e.g. `Speed ×1 (225 px/s)`) and its health (e.g. `HP 100`). The row of cards
+Under each ship, a card gives its name and its stats in plain words: its speed, from its factor of
+the base speed (`Speed: slow` under 1, `Speed: normal` at 1, `Speed: fast` over 1), and its health
+(e.g. `HP 100`). The row of cards
 is as wide as the row of ships on screen, so each card sits under its ship. Above the cards: the
 heading "Choose your ship"; under them, the hint "◀ ▶ to pick · Enter or tap to go"; at the
 top left, the Back button ([menu-input.md](menu-input.md)).
@@ -45,8 +46,7 @@ the ambient light, so they look dimmed), and it stands on a glowing neon ring. I
 **Acceptance criteria**
 - Given a ship is highlighted, then it is bigger and lit, the ring is under it, and its card has the `▲` mark; the others are smaller, darker and their cards faded.
 
-**Discrepancy:** the ring is still the acid yellow `(1, 0.92, 0.05)` of the cyberpunk look
-(D-014); the menus have been neon blue/green since D-198.
+The ring is the menus' hot pink (`#ff4fa0`, D-323).
 
 *Sources: P01-R06, D-008.*
 
@@ -112,5 +112,5 @@ ignored (Balanced is highlighted).
 - Moving the highlight must not stall the screen: each ship has its own key light, turned on and
   off, and each ship is drawn highlighted once while the menus load (D-116, D-118). See
   [performance.md](../performance.md) for the "instant feedback" rule.
-- The ship stats are shown as text (`Speed ×1 (225 px/s)`); a friendlier display for kids (bars or
-  stars) was suggested in phase 1 and never asked for.
+- The ship stats are shown as plain words (`Speed: fast`) since D-323; they were
+  `Speed ×1 (225 px/s)` before. Bars or stars were suggested in phase 1 and never asked for.

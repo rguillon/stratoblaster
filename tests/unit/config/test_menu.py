@@ -38,13 +38,12 @@ def test_ui_title_03_the_cookies_last_a_year_and_frames_are_capped() -> None:
     assert MENU_CONFIG.glow.intensity > 0
 
 
-def test_ui_ship_03_the_ring_is_neon_blue_green_not_acid_yellow() -> None:
-    """The ring under the highlighted ship is the menus' neon cyan (UI-LOOK-03, D-198).
+def test_ui_ship_03_the_ring_is_the_menus_hot_pink() -> None:
+    """The ring under the highlighted ship is the menus' hot pink (UI-LOOK-03, D-323).
 
-    No red and a blue-green hue, where the old acid yellow had no blue.
+    Full red, some blue, little green: pink, not the old cyan or acid yellow.
     """
     red, green, blue = MENU_CONFIG.ship_select.ring.color
-    assert red == 0
+    assert red == 1
     assert blue > 0.5
-    assert green > 0.5
-    assert (red, green, blue) != (1, 0.92, 0.05)
+    assert green < 0.5

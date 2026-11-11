@@ -46,7 +46,7 @@ level of this game is locked.
 
 The engine still handles a level the data marks as locked: its cell is greyed out, hazard-striped,
 with a padlock. It can be highlighted (its frame is then red), but Confirm does not start it: the
-cell shakes (`locked_shake`) and the status line under the grid says "Locked!". This game's data has
+cell shakes (`locked_shake`) and the status line under the grid says "Locked". This game's data has
 no locked level, so this is checked with sample grids in unit tests only.
 
 **Acceptance criteria**
@@ -104,8 +104,10 @@ Back opens the ship select screen.
 ### UI-LEVEL-09 — The screen's look · SHOULD
 
 The heading "Choose a level" is over the grid; the hint "Arrows to pick · Enter or tap to go"
-and the status line are under it; the Back button is at the top left. The cells are 68 × 68 px
-glass squares, 10 px apart, with a green border and the label in 22 px bold monospace. The
+and the status line are under it; the grid, the hint and the status line are centred together in
+the height left under the heading; the Back button is at the top left. The cells are 68 × 68 px
+glass squares with 8 px corners, 12 px apart, with a hairline border and the label in 24 px
+monospace at weight 600. The
 highlighted cell is the light cyan block of the menus with a white border and a dashed white
 outline ([look-and-layout.md](look-and-layout.md)).
 
@@ -120,9 +122,9 @@ outline ([look-and-layout.md](look-and-layout.md)).
 |------|-------|-------|
 | Worlds × levels per world | 4 × 5 | `src/game/config/levels.py` `LEVELS_CONFIG` (`worlds`, `levelsPerWorld`) |
 | Unlocked levels | every level of `GAME_LEVELS` | `src/game/sim/levels.py` `LEVELS` |
-| Level cell | 68 × 68 px, 10 px gap | `index.html` `.level-cell`, `.level-grid` |
+| Level cell | 68 × 68 px, 12 px gap | `index.html` `.level-cell`, `.level-grid` |
 | `locked_shake` | 0.3 s, ±6 px | `index.html` `.shake`, `@keyframes menu-shake` |
-| Locked text | "Locked!" | `src/game/config/menu_texts.py` `MENU_TEXTS["locked"]` |
+| Locked text | "Locked" | `src/game/config/menu_texts.py` `MENU_TEXTS["locked"]` |
 
 ## Notes
 

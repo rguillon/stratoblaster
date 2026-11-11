@@ -2104,3 +2104,35 @@
   - The player's side is read about a second earlier than before.
   - A Sweeper spawned already inside its brake distance (only in tests) still turns at once.
 - **Status:** Proposed
+
+### D-323 — The UI redesigned in retro synthwave, made clear
+- **Date:** 2026-11-11
+- **Requirements:** UI-LOOK-03, UI-LOOK-04, UI-LOOK-06, UI-LOOK-08, UI-LOOK-09, UI-LOOK-12,
+  UI-LOOK-14, UI-TITLE-05, UI-TITLE-08, UI-SHIP-02, UI-SHIP-03, UI-LEVEL-04, UI-LEVEL-09,
+  UI-OVER-02, UI-OVER-09, UI-LOAD-02, UI-LOAD-05, UI-FLOW-08, UI-HUD-02 to UI-HUD-06, UI-HUD-16,
+  UI-HUD-17.
+- **Context:** owner: "redesign the UI completly, main menus and in game UI [...] Make something
+  clear, modern, with a retro synthwave look". The neon blue/green look (D-198) glowed everywhere:
+  glowing headings, a gradient selected block, a neon frame and bottom line on every screen, a
+  pulsing chrome logo, pulsing hints, uppercase tracked labels at weights 700 to 900, 9 to 11 px
+  HUD labels, spacing off the 4 px grid.
+- **Decision:**
+  - **Palette:** one night-violet ramp (`#0c0814`, glass `rgba(22, 15, 36, 0.86)`, three text
+    roles), one hot pink accent `#ff4fa0` (selection, horizon line, sliders, progress, ship ring),
+    player cyan `#4fd8ff` for the player's own gauges, red and orange kept for danger and bombs.
+    No glows and no hue gradient in the chrome.
+  - **The moment:** a flat striped sunset half sun behind the logo, yellow to orange to pink, the
+    only gradient of the UI; the logo is solid italic capitals on a pink horizon line.
+  - **The signature:** the horizon line, a 2 × 48 px pink rule under every heading.
+  - **Shapes and type:** rounded glass entries (8 px) and panels (16 px) replace the chamfers;
+    sentence case, weights 500 / 600, 4 px grid, no HUD text under 12 px.
+  - **Copy:** no exclamation marks; the ship speed in plain words (`Speed: fast`).
+  - **Motion:** nothing loops in the menus; a screen fades and rises 8 px; the low-health alarm is
+    the one loop.
+  - **Backdrop:** the title city re-lit at dusk: magenta sky low down, violet haze and towers,
+    pink, violet and cyan windows and neon, pink lane lines.
+- **Consequences:**
+  - The specs' look sections, `index.html`'s styles, `title_look.py`, the ring colour and the texts
+    changed together; the tests of the texts, the ring and the backdrop follow.
+  - System fonts still (UI-LOOK-11): the look relies on the condensed stack, as before.
+- **Status:** Proposed

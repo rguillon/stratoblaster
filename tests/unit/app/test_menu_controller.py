@@ -186,7 +186,7 @@ def test_ui_over_02_a_completed_level_that_beats_the_score_says_so_on_its_panel(
     assert controller.high_score == 1200
     game_view = display.last
     assert isinstance(game_view, GameScreenView)
-    assert game_view.complete.new_high_score == "New high score!"
+    assert game_view.complete.new_high_score == "New high score"
 
 
 def test_dev_opt_01_a_direct_start_refreshes_the_display() -> None:

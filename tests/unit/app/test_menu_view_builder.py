@@ -70,7 +70,7 @@ def test_ui_ship_02_the_ship_select_has_a_card_per_ship() -> None:
     view = build_menu_view(state("ship-select", selection=1), ctx())
     assert isinstance(view, ShipSelectView)
     assert [card.title for card in view.ships] == ["Alpha", "Beta"]
-    assert view.ships[1].lines[0] == "Speed \u00d72 (200 px/s)"
+    assert view.ships[1].lines[0] == "Speed: fast"
     assert view.cards_width_percent == 80
 
 
@@ -125,7 +125,7 @@ def test_ui_over_01_a_completed_level_shows_its_score_and_the_new_high_score() -
     assert complete.over is False
     assert complete.enemies == "10/12"
     assert complete.score == "Score 1500"
-    assert complete.new_high_score == "New high score!"
+    assert complete.new_high_score == "New high score"
     assert complete.choices is None
 
 

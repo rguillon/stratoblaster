@@ -41,7 +41,7 @@ def make_texts() -> SimpleNamespace:
         continueFromCheckpoint="Continue",
         toLevelSelect="Level select",
         continueHint="Tap to go on",
-        newHighScore="New high score!",
+        newHighScore="New high score",
         fire="FIRE",
         pauseButton="II",
         enemiesDestroyed=lambda destroyed, spawned: f"{destroyed}/{spawned}",

@@ -25,8 +25,8 @@ else starts, and no error is thrown or logged.
 
 The "not supported" message is short and plain, understandable by a kid's parent: the game cannot
 run in this browser or on this device, and which browsers to try. It comes from the game's texts
-(`unsupported`): "Sorry! This game cannot run in this browser or on this device. Please try a
-recent version of Chrome, Edge, Firefox or Safari on a computer." It is centred on the whole page,
+(`unsupported`): "This game cannot run in this browser or on this device. Please try a recent
+version of Chrome, Edge, Firefox or Safari on a computer." It is centred on the whole page,
 in large text (22 px) on the dark background.
 
 **Acceptance criteria**
@@ -59,13 +59,12 @@ When the last loading step is done, the title screen appears without any user ac
 
 ### UI-LOAD-05 — The loading screen's look · SHOULD
 
-The loading screen shows, centred: the game's "Loading…" text (30 px, italic, uppercase, in a cyan
-glow), a 320 × 24 px gauge with a cyan border filled by the blue-to-green neon line cut into
-segments like a power gauge, and the percent under it in green monospace. Its background is a faint
-cyan grid floor under a deep blue horizon glow. It does not fade in.
+The loading screen shows, centred: the game's "Loading…" text (28 px, sentence case, weight 600),
+a 320 × 8 px gauge (a hairline track with 4 px corners, filled in solid hot pink) and the percent
+under it in muted monospace. Its background is the plain night colour. It does not fade in.
 
 **Acceptance criteria**
-- Manual check: the loading screen matches this description in the neon blue/green look ([look-and-layout.md](look-and-layout.md)).
+- Manual check: the loading screen matches this description ([look-and-layout.md](look-and-layout.md)).
 - The gauge is a `progressbar` with its value from 0 to 100 (unit test).
 
 *Sources: P01-R13, D-013, D-198.*

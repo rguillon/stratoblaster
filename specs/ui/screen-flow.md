@@ -150,8 +150,8 @@ in [level-select.md](level-select.md).
 
 ### UI-FLOW-08 — Short screen transitions · MAY
 
-A new screen fades in over `menu_transition_duration` (at most 300 ms): from transparent, slightly
-to the left and brighter, to its place. Input is ignored during a transition, so one press cannot
+A new screen fades in over `menu_transition_duration` (at most 300 ms): from transparent and 8 px
+below, to its place (no brightness flash, D-323). Input is ignored during a transition, so one press cannot
 skip two screens. The timer is in the flow, so commands from the test API obey it too. Resuming a
 level and a Continue also start a transition. The boot loading screen does not fade in.
 

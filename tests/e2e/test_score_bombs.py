@@ -39,7 +39,7 @@ def test_game_score_04_boss_parts_score_a_new_high_score_is_saved_and_shown(
 ) -> None:
     """Also GAME-SCORE-05 (the high score is saved) and UI-HUD-05 (the score lines).
 
-    Also UI-OVER-02 ("New high score!"), DEV-API-02 (`highScore`) and DEV-API-03 (`score`).
+    Also UI-OVER-02 ("New high score"), DEV-API-02 (`highScore`) and DEV-API-03 (`score`).
     """
     open_debug(page, "?level=1-1&boss=final&ship=light")
     wait_for_boss(page, "Storm Petrel")
@@ -60,7 +60,7 @@ def test_game_score_04_boss_parts_score_a_new_high_score_is_saved_and_shown(
     assert result["newHighScore"] is True
     assert state["highScore"] == score
     expect(page.locator(".level-complete-score")).to_have_text(f"Score: {score}")
-    expect(page.locator(".level-complete-high-score")).to_have_text("New high score!")
+    expect(page.locator(".level-complete-high-score")).to_have_text("New high score")
     send_action(page, "confirm")
     expect_state(page, {"screen": "level-select"})
     send_action(page, "back")

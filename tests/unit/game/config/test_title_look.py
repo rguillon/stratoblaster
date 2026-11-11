@@ -20,11 +20,11 @@ def _stop_colors() -> list[list[float]]:
     return [stop["color"] for stop in TITLE_LOOK.sky["stops"]]
 
 
-def test_ui_title_08_the_sky_haze_and_towers_stay_dark_and_red_free() -> None:
+def test_ui_title_08_the_sky_haze_and_towers_stay_dark_and_violet() -> None:
     """The sky's glow, the haze and the towers, streets and signs panels are dark.
 
-    No channel is above 0.35, and they are never red, magenta or violet (red no more than green or
-    blue).
+    No channel is above 0.35, and they lean violet, never green or teal (blue at least green,
+    D-323).
     """
     dark = [
         *_stop_colors(),
@@ -36,8 +36,7 @@ def test_ui_title_08_the_sky_haze_and_towers_stay_dark_and_red_free() -> None:
     ]
     for r, g, b in dark:
         assert max(r, g, b) <= 0.35, (r, g, b)
-        assert r <= g, (r, g, b)
-        assert r <= b, (r, g, b)
+        assert g <= b, (r, g, b)
 
 
 def test_ui_title_08_the_neon_and_window_colours_stay_bright() -> None:

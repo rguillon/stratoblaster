@@ -177,7 +177,7 @@ def test_lvl_1_1_13_1_1_ends_once_its_final_boss_is_destroyed(page: Page) -> Non
     assert level(page)["phase"] == "playing"
     # K destroys its four parts one by one (the stage goes up), then its core.
     destroy_boss(page, "Storm Petrel")
-    expect(page.locator(".level-complete-heading")).to_have_text("Level complete!")
+    expect(page.locator(".level-complete-heading")).to_have_text("Level complete")
     expect(page.locator(".level-complete-level")).to_have_text("1-1")
     expect(page.locator(".level-complete-enemies")).to_have_text(
         re.compile(r"^Enemies destroyed: \d+ / \d+$")

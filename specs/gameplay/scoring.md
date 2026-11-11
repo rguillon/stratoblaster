@@ -71,7 +71,7 @@ whole number reads as 0, and the next higher score overwrites it.
 
 **Acceptance criteria**
 - Given a saved high score of 1 000 and a level completed with 2 500 points, then the cookie holds
-  `2500` and the panel shows `New high score!` (unit test, e2e).
+  `2500` and the panel shows `New high score` (unit test, e2e).
 - Given a saved high score of 5 000 and a game over at 2 500 points, then the cookie still holds
   `5000`.
 - Given the player leaves a level from the pause menu at 3 000 points over a saved 1 000, then the

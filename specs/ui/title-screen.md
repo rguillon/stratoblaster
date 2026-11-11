@@ -2,7 +2,7 @@
 
 > **Area:** UI · **Prefix:** `UI-TITLE` · **Related:** [screen-flow.md](screen-flow.md), [look-and-layout.md](look-and-layout.md), [settings.md](settings.md), [ship-select.md](ship-select.md), [../dev/dev-menu.md](../dev/dev-menu.md), [../gameplay/scoring.md](../gameplay/scoring.md), [../01-engineering.md](../01-engineering.md)
 
-The first screen after loading: the high score, the game's name as a chrome logo, the Start and
+The first screen after loading: the high score, the game's name over a striped sunset sun, the Start and
 Settings entries, a short controls hint and the build's version, over a 3D night city generated in
 code, with the balanced ship floating above the street. The same 3D backdrop stays behind the other
 menu screens.
@@ -70,7 +70,8 @@ the commit the short hash of the built commit; either reads `unknown` when git c
 ### UI-TITLE-05 — The controls hint · MUST
 
 A short hint near the bottom tells how to start: "Press Space / Enter or tap to start" (game texts,
-`startHint`). It pulses slowly ([look-and-layout.md](look-and-layout.md)).
+`startHint`). It is in the secondary text colour and does not move
+([look-and-layout.md](look-and-layout.md)).
 
 **Acceptance criteria**
 - Given the title screen, then the hint contains "Space / Enter".
@@ -107,18 +108,18 @@ city comes from a fixed seed, so it is the same on every run. No model or textur
 
 *Sources: P01-R05, D-014, D-104.*
 
-### UI-TITLE-08 — Dark, in neon blue and green · MUST
+### UI-TITLE-08 — Dark, at synthwave dusk · MUST
 
-The backdrop is dark and follows the menus' neon blue/green scheme
-([look-and-layout.md](look-and-layout.md)): a deep blue glow low in the sky through teal to black
-higher up, a deep blue-black haze, near-black skyline and blue-grey towers, cyan, green and blue
-windows, signs and trims, teal lane lines and rain.
+The backdrop is dark and follows the menus' synthwave palette
+([look-and-layout.md](look-and-layout.md), D-323): a dim magenta dusk low in the sky through violet
+to near black higher up, a deep violet haze, near-black skyline and violet-grey towers, hot pink,
+violet and cyan windows, signs and trims, pink lane lines, violet rain.
 
 **Acceptance criteria**
-- Unit test: the sky, haze and tower colours stay dark; the neon colours stay bright.
-- Manual check: no magenta, violet or red in the backdrop.
+- Unit test: the sky, haze and tower colours stay dark and lean violet (blue at least green); the neon colours stay bright.
+- Manual check: no green or teal in the backdrop.
 
-*Sources: P01-R05, D-012, D-198.*
+*Sources: P01-R05, D-012, D-198, D-323.*
 
 ### UI-TITLE-09 — The backdrop stays behind the menus · MUST
 
