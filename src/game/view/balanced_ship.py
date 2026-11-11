@@ -4,11 +4,10 @@
 An original design. A long, slim, faceted central body with a needle nose and a bubble canopy set
 forward, a spine ridge, dark seams and vents, closing to a point at its tail, with no reactor at its
 back; canards; a gun pod under its belly. Two big rounded hexagon reactor nacelles stand out either
-side, each with its intake, joined to the body by its strakes (D-336) and carrying a canted tail
-and a ventral fin. From each nacelle a
-forward-swept wing runs out to twin reactors one over the other on its tip, wrapped in one body,
-each with its intake and a fin at 45°. A missile launcher hangs under each wing, its seven
-missiles' tips out ahead of the leading edge.
+side, each with its intake, joined to the body by its strakes (D-336). From each nacelle a
+forward-swept wing runs out to twin reactors one over the other on its tip, wrapped in one body
+with one intake, a canted tail on its top and a ventral fin under it (D-353). A missile launcher
+hangs under each wing, its seven missiles' tips out ahead of the leading edge.
 
 Model units: nose towards +Z, about 5.2 units long. The body is one blended skin
 (`balanced_hull.py`), flat-shaded facets; the canopy, nacelles and pods are smooth-shaded on top:
@@ -148,9 +147,13 @@ VENTRAL_FIN = [
     [0.38, -1.4],
     [0, -1.35],
 ]
-# The twin tails and ventral fins stand on the nacelles (D-332). The tails' cant, in rad from
-# vertical, outwards: their tips stay inside the nacelle's edge seen from above (D-330), so the
-# trim runs along that edge unbroken.
+# The twin tails and ventral fins stood on the main nacelles (D-332); they stand on the wing-tip
+# pods now, in place of the pods' 45° fins (owner, D-353: "move the vertical wings from the big
+# reactors to the small side reactors, they replace the side reactors original vertical wings"):
+# the tail on the pod's top, the ventral fin under it, both brought forward by `TIP_TAIL_SHIFT`
+# so their roots run along the pod. Their outlines stay as drawn (Z along the ship). The tails'
+# cant, in rad from vertical, outwards.
+TIP_TAIL_SHIFT = 0.65
 TAIL_CANT = 0.2
 TAIL_THICKNESS = 0.05
 VENTRAL_THICKNESS = 0.04
@@ -314,8 +317,8 @@ MISSILE_FIN = [
 # Twin reactors on each wing tip (owner: "add two reactors on the tip of each wing, with 45° lil
 # wings on each", "make it a dual reactor on the tip of each wing, and add intake to the
 # reactors", D-330, "make the wings reactor on of top the other, not side by side", D-331): one over
-# the other, each with an intake and a small fin out from its back half at 45°, the upper one's
-# above the wing's plane, the lower one's below it. D-332 ("add more body to the wings reactors,
+# the other, each with an intake and a small fin out from its back half at 45° (the fins gave way
+# to the tails and ventral fins, D-353). D-332 ("add more body to the wings reactors,
 # connecting them"): one steel body wraps both, a tall rounded rectangle in section, their intakes
 # and nozzles out at its ends. The reactors' X, their heights (upper, lower), middle along Z and
 # size; the body's section and its profile (`[z from the reactors' middle, scale of the section]`).
@@ -339,14 +342,6 @@ TIP_BODY_PROFILE = [
     [-0.58, 0.82],
     [-0.62, 0],
 ]
-TIP_FIN = [
-    [0, 0.05],
-    [0.34, -0.22],
-    [0.34, -0.38],
-    [0, -0.32],
-]
-TIP_FIN_CANT = math.pi / 4
-TIP_FIN_THICKNESS = 0.03
 
 
 def _build_body(root: Any, scene: Any) -> None:
@@ -615,12 +610,15 @@ def _build_edge_glow(side: str, sign: float, root: Any, scene: Any) -> None:
 
 
 def _build_tails(side: str, sign: float, root: Any, scene: Any) -> None:
-    """Build the canted tail on a nacelle's top and the ventral fin under it."""
+    """Build the canted tail on a wing-tip pod's top and the ventral fin under it (D-353)."""
     mats = get_ship_materials(scene)
-    radius = REACTOR["radius"]
-    top = REACTOR_Y + radius * math.cos(math.pi / OCTAGON) * REACTOR_HEIGHT
+    pod = TIP_REACTOR
+    x = sign * pod["x"]
+    middle = (pod["ys"][0] + pod["ys"][1]) / 2
+    top = middle + TIP_BODY["halfHeight"]
+    bottom = middle - TIP_BODY["halfHeight"]
     tail = new_transform_node("balanced-tail-" + side, scene)
-    tail.position.set(sign * REACTOR_OFFSET_X, top - 0.02, 0)
+    tail.position.set(x, top - 0.02, TIP_TAIL_SHIFT)
     # Stand the panel up (X becomes height), then cant it outwards.
     tail.rotation.z = math.pi / 2 - sign * TAIL_CANT
     tail.parent = root
@@ -631,7 +629,7 @@ def _build_tails(side: str, sign: float, root: Any, scene: Any) -> None:
 
     # Ventral fin: same trick, pointing down and outwards.
     fin = new_transform_node("balanced-ventral-" + side, scene)
-    fin.position.set(sign * REACTOR_OFFSET_X, REACTOR_Y - radius * 0.8 * REACTOR_HEIGHT, 0)
+    fin.position.set(x, bottom + 0.02, TIP_TAIL_SHIFT)
     fin.rotation.z = -math.pi / 2 + sign * VENTRAL_CANT
     fin.parent = root
     panel("balanced-ventral-" + side + "-panel", VENTRAL_FIN, VENTRAL_THICKNESS, mats.hullDark, fin)
@@ -707,23 +705,19 @@ def _build_missile_pod(side: str, sign: float, root: Any, scene: Any) -> None:
 
 
 def _build_tip_reactor(side: str, sign: float, root: Any, scene: Any) -> None:
-    """Build the twin reactors on a wing tip, one over the other, the body round them, the fins."""
+    """Build the twin reactors on a wing tip, one over the other, and the body round them.
+
+    The tail and ventral fin on the body are `_build_tails`' (D-353: they replace its 45° fins).
+    """
     mats = get_ship_materials(scene)
     pod = TIP_REACTOR
     name = "balanced-tip-" + side
     x = sign * pod["x"]
-    fin = TIP_FIN if sign > 0 else mirror_x(TIP_FIN)
-    for k, (label, up) in enumerate([("upper", 1), ("lower", -1)]):
+    for k, label in enumerate(["upper", "lower"]):
         y = pod["ys"][k]
         reactor = build_reactor(name + "-reactor-" + label, pod, scene)
         reactor.position.set(x, y, pod["z"])
         reactor.parent = root
-        node = new_transform_node(name + "-fin-" + label, scene)
-        node.position.set(x, y, pod["z"])
-        # The fin's span turns from outwards (along X) to 45° above or below the wing's plane.
-        node.rotation.z = sign * up * TIP_FIN_CANT
-        node.parent = root
-        panel(name + "-fin-" + label + "-panel", fin, TIP_FIN_THICKNESS, mats.hullDark, node)
     # One body wrapping both: a tall rounded rectangle in section, scaled along the profile.
     body = TIP_BODY
     ring = rounded_rectangle(body["halfWidth"], body["halfHeight"], body["corner"], body["steps"])

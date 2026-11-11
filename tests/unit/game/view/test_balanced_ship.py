@@ -85,7 +85,6 @@ def test_gfx_ship_01_twin_reactors_sit_one_over_the_other_on_each_wing_tip() -> 
     assert upper - lower >= 2 * pod["radius"]
     x = pod["x"]
     assert balanced_ship._trailing_edge(x) < pod["z"] < balanced_ship._leading_edge(x)
-    assert pytest.approx(math.pi / 4) == balanced_ship.TIP_FIN_CANT
 
 
 def test_gfx_ship_01_the_flaps_and_panel_lines_lie_on_the_wing() -> None:
@@ -148,14 +147,37 @@ def test_gfx_ship_01_the_central_body_is_long_and_slim_with_no_reactor_at_its_ba
     assert balanced_ship.REACTOR_OFFSET_X - balanced_ship.REACTOR["radius"] > 0.5
 
 
-def test_gfx_trim_the_tails_lean_out_no_further_than_the_nacelles_edge() -> None:
-    """D-330, D-332: seen from above, the canted tails stay inside their nacelle's outline."""
-    span = max(x for x, _z in balanced_ship.TAIL)
-    tip_x = balanced_ship.REACTOR_OFFSET_X + span * math.sin(balanced_ship.TAIL_CANT)
-    assert tip_x < balanced_ship.REACTOR_OFFSET_X + balanced_ship.REACTOR["radius"] - 0.03
-    front = balanced_ship.REACTOR_Z + balanced_ship.REACTOR["length"] / 2
-    back = balanced_ship.REACTOR_Z - balanced_ship.REACTOR["length"] / 2
-    assert all(back < z < front for _x, z in balanced_ship.TAIL)
+def test_gfx_ship_01_the_tails_and_ventral_fins_stand_on_the_wing_tip_pods() -> None:
+    """D-353: moved from the main nacelles, their roots run along the tip pod's length."""
+    pod = balanced_ship.TIP_REACTOR
+    front = pod["z"] + pod["length"] / 2
+    back = pod["z"] - pod["length"] / 2
+    shift = balanced_ship.TIP_TAIL_SHIFT
+    for outline in [balanced_ship.TAIL, balanced_ship.VENTRAL_FIN]:
+        roots = [z + shift for x, z in outline if x == 0]
+        assert roots
+        assert all(back < z < front for z in roots)
+
+
+def test_gfx_ship_01_the_tip_pods_carry_a_tail_and_a_ventral_fin_not_45_degree_fins(
+    scene: Any, monkeypatch: Any
+) -> None:
+    """D-353: the tails replace the pods' 45° fins; the main nacelles carry none."""
+    nodes: dict[str, Any] = {}
+    real = balanced_ship.new_transform_node
+
+    def node(name: str, *args: Any) -> Any:
+        nodes[name] = real(name, *args)
+        return nodes[name]
+
+    monkeypatch.setattr(balanced_ship, "new_transform_node", node)
+    build_balanced_ship(scene)
+    assert not any(name.startswith("balanced-tip-") and "-fin-" in name for name in nodes)
+    for side, sign in [("right", 1), ("left", -1)]:
+        tail = nodes["balanced-tail-" + side]
+        assert tail.position.set.call_args[0][0] == pytest.approx(
+            sign * balanced_ship.TIP_REACTOR["x"]
+        )
 
 
 def test_gfx_ship_01_one_body_wraps_each_wing_tips_twin_reactors() -> None:

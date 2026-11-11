@@ -49,8 +49,7 @@ vents on each strake, in front of the wing roots.
 **Main reactors** (D-332: "spead the two main reactors, adding pieces of wings that connect them
 to the central body"): two big nacelles standing out either side of the body, each with its
 intake, joined to the body by its strakes (D-336; by a separate stub wing from D-332), along
-their length. Each carries a canted tail on its top, leaning no further out than the nacelle's
-edge, and a ventral fin under it.
+their length. They carry no tail: the tails and ventral fins stand on the wing-tip pods (D-353).
 
 **Wings:** forward-swept (D-330: "make the wings front sided"; the tip's leading and trailing
 edges ahead of the root's, a square-cut tip with a chamfered front corner, running on a little
@@ -60,10 +59,13 @@ of the nacelles towards their back
 top face at the body's chine edge, as the wings do, so their trim runs on from the body's beside
 the cockpit (D-333: "lower the front wings so their highlight is aligned to the cockpit one").
 Each tip carries twin reactors one over the other (D-330, D-331), one above the wing's plane
-and one below, each with a small gunmetal fin at 45°, the upper one's up and out, the lower
-one's down and out; one steel body wraps both (D-332: "add more body to the wings reactors,
+and one below; one steel body wraps both (D-332: "add more body to the wings reactors,
 connecting them"), a tall rounded rectangle in section, from their fronts to short of their
-nozzles, and one octagonal intake at its front, stretched upright to the body's height, feeds both
+nozzles, and one octagonal intake at its front, stretched upright to the body's height, feeds both.
+The body carries a canted gunmetal tail on its top and a ventral fin under it, with glowing leading
+edges and tips, brought forward along it from where they stood on the main nacelles (D-353, owner:
+"move the vertical wings from the big reactors to the small side reactors, they replace the side
+reactors original vertical wings"; each reactor had a small fin at 45° before). One intake for both
 (D-339, owner: "merge the two lateral intales into a single octogonal intake"; an intake each
 before). A missile launcher runs through each wing (D-330; D-343, owner: "make the missile pods
 hexagonal, higher and make them go trough the wings"; it hung under the wing on a pylon before;
@@ -87,8 +89,7 @@ black"), with four flat horizontal steel fins across the duct in front of
 it, each as wide as the duct's polygon at its height (D-338, owner: "replace the central helix by
 horizontal fins in the reactors"; ten fan blades round a spinner before); the mouths
 face forward, so the frontal menu camera looks straight into them. The two main reactors are taller
-than wide (D-337: "make the main reactors higher"): their section stretched 1.3 times upright, the
-tails and ventral fins standing on the taller nacelles. On the top and the bottom of each main
+than wide (D-337: "make the main reactors higher"): their section stretched 1.3 times upright. On the top and the bottom of each main
 reactor sits a secondary intake (D-347, owner: "add secondary intake at the top and botton of each
 of the main reactors, with a slope eaching the back of the reactor"): a silver scoop on the
 nacelle's flat face, behind its front ring, its matte black mouth facing forward, its back a ramp
@@ -112,7 +113,8 @@ No gun stands on top (D-330), and the ship carries no light of its own but its r
   roots (forward-swept), the wing's root in the nacelle and its tip a little past the tip
   reactors' body; twin reactors one over the other at each wing tip, wrapped in one body from
   their fronts to short of their nozzles, one octagonal intake as wide and tall as the body feeding
-  both, their fins canted 45°; the main reactors octagons with intakes (unit tests).
+  both, a tail on its top and a ventral fin under it, their roots along it, none on the main
+  nacelles (D-353); the main reactors octagons with intakes (unit tests).
 - Given the guns under the belly, then a laser lies on the centre line and a minigun of six
   barrels either side of it; the fairing's top lies inside the belly, the minigun drums half in
   its flanks, and the laser's rails clear under the nose, its core and prongs past the nose's tip
@@ -283,8 +285,8 @@ either side of the tip reactors' body, so it does not cross their intake (D-339)
 | Reactor intake | straight at 1.0 radius (the nacelle's) to 0.24 ahead, angled in to 0.8 at 0.47; flush with the nacelle; dark duct, its end behind the fan face; fan face at 0.68 radii; 4 horizontal fins at heights ±0.14 and ±0.42, z 0.12 to 0.4, inside a 0.66 duct hexagon | `ship_parts.py` `REACTOR_INTAKE*` |
 | Reactor scoops | top and bottom of each main reactor, z 0.5 to -1.0 of the nacelle, 0.16 wide, 0.1 high at the mouth, sunk 0.012; corners 0.035; a 0.06 lip then 4 eased ramp sections; mouth 0.72 of its size; fins at -0.28, 0, 0.28 of its height | `balanced_ship.py` `REACTOR_SCOOP` |
 | Intake black | albedo [0.012, 0.012, 0.015], metallic 0, roughness 1 | `SHIP_LOOK["intakeBlack"]` |
-| Tip reactors | x 1.98, y 0.125 and -0.125, z -0.4; radius 0.11, length 1.35 (0.95 until D-340); fins at 45° | `TIP_REACTOR`, `TIP_FIN`, `TIP_FIN_CANT` |
-| Tail cant | 0.2 rad outwards, on the nacelles | `TAIL_CANT` |
+| Tip reactors | x 1.98, y 0.125 and -0.125, z -0.4; radius 0.11, length 1.35 (0.95 until D-340) | `TIP_REACTOR` |
+| Tails and ventral fins | on the tip pods, brought forward 0.65; tails canted 0.2 rad outwards, ventral fins 0.55 | `TIP_TAIL_SHIFT`, `TAIL_CANT`, `VENTRAL_CANT` |
 | Nacelles | at x ±0.8, y -0.02, centre z -0.95; radius 0.22, length 2.0, 1.3 times taller than wide; with intakes | `REACTOR`, `REACTOR_HEIGHT`, `REACTOR_OFFSET_X`, `REACTOR_Y`, `REACTOR_Z` |
 | Strakes | the body's chines, 0.64 half wide from z -0.4 to -1.2, 0.63 at -1.9; glowing edge from z 0.85 to -0.3 | `balanced_hull.py` `STATIONS`; `balanced_ship.py` `STRAKE_EDGE_ZS` |
 | Tip reactors' body | rounded rectangle 0.125 x 0.255 half, corners 0.1; z 0.675 to -0.62 from the reactors' middle; one octagonal intake, radius 0.124, stretched 2.05 upright | `TIP_BODY`, `TIP_BODY_PROFILE`, `TIP_INTAKE` |

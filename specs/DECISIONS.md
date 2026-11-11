@@ -2680,3 +2680,16 @@
   is, so its wall faces the axis and its bottom the muzzle; it keeps the matte black and the 0.55
   bore. A unit test checks the bore lathe alone faces outward and that each of the 12 is turned.
 - **Consequences:** the triangle count is unchanged.
+
+### D-353 — The tails and ventral fins move to the wing-tip pods
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01.
+- **Context:** owner: "now move the vertical wings from the big reactors to the small side
+  reactors, they replace the side reactors original vertical wings".
+- **Decision:** the canted tail and the ventral fin (with their glowing edges, D-346) leave the
+  main nacelles' top and bottom for the tip pod's: the tail on the pod body's top, the ventral
+  fin under it, same outlines, cants and thickness, brought forward by `TIP_TAIL_SHIFT` (0.65)
+  so their roots run along the pod. The pods' two 45° fins (`TIP_FIN`, D-330) are gone.
+- **Consequences:** the ship measures 10,532 triangles. The main nacelles' secondary scoops
+  (D-347) no longer have the tails rising out of their ramps.
