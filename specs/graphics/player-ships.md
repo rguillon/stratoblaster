@@ -23,9 +23,11 @@ canopy set forward, a teardrop with its peak ahead of its middle; canards. Under
 (D-339, owner: "rework the undergun, make a cool looking laser and add two miniguns on it's
 sides"; D-340: "make the lazer longer, it should go further than the tip of the ship, and rework
 those weapons, make them better integrated into the hull"): a faceted keel fairing of hull metal
-grows out of the belly, its top inside it; a laser's barrel runs through it and out of its nose,
-under the ship's nose and past its tip, ringed by three accent focusing coils, a glowing emitter
-at its muzzle; a minigun sits in each flank of the fairing, its hull-metal drum half sunk in it as
+grows out of the belly, its top inside it; out of its nose, under the ship's nose and past its
+tip, runs the laser (D-342, owner: "review the laze design, the rings sucks"; a barrel ringed by
+accent coils before): two gunmetal rails tapering forward into prongs either side of a glowing
+core rod, joined at their back by a bridge, a glowing emitter at the core's tip between the
+prongs; a minigun sits in each flank of the fairing, its hull-metal drum half sunk in it as
 a blister, six thick barrels round its axis out ahead of it held by a gunmetal clamp (D-341, owner:
 "increase ther size of the miniguns, and make their cannons thicker"). It is one skin (D-327: "smoth the transition between the elements"), a loft through
 cross-sections whose sizes follow smooth curves through hand-set stations, and it is faceted
@@ -88,8 +90,8 @@ No gun stands on top (D-330), and the ship carries no light of its own but its r
   both, their fins canted 45°; the main reactors octagons with intakes (unit tests).
 - Given the guns under the belly, then a laser lies on the centre line and a minigun of six
   barrels either side of it; the fairing's top lies inside the belly, the minigun drums half in
-  its flanks, and the laser's coils clear under the nose, its muzzle past the nose's tip (unit
-  tests).
+  its flanks, and the laser's rails clear under the nose, its core and prongs past the nose's tip
+  (unit tests).
 - Given the main reactors, then the body's strakes reach into them from their front to the wing
   roots' back, the body itself under half as wide as the gap between them, and the tails lean no
   further out than the nacelle's edge (unit tests).
@@ -110,7 +112,7 @@ No gun stands on top (D-330), and the ship carries no light of its own but its r
   and meets the wings' plane at the chine's edge (unit tests).
 - The design is validated by eye (manual).
 
-*Sources: P02-R01, D-327, D-328, D-330, D-331, D-332, D-333, D-336, D-337, D-338, D-339, D-340, D-341.*
+*Sources: P02-R01, D-327, D-328, D-330, D-331, D-332, D-333, D-336, D-337, D-338, D-339, D-340, D-341, D-342.*
 
 ### GFX-SHIP-02 — (removed) Heavy ship
 
@@ -126,8 +128,8 @@ The player ship's materials are made once per scene: a grey/blue physically base
 shades (D-327, owner: "add different shades of metalic"): a light silver **hull** (the blended
 body, the intake shells), a mid **steel** (the wings, canards, intake fins, missile
 pods and the tip reactors' body) and a dark **gunmetal** (the tails, ventral fins, flaps, panel
-lines, the body's seams and vents, the missile pylons and fins, the tip reactors' fins); a blue accent metal (the laser's coils,
-the reactors' rings, the missile pods' bands and missile tips), a dark canopy with a faint blue glow, a darker trim metal (frames, barrels, launch faces) and a dark
+lines, the body's seams and vents, the missile pylons and fins, the tip reactors' fins); a blue accent metal (the
+reactors' rings, the missile pods' bands and missile tips), a dark canopy with a faint blue glow, a darker trim metal (frames, barrels, launch faces) and a dark
 metal nozzle (and intake ducts). The metals are satin, not mirrors (owner: "remove the ugly light spots, make something
 more smoth"): metallic at least 0.7, roughness 0.4 to 0.55, so the light rolls smoothly over the
 hull instead of breaking into hard white spots. Each shade is more blue than red, and each darker
@@ -213,7 +215,7 @@ D-336) and canard (and the canard's tip), half
 on the panel and half out past it, a hair thicker than the panel so it caps the edge seen from
 above and from ahead; and the canopy's frame, whose rim shows round the canopy. The guns (the
 missile launchers, the laser, the miniguns and their fairing) and the reactors' bodies do not glow, but for the
-laser's emitter at its muzzle, of the reactors' core light (D-339). The main wing's strip stops
+laser's core and emitter, of the reactors' core light (D-339, D-342). The main wing's strip stops
 either side of the tip reactors' body, so it does not cross their intake (D-339).
 
 **Acceptance criteria**
@@ -256,7 +258,7 @@ either side of the tip reactors' body, so it does not cross their intake (D-339)
 | Strakes | the body's chines, 0.64 half wide from z -0.4 to -1.2, 0.63 at -1.9; glowing edge from z 0.85 to -0.3 | `balanced_hull.py` `STATIONS`; `balanced_ship.py` `STRAKE_EDGE_ZS` |
 | Tip reactors' body | rounded rectangle 0.125 x 0.255 half, corners 0.1; z 0.675 to -0.62 from the reactors' middle; one octagonal intake, radius 0.124, stretched 2.05 upright | `TIP_BODY`, `TIP_BODY_PROFILE`, `TIP_INTAKE` |
 | Gun fairing | z -0.8 to 2.3, up to 0.15 half wide and 0.11 under the belly, its top 0.02 inside it | `GUN_FAIRING`, `GUN_FAIRING_SECTION` |
-| Laser | at y -0.1; barrel z 1.5 to 3.1 (nose tip 2.75), radius 0.028; coils at 2.35, 2.6, 2.85; emitter to 3.2 | `LASER`, `LASER_EMITTER` |
+| Laser | at y -0.1; glowing core z 2.1 to 3.06 (nose tip 2.75), radius 0.012; rails 0.034 thick, x 0.02 to 0.052, z 2.0 to prongs at 3.2; bridge z 2.0 to 2.2; emitter to 3.13 | `LASER`, `LASER_RAIL`, `LASER_BRIDGE`, `LASER_EMITTER` |
 | Miniguns | at x ±0.15, y -0.18, z 0.75; drum 0.8 long, radius 0.066, of hull metal; 6 six-sided barrels of radius 0.016 on a 0.036 ring, 0.46 long (D-341) | `MINIGUN` |
 | Missile pods | under the wing at x 1.3, y -0.2, z -0.4; radius 0.1, 1.16 long; 7 tips | `MISSILE_POD`, `MISSILE_POD_PROFILE`, `MISSILE_TIPS` |
 

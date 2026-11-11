@@ -199,7 +199,7 @@ def test_gfx_ship_01_one_octagonal_intake_feeds_both_tip_reactors(
 def test_gfx_ship_01_a_laser_with_a_minigun_either_side_under_the_belly(
     scene: Any, monkeypatch: Any
 ) -> None:
-    """D-339: the laser on the centre line, a minigun of six barrels each side, all under it."""
+    """D-339, D-342: the laser on the centre line, a minigun of six barrels each side."""
     rods: dict[str, Any] = {}
     real = balanced_ship.faceted_rod
 
@@ -209,7 +209,7 @@ def test_gfx_ship_01_a_laser_with_a_minigun_either_side_under_the_belly(
 
     monkeypatch.setattr(balanced_ship, "faceted_rod", rod)
     build_balanced_ship(scene)
-    assert "balanced-laser-barrel" in rods
+    assert "balanced-laser-core" in rods
     for side in ["right", "left"]:
         barrels = [n for n in rods if n.startswith("balanced-minigun-" + side + "-barrel-")]
         assert len(barrels) == 6
@@ -217,12 +217,15 @@ def test_gfx_ship_01_a_laser_with_a_minigun_either_side_under_the_belly(
     laser = balanced_ship.LASER
     # D-340: the laser runs out past the ship's nose tip.
     nose = hull.STATIONS[0][hull.Z]
-    assert laser["zs"][1] > nose
-    assert balanced_ship.LASER_EMITTER[0][0] > laser["zs"][1]
-    # Out of the fairing's nose, its coils clear under the ship's nose.
-    coil = laser["coil"]
-    for z in coil["zs"]:
-        top = laser["y"] + coil["radius"] + coil["half"]
+    core = laser["core"]
+    assert core["zs"][1] > nose
+    assert balanced_ship.LASER_EMITTER[0][0] > core["zs"][1]
+    # D-342: its prongs reach past the core's tip, either side of it, and clear under the nose.
+    rail = balanced_ship.LASER_RAIL
+    assert max(z for _x, z in rail) > balanced_ship.LASER_EMITTER[0][0]
+    assert min(x for x, _z in rail) > core["radius"]
+    top = laser["y"] + laser["railThickness"] / 2
+    for _x, z in rail:
         assert top < -hull.station_at(z)[hull.BELLY_DEPTH]
     # The minigun drums sit in the fairing's flanks: half in, half out.
     _z, ring = balanced_ship.fairing_section(gun["z"], [gun["z"], 0.14, 0.1])

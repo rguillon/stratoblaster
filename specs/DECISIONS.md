@@ -2524,3 +2524,15 @@
   - The intake's duct lining ended at the fan face's depth, so its end cap and the fan face lay in
     one plane and fought for depth. The lining now ends 0.06 radii behind the fan face.
 - **Consequences:** the ship measures 9,152 triangles.
+
+### D-342 — The laser: twin prongs round a glowing core, no rings
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-04, GFX-SHIP-09.
+- **Context:** owner: "review the laze design, the rings sucks".
+- **Decision:** the barrel and its accent coils are gone. Out of the gun fairing's nose run two
+  flat gunmetal rails, tapering forward into prongs that reach past the ship's tip (z 3.2, the tip
+  at 2.75), joined at their back by a bridge; between them a thin glowing core rod (the reactors'
+  core light) ends in a glowing emitter. From above, the core reads as a thin bright line between
+  two dark ones ahead of the nose.
+- **Consequences:** the ship measures 8,812 triangles.

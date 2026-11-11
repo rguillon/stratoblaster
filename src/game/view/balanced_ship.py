@@ -178,16 +178,26 @@ GUN_FAIRING = [
 # The fairing's section, as shares of its half width: its top, its widest, its bottom; how far
 # down its widest point lies, as a share of its depth.
 GUN_FAIRING_SECTION = {"top": 0.8, "bottom": 0.55, "waist": 0.4}
-# The laser's barrel runs through the fairing and out of its nose, under the ship's nose and well
-# past its tip (2.75): its height, its back and front (Z), its radius; the accent focusing coils
-# on its bare part; the glowing emitter at its muzzle (a lathe profile, Z absolute).
+# The laser (D-342, owner: "review the laze design, the rings sucks"; a barrel ringed by accent
+# coils before): out of the fairing's nose and past the ship's tip (2.75), two gunmetal rails
+# taper forward into prongs either side of a glowing core rod, joined at their back by a bridge;
+# a glowing emitter at the core's tip, between the prongs. Its height; the core (Z back and front,
+# radius); the right rail's planform (mirrored left) and thickness; the bridge's planform; the
+# emitter (a lathe profile, Z absolute).
 LASER: dict[str, Any] = {
     "y": -0.1,
-    "zs": [1.5, 3.1],
-    "radius": 0.028,
-    "coil": {"zs": [2.35, 2.6, 2.85], "radius": 0.042, "half": 0.012},
+    "core": {"zs": [2.1, 3.06], "radius": 0.012},
+    "railThickness": 0.034,
 }
-LASER_EMITTER = [[3.2, 0], [3.16, 0.034], [3.11, 0.046], [3.1, 0]]
+LASER_RAIL = [
+    [0.02, 2.0],
+    [0.052, 2.0],
+    [0.052, 2.85],
+    [0.03, 3.2],
+    [0.02, 3.0],
+]
+LASER_BRIDGE = [[-0.052, 2.0], [0.052, 2.0], [0.052, 2.2], [-0.052, 2.2]]
+LASER_EMITTER = [[3.13, 0], [3.1, 0.022], [3.06, 0.03], [3.05, 0]]
 # The miniguns, one in each flank of the fairing: their drums half sunk in it as blisters, their
 # six barrels out ahead of it. Place; drum; barrels (ring radius, radius, length, middle along Z
 # from the drum's); the clamp round the barrels. D-341 (owner: "increase ther size of the
@@ -347,10 +357,10 @@ def fairing_section(z: float, size: list[float]) -> list[Any]:
 
 
 def _build_laser(root: Any, scene: Any) -> None:
-    """Build the keel fairing under the belly and the laser running out of it (D-339, D-340).
+    """Build the keel fairing under the belly and the laser out of it (D-339, D-340, D-342).
 
-    The barrel runs out of the fairing's nose, under the ship's, and past its tip, ringed by accent
-    focusing coils, a glowing emitter at its muzzle.
+    Out of the fairing's nose, under the ship's and past its tip: twin rails tapering into prongs
+    either side of a glowing core, a glowing emitter at its tip (D-342).
     """
     mats = get_ship_materials(scene)
     sections = [fairing_section(f[0], f) for f in GUN_FAIRING]
@@ -358,30 +368,25 @@ def _build_laser(root: Any, scene: Any) -> None:
     fairing.material = mats.hull
     fairing.parent = root
     laser = LASER
-    back = laser["zs"][0]
-    front = laser["zs"][1]
-    faceted_rod(
-        "balanced-laser-barrel",
-        {"length": front - back, "radius": laser["radius"]},
-        vector3(0, laser["y"], (front + back) / 2),
-        mats.trim,
-        root,
-        OCTAGON,
-    )
     node = new_transform_node("balanced-laser", scene)
     node.position.y = laser["y"]
     node.parent = root
-    coil = laser["coil"]
-    for k, z in enumerate(coil["zs"]):
-        hexagon_band(
-            "balanced-laser-coil-" + str(k),
-            z,
-            coil["radius"],
-            coil["half"],
-            mats.accent,
-            node,
-            OCTAGON,
-        )
+    core = laser["core"]
+    back = core["zs"][0]
+    front = core["zs"][1]
+    faceted_rod(
+        "balanced-laser-core",
+        {"length": front - back, "radius": core["radius"]},
+        vector3(0, 0, (front + back) / 2),
+        mats.reactorCore,
+        node,
+        OCTAGON,
+    )
+    thickness = laser["railThickness"]
+    for side, sign in [("right", 1), ("left", -1)]:
+        outline = LASER_RAIL if sign > 0 else mirror_x(LASER_RAIL)
+        panel("balanced-laser-rail-" + side, outline, thickness, mats.hullDark, node)
+    panel("balanced-laser-bridge", LASER_BRIDGE, thickness * 1.2, mats.hullDark, node)
     emitter = create_faceted_lathe_along_z("balanced-laser-emitter", LASER_EMITTER, OCTAGON, scene)
     emitter.material = mats.reactorCore
     emitter.parent = node
