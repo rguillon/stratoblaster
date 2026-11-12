@@ -34,8 +34,11 @@ from game.view.balanced_cockpit import (
 )
 from game.view.balanced_hull import (
     BELLY_DEPTH,
+    BODY_HALF_WIDTH,
     CHINE_EDGE,
     CHINE_HALF_WIDTH,
+    CHINE_ROOT,
+    STATIONS,
     hull_section,
     hull_sections,
     station_at,
@@ -99,6 +102,19 @@ BALANCED_WING = [
 # D-336: the stub wings joining the body to the nacelles (D-332) are now the body's own strakes
 # (`balanced_hull.py`). Their glowing leading edge follows the strakes' curve, at these Z.
 STRAKE_EDGE_ZS = [0.85, 0.6, 0.35, 0.1, -0.1, -0.3]
+# D-356 (owner: "the central wing shall be oriented the other way (the entier wings will form a
+# W)"): behind the body's square back the strakes run on into the nacelles, their trailing edge
+# swept forward from the nacelle to the body's back corner, the way the main wings' runs from their
+# tip, so the trailing edges across the ship read as a W (they ran back to the body's point
+# before). Right side, mirrored left; as thick as the strake, its top at the wings' top face.
+STRAKE_TAIL = [
+    [0.24, -1.45],
+    [0.7, -1.45],
+    [0.7, -1.86],
+    [0.6, -1.88],
+]
+# A dark plate on the body's square back: shares of the back's section, its front and back Z.
+TAIL_PLATE = {"front": 0.8, "back": 0.66, "frontZ": -1.44, "backZ": -1.48}
 WING_THICKNESS = 0.07
 
 
@@ -264,7 +280,7 @@ MINIGUN: dict[str, Any] = {
 # Dark panel seams round the body (D-336): their Z, their half width along Z and how much larger
 # than the body's section they are.
 # D-354: the radome's joint, behind the blunt nose.
-SEAM_ZS = [2.75, 1.85, 0.4, -0.75, -1.75]
+SEAM_ZS = [2.75, 1.85, 0.4, -0.75]
 SEAM: dict[str, Any] = {"half": 0.012, "grow": 1.02}
 # Dark vents on the strakes, in front of and behind the wing roots (right side; mirrored left).
 VENTS = [
@@ -367,9 +383,36 @@ def _build_body(root: Any, scene: Any) -> None:
             name = "balanced-vent-" + side + "-" + str(k)
             plate(name, outline, y, mats.hullDark, body_root)
 
+    for side, sign in [("right", 1), ("left", -1)]:
+        outline = STRAKE_TAIL if sign > 0 else mirror_x(STRAKE_TAIL)
+        panel("balanced-strake-" + side + "-tail", outline, CHINE_EDGE * 2, mats.hull, body_root)
+    _build_tail_plate(body_root, scene)
+
     _build_laser(root, scene)
     for side, sign in [("right", 1), ("left", -1)]:
         _build_minigun(side, sign, root, scene)
+
+
+def tail_plate_sections() -> list[list[Any]]:
+    """Return the dark plate's sections on the body's square back (D-356), front to back."""
+    end = STATIONS[len(STATIONS) - 1]
+    _z, ring = hull_section(end)
+    # Only the body's own part of the back: the strakes are left out, flat.
+    body = [p for p in ring if abs(p[0]) <= end[BODY_HALF_WIDTH] * CHINE_ROOT]
+    sections: list[list[Any]] = []
+    for share, z in [
+        [TAIL_PLATE["front"], TAIL_PLATE["frontZ"]],
+        [TAIL_PLATE["back"], TAIL_PLATE["backZ"]],
+    ]:
+        sections.append([z, [[p[0] * share, p[1] * share] for p in body]])
+    return sections
+
+
+def _build_tail_plate(parent: Any, scene: Any) -> None:
+    """Build the dark plate on the body's square back (D-356)."""
+    plate_mesh = create_section_loft("balanced-tail-plate", tail_plate_sections(), 0, scene)
+    plate_mesh.material = get_ship_materials(scene).hullDark
+    plate_mesh.parent = parent
 
 
 def fairing_section(z: float, size: list[float]) -> list[Any]:

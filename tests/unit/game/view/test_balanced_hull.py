@@ -48,13 +48,17 @@ def test_gfx_ship_01_the_top_is_facets_rising_to_a_spine() -> None:
     assert ring[0][1] == pytest.approx(ring[1][1])
 
 
-def test_gfx_ship_01_every_section_has_the_same_ring_and_both_ends_close() -> None:
-    """D-332: the nose and the tail end in a point: nothing comes out of the body's back."""
+def test_gfx_ship_01_every_section_has_the_same_ring_the_nose_closes_the_back_is_square() -> None:
+    """D-332: the nose ends in a point; D-356: the back is cut square, its strakes at full width."""
     sections = hull_sections()
     counts = {len(ring) for _z, ring in sections}
     assert counts == {TOP_POINTS + 6}
-    for end in [sections[0][1], sections[-1][1]]:
-        assert all(abs(p[0]) < 1e-9 and abs(p[1]) < 1e-9 for p in end)
+    assert all(abs(p[0]) < 1e-9 and abs(p[1]) < 1e-9 for p in sections[0][1])
+    back = STATIONS[-1]
+    assert back[hull.BODY_HALF_WIDTH] > 0.2
+    assert back[hull.CHINE_HALF_WIDTH] == pytest.approx(
+        max(s[hull.CHINE_HALF_WIDTH] for s in STATIONS)
+    )
 
 
 def test_gfx_ship_01_a_section_runs_over_the_top_then_along_the_belly() -> None:

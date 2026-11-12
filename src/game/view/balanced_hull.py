@@ -6,9 +6,10 @@ part, it's too round, add more details, make a better connection with the wings"
 a few flat facets: a dorsal spine ridge, a flat deck either side of it, bevelled shoulders down to
 the chines, a flat underside and a flat belly. The chines run out flat at the height of the wings'
 top face and widen behind the canards into strakes that reach the nacelles: the body itself is the
-stub wing joining them, its leading edge one swept curve from the canards to the intakes. It closes
-to a point at both ends: nothing comes out of its back (owner, D-332: "the central body had no back
-reactor"); the reactors are the nacelles and the pairs on the wing tips.
+stub wing joining them, its leading edge one swept curve from the canards to the intakes. Its nose
+closes to a point; its back is cut square and capped (D-356): nothing comes out of it (owner, D-332:
+"the central body had no back reactor"); the reactors are the nacelles and the pairs on the wing
+tips.
 
 Stations along the ship give each part's size; between them the sizes follow smooth curves.
 Model units: nose towards +Z, Y up.
@@ -33,6 +34,8 @@ SPINE = 5
 # inner corner at 0.58 across) and close in behind them; a spine ridge runs from the canopy's back
 # to the tail. D-354 (owner: "make the nose longer, less pointy"): the nose runs 0.55 further, to
 # 3.3, and is blunt: it swells fast behind its tip, a rounded radome rather than a needle.
+# D-356 (owner: "the back of the main hull shall not be pointy"): it ends square at -1.45, its
+# strakes still at full width; a flat cap closes it (it closed to a point at -2.45 before).
 STATIONS = [
     [3.3, 0, 0, 0, 0, 0],
     [3.22, 0.05, 0.043, 0.038, 0.055, 0],
@@ -43,9 +46,7 @@ STATIONS = [
     [0.0, 0.26, 0.2, 0.16, 0.57, 0.04],
     [-0.4, 0.26, 0.2, 0.16, 0.64, 0.045],
     [-1.2, 0.24, 0.18, 0.14, 0.64, 0.045],
-    [-1.9, 0.16, 0.12, 0.09, 0.63, 0.03],
-    [-2.2, 0.08, 0.06, 0.05, 0.18, 0.01],
-    [-2.45, 0, 0, 0, 0, 0],
+    [-1.45, 0.22, 0.165, 0.13, 0.64, 0.04],
 ]
 # Each gap between stations is cut into this many sections.
 STATION_STEPS = 3

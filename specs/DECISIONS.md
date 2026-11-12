@@ -2733,3 +2733,22 @@
   first: the canards and strakes showed, the wings' leading edges hardly.
 - **Consequences:** no change to the triangle count; the dev viewer's close-up shows the
   playfield's wider strips.
+
+### D-356 — A W of trailing edges and a square back to the body
+
+- **Date:** 2026-11-12
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-07.
+- **Context:** owner: "rework the back of central hull, make the central wing shall be oriented
+  the other way (the entier wings will form a W) and the back of the main hull shall not be
+  pointy". The body's strakes tapered behind the nacelles to the body's point at -2.45, so the
+  trailing edges across the ship made one V with the forward-swept main wings'.
+- **Decision:** the body (`balanced_hull.py`) ends square at -1.45, its strakes at full width
+  there, its end closed by the loft's flat cap; a dark plate (`TAIL_PLATE`, a short loft of the
+  body's part of the back section, shrunk) stands on it. Behind it, a flat strake tail on each side
+  (`STRAKE_TAIL`, as thick as the strake, its top at the wings' top face) runs into the nacelle,
+  its trailing edge swept forward from the nacelle (-1.88) to the body's back corner (-1.45): the
+  main wings' trailing edges run back from tip to root, the strakes' forward again to the body, a
+  W. The seam at -1.75 went with the back.
+- **Consequences:** the ship is 5.27 long from nose to the nacelles' back rings (5.75 to the
+  body's point before), about 37 px on the playfield (GFX-SHIP-07, 40 before). Fewer triangles
+  (9,975 in the browser, 10,117 before, counted the same way). The hitbox is unchanged.

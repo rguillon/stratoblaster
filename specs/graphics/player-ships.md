@@ -17,8 +17,13 @@ variable fighter "with full upgrades", in the genre but copying no existing desi
 5.2 model units long (4.8 until D-332).
 
 **Central body** (owner, D-332: "make the central body longer and thiner, the central body had no
-back reactor"): a long, slim fuselage, widest behind the cockpit (0.52 across), tapering to a
-point at the tail; nothing comes out of its back. Its nose is long and blunt (D-354, owner: "make
+back reactor"): a long, slim fuselage, widest behind the cockpit (0.52 across); nothing comes
+out of its back. Its back is cut square at -1.45 and capped, a dark plate on it, its strakes there
+at full width (D-356, owner: "the back of the main hull shall not be pointy"; it tapered to a point
+at -2.45 before). Behind it the strakes run on into the nacelles, their trailing edges swept
+forward from the nacelles to the body's back corners, so the trailing edges across the ship form a
+W with the forward-swept main wings' (owner: "the central wing shall be oriented the other way
+(the entier wings will form a W)"). Its nose is long and blunt (D-354, owner: "make
 the nose longer, less pointy": 0.55 longer, to 3.3, swelling fast behind its tip into a rounded
 radome, a panel seam at its joint; a needle before). The cockpit is a fighter's (D-354: "make a
 better realistic looking cockpit"; a round bubble on a glowing frame before): a canopy lofted along
@@ -215,11 +220,12 @@ own phase, so no two flicker in step. The core and flame bloom in the glow layer
 ### GFX-SHIP-07 — Size and heading on the playfield · SHOULD
 
 On the playfield the ship is drawn `PLAYER_SHIP_SCALE` logical pixels per model unit, nose up the
-screen; the Balanced ship is then about 40 px long (34 until D-332, 36 until D-354), the length
+screen; the Balanced ship is then about 37 px long from its nose to its nacelles' back (34 until
+D-332, 36 until D-354, 40 until D-356), the length
 `L` other specs measure in.
 
 **Acceptance criteria**
-- Given the Balanced ship on the playfield, then it is about 40 px long, nose towards the top.
+- Given the Balanced ship on the playfield, then it is about 37 px long, nose towards the top.
 
 *Sources: D-015.*
 

@@ -102,8 +102,12 @@ def test_gfx_ship_01_the_strakes_join_the_body_to_the_nacelles() -> None:
     radius = balanced_ship.REACTOR["radius"]
     inner = balanced_ship.REACTOR_OFFSET_X - radius
     front = balanced_ship.REACTOR_Z + balanced_ship.REACTOR["length"] / 2
-    for z in [front - 0.2, balanced_ship.BALANCED_WING[0][1], balanced_ship.BALANCED_WING[4][1]]:
+    for z in [front - 0.2, balanced_ship.BALANCED_WING[0][1], hull.STATIONS[-1][hull.Z]]:
         assert hull.station_at(z)[hull.CHINE_HALF_WIDTH] > inner
+    # D-356: behind the body's back, the strake's tail runs into the nacelle to the wing's root.
+    tail = balanced_ship.STRAKE_TAIL
+    assert max(x for x, _z in tail) > inner
+    assert min(z for _x, z in tail) < balanced_ship.BALANCED_WING[4][1]
     # The body itself stays slim; the main wing's root lies in the nacelle.
     assert max(s[hull.BODY_HALF_WIDTH] for s in hull.STATIONS) < inner / 2
     assert balanced_ship.BALANCED_WING[0][0] == pytest.approx(balanced_ship.REACTOR_OFFSET_X)
@@ -122,11 +126,11 @@ def test_gfx_ship_01_the_body_has_seams_and_vents_on_its_strakes() -> None:
 
 
 def test_gfx_ship_01_the_central_body_is_long_and_slim_with_no_reactor_at_its_back() -> None:
-    """D-332: closing to a point at the tail; D-354: 5.75 long, the nose 0.55 longer than 5.2."""
+    """D-354: the nose 0.55 longer; D-356: the back cut square at -1.45, 4.75 long, not pointy."""
     nose = hull.STATIONS[0]
     tail = hull.STATIONS[-1]
-    assert nose[hull.Z] - tail[hull.Z] == pytest.approx(5.75)
-    assert all(v == 0 for v in tail[1:])
+    assert nose[hull.Z] - tail[hull.Z] == pytest.approx(4.75)
+    assert all(v > 0 for v in tail[1:])
     assert max(s[hull.BODY_HALF_WIDTH] for s in hull.STATIONS) <= 0.3
     # The nacelles' nozzles are well clear of the body's centre line.
     assert balanced_ship.REACTOR_OFFSET_X - balanced_ship.REACTOR["radius"] > 0.5
@@ -492,3 +496,39 @@ def test_gfx_ship_09_on_the_playfield_the_glowing_edges_are_wide_enough_to_show(
     assert widths
     # At least a logical pixel across on the playfield.
     assert width * PLAYER_SHIP_SCALE >= 1
+
+
+def test_gfx_ship_01_the_trailing_edges_form_a_w() -> None:
+    """D-356: the trailing edges across the ship form a W.
+
+    The main wings' run back from their tips to their roots, the strakes' forward again from the
+    nacelles to the body's square back.
+    """
+    wing = balanced_ship.BALANCED_WING
+    tip = wing[3]
+    root = wing[4]
+    assert tip[1] > root[1]
+    tail = balanced_ship.STRAKE_TAIL
+    # The strake's trailing edge: from its corner in the nacelle to the body's back corner.
+    outer = tail[3]
+    inner = tail[0]
+    assert outer[0] > inner[0]
+    assert inner[1] - outer[1] > 0.3
+    assert inner[1] == pytest.approx(hull.STATIONS[-1][hull.Z])
+    # The body's back corner: at the side of the body, inside its strake.
+    back = hull.STATIONS[-1]
+    assert back[hull.BODY_HALF_WIDTH] <= inner[0] < back[hull.CHINE_HALF_WIDTH]
+
+
+def test_gfx_ship_01_a_dark_plate_lies_on_the_bodys_square_back() -> None:
+    """D-356: inside the back's section, standing out behind it."""
+    back = hull.STATIONS[-1]
+    sections = balanced_ship.tail_plate_sections()
+    front_z, front = sections[0]
+    back_z, rear = sections[1]
+    assert back_z < back[hull.Z] < front_z
+    for ring in [front, rear]:
+        assert len(ring) >= 6
+        assert max(abs(p[0]) for p in ring) < back[hull.BODY_HALF_WIDTH] * hull.CHINE_ROOT
+        assert max(p[1] for p in ring) < back[hull.BODY_HEIGHT] + back[hull.SPINE]
+        assert min(p[1] for p in ring) > -back[hull.BELLY_DEPTH]
