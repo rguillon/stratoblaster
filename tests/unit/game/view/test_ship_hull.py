@@ -90,3 +90,17 @@ def test_gfx_ship_01_the_underside_runs_from_the_belly_out_to_the_chine_edge() -
         < underside_height(station, 0.2)
         < underside_height(station, edge)
     )
+
+
+def test_gfx_ship_01_past_the_hulls_ends_and_chines_the_last_sizes_hold() -> None:
+    """Behind the back the back's sizes; past the chine its edge's height under it."""
+    back = STATIONS[-1]
+    assert hull.station_at(back[hull.Z] - 1) == pytest.approx(back)
+    assert hull.station_at(STATIONS[0][hull.Z] + 1) == pytest.approx(STATIONS[0])
+    station = STATIONS[7]
+    beyond = station[hull.CHINE_HALF_WIDTH] + 0.1
+    assert underside_height(station, beyond) == pytest.approx(-hull.chine_edge(station))
+    assert top_height(station, beyond) == 0
+    # Out along the chine's flat, its edge's height.
+    chine = station[hull.CHINE_HALF_WIDTH] - 0.01
+    assert top_height(station, chine) == pytest.approx(hull.chine_edge(station))

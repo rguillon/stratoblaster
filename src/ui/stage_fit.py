@@ -44,8 +44,6 @@ def _floor(n: float) -> float:
 
 def _scale(view_width: float, view_height: float, width: float, height: float) -> float:
     """Return the largest scale at which `width x height` fits in a window of the given size."""
-    if width <= 0 or height <= 0:
-        return 0.0
     return float(window.Math.max(0, window.Math.min(view_width / width, view_height / height)))
 
 

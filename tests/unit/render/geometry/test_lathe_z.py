@@ -168,3 +168,9 @@ def test_a_smooth_top_lathe_is_made_from_its_vertex_data(monkeypatch: Any) -> No
     mesh = create_smooth_top_lathe_along_z("hull", CONE, LatheHalves(4, 2), object())
     assert mesh.name == "hull"
     assert made.data is not None
+
+
+def test_a_point_where_the_profile_does_not_move_faces_straight_out() -> None:
+    """A repeated profile point has no slope: its normal points away from the axis."""
+    normal = lathe_z._surface_normal(math.pi / 2, 0, 0)
+    assert normal == pytest.approx([0, 1, 0], abs=1e-12)

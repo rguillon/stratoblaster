@@ -60,3 +60,11 @@ def test_gfx_ship_01_the_sill_rails_run_along_both_sides() -> None:
         assert len(sections) == len(cockpit.canopy_rows())
         for _z, ring in sections:
             assert all(p[0] * side > 0 for p in ring)
+
+
+def test_gfx_ship_01_off_the_canopys_rows_it_has_no_size() -> None:
+    rows = cockpit.CANOPY_ROWS
+    assert cockpit.canopy_at(rows[0][0] + 0.1) == [0.0, 0.0]
+    assert cockpit.canopy_at(rows[-1][0] - 0.1) == [0.0, 0.0]
+    middle = cockpit.canopy_at(rows[4][0])
+    assert middle == pytest.approx([rows[4][1], rows[4][2]])

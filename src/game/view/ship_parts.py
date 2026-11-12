@@ -211,19 +211,6 @@ def _hexagon_sections(
     return polygon_lathe_sections(profile, sides, REACTOR_ROUNDING, steps, polygon_turn(sides))
 
 
-def hexagon_body(name: str, profile: list[list[float]], material: Any, parent: Any) -> Any:
-    """Create a smooth body round the Z axis with the reactors' rounded hexagon section.
-
-    `profile` as a lathe's (`[z, radius]`); smooth-shaded all round, so the rounded corners read as
-    one curved skin with flat sides.
-    """
-    sections = _hexagon_sections(profile, REACTOR_CORNER_STEPS)
-    mesh = create_section_loft(name, sections, len(sections[0][1]), parent.getScene())
-    mesh.material = material
-    mesh.parent = parent
-    return mesh
-
-
 def hexagon_band(
     name: str,
     z: float,

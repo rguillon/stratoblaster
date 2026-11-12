@@ -95,15 +95,16 @@ def top_height(station: list[float], x: float) -> float:
     if station[CHINE_HALF_WIDTH] <= side:
         return 0
     ring = top_ring(station)
-    # The right half, from the spine out to the chine edge.
-    for k in range(4, 0, -1):
-        inner = ring[k]
-        outer = ring[k - 1]
-        if side <= outer[0]:
-            span = outer[0] - inner[0]
-            t = (side - inner[0]) / span if span > 0 else 1
-            return inner[1] + (outer[1] - inner[1]) * t
-    return ring[0][1]
+    # The right half, from the spine out to the chine edge: the first segment reaching past `side`
+    # (the chine's, the last, always does).
+    k = 4
+    while k > 1 and side > ring[k - 1][0]:
+        k -= 1
+    inner = ring[k]
+    outer = ring[k - 1]
+    span = outer[0] - inner[0]
+    t = (side - inner[0]) / span if span > 0 else 1
+    return inner[1] + (outer[1] - inner[1]) * t
 
 
 def smooth_stations(stations: list[list[float]], steps: int) -> list[list[float]]:

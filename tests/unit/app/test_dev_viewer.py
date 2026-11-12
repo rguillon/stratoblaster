@@ -278,6 +278,8 @@ def test_d199_a_ship_is_shown_at_the_middle_of_the_view_in_close_up(env: Env) ->
     v = viewer("ships", [DevItem("alpha", "Alpha", "1-1")])
     v.show(0, toggle=True)
     v.frame(0.1)
+    # Shown, a ship has no status line (the levels' clock, D-199).
+    assert v.status == ""
     ship = FakeShip.made[0]
     # The camera is 100 above the flight plane, looking down at 45°: the middle is 100 ahead.
     assert ship.at == (240, -50 + 100)
