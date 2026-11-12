@@ -14,7 +14,7 @@ and its choices in [ui/continue-and-game-over.md](../ui/continue-and-game-over.m
 ### GAME-LIFE-01 — Health bar · MUST
 
 Each life is a full health bar: the ship's health ([player-ship.md](player-ship.md)), 100 for the
-Balanced ship, the game's one ship. A level starts with the health bar full. Damage never takes the
+player ship, the game's one ship. A level starts with the health bar full. Damage never takes the
 health below 0.
 
 **Acceptance criteria**
@@ -191,5 +191,5 @@ read (not a whole number of at least 1 life and 0 bombs) count as none: the star
 
 ## Notes
 
-- D-050 measured (seed 606, Balanced ship, standing still in the middle) that the 3 lives last
+- D-050 measured (seed 606, player ship, standing still in the middle) that the 3 lives last
   about 60–85 s in World 1; a bot that only weaves and fires finishes 1-1 to 1-3.

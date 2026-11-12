@@ -151,7 +151,7 @@ GAME-LIFE-01), never above full; at full health, or once the game is over, it gi
   place; otherwise the weapon bonus (unit test).
 - Given the same enemies destroyed with and without heal bonuses, then the same ones drop a bonus
   (unit test).
-- Given the Balanced ship at 50 of 100 health, when a heal bonus is picked up, then it has 70; at
+- Given the player ship at 50 of 100 health, when a heal bonus is picked up, then it has 70; at
   90, 100 (unit test).
 
 *Sources: D-282.*

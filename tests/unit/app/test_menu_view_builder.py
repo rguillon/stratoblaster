@@ -315,10 +315,10 @@ def test_dev_menu_21_the_other_viewers_have_no_view_buttons() -> None:
 def test_d333_a_model_viewer_with_a_single_model_has_no_menu() -> None:
     """D-333: the player ship alone: no menu, no place in a list, no "next" in the hint."""
     context = dev_ctx()
-    context.dev_labels["ships"] = ["Balanced"]
+    context.dev_labels["ships"] = ["Player ship"]
     view = build_menu_view(state("dev-viewer", dev_viewer="ships"), context)
     assert isinstance(view, DevViewerView)
     assert view.menu is None
-    assert (view.item, view.position) == ("Balanced", "")
+    assert (view.item, view.position) == ("Player ship", "")
     assert "next" not in view.hint
     assert "zoom" in view.hint

@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Renaud Guillon
 """The neon trench behind the menus (UI-TITLE-07, D-325).
 
-UI-TITLE-08: neon blue/green (D-198). The balanced ship races down a dark trench towards the
+UI-TITLE-08: neon blue/green (D-198). The player ship races down a dark trench towards the
 camera: blue-grey walls of uneven panels with cyan, green and blue slots, a neon strip along their
 feet, lit ribs across the floor, a dashed guide line, haze, a deep blue glow at the far end, and
 speed streaks rushing past. Linear RGB, 0..1. Distances in world units; the camera looks towards

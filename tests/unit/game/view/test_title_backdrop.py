@@ -56,7 +56,7 @@ def backdrop(monkeypatch: Any, scene: Any) -> SimpleNamespace:
     monkeypatch.setattr(
         title_backdrop, "js_set", lambda obj, key, value: obj.__setitem__(key, value)
     )
-    monkeypatch.setattr(title_backdrop, "build_balanced_ship", lambda _scene: made.ship)
+    monkeypatch.setattr(title_backdrop, "build_player_ship", lambda _scene: made.ship)
     # Empty geometry for the trench and the streaks: the meshes are stand-ins anyway.
     empty = SimpleNamespace(positions=[], indices=[], colors=[])
     parts = {"structure": empty, "lights": empty}

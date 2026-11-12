@@ -1,10 +1,10 @@
 # Copyright (c) 2026 Renaud Guillon
-"""Unit tests of `src/game/view/balanced_hull.py` (GFX-SHIP-01, D-327, D-336)."""
+"""Unit tests of `src/game/view/ship_hull.py` (GFX-SHIP-01, D-327, D-336)."""
 
 import pytest
 
-from game.view import balanced_hull as hull
-from game.view.balanced_hull import (
+from game.view import ship_hull as hull
+from game.view.ship_hull import (
     STATIONS,
     TOP_POINTS,
     hull_section,

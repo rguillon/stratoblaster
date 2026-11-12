@@ -4,7 +4,7 @@
 
 The first screen after loading: the high score, the game's name as a chrome logo, the Start and
 Settings entries, a short controls hint and the build's version, over a 3D neon trench generated in
-code, the game's ship (the Balanced one) racing down it towards the camera, speed streaks rushing past. The same 3D
+code, the game's ship (the player ship) racing down it towards the camera, speed streaks rushing past. The same 3D
 backdrop stays behind the other menu screens.
 
 ## Requirements
@@ -97,7 +97,7 @@ select screen, or leaving a level), Start is selected.
 ### UI-TITLE-07 — The ship racing down a neon trench · SHOULD
 
 Behind the menu, a 3D scene generated in code (owner, 2026-11-11, D-325; a night city street
-before): the balanced player ship races down a deep trench, seen from the front, its nose towards
+before): the player ship races down a deep trench, seen from the front, its nose towards
 the camera. The camera flies backwards ahead of it, a little above, looking down the trench behind
 it. The trench has a dark floor and two tall walls of panels of uneven depth, with lit slots, a
 neon strip along the foot of each wall, lit ribs across the floor and a dashed guide line down its
@@ -196,7 +196,7 @@ full screen (an iPhone's Safari), there is no entry.
 ## Notes
 
 - For a short time the reviewer had the menu ship replaced by a wireframe, then anime-styled fighter
-  pilot; it was reverted to the balanced ship and the pilot code deleted (D-104). The striped sun of
+  pilot; it was reverted to the player ship and the pilot code deleted (D-104). The striped sun of
   the synthwave and darksynth looks is gone too.
 - The night city street with its towers, signs, skyline and rain (D-012, D-014) was replaced by the
   trench (D-325, owner: "I want the ship to move like it is in a trench with a frontal facing

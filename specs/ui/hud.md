@@ -53,7 +53,7 @@ The top right corner of the window shows the ship's lives as `♥ N` (green), an
 bombs as a count, `● N` (orange), however many there are.
 
 **Acceptance criteria**
-- Given the balanced ship with 3 lives and 7 bombs, then the HUD shows `♥ 3` and `● 7`.
+- Given the player ship with 3 lives and 7 bombs, then the HUD shows `♥ 3` and `● 7`.
 
 *Sources: D-041, D-050, D-154, D-155, D-317.*
 
@@ -65,7 +65,7 @@ into ten cells, filled with the share of health left, in solid cyan. Under `low_
 ship's full health the bar and the text turn red and the window's edges glow red, pulsing.
 
 **Acceptance criteria**
-- Given the balanced ship at 72.4 health, then the text is `HP 73 / 100` and the bar is 72.4 % full.
+- Given the player ship at 72.4 health, then the text is `HP 73 / 100` and the bar is 72.4 % full.
 - Given the ship under 30 % health, then the bar is red and the HUD is marked low; at 30 % or more,
   it is not.
 

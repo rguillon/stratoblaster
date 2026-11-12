@@ -79,7 +79,7 @@ fast as the CPU goes, no browser. The games are played under PyPy, about five ti
 CPython on the simulation (`make learn` has uv install it; D-301), and the brain learns under
 CPython with PyTorch. It sees the whole playfield and a close-up around the
 ship: the enemies and bosses, the bullets, missiles and lasers, and the weapon, life, bomb and
-healing bonuses. `make learn` trains it: each game it plays, with the balanced ship, starts at
+healing bonuses. `make learn` trains it: each game it plays, with the player ship, starts at
 1-1 with 3 lives and 3 bombs and goes on to the next level with what it earned, until the ship is
 lost, and it learns to score the most (D-295). Every 10 s it says how its games went (score, levels reached); the brain
 whose games scored best on average is kept in `data/brain-best.pt`, and `data/learn-log.csv` logs

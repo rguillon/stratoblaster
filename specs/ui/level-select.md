@@ -93,11 +93,11 @@ Coming back from a level's end panel ([continue-and-game-over.md](continue-and-g
 ### UI-LEVEL-08 — Confirm starts the level · MUST
 
 Confirming an unlocked level opens the game screen, which starts that level with the game's one
-ship, the Balanced one ([gameplay/player-ship.md](../gameplay/player-ship.md)). Back opens the
+ship, the player ship ([gameplay/player-ship.md](../gameplay/player-ship.md)). Back opens the
 title screen.
 
 **Acceptance criteria**
-- Given `1-1` is confirmed, then the game screen plays `1-1` with the Balanced ship.
+- Given `1-1` is confirmed, then the game screen plays `1-1` with the player ship.
 - Given any level of any world is confirmed, then the game screen starts that level.
 - Given `level-select`, when Back is pressed, then the screen is `title`.
 

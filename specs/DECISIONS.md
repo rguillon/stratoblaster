@@ -2752,3 +2752,19 @@
 - **Consequences:** the ship is 5.27 long from nose to the nacelles' back rings (5.75 to the
   body's point before), about 37 px on the playfield (GFX-SHIP-07, 40 before). Fewer triangles
   (9,975 in the browser, 10,117 before, counted the same way). The hitbox is unchanged.
+
+### D-357 — No more "balanced": the ship is the player ship
+
+- **Date:** 2026-11-12
+- **Requirements:** GAME-SHIP-01, GFX-SHIP-01, DEV-OPT-01.
+- **Context:** owner: "remove all the references to "balanced" in the code". The name was left
+  from phase 2's three ships (D-326 kept only that one); the owner chose "player" for the new name.
+- **Decision:** the ship's id is `player` and its name "Player ship" (`game/config/player_ships.py`;
+  the menu state's and the test API's `shipId`). The view modules are `ship_model.py`
+  (`build_player_ship`, `MAIN_WING` for `BALANCED_WING`), `ship_hull.py` and `ship_cockpit.py`,
+  next to `ship_parts.py` and `ship_materials.py` (`player_ship`/`player_hull` would have shared
+  their names with `core.entities.player_ship` and `core.systems.player_hull`); their tests
+  follow. The meshes are named `ship-…` under the `ship-player` root. The live specs and the README
+  follow; the decisions log, `specs_old/` and the unused TypeScript tests in `node/tests/` keep the
+  old name as history.
+- **Consequences:** no behaviour changes; the dev ships viewer labels the ship "Player ship".

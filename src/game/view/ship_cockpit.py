@@ -1,5 +1,5 @@
 # Copyright (c) 2026 Renaud Guillon
-"""The Balanced ship's cockpit (GFX-SHIP-01, D-354): its canopy, frame and what shows inside.
+"""The player ship's cockpit (GFX-SHIP-01, D-354): its canopy, frame and what shows inside.
 
 Owner: "make a better realistic looking cockpit". A fighter's canopy sitting on the body's deck,
 not a ball on it: lofted along the ship, each section an arch on the sill where it meets the hull;
@@ -8,13 +8,13 @@ fall into the spine. Tinted glass shows the cockpit inside: a dark floor, the in
 the windscreen, the ejection seat and the pilot's helmet. A dark bow frames the windscreen and
 glowing rails run along both sills (the cockpit glows as the wings' edges do, D-335).
 
-Pure geometry: sections `[z, ring]` and points; `balanced_ship.py` builds the meshes. Model units,
+Pure geometry: sections `[z, ring]` and points; `ship_model.py` builds the meshes. Model units,
 nose towards +Z, Y up.
 """
 
 import math
 
-from game.view.balanced_hull import smooth_stations, station_at, top_height
+from game.view.ship_hull import smooth_stations, station_at, top_height
 
 # isort: split
 # __pragma__ ("skip")

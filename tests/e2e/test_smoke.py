@@ -45,7 +45,7 @@ def test_eng_54_loading_title_levels_game_pause_resume_back_to_title(
     expect(page.locator(".title-screen")).to_be_visible(timeout=LOAD_TIMEOUT)
     expect_state(page, {"screen": "title", "selectedId": "start"})
     send_action(page, "confirm")
-    expect_state(page, {"screen": "level-select", "selectedId": "1-1", "shipId": "balanced"})
+    expect_state(page, {"screen": "level-select", "selectedId": "1-1", "shipId": "player"})
     send_action(page, "confirm")
     expect_state(page, {"screen": "game", "chosenLevelId": "1-1"})
     expect(page.locator(".game-level")).to_have_text("Level 1-1")

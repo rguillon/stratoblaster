@@ -4,9 +4,9 @@
 from game.config.player_ships import PLAYER_SHIPS
 
 
-def test_game_ship_01_the_player_flies_one_ship_the_balanced_one() -> None:
+def test_game_ship_01_the_player_flies_one_ship_the_player_ship() -> None:
     ids = [ship.id for ship in PLAYER_SHIPS.ships]
-    assert ids == ["balanced"]
+    assert ids == ["player"]
 
 
 def test_game_ship_02_its_top_speed_is_the_base_speed() -> None:

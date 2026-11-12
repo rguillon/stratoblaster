@@ -20,13 +20,13 @@ def run_flow(page: Page, press: Callable[[Locator], None]) -> None:
     """
     open_game(page)
     press(page.locator(".title-start"))
-    expect_state(page, {"screen": "level-select", "selectedId": "1-1", "shipId": "balanced"})
+    expect_state(page, {"screen": "level-select", "selectedId": "1-1", "shipId": "player"})
     press(page.locator(".menu-back"))
     expect_state(page, {"screen": "title", "selectedId": "start"})
     press(page.locator(".title-start"))
     expect_state(page, {"screen": "level-select", "selectedId": "1-1"})
     press(page.locator(".level-cell").first)
-    expect_state(page, {"screen": "game", "shipId": "balanced", "chosenLevelId": "1-1"})
+    expect_state(page, {"screen": "game", "shipId": "player", "chosenLevelId": "1-1"})
     expect(page.locator(".game-level")).to_have_text("Level 1-1")
     # No Back button and no pause button over the playfield (UI-HUD-09, D-251): Escape pauses
     # (UI-PAUSE-01), then Main menu and Yes, leave, by pointer (UI-PAUSE-10).

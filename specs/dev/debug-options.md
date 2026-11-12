@@ -28,13 +28,13 @@ game ignores the debug keys. The options are read once, when the page opens.
 
 With `level=<id>` in the URL (for example `?level=2-4`), the game starts that level as soon as the
 menus have loaded, skipping the title and level select screens. It is flown with the game's one
-ship (`balanced`); there is no `ship=` option any more (D-326). Every level of every world is
+ship (`player`); there is no `ship=` option any more (D-326). Every level of every world is
 accepted (1-1 to 4-5). The `level` option turns debug mode on; the other options of this file only
 act with it. Without `level` (or with an empty one) there are no debug options. A level the game
 does not know starts nothing: the title screen shows.
 
 **Acceptance criteria**
-- Given `?level=1-3`, then level 1-3 is being played, with the balanced ship.
+- Given `?level=1-3`, then level 1-3 is being played, with the player ship.
 - Given no `level` in the URL, then the game opens on its title screen and there is no debug mode.
 
 *Sources: P06-R09, P08-R12, P09-R11, P10-R13, D-326.*
@@ -161,7 +161,7 @@ the game is paused.
 |------|-------|-------|
 | `fast_forward` | 4 | Time scale while F is on. `src/config/game_play.py` `GAME_PLAY_CONFIG.debug.fast_forward` |
 | `seek_step` | 10 s | Jump of ← / →. `GAME_PLAY_CONFIG.debug.seek_step` |
-| default ship | `balanced` | The first ship of `src/game/config/player_ships.py` |
+| default ship | `player` | The first ship of `src/game/config/player_ships.py` |
 | times of day | dawn, morning, midday, afternoon, dusk, night | `src/core/scenery/atmosphere.py` `TIMES_OF_DAY` |
 
 ## Notes

@@ -2,7 +2,7 @@
 """Readability of the playfield (P14): scenery toning and shot glow.
 
 The toning of the scenery under the ships, and the shot renderers' glow. The player ship has no
-edge trim (D-335): its wings', canards' and canopy's edges glow (`balanced_ship.py`).
+edge trim (D-335): its wings', canards' and canopy's edges glow (`ship_model.py`).
 """
 
 from org.transcrypt.stubs.browser import __pragma__

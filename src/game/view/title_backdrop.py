@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Renaud Guillon
 """The backdrop of the menus: the ship racing down a neon trench (UI-TITLE-07, D-325).
 
-UI-TITLE-08 for its colours. The balanced ship flies down a trench towards a frontal camera that
+UI-TITLE-08 for its colours. The player ship flies down a trench towards a frontal camera that
 flies backwards ahead of it; the trench scrolls away behind the ship, speed streaks rush past
 faster still, and the ship sways, banks and floats. Everything is generated in code from a fixed
 seed. It shows behind every menu screen (UI-TITLE-09).
@@ -13,7 +13,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from core.math.rng import create_rng
 from game.config.title_look import TITLE_LOOK as LOOK
-from game.view.balanced_ship import build_balanced_ship
+from game.view.ship_model import build_player_ship
 from game.view.trench_geometry import build_streaks, build_trench_chunk
 from render.babylon import (
     apply_vertex_data,
@@ -148,7 +148,7 @@ def build_title_backdrop(scene: Any) -> Any:
     ship_position = LOOK.ship.position
     pivot.position.set(ship_position[0], ship_position[1], ship_position[2])
     # The model's nose is towards +Z, where the camera is: the ship flies at it.
-    ship = build_balanced_ship(scene)
+    ship = build_player_ship(scene)
     ship.parent = pivot
     # Seconds since the backdrop was built.
     clock = [0.0]

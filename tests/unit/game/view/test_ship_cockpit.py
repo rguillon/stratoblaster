@@ -1,10 +1,10 @@
 # Copyright (c) 2026 Renaud Guillon
-"""Unit tests of `src/game/view/balanced_cockpit.py` (GFX-SHIP-01, D-354)."""
+"""Unit tests of `src/game/view/ship_cockpit.py` (GFX-SHIP-01, D-354)."""
 
 import pytest
 
-from game.view import balanced_cockpit as cockpit
-from game.view.balanced_hull import STATIONS, Z, station_at, top_height
+from game.view import ship_cockpit as cockpit
+from game.view.ship_hull import STATIONS, Z, station_at, top_height
 
 
 def test_gfx_ship_01_the_canopy_sits_on_the_deck_its_skin_closing_under_the_sill() -> None:

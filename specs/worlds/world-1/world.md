@@ -443,11 +443,11 @@ enemies'.
 
 #### WLD-1-29 — Boss fight times · MUST
 
-With the balanced ship, guns at level 3, always firing at the boss, each fight lasts within
+With the player ship, guns at level 3, always firing at the boss, each fight lasts within
 `mini_fight_time` and `final_fight_time`, longer from 1-1 to 1-5.
 
 **Acceptance criteria**
-- Given a simulated fight of each World 1 boss (balanced ship, guns level 3, always on target), then it lasts within the ranges of **Tunable values** (unit test).
+- Given a simulated fight of each World 1 boss (player ship, guns level 3, always on target), then it lasts within the ranges of **Tunable values** (unit test).
 
 *Sources: P07-R10, D-055.*
 

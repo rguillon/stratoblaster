@@ -6,7 +6,7 @@ from game.view.player_ship_models import PLAYER_SHIP_MODELS
 
 
 def test_the_player_ship_has_a_model_builder() -> None:
-    assert set(PLAYER_SHIP_MODELS) == {"balanced"}
+    assert set(PLAYER_SHIP_MODELS) == {"player"}
     assert all(callable(build) for build in PLAYER_SHIP_MODELS.values())
 
 

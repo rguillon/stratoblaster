@@ -10,7 +10,7 @@ with one intake, a canted tail on its top and a ventral fin under it (D-353). A 
 hangs under each wing, its seven missiles' tips out ahead of the leading edge.
 
 Model units: nose towards +Z, about 5.2 units long. The body is one blended skin
-(`balanced_hull.py`), flat-shaded facets; the canopy, nacelles and pods are smooth-shaded on top:
+(`ship_hull.py`), flat-shaded facets; the canopy, nacelles and pods are smooth-shaded on top:
 their triangles go on the upper half, which the playfield camera sees (GFX-SHIP-05).
 """
 
@@ -18,7 +18,7 @@ import math
 
 from game.config.readability import READABILITY
 from game.config.ship_look import PLAYER_SHIP_SCALE
-from game.view.balanced_cockpit import (
+from game.view.ship_cockpit import (
     ARCH_POINTS,
     BOW,
     HELMET,
@@ -32,7 +32,7 @@ from game.view.balanced_cockpit import (
     floor_sections,
     rail_sections,
 )
-from game.view.balanced_hull import (
+from game.view.ship_hull import (
     BELLY_DEPTH,
     BODY_HALF_WIDTH,
     CHINE_EDGE,
@@ -92,7 +92,7 @@ Scene = Any
 # back (D-333, owner: "move the wings more to the back"; 0.6 further forward before). Its tip runs
 # on past the twin tip reactors (D-339, owner: "make the wings go a little beyond the side
 # reactors"; it stopped at 1.9, under them, before).
-BALANCED_WING = [
+MAIN_WING = [
     [0.8, -0.7],
     [2.25, 0.2425],
     [2.3, 0.2],
@@ -100,7 +100,7 @@ BALANCED_WING = [
     [0.8, -1.85],
 ]
 # D-336: the stub wings joining the body to the nacelles (D-332) are now the body's own strakes
-# (`balanced_hull.py`). Their glowing leading edge follows the strakes' curve, at these Z.
+# (`ship_hull.py`). Their glowing leading edge follows the strakes' curve, at these Z.
 STRAKE_EDGE_ZS = [0.85, 0.6, 0.35, 0.1, -0.1, -0.3]
 # D-356 (owner: "the central wing shall be oriented the other way (the entier wings will form a
 # W)"): behind the body's square back the strakes run on into the nacelles, their trailing edge
@@ -120,15 +120,15 @@ WING_THICKNESS = 0.07
 
 def _leading_edge(x: float) -> float:
     """Return the Z of the right wing's leading edge at `x`, from its root to its tip."""
-    root = BALANCED_WING[0]
-    tip = BALANCED_WING[1]
+    root = MAIN_WING[0]
+    tip = MAIN_WING[1]
     return root[1] + (x - root[0]) * (tip[1] - root[1]) / (tip[0] - root[0])
 
 
 def _trailing_edge(x: float) -> float:
     """Return the Z of the right wing's trailing edge at `x`, from its root to its tip."""
-    root = BALANCED_WING[4]
-    tip = BALANCED_WING[3]
+    root = MAIN_WING[4]
+    tip = MAIN_WING[3]
     return root[1] + (x - root[0]) * (tip[1] - root[1]) / (tip[0] - root[0])
 
 
@@ -296,7 +296,7 @@ VENTS = [
 # Segments of each hand-set profile are cut into this many along a smooth curve.
 PROFILE_STEPS = 3
 
-# The cockpit is `balanced_cockpit.py`'s (D-354: a fighter's canopy on the deck; a teardrop bubble
+# The cockpit is `ship_cockpit.py`'s (D-354: a fighter's canopy on the deck; a teardrop bubble
 # with a glowing frame under it before). The pilot's helmet and its visor, lathe profiles in units
 # of the helmet's radius (`[z, radius]`, nose to tail).
 HELMET_PROFILE = [[1.0, 0.0], [0.7, 0.71], [0.0, 1.0], [-0.7, 0.71], [-1.0, 0.0]]
@@ -367,25 +367,25 @@ TIP_BODY_PROFILE = [
 def _build_body(root: Any, scene: Any) -> None:
     """Build the slim central body, its seams and vents, and the guns under it."""
     mats = get_ship_materials(scene)
-    body_root = new_transform_node("balanced-body-root", scene)
+    body_root = new_transform_node("ship-body-root", scene)
     body_root.parent = root
     # One faceted skin (D-336): every face flat-shaded, so the facets' edges read crisp.
-    body = create_section_loft("balanced-body", hull_sections(), 0, scene)
+    body = create_section_loft("ship-body", hull_sections(), 0, scene)
     body.material = mats.hull
     body.parent = body_root
     for k, z in enumerate(SEAM_ZS):
-        _build_seam("balanced-seam-" + str(k), z, mats.hullDark, body_root, scene)
+        _build_seam("ship-seam-" + str(k), z, mats.hullDark, body_root, scene)
     for side, sign in [("right", 1), ("left", -1)]:
         for k, vent in enumerate(VENTS):
             outline = vent if sign > 0 else mirror_x(vent)
             middle = _centre(vent)
             y = top_height(station_at(middle[1]), middle[0])
-            name = "balanced-vent-" + side + "-" + str(k)
+            name = "ship-vent-" + side + "-" + str(k)
             plate(name, outline, y, mats.hullDark, body_root)
 
     for side, sign in [("right", 1), ("left", -1)]:
         outline = STRAKE_TAIL if sign > 0 else mirror_x(STRAKE_TAIL)
-        panel("balanced-strake-" + side + "-tail", outline, CHINE_EDGE * 2, mats.hull, body_root)
+        panel("ship-strake-" + side + "-tail", outline, CHINE_EDGE * 2, mats.hull, body_root)
     _build_tail_plate(body_root, scene)
 
     _build_laser(root, scene)
@@ -410,7 +410,7 @@ def tail_plate_sections() -> list[list[Any]]:
 
 def _build_tail_plate(parent: Any, scene: Any) -> None:
     """Build the dark plate on the body's square back (D-356)."""
-    plate_mesh = create_section_loft("balanced-tail-plate", tail_plate_sections(), 0, scene)
+    plate_mesh = create_section_loft("ship-tail-plate", tail_plate_sections(), 0, scene)
     plate_mesh.material = get_ship_materials(scene).hullDark
     plate_mesh.parent = parent
 
@@ -446,18 +446,18 @@ def _build_laser(root: Any, scene: Any) -> None:
     """
     mats = get_ship_materials(scene)
     sections = [fairing_section(f[0], f) for f in GUN_FAIRING]
-    fairing = create_section_loft("balanced-gun-fairing", sections, 0, scene)
+    fairing = create_section_loft("ship-gun-fairing", sections, 0, scene)
     fairing.material = mats.hull
     fairing.parent = root
     laser = LASER
-    node = new_transform_node("balanced-laser", scene)
+    node = new_transform_node("ship-laser", scene)
     node.position.y = laser["y"]
     node.parent = root
     core = laser["core"]
     back = core["zs"][0]
     front = core["zs"][1]
     faceted_rod(
-        "balanced-laser-core",
+        "ship-laser-core",
         {"length": front - back, "radius": core["radius"]},
         vector3(0, 0, (front + back) / 2),
         mats.reactorCore,
@@ -467,9 +467,9 @@ def _build_laser(root: Any, scene: Any) -> None:
     thickness = laser["railThickness"]
     for side, sign in [("right", 1), ("left", -1)]:
         outline = LASER_RAIL if sign > 0 else mirror_x(LASER_RAIL)
-        panel("balanced-laser-rail-" + side, outline, thickness, mats.hullDark, node)
-    panel("balanced-laser-bridge", LASER_BRIDGE, thickness * 1.2, mats.hullDark, node)
-    emitter = create_faceted_lathe_along_z("balanced-laser-emitter", LASER_EMITTER, OCTAGON, scene)
+        panel("ship-laser-rail-" + side, outline, thickness, mats.hullDark, node)
+    panel("ship-laser-bridge", LASER_BRIDGE, thickness * 1.2, mats.hullDark, node)
+    emitter = create_faceted_lathe_along_z("ship-laser-emitter", LASER_EMITTER, OCTAGON, scene)
     emitter.material = mats.reactorCore
     emitter.parent = node
 
@@ -502,7 +502,7 @@ def _build_minigun(side: str, sign: float, root: Any, scene: Any) -> None:
     """
     mats = get_ship_materials(scene)
     gun = MINIGUN
-    name = "balanced-minigun-" + side
+    name = "ship-minigun-" + side
     node = new_transform_node(name, scene)
     node.position.set(sign * gun["x"], gun["y"], gun["z"])
     node.parent = root
@@ -557,12 +557,12 @@ def _build_seam(name: str, z: float, material: Any, parent: Any, scene: Any) -> 
 def _build_cockpit(root: Any, scene: Any, glow_width: float) -> None:
     """Build the cockpit (D-354): canopy glass, its bow and sill rails, and what shows inside."""
     mats = get_ship_materials(scene)
-    glass = create_section_loft("balanced-canopy", canopy_sections(), ARCH_POINTS, scene)
+    glass = create_section_loft("ship-canopy", canopy_sections(), ARCH_POINTS, scene)
     glass.material = mats.glass
     glass.parent = root
     for side, sign in [("right", 1.0), ("left", -1.0)]:
         rail = create_section_loft(
-            "balanced-canopy-rail-" + side,
+            "ship-canopy-rail-" + side,
             rail_sections(sign, glow_width / EDGE_GLOW["width"]),
             0,
             scene,
@@ -573,7 +573,7 @@ def _build_cockpit(root: Any, scene: Any, glow_width: float) -> None:
     half_width = bow["width"] / 2
     outline_z = [[-1.0, -half_width], [1.0, -half_width], [1.0, half_width], [-1.0, half_width]]
     for k, (x, y, angle, length) in enumerate(bow_segments()):
-        node = new_transform_node("balanced-canopy-bow-" + str(k), scene)
+        node = new_transform_node("ship-canopy-bow-" + str(k), scene)
         node.position.set(x, y, bow["z"])
         node.rotation.z = angle
         node.parent = root
@@ -585,7 +585,7 @@ def _build_cockpit(root: Any, scene: Any, glow_width: float) -> None:
 def _build_cockpit_inside(root: Any, scene: Any) -> None:
     """Build what shows under the glass: the floor, the hood, the seat and the pilot's helmet."""
     mats = get_ship_materials(scene)
-    floor = create_section_loft("balanced-cockpit-floor", floor_sections(), 0, scene)
+    floor = create_section_loft("ship-cockpit-floor", floor_sections(), 0, scene)
     floor.material = mats.intakeBlack
     floor.parent = root
     hood = HOOD
@@ -593,7 +593,7 @@ def _build_cockpit_inside(root: Any, scene: Any) -> None:
     outline = [[-hood["half"], HOOD_ZS[0]], [hood["half"], HOOD_ZS[0]]]
     outline.append([hood["half"], HOOD_ZS[1]])
     outline.append([-hood["half"], HOOD_ZS[1]])
-    mesh = panel("balanced-cockpit-hood", outline, hood["height"], mats.hullDark, root)
+    mesh = panel("ship-cockpit-hood", outline, hood["height"], mats.hullDark, root)
     mesh.position.y = hood_floor + hood["height"] / 2
     seat = SEAT
     seat_floor = floor_height(SEAT_ZS[0])
@@ -603,7 +603,7 @@ def _build_cockpit_inside(root: Any, scene: Any) -> None:
     ]:
         outline = [[-half, SEAT_ZS[0]], [half, SEAT_ZS[0]], [half, SEAT_ZS[1]]]
         outline.append([-half, SEAT_ZS[1]])
-        mesh = panel("balanced-cockpit-" + part, outline, height, mats.hullDark, root)
+        mesh = panel("ship-cockpit-" + part, outline, height, mats.hullDark, root)
         mesh.position.y = seat_floor + height / 2
     helmet = HELMET
     radius = helmet["radius"]
@@ -615,7 +615,7 @@ def _build_cockpit_inside(root: Any, scene: Any) -> None:
     for part, profile, material in parts:
         scaled = [[p[0] * radius, p[1] * radius] for p in profile]
         mesh = create_faceted_lathe_along_z(
-            "balanced-cockpit-" + part, scaled, LatheHalves(8, 3), scene
+            "ship-cockpit-" + part, scaled, LatheHalves(8, 3), scene
         )
         mesh.position.set(0, centre, helmet["z"])
         mesh.material = material
@@ -632,21 +632,21 @@ def _build_wing(side: str, sign: float, root: Any, scene: Any) -> None:
     def mirror(outline: list[list[float]]) -> list[list[float]]:
         return outline if sign > 0 else mirror_x(outline)
 
-    wing = new_transform_node("balanced-wing-" + side, scene)
+    wing = new_transform_node("ship-wing-" + side, scene)
     wing.parent = root
     panel(
-        "balanced-wing-" + side + "-panel",
-        mirror(BALANCED_WING),
+        "ship-wing-" + side + "-panel",
+        mirror(MAIN_WING),
         WING_THICKNESS,
         mats.hullMid,
         wing,
     )
     flap = mirror(WING_FLAP)
-    plate("balanced-wing-" + side + "-flap", flap, WING_THICKNESS / 2, mats.hullDark, wing)
+    plate("ship-wing-" + side + "-flap", flap, WING_THICKNESS / 2, mats.hullDark, wing)
     for k, line in enumerate(WING_LINES):
-        name = "balanced-wing-" + side + "-line-" + str(k)
+        name = "ship-wing-" + side + "-line-" + str(k)
         plate(name, mirror(line), WING_THICKNESS / 2, mats.hullDark, wing)
-    canard = panel("balanced-canard-" + side, mirror(CANARD), CANARD_THICKNESS, mats.hullMid, wing)
+    canard = panel("ship-canard-" + side, mirror(CANARD), CANARD_THICKNESS, mats.hullMid, wing)
     # Its top face at the body's chine edge, so its trim runs on from the body's (D-333).
     canard.position.y = CHINE_EDGE - CANARD_THICKNESS / 2
 
@@ -672,9 +672,9 @@ def _build_edge_glow(side: str, sign: float, root: Any, scene: Any, glow_width: 
 
     wing_size = {"width": glow_width, "thickness": EDGE_GLOW["wing"]}
     canard_size = {"width": glow_width, "thickness": EDGE_GLOW["canard"]}
-    name = "balanced-glow-" + side
+    name = "ship-glow-" + side
     # The main wing's, either side of the tip reactors' body, which it runs through (D-339).
-    wing = mirror(BALANCED_WING)
+    wing = mirror(MAIN_WING)
     gap = [TIP_REACTOR["x"] - TIP_BODY["halfWidth"], TIP_REACTOR["x"] + TIP_BODY["halfWidth"]]
     inner = mirror([[gap[0], _leading_edge(gap[0])]])[0]
     outer = mirror([[gap[1], _leading_edge(gap[1])]])[0]
@@ -707,26 +707,26 @@ def _build_tails(side: str, sign: float, root: Any, scene: Any, glow_width: floa
     middle = (pod["ys"][0] + pod["ys"][1]) / 2
     top = middle + TIP_BODY["halfHeight"]
     bottom = middle - TIP_BODY["halfHeight"]
-    tail = new_transform_node("balanced-tail-" + side, scene)
+    tail = new_transform_node("ship-tail-" + side, scene)
     tail.position.set(x, top - 0.02, TIP_TAIL_SHIFT)
     # Stand the panel up (X becomes height), then cant it outwards.
     tail.rotation.z = math.pi / 2 - sign * TAIL_CANT
     tail.parent = root
-    panel("balanced-tail-" + side + "-panel", TAIL, TAIL_THICKNESS, mats.hullDark, tail)
+    panel("ship-tail-" + side + "-panel", TAIL, TAIL_THICKNESS, mats.hullDark, tail)
     # Their leading edge and tip glow, as the wings' do (D-346, owner: "add highlight to the
     # vertical wings too").
     _glow_edges(
-        "balanced-glow-" + side + "-tail", TAIL, TAIL_THICKNESS, glow_width, mats.edgeGlow, tail
+        "ship-glow-" + side + "-tail", TAIL, TAIL_THICKNESS, glow_width, mats.edgeGlow, tail
     )
 
     # Ventral fin: same trick, pointing down and outwards.
-    fin = new_transform_node("balanced-ventral-" + side, scene)
+    fin = new_transform_node("ship-ventral-" + side, scene)
     fin.position.set(x, bottom + 0.02, TIP_TAIL_SHIFT)
     fin.rotation.z = -math.pi / 2 + sign * VENTRAL_CANT
     fin.parent = root
-    panel("balanced-ventral-" + side + "-panel", VENTRAL_FIN, VENTRAL_THICKNESS, mats.hullDark, fin)
+    panel("ship-ventral-" + side + "-panel", VENTRAL_FIN, VENTRAL_THICKNESS, mats.hullDark, fin)
     _glow_edges(
-        "balanced-glow-" + side + "-ventral",
+        "ship-glow-" + side + "-ventral",
         VENTRAL_FIN,
         VENTRAL_THICKNESS,
         glow_width,
@@ -772,7 +772,7 @@ def _build_missile_pod(side: str, sign: float, root: Any, scene: Any) -> None:
     """Build the missile launcher through a wing: pod, launch face, missiles, band, fins."""
     mats = get_ship_materials(scene)
     pod = MISSILE_POD
-    name = "balanced-missiles-" + side
+    name = "ship-missiles-" + side
     node = new_transform_node(name, scene)
     node.position.set(sign * pod["x"], pod["y"], pod["z"])
     node.scaling.y = pod["stretch"]
@@ -813,7 +813,7 @@ def _build_tip_reactor(side: str, sign: float, root: Any, scene: Any) -> None:
     """
     mats = get_ship_materials(scene)
     pod = TIP_REACTOR
-    name = "balanced-tip-" + side
+    name = "ship-tip-" + side
     x = sign * pod["x"]
     for k, label in enumerate(["upper", "lower"]):
         y = pod["ys"][k]
@@ -934,9 +934,9 @@ def scoop_collar_rings(up: float) -> list[list[list[float]]]:
     return rings
 
 
-def build_balanced_ship(scene: Any, glow_width: float = EDGE_GLOW["width"]) -> Any:
+def build_player_ship(scene: Any, glow_width: float = EDGE_GLOW["width"]) -> Any:
     """Build the player ship (GFX-SHIP-01), its glowing edge strips `glow_width` across."""
-    root = new_transform_node("ship-balanced", scene)
+    root = new_transform_node("ship-player", scene)
     _build_body(root, scene)
     _build_cockpit(root, scene, glow_width)
     for side, sign in [("right", 1), ("left", -1)]:
@@ -946,13 +946,13 @@ def build_balanced_ship(scene: Any, glow_width: float = EDGE_GLOW["width"]) -> A
         _build_missile_pod(side, sign, root, scene)
         _build_tip_reactor(side, sign, root, scene)
         reactor = build_reactor(
-            "balanced-reactor-" + side, REACTOR, scene, True, OCTAGON, REACTOR_HEIGHT
+            "ship-reactor-" + side, REACTOR, scene, True, OCTAGON, REACTOR_HEIGHT
         )
         reactor.position.set(sign * REACTOR_OFFSET_X, REACTOR_Y, REACTOR_Z)
         reactor.scaling.y = REACTOR_HEIGHT
         reactor.parent = root
         for label, up in [("top", 1), ("bottom", -1)]:
-            _build_scoop("balanced-reactor-" + side + "-scoop-" + label, up, reactor, scene)
+            _build_scoop("ship-reactor-" + side + "-scoop-" + label, up, reactor, scene)
     return root
 
 
@@ -970,4 +970,4 @@ def build_playfield_ship(scene: Any) -> Any:
 
     At about 40 px long, the menus' strips would be a quarter of a pixel across.
     """
-    return build_balanced_ship(scene, playfield_glow_width())
+    return build_player_ship(scene, playfield_glow_width())

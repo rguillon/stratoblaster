@@ -1,5 +1,5 @@
 # Copyright (c) 2026 Renaud Guillon
-"""Unit tests of `src/game/view/balanced_ship.py` (GFX-SHIP-01)."""
+"""Unit tests of `src/game/view/ship_model.py` (GFX-SHIP-01)."""
 
 import math
 from typing import Any
@@ -11,11 +11,11 @@ from helpers.babylon_stub import stub_babylon
 from game.config.readability import READABILITY
 from game.config.ship_look import PLAYER_SHIP_SCALE
 from game.index import GAME
-from game.view import balanced_hull as hull
-from game.view import balanced_ship
-from game.view.balanced_hull import hull_sections
-from game.view.balanced_ship import build_balanced_ship
+from game.view import ship_hull as hull
+from game.view import ship_model
 from game.view.player_ship_models import PLAYER_SHIP_MODELS
+from game.view.ship_hull import hull_sections
+from game.view.ship_model import build_player_ship
 from render.geometry.lathe_z import (
     build_faceted_lathe_vertex_data,
     build_smooth_top_lathe_vertex_data,
@@ -25,15 +25,15 @@ from render.geometry.section_loft import build_section_loft
 
 @pytest.fixture
 def scene(monkeypatch: Any) -> Any:
-    stub_babylon(monkeypatch, balanced_ship)
+    stub_babylon(monkeypatch, ship_model)
     monkeypatch.setattr(
-        balanced_ship, "get_ship_materials", lambda _scene: MagicMock(name="materials")
+        ship_model, "get_ship_materials", lambda _scene: MagicMock(name="materials")
     )
     return MagicMock(name="scene")
 
 
-def test_the_balanced_ship_is_built_under_a_root_node(scene: Any) -> None:
-    assert build_balanced_ship(scene) is not None
+def test_the_ship_model_is_built_under_a_root_node(scene: Any) -> None:
+    assert build_player_ship(scene) is not None
 
 
 def _upper_share(profile: list[list[float]], halves: Any) -> float:
@@ -54,71 +54,71 @@ def test_gfx_ship_05_the_faceted_hull_stays_cheap() -> None:
 
 def test_gfx_ship_01_the_wings_are_forward_swept() -> None:
     """D-330: the tip's leading and trailing edges lie ahead of the root's."""
-    wing = balanced_ship.BALANCED_WING
+    wing = ship_model.MAIN_WING
     assert wing[1][1] > wing[0][1]
     assert wing[3][1] > wing[4][1]
 
 
 def test_gfx_ship_01_twin_reactors_sit_one_over_the_other_on_each_wing_tip() -> None:
     """D-331, D-339: one over the other, the fins canted 45°; the wing runs on past them."""
-    pod = balanced_ship.TIP_REACTOR
-    tip = balanced_ship.BALANCED_WING[2]
-    body = balanced_ship.TIP_BODY
+    pod = ship_model.TIP_REACTOR
+    tip = ship_model.MAIN_WING[2]
+    body = ship_model.TIP_BODY
     assert pod["x"] + body["halfWidth"] < tip[0] < pod["x"] + body["halfWidth"] + 0.3
     upper, lower = pod["ys"]
     assert upper > 0 > lower
     assert upper - lower >= 2 * pod["radius"]
     x = pod["x"]
-    assert balanced_ship._trailing_edge(x) < pod["z"] < balanced_ship._leading_edge(x)
+    assert ship_model._trailing_edge(x) < pod["z"] < ship_model._leading_edge(x)
 
 
 def test_gfx_ship_01_the_flaps_and_panel_lines_lie_on_the_wing() -> None:
-    for outline in [balanced_ship.WING_FLAP, *balanced_ship.WING_LINES]:
+    for outline in [ship_model.WING_FLAP, *ship_model.WING_LINES]:
         for x, z in outline:
-            assert balanced_ship._trailing_edge(x) <= z <= balanced_ship._leading_edge(x), (x, z)
+            assert ship_model._trailing_edge(x) <= z <= ship_model._leading_edge(x), (x, z)
 
 
 def test_gfx_ship_01_the_missile_pods_run_through_the_wings_their_tips_in_view() -> None:
     """D-330, D-343, D-344: through the wing, root to tip; the front ahead of the leading edge."""
-    assert not hasattr(balanced_ship, "CANNON")
-    pod = balanced_ship.MISSILE_POD
-    profile = balanced_ship.MISSILE_POD_PROFILE
+    assert not hasattr(ship_model, "CANNON")
+    pod = ship_model.MISSILE_POD
+    profile = ship_model.MISSILE_POD_PROFILE
     radius = max(r for _z, r in profile)
-    wing = balanced_ship.BALANCED_WING
+    wing = ship_model.MAIN_WING
     assert wing[0][0] < pod["x"] - radius
     assert pod["x"] + radius < wing[2][0]
     # The wing runs through it: its flat top above the wing's top face, its bottom below; taller
     # than wide.
     half_height = radius * math.cos(math.pi / 8) * pod["stretch"]
-    assert pod["y"] + half_height > balanced_ship.WING_THICKNESS / 2
-    assert pod["y"] - half_height < -balanced_ship.WING_THICKNESS / 2
+    assert pod["y"] + half_height > ship_model.WING_THICKNESS / 2
+    assert pod["y"] - half_height < -ship_model.WING_THICKNESS / 2
     assert half_height > radius
     front = pod["z"] + profile[0][0]
-    assert front > balanced_ship._leading_edge(pod["x"] + radius) + 0.2
+    assert front > ship_model._leading_edge(pod["x"] + radius) + 0.2
 
 
 def test_gfx_ship_01_the_strakes_join_the_body_to_the_nacelles() -> None:
     """D-336: the body's chines widen into strakes reaching the nacelles, along the wing roots."""
-    radius = balanced_ship.REACTOR["radius"]
-    inner = balanced_ship.REACTOR_OFFSET_X - radius
-    front = balanced_ship.REACTOR_Z + balanced_ship.REACTOR["length"] / 2
-    for z in [front - 0.2, balanced_ship.BALANCED_WING[0][1], hull.STATIONS[-1][hull.Z]]:
+    radius = ship_model.REACTOR["radius"]
+    inner = ship_model.REACTOR_OFFSET_X - radius
+    front = ship_model.REACTOR_Z + ship_model.REACTOR["length"] / 2
+    for z in [front - 0.2, ship_model.MAIN_WING[0][1], hull.STATIONS[-1][hull.Z]]:
         assert hull.station_at(z)[hull.CHINE_HALF_WIDTH] > inner
     # D-356: behind the body's back, the strake's tail runs into the nacelle to the wing's root.
-    tail = balanced_ship.STRAKE_TAIL
+    tail = ship_model.STRAKE_TAIL
     assert max(x for x, _z in tail) > inner
-    assert min(z for _x, z in tail) < balanced_ship.BALANCED_WING[4][1]
+    assert min(z for _x, z in tail) < ship_model.MAIN_WING[4][1]
     # The body itself stays slim; the main wing's root lies in the nacelle.
     assert max(s[hull.BODY_HALF_WIDTH] for s in hull.STATIONS) < inner / 2
-    assert balanced_ship.BALANCED_WING[0][0] == pytest.approx(balanced_ship.REACTOR_OFFSET_X)
+    assert ship_model.MAIN_WING[0][0] == pytest.approx(ship_model.REACTOR_OFFSET_X)
 
 
 def test_gfx_ship_01_the_body_has_seams_and_vents_on_its_strakes() -> None:
     """D-336: the seams lie along the body, the vents on the flat of the strakes."""
     nose = hull.STATIONS[0][hull.Z]
     tail = hull.STATIONS[-1][hull.Z]
-    assert all(tail < z < nose for z in balanced_ship.SEAM_ZS)
-    for vent in balanced_ship.VENTS:
+    assert all(tail < z < nose for z in ship_model.SEAM_ZS)
+    for vent in ship_model.VENTS:
         for x, z in vent:
             station = hull.station_at(z)
             assert station[hull.BODY_HALF_WIDTH] * hull.CHINE_ROOT < x
@@ -133,16 +133,16 @@ def test_gfx_ship_01_the_central_body_is_long_and_slim_with_no_reactor_at_its_ba
     assert all(v > 0 for v in tail[1:])
     assert max(s[hull.BODY_HALF_WIDTH] for s in hull.STATIONS) <= 0.3
     # The nacelles' nozzles are well clear of the body's centre line.
-    assert balanced_ship.REACTOR_OFFSET_X - balanced_ship.REACTOR["radius"] > 0.5
+    assert ship_model.REACTOR_OFFSET_X - ship_model.REACTOR["radius"] > 0.5
 
 
 def test_gfx_ship_01_the_tails_and_ventral_fins_stand_on_the_wing_tip_pods() -> None:
     """D-353: moved from the main nacelles, their roots run along the tip pod's length."""
-    pod = balanced_ship.TIP_REACTOR
+    pod = ship_model.TIP_REACTOR
     front = pod["z"] + pod["length"] / 2
     back = pod["z"] - pod["length"] / 2
-    shift = balanced_ship.TIP_TAIL_SHIFT
-    for outline in [balanced_ship.TAIL, balanced_ship.VENTRAL_FIN]:
+    shift = ship_model.TIP_TAIL_SHIFT
+    for outline in [ship_model.TAIL, ship_model.VENTRAL_FIN]:
         roots = [z + shift for x, z in outline if x == 0]
         assert roots
         assert all(back < z < front for z in roots)
@@ -153,32 +153,32 @@ def test_gfx_ship_01_the_tip_pods_carry_a_tail_and_a_ventral_fin_not_45_degree_f
 ) -> None:
     """D-353: the tails replace the pods' 45° fins; the main nacelles carry none."""
     nodes: dict[str, Any] = {}
-    real = balanced_ship.new_transform_node
+    real = ship_model.new_transform_node
 
     def node(name: str, *args: Any) -> Any:
         nodes[name] = real(name, *args)
         return nodes[name]
 
-    monkeypatch.setattr(balanced_ship, "new_transform_node", node)
-    build_balanced_ship(scene)
-    assert not any(name.startswith("balanced-tip-") and "-fin-" in name for name in nodes)
+    monkeypatch.setattr(ship_model, "new_transform_node", node)
+    build_player_ship(scene)
+    assert not any(name.startswith("ship-tip-") and "-fin-" in name for name in nodes)
     for side, sign in [("right", 1), ("left", -1)]:
-        tail = nodes["balanced-tail-" + side]
+        tail = nodes["ship-tail-" + side]
         assert tail.position.set.call_args[0][0] == pytest.approx(
-            sign * balanced_ship.TIP_REACTOR["x"]
+            sign * ship_model.TIP_REACTOR["x"]
         )
 
 
 def test_gfx_ship_01_one_body_wraps_each_wing_tips_twin_reactors() -> None:
     """D-332, D-339: its section round both reactors, from their fronts to short of the nozzles."""
-    pod = balanced_ship.TIP_REACTOR
-    body = balanced_ship.TIP_BODY
+    pod = ship_model.TIP_REACTOR
+    body = ship_model.TIP_BODY
     radius = pod["radius"]
     middle = (pod["ys"][0] + pod["ys"][1]) / 2
     assert body["halfWidth"] > radius
     assert body["halfHeight"] > pod["ys"][0] - middle + radius * math.cos(math.pi / 6)
-    front = max(z for z, _k in balanced_ship.TIP_BODY_PROFILE)
-    back = min(z for z, _k in balanced_ship.TIP_BODY_PROFILE)
+    front = max(z for z, _k in ship_model.TIP_BODY_PROFILE)
+    back = min(z for z, _k in ship_model.TIP_BODY_PROFILE)
     assert front == pytest.approx(pod["length"] / 2)
     assert back > -pod["length"] / 2
 
@@ -189,7 +189,7 @@ def test_gfx_ship_01_one_octagonal_intake_feeds_both_tip_reactors(
     """D-339: the tip reactors have no intakes of their own; one octagon, the body's height."""
     intakes: list[list[Any]] = []
     monkeypatch.setattr(
-        balanced_ship,
+        ship_model,
         "add_reactor_intake",
         lambda name, radius, _front, _parent, sides, _stretch=1.0: intakes.append([
             name,
@@ -203,20 +203,20 @@ def test_gfx_ship_01_one_octagonal_intake_feeds_both_tip_reactors(
         reactors[name] = list(rest)
         return MagicMock(name=name)
 
-    monkeypatch.setattr(balanced_ship, "build_reactor", reactor)
-    build_balanced_ship(scene)
-    assert sorted(i[0] for i in intakes) == ["balanced-tip-left", "balanced-tip-right"]
+    monkeypatch.setattr(ship_model, "build_reactor", reactor)
+    build_player_ship(scene)
+    assert sorted(i[0] for i in intakes) == ["ship-tip-left", "ship-tip-right"]
     assert all(i[2] == 8 for i in intakes)
-    intake = balanced_ship.TIP_INTAKE
+    intake = ship_model.TIP_INTAKE
     flat = intake["radius"] * math.cos(math.pi / 8)
-    body = balanced_ship.TIP_BODY
+    body = ship_model.TIP_BODY
     assert flat == pytest.approx(body["halfWidth"], abs=0.02)
     assert flat * intake["stretch"] == pytest.approx(body["halfHeight"], abs=0.03)
     for name, rest in reactors.items():
         if "-tip-" in name:
             assert rest == []
         else:
-            assert rest == [True, balanced_ship.OCTAGON, balanced_ship.REACTOR_HEIGHT]
+            assert rest == [True, ship_model.OCTAGON, ship_model.REACTOR_HEIGHT]
 
 
 def test_gfx_ship_01_a_laser_with_a_minigun_either_side_under_the_belly(
@@ -224,76 +224,76 @@ def test_gfx_ship_01_a_laser_with_a_minigun_either_side_under_the_belly(
 ) -> None:
     """D-339, D-342: the laser on the centre line, a minigun of six barrels each side."""
     rods: dict[str, Any] = {}
-    real = balanced_ship.faceted_rod
+    real = ship_model.faceted_rod
 
     def rod(name: str, size: Any, position: Any, *rest: Any) -> Any:
         rods[name] = position
         return real(name, size, position, *rest)
 
-    monkeypatch.setattr(balanced_ship, "faceted_rod", rod)
+    monkeypatch.setattr(ship_model, "faceted_rod", rod)
     lathes: list[str] = []
-    real_lathe = balanced_ship.create_faceted_lathe_along_z
+    real_lathe = ship_model.create_faceted_lathe_along_z
 
     def lathe(name: str, *args: Any) -> Any:
         lathes.append(name)
         return real_lathe(name, *args)
 
-    monkeypatch.setattr(balanced_ship, "create_faceted_lathe_along_z", lathe)
-    build_balanced_ship(scene)
-    assert "balanced-laser-core" in rods
+    monkeypatch.setattr(ship_model, "create_faceted_lathe_along_z", lathe)
+    build_player_ship(scene)
+    assert "ship-laser-core" in rods
     for side in ["right", "left"]:
-        prefix = "balanced-minigun-" + side + "-barrel-"
+        prefix = "ship-minigun-" + side + "-barrel-"
         barrels = [n for n in lathes if n.startswith(prefix) and not n.endswith("-bore")]
         assert len(barrels) == 6
         # D-351: each with its bore, matte black, apart.
         assert len([n for n in lathes if n.startswith(prefix) and n.endswith("-bore")]) == 6
-    gun = balanced_ship.MINIGUN
-    laser = balanced_ship.LASER
+    gun = ship_model.MINIGUN
+    laser = ship_model.LASER
     # D-340: the laser runs out past the ship's nose tip.
     nose = hull.STATIONS[0][hull.Z]
     core = laser["core"]
     assert core["zs"][1] > nose
-    assert balanced_ship.LASER_EMITTER[0][0] > core["zs"][1]
+    assert ship_model.LASER_EMITTER[0][0] > core["zs"][1]
     # D-342: its prongs reach past the core's tip, either side of it, and clear under the nose.
-    rail = balanced_ship.LASER_RAIL
-    assert max(z for _x, z in rail) > balanced_ship.LASER_EMITTER[0][0]
+    rail = ship_model.LASER_RAIL
+    assert max(z for _x, z in rail) > ship_model.LASER_EMITTER[0][0]
     assert min(x for x, _z in rail) > core["radius"]
     top = laser["y"] + laser["railThickness"] / 2
     for _x, z in rail:
         assert top < -hull.station_at(z)[hull.BELLY_DEPTH]
     # The minigun drums sit in the fairing's flanks: half in, half out.
-    _z, ring = balanced_ship.fairing_section(gun["z"], [gun["z"], 0.2, 0.1])
+    _z, ring = ship_model.fairing_section(gun["z"], [gun["z"], 0.2, 0.1])
     widest = max(p[0] for p in ring)
     assert gun["x"] - gun["drum"]["radius"] < widest < gun["x"] + gun["drum"]["radius"]
 
 
 def test_gfx_ship_01_the_gun_fairing_grows_out_of_the_belly() -> None:
     """D-340: the fairing's top lies inside the belly; it closes at both ends."""
-    fairing = balanced_ship.GUN_FAIRING
+    fairing = ship_model.GUN_FAIRING
     assert fairing[0][1] == 0
     assert fairing[-1][1] == 0
     for size in fairing:
-        _z, ring = balanced_ship.fairing_section(size[0], size)
+        _z, ring = ship_model.fairing_section(size[0], size)
         top = max(p[1] for p in ring)
         assert top > -hull.station_at(size[0])[hull.BELLY_DEPTH]
 
 
 def test_gfx_ship_01_the_wings_sit_towards_the_nacelles_back() -> None:
     """D-333: the wing root's middle behind the nacelle's, its trailing edge still inside it."""
-    root_front = balanced_ship.BALANCED_WING[0][1]
-    root_back = balanced_ship.BALANCED_WING[4][1]
-    middle = balanced_ship.REACTOR_Z
-    back = middle - balanced_ship.REACTOR["length"] / 2
+    root_front = ship_model.MAIN_WING[0][1]
+    root_back = ship_model.MAIN_WING[4][1]
+    middle = ship_model.REACTOR_Z
+    back = middle - ship_model.REACTOR["length"] / 2
     assert (root_front + root_back) / 2 < middle
     assert back < root_back
 
 
 def test_gfx_trim_the_canards_top_lies_at_the_bodys_chine_edge() -> None:
     """D-333: the canards' trim runs on from the body's beside the cockpit."""
-    root_x = balanced_ship.CANARD[0][0]
-    for _x, z in balanced_ship.CANARD:
+    root_x = ship_model.CANARD[0][0]
+    for _x, z in ship_model.CANARD:
         assert root_x < hull.station_at(z)[hull.CHINE_HALF_WIDTH]
-    assert pytest.approx(hull.CHINE_EDGE) == balanced_ship.CHINE_EDGE
+    assert pytest.approx(hull.CHINE_EDGE) == ship_model.CHINE_EDGE
 
 
 def test_gfx_ship_09_the_wings_canards_and_canopy_glow_not_the_guns(
@@ -301,20 +301,20 @@ def test_gfx_ship_09_the_wings_canards_and_canopy_glow_not_the_guns(
 ) -> None:
     """D-335: glowing leading edges on the wings, strakes and canards; none on the guns."""
     names: list[str] = []
-    real = balanced_ship.edge_strip
+    real = ship_model.edge_strip
 
     def record(name: str, *args: Any) -> Any:
         names.append(name)
         return real(name, *args)
 
-    monkeypatch.setattr(balanced_ship, "edge_strip", record)
-    build_balanced_ship(scene)
+    monkeypatch.setattr(ship_model, "edge_strip", record)
+    build_player_ship(scene)
     for side in ["right", "left"]:
         # D-346: the tails and ventral fins too, their leading edge and tip.
         parts = ["wing", "strake-0", "strake-4", "canard-0", "canard-1"]
         parts.extend(["tail-0", "tail-1", "ventral-0", "ventral-1"])
         for part in parts:
-            assert "balanced-glow-" + side + "-" + part in names
+            assert "ship-glow-" + side + "-" + part in names
     assert not any("missile" in n or "gun" in n for n in names)
 
 
@@ -331,14 +331,14 @@ def test_gfx_ship_09_the_canopy_sills_glow(scene: Any, monkeypatch: Any) -> None
         meshes[name] = MagicMock(name=name)
         return meshes[name]
 
-    monkeypatch.setattr(balanced_ship, "create_section_loft", loft)
+    monkeypatch.setattr(ship_model, "create_section_loft", loft)
     materials = MagicMock(name="materials")
-    monkeypatch.setattr(balanced_ship, "get_ship_materials", lambda _scene: materials)
-    build_balanced_ship(scene)
+    monkeypatch.setattr(ship_model, "get_ship_materials", lambda _scene: materials)
+    build_player_ship(scene)
     for side in ["right", "left"]:
-        assert meshes["balanced-canopy-rail-" + side].material is materials.edgeGlow
-    assert meshes["balanced-canopy"].material is materials.glass
-    assert meshes["balanced-cockpit-floor"].material is materials.intakeBlack
+        assert meshes["ship-canopy-rail-" + side].material is materials.edgeGlow
+    assert meshes["ship-canopy"].material is materials.glass
+    assert meshes["ship-cockpit-floor"].material is materials.intakeBlack
 
 
 def test_gfx_ship_01_the_main_reactors_are_taller_than_wide(scene: Any, monkeypatch: Any) -> None:
@@ -350,11 +350,11 @@ def test_gfx_ship_01_the_main_reactors_are_taller_than_wide(scene: Any, monkeypa
         reactors[name].scaling.y = 1
         return reactors[name]
 
-    monkeypatch.setattr(balanced_ship, "build_reactor", reactor)
-    build_balanced_ship(scene)
-    assert balanced_ship.REACTOR_HEIGHT > 1
+    monkeypatch.setattr(ship_model, "build_reactor", reactor)
+    build_player_ship(scene)
+    assert ship_model.REACTOR_HEIGHT > 1
     for side in ["right", "left"]:
-        assert reactors["balanced-reactor-" + side].scaling.y == balanced_ship.REACTOR_HEIGHT
+        assert reactors["ship-reactor-" + side].scaling.y == ship_model.REACTOR_HEIGHT
     tips = [m for name, m in reactors.items() if "-tip-" in name or "tip" in name]
     assert tips
     assert all(m.scaling.y == 1 for m in tips)
@@ -363,7 +363,7 @@ def test_gfx_ship_01_the_main_reactors_are_taller_than_wide(scene: Any, monkeypa
 def test_gfx_ship_01_the_minigun_barrels_are_hollow_at_their_muzzles() -> None:
     """D-345: the profile runs in from the muzzle's rim to a bore, then out round the barrel."""
     bore = {"radius": 0.5, "depth": 0.06}
-    profile = balanced_ship.barrel_profile(0.5, 0.02, bore)
+    profile = ship_model.barrel_profile(0.5, 0.02, bore)
     assert profile[0] == pytest.approx([0.25 - 0.06, 0])
     assert profile[1] == pytest.approx([0.19, 0.01])
     assert profile[2] == pytest.approx([0.25, 0.01])
@@ -374,10 +374,10 @@ def test_gfx_ship_01_the_minigun_barrels_are_hollow_at_their_muzzles() -> None:
 @pytest.mark.parametrize("up", [1, -1])
 def test_gfx_ship_01_the_reactor_scoops_stand_on_the_nacelle_and_ramp_to_its_back(up: int) -> None:
     """D-347: full height at the mouth, down to the nacelle at its back; faces turned outward."""
-    sections = balanced_ship.scoop_sections(up)
-    scoop = balanced_ship.REACTOR_SCOOP
+    sections = ship_model.scoop_sections(up)
+    scoop = ship_model.REACTOR_SCOOP
     assert sections[0][0] == scoop["front"]
-    assert sections[-1][0] == pytest.approx(-balanced_ship.REACTOR["length"] / 2)
+    assert sections[-1][0] == pytest.approx(-ship_model.REACTOR["length"] / 2)
     heights = [max(abs(p[1]) for p in ring) for _z, ring in sections]
     assert heights[0] > heights[-1]
     positions, indices, normals = build_section_loft(sections, 0)
@@ -394,27 +394,27 @@ def test_gfx_ship_01_the_reactor_scoops_have_fins_across_their_mouths(
 ) -> None:
     """D-348: flat fins across each scoop's mouth, as the main intakes have; the ramp eases down."""
     names: list[str] = []
-    real = balanced_ship.panel
+    real = ship_model.panel
 
     def record(name: str, *args: Any) -> Any:
         names.append(name)
         return real(name, *args)
 
-    monkeypatch.setattr(balanced_ship, "panel", record)
-    build_balanced_ship(scene)
+    monkeypatch.setattr(ship_model, "panel", record)
+    build_player_ship(scene)
     fins = [n for n in names if "-scoop-" in n and "-fin-" in n]
     # D-351: three fins fit the mouth at the intakes' spacing.
     assert len(fins) == 2 * 2 * 3
-    heights = [max(p[1] for p in ring) for _z, ring in balanced_ship.scoop_sections(1)]
+    heights = [max(p[1] for p in ring) for _z, ring in ship_model.scoop_sections(1)]
     assert heights == sorted(heights, reverse=True)
 
 
 def test_gfx_ship_01_the_fairing_meets_the_hull_under_its_flanks() -> None:
     """D-349: the widened fairing's top corners lie inside the hull's underside, not under it."""
-    for size in balanced_ship.GUN_FAIRING:
+    for size in ship_model.GUN_FAIRING:
         if size[1] == 0:
             continue
-        _z, ring = balanced_ship.fairing_section(size[0], size)
+        _z, ring = ship_model.fairing_section(size[0], size)
         x, y = ring[0]
         assert y > hull.underside_height(hull.station_at(size[0]), x)
 
@@ -422,9 +422,9 @@ def test_gfx_ship_01_the_fairing_meets_the_hull_under_its_flanks() -> None:
 @pytest.mark.parametrize("up", [1, -1])
 def test_gfx_ship_01_a_scoops_collar_rings_its_mouth_and_holds_its_fins(up: int) -> None:
     """D-351: the mouth inside the collar's outer ring; the fins' ends in the collar's wall."""
-    outer, mouth, lining = balanced_ship.scoop_collar_rings(up)
+    outer, mouth, lining = ship_model.scoop_collar_rings(up)
     assert len(outer) == len(mouth) == len(lining)
-    scoop = balanced_ship.REACTOR_SCOOP
+    scoop = ship_model.REACTOR_SCOOP
 
     def extent(ring: list[list[float]]) -> tuple[float, float, float]:
         ys = [p[1] * up for p in ring]
@@ -438,16 +438,16 @@ def test_gfx_ship_01_a_scoops_collar_rings_its_mouth_and_holds_its_fins(up: int)
     assert l_half < m_half
     fin_half = scoop["width"] / 2 * (1 + scoop["mouth"]) / 2
     assert m_half < fin_half < o_half
-    room = scoop["height"] * scoop["mouth"] / 2 * balanced_ship.REACTOR_HEIGHT
-    heights = balanced_ship.intake_fin_heights(room)
+    room = scoop["height"] * scoop["mouth"] / 2 * ship_model.REACTOR_HEIGHT
+    heights = ship_model.intake_fin_heights(room)
     assert len(heights) == 3
 
 
 def test_gfx_ship_01_the_minigun_bores_face_the_axis(scene: Any, monkeypatch: Any) -> None:
     """D-352: the bore's lathe alone faces outward, so the builder turns it round to be seen."""
-    gun = balanced_ship.MINIGUN
+    gun = ship_model.MINIGUN
     barrels = gun["barrels"]
-    profile = balanced_ship.barrel_profile(barrels["length"], barrels["radius"], gun["bore"])
+    profile = ship_model.barrel_profile(barrels["length"], barrels["radius"], gun["bore"])
     positions, indices = build_faceted_lathe_vertex_data(profile[0:3], 6)
     walls = 0
     for t in range(0, len(indices), 3):
@@ -467,8 +467,8 @@ def test_gfx_ship_01_the_minigun_bores_face_the_axis(scene: Any, monkeypatch: An
         meshes[name] = MagicMock(name=name)
         return meshes[name]
 
-    monkeypatch.setattr(balanced_ship, "create_faceted_lathe_along_z", lathe)
-    build_balanced_ship(scene)
+    monkeypatch.setattr(ship_model, "create_faceted_lathe_along_z", lathe)
+    build_player_ship(scene)
     bores = [m for name, m in meshes.items() if name.endswith("-bore")]
     assert len(bores) == 12
     for bore in bores:
@@ -480,17 +480,17 @@ def test_gfx_ship_09_on_the_playfield_the_glowing_edges_are_wide_enough_to_show(
 ) -> None:
     """D-355: the playfield's ship has its strips some logical pixels across, the menus' thin."""
     widths: dict[str, float] = {}
-    real = balanced_ship.edge_strip
+    real = ship_model.edge_strip
 
     def record(name: str, edge: Any, inside: Any, size: Any, *args: Any) -> Any:
         widths[name] = size["width"]
         return real(name, edge, inside, size, *args)
 
-    monkeypatch.setattr(balanced_ship, "edge_strip", record)
-    build_balanced_ship(scene)
-    assert set(widths.values()) == {balanced_ship.EDGE_GLOW["width"]}
+    monkeypatch.setattr(ship_model, "edge_strip", record)
+    build_player_ship(scene)
+    assert set(widths.values()) == {ship_model.EDGE_GLOW["width"]}
     widths.clear()
-    PLAYER_SHIP_MODELS["balanced"](scene)
+    PLAYER_SHIP_MODELS["player"](scene)
     width = READABILITY.playerGlow.width / PLAYER_SHIP_SCALE
     assert all(w == pytest.approx(width) for w in widths.values())
     assert widths
@@ -504,11 +504,11 @@ def test_gfx_ship_01_the_trailing_edges_form_a_w() -> None:
     The main wings' run back from their tips to their roots, the strakes' forward again from the
     nacelles to the body's square back.
     """
-    wing = balanced_ship.BALANCED_WING
+    wing = ship_model.MAIN_WING
     tip = wing[3]
     root = wing[4]
     assert tip[1] > root[1]
-    tail = balanced_ship.STRAKE_TAIL
+    tail = ship_model.STRAKE_TAIL
     # The strake's trailing edge: from its corner in the nacelle to the body's back corner.
     outer = tail[3]
     inner = tail[0]
@@ -523,7 +523,7 @@ def test_gfx_ship_01_the_trailing_edges_form_a_w() -> None:
 def test_gfx_ship_01_a_dark_plate_lies_on_the_bodys_square_back() -> None:
     """D-356: inside the back's section, standing out behind it."""
     back = hull.STATIONS[-1]
-    sections = balanced_ship.tail_plate_sections()
+    sections = ship_model.tail_plate_sections()
     front_z, front = sections[0]
     back_z, rear = sections[1]
     assert back_z < back[hull.Z] < front_z

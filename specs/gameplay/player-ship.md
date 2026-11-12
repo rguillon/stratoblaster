@@ -2,7 +2,7 @@
 
 > **Area:** Gameplay · **Prefix:** `GAME-SHIP` · **Related:** [controls.md](controls.md), [screen.md](screen.md), [weapons.md](weapons.md), [lives-and-damage.md](lives-and-damage.md), [../graphics/player-ships.md](../graphics/player-ships.md), [../ui/level-select.md](../ui/level-select.md)
 
-The player flies one ship, the Balanced one, in every level: there is no ship to choose (D-326).
+The player flies one ship in every level: there is no ship to choose (D-326).
 It fires every weapon. This file gives its stats and how it handles in flight: top speed,
 acceleration, banking and hitbox. What it looks like is in
 [graphics/player-ships.md](../graphics/player-ships.md).
@@ -11,13 +11,13 @@ acceleration, banking and hitbox. What it looks like is in
 
 ### GAME-SHIP-01 — One ship · MUST
 
-The player flies one ship, **Balanced** (id `balanced`), in every level. It fires all three weapons
+The player flies one ship, the **player ship** (id `player`), in every level. It fires all three weapons
 ([weapons.md](weapons.md)). The game's roster of ships holds that one ship; the menus offer no ship
 choice ([ui/screen-flow.md](../ui/screen-flow.md)), and the engine flies the roster's first ship.
 The Heavy and Light ships of phase 2 are gone (D-326).
 
 **Acceptance criteria**
-- Given the game data, then there is exactly one ship, `balanced` (unit test).
+- Given the game data, then there is exactly one ship, `player` (unit test).
 
 *Sources: P02-R01, GD-30, D-015, D-326.*
 
@@ -27,7 +27,7 @@ The ship's top speed is its speed factor times the base speed `base_speed` (225 
 225 px/s. The speed is stored as a factor of the base speed, so the base speed tunes it.
 
 **Acceptance criteria**
-- Given the Balanced ship, then its top speed is 225 px/s (unit test).
+- Given the player ship, then its top speed is 225 px/s (unit test).
 
 *Sources: P02-R01, D-004, D-044, D-047, D-326.*
 
@@ -36,7 +36,7 @@ The ship's top speed is its speed factor times the base speed `base_speed` (225 
 The ship's health points are its health bar ([lives-and-damage.md](lives-and-damage.md)): 100.
 
 **Acceptance criteria**
-- Given the Balanced ship, then its health is 100 (unit test).
+- Given the player ship, then its health is 100 (unit test).
 
 *Sources: P02-R01, D-050, D-326.*
 
@@ -123,6 +123,6 @@ has no test.
 ## Notes
 
 - Phase 2 had three ships, Balanced, Heavy (×0.8 speed, 140 health) and Light (×1.4 speed, 80
-  health), picked on a ship select screen. The owner kept only the Balanced one (D-326).
+  health), picked on a ship select screen. The owner kept only the Balanced one (D-326), since renamed the player ship, id `player` (D-357).
 - The 225 px/s base speed comes from two reviewer requests of +50 % each in phase 6 (D-044,
   D-047); the phase 2 text said 100 px/s.

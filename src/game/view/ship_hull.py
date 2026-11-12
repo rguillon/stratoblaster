@@ -1,5 +1,5 @@
 # Copyright (c) 2026 Renaud Guillon
-"""The Balanced ship's central body (GFX-SHIP-01, D-327, D-332, D-336).
+"""The player ship's central body (GFX-SHIP-01, D-327, D-332, D-336).
 
 A long, slim fuselage lofted through cross-sections, faceted (owner, D-336: "rework the central
 part, it's too round, add more details, make a better connection with the wings"): each section is

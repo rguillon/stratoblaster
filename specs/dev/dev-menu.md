@@ -177,7 +177,7 @@ model: ◀ ▶, ▲ ▼ and the menu do. Over the menu the wheel scrolls the men
 
 ### DEV-MENU-12 — The ships viewer · MUST
 
-The ships viewer shows the player ship (the game's one ship, Balanced, D-326) at the middle of the
+The ships viewer shows the player ship (the game's one ship, D-326) at the middle of the
 view, on the playfield of the first level (1-1), lit as there but with no ground loaded, as the
 enemies viewer (DEV-MENU-13; owner, 2026-11-11, D-334: "dont load a ground in the dev view for the
 player ship"), with its animations (its reactor flames). Having a single ship, it shows no menu

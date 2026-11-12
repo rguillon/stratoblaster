@@ -2,7 +2,7 @@
 
 > **Area:** Graphics · **Prefix:** `GFX-SHIP` · **Related:** [../gameplay/player-ship.md](../gameplay/player-ship.md), [art-direction.md](art-direction.md), [edge-trim.md](edge-trim.md), [readability.md](readability.md), [shots.md](shots.md)
 
-The look of the player's ship, the Balanced one (the Heavy and Light ships were removed, D-326):
+The look of the player's ship, the player ship (the Heavy and Light ships were removed, D-326):
 its model, its materials, its reactors and animated flames, how it banks and how it glows. It is
 generated in code (GFX-ART-01); its upper half, the side the playfield camera sees, is finely
 built, its belly low-poly and polygonal (GFX-ART-09, D-327); its central body is faceted (D-336). Its speed, health and handling
@@ -10,9 +10,9 @@ are in [GAME-SHIP](../gameplay/player-ship.md).
 
 ## Requirements
 
-### GFX-SHIP-01 — Balanced ship · MUST
+### GFX-SHIP-01 — player ship · MUST
 
-The Balanced ship is a heavy variable fighter, an original design (owner, 2026-11-11, D-328: a
+The player ship is a heavy variable fighter, an original design (owner, 2026-11-11, D-328: a
 variable fighter "with full upgrades", in the genre but copying no existing design). It is about
 5.2 model units long (4.8 until D-332).
 
@@ -119,7 +119,7 @@ running into the collar's walls.
 No gun stands on top (D-330), and the ship carries no light of its own but its reactors (D-327).
 
 **Acceptance criteria**
-- Given the Balanced model, then its wing tips' leading and trailing edges are ahead of their
+- Given the ship's model, then its wing tips' leading and trailing edges are ahead of their
   roots (forward-swept), the wing's root in the nacelle and its tip a little past the tip
   reactors' body; twin reactors one over the other at each wing tip, wrapped in one body from
   their fronts to short of their nozzles, one octagonal intake as wide and tall as the body feeding
@@ -220,12 +220,12 @@ own phase, so no two flicker in step. The core and flame bloom in the glow layer
 ### GFX-SHIP-07 — Size and heading on the playfield · SHOULD
 
 On the playfield the ship is drawn `PLAYER_SHIP_SCALE` logical pixels per model unit, nose up the
-screen; the Balanced ship is then about 37 px long from its nose to its nacelles' back (34 until
+screen; the player ship is then about 37 px long from its nose to its nacelles' back (34 until
 D-332, 36 until D-354, 40 until D-356), the length
 `L` other specs measure in.
 
 **Acceptance criteria**
-- Given the Balanced ship on the playfield, then it is about 37 px long, nose towards the top.
+- Given the player ship on the playfield, then it is about 37 px long, nose towards the top.
 
 *Sources: D-015.*
 
@@ -282,7 +282,7 @@ either side of the tip reactors' body, so it does not cross their intake (D-339)
 | Gunmetal | albedo [0.2, 0.23, 0.29], metallic 0.85, roughness 0.5 | `SHIP_LOOK["hullDark"]` |
 | Accent | albedo [0.16, 0.3, 0.6], metallic 0.75, roughness 0.4 | `SHIP_LOOK["accent"]` |
 | Canopy glass | albedo [0.02, 0.07, 0.14], metallic 0.2, roughness 0.06, alpha 0.45 (D-354) | `SHIP_LOOK["glass"]` |
-| Cockpit | canopy z 1.72 to 0.46, up to 0.104 half wide and 0.128 over the sill; bow at 1.42; helmet at 0.93 | `balanced_cockpit.py` |
+| Cockpit | canopy z 1.72 to 0.46, up to 0.104 half wide and 0.128 over the sill; bow at 1.42; helmet at 0.93 | `ship_cockpit.py` |
 | Visor, intake fans | albedo [0.03, 0.08, 0.18], emissive [0, 0.06, 0.12] | `SHIP_LOOK["canopy"]` |
 | Reactor core / exhaust / flame / plasma | [0.35, 0.75, 1] / [0.1, 0.45, 1] α 0.45 / [0.55, 0.85, 1] α 0.75 / [0.3, 0.7, 1] α 0.6 | `SHIP_LOOK` |
 | Flame flicker | length ±0.14, width ±0.06, brightness ±0.2; 5.3, 11.7, 19.1 Hz | `REACTOR_FLAME` in `ship_look.py` |
@@ -291,22 +291,22 @@ either side of the tip reactors' body, so it does not cross their intake (D-339)
 | `PLAYER_SHIP_SCALE` | 7 px per model unit | `ship_look.py` |
 | Bank | `max_deg` 35°, `ease_per_sec` 8 | `src/config/game_play.py` `ShipRoll(35, 8)` |
 | Triangle budget | 11,000 | GFX-SHIP-05 |
-| `player_glow_width` | 1.8 logical px on the playfield (D-355); 0.035 model units in the menus | `src/game/config/readability.py` `READABILITY.playerGlow`; `balanced_ship.py` `EDGE_GLOW` |
-| Edge glow | emissive [0.25, 0.85, 1]; strips 0.035 wide, the panel's thickness + 0.006 | `ship_look.py` `SHIP_LOOK["edgeGlow"]`; `balanced_ship.py` `EDGE_GLOW` |
-| Sections | hull 9 points over the top, 6 under it, all flat (D-336), canopy 11 over its arch / 2 under (D-354), intakes, nacelles, rings 12 / 3 (upper / lower facets) | `balanced_hull.py` `TOP_POINTS`; `ship_parts.py` `SMOOTH_PART_SECTION`; `balanced_ship.py` |
-| Hull stations | 12 (z 2.75 to -2.45, closed at both ends), each gap cut in 3 | `balanced_hull.py` `STATIONS`, `STATION_STEPS` |
-| Hull facets | chine root 1.1, shoulder 0.8, deck edge 0.4 of the body's half width; shoulder at 0.75 of the deck's height | `balanced_hull.py` `CHINE_ROOT`, `SHOULDER`, `DECK_EDGE`, `SHOULDER_HEIGHT` |
-| Body details | seams at z 1.7, 0.55, -0.75, -1.75 (0.024 wide, 2% proud); 3 vents a side, x 0.34-0.5 from z -0.15 | `balanced_ship.py` `SEAM_ZS`, `SEAM`, `VENTS` |
-| `profile_steps` | 3 | `balanced_ship.py` `PROFILE_STEPS` |
-| Wing | forward-swept: root x 0.8 (z -0.7 to -1.85), tip x 2.3 (z 0.2 to -0.4, chamfered to 2.25, 0.24) | `balanced_ship.py` `BALANCED_WING` |
-| Reactor section | hexagon (main reactors and tip intakes: octagon turned π/8), corners rounded at 0.3 of the radius, 3 points a corner (rings 2) | `ship_parts.py` `REACTOR_SIDES`, `polygon_turn`, `REACTOR_ROUNDING`, `REACTOR_CORNER_STEPS`, `RING_CORNER_STEPS`; `balanced_ship.py` `OCTAGON` |
+| `player_glow_width` | 1.8 logical px on the playfield (D-355); 0.035 model units in the menus | `src/game/config/readability.py` `READABILITY.playerGlow`; `ship_model.py` `EDGE_GLOW` |
+| Edge glow | emissive [0.25, 0.85, 1]; strips 0.035 wide, the panel's thickness + 0.006 | `ship_look.py` `SHIP_LOOK["edgeGlow"]`; `ship_model.py` `EDGE_GLOW` |
+| Sections | hull 9 points over the top, 6 under it, all flat (D-336), canopy 11 over its arch / 2 under (D-354), intakes, nacelles, rings 12 / 3 (upper / lower facets) | `ship_hull.py` `TOP_POINTS`; `ship_parts.py` `SMOOTH_PART_SECTION`; `ship_model.py` |
+| Hull stations | 12 (z 2.75 to -2.45, closed at both ends), each gap cut in 3 | `ship_hull.py` `STATIONS`, `STATION_STEPS` |
+| Hull facets | chine root 1.1, shoulder 0.8, deck edge 0.4 of the body's half width; shoulder at 0.75 of the deck's height | `ship_hull.py` `CHINE_ROOT`, `SHOULDER`, `DECK_EDGE`, `SHOULDER_HEIGHT` |
+| Body details | seams at z 1.7, 0.55, -0.75, -1.75 (0.024 wide, 2% proud); 3 vents a side, x 0.34-0.5 from z -0.15 | `ship_model.py` `SEAM_ZS`, `SEAM`, `VENTS` |
+| `profile_steps` | 3 | `ship_model.py` `PROFILE_STEPS` |
+| Wing | forward-swept: root x 0.8 (z -0.7 to -1.85), tip x 2.3 (z 0.2 to -0.4, chamfered to 2.25, 0.24) | `ship_model.py` `MAIN_WING` |
+| Reactor section | hexagon (main reactors and tip intakes: octagon turned π/8), corners rounded at 0.3 of the radius, 3 points a corner (rings 2) | `ship_parts.py` `REACTOR_SIDES`, `polygon_turn`, `REACTOR_ROUNDING`, `REACTOR_CORNER_STEPS`, `RING_CORNER_STEPS`; `ship_model.py` `OCTAGON` |
 | Reactor intake | straight at 1.0 radius (the nacelle's) to 0.24 ahead, angled in to 0.8 at 0.47; flush with the nacelle; dark duct, its end behind the fan face; fan face at 0.68 radii; 4 horizontal fins at heights ±0.14 and ±0.42, z 0.12 to 0.4, inside a 0.66 duct hexagon | `ship_parts.py` `REACTOR_INTAKE*` |
-| Reactor scoops | top and bottom of each main reactor, z 0.5 to -1.0 of the nacelle, 0.16 wide, 0.1 high at the mouth, sunk 0.012; corners 0.035; a 0.06 lip then 4 eased ramp sections; mouth 0.72 of its size; fins at -0.28, 0, 0.28 of its height | `balanced_ship.py` `REACTOR_SCOOP` |
+| Reactor scoops | top and bottom of each main reactor, z 0.5 to -1.0 of the nacelle, 0.16 wide, 0.1 high at the mouth, sunk 0.012; corners 0.035; a 0.06 lip then 4 eased ramp sections; mouth 0.72 of its size; fins at -0.28, 0, 0.28 of its height | `ship_model.py` `REACTOR_SCOOP` |
 | Intake black | albedo [0.012, 0.012, 0.015], metallic 0, roughness 1 | `SHIP_LOOK["intakeBlack"]` |
 | Tip reactors | x 1.98, y 0.125 and -0.125, z -0.4; radius 0.11, length 1.35 (0.95 until D-340) | `TIP_REACTOR` |
 | Tails and ventral fins | on the tip pods, brought forward 0.65; tails canted 0.2 rad outwards, ventral fins 0.55 | `TIP_TAIL_SHIFT`, `TAIL_CANT`, `VENTRAL_CANT` |
 | Nacelles | at x ±0.8, y -0.02, centre z -0.95; radius 0.22, length 2.0, 1.3 times taller than wide; with intakes | `REACTOR`, `REACTOR_HEIGHT`, `REACTOR_OFFSET_X`, `REACTOR_Y`, `REACTOR_Z` |
-| Strakes | the body's chines, 0.64 half wide from z -0.4 to -1.2, 0.63 at -1.9; glowing edge from z 0.85 to -0.3 | `balanced_hull.py` `STATIONS`; `balanced_ship.py` `STRAKE_EDGE_ZS` |
+| Strakes | the body's chines, 0.64 half wide from z -0.4 to -1.2, 0.63 at -1.9; glowing edge from z 0.85 to -0.3 | `ship_hull.py` `STATIONS`; `ship_model.py` `STRAKE_EDGE_ZS` |
 | Tip reactors' body | rounded rectangle 0.125 x 0.255 half, corners 0.1; z 0.675 to -0.62 from the reactors' middle; one octagonal intake, radius 0.124, stretched 2.05 upright | `TIP_BODY`, `TIP_BODY_PROFILE`, `TIP_INTAKE` |
 | Gun fairing | z -0.8 to 2.3, up to 0.21 half wide and 0.11 under the belly, its top 0.02 inside the belly and its top corners 0.02 inside the hull's underside (D-349) | `GUN_FAIRING`, `GUN_FAIRING_SECTION` |
 | Laser | at y -0.12; glowing core z 2.65 to 3.61 (nose tip 3.3, D-354), radius 0.012; rails 0.034 thick, x 0.02 to 0.052, z 2.55 to prongs at 3.75; bridge z 2.55 to 2.75; emitter to 3.68 | `LASER`, `LASER_RAIL`, `LASER_BRIDGE`, `LASER_EMITTER` |

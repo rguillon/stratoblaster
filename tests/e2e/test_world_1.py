@@ -85,7 +85,7 @@ def test_game_screen_05_the_ship_flies_over_1_1_shoots_and_stays_on_screen(
     GAME-LEVEL-11 (the ship rises in) and ENG-54 (the player moves and shoots).
     """
     play_level(page, 0)
-    assert game_state(page)["shipId"] == "balanced"
+    assert game_state(page)["shipId"] == "player"
     # The ship rises into the level first (reviewer, 2026-10-28).
     advance(page, 2)
     start = level(page)["player"]
@@ -141,7 +141,7 @@ def test_dev_opt_02_level_1_3_t_120_starts_at_2_00_the_waves_before_it_skipped(p
     state = game_state(page)
     played = state["game"]
     assert state["screen"] == "game"
-    assert state["shipId"] == "balanced"
+    assert state["shipId"] == "player"
     assert played["levelId"] == "1-3"
     assert 120 <= played["time"] < 121
     # The first wave after 2:00 comes at 2:10: nothing before it came in. At 2:00, the middle of
