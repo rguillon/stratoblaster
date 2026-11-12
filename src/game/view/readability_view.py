@@ -1,17 +1,15 @@
 # Copyright (c) 2026 Renaud Guillon
-"""Readability of the playfield (P14): edge trim, scenery toning and shot glow.
+"""Readability of the playfield (P14): scenery toning and shot glow.
 
-The player ships' edge trim, the toning of the scenery under them, and the shot renderers' glow.
+The toning of the scenery under the ships, and the shot renderers' glow. The player ship has no
+edge trim (D-335): its wings', canards' and canopy's edges glow (`ship_model.py`).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.readability import READABILITY as LOOK
 from game.config.record import record
-from game.config.ship_look import PLAYER_SHIP_SCALE
 from render.babylon import babylon_constant
-from render.edge_trim_mesh import add_edge_trim, request_trim
-from render.geometry.edge_trim import TrimOptions
 
 # isort: split
 # __pragma__ ("skip")
@@ -80,23 +78,6 @@ def _range_scale(value: Any, k: float, skip: list[str]) -> Any:
     ])
 
 
-def _trimmed(build: Callable[[Any], Any]) -> Callable[[Any], Any]:
-    """Return a model factory giving what `build` makes a glowing edge trim in the player colour.
-
-    GFX-TRIM-05: widths are in logical pixels, the models drawn `PLAYER_SHIP_SCALE` times smaller.
-    """
-    look = LOOK.playerTrim
-    options = TrimOptions(look.width / PLAYER_SHIP_SCALE, look.offset / PLAYER_SHIP_SCALE)
-
-    def trimmed(scene: Scene) -> Any:
-        root = build(scene)
-        request_trim(root, look.color)
-        add_edge_trim(root, options)
-        return root
-
-    return trimmed
-
-
 def _toned_shot(create: Callable[[Any], Any]) -> Callable[[Any], Any]:
     """Return a shot renderer factory whose additive materials are capped.
 
@@ -112,14 +93,6 @@ def _toned_shot(create: Callable[[Any], Any]) -> Callable[[Any], Any]:
         return renderer
 
     return toned_shot
-
-
-def trimmed_ships(models: dict[str, Any]) -> dict[str, Any]:
-    """Return the player ship models, each with a glowing edge trim in the player colour.
-
-    Covers GFX-TRIM-01 and GFX-READ-07; no hitbox marker is added (GFX-READ-08).
-    """
-    return {ship_id: _trimmed(build) for ship_id, build in models.items()}
 
 
 def toned(look: Any, tone: float) -> Any:

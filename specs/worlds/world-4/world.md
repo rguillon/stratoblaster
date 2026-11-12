@@ -343,7 +343,7 @@ themselves are described in their files:
 - Each final boss has more full HP than its level's mini boss.
 - Each World 4 boss has more full HP than the World 3 boss of the same level number and rank.
 - Boss bullets use the level's bullet speed and fire rate factors.
-- The fight times (simulation, balanced ship, guns at level 3, always firing at the boss) are within `mini_fight_time` and `final_fight_time`.
+- The fight times (simulation, player ship, guns at level 3, always firing at the boss) are within `mini_fight_time` and `final_fight_time`.
 - The Caldera Throne is the hardest boss of the game, and still beatable.
 
 Full HP is the boss's health bar at its arrival, the hidden weapons it reveals included (see

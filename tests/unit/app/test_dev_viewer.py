@@ -260,9 +260,9 @@ def test_d199_the_time_eases_towards_the_wheel_without_overshooting() -> None:
 
 
 def test_d199_the_scene_waits_for_the_level_ground(env: Env) -> None:
-    """DEV-MENU-08."""
+    """DEV-MENU-08: the levels viewer (the ships, enemies and bosses show no ground, D-334)."""
     env.ready = False
-    v = viewer("ships", [DevItem("alpha", "Alpha", "1-1")])
+    v = viewer("levels", [DevItem("1-1", "1-1", "1-1")])
     v.frame(0.1)
     assert v.scene is None
     assert v.status == CFG.texts.loading
@@ -270,7 +270,7 @@ def test_d199_the_scene_waits_for_the_level_ground(env: Env) -> None:
     v.frame(0.1)
     assert v.scene is env.views[0].scene
     assert env.views[0].level.id == "1-1"
-    assert v.status == ""
+    assert v.status != CFG.texts.loading
 
 
 def test_d199_a_ship_is_shown_at_the_middle_of_the_view_in_close_up(env: Env) -> None:
@@ -278,6 +278,8 @@ def test_d199_a_ship_is_shown_at_the_middle_of_the_view_in_close_up(env: Env) ->
     v = viewer("ships", [DevItem("alpha", "Alpha", "1-1")])
     v.show(0, toggle=True)
     v.frame(0.1)
+    # Shown, a ship has no status line (the levels' clock, D-199).
+    assert v.status == ""
     ship = FakeShip.made[0]
     # The camera is 100 above the flight plane, looking down at 45°: the middle is 100 ahead.
     assert ship.at == (240, -50 + 100)
@@ -529,17 +531,20 @@ def test_d208_the_wheel_zooms_a_ship_and_the_props_camera(env: Env) -> None:
     assert FakePropStage.made[0].updates[-1][2] == pytest.approx(zoomed(1, -200))
 
 
-def test_the_enemies_and_bosses_are_shown_with_no_ground_and_none_waited_for(env: Env) -> None:
+def test_the_ships_enemies_and_bosses_are_shown_with_no_ground_and_none_waited_for(
+    env: Env,
+) -> None:
+    """D-334 (owner: "dont load a ground in the dev view for the player ship")."""
     env.ready = False
-    for name, item in [("enemies", "gnat"), ("bosses", "warden")]:
+    for name, item in [("ships", "alpha"), ("enemies", "gnat"), ("bosses", "warden")]:
         v = viewer(name, [DevItem(item, item, "1-1")])
         v.frame(0)
         assert v.scene is not None
-    assert len(env.groundless) == 2
-    ships = viewer("ships", [DevItem("alpha", "Alpha", "1-1")])
-    ships.frame(0)
-    # The other viewers still wait for their level's ground.
-    assert ships.scene is None
+    assert len(env.groundless) == 3
+    levels = viewer("levels", [DevItem("1-1", "1-1", "1-1")])
+    levels.frame(0)
+    # The levels viewer still waits for its level's ground.
+    assert levels.scene is None
 
 
 def _probe_boss() -> Any:

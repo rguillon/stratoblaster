@@ -2,7 +2,7 @@
 
 > **Area:** UI · **Prefix:** `UI-OVER` · **Related:** [screen-flow.md](screen-flow.md), [level-select.md](level-select.md), [hud.md](hud.md), [../gameplay/level-flow.md](../gameplay/level-flow.md), [../gameplay/lives-and-damage.md](../gameplay/lives-and-damage.md), [../gameplay/scoring.md](../gameplay/scoring.md), [../audio/music.md](../audio/music.md)
 
-When a level ends, a panel shows over the playfield: "Level complete!" when it is won, "Game over"
+When a level ends, a panel shows over the playfield: "Level complete" when it is won, "Game over"
 when every life is lost. After the level's checkpoint (its mini boss destroyed), the "Game over"
 panel offers to Continue from there. When a level is won or lost, what the checkpoint keeps and
 what a Continue restores are in [gameplay/level-flow.md](../gameplay/level-flow.md); this file is
@@ -14,11 +14,11 @@ what the panels show and what their choices do.
 
 When a level is complete ([gameplay/level-flow.md](../gameplay/level-flow.md)), a panel shows in the
 middle of the playfield, over the still running level, with:
-- the heading "Level complete!";
+- the heading "Level complete";
 - the level's label (e.g. `1-2`);
 - how many enemies were destroyed out of how many came: `Enemies destroyed: 41 / 57`;
 - the attempt's score: `Score: 12500`;
-- `New high score!` when the score beat the saved high score (UI-OVER-02);
+- `New high score` when the score beat the saved high score (UI-OVER-02);
 - the hint "Press Space / Enter or tap to go on".
 
 The HUD stays visible; the touch fire button is gone.
@@ -28,15 +28,15 @@ The HUD stays visible; the touch fire button is gone.
 
 *Sources: P06-R03, P11-R03.*
 
-### UI-OVER-02 — "New high score!" · MUST
+### UI-OVER-02 — "New high score" · MUST
 
 When an attempt ends with a score above the saved high score, the high score is saved before the
-panel shows, and the panel says `New high score!`. On a "Game over" panel this happens before
+panel shows, and the panel says `New high score`. On a "Game over" panel this happens before
 Continue is offered, so a Continue never loses a high score.
 
 **Acceptance criteria**
-- Given a saved high score of 1 000 and a level completed with 2 500 points, then the cookie holds `2500` and the panel shows the score and `New high score!` (unit test and e2e).
-- Given a saved high score of 5 000 and a game over at 2 500 points, then the panel does not show `New high score!`.
+- Given a saved high score of 1 000 and a level completed with 2 500 points, then the cookie holds `2500` and the panel shows the score and `New high score` (unit test and e2e).
+- Given a saved high score of 5 000 and a game over at 2 500 points, then the panel does not show `New high score`.
 - Given a game over at 9 500 that beat the high score, then the cookie holds 9 500 before Continue is chosen.
 
 *Sources: P11-R03, P11-R04.*
@@ -113,9 +113,10 @@ If the game is over before the checkpoint, the "Game over" panel is the plain on
 
 ### UI-OVER-09 — The panels' look · SHOULD
 
-The panels are chamfered glass panels with a cyan border (red for "Game over"): the heading in
-34 px uppercase cyan (red for "Game over"), the level's label in 40 px green monospace, the enemy
-count in 22 px, the score in cyan monospace, `New high score!` in green capitals.
+The panels are glass panels with 16 px corners and a hairline border (red for "Game over"): the
+heading in 32 px primary text at weight 600 over the horizon line (red for "Game over"), the level's
+label in 40 px monospace, the enemy count in 20 px secondary text, the score in monospace, and
+`New high score` in green.
 
 **Acceptance criteria**
 - Manual check: the panels read well over every level's ground.
@@ -128,7 +129,7 @@ count in 22 px, the score in cyan monospace, `New high score!` in green capitals
 |------|-------|-------|
 | `panel_input_delay` | 1 s | `src/config/game_play.py` `GAME_PLAY_CONFIG.complete_delay` |
 | `game_over_delay` | 2 s | `src/config/game_play.py` `GAME_PLAY_CONFIG.damage.game_over_delay` |
-| Texts | "Level complete!", "Game over", "Enemies destroyed: N / M", "Score: N", "New high score!", "Press Space / Enter or tap to go on", "Continue", "Level select" | `src/game/config/menu_texts.py` `MENU_TEXTS` |
+| Texts | "Level complete", "Game over", "Enemies destroyed: N / M", "Score: N", "New high score", "Press Space / Enter or tap to go on", "Continue", "Level select" | `src/game/config/menu_texts.py` `MENU_TEXTS` |
 
 ## Notes
 

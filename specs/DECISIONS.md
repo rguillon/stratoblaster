@@ -2104,3 +2104,724 @@
   - The player's side is read about a second earlier than before.
   - A Sweeper spawned already inside its brake distance (only in tests) still turns at once.
 - **Status:** Proposed
+
+### D-323 — The UI redesigned in retro synthwave, made clear
+- **Date:** 2026-11-11
+- **Requirements:** UI-LOOK-03, UI-LOOK-04, UI-LOOK-06, UI-LOOK-08, UI-LOOK-09, UI-LOOK-12,
+  UI-LOOK-14, UI-TITLE-05, UI-TITLE-08, UI-SHIP-02, UI-SHIP-03, UI-LEVEL-04, UI-LEVEL-09,
+  UI-OVER-02, UI-OVER-09, UI-LOAD-02, UI-LOAD-05, UI-FLOW-08, UI-HUD-02 to UI-HUD-06, UI-HUD-16,
+  UI-HUD-17.
+- **Context:** owner: "redesign the UI completly, main menus and in game UI [...] Make something
+  clear, modern, with a retro synthwave look". The neon blue/green look (D-198) glowed everywhere:
+  glowing headings, a gradient selected block, a neon frame and bottom line on every screen, a
+  pulsing chrome logo, pulsing hints, uppercase tracked labels at weights 700 to 900, 9 to 11 px
+  HUD labels, spacing off the 4 px grid.
+- **Decision:**
+  - **Palette:** one night-violet ramp (`#0c0814`, glass `rgba(22, 15, 36, 0.86)`, three text
+    roles), one hot pink accent `#ff4fa0` (selection, horizon line, sliders, progress, ship ring),
+    player cyan `#4fd8ff` for the player's own gauges, red and orange kept for danger and bombs.
+    No glows and no hue gradient in the chrome.
+  - **The moment:** a flat striped sunset half sun behind the logo, yellow to orange to pink, the
+    only gradient of the UI; the logo is solid italic capitals on a pink horizon line.
+  - **The signature:** the horizon line, a 2 × 48 px pink rule under every heading.
+  - **Shapes and type:** rounded glass entries (8 px) and panels (16 px) replace the chamfers;
+    sentence case, weights 500 / 600, 4 px grid, no HUD text under 12 px.
+  - **Copy:** no exclamation marks; the ship speed in plain words (`Speed: fast`).
+  - **Motion:** nothing loops in the menus; a screen fades and rises 8 px; the low-health alarm is
+    the one loop.
+  - **Backdrop:** the title city re-lit at dusk: magenta sky low down, violet haze and towers,
+    pink, violet and cyan windows and neon, pink lane lines.
+- **Consequences:**
+  - The specs' look sections, `index.html`'s styles, `title_look.py`, the ring colour and the texts
+    changed together; the tests of the texts, the ring and the backdrop follow.
+  - System fonts still (UI-LOOK-11): the look relies on the condensed stack, as before.
+- **Status:** Proposed
+
+### D-324 — Back to cyan, a chrome logo, no sun
+- **Date:** 2026-11-11
+- **Requirements:** UI-LOOK-03, UI-LOOK-06, UI-LOOK-08, UI-LOOK-12, UI-TITLE-08, UI-SHIP-03,
+  UI-HUD-02 to UI-HUD-04, UI-OVER-09, UI-LOAD-05.
+- **Context:** owner, on D-323: "remove the ugly sun from the main menue, put back a kick ass game
+  name logo, and put back the cyan theme, the pink sucks".
+- **Decision:**
+  - **Palette:** the D-323 structure stays (one ramp, one accent, no glows, solid fills), on a
+    blue-black ramp with electric cyan `#00e8ff` as the accent; green `#3dff9a` for the lives and
+    a new high score.
+  - **Logo:** black italic capitals at 60 px in a cold 80s chrome with a hard navy horizon across
+    the middle, a thin pale outline and a 6 px solid teal edge cast down and right (stacked
+    unblurred drop shadows), over a 4 px cyan bar. The striped sun is gone. It does not glow or
+    move.
+  - **Backdrop and ring:** back to the D-198 neon blue/green city and the cyan ring.
+  - **Kept from D-323:** rounded glass entries, the horizon line under the headings, sentence
+    case, the 4 px grid, the readable HUD, the copy without exclamation marks, still menus.
+- **Consequences:** the D-323 backdrop colours and their test were reverted to the D-198 ones.
+- **Status:** Proposed
+
+### D-325 — The menu backdrop is the ship racing down a neon trench
+- **Date:** 2026-11-11
+- **Requirements:** UI-TITLE-07, UI-TITLE-08, UI-TITLE-10.
+- **Context:** owner: "I want the ship to move like it is in a trench with a frontal facing
+  camera, no more city background, put fast moving particles making it look like the ship flies
+  fast".
+- **Decision:**
+  - **Shot:** the camera flies backwards 10 units ahead of the ship, 2.4 above it, looking back
+    down the trench; the ship's nose points at it. The trench scrolls away behind the ship
+    (60 units/s), so the scenery comes from beside the camera and shrinks into the haze.
+  - **Trench:** generated from the seed, in stretches of 160 units (two end to end, one node):
+    a floor with lit ribs every 10 units and a dashed guide line, two walls 16 high of panels 3 to
+    9 long standing 0 to 1.4 out of the wall, lit slots on about half of them, a neon strip at the
+    foot of each wall. Structure and lights are merged meshes, as the city's were (UI-TITLE-10).
+  - **Speed streaks:** 220 thin quads along the trench, round its axis and facing it, 2 to 7 long,
+    in stretches of 60 units moving away at 160 units/s, faster than the trench, so they read as
+    rushing past. They glow.
+  - **Ship:** sways 0.8 units side to side at 0.18 Hz, banking up to 0.35 rad into the sway, and
+    floats 0.2 units at 0.5 Hz; it no longer turns on itself.
+  - **Gone:** the city chunk, skyline and rain (`game/view/city_geometry.py` and its test).
+- **Consequences:** the ship select screen, drawn over the backdrop, now has the trench behind it.
+- **Status:** Proposed
+
+### D-326 — One player ship, no ship select screen
+- **Date:** 2026-11-11
+- **Requirements:** GAME-SHIP-01, GAME-SHIP-02, GAME-SHIP-03, GAME-LIFE-01, GAME-WPN-05,
+  UI-FLOW-01, UI-FLOW-02, UI-FLOW-05, UI-TITLE-06, UI-TITLE-09, UI-LEVEL-06, UI-LEVEL-08,
+  UI-INPUT-09, UI-LOOK-08, UI-LOAD-03, PERF-07, DEV-OPT-01, DEV-MENU-12, DEV-API-02, ENG-07,
+  ENG-54; removes UI-SHIP-01 to UI-SHIP-07.
+- **Context:** owner: "now remove the heave and ligh ships, and the ship selection menu, only keep
+  the balanced one."
+- **Decision:**
+  - **One ship:** the game's roster (`game/config/player_ships.py`) holds only the Balanced ship.
+    The engine keeps the `PlayerShipRoster` type and flies its first ship: `MenuFlowOptions` and
+    `MenuState` carry one `ship_id`, which `GameSession` builds the levels with.
+  - **No ship select screen:** `ship-select` leaves `MenuScreen` and `MENU_TRANSITIONS`; Start on
+    the title opens the level select, whose Back returns to the title.
+  - **Gone:** the Heavy and Light ships and their models (`game/view/heavy_ship.py`,
+    `light_ship.py`); the ship select view and screen (`ShipSelectView`,
+    `ui/screens/ship_select_screen.py`), its 3D stage (`render/ship_select_stage.py`,
+    `render/model_showcase.py`) and second menu scene, its tunables (`MENU_CONFIG.ship_select`),
+    texts (`chooseShip`, `chooseShipHint`) and CSS; the ship caption (`ui/ship_caption.py`,
+    `ui/caption_row.py`); the remembered ship (`<gameId>_last_ship` cookie); the backdrop's
+    `showScreen` hook, which only hid its ship on that screen; the `ship=` debug option (and
+    `--ship` / `SHIP=` of `make serve-ai`); the ship-highlight warm-up of the menus' loading.
+  - **Test API:** `highlightedShipId` and `chosenShipId` become one `shipId`.
+- **Consequences:** the menus' loading has two steps (the backdrop, then its shaders). PERF-07 is
+  removed. The dev menu's ships viewer shows the one ship. An old `stratoblaster_last_ship`
+  cookie is left unread. `create_torus` and `camera_fov_mode_horizontal_fixed` in
+  `render/babylon.py` have no caller any more; they stay as Babylon wrappers.
+- **Status:** Proposed
+
+### D-327 — The Balanced ship rebuilt: one blended hull, smooth top, satin metal in three shades
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-04, GFX-SHIP-05, GFX-SHIP-06, GFX-SHIP-09, GFX-TRIM-05.
+- **Context:** owner, in turn:
+  - "rework the ship design to make it look better, more smoth, it's ok to increase polygon count
+    but only on the upper half of the ship";
+  - "add visible cool looking intakes on the reactors";
+  - "rework the player's ship highlight, make it lighter";
+  - "it looks like a bunch of basic shaped put together, smoth the transition between the elements
+    with more complex looking parts";
+  - "remove the ugly ligh spots, make something more smoth, and remove the inter-part transition
+    more, add different shades of metalic".
+- **Decision:**
+  - **Blended hull:** the round fuselage, the dorsal spine and the strakes are replaced by one skin
+    lofted through cross-sections (`render/geometry/section_loft.py`, generic; the ship's sections in
+    `game/view/balanced_hull.py`). Each section's top is the smooth maximum of the fuselage's back,
+    two nacelle shoulders and a chine sweeping into the wing roots, so the joints are fillets. The
+    shoulders stand over the intakes and nacelles, which only show their mouths and nozzles; the
+    tail is cut off square over the nozzles and capped.
+  - **Winding:** every triangle of a loft is wound the same way, the direction chosen once for the
+    whole skin. Chosen triangle by triangle, the inner slopes of the shoulders were turned inwards
+    and culled, which left holes.
+  - **Smooth top, low-poly belly:** the hull, canopy, intakes and nacelles are smooth-shaded on top
+    (24, 16 or 12 facets) over a flat 3-facet belly (`LatheHalves`, `create_smooth_top_lathe_along_z`);
+    hand-set profiles run through Catmull-Rom curves. Budget 4,500 triangles (was 2,000), at least
+    three quarters of each part's on the upper half.
+  - **Intakes:** a hollow, flared hull-metal scoop ahead of each reactor, a blue lip, a dark fan face
+    ringed in blue metal and a spinner.
+  - **No light spots:** the nav lights, the pale blue wing bands and the tail stripes are gone; the
+    only lights left are the reactors. The nav-light helper and material are removed.
+  - **Materials:** satin metal (roughness 0.42 to 0.5, was 0.25) in three shades: silver hull, steel
+    wings, canards and spinners, gunmetal tails, fins and flaps.
+  - **Trim:** the player trim is lighter, 0.5 px wide (was 0.9) in a softer cyan [0.3, 0.72, 0.82].
+- **Consequences:**
+  - The ship is about 3,600 triangles before the trim, counted from its parts (not measured in the
+    browser).
+  - The dev viewer's close-up draws the trim at its game width over a model drawn many times larger,
+    so it looks much heavier there than in play.
+  - The thinner, softer trim is checked against the ship's contrast floor by the readability e2e
+    test (GFX-READ-07, 3:1).
+- **Status:** Proposed
+
+### D-328 — The player ship redesigned as a heavy variable fighter with an assault pack
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-04, GFX-SHIP-05, GFX-SHIP-06.
+- **Context:** the owner asked to rewrite the ship to look like a specific, well-known anime
+  variable fighter with its full upgrade pack, to tune it later so it would not infringe. A copy
+  of that design was declined; the owner agreed to an original design in the same genre.
+- **Decision:** keep the blended hull, canopy, intakes and tails of D-327, and change:
+  - wings cranked and swept back (they were forward-swept), with gunmetal panel lines;
+  - nacelles longer (2.0) and further back, their back third and nozzles out past the tail;
+  - an assault pack on top:
+    - two back boosters, each with its own reactor and flame (first steel tubes on the back;
+      then, owner: "rework the blend between the inner and outer reactors so they dont just
+      looks like tubes put next to each other", humps of the hull's skin: a `BOOSTER_HEIGHT`
+      column in the stations, blended by the same smooth maximum as the shoulders, an accent
+      band lofted across each; the hull runs on to z -2.0, one engine block whose tail face
+      wraps the four engines; 31 points across the top, half evenly spaced, for the humps);
+    - a conformal gunmetal armour plate over each nacelle shoulder, lofted from the hull's own
+      top (`plate_sections`, `station_at` in `balanced_hull.py`);
+    - a silver missile pod on each wing root, six forward launch tubes with accent tips;
+    - a rail cannon on the right shoulder, its barrel between two accent rails;
+  - the paint stays the project's three metal shades with blue accents.
+- **Consequences:** the ship measures 6,752 triangles in the browser with its flames (3,996
+  before; the trim adds about 200); the GFX-SHIP-05 budget goes from 4,500 to 7,000. The pack's
+  triangles are all on the ship's top, seen from the playfield camera. The cannon makes the ship
+  asymmetric; the hitbox is unchanged (gameplay is not touched).
+
+### D-329 — The playfield window, not the whole 16:9 stage, is fitted to the browser window
+
+- **Date:** 2026-11-11
+- **Requirements:** GAME-SCREEN-02, UI-LOOK-02, ENG-110.
+- **Context:** owner: "the display area get small for no good reason when I play with the
+  browser size". Since D-317 and D-319 everything is drawn and laid out in the 540 × 720
+  playfield window, but the fit still kept the whole 1280 × 720 stage in view. A window narrower
+  than 16:9 shrank the playfield to make room for the opaque side columns: at 1000 × 900 it was
+  421 × 562 px where 675 × 900 fits.
+- **Decision:** `fit_stage` takes the game's playfield window. Its scale is the largest at which
+  the playfield window fits (not the stage), the stage keeps its ratio and is placed so the window
+  is centred. The stage's sides may run past the browser window's edges, clipped by `body`'s
+  `overflow: hidden`. A window wide enough for the whole stage still shows it, centred, as before.
+  A game without a playfield window fits the whole stage.
+  - The phone layout (D-286) is still measured on the scale the whole stage would have
+    (`StageFit.whole_scale`), so the same windows get it; their HUD and playfield are bigger now
+    (0.72 instead of 0.3 on a 390 × 844 phone).
+  - The touch fire and bomb buttons sat in the right side column, now possibly cropped: the fit
+    tells the overlay how much of that column is in view (`--side-room`, `StageFit.side_room`).
+    The buttons keep to its part in view, and move into the window's lower right corner, above
+    the weapon readout, when less than 140 logical px of it is left (`narrow-sides`, as on a
+    phone).
+- **Consequences:** in a narrow window, the canvas is wider than the browser window; the 3D still
+  draws only in the playfield's viewport, and the render scale cap (D-250) follows the larger
+  scale. The dev viewer's 3D views, which use the whole stage, are cropped at the sides in such a
+  window.
+
+### D-330 — Rounded hexagon reactors, forward-swept wings with twin tip reactors, launchers under the wings, an unbroken trim
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-04, GFX-SHIP-05, GFX-SHIP-06, GFX-TRIM-02.
+- **Context:** owner: "make the ship reactor rounded hexagons, make the wings front sided, add two
+  reactors on the tip of each wing, with 45° lil wings on each and remove the gun on top of the
+  ship. Also rework the ship highlight, it doesnt follow the wings geometry correctly"; then
+  "rework the missiles pods, make them look cool, and under the wings" and "make it a dual reactor
+  on the tip of each wing, and add intake to the reactors".
+- **Decision:**
+  - **Rounded hexagons:** `rounded_polygon` and `polygon_lathe_sections` (generic, in
+    `section_loft.py`) loft a body round Z with a rounded polygon section. Every reactor's nacelle
+    (smooth-shaded), rings (flat) and core are hexagons; the flame already was.
+  - **Wings:** forward-swept, the tip pulled in to x 1.9; flap and panel lines follow the edges.
+  - **Tip reactors:** two side by side on each tip, a steel fairing between them, each with a
+    rounded hexagon intake (`build_reactor(..., intake=True)`); the outer one has two fins at 45°.
+    "Two reactors on the tip of each wing" was read as a pair per tip.
+  - **Gun on top:** the rail cannon is removed.
+  - **Missile launchers:** under each wing on a pylon, rounded hexagon pods, their fronts out
+    ahead of the leading edge with seven missile tips in a dark launch face; fins at 45° under the
+    tail.
+  - **Trim:** two causes of the broken outline.
+    - The trim dropped a whole edge when its middle was covered by another part; it now probes
+      each edge at 8 points and keeps the uncovered parts (GFX-TRIM-02, generic).
+    - The nacelles peeked out from under the hull's edge, and the canted tails leaned past it,
+      so the hull's and their outlines took turns: the aft chine is now 0.69 to 0.7 wide (the
+      nacelles reach 0.64) and the tails cant 0.3 rad (0.4 before), their tips inside the edge.
+- **Consequences:** the ship measures 10,398 triangles in the browser (6,752 before): eight
+  reactors with their flames, two launchers. The GFX-SHIP-05 budget goes from 7,000 to 11,000.
+  Gameplay and the hitbox are unchanged.
+
+### D-331 — The tip reactors one over the other; no reactors between the nacelles
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-05, GFX-SHIP-06.
+- **Context:** owner: "make the wings reactor on of top the other, not side by side, and remove
+  the central tony reactors".
+- **Decision:**
+  - Each wing tip's twin reactors stand one over the other (at y ±0.125, x 1.98), joined by an
+    upright fairing; each carries one fin at 45°, the upper one's up and out, the lower one's down
+    and out (an X seen from the front).
+  - "The central tony reactors" was read as the two small booster reactors whose nozzles came out
+    of the tail face between the nacelles (D-328); they are removed. The humps on the back stay,
+    as the hull's shape, with their accent bands.
+- **Consequences:** six reactors; 9,498 triangles measured in the browser (10,398 before).
+
+### D-332 — A slim central body, the main reactors out on stub wings, a body round the tip reactors
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-04, GFX-SHIP-05, GFX-SHIP-07.
+- **Context:** owner: "add more body to the wings reactors, connecting them, spead the two main
+  reactors, adding pieces of wings that connect them to the central body. make the central body
+  longer and thiner, the central body had no back reactor".
+- **Decision:**
+  - **Central body:** `balanced_hull.py` keeps only the fuselage and its chine (the nacelle
+    shoulders and the humps are gone): 5.2 long (4.8 before), 0.66 across at its chine (1.4),
+    closed to a point at the tail, no reactor at its back. The armour plates and the hump bands,
+    which lay on the shoulders and humps, went with them, as did `plate_sections`.
+  - **Main reactors:** at x ±0.8 (0.42 inside the shoulders before), their middle at the wings'
+    plane, each with the rounded hexagon intake of `build_reactor` (the oval intakes ahead of
+    them are gone). A stub wing joins each to the body; the main wing now runs out of the
+    nacelle; the twin tails (cant 0.2 rad, inside the nacelle's edge seen from above) and the
+    ventral fins stand on the nacelles.
+  - **Tip reactors:** one steel body wraps each pair, a loft of a tall rounded rectangle
+    (`rounded_rectangle`, generic), short of their intakes and nozzles; the blade between them is
+    gone.
+  - The missile launchers move out to x 1.3, between the nacelle and the tip.
+- **Consequences:** 8,196 triangles measured in the browser (9,498 before). The ship is about
+  36 px long on the playfield (34 before; GFX-SHIP-07); its hitbox is unchanged.
+
+### D-333 — The wings further back, the canards at the chine's height, the ship viewer without a menu
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, DEV-MENU-05, DEV-MENU-07.
+- **Context:** owner: "move the wings more to the back", "lower the front wings so their highlight
+  is aligned to the cockpit one", and "in the dev view, for the player ship, remove the menu,
+  there is only one ship".
+- **Decision:**
+  - The main wings move 0.6 back, their root's middle now behind the nacelle's, the trailing
+    edge still inside it; the tip reactors and the missile launchers move with them.
+  - "The front wings" were read as the canards, beside the cockpit. Their top face now lies at the
+    body's chine edge (0.035, as the wings'), 0.045 lower than before, so their trim runs on from
+    the body's.
+  - A model viewer with a single item shows no menu, no place in a list (`1 / 1`), and a hint
+    without "next" (`single_hint`). The bosses and levels viewers keep their own controls.
+
+### D-334 — The ships viewer loads no ground
+
+- **Date:** 2026-11-11
+- **Requirements:** DEV-MENU-08, DEV-MENU-12.
+- **Context:** owner: "and dont load a ground in the dev view for the player ship".
+- **Decision:** the ships viewer is one of the groundless viewers, with the enemies and bosses:
+  its scene is `build_model_scene` (the level's light and sky reflections, the playfield camera
+  and layer, over a plain dark backdrop), built at once, with no wait for the ground worker. Only
+  the levels viewer still loads a level's ground.
+
+### D-335 — No trim round the player ship: its wings', canards' and cockpit's edges glow
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-09, GFX-TRIM-01, GFX-TRIM-05, GFX-READ-07.
+- **Context:** owner: "remove the highlight as an outter layer for the player's ship, instead make
+  it look like it's the extremities of the wings and cockpit that are glowing, no highlight on the
+  guns".
+- **Decision:**
+  - The player ship models get no edge trim (`trimmed_ships` and `READABILITY.playerTrim` are
+    gone; the enemies and bosses keep theirs).
+  - A self-lit cyan material, `edgeGlow` (`SHIP_LOOK.edgeGlow`), blooming in the glow layer:
+    `edge_strip` (`ship_parts.py`) lays a thin strip across a panel's edge, half on it and half out
+    past it, a hair thicker so it caps the edge from above and from ahead. The main wings', stub
+    wings' and canards' leading edges (and the canards' tips) get one; the canopy's frame takes
+    the material, so its rim glows round the cockpit.
+  - The missile launchers, the gun pod and the reactors' bodies get none.
+- **Consequences:** the readability probe's player contrast (GFX-READ-07, 3:1) now rests on the
+  silver hull, the glowing edges and the flames; the e2e checks it in four levels.
+
+### D-336 — A faceted central body whose strakes join the nacelles
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-04, GFX-SHIP-05, GFX-SHIP-09.
+- **Context:** owner: "rework the central part, it's too round, add more details, make a better
+  connection with the wings".
+- **Decision:**
+  - The body's sections are flat facets, flat-shaded (the loft's smooth part is 0): a spine ridge
+    (a new station column, from behind the canopy to the tail), a flat deck, bevelled shoulders,
+    flat chines at the wings' top face, flat flanks and belly. The elliptic back and the smooth
+    maximum's fillet are gone.
+  - The chines widen behind the canards into flat strakes reaching the nacelles (0.64 half wide)
+    from their front to their back, in place of the separate stub wings: the body itself joins the
+    nacelles, so wing, strake and body are one flat surface at one height. The strakes' leading
+    edge glows in short strips along its curve, as the stub wings' did.
+  - Details in gunmetal: four seams round the body (thin bands of its section, 2% proud) and three
+    vents on each strake ahead of the wing roots.
+- **Consequences:** the hull drops from about 1,700 triangles to under a thousand (the ship
+  measures 7,908 with its flames); the unit test that the hull's triangles sit on its upper half is
+  replaced by a budget, the facets being flat both sides.
+
+### D-337 — Intakes straight then angled in, with a bladed fan; taller main reactors
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-04, GFX-SHIP-05.
+- **Context:** owner: "rework the reactor intake, make it start flag, then angled inward a little,
+  and make a better inner part. Also make the main reactors higher (they wont be 'square'
+  anymore)". "flag" is read as "flat": the skin starts straight.
+- **Decision:**
+  - The intake's skin runs on straight from the nacelle (0.98 radii), then angles inward to a thin
+    lip (0.8 radii); the accent band moves from the lip to the turn.
+  - Inside: a dark duct lining (a loft turned round with `flipFaces`, since the metals cull back
+    faces), the dark fan face, ten steel blades pitched 0.6 rad, and a pointed accent spinner.
+  - The main reactors are scaled 1.3 times upright (`REACTOR_HEIGHT`), flame and intake with them;
+    the tails and ventral fins follow the taller nacelle. The tip reactors keep their section.
+- **Consequences:** the ship measures 9,564 triangles (under the 11,000 budget), the blades and
+  ducts of six intakes adding about 1,650.
+
+### D-338 — Horizontal fins in the intakes in place of the fan blades
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-04, GFX-SHIP-05.
+- **Context:** owner: "replace the central helix by horizontal fins in the reactors".
+- **Decision:** the fan blades and the spinner (D-337) are gone. Four flat steel fins span each
+  intake's duct in front of its dark fan face, at ±0.14 and ±0.42 nacelle radii, each as wide as
+  the duct's hexagon at its height (`intake_fin_half_width`: the hexagon, with a corner each side,
+  narrows by 1/sqrt(3) of the height on each side). They follow the main reactors' upright stretch.
+- **Consequences:** the ship drops to 8,952 triangles.
+
+### D-339 — Longer wings, a laser and two miniguns, one octagonal tip intake, octagonal main reactors
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-05, GFX-SHIP-09.
+- **Context:** owner: "make the wings go a little beyond the side reactors, and rework the
+  undergun, make a cool looking laser and add two miniguns on it's sides", then "and merge the two
+  lateral intales into a single octogonal intake, make the main reactor octogonal too".
+- **Decision:**
+  - The wing's tip moves from x 1.9 to 2.3, past the tip reactors' body (outer side at 2.105),
+    its leading and trailing edges carried on along their sweep, its front corner chamfered. Its
+    glowing leading edge is two strips, either side of the tip reactors' body.
+  - The gun pod is replaced by a laser (octagonal gunmetal housing, barrel, three accent coils, an
+    emitter of the reactors' core light at the muzzle) and a minigun each side (steel drum, six
+    barrels on a ring, a gunmetal clamp).
+  - `rounded_polygon` and `polygon_lathe_sections` take a `turn`; reactor parts take a number of
+    sides (`polygon_turn`: octagons turned π/8 so they lie flat on top and at the sides). The main
+    reactors are octagons: nacelle, rings, core, flame and intake.
+  - The tip reactors lose their own intakes; their body runs on to their fronts, where one
+    octagonal intake, stretched upright to the body's height, feeds both. `add_reactor_intake` is
+    public for it; the intake fins' width follows the octagon.
+- **Consequences:** the ship measures 9,832 triangles, under the 11,000 budget.
+
+### D-340 — Longer tip reactors, flush intakes, a laser past the nose, guns in a keel fairing
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-04, GFX-SHIP-05, GFX-SHIP-09.
+- **Context:** owner: "make the side reactor longer on both side, remove the circular bump around
+  the intakes, make the lazer longer, it should go further than the tip of the ship, and rework
+  those weapons, make them better integrated into the hull". "Side reactors" are read as the tip
+  reactors, as in D-339.
+- **Decision:**
+  - The tip reactors are 1.35 long (0.95), longer at both ends; their body follows to their
+    fronts and to short of their nozzles.
+  - Intakes: their skin starts at the nacelle's full radius, flush, and the nacelle runs on at
+    full size to its front when it has an intake (it closed in to 0.75, so the intake stood proud
+    of it); the accent band at the intake's turn is gone. The nacelles' own front rings stay.
+  - The laser housing is gone: a faceted keel fairing of hull metal (`GUN_FAIRING`), its top 0.02
+    inside the belly, runs from z -0.8 to 2.3. The laser's barrel runs through it and out of its
+    nose, under the ship's, to z 3.1 (the nose tip is at 2.75), its coils on the bare part, the
+    emitter beyond. The miniguns sit in the fairing's flanks, their drums of hull metal half sunk
+    in it as blisters, their barrels out ahead.
+- **Consequences:** the ship measures 9,056 triangles.
+
+### D-341 — Bigger miniguns with thicker barrels; no depth fight in the intakes
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-05.
+- **Context:** owner: "increase ther size of the miniguns, and make their cannons thicker", "there
+  are two polygons fighting for Z on the inside of the reactor intakes".
+- **Decision:**
+  - The miniguns' drums grow to radius 0.066 and 0.8 long (0.05, 0.75); their barrels are
+    six-sided, radius 0.016 (0.009, four-sided), on a 0.036 ring, 0.46 long; the clamp follows.
+  - The intake's duct lining ended at the fan face's depth, so its end cap and the fan face lay in
+    one plane and fought for depth. The lining now ends 0.06 radii behind the fan face.
+- **Consequences:** the ship measures 9,152 triangles.
+
+### D-342 — The laser: twin prongs round a glowing core, no rings
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-04, GFX-SHIP-09.
+- **Context:** owner: "review the laze design, the rings sucks".
+- **Decision:** the barrel and its accent coils are gone. Out of the gun fairing's nose run two
+  flat gunmetal rails, tapering forward into prongs that reach past the ship's tip (z 3.2, the tip
+  at 2.75), joined at their back by a bridge; between them a thin glowing core rod (the reactors'
+  core light) ends in a glowing emitter. From above, the core reads as a thin bright line between
+  two dark ones ahead of the nose.
+- **Consequences:** the ship measures 8,812 triangles.
+
+### D-343 — Missile pods: crisp, taller hexagons through the wings
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-04, GFX-SHIP-05.
+- **Context:** owner: "make the missile pods hexagonal, higher and make them go trough the wings".
+  "Higher" is read as taller, as for the main reactors (D-337).
+- **Decision:** the pods are flat-shaded hexagons with barely rounded corners (0.08 of the radius,
+  0.3 before, smooth-shaded), stretched 1.35 times upright, their axis in the wing's plane (0.2
+  under it before), so the wing runs through them. Their pylon is gone; band, launch face, missile
+  tips and tail fins stay.
+- **Consequences:** the ship measures 8,692 triangles.
+
+### D-344 — Octagonal missile pods
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-05.
+- **Context:** owner: "sorry, make the missile pods octogonal" (after D-343's hexagons).
+- **Decision:** the pods, their band and their launch face are octagons turned π/8, flat on top,
+  bottom and sides, as the main reactors are; still crisp, flat-shaded, 1.35 times taller than
+  wide, through the wing.
+- **Consequences:** the ship measures 8,824 triangles.
+
+### D-345 — Bigger miniguns, hollow barrels
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-05.
+- **Context:** owner: "increase the minigun size again, and add hole into the barrels".
+- **Decision:** drums of radius 0.085, 0.9 long; barrels of radius 0.021 on a 0.048 ring, 0.5
+  long. Each barrel is a lathe whose profile runs in from the muzzle's rim to a bore (0.55 of its
+  radius, 0.06 deep) and back out round the barrel (`barrel_profile`), so the bore's wall faces
+  the axis and the hole reads from ahead.
+
+### D-346 — Miniguns spread, glowing fins, a rounded canopy front
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-05, GFX-SHIP-09.
+- **Context:** owner: "spread the minguns a little more, add highlight to the vertical wings too and
+  make the cockpit tip less pointy".
+- **Decision:**
+  - The miniguns sit 0.21 out from the centre line (0.17), still half in the fairing's flanks.
+  - The tails and ventral fins get glowing strips on their leading edge and tip (`_glow_edges`),
+    as the wings and canards have.
+  - The canopy's front closes over a short, steep end (from 1.42 to 1.41 it reaches 0.045 across)
+    instead of a point at 1.45; its glowing frame follows.
+- **Consequences:** the ship measures 9,476 triangles.
+
+### D-347 — Matte black intakes; secondary scoops on the main reactors
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-04, GFX-SHIP-05.
+- **Context:** owner: "make the back of the reactor intake mat black, and add secondary intake at
+  the top and botton of each of the main reactors, with a slope eaching the back of the reactor".
+- **Decision:**
+  - A matte black material (`SHIP_LOOK.intakeBlack`: no metal, roughness 1) for every intake's
+    duct lining and fan face (the fan face was the canopy's glass, the lining the nozzle metal).
+  - Each main reactor gets a scoop on its top and bottom flat faces (`REACTOR_SCOOP`), built in the
+    nacelle's own units so it follows the upright stretch: a silver trapezoid loft, full height
+    just behind the front ring, ramping down to the nacelle's back; a matte black slab is its
+    forward-facing mouth. The tails and ventral fins rise out of the ramps.
+- **Consequences:** the ship measures 9,620 triangles.
+
+### D-348 — Smooth, finned secondary intakes
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-05.
+- **Context:** owner: "rework the secondary intakes, smoth them a little and add fins like the
+  others".
+- **Decision:** the reactor scoops are rounded arches in section (a rounded rectangle, corners
+  0.035, 2 points a corner) and smooth-shaded; after a short straight lip, the ramp eases down to
+  the nacelle's back along a half cosine over 4 sections, narrowing by 15%. Three flat steel fins
+  span each matte black mouth, at its middle and 0.28 of its height either side, as the main
+  intakes' fins span their ducts.
+- **Consequences:** the ship measures 10,004 triangles, under the 11,000 budget; the scoops'
+  detail was cut (3 points a corner and 6 ramp sections first gave 10,372) to keep a margin.
+
+### D-349 — Miniguns spread further, a wider gun fairing
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01.
+- **Context:** owner: "and spread the minigun more again".
+- **Decision:** the miniguns sit 0.27 out from the centre line (0.21). To keep their drums half in
+  the fairing's flanks, the fairing widens (up to 0.21 half wide, 0.15 before); where its top
+  corners reach out under the body's flanks they rise to 0.02 inside the hull's underside
+  (`underside_height`, `balanced_hull.py`), so no gap opens between fairing and hull.
+
+### D-350 — One size for every intake's fins
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01.
+- **Context:** owner: "equalize the size of the fins between the different intakes". The fins
+  were sized in each intake's own frame: their thickness was stretched with it (the main
+  reactors 1.3 times upright, the tip intakes 2.05) and their depth scaled with the intake's
+  radius. Measured in model units: the main intakes' 0.016 thick and 0.062 deep, the tip
+  intakes' 0.025 and 0.035, the secondary scoops' 0.016 and 0.03.
+- **Decision:** `INTAKE_FIN_SIZE` (`ship_parts.py`): every intake fin is 0.016 thick and 0.035
+  deep in model units. The intake builders take their frame's upright `stretch` and divide the
+  thickness by it (`intake_fin_thickness`); the depth runs back from the fins' front. 0.035 is
+  the most the small tip intakes hold ahead of their fan face; the main intakes' fins get
+  shallower to match. Their widths still follow each mouth.
+- **Consequences:** measured in the dev viewer, all fourteen fins on a side are 0.016 × 0.035.
+  The triangle count is unchanged.
+
+### D-351 — Intake fins evenly spaced and merging into their rings; black minigun bores
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01.
+- **Context:** owner: "Equalize the spacing too, and make the fins merge into the outer ring on
+  all reactors", then "and make the inner part of the minigun mat black". After D-350 the fins
+  had one size but not one spacing (0.08 apart in the main intakes, 0.071 in the tip intakes,
+  0.026 in the scoops), and they stopped short of the rings: the main and tip intakes' fins
+  ended at the duct lining, behind the lip; the scoops' stood out in front of a flat black slab.
+- **Decision:**
+  - **Spacing:** `intake_fin_heights` lays the fins 0.038 apart in model units round the
+    mouth's middle, as many as fit the room (the duct lining's flat top, or a scoop mouth's
+    half height, stretched as the frame is): nine in the main and tip intakes, three in a scoop.
+  - **Into the ring:** the main and tip intakes' fins come forward to just behind the lip (0.46
+    radii) and reach out to 0.8 radii, inside the ring's wall (lining 0.71 to 0.75, skin 0.86 or
+    more).
+  - **Scoops:** the black slab gives way to a short silver collar (0.04 deep) round the mouth,
+    lofted from the scoop's front section in to its mouth, lined in matte black (a flipped loft
+    whose back end is the mouth's black face). The fins span the collar, their ends halfway into
+    its side walls. The mouth is 0.8 of the scoop (0.72), so its three fins fit.
+  - **Minigun bores:** each barrel is two lathes, the bore (its bottom and wall) in the matte
+    black intake material and the rest in trim metal.
+- **Consequences:** the ship measures 10,580 triangles, under the 11,000 budget.
+
+### D-352 — The minigun bores face their barrel's axis
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01.
+- **Context:** owner, after D-351 made the bores matte black: "make the inner part of the
+  minigun mat black" (again), then "it's not a color issue it's a normal issue, the inside
+  polygons of the gun barrel are not drawn". Two attempts were reverted first (a black core and
+  plate between the barrels; an unlit black bore material, 0.7 of the radius).
+- **Cause:** `build_faceted_lathe_vertex_data` turns every profile to run tail to nose and faces it
+  outward. The whole barrel profile (D-345) runs from the bore's bottom to the breech, nose to
+  tail: turned round, its bore wall faced the axis. D-351 cut the bore out as a lathe of its own,
+  whose profile already runs tail to nose: its wall faced away from the axis and was culled, so
+  the background showed through each barrel.
+- **Decision:** the bore's mesh is turned round (`flipFaces(True)`), as the intakes' duct lining
+  is, so its wall faces the axis and its bottom the muzzle; it keeps the matte black and the 0.55
+  bore. A unit test checks the bore lathe alone faces outward and that each of the 12 is turned.
+- **Consequences:** the triangle count is unchanged.
+
+### D-353 — The tails and ventral fins move to the wing-tip pods
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01.
+- **Context:** owner: "now move the vertical wings from the big reactors to the small side
+  reactors, they replace the side reactors original vertical wings".
+- **Decision:** the canted tail and the ventral fin (with their glowing edges, D-346) leave the
+  main nacelles' top and bottom for the tip pod's: the tail on the pod body's top, the ventral
+  fin under it, same outlines, cants and thickness, brought forward by `TIP_TAIL_SHIFT` (0.65)
+  so their roots run along the pod. The pods' two 45° fins (`TIP_FIN`, D-330) are gone.
+- **Consequences:** the ship measures 10,532 triangles. The main nacelles' secondary scoops
+  (D-347) no longer have the tails rising out of their ramps.
+
+### D-354 — A longer, blunt nose and a fighter's cockpit
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-05, GFX-SHIP-07, GFX-SHIP-09.
+- **Context:** owner: "rework the central part, make the nose longer, less pointy, and make a
+  better realistic looking cockpit".
+- **Decision:**
+  - **Nose:** the body's nose runs 0.55 further (tip at 3.3); the stations behind the tip swell
+    fast, so it ends in a blunt, rounded radome, with a panel seam at its joint (2.75). The front
+    stations were redrawn with as many as before, so the faceted body stays under a thousand
+    triangles (D-336). The laser and the gun fairing's front move 0.55 forward with it, so the
+    laser still reaches past the tip (D-340); the laser sits 0.02 lower, under the fuller nose.
+  - **Cockpit** (`balanced_cockpit.py`): the round bubble on its glowing frame gives way to a
+    canopy lofted along the ship on the deck: each section an arch whose feet sit on the hull's
+    top, closing just under it; a low, raked windscreen rising to a dark bow (eight segments over
+    the arch), the peak just behind, then a long fall into the spine. Its glass is a new
+    see-through material (`SHIP_LOOK.glass`, alpha 0.45). Under it: a dark floor, the instrument
+    hood, an ejection seat with its headrest and the pilot's helmet with a dark visor. The cockpit
+    keeps its glow (D-335) as rails along both sills.
+- **Consequences:** the ship is 5.75 long (5.2), about 40 px on the playfield (GFX-SHIP-07); it
+  measures 10,797 triangles. Transcrypt leaves annotated module-level names unexported and has no
+  `from package import module as alias`: the cockpit's tunables are plain dicts of numbers,
+  imported by name.
+
+### D-355 — The ship's glowing edges sized for the playfield
+
+- **Date:** 2026-11-11
+- **Requirements:** GFX-SHIP-09, GFX-SHIP-07.
+- **Context:** owner: "the player ship glow is not visible in game". The glowing edge strips
+  (D-335) are 0.035 model units across: on the menus' large ship they show and bloom, but on the
+  playfield, at 7 px a unit, they were a quarter of a pixel wide. Measured in a level, they were
+  in the playfield glow layer's rendering group and lit, but too thin to draw or bloom.
+- **Decision:** `build_balanced_ship` takes the strips' width. The playfield's model
+  (`PLAYER_SHIP_MODELS`, also the dev viewer's) is `build_playfield_ship`: its strips
+  `READABILITY.playerGlow.width` (1.8) logical pixels across at the playfield scale, the canopy's
+  sill rails widened in the same ratio. The title backdrop keeps the thin strips. 1.2 px was tried
+  first: the canards and strakes showed, the wings' leading edges hardly.
+- **Consequences:** no change to the triangle count; the dev viewer's close-up shows the
+  playfield's wider strips.
+
+### D-356 — A W of trailing edges and a square back to the body
+
+- **Date:** 2026-11-12
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-07.
+- **Context:** owner: "rework the back of central hull, make the central wing shall be oriented
+  the other way (the entier wings will form a W) and the back of the main hull shall not be
+  pointy". The body's strakes tapered behind the nacelles to the body's point at -2.45, so the
+  trailing edges across the ship made one V with the forward-swept main wings'.
+- **Decision:** the body (`balanced_hull.py`) ends square at -1.45, its strakes at full width
+  there, its end closed by the loft's flat cap; a dark plate (`TAIL_PLATE`, a short loft of the
+  body's part of the back section, shrunk) stands on it. Behind it, a flat strake tail on each side
+  (`STRAKE_TAIL`, as thick as the strake, its top at the wings' top face) runs into the nacelle,
+  its trailing edge swept forward from the nacelle (-1.88) to the body's back corner (-1.45): the
+  main wings' trailing edges run back from tip to root, the strakes' forward again to the body, a
+  W. The seam at -1.75 went with the back.
+- **Consequences:** the ship is 5.27 long from nose to the nacelles' back rings (5.75 to the
+  body's point before), about 37 px on the playfield (GFX-SHIP-07, 40 before). Fewer triangles
+  (9,975 in the browser, 10,117 before, counted the same way). The hitbox is unchanged.
+
+### D-357 — No more "balanced": the ship is the player ship
+
+- **Date:** 2026-11-12
+- **Requirements:** GAME-SHIP-01, GFX-SHIP-01, DEV-OPT-01.
+- **Context:** owner: "remove all the references to "balanced" in the code". The name was left
+  from phase 2's three ships (D-326 kept only that one); the owner chose "player" for the new name.
+- **Decision:** the ship's id is `player` and its name "Player ship" (`game/config/player_ships.py`;
+  the menu state's and the test API's `shipId`). The view modules are `ship_model.py`
+  (`build_player_ship`, `MAIN_WING` for `BALANCED_WING`), `ship_hull.py` and `ship_cockpit.py`,
+  next to `ship_parts.py` and `ship_materials.py` (`player_ship`/`player_hull` would have shared
+  their names with `core.entities.player_ship` and `core.systems.player_hull`); their tests
+  follow. The meshes are named `ship-…` under the `ship-player` root. The live specs and the README
+  follow; the decisions log, `specs_old/` and the unused TypeScript tests in `node/tests/` keep the
+  old name as history.
+- **Consequences:** no behaviour changes; the dev ships viewer labels the ship "Player ship".
+
+### D-358 — Larger reactor scoops, the miniguns spread again
+
+- **Date:** 2026-11-12
+- **Requirements:** GFX-SHIP-01.
+- **Context:** owner: "increase the size of the secondary vents and spread the minigun more
+  again". Taken as the secondary intakes on the main reactors (D-347, the owner's "secondary
+  intake"), not the dark vents on the strakes.
+- **Decision:** `REACTOR_SCOOP` is 0.21 wide and 0.13 high at its mouth (0.16 and 0.1), sunk 0.02
+  into the nacelle (0.012) so its wider base stays on the octagon's chamfers; it keeps three fins
+  at the intakes' spacing. The miniguns stand at x ±0.33 (0.27); the gun fairing widens to 0.18,
+  0.27 and 0.25 half wide at z -0.45, 0.3 and 1.3 (0.14, 0.21, 0.19) to keep their drums half in
+  its flanks. The test of that now measures the fairing's own size at the drums, not a fixed one.
+
+### D-359 — The wing-tip pods tilt like a VTOL's
+
+- **Date:** 2026-11-12
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-08, UI-TITLE-07.
+- **Context:** owner: "make the side reactors rotate like if the plane was a vtol, and make them
+  rotate accordingly when the ship moves left/right (in the main menu animation too)"; asked how,
+  the owner chose a tilt round the wing with a differential tilt moving sideways.
+- **Decision:** each wing-tip pod, its tail and ventral fin are built under a pivot through the
+  pod's middle on the wing (`_tip_pivot`), turned round X. A model animation eases its tilt
+  towards `tip_tilt_target`: the rest tilt, minus the side's sign times the ship's sideways speed
+  share times the swing, so the pod away from the move tilts its nozzles down and the other up.
+  The sideways speed is a new model input (`render/model_animation.py`: `set_model_input` on any
+  node, `model_input` read from below it, walking up the parents; `SIDEWAYS`): the game sets it on
+  the playfield ship's pivot (its vx over its top speed), the title backdrop on its ship's pivot
+  (the sway's speed share, `cos`). The unit tests' conftest gives each test a fresh map of inputs.
+- **Consequences:** an e2e test flies 1-1 right then left and reads the pods' turns. The dev
+  ships viewer shows the pods at rest.
+
+### D-360 — The wings stop at the pods; level pods with less tilt; matching ventral fins
+
+- **Date:** 2026-11-12
+- **Requirements:** GFX-SHIP-01.
+- **Context:** owner: "make the wings stop at the junction with the outer reactors, create a
+  better looking junction between the wing and the outer reactor, and keep the rotation centered
+  on the horizontal and reduce the rotation range. Also make the lower vertical wing on the
+  reactor the same as the upper ones"; then "remove the small joint between the wing and the side
+  reactor".
+- **Decision:** `MAIN_WING`'s tip is at x 1.78, its edges' sweep kept, its leading edge's glow one
+  strip from root to tip. A fairing (`TIP_FAIRING`, a rounded box tapering at both ends, along the
+  tip's chord, a little over and under the wing) closes the tip, its outer face at 1.85 against the
+  pod's flank (1.855), which turns along it. A hub on the pivot axis, across a gap between the
+  fairing and the pod, was tried first and removed at the owner's word. `TIP_TILT` is level at
+  rest and swings 0.26 rad (15°) either way (0.52 down at rest, 0.52 either way). The ventral fin is
+  the tail's outline and thickness, mirrored under the pod (`VENTRAL_FIN`, `VENTRAL_THICKNESS`
+  and `VENTRAL_CANT` are gone).
+
+### D-361 — The tails canted 40°
+
+- **Date:** 2026-11-12
+- **Requirements:** GFX-SHIP-01.
+- **Context:** owner: "angle the vertical wings 40°".
+- **Decision:** `TAIL_CANT` is 0.698 rad (40°) from vertical, outwards, for the tails and the
+  ventral fins (0.2 rad before).

@@ -21,23 +21,21 @@ MENU_TEXTS = record({
     "start": "Start",
     # The title's controls hint (UI-TITLE-05).
     "startHint": "Press Space / Enter or tap to start",
-    "chooseShip": "Choose your ship",
-    "chooseShipHint": "◀ ▶ to pick · Enter or tap to go",
     # The level select's heading and hint (UI-LEVEL-09).
     "chooseLevel": "Choose a level",
     "chooseLevelHint": "Arrows to pick · Enter or tap to go",
     "back": "Back",
-    "locked": "Locked!",
+    "locked": "Locked",
     # The level played, under the HUD's weapon (UI-HUD-06).
     "gameLevel": lambda level: "Level " + str(level),
     "fire": "Fire",
-    "levelComplete": "Level complete!",
+    "levelComplete": "Level complete",
     "gameOver": "Game over",
     "enemiesDestroyed": lambda destroyed, spawned: (
         "Enemies destroyed: " + str(destroyed) + " / " + str(spawned)
     ),
     "finalScore": lambda score: "Score: " + str(score),
-    "newHighScore": "New high score!",
+    "newHighScore": "New high score",
     "continueHint": "Press Space / Enter or tap to go on",
     "continueFromCheckpoint": "Continue",
     "toLevelSelect": "Level select",
@@ -52,7 +50,7 @@ MENU_TEXTS = record({
     "hudMiniBoss": "Mini boss",
     "hudBoss": "Boss",
     # The "not supported" message (UI-LOAD-02).
-    "unsupported": "Sorry! This game cannot run in this browser or on this device. "
+    "unsupported": "This game cannot run in this browser or on this device. "
     "Please try a recent version of Chrome, Edge, Firefox or Safari on a computer.",
     # The message when the graphics context is lost while playing (UI-LOAD-07), and its button.
     "contextLost": "The graphics context was lost. Please reload the page.",

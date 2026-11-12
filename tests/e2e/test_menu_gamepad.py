@@ -74,14 +74,13 @@ def tilt_stick(page: Page, x: float, y: float, expected: dict[str, Any] | None =
 def test_ui_input_12_the_whole_flow_with_the_gamepad_only(page: Page) -> None:
     """Also UI-INPUT-07 (the buttons) and UI-INPUT-08 (the stick's dead zone)."""
     open_game(page)
-    press_button(page, A, {"screen": "ship-select", "selectedId": "balanced"})
+    press_button(page, A, {"screen": "level-select", "selectedId": "1-1"})
     tilt_stick(page, 0.2, 0)  # inside the dead zone
-    assert game_state(page)["selectedId"] == "balanced"
-    tilt_stick(page, 0.9, 0, {"selectedId": "heavy"})
-    press_button(page, DPAD_RIGHT, {"selectedId": "light"})
-    press_button(page, A, {"screen": "level-select", "chosenShipId": "light"})
-    press_button(page, B, {"screen": "ship-select", "selectedId": "light"})
-    press_button(page, A, {"screen": "level-select"})
+    assert game_state(page)["selectedId"] == "1-1"
+    tilt_stick(page, 0.9, 0, {"selectedId": "1-2"})
+    press_button(page, DPAD_RIGHT, {"selectedId": "1-3"})
+    press_button(page, B, {"screen": "title", "selectedId": "start"})
+    press_button(page, A, {"screen": "level-select", "selectedId": "1-1"})
     press_button(page, A, {"screen": "game", "chosenLevelId": "1-1"})
     # UI-PAUSE-05: B does nothing in a level; UI-PAUSE-01: Start and Select pause; B resumes
     # (UI-PAUSE-08); the level is left from the pause menu (UI-PAUSE-10).

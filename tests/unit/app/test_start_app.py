@@ -21,13 +21,11 @@ from app.start_app import (
     RunningApp,
     SceneLoad,
     TouchHandlers,
-    _index_of,
     create_input,
     dispose_scenes,
     frame_ticker,
     run_loop,
     start_debug_level,
-    sync_scenes,
 )
 from config.engine import ENGINE_CONFIG
 from config.game_play import GAME_PLAY_CONFIG
@@ -87,12 +85,6 @@ def test_dev_api_08_zero_steps_with_drawing_still_draw_once() -> None:
     assert renders == ["r"]
 
 
-def test_perf_07_an_index_is_found_or_is_minus_one() -> None:
-    assert _index_of(["alpha", "beta"], "beta") == 1
-    assert _index_of(["alpha"], "gamma") == -1
-    assert _index_of(["alpha"], None) == -1
-
-
 def test_ui_input_01_the_keyboard_is_always_an_input_and_listens_to_its_target() -> None:
     target = MagicMock()
     handle = create_input(SimpleNamespace(keyboard_target=target, gamepads=None))
@@ -114,26 +106,10 @@ def test_ui_input_01_without_a_target_nothing_listens_to_the_keyboard() -> None:
     handle.stop()
 
 
-def test_ui_title_09_the_menu_scenes_show_the_screen_and_the_highlighted_ship() -> None:
-    """Also UI-SHIP-03 (the highlighted ship)."""
-    backdrop = {"showScreen": MagicMock()}
-    stage = MagicMock()
-    scenes = SimpleNamespace(backdrop=backdrop, stage=stage)
-    state = SimpleNamespace(screen="ship-select", highlighted_ship_id="beta")
-    sync_scenes(scenes, state, ["alpha", "beta"])
-    backdrop["showScreen"].assert_called_once_with("ship-select")
-    stage.select.assert_called_once_with(1)
-
-
-def test_ui_title_09_syncing_without_scenes_does_nothing() -> None:
-    sync_scenes(None, SimpleNamespace(screen="title"), [])
-
-
-def test_ui_title_09_disposing_the_menu_scenes_releases_both_and_none_is_fine() -> None:
-    scenes = SimpleNamespace(backdrop_scene=MagicMock(), ship_scene=MagicMock())
+def test_ui_title_09_disposing_the_menu_scenes_releases_the_backdrop_and_none_is_fine() -> None:
+    scenes = SimpleNamespace(backdrop_scene=MagicMock())
     dispose_scenes(scenes)
     scenes.backdrop_scene.dispose.assert_called_once()
-    scenes.ship_scene.dispose.assert_called_once()
     dispose_scenes(None)
 
 
@@ -149,19 +125,14 @@ def test_eng_100_the_render_loop_gets_each_frame_in_seconds() -> None:
 
 def test_dev_opt_01_a_debug_start_plays_its_level_once_loading_is_over() -> None:
     menu = MagicMock()
-    debug = SimpleNamespace(level_id="2-1", ship_id="beta")
-    start_debug_level(menu, debug, ["alpha", "beta"])
-    menu.play_direct.assert_called_once_with("beta", "2-1")
+    start_debug_level(menu, SimpleNamespace(level_id="2-1"))
+    menu.play_direct.assert_called_once_with("2-1")
 
 
-def test_dev_opt_01_without_a_ship_the_first_one_is_used_and_no_debug_does_nothing() -> None:
+def test_dev_opt_01_without_debug_options_nothing_starts() -> None:
     menu = MagicMock()
-    start_debug_level(menu, SimpleNamespace(level_id="1-1", ship_id=None), ["alpha"])
-    menu.play_direct.assert_called_once_with("alpha", "1-1")
-    start_debug_level(menu, None, ["alpha"])
-    assert menu.play_direct.call_count == 1
-    start_debug_level(menu, SimpleNamespace(level_id="1-1", ship_id=None), [])
-    menu.play_direct.assert_called_with("", "1-1")
+    start_debug_level(menu, None)
+    menu.play_direct.assert_not_called()
 
 
 def test_eng_100_a_frame_is_capped_at_the_longest_the_menus_accept() -> None:
@@ -173,11 +144,7 @@ def test_eng_100_a_frame_is_capped_at_the_longest_the_menus_accept() -> None:
         controls=MagicMock(),
     )
     backdrop_update = MagicMock()
-    stage_update = MagicMock()
-    scenes = SimpleNamespace(
-        backdrop={"update": backdrop_update},
-        stage=SimpleNamespace(update=stage_update),
-    )
+    scenes = SimpleNamespace(backdrop={"update": backdrop_update})
     ticker = frame_ticker(clock, menu, lambda: scenes, session, MagicMock())
     ticker.simulate(5.0)
     assert clock.advanced == [MENU_CONFIG.max_frame_seconds]
@@ -234,7 +201,7 @@ def test_ui_title_09_the_menu_scenes_are_drawn_for_the_menu_screen() -> None:
     menu = MagicMock()
     menu.flow.state.screen = "title"
     session = SimpleNamespace(play=None, load_step=MagicMock(), controls=MagicMock())
-    scenes = SimpleNamespace(backdrop={"update": MagicMock()}, stage=MagicMock())
+    scenes = SimpleNamespace(backdrop={"update": MagicMock()})
     drawn: list = []
     original = start_app.render_menu_scenes
     start_app.render_menu_scenes = lambda loaded, screen: drawn.append((loaded, screen))
@@ -472,7 +439,7 @@ def _menu_options() -> AppOptions:
 def test_ui_flow_01_the_menu_is_wired_to_its_overlay_input_audio_and_scenes(
     menu_parts: MenuParts,
 ) -> None:
-    """Also UI-SHIP-02 (the cards' width) and AUD-ENGINE-09 (the menu sounds)."""
+    """Also AUD-ENGINE-09 (the menu sounds)."""
     audio = MagicMock()
     controls = MagicMock()
     input_handle = start_app.InputHandle("menu-input", lambda: None)
@@ -493,7 +460,6 @@ def test_ui_flow_01_the_menu_is_wired_to_its_overlay_input_audio_and_scenes(
     assert (deps.display, deps.input, deps.storage) == ("overlay", "menu-input", "storage")
     assert deps.transition_seconds == MENU_CONFIG.transition_seconds
     assert deps.result_delay_seconds == GAME_PLAY_CONFIG.complete_delay
-    assert deps.cards_width_percent == 100 / MENU_CONFIG.ship_select.camera.framing_margin
     assert (deps.version, deps.commit, deps.on_change) == ("1.2.0", "abc1234", "on-change")
     assert (deps.dev_labels, deps.dev_groups) == (None, None)
     # The overlay's commands go to the menu, its feedback to the audio with the volumes.
@@ -625,14 +591,12 @@ class AppParts:
         self.engine = MagicMock(name="engine")
         self.dev = MagicMock(name="dev", active=False) if dev else None
         self.menu = MagicMock(name="menu")
-        self.menu.flow.state = SimpleNamespace(screen="title", highlighted_ship_id="beta")
+        self.menu.flow.state = SimpleNamespace(screen="title", ship_id="alpha")
         self.overlay = MagicMock(name="overlay")
         self.stop_page = MagicMock(name="stop_page")
         self.scenes = SimpleNamespace(
-            backdrop={"showScreen": MagicMock(), "update": MagicMock()},
-            stage=MagicMock(name="stage"),
+            backdrop={"update": MagicMock()},
             backdrop_scene=MagicMock(name="backdrop_scene"),
-            ship_scene=MagicMock(name="ship_scene"),
         )
         self.perf_overlay = MagicMock(name="perf_overlay")
         self.perf_overlay.wrap.side_effect = lambda ticker: ticker
@@ -673,9 +637,7 @@ class AppParts:
         self.loops.append((engine, tick))
 
 
-GAME = SimpleNamespace(
-    player_ships=SimpleNamespace(ships=[SimpleNamespace(id="alpha"), SimpleNamespace(id="beta")])
-)
+GAME = SimpleNamespace(player_ships=SimpleNamespace(ships=[SimpleNamespace(id="alpha")]))
 
 
 def start(
@@ -725,34 +687,30 @@ def test_eng_100_the_app_starts_its_menus_on_a_fixed_step_clock(
     app.loaded.close()
 
 
-def test_ui_load_04_once_loaded_the_scenes_show_the_menu_s_screen_and_ship(
+def test_ui_load_04_once_loaded_the_menu_scenes_are_kept_and_the_title_follows(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    """Also UI-TITLE-09 and UI-LOAD-03 (the progress, here with no step)."""
+    """Also UI-LOAD-03 (the progress, here with no step)."""
     app, parts, _ = start(monkeypatch, False, False)
     asyncio.run(app.loaded)
     assert app.loading_progress == [0, 1]
     parts.menu.finish_loading.assert_called_once_with()
     assert app.scenes() is parts.scenes
-    parts.scenes.backdrop["showScreen"].assert_called_once_with("title")
-    parts.scenes.stage.select.assert_called_once_with(1)
     # No debug options: the title screen stays.
     parts.menu.play_direct.assert_not_called()
 
 
-def test_ui_flow_01_each_menu_change_goes_to_the_scenes_session_and_audio(
+def test_ui_flow_01_each_menu_change_goes_to_the_session_and_audio(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     app, parts, _ = start(monkeypatch, False, False)
-    state = SimpleNamespace(screen="ship-select", highlighted_ship_id="alpha")
-    # Before the scenes are loaded, only the session and the audio follow.
+    state = SimpleNamespace(screen="level-select", ship_id="alpha")
     parts.on_change(state)
     parts.session.sync.assert_called_once_with(state)
     parts.audio.menu_changed.assert_called_once_with(state)
     asyncio.run(app.loaded)
     parts.on_change(state)
-    parts.scenes.backdrop["showScreen"].assert_called_with("ship-select")
-    parts.scenes.stage.select.assert_called_with(0)
+    assert parts.session.sync.call_count == 2
     assert parts.audio.menu_changed.call_count == 2
 
 
@@ -764,7 +722,6 @@ def test_eng_100_a_frame_moves_and_draws_the_menu_scenes(monkeypatch: pytest.Mon
     parts.menu.tick.assert_called_once_with(0.02)
     parts.session.load_step.assert_called_once_with(0.02)
     parts.scenes.backdrop["update"].assert_called_once_with(0.02)
-    parts.scenes.stage.update.assert_called_once_with(0.02)
     parts.scenes.backdrop_scene.render.assert_called_once_with()
 
 
@@ -773,13 +730,13 @@ def test_dev_opt_01_a_debug_start_plays_its_level_once_the_menus_are_loaded(
 ) -> None:
     """Also DEV-PERF-01 (the clock given) and ENG-100 (Babylon's render loop when asked)."""
     now = MagicMock(return_value=0.0)
-    debug = SimpleNamespace(level_id="2-1", ship_id=None)
+    debug = SimpleNamespace(level_id="2-1")
     app, parts, _ = start(monkeypatch, False, True, debug, now)
     assert app.perf._now is now
     assert parts.loops == [(parts.engine, app._frames.tick)]
     parts.menu.play_direct.assert_not_called()
     asyncio.run(app.loaded)
-    parts.menu.play_direct.assert_called_once_with("alpha", "2-1")
+    parts.menu.play_direct.assert_called_once_with("2-1")
 
 
 def test_d199_the_dev_viewers_follow_the_menus_and_are_released_with_the_app(
@@ -790,7 +747,7 @@ def test_d199_the_dev_viewers_follow_the_menus_and_are_released_with_the_app(
     dev = parts.dev
     assert dev is not None
     assert parts.dev_menu == ["labels", dev.wheel, dev.turn, "groups", dev.hold]
-    state = SimpleNamespace(screen="dev-viewer", highlighted_ship_id=None)
+    state = SimpleNamespace(screen="dev-viewer", ship_id="alpha")
     parts.on_change(state)
     dev.sync.assert_called_once_with(state)
     app.tick(0.02)
@@ -814,7 +771,6 @@ def test_eng_100_disposing_the_app_releases_everything_it_holds(
     parts.overlay.dispose.assert_called_once_with()
     parts.perf_overlay.dispose.assert_called_once_with()
     parts.scenes.backdrop_scene.dispose.assert_called_once_with()
-    parts.scenes.ship_scene.dispose.assert_called_once_with()
 
 
 def test_eng_100_an_app_disposed_while_loading_has_no_scenes_to_release(

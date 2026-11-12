@@ -68,6 +68,10 @@ A viewer draws its 3D view over the whole screen and shows over it:
 - the scrolling menu of its items down the left side (DEV-MENU-07);
 - the hint at the bottom, which lists the viewer's controls.
 
+A model viewer with a single item (the player ships since D-326) shows it alone: no menu, no place
+in a list, and no "next" in its hint (owner, 2026-11-11, D-333: "in the dev view, for the player
+ship, remove the menu, there is only one ship").
+
 The status line says `Building…` while the viewer's scene is being built; the levels viewer shows
 the time and the level's length (`1:24 / 4:05`); the props viewer shows `1 square = 1 block`. Until
 its scene is built, the menu backdrop shows behind it.
@@ -99,7 +103,8 @@ so it opens again where it was left. The model viewers start in close-up, the le
 
 ### DEV-MENU-07 — The scrolling menu · MUST
 
-Every viewer shows a menu that scrolls up and down, in a panel down the left side of the screen. It
+Every viewer but a model viewer with a single item (DEV-MENU-05) shows a menu that scrolls up and
+down, in a panel down the left side of the screen. It
 lists the viewer's items; in a grouped list (the props) each group's heading comes before its items,
 with the group's number of items (`Tiles: docks (5)`). A tap on an item shows it; a tap on a heading
 shows its group's first item. The item shown is filled, and its group's heading outlined. Each time
@@ -117,9 +122,9 @@ names are cut with an ellipsis.
 ### DEV-MENU-08 — Drawn as in game · MUST
 
 The viewers show the models as the game draws them: the game's own models, materials, lights,
-environment, glow and edge trim, with the game's camera. The ships and levels viewers build a
-level's scene as a level is built, after its ground is ready (it comes from the ground worker); the
-enemies and bosses viewers use a level's light without its ground (DEV-MENU-13); the props viewer has
+environment, glow and edge trim, with the game's camera. The levels viewer builds a level's
+scene as a level is built, after its ground is ready (it comes from the ground worker); the ships,
+enemies and bosses viewers use a level's light without its ground (DEV-MENU-12, DEV-MENU-13); the props viewer has
 its own stage (DEV-MENU-16).
 
 **Acceptance criteria**
@@ -172,15 +177,17 @@ model: ◀ ▶, ▲ ▼ and the menu do. Over the menu the wheel scrolls the men
 
 ### DEV-MENU-12 — The ships viewer · MUST
 
-The ships viewer shows each player ship (in the game's order: Balanced, Heavy, Light) at the middle
-of the view, on the playfield of the first level (1-1), over its ground, with its animations (its
-reactor flames).
+The ships viewer shows the player ship (the game's one ship, D-326) at the middle of the
+view, on the playfield of the first level (1-1), lit as there but with no ground loaded, as the
+enemies viewer (DEV-MENU-13; owner, 2026-11-11, D-334: "dont load a ground in the dev view for the
+player ship"), with its animations (its reactor flames). Having a single ship, it shows no menu
+(DEV-MENU-05).
 
 **Acceptance criteria**
-- Given the ships viewer, when the ground of 1-1 is ready, then the first ship shows at the middle
-  of the view in close-up.
+- Given the ships viewer, then the ship shows at the middle of the view in close-up, with no
+  ground and nothing waited for (unit test).
 
-*Sources: D-199, D-004.*
+*Sources: D-199, D-004, D-326, D-334.*
 
 ### DEV-MENU-13 — The enemies viewer · MUST
 

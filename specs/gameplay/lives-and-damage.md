@@ -14,13 +14,13 @@ and its choices in [ui/continue-and-game-over.md](../ui/continue-and-game-over.m
 ### GAME-LIFE-01 — Health bar · MUST
 
 Each life is a full health bar: the ship's health ([player-ship.md](player-ship.md)), 100 for the
-Balanced ship, 140 for the Heavy, 80 for the Light. A level starts with the health bar full. Damage
-never takes the health below 0.
+player ship, the game's one ship. A level starts with the health bar full. Damage never takes the
+health below 0.
 
 **Acceptance criteria**
-- Given the Heavy ship at the start of a level, then its health is 140 of 140 (unit test).
+- Given the ship at the start of a level, then its health is 100 of 100 (unit test).
 
-*Sources: GD-20, P02-R01, P02-R02, P02-R03, D-050.*
+*Sources: GD-20, P02-R01, D-050, D-326.*
 
 ### GAME-LIFE-02 — Lives · MUST
 
@@ -191,5 +191,5 @@ read (not a whole number of at least 1 life and 0 bombs) count as none: the star
 
 ## Notes
 
-- D-050 measured (seed 606, Balanced ship, standing still in the middle) that the 3 lives last
+- D-050 measured (seed 606, player ship, standing still in the middle) that the 3 lives last
   about 60–85 s in World 1; a bot that only weaves and fires finishes 1-1 to 1-3.

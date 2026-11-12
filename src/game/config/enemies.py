@@ -19,7 +19,7 @@ from typing import Any
 # __pragma__ ("noskip")
 
 
-# `L` (ENM-05): length of the medium (balanced) player ship on the playfield, ~4.8 model units x 7.
+# `L` (ENM-05): length of the player ship on the playfield, ~4.8 model units x 7.
 ENEMY_UNIT = 34
 
 # Hit radius relative to half the model size (ENM-11: a hitbox about as big as the model).

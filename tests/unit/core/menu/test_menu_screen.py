@@ -10,12 +10,10 @@ from core.menu.menu_screen import MENU_TRANSITIONS, can_transition
     ("source", "target"),
     [
         ("loading", "title"),
-        ("title", "ship-select"),
+        ("title", "level-select"),
         ("title", "settings"),
-        ("ship-select", "level-select"),
-        ("ship-select", "title"),
         ("level-select", "game"),
-        ("level-select", "ship-select"),
+        ("level-select", "title"),
         ("game", "pause"),
         ("game", "level-select"),  # A completed level returns to the level select (UI-FLOW-07).
         ("pause", "game"),
@@ -37,7 +35,7 @@ def test_ui_flow_02_the_flow_allows_its_transitions(source: str, target: str) ->
     ("source", "target"),
     [
         ("loading", "game"),
-        ("title", "game"),  # The flow goes through ship and level select first.
+        ("title", "game"),  # The flow goes through the level select first.
         ("game", "title"),  # The level is left through the pause menu.
         ("settings", "game"),
         ("title", "title"),
@@ -53,7 +51,6 @@ def test_every_screen_has_its_transitions_listed() -> None:
     assert set(MENU_TRANSITIONS) == {
         "loading",
         "title",
-        "ship-select",
         "level-select",
         "game",
         "pause",

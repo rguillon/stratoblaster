@@ -11,7 +11,7 @@ from helpers.babylon_stub import stub_babylon
 
 from core.math.rng import create_rng
 from game.view import title_backdrop
-from game.view.title_backdrop import _build_city, _build_sky, build_title_backdrop
+from game.view.title_backdrop import _build_sky, _build_streaks, _build_trench, build_title_backdrop
 
 
 @pytest.fixture
@@ -23,16 +23,17 @@ def scene(monkeypatch: Any) -> Any:
     return MagicMock(name="scene")
 
 
-def test_the_title_sky_and_skyline_are_built_without_glow(scene: Any) -> None:
-    """UI-TITLE-10: the dark sky and skyline are kept out of the glow."""
-    meshes = _build_sky(scene, create_rng(1))
-    assert len(meshes) == 2
+def test_the_title_sky_is_built(scene: Any) -> None:
+    assert _build_sky(scene) is not None
 
 
-def test_the_title_city_is_two_chunks_end_to_end(scene: Any) -> None:
-    """UI-TITLE-07: the street loops forever."""
-    city = _build_city(scene, create_rng(2))
-    assert city is not None
+def test_ui_title_07_the_trench_is_two_stretches_end_to_end(scene: Any) -> None:
+    trench = _build_trench(scene, create_rng(2))
+    assert len(trench["structure"]) == 2
+
+
+def test_ui_title_07_the_streaks_are_built(scene: Any) -> None:
+    assert _build_streaks(scene, create_rng(3)) is not None
 
 
 def test_the_title_backdrop_is_built_in_its_scene(scene: Any) -> None:
@@ -46,7 +47,7 @@ def backdrop(monkeypatch: Any, scene: Any) -> SimpleNamespace:
 
     def node(label: str, _scene: Any) -> Any:
         made.nodes[label] = MagicMock(name=label)
-        made.nodes[label].rotation.y = 0.0
+        made.nodes[label].rotation.z = 0.0
         return made.nodes[label]
 
     monkeypatch.setattr(title_backdrop, "new_transform_node", node)
@@ -55,13 +56,12 @@ def backdrop(monkeypatch: Any, scene: Any) -> SimpleNamespace:
     monkeypatch.setattr(
         title_backdrop, "js_set", lambda obj, key, value: obj.__setitem__(key, value)
     )
-    monkeypatch.setattr(title_backdrop, "build_balanced_ship", lambda _scene: made.ship)
-    # Empty geometry for the street, skyline and rain: the meshes are stand-ins anyway.
+    monkeypatch.setattr(title_backdrop, "build_player_ship", lambda _scene: made.ship)
+    # Empty geometry for the trench and the streaks: the meshes are stand-ins anyway.
     empty = SimpleNamespace(positions=[], indices=[], colors=[])
     parts = {"structure": empty, "lights": empty}
-    monkeypatch.setattr(title_backdrop, "build_city_chunk", lambda _look, _random: parts)
-    monkeypatch.setattr(title_backdrop, "build_skyline", lambda _look, _random: parts)
-    monkeypatch.setattr(title_backdrop, "build_rain", lambda _look, _random: empty)
+    monkeypatch.setattr(title_backdrop, "build_trench_chunk", lambda _look, _random: parts)
+    monkeypatch.setattr(title_backdrop, "build_streaks", lambda _look, _random: empty)
     monkeypatch.setattr(
         title_backdrop, "step_model_animations", lambda root, dt: made.steps.append((root, dt))
     )
@@ -69,53 +69,64 @@ def backdrop(monkeypatch: Any, scene: Any) -> SimpleNamespace:
     return made
 
 
-def test_ui_title_10_the_sky_skyline_street_and_rain_are_kept_out_of_the_glow(
+def test_ui_title_10_the_sky_and_the_trench_structure_are_kept_out_of_the_glow(
     backdrop: SimpleNamespace,
 ) -> None:
     excluded = backdrop.handle["glowExcludedMeshes"]
     nodes = backdrop.nodes
     assert excluded[0] is nodes["title-sky"]
-    assert excluded[1] is nodes["title-skyline"]
-    assert excluded[2] is nodes["title-city-structure"]
-    assert excluded[-1] is nodes["title-rain"]
-    assert nodes["title-city-lights"] not in excluded
+    assert excluded[1] is nodes["title-trench-structure"]
+    assert nodes["title-trench-lights"] not in excluded
+    assert nodes["title-streak-mesh"] not in excluded
 
 
-def test_ui_title_07_each_frame_scrolls_the_street_drops_the_rain_and_turns_the_ship(
+def test_ui_title_07_each_frame_scrolls_the_trench_and_the_faster_streaks_away(
     backdrop: SimpleNamespace,
 ) -> None:
     look = title_backdrop.LOOK
     nodes = backdrop.nodes
-    backdrop.handle["update"](0.25)
-    backdrop.handle["update"](0.25)
-    t = 0.5
-    assert t * look.city.scrollSpeed < look.city["length"]
-    assert t * look.rain.speed < look.rain.height
-    assert nodes["title-city"].position.z == pytest.approx(-(t * look.city.scrollSpeed))
-    assert nodes["title-rain"].position.y == pytest.approx(look.rain.y - t * look.rain.speed)
-    pivot = nodes["title-ship"]
-    assert pivot.rotation.y == pytest.approx(look.ship.rotationSpeedRadPerSec * t)
-    bob = look.ship.bobAmplitude * math.sin(2 * math.pi * look.ship.bobHz * t)
-    assert pivot.position.y == pytest.approx(look.ship.position[1] + bob)
-    # The ship floats on its pivot, its reactors' flames stepped each frame.
-    assert backdrop.ship.parent is pivot
-    assert backdrop.steps == [(backdrop.ship, 0.25), (backdrop.ship, 0.25)]
+    assert look.streaks.speed > look.trench.speed
+    backdrop.handle["update"](0.1)
+    backdrop.handle["update"](0.1)
+    t = 0.2
+    assert t * look.trench.speed < look.trench["length"]
+    assert t * look.streaks.speed < look.streaks["length"]
+    trench_z = look.trench.startZ - t * look.trench.speed
+    assert nodes["title-trench"].position.z == pytest.approx(trench_z)
+    streaks_z = look.streaks.startZ - t * look.streaks.speed
+    assert nodes["title-streaks"].position.z == pytest.approx(streaks_z)
 
 
-def test_ui_title_07_the_street_and_the_rain_loop_once_they_have_gone_round(
+def test_ui_title_07_the_trench_and_the_streaks_loop_once_they_have_gone_round(
     backdrop: SimpleNamespace,
 ) -> None:
     look = title_backdrop.LOOK
-    loop = look.city["length"] / look.city.scrollSpeed
-    backdrop.handle["update"](loop + 1)
-    assert backdrop.nodes["title-city"].position.z == pytest.approx(-look.city.scrollSpeed)
-    fallen = ((loop + 1) * look.rain.speed) % look.rain.height
-    assert backdrop.nodes["title-rain"].position.y == pytest.approx(look.rain.y - fallen)
+    loop = look.trench["length"] / look.trench.speed
+    backdrop.handle["update"](loop + 0.1)
+    expected = look.trench.startZ - 0.1 * look.trench.speed
+    assert backdrop.nodes["title-trench"].position.z == pytest.approx(expected)
+    gone = ((loop + 0.1) * look.streaks.speed) % look.streaks["length"]
+    assert backdrop.nodes["title-streaks"].position.z == pytest.approx(look.streaks.startZ - gone)
 
 
-@pytest.mark.parametrize(("screen", "shown"), [("ship-select", False), ("title", True)])
-def test_ui_title_09_the_ship_is_hidden_on_the_ship_select_screen(
-    backdrop: SimpleNamespace, screen: str, shown: bool
+def test_ui_title_07_the_ship_faces_the_camera_sways_banks_and_floats(
+    backdrop: SimpleNamespace,
 ) -> None:
-    backdrop.handle["showScreen"](screen)
-    backdrop.nodes["title-ship"].setEnabled.assert_called_once_with(shown)
+    look = title_backdrop.LOOK
+    s = look.ship
+    # The camera is ahead of the ship, along +Z, where the model's nose points.
+    assert look.camera.position[2] > s.position[2]
+    pivot = backdrop.nodes["title-ship"]
+    t = 1 / (4 * s.swayHz)
+    backdrop.handle["update"](t)
+    # A quarter sway: at its widest, not moving sideways, so not banked.
+    assert pivot.position.x == pytest.approx(s.position[0] + s.swayAmplitude)
+    assert pivot.rotation.z == pytest.approx(0, abs=1e-9)
+    bob = s.bobAmplitude * math.sin(2 * math.pi * s.bobHz * t)
+    assert pivot.position.y == pytest.approx(s.position[1] + bob)
+    backdrop.handle["update"](t)
+    # Half a sway: back in the middle, moving towards -X, banked the most, its -X wing down.
+    assert pivot.position.x == pytest.approx(s.position[0], abs=1e-9)
+    assert pivot.rotation.z == pytest.approx(s.bankRad)
+    assert backdrop.ship.parent is pivot
+    assert backdrop.steps == [(backdrop.ship, t), (backdrop.ship, t)]

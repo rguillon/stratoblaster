@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Renaud Guillon
-"""Unit tests of `src/app/menu_scenes.py`: the menu scenes' loading steps and their drawing.
+"""Unit tests of `src/app/menu_scenes.py`: the menu scene's loading steps and its drawing.
 
-Babylon's scenes, the showcase environment and the ship select stage are fakes here.
+Babylon's scenes and the showcase environment are fakes here.
 """
 
 from types import SimpleNamespace
@@ -21,7 +21,6 @@ class FakeScene:
         self.label = label
         self.renders = 0
         self.metadata: Any = None
-        self.autoClear = True
         self.ready = "ready:" + label
         self.activeCamera = SimpleNamespace(viewport=None)
 
@@ -38,20 +37,6 @@ class FakeGlow:
 
     def addExcludedMesh(self, mesh: str) -> None:
         self.excluded.append(mesh)
-
-
-class FakeStage:
-    """The ship select stage: the ships it shows and the one highlighted, in order."""
-
-    def __init__(self, scene: FakeScene, models: list[Any], options: Any) -> None:
-        self.scene = scene
-        self.models = models
-        self.options = options
-        self.showcase = SimpleNamespace(pivots=["pivot" for _ in models])
-        self.selected: list[int] = []
-
-    def select(self, index: int) -> None:
-        self.selected.append(index)
 
 
 class Babylon:
@@ -89,23 +74,11 @@ def babylon(monkeypatch: pytest.MonkeyPatch) -> Babylon:
     monkeypatch.setattr(menu_scenes, "apply_showcase_environment", fake.apply_showcase_environment)
     monkeypatch.setattr(menu_scenes, "js_object", dict)
     monkeypatch.setattr(menu_scenes, "js_set", _js_set)
-    monkeypatch.setattr(menu_scenes, "ShipSelectStage", FakeStage)
     monkeypatch.setattr(menu_scenes, "new_viewport", lambda *box: box)
     return fake
 
 
-def _alpha(_scene: Any) -> str:
-    return "alpha-model"
-
-
-def _beta(_scene: Any) -> str:
-    return "beta-model"
-
-
-def make_game(
-    models: dict[str, Any] | None = None,
-    viewport: tuple[float, float, float, float] | None = None,
-) -> SimpleNamespace:
+def make_game(viewport: tuple[float, float, float, float] | None = None) -> SimpleNamespace:
     backdrop = SimpleNamespace(glowExcludedMeshes=["sky", "sun"])
 
     def menu_backdrop(scene: FakeScene) -> Any:
@@ -115,13 +88,7 @@ def make_game(
     return SimpleNamespace(
         id="strato",
         playfield=SimpleNamespace(viewport=viewport),
-        player_ships=SimpleNamespace(
-            ships=[SimpleNamespace(id="alpha"), SimpleNamespace(id="beta")]
-        ),
-        view=SimpleNamespace(
-            player_ship_models=models if models is not None else {"alpha": _alpha, "beta": _beta},
-            menu_backdrop=menu_backdrop,
-        ),
+        view=SimpleNamespace(menu_backdrop=menu_backdrop),
     )
 
 
@@ -129,34 +96,28 @@ def run_tasks(tasks: list[Any]) -> list[Any]:
     return [task() for task in tasks]
 
 
-def test_ui_load_03_the_menu_scenes_are_built_in_loading_steps(babylon: Babylon) -> None:
-    """Also UI-SHIP-01 (the ships on their own scene, over the backdrop) and UI-TITLE-09."""
+def test_ui_load_03_the_menu_scene_is_built_in_loading_steps(babylon: Babylon) -> None:
+    """Also UI-TITLE-09 (the game's backdrop behind the menus)."""
     game = make_game()
     load = prepare_menu_scenes("engine", game, True)
-    assert len(load.tasks) == 5
+    assert len(load.tasks) == 2
     waits = run_tasks(load.tasks)
-    backdrop_scene, ship_scene = babylon.scenes
-    # The two waits are the scenes' own readiness promises.
-    assert waits[2:4] == [backdrop_scene.ready, ship_scene.ready]
+    (backdrop_scene,) = babylon.scenes
+    # The wait is the scene's own readiness promise.
+    assert waits[1] == backdrop_scene.ready
     scenes = load.result()
     assert isinstance(scenes, MenuScenes)
     assert scenes.backdrop_scene is backdrop_scene
     assert scenes.backdrop.scene is backdrop_scene
     assert backdrop_scene.metadata == {"gameId": "strato"}
-    assert scenes.ship_scene is ship_scene
-    assert ship_scene.autoClear is False
-    stage = scenes.stage
-    assert stage.scene is ship_scene
-    assert stage.models == [_alpha, _beta]
-    assert stage.options is MENU_CONFIG.ship_select
 
 
-def test_ui_load_03_with_the_environment_both_scenes_are_lit_and_the_backdrop_glows(
+def test_ui_load_03_with_the_environment_the_backdrop_is_lit_and_glows(
     babylon: Babylon,
 ) -> None:
     run_tasks(prepare_menu_scenes("engine", make_game(), True).tasks)
-    backdrop_scene, ship_scene = babylon.scenes
-    assert [scene for scene, _ in babylon.environments] == [backdrop_scene, ship_scene]
+    (backdrop_scene,) = babylon.scenes
+    assert [scene for scene, _ in babylon.environments] == [backdrop_scene]
     options = babylon.environments[0][1]
     environment = MENU_CONFIG.environment
     assert options.cube_size == environment.cube_size
@@ -167,60 +128,35 @@ def test_ui_load_03_with_the_environment_both_scenes_are_lit_and_the_backdrop_gl
     assert babylon.glows[0].excluded == ["sky", "sun"]
 
 
-def test_ui_look_02_the_menu_scenes_draw_in_the_playfield_window(babylon: Babylon) -> None:
+def test_ui_load_03_without_the_environment_nothing_is_lit(babylon: Babylon) -> None:
+    run_tasks(prepare_menu_scenes("engine", make_game(), False).tasks)
+    assert babylon.environments == []
+    assert [scene.renders for scene in babylon.scenes] == [0]
+
+
+def test_ui_look_02_the_menu_scene_draws_in_the_playfield_window(babylon: Babylon) -> None:
     """D-319: the menus have the game's aspect ratio, their 3D drawn where a level is."""
     run_tasks(prepare_menu_scenes("engine", make_game(viewport=(0.25, 0, 0.5, 1)), False).tasks)
-    assert [scene.activeCamera.viewport for scene in babylon.scenes] == [(0.25, 0, 0.5, 1)] * 2
+    assert [scene.activeCamera.viewport for scene in babylon.scenes] == [(0.25, 0, 0.5, 1)]
 
 
 def test_ui_look_02_without_a_playfield_window_the_menus_take_the_screen(babylon: Babylon) -> None:
     run_tasks(prepare_menu_scenes("engine", make_game(), False).tasks)
-    assert [scene.activeCamera.viewport for scene in babylon.scenes] == [None, None]
+    assert [scene.activeCamera.viewport for scene in babylon.scenes] == [None]
 
 
-def test_perf_07_each_ship_is_drawn_highlighted_once_while_loading(babylon: Babylon) -> None:
+def test_ui_load_03_the_scene_is_not_there_before_its_steps_ran(babylon: Babylon) -> None:
     load = prepare_menu_scenes("engine", make_game(), True)
-    run_tasks(load.tasks)
-    stage = load.result().stage
-    assert stage.selected == [1, 0]
-    assert babylon.scenes[1].renders == 2
-
-
-def test_perf_07_without_the_environment_nothing_is_lit_nor_drawn_ahead(babylon: Babylon) -> None:
-    load = prepare_menu_scenes("engine", make_game(), False)
-    run_tasks(load.tasks)
-    assert babylon.environments == []
-    assert load.result().stage.selected == []
-    assert [scene.renders for scene in babylon.scenes] == [0, 0]
-
-
-def test_ui_load_03_the_scenes_are_not_there_before_their_steps_ran(babylon: Babylon) -> None:
-    load = prepare_menu_scenes("engine", make_game(), True)
-    # Waiting on, or highlighting, scenes not built yet does nothing.
-    assert [load.tasks[i]() for i in [2, 3, 4]] == [None, None, None]
+    # Waiting on a scene not built yet does nothing.
+    assert load.tasks[1]() is None
     with pytest.raises(ValueError, match="not loaded yet"):
         load.result()
-    load.tasks[0]()
-    with pytest.raises(ValueError, match="not loaded yet"):
-        load.result()
-    assert babylon.scenes[0].renders == 0
+    assert babylon.scenes == []
 
 
-def test_ui_ship_01_a_ship_without_a_model_is_an_error(babylon: Babylon) -> None:
-    del babylon
-    load = prepare_menu_scenes("engine", make_game({"alpha": _alpha}), False)
-    load.tasks[0]()
-    with pytest.raises(ValueError, match='No model for player ship "beta"'):
-        load.tasks[1]()
-
-
-@pytest.mark.parametrize(
-    ("screen", "drawn"), [("loading", [0, 0]), ("title", [1, 0]), ("ship-select", [1, 1])]
-)
-def test_ui_title_09_the_backdrop_is_drawn_behind_the_menus_and_the_ships_on_their_screen(
-    screen: str, drawn: list[int]
-) -> None:
-    """Nothing on the loading screen; the ships only on the ship select screen (UI-SHIP-01)."""
-    backdrop_scene, ship_scene = FakeScene("backdrop"), FakeScene("ships")
-    render_menu_scenes(MenuScenes(backdrop_scene, None, ship_scene, None), screen)
-    assert [backdrop_scene.renders, ship_scene.renders] == drawn
+@pytest.mark.parametrize(("screen", "drawn"), [("loading", 0), ("title", 1), ("level-select", 1)])
+def test_ui_title_09_the_backdrop_is_drawn_behind_the_menus(screen: str, drawn: int) -> None:
+    """Nothing on the loading screen."""
+    backdrop_scene = FakeScene("backdrop")
+    render_menu_scenes(MenuScenes(backdrop_scene, None), screen)
+    assert backdrop_scene.renders == drawn

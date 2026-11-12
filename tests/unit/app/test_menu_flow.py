@@ -12,7 +12,7 @@ from core.systems.level_run_types import LevelCheckpoint, LevelResult
 from core.systems.run_arsenal import WeaponLevels
 from input.menu_action import MenuSelect, MenuSet
 
-SHIPS = ["alpha", "beta", "gamma"]
+SHIP = "alpha"
 
 
 def catalog(second_unlocked: bool = False) -> LevelCatalog:
@@ -29,15 +29,13 @@ def catalog(second_unlocked: bool = False) -> LevelCatalog:
 def make_flow(
     *,
     second_unlocked: bool = False,
-    initial_ship: str | None = None,
     volumes: Volumes | None = None,
     result_delay: float | None = None,
 ) -> MenuFlow:
     return MenuFlow(
         MenuFlowOptions(
-            list(SHIPS),
+            SHIP,
             catalog(second_unlocked),
-            initial_ship,
             0.25,
             result_delay,
             volumes,
@@ -62,9 +60,7 @@ def at_game(**options: object) -> MenuFlow:
     flow = make_flow(**options)  # type: ignore[arg-type]
     flow.finish_loading()
     settle(flow)
-    assert flow.dispatch("confirm") == "screen"  # title -> ship select
-    settle(flow)
-    assert flow.dispatch("confirm") == "screen"  # ship -> level select
+    assert flow.dispatch("confirm") == "screen"  # title -> level select
     settle(flow)
     assert flow.dispatch("confirm") == "screen"  # level 1-1 -> game
     settle(flow)
@@ -106,7 +102,7 @@ def test_ui_title_06_the_title_entries_move_with_up_and_down_and_confirm_goes_on
     assert flow.dispatch("down") == "none"
     assert flow.dispatch("up") == "moved"
     assert flow.dispatch("confirm") == "screen"
-    assert flow.state.screen == "ship-select"
+    assert flow.state.screen == "level-select"
 
 
 def test_ui_set_01_settings_from_the_title_and_back_returns_to_the_title() -> None:
@@ -130,48 +126,20 @@ def test_ui_input_09_selecting_an_entry_directly_and_bad_indexes() -> None:
     assert flow.dispatch(MenuSelect(-1)) == "none"
 
 
-def test_ui_ship_04_the_ship_select_wraps_around_and_confirm_chooses_the_ship() -> None:
-    """Also UI-SHIP-06."""
+def test_ui_flow_02_start_goes_to_the_level_select_with_the_game_s_one_ship() -> None:
     flow = at_title()
-    flow.dispatch("confirm")
+    assert flow.state.ship_id == SHIP
+    assert flow.dispatch("confirm") == "screen"
     settle(flow)
-    assert flow.dispatch("left") == "moved"
-    assert flow.state.highlighted_ship_id == "gamma"
-    flow.dispatch("confirm")
-    settle(flow)
-    assert flow.state.chosen_ship_id == "gamma"
     assert flow.state.screen == "level-select"
-
-
-def test_ui_ship_07_the_highlighted_ship_starts_as_the_saved_one() -> None:
-    flow = make_flow(initial_ship="beta")
-    flow.finish_loading()
-    settle(flow)
-    flow.dispatch("confirm")
-    settle(flow)
-    assert flow.state.highlighted_ship_id == "beta"
-
-
-def test_ui_ship_05_an_unknown_saved_ship_falls_back_to_the_first() -> None:
-    flow = make_flow(initial_ship="nope")
-    flow.finish_loading()
-    settle(flow)
-    flow.dispatch("confirm")
-    settle(flow)
-    assert flow.state.highlighted_ship_id == "alpha"
+    assert flow.state.ship_id == SHIP
 
 
 def test_ui_flow_05_back_walks_the_menus_in_reverse() -> None:
-    """Also UI-SHIP-06."""
     flow = at_title()
     flow.dispatch("confirm")
     settle(flow)
-    flow.dispatch("confirm")
-    settle(flow)
     assert flow.state.screen == "level-select"
-    assert flow.dispatch("back") == "screen"
-    settle(flow)
-    assert flow.state.screen == "ship-select"
     assert flow.dispatch("back") == "screen"
     settle(flow)
     assert flow.state.screen == "title"
@@ -180,8 +148,6 @@ def test_ui_flow_05_back_walks_the_menus_in_reverse() -> None:
 
 def test_ui_level_04_a_locked_level_gives_the_locked_feedback_and_stays() -> None:
     flow = at_title()
-    flow.dispatch("confirm")
-    settle(flow)
     flow.dispatch("confirm")
     settle(flow)
     assert flow.state.selection == 0
@@ -194,8 +160,6 @@ def test_ui_level_04_a_locked_level_gives_the_locked_feedback_and_stays() -> Non
 def test_ui_level_06_the_level_select_starts_on_the_first_unlocked_level() -> None:
     flow = make_flow(second_unlocked=False)
     flow.finish_loading()
-    settle(flow)
-    flow.dispatch("confirm")
     settle(flow)
     flow.dispatch("confirm")
     settle(flow)
@@ -412,28 +376,27 @@ def test_ui_over_07_level_select_from_the_game_over_panel_leaves_the_level() -> 
 
 def test_dev_opt_01_a_directly_started_level_skips_the_menus() -> None:
     flow = make_flow(second_unlocked=True)
-    assert flow.play_direct("beta", "1-2") is True
+    assert flow.play_direct("1-2") is True
     state = flow.state
     assert state.screen == "game"
-    assert state.chosen_ship_id == "beta"
+    assert state.ship_id == SHIP
     assert state.chosen_level_id == "1-2"
     assert state.transitioning is False
 
 
 @pytest.mark.parametrize(
-    ("ship", "level", "unlocked"),
+    ("level", "unlocked"),
     [
-        ("nope", "1-1", True),
-        ("alpha", "nope", True),
-        ("alpha", "1-3", True),
-        ("alpha", "1-2", False),
+        ("nope", True),
+        ("1-3", True),
+        ("1-2", False),
     ],
 )
-def test_dev_opt_01_a_direct_start_is_refused_for_unknown_or_locked_choices(
-    ship: str, level: str, unlocked: bool
+def test_dev_opt_01_a_direct_start_is_refused_for_unknown_or_locked_levels(
+    level: str, unlocked: bool
 ) -> None:
     flow = make_flow(second_unlocked=unlocked)
-    assert flow.play_direct(ship, level) is False
+    assert flow.play_direct(level) is False
     assert flow.state.screen == "loading"
 
 
@@ -467,11 +430,11 @@ def test_ui_flow_04_a_revision_goes_up_on_every_change() -> None:
     assert flow.revision > before
 
 
-def test_ui_flow_04_a_menu_needs_at_least_one_ship_and_one_level() -> None:
-    with pytest.raises(ValueError, match="at least one ship"):
-        MenuFlow(MenuFlowOptions([], catalog(), None, 0.25, None, None, None))
+def test_ui_flow_04_a_menu_needs_a_ship_and_at_least_one_level() -> None:
+    with pytest.raises(ValueError, match="needs a ship"):
+        MenuFlow(MenuFlowOptions("", catalog(), 0.25, None, None, None))
     with pytest.raises(ValueError, match="at least one level"):
-        MenuFlow(MenuFlowOptions(list(SHIPS), LevelCatalog(1, []), None, 0.25, None, None, None))
+        MenuFlow(MenuFlowOptions(SHIP, LevelCatalog(1, []), 0.25, None, None, None))
 
 
 def test_ui_flow_01_the_selected_id_of_each_screen() -> None:
@@ -482,14 +445,12 @@ def test_ui_flow_01_the_selected_id_of_each_screen() -> None:
     assert flow.state.selected_id == "start"
     flow.dispatch("confirm")
     settle(flow)
-    assert flow.state.selected_id == "alpha"
+    assert flow.state.selected_id == "1-1"
 
 
 def test_ui_over_04_a_result_delay_replaces_the_transition_time() -> None:
     flow = make_flow(result_delay=2.0)
     flow.finish_loading()
-    settle(flow)
-    flow.dispatch("confirm")
     settle(flow)
     flow.dispatch("confirm")
     settle(flow)
@@ -509,9 +470,7 @@ DEV_COUNTS = [3, 4, 2, 5, 6, 3, 2]
 
 
 def dev_flow() -> MenuFlow:
-    flow = MenuFlow(
-        MenuFlowOptions(list(SHIPS), catalog(), None, 0.25, None, None, 10, list(DEV_COUNTS))
-    )
+    flow = MenuFlow(MenuFlowOptions(SHIP, catalog(), 0.25, None, None, 10, list(DEV_COUNTS)))
     flow.finish_loading()
     settle(flow)
     return flow
@@ -528,9 +487,7 @@ def at_dev_menu() -> MenuFlow:
 
 def fullscreen_flow(dev: bool = False) -> MenuFlow:
     counts = list(DEV_COUNTS) if dev else None
-    flow = MenuFlow(
-        MenuFlowOptions(list(SHIPS), catalog(), None, 0.25, None, None, 10, counts, None, True)
-    )
+    flow = MenuFlow(MenuFlowOptions(SHIP, catalog(), 0.25, None, None, 10, counts, None, True))
     flow.finish_loading()
     settle(flow)
     return flow
@@ -671,7 +628,7 @@ def test_d204_a_tap_on_a_viewer_button_shows_its_item() -> None:
 
 
 def test_d199_a_viewer_of_one_item_does_not_move() -> None:
-    flow = MenuFlow(MenuFlowOptions(list(SHIPS), catalog(), None, 0.25, None, None, 10, [1]))
+    flow = MenuFlow(MenuFlowOptions(SHIP, catalog(), 0.25, None, None, 10, [1]))
     flow.finish_loading()
     settle(flow)
     flow.dispatch("down")
@@ -692,9 +649,7 @@ def test_d199_a_viewer_of_one_item_does_not_move() -> None:
 
 def test_d202_up_and_down_jump_between_the_groups_of_a_grouped_viewer() -> None:
     groups = [["a", "a", "b"], [], [], [], []]
-    options = MenuFlowOptions(
-        list(SHIPS), catalog(), None, 0.25, None, None, 10, [3, 1, 1, 1, 1], groups
-    )
+    options = MenuFlowOptions(SHIP, catalog(), 0.25, None, None, 10, [3, 1, 1, 1, 1], groups)
     flow = MenuFlow(options)
     flow.finish_loading()
     settle(flow)
@@ -794,9 +749,7 @@ def test_dev_menu_19_on_an_audio_viewer_the_item_picked_plays_with_no_menu_sound
 def test_dev_menu_20_the_music_viewer_is_the_last_entry_and_up_down_jump_its_groups() -> None:
     groups = [["", "", ""], [], [], [], [], ["", "", ""], ["Menu", "Levels"]]
     flow = MenuFlow(
-        MenuFlowOptions(
-            list(SHIPS), catalog(), None, 0.25, None, None, 10, list(DEV_COUNTS), groups
-        )
+        MenuFlowOptions(SHIP, catalog(), 0.25, None, None, 10, list(DEV_COUNTS), groups)
     )
     flow.finish_loading()
     settle(flow)

@@ -6,53 +6,46 @@
     <title>Stratoblaster</title>
     <style>
       /*
-       * Neon blue/green look (reviewer, 2026-10-30, D-198; was darksynth magenta, D-103):
-       * electric cyan and neon green on blue-black (UI-LOOK-03), a cold chrome logo, blue-to-green
-       * neon lines, soft neon glows, chamfered glass panels (UI-LOOK-06). The selected entry is a
-       * solid cyan block, with its markers. Red stays for danger (low health, game over, locked,
-       * the boss), orange for the bombs (UI-LOOK-04). Large type for kids (UI-LOOK-09). System
-       * fonts only: works offline (UI-LOOK-11).
+       * Cyan neon night, made clear (owner, 2026-11-11, D-324; synthwave pink D-323, neon
+       * blue/green D-198 before): a blue-black ramp, one electric cyan accent, a cast chrome logo
+       * with a hard teal edge (the title's one rich moment, UI-LOOK-12) and a cyan horizon line
+       * under the headings (the signature, UI-LOOK-06). Nothing in the chrome glows; fills are
+       * solid (UI-LOOK-03). Red stays for danger, orange for the bombs (UI-LOOK-04), green for
+       * good things. Large type for kids, sentence case, 4 px grid (UI-LOOK-09). System fonts
+       * only (UI-LOOK-11).
        */
       :root {
-        --neon: #00e8ff;
-        --accent: #3dff9a;
-        --deep: #0a5cff;
-        --red: #ff2244;
-        --black: #010a10;
-        --paper: #ecfdff;
-        --dim: #6e8f98;
-        --glass: rgba(2, 14, 22, 0.8);
+        --night: #010a10;
         --letterbox: #000407;
+        --glass: rgba(4, 18, 28, 0.86);
+        --glass-2: rgba(10, 34, 48, 0.92);
+        --text: #ecfdff;
+        --text-2: #9fbcc4;
+        --text-3: #5f7f89;
+        --line: rgba(236, 253, 255, 0.12);
+        --line-2: rgba(236, 253, 255, 0.24);
+        --cyan: #00e8ff;
+        --on-accent: #01141c;
+        --green: #3dff9a;
+        --red: #ff3b47;
+        --orange: #ff9a2e;
+        --outline: 0 1px 2px rgba(0, 4, 7, 0.9), 0 0 2px rgba(0, 4, 7, 0.9);
+        --r-control: 8px;
+        --r-panel: 16px;
+        --ease: cubic-bezier(0.2, 0, 0, 1);
         /* D-249: width of the menus' column in the middle of the 16:9 screen (UI-LOOK-02). */
         --menu-column: 560px;
         /* D-252, D-263: width of the side columns round the 540 px wide playfield window, where
            the level is drawn; since D-317 the HUD is laid over the window, the columns are empty
            but for the touch buttons (UI-HUD-01). */
         --hud-side: 370px;
-        --glow: rgba(0, 232, 255, 0.55);
-        --neon-line: linear-gradient(90deg, #0a5cff, #00b4ff 40%, #00e8ff 65%, #3dff9a 90%, #b4ff4a);
-        --chrome: linear-gradient(
-          180deg,
-          #ffffff 0%,
-          #d4fbff 40%,
-          #0b3a5a 50%,
-          #4ff0ff 60%,
-          #e4fff4 100%
-        );
+        /* How much of the right side column is in view (D-329): all of it unless the window
+           crops it; set by the stage fit. */
+        --side-room: var(--hud-side);
         --font:
           'Bahnschrift', 'DIN Alternate', 'Roboto Condensed', 'Arial Narrow', 'Segoe UI', system-ui,
           sans-serif;
         --font-tech: 'Consolas', 'Menlo', 'DejaVu Sans Mono', 'Liberation Mono', monospace;
-        --cut: 14px;
-        /* Panel with its top-left and bottom-right corners cut off. */
-        --chamfer: polygon(
-          var(--cut) 0,
-          100% 0,
-          100% calc(100% - var(--cut)),
-          calc(100% - var(--cut)) 100%,
-          0 100%,
-          0 var(--cut)
-        );
       }
       html,
       body {
@@ -60,15 +53,16 @@
         height: 100%;
         overflow: hidden;
         background: var(--letterbox);
-        color: var(--paper);
+        color: var(--text);
         font-family: var(--font);
+        font-weight: 500;
       }
       /* No screen overlay on the stage (UI-LOOK-07); #menu, laid out at the logical resolution,
          is scaled over it (UI-LOOK-01). */
       #stage {
         position: fixed;
         overflow: hidden;
-        background: var(--black);
+        background: var(--night);
       }
       #game-canvas {
         display: block;
@@ -98,12 +92,11 @@
         height: 100dvh !important;
         transform: none !important;
       }
-      /* The menus have the game's aspect ratio (D-319, owner: "make the main menues the same aspect
-         ratio as the game"): every screen is laid out in the 540 x 720 playfield window in the
-         middle of the stage, where the menus' 3D scenes are drawn too, between opaque side
-         columns, the same round a level (UI-LOOK-02, D-317). The game screen keeps the whole
-         stage (its HUD is laid over the window itself), the dev viewer's 3D views the whole
-         stage, a phone's menus the whole window (D-286). */
+      /* The menus have the game's aspect ratio (D-319): every screen is laid out in the 540 x 720
+         playfield window in the middle of the stage, between opaque night side columns with a
+         hairline on the window's edges, the same round a level (UI-LOOK-02, D-317). The game
+         screen keeps the whole stage (its HUD is laid over the window itself), the dev viewer's 3D
+         views the whole stage, a phone's menus the whole window (D-286). */
       #menu:not(.phone):not(:has(.dev-viewer-screen))::before {
         content: '';
         position: absolute;
@@ -111,11 +104,11 @@
         pointer-events: none;
         background: linear-gradient(
           90deg,
-          var(--black) calc(var(--hud-side) - 1px),
-          rgba(0, 232, 255, 0.45) calc(var(--hud-side) - 1px) var(--hud-side),
+          var(--night) calc(var(--hud-side) - 1px),
+          var(--line-2) calc(var(--hud-side) - 1px) var(--hud-side),
           transparent var(--hud-side) calc(100% - var(--hud-side)),
-          rgba(0, 232, 255, 0.45) calc(100% - var(--hud-side)) calc(100% - var(--hud-side) + 1px),
-          var(--black) calc(100% - var(--hud-side) + 1px)
+          var(--line-2) calc(100% - var(--hud-side)) calc(100% - var(--hud-side) + 1px),
+          var(--night) calc(100% - var(--hud-side) + 1px)
         );
       }
       #menu:not(.phone) .menu-screen:not(.game-screen, .dev-viewer-screen) {
@@ -149,6 +142,8 @@
         display: none;
       }
 
+      /* A menu screen: a column, centred, on the 4 px grid. No frame and no bottom line: the
+         window's hairline is its edge (UI-LOOK-06). */
       .menu-screen {
         position: absolute;
         inset: 0;
@@ -158,42 +153,17 @@
         box-sizing: border-box;
         padding: 24px 16px;
         text-align: center;
-        text-shadow: 0 0 4px rgba(0, 0, 0, 0.9);
+        text-shadow: var(--outline);
       }
-      /* Screen frame: a thin neon line, cyan at the top fading to deep blue, softly glowing. */
-      .menu-screen::before {
-        content: '';
-        position: absolute;
-        inset: 6px;
-        pointer-events: none;
-        border: 1px solid transparent;
-        border-image: linear-gradient(180deg, var(--neon), rgba(10, 92, 255, 0.35)) 1;
-        box-shadow:
-          0 0 14px rgba(0, 232, 255, 0.25),
-          inset 0 0 18px rgba(10, 92, 255, 0.2);
-      }
-      /* The neon line along the bottom of every screen. */
-      .menu-screen::after {
-        content: '';
-        position: absolute;
-        left: 6px;
-        right: 6px;
-        bottom: 6px;
-        height: 3px;
-        pointer-events: none;
-        background: var(--neon-line);
-        box-shadow: 0 0 12px var(--glow);
-      }
-      /* Short screen transitions (UI-FLOW-08). */
+      /* Short screen transitions (UI-FLOW-08): a fade and an 8 px rise. */
       .menu-enter {
         animation-name: menu-fade;
-        animation-timing-function: ease-out;
+        animation-timing-function: var(--ease);
       }
       @keyframes menu-fade {
         from {
           opacity: 0;
-          transform: translateX(-10px);
-          filter: brightness(2.5);
+          transform: translateY(8px);
         }
       }
       .menu-entry {
@@ -201,48 +171,66 @@
         box-sizing: border-box;
         min-width: 44px;
         min-height: 44px;
-        border: 2px solid rgba(61, 255, 154, 0.45);
-        background:
-          linear-gradient(-45deg, var(--accent) 0 7px, transparent 7px) bottom right / 16px 16px
-            no-repeat,
-          var(--glass);
+        border: 1px solid var(--line);
+        border-radius: var(--r-control);
+        background: var(--glass);
+        color: var(--text);
+        font-weight: 600;
+        transition:
+          background-color 120ms var(--ease),
+          border-color 120ms var(--ease),
+          color 120ms var(--ease);
       }
-      /* Selected entry: solid cyan block with black text, plus its markers, so it shows
+      .menu-entry:hover {
+        border-color: var(--line-2);
+        background: var(--glass-2);
+      }
+      .menu-entry:focus-visible,
+      .menu-back:focus-visible {
+        outline: 2px solid var(--cyan);
+        outline-offset: 2px;
+      }
+      /* Selected entry: a solid cyan block with dark text, plus its markers, so it shows
          without colour too (much lighter than the dark panels in greyscale, UI-LOOK-08). */
-      .menu-entry.selected {
-        border-color: var(--paper);
-        color: var(--black);
+      .menu-entry.selected,
+      .menu-entry.selected:hover {
+        border-color: var(--cyan);
+        color: var(--on-accent);
         text-shadow: none;
-        background:
-          linear-gradient(-45deg, var(--black) 0 7px, transparent 7px) bottom right / 16px 16px
-            no-repeat,
-          linear-gradient(180deg, #8ff6ff, var(--neon) 55%, #00a6c8);
-        box-shadow: 0 0 22px var(--glow);
+        background: var(--cyan);
+      }
+      /* Headings over the horizon line, the UI's signature (UI-LOOK-06). */
+      .menu-heading,
+      .pause-heading,
+      .level-complete-heading {
+        position: relative;
+        margin: 0;
+        padding-bottom: 16px;
+        font-size: 32px;
+        font-weight: 600;
+        line-height: 40px;
+        color: var(--text);
+      }
+      .menu-heading::after,
+      .pause-heading::after,
+      .level-complete-heading::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        bottom: 0;
+        width: 48px;
+        height: 2px;
+        margin-left: -24px;
+        background: var(--cyan);
       }
       .menu-heading {
-        margin: 68px 0 0;
-        font-size: 32px;
-        font-weight: 800;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--paper);
-        text-shadow:
-          0 0 6px var(--neon),
-          0 0 18px rgba(10, 92, 255, 0.9),
-          0 0 4px rgba(0, 0, 0, 0.9);
+        margin-top: 64px;
       }
-      /* Hints pulse gently; not with reduced motion (UI-LOOK-14). */
+      /* Hints: secondary text, still (UI-LOOK-14). */
       .menu-hint {
-        font-size: 15px;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: #b8fff0;
-        animation: hint-pulse 2.4s ease-in-out infinite;
-      }
-      @keyframes hint-pulse {
-        50% {
-          opacity: 0.55;
-        }
+        font-size: 16px;
+        line-height: 24px;
+        color: var(--text-2);
       }
       /* The on-screen Back button (UI-INPUT-10). */
       .menu-back {
@@ -256,16 +244,21 @@
         align-items: center;
         justify-content: center;
         box-sizing: border-box;
-        padding: 0 12px;
-        border: 2px solid var(--accent);
-        clip-path: var(--chamfer);
+        padding: 0 16px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-control);
         background: var(--glass);
-        color: var(--accent);
-        font-size: 18px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
+        color: var(--text-2);
+        font-size: 20px;
+        font-weight: 600;
         cursor: pointer;
+        transition:
+          background-color 120ms var(--ease),
+          color 120ms var(--ease);
+      }
+      .menu-back:hover {
+        color: var(--text);
+        background: var(--glass-2);
       }
       /* A locked level shakes when confirmed (UI-LEVEL-04). */
       .shake {
@@ -282,193 +275,167 @@
         }
       }
 
-      /* The loading screen (UI-LOAD-05): a neon grid floor under a deep blue horizon glow. */
+      /* The loading screen (UI-LOAD-05): the text, a slim cyan gauge, the percent, on plain
+         night. */
       .loading-screen {
         justify-content: center;
         gap: 16px;
-        background:
-          linear-gradient(rgba(0, 232, 255, 0.1) 1px, transparent 1px) 0 0 / 32px 32px,
-          linear-gradient(90deg, rgba(0, 232, 255, 0.1) 1px, transparent 1px) 0 0 / 32px 32px,
-          radial-gradient(ellipse at 50% 100%, rgba(10, 92, 255, 0.4), transparent 60%),
-          var(--black);
+        background: var(--night);
       }
       .loading-text {
-        font-size: 30px;
-        font-weight: 800;
-        font-style: italic;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-        color: var(--paper);
-        text-shadow:
-          0 0 8px var(--neon),
-          0 0 20px rgba(10, 92, 255, 0.9);
+        font-size: 28px;
+        font-weight: 600;
+        color: var(--text);
       }
       .loading-bar {
         width: 320px;
-        height: 24px;
+        height: 8px;
         box-sizing: border-box;
-        padding: 3px;
-        border: 2px solid var(--neon);
+        border: 1px solid var(--line-2);
+        border-radius: 4px;
         overflow: hidden;
         background: var(--glass);
       }
-      /* Segmented fill, like a power gauge. */
       .loading-fill {
         height: 100%;
-        background:
-          repeating-linear-gradient(90deg, transparent 0 10px, var(--black) 10px 13px),
-          var(--neon-line);
+        background: var(--cyan);
       }
       .loading-percent {
         font-family: var(--font-tech);
-        font-size: 18px;
-        color: var(--accent);
+        font-size: 16px;
+        font-variant-numeric: tabular-nums;
+        color: var(--text-3);
       }
 
       /* The title: high score, logo, Start, Settings, the hint and the version (UI-TITLE-01). */
+      .title-score {
+        margin-top: 0;
+      }
       .title-score-label {
-        font-family: var(--font-tech);
-        font-size: 15px;
-        letter-spacing: 0.3em;
-        text-transform: uppercase;
-        color: var(--accent);
+        font-size: 16px;
+        line-height: 24px;
+        color: var(--text-2);
       }
       .title-high-score {
         font-family: var(--font-tech);
         font-size: 32px;
-        font-weight: 700;
+        font-weight: 600;
+        line-height: 40px;
         font-variant-numeric: tabular-nums;
-        color: var(--neon);
+        color: var(--text);
       }
-      /* 80s chrome letters (a horizon line across the middle) in a slow neon glow (UI-LOOK-12). */
+      /* The logo (UI-LOOK-12), the title's one rich moment: black italic capitals in a cold 80s
+         chrome (a hard navy horizon across the middle), a thin pale outline and a solid teal
+         edge cast down and right in hard, unblurred layers (`title_logo_depth`, 6 px). It sits
+         on the horizon line, a cyan bar. Nothing behind it; nothing glows or
+         moves. */
       .title-name {
-        margin: 40px 0 0;
-        padding: 6px 24px;
-        /* Sized so the 13-letter "Stratoblaster" fits the screen's width (1280 px since D-249;
-           it was sized for 480); shrinkToFit() lowers it when the system falls back to a wider
-           font (UI-LOOK-13). */
-        font-size: 46px;
+        position: relative;
+        margin: 24px 0 0;
+        padding: 8px 24px 24px;
+        /* `title_logo_size`; shrinkToFit() lowers it when the system falls back to a wider font
+           (UI-LOOK-13). */
+        font-size: 60px;
         font-weight: 900;
         font-style: italic;
-        letter-spacing: 0.05em;
+        line-height: 64px;
+        letter-spacing: 0.02em;
         white-space: nowrap;
         text-transform: uppercase;
-        color: transparent;
         text-shadow: none;
-        background: var(--chrome);
+        color: transparent;
+        background: linear-gradient(
+          180deg,
+          #ffffff 0%,
+          #d4fbff 38%,
+          #7fe9f7 49%,
+          #0b3a5a 50%,
+          #05607a 56%,
+          var(--cyan) 72%,
+          #c8fbff 100%
+        );
+        background-size: 100% 64px;
+        background-position: 0 8px;
+        background-repeat: no-repeat;
         -webkit-background-clip: text;
         background-clip: text;
-        filter: drop-shadow(0 0 6px var(--neon)) drop-shadow(0 0 16px rgba(10, 92, 255, 0.8));
-        animation: title-glow 3.5s ease-in-out infinite;
+        -webkit-text-stroke: 1px rgba(236, 253, 255, 0.5);
+        filter: drop-shadow(1px 1px 0 #05607a) drop-shadow(1px 1px 0 #044a5e)
+          drop-shadow(1px 1px 0 #033a4b) drop-shadow(1px 1px 0 #022a38)
+          drop-shadow(1px 1px 0 #022a38) drop-shadow(1px 1px 0 #011a24);
       }
-      @keyframes title-glow {
-        50% {
-          filter: drop-shadow(0 0 10px var(--neon)) drop-shadow(0 0 26px rgba(61, 255, 154, 0.8));
-        }
+      /* The horizon line under the logo: a 4 px cyan bar, inset under the letters. */
+      .title-name::after {
+        content: '';
+        position: absolute;
+        left: 48px;
+        right: 48px;
+        bottom: 8px;
+        height: 4px;
+        background: var(--cyan);
+      }
+      .title-start,
+      .title-settings,
+      .title-fullscreen,
+      .title-dev {
+        width: 280px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
       }
       .title-start {
-        margin-top: 56px;
-        padding: 10px 28px;
-        clip-path: var(--chamfer);
-        font-size: 34px;
-        font-weight: 800;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-      }
-      .title-start.selected::before {
-        content: '▶ ';
-      }
-      .title-start.selected::after {
-        content: ' ◀';
+        min-height: 56px;
+        margin-top: 24px;
+        font-size: 32px;
       }
       /* Settings entry under Start (UI-TITLE-01), and the Full screen entry under it
          (UI-TITLE-11). */
       .title-settings,
       .title-fullscreen {
-        margin-top: 18px;
-        padding: 8px 22px;
-        clip-path: var(--chamfer);
-        font-size: 22px;
-        font-weight: 700;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
+        min-height: 44px;
+        margin-top: 12px;
+        font-size: 24px;
       }
-      .title-start:not(.selected) {
-        font-size: 28px;
-      }
+      .title-start.selected::before,
       .title-settings.selected::before,
-      .title-fullscreen.selected::before {
-        content: '▶ ';
+      .title-fullscreen.selected::before,
+      .title-dev.selected::before {
+        content: '▶';
+        font-size: 0.6em;
       }
+      .title-start.selected::after,
       .title-settings.selected::after,
       .title-fullscreen.selected::after {
-        content: ' ◀';
+        content: '◀';
+        font-size: 0.6em;
       }
       .title-hint {
         margin-top: auto;
-        margin-bottom: 28px;
+        margin-bottom: 24px;
       }
       /* Version and commit (UI-TITLE-04). */
       .title-version {
         position: absolute;
         right: 16px;
-        bottom: 14px;
+        bottom: 12px;
         font-family: var(--font-tech);
         font-size: 11px;
+        line-height: 16px;
         text-align: right;
-        color: var(--accent);
-        opacity: 0.85;
+        color: var(--text-3);
       }
 
-      /* D-249: the menus keep a column about as wide as the old 3:4 screen in the middle of the
-         16:9 one (`--menu-column`), so the cards, sliders and entries are not stretched. */
-      .ship-cards {
-        display: flex;
-        width: 100%;
-        max-width: var(--menu-column);
-        margin-top: auto;
-      }
-      .ship-card {
-        flex: 1;
-        margin: 0 3px;
-        padding: 6px 2px 8px;
-        clip-path: var(--chamfer);
-        font-size: 12px;
-        line-height: 1.5;
-        opacity: 0.6;
-      }
-      /* The highlighted ship's marker (UI-SHIP-03). */
-      .ship-card::before {
-        content: '▲';
-        display: block;
-        font-size: 16px;
-        line-height: 1;
-        visibility: hidden;
-      }
-      .ship-card.selected::before {
-        visibility: visible;
-      }
-      .ship-card.selected {
-        opacity: 1;
-      }
-      .ship-card-name {
-        white-space: nowrap;
-        font-size: 20px;
-        font-weight: 800;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-      }
-      .ship-select-screen .menu-hint {
-        margin: 12px 0 8px;
-      }
-
-      /* The level grid (UI-LEVEL-09). */
+      /* The level grid (UI-LEVEL-09): the grid, the status and the hint centred together in the
+         height under the heading. */
       .level-grid {
         display: grid;
-        gap: 10px;
-        margin-top: 40px;
+        gap: 12px;
+        margin-top: auto;
       }
-      /* No clip-path here: it would hide the dashed outline of the selected cell. */
+      .level-select-screen .menu-hint {
+        margin-bottom: auto;
+      }
       .level-cell {
         position: relative;
         width: 68px;
@@ -478,46 +445,39 @@
         align-items: center;
         justify-content: center;
         font-family: var(--font-tech);
-        font-size: 22px;
-        font-weight: 700;
+        font-size: 24px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
       }
-      .level-cell:not(.locked) {
-        border-color: var(--accent);
-      }
-      .level-cell.selected:not(.locked) {
-        border-color: var(--paper);
-      }
-      /* Locked: dim, hazard-striped panel; selected, a red frame instead of the cyan block. */
-      .level-cell.locked {
-        color: var(--dim);
-        border-color: rgba(110, 143, 152, 0.3);
+      /* Locked: dim, hazard-striped; selected, a red frame instead of the cyan block. */
+      .level-cell.locked,
+      .level-cell.locked:hover {
+        color: var(--text-3);
+        border-color: var(--line);
         background:
-          repeating-linear-gradient(-45deg, rgba(110, 143, 152, 0.1) 0 6px, transparent 6px 12px),
-          rgba(6, 16, 22, 0.85);
+          repeating-linear-gradient(-45deg, rgba(95, 127, 137, 0.14) 0 6px, transparent 6px 12px),
+          var(--glass);
         text-shadow: none;
-        box-shadow: none;
       }
       .level-cell.locked.selected {
         color: var(--red);
         border-color: var(--red);
       }
       .level-cell.selected {
-        outline: 3px dashed var(--paper);
-        outline-offset: 3px;
+        outline: 3px dashed var(--text);
+        outline-offset: 4px;
       }
       .padlock {
-        width: 18px;
-        height: 18px;
-        margin-top: 2px;
+        width: 16px;
+        height: 16px;
+        margin-top: 4px;
       }
       .menu-status {
         min-height: 32px;
-        margin-top: 16px;
-        font-family: var(--font-tech);
+        margin: 8px 0 4px;
         font-size: 24px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
+        font-weight: 600;
+        line-height: 32px;
         color: var(--red);
       }
 
@@ -526,40 +486,25 @@
         justify-content: center;
         touch-action: none;
       }
-      /* The level played: small and dim under the score, at the top left of the playfield window
+      /* The level played: under the high score, at the top left of the playfield window
          (UI-HUD-06, D-317). */
       .game-level {
         position: absolute;
         z-index: 2;
         left: calc(var(--hud-side) + 12px);
-        top: 50px;
+        top: 56px;
         font-family: var(--font-tech);
-        font-size: 10px;
-        letter-spacing: 0.22em;
-        text-transform: uppercase;
-        color: var(--paper);
-        opacity: 0.55;
-        text-shadow:
-          0 0 3px #000,
-          0 1px 2px #000;
+        font-size: 12px;
+        line-height: 16px;
+        color: var(--text-2);
+        text-shadow: var(--outline);
         pointer-events: none;
       }
-      /* No neon line over the playfield (UI-LOOK-05). */
-      .game-screen::after {
-        content: none;
-      }
-      /* No screen frame over the playfield either; the empty side columns round the playfield
-         window are `#menu`'s, as round the menus (D-317, D-319). */
-      .game-screen::before {
-        content: none;
-      }
-      /* In-game HUD (D-317, owner: the UI back in the playing area, light, designed afresh): no
-         panels and no backgrounds, only outlined text and slim gauges in the corners of the
-         playfield window, so the level shows through everywhere. Score top left, lives and bombs
-         top right, the boss gauge between them during a fight, the progress as a rail up the
-         right edge, the health bottom left, the weapon bottom right (UI-HUD-01, laid out without
-         overlap, UI-HUD-08). The side columns outside the window are left empty but for the touch
-         buttons (UI-HUD-10). Never takes clicks (UI-HUD-11). */
+      /* In-game HUD (D-317): no panels and no backgrounds, only outlined text and slim gauges in
+         the corners of the playfield window, 12 px in, so the level shows through everywhere.
+         Score top left, lives and bombs top right, the boss gauge between them during a fight,
+         the progress as a rail up the right edge, the health bottom left, the weapon bottom
+         right (UI-HUD-01, laid out without overlap, UI-HUD-08). Never takes clicks (UI-HUD-11). */
       .game-hud {
         position: absolute;
         top: 0;
@@ -569,20 +514,19 @@
         pointer-events: none;
         font-family: var(--font-tech);
         font-size: 12px;
-        letter-spacing: 0.08em;
-        color: var(--paper);
-        text-shadow:
-          0 0 3px #000,
-          0 1px 2px #000;
+        font-variant-numeric: tabular-nums;
+        color: var(--text);
+        text-shadow: var(--outline);
       }
-      /* Low health (UI-HUD-04): the window's edges glow red, pulsing (opacity only: cheap). */
+      /* Low health (UI-HUD-04): the window's edges glow red, pulsing (opacity only: cheap). The one
+         loop of the UI: it tells a live danger (UI-LOOK-14). */
       .game-hud::before {
         content: '';
         position: absolute;
         inset: 0;
-        box-shadow: inset 0 0 70px rgba(255, 34, 68, 0.45);
+        box-shadow: inset 0 0 72px rgba(255, 59, 71, 0.45);
         opacity: 0;
-        transition: opacity 0.3s;
+        transition: opacity 0.3s var(--ease);
       }
       .game-hud.hud-low::before {
         animation: hud-alarm 1.1s ease-in-out infinite alternate;
@@ -595,70 +539,64 @@
           opacity: 0.85;
         }
       }
-      /* Score (UI-HUD-05), top left: its padding zeros dim, the high score small under it. */
+      /* Score (UI-HUD-05), top left: its padding zeros dim, the high score under it. */
       .hud-score {
         position: absolute;
-        top: 8px;
+        top: 12px;
         left: 12px;
         white-space: nowrap;
       }
       .hud-score-value {
-        font-size: 22px;
-        font-weight: 700;
-        line-height: 24px;
-        color: var(--paper);
-        text-shadow:
-          0 0 3px #000,
-          0 0 8px rgba(0, 232, 255, 0.6);
+        font-size: 24px;
+        font-weight: 600;
+        line-height: 28px;
+        color: var(--text);
       }
       .hud-score-lead {
-        opacity: 0.28;
+        opacity: 0.3;
       }
       .hud-high-score {
-        font-size: 11px;
-        line-height: 14px;
-        letter-spacing: 0.14em;
-        color: var(--accent);
-        opacity: 0.85;
+        font-size: 12px;
+        line-height: 16px;
+        color: var(--text-2);
       }
       /* Lives and bombs (UI-HUD-03), top right, one under the other. */
       .hud-stock {
         position: absolute;
-        top: 9px;
-        right: 14px;
+        top: 12px;
+        right: 12px;
         display: flex;
         flex-direction: column;
         align-items: flex-end;
-        gap: 2px;
-        font-size: 15px;
-        font-weight: 700;
-        line-height: 18px;
+        gap: 4px;
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 20px;
         white-space: nowrap;
       }
       .hud-lives {
-        color: var(--accent);
+        color: var(--green);
       }
       .hud-bombs {
-        color: #ff8a1e;
+        color: var(--orange);
       }
       /* Level progress (UI-HUD-02): a hairline rail up the right edge of the window, filled from
-         the bottom in the neon line, a bright bead where the fill ends: the ship climbing the
+         the bottom in solid cyan, a near-white bead where the fill ends: the ship climbing the
          level. */
       .hud-progress {
         position: absolute;
         top: 104px;
         bottom: 104px;
-        right: 5px;
+        right: 4px;
         width: 2px;
-        background: rgba(236, 253, 255, 0.14);
+        background: var(--line);
       }
       .hud-progress-fill {
         position: absolute;
         left: 0;
         right: 0;
         bottom: 0;
-        background: linear-gradient(0deg, #0a5cff, #00b4ff 40%, #00e8ff 65%, #3dff9a 90%, #b4ff4a);
-        box-shadow: 0 0 5px var(--neon);
+        background: var(--cyan);
       }
       .hud-progress-fill::after {
         content: '';
@@ -668,8 +606,7 @@
         width: 6px;
         height: 6px;
         border-radius: 50%;
-        background: var(--paper);
-        box-shadow: 0 0 6px var(--accent);
+        background: var(--text);
       }
       /* Health (UI-HUD-04), bottom left: the ship's callsign and `HP n / N` over a segmented bar. */
       .hud-health {
@@ -683,16 +620,16 @@
         align-items: baseline;
         margin-bottom: 4px;
         white-space: nowrap;
+        line-height: 16px;
       }
       .hud-ship {
-        font-size: 9px;
-        letter-spacing: 0.24em;
-        text-transform: uppercase;
-        color: var(--neon);
-        opacity: 0.7;
+        font-family: var(--font);
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-2);
       }
       .hud-health-text {
-        font-size: 11px;
+        font-size: 12px;
       }
       .hud-low .hud-health-text {
         color: var(--red);
@@ -702,83 +639,90 @@
         position: relative;
         width: 130px;
         height: 6px;
-        background: rgba(1, 10, 16, 0.4);
+        background: rgba(1, 10, 16, 0.5);
       }
       .hud-bar::after {
         content: '';
         position: absolute;
         inset: 0;
-        background: repeating-linear-gradient(90deg, transparent 0 11px, var(--black) 11px 13px);
-        opacity: 0.85;
+        background: repeating-linear-gradient(90deg, transparent 0 11px, var(--night) 11px 13px);
       }
       .hud-bar-fill {
         height: 100%;
-        background: linear-gradient(90deg, var(--deep), var(--neon));
-        box-shadow: 0 0 6px var(--neon);
+        background: var(--cyan);
       }
       .hud-bar-fill.low {
         background: var(--red);
-        box-shadow: 0 0 6px var(--red);
       }
       /* Weapon (UI-HUD-06), bottom right: its name and one pip per level, lit up to its level. */
       .hud-weapon {
         position: absolute;
-        right: 14px;
+        right: 12px;
         bottom: 12px;
         display: flex;
         flex-direction: column;
         align-items: flex-end;
-        gap: 6px;
+        gap: 8px;
       }
       .hud-weapon-name {
-        font-size: 13px;
-        letter-spacing: 0.16em;
-        text-transform: uppercase;
-        color: var(--neon);
+        font-family: var(--font);
+        font-size: 16px;
+        font-weight: 600;
+        line-height: 20px;
+        color: var(--cyan);
         white-space: nowrap;
       }
       .hud-weapon-pips {
         display: flex;
-        gap: 6px;
+        gap: 8px;
         padding-right: 1px;
       }
       .hud-pip {
         width: 6px;
         height: 6px;
         transform: rotate(45deg);
-        border: 1px solid rgba(0, 232, 255, 0.7);
-        background: rgba(1, 10, 16, 0.4);
+        border: 1px solid var(--cyan);
+        background: rgba(1, 10, 16, 0.5);
       }
       .hud-pip.on {
-        background: var(--neon);
-        box-shadow: 0 0 5px var(--neon);
+        background: var(--cyan);
       }
       /* Touch bomb button (UI-HUD-10), above the fire button in the right side column (outside
-         the window this HUD is laid over), only on touch screens. */
+         the window this HUD is laid over), only on touch screens; against the column's part in
+         view when the window crops it, inside the window when too little is left (D-329). */
       .hud-bomb-button {
         display: none;
         position: absolute;
         z-index: 5;
-        right: calc(24px - var(--hud-side));
+        right: calc(24px - var(--side-room));
         bottom: 160px;
         width: 92px;
         height: 92px;
         border-radius: 50%;
         align-items: center;
         justify-content: center;
-        font-size: 14px;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: var(--black);
-        background: rgba(255, 138, 30, 0.55);
-        border: 3px solid #ff8a1e;
+        font-family: var(--font);
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--on-accent);
+        background: var(--orange);
+        border: 2px solid var(--orange);
         text-shadow: none;
         pointer-events: auto;
         touch-action: none;
       }
+      /* Too little of the column in view: both buttons in the window's lower right corner, above
+         the weapon readout (D-329). */
+      #menu.narrow-sides .hud-bomb-button {
+        right: 24px;
+        bottom: 200px;
+      }
+      #menu.narrow-sides .game-fire {
+        right: calc(var(--hud-side) + 24px);
+        bottom: 80px;
+      }
       .hud-bomb-button.empty {
-        opacity: 0.35;
+        opacity: 0.36;
       }
       @media (pointer: coarse) {
         .hud-bomb-button {
@@ -787,8 +731,7 @@
       }
       /* Boss gauge (UI-HUD-12, D-317): a slim bar across the top of the window, between the score
          and the lives, the boss's kind and name over it (UI-HUD-16), filled from the left, a notch
-         at the end of each part's share (UI-HUD-15); red for the danger (UI-HUD-17). Thin and high
-         up, it hides next to nothing of the boss below it. */
+         at the end of each part's share (UI-HUD-15); solid red for the danger (UI-HUD-17). */
       .boss-bar {
         position: absolute;
         top: 12px;
@@ -808,19 +751,17 @@
         align-items: baseline;
         justify-content: center;
         overflow: hidden;
-        text-transform: uppercase;
         white-space: nowrap;
-        font-size: 11px;
-        line-height: 13px;
+        font-family: var(--font);
+        font-size: 12px;
+        font-weight: 600;
+        line-height: 16px;
       }
       .boss-rank {
-        font-size: 9px;
         color: var(--red);
-        letter-spacing: 0.2em;
       }
       .boss-name {
-        color: var(--neon);
-        letter-spacing: 0.1em;
+        color: var(--text);
         overflow: hidden;
         text-overflow: ellipsis;
       }
@@ -828,15 +769,14 @@
         position: relative;
         height: 4px;
         border: 1px solid var(--red);
-        background: rgba(1, 10, 16, 0.4);
+        background: rgba(1, 10, 16, 0.5);
       }
       .boss-fill {
         position: absolute;
         left: 0;
         top: 0;
         bottom: 0;
-        background: linear-gradient(90deg, #7a0016, var(--red) 60%, #ff5a3c);
-        box-shadow: 0 0 6px var(--red);
+        background: var(--red);
       }
       .boss-notch {
         position: absolute;
@@ -844,29 +784,27 @@
         bottom: -3px;
         width: 2px;
         margin-left: -1px;
-        background: var(--paper);
+        background: var(--text);
         opacity: 0.8;
       }
       /* Touch fire button, at the foot of the right column, only on touch screens (keyboard and
-         gamepad have their own). */
+         gamepad have their own); placed as the bomb button (D-329). */
       .game-fire {
         display: none;
         position: absolute;
-        right: 24px;
+        right: calc(var(--hud-side) - var(--side-room) + 24px);
         bottom: 40px;
         width: 92px;
         height: 92px;
         border-radius: 50%;
         align-items: center;
         justify-content: center;
-        font-family: var(--font-tech);
-        font-size: 16px;
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
-        color: var(--black);
-        background: rgba(0, 232, 255, 0.55);
-        border: 3px solid var(--neon);
+        font-family: var(--font);
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--on-accent);
+        background: var(--cyan);
+        border: 2px solid var(--cyan);
         text-shadow: none;
       }
       @media (pointer: coarse) {
@@ -889,52 +827,45 @@
         display: flex;
         flex-direction: column;
         align-items: stretch;
-        gap: 14px;
+        gap: 12px;
         min-width: 280px;
-        padding: 24px 32px;
-        clip-path: var(--chamfer);
-        border: 2px solid var(--neon);
+        padding: 32px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-panel);
         background: var(--glass);
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+        text-align: center;
       }
       .pause-heading {
-        font-size: 34px;
-        font-weight: 800;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--paper);
-        text-shadow:
-          0 0 6px var(--neon),
-          0 0 18px rgba(10, 92, 255, 0.9);
+        margin-bottom: 12px;
       }
       .pause-entry,
       .pause-choice {
         display: flex;
         align-items: center;
         justify-content: center;
+        gap: 12px;
         min-height: 56px;
-        padding: 6px 20px;
-        clip-path: var(--chamfer);
+        padding: 4px 20px;
         font-size: 24px;
-        font-weight: 700;
-        letter-spacing: 0.1em;
-        text-transform: uppercase;
       }
       .pause-entry.selected::before {
-        content: '▶ ';
+        content: '▶';
+        font-size: 0.6em;
       }
       .pause-question-text {
-        margin: 8px 0 14px;
+        margin: 8px 0 16px;
         font-size: 24px;
-        font-weight: 700;
-        color: var(--paper);
+        font-weight: 600;
+        color: var(--text);
       }
       .pause-choices {
         display: flex;
-        gap: 14px;
+        gap: 12px;
         justify-content: center;
       }
       .pause-choice {
-        min-width: 110px;
+        min-width: 112px;
       }
       .pause-hint {
         margin-top: 4px;
@@ -948,53 +879,47 @@
       .settings-list {
         display: flex;
         flex-direction: column;
-        gap: 18px;
+        gap: 16px;
         width: 100%;
         max-width: var(--menu-column);
         margin: 56px 0 28px;
       }
       .settings-slider {
         display: grid;
-        grid-template-columns: 130px 1fr 34px;
-        gap: 10px;
+        grid-template-columns: 132px 1fr 36px;
+        gap: 12px;
         align-items: center;
         min-height: 64px;
-        padding: 4px 14px;
-        clip-path: var(--chamfer);
-        font-size: 18px;
-        font-weight: 700;
-        letter-spacing: 0.06em;
+        padding: 4px 16px;
+        font-size: 20px;
         text-align: left;
-        text-transform: uppercase;
       }
       .slider-bar {
         display: flex;
-        gap: 3px;
+        gap: 4px;
         align-items: center;
         height: 56px;
         touch-action: none;
       }
       .slider-cell {
         flex: 1;
-        height: 22px;
-        background: rgba(61, 255, 154, 0.18);
-        border: 1px solid rgba(61, 255, 154, 0.45);
+        height: 20px;
+        border-radius: 2px;
+        background: var(--line);
       }
       .slider-cell.on {
-        background: var(--accent);
-        box-shadow: 0 0 6px var(--accent);
+        background: var(--cyan);
       }
       .settings-slider.selected .slider-cell {
-        background: rgba(0, 0, 0, 0.15);
-        border-color: rgba(0, 0, 0, 0.5);
-        box-shadow: none;
+        background: rgba(1, 20, 28, 0.2);
       }
       .settings-slider.selected .slider-cell.on {
-        background: var(--black);
+        background: var(--on-accent);
       }
       .slider-value {
         font-family: var(--font-tech);
-        font-size: 22px;
+        font-size: 20px;
+        font-variant-numeric: tabular-nums;
         text-align: right;
       }
 
@@ -1004,50 +929,56 @@
         flex-direction: column;
         align-items: center;
         gap: 12px;
-        padding: 24px 32px;
-        clip-path: var(--chamfer);
-        border: 2px solid var(--neon);
+        padding: 32px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-panel);
         background: var(--glass);
-        color: var(--paper);
+        box-shadow: 0 16px 48px rgba(0, 0, 0, 0.5);
+        color: var(--text);
+        font-weight: 500;
       }
-      .level-complete.menu-entry.selected {
-        color: var(--paper);
+      .level-complete.menu-entry.selected,
+      .level-complete.menu-entry:hover {
+        color: var(--text);
+        border-color: var(--line);
         background: var(--glass);
       }
       .level-complete-heading {
-        font-size: 34px;
-        font-weight: 700;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: var(--neon);
+        margin-bottom: 8px;
       }
       .level-complete-level {
         font-family: var(--font-tech);
         font-size: 40px;
-        font-weight: 700;
-        color: var(--accent);
+        font-weight: 600;
+        line-height: 48px;
+        color: var(--text);
       }
       .level-complete-enemies {
-        font-size: 22px;
+        font-size: 20px;
+        color: var(--text-2);
       }
       /* The attempt's score, and a new high score (UI-OVER-02). */
       .level-complete-score {
         font-family: var(--font-tech);
         font-size: 24px;
-        color: var(--neon);
+        font-variant-numeric: tabular-nums;
+        color: var(--text);
       }
       .level-complete-high-score {
         font-size: 20px;
-        font-weight: 700;
-        text-transform: uppercase;
-        color: var(--accent);
+        font-weight: 600;
+        color: var(--green);
       }
       /* The "Game over" panel (UI-OVER-05). */
-      .level-complete.game-over {
+      .level-complete.game-over,
+      .level-complete.game-over.menu-entry:hover {
         border-color: var(--red);
       }
       .game-over .level-complete-heading {
         color: var(--red);
+      }
+      .game-over .level-complete-heading::after {
+        background: var(--red);
       }
       /* Game over after the mini boss: Continue from the checkpoint, or level select
          (UI-OVER-06). */
@@ -1056,32 +987,18 @@
         gap: 12px;
       }
       .level-complete-choice {
-        padding: 6px 14px;
+        display: flex;
+        align-items: center;
+        padding: 4px 16px;
         font-size: 20px;
-        font-weight: 700;
-        text-transform: uppercase;
-        border: 2px solid var(--dim);
-        color: var(--paper);
-      }
-      .level-complete-choice.selected {
-        border-color: var(--neon);
-        color: var(--black);
-        background: var(--neon);
       }
 
       /* Dev entry under Settings (D-199, with ?dev in the URL). */
       .title-dev {
-        margin-top: 14px;
-        padding: 6px 18px;
-        clip-path: var(--chamfer);
+        min-height: 44px;
+        margin-top: 12px;
         font-family: var(--font-tech);
         font-size: 16px;
-        font-weight: 700;
-        letter-spacing: 0.2em;
-        text-transform: uppercase;
-      }
-      .title-dev.selected::before {
-        content: '▶ ';
       }
       /* The dev menu (D-199): one entry per viewer. */
       .dev-entries {
@@ -1093,12 +1010,8 @@
         margin: 48px 0 24px;
       }
       .dev-entry {
-        padding: 10px 18px;
-        clip-path: var(--chamfer);
-        font-size: 22px;
-        font-weight: 700;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
+        padding: 12px 16px;
+        font-size: 20px;
       }
       .dev-entry.selected::before {
         content: '▶ ';
@@ -1109,49 +1022,42 @@
         touch-action: none;
         cursor: grab;
       }
-      .dev-viewer-screen::after {
-        content: none;
-      }
       .dev-heading {
-        margin: 26px 0 0 128px;
+        margin: 28px 0 0 128px;
         align-self: flex-start;
-        font-size: 18px;
-        font-weight: 800;
-        letter-spacing: 0.12em;
-        text-transform: uppercase;
-        color: var(--accent);
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--text-2);
       }
       .dev-caption {
-        margin-top: 10px;
-        padding: 6px 16px;
-        clip-path: var(--chamfer);
+        margin-top: 12px;
+        padding: 8px 16px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-control);
         background: var(--glass);
-        border: 1px solid rgba(0, 232, 255, 0.45);
         font-family: var(--font-tech);
       }
       .dev-item {
-        font-size: 22px;
-        font-weight: 700;
-        color: var(--paper);
-        text-shadow: 0 0 6px var(--neon);
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--text);
       }
       .dev-position,
       .dev-status {
-        font-size: 13px;
-        color: var(--accent);
+        font-size: 12px;
+        color: var(--text-2);
       }
       .dev-status:empty {
         display: none;
       }
       /* A dev viewer's menu (D-206, DEV-MENU-07): a scrolling panel along the bottom, under the
-         model (it hid the models down the left side), three items a row, each group's heading on
-         a row of its own before its items, so the item shown stays in view. */
+         model, three items a row, each group's heading on a row of its own before its items. */
       .dev-menu {
         position: absolute;
-        left: 14px;
-        right: 14px;
-        bottom: 70px;
-        height: 106px;
+        left: 16px;
+        right: 16px;
+        bottom: 72px;
+        height: 104px;
         display: grid;
         grid-template-columns: repeat(var(--dev-columns, 3), minmax(0, 1fr));
         align-content: start;
@@ -1160,10 +1066,11 @@
         box-sizing: border-box;
         overflow-y: auto;
         scrollbar-width: thin;
-        scrollbar-color: var(--neon) transparent;
+        scrollbar-color: var(--text-3) transparent;
         touch-action: pan-y;
         background: var(--glass);
-        border: 1px solid rgba(0, 232, 255, 0.35);
+        border: 1px solid var(--line);
+        border-radius: var(--r-control);
         text-align: left;
         cursor: default;
         z-index: 1;
@@ -1172,9 +1079,9 @@
         flex: none;
         min-height: 24px;
         padding: 2px 8px;
-        border-width: 1px;
+        border-radius: 4px;
         font-family: var(--font-tech);
-        font-size: 11px;
+        font-size: 12px;
         line-height: 18px;
         white-space: nowrap;
         overflow: hidden;
@@ -1184,56 +1091,46 @@
       /* The view buttons of the enemies and bosses viewers (DEV-MENU-21): a row over the menu. */
       .dev-modes {
         position: absolute;
-        left: 14px;
-        bottom: 182px;
+        left: 16px;
+        bottom: 184px;
         display: flex;
         gap: 4px;
         z-index: 1;
       }
       .dev-modes .menu-entry {
         min-height: 24px;
-        padding: 2px 14px;
-        border-width: 1px;
+        padding: 2px 12px;
+        border-radius: 4px;
         font-family: var(--font-tech);
         font-size: 12px;
-        font-weight: 700;
         line-height: 18px;
         cursor: pointer;
       }
-      .dev-modes .menu-entry.selected {
-        color: var(--black);
-      }
       .dev-menu-group {
         grid-column: 1 / -1;
-        margin-top: 6px;
-        font-weight: 800;
-        letter-spacing: 0.06em;
-        text-transform: uppercase;
-        color: var(--accent);
+        margin-top: 8px;
+        font-weight: 600;
+        color: var(--text-2);
       }
       .dev-menu-group:first-child {
         margin-top: 0;
       }
       .dev-menu-item {
-        font-weight: 600;
-        color: var(--paper);
-      }
-      .dev-menu .menu-entry.selected {
-        color: var(--black);
+        font-weight: 500;
       }
       /* The group of the prop shown: marked, not filled like the prop itself. */
       .dev-menu .dev-menu-group.selected {
-        color: var(--neon);
+        color: var(--cyan);
         background: var(--glass);
-        border-color: var(--neon);
-        box-shadow: none;
+        border-color: var(--cyan);
       }
       .dev-hint {
         margin-top: auto;
-        margin-bottom: 14px;
-        padding: 4px 10px;
+        margin-bottom: 16px;
+        padding: 4px 12px;
+        border-radius: 4px;
         background: var(--glass);
-        font-size: 11px;
+        font-size: 12px;
       }
       /* The dev audio viewers (DEV-MENU-19, DEV-MENU-20): the status under the heading, then the
          buttons in a grid that fills the screen and scrolls, three a row. */
@@ -1253,14 +1150,14 @@
         min-height: 0;
         width: 100%;
         height: auto;
-        margin: 12px 0 10px;
-        gap: 6px;
+        margin: 12px 0;
+        gap: 8px;
         padding: 8px;
       }
       .dev-audio-menu .menu-entry {
         min-height: 36px;
-        padding: 4px 10px;
-        font-size: 13px;
+        padding: 4px 12px;
+        font-size: 14px;
         line-height: 26px;
       }
       .dev-audio-menu .dev-menu-group {
@@ -1273,20 +1170,28 @@
         margin-top: 0;
       }
 
-      /* Debug tile (DEV-PERF-04): frame rate and polygons drawn, top right of the window. */
-      .stats-tile {
+      /* Debug tile (DEV-PERF-04) and perf overlay (DEV-PERF-03, F3). */
+      .stats-tile,
+      .perf-overlay {
         position: fixed;
         top: 8px;
-        right: 8px;
         z-index: 10;
-        padding: 6px 10px;
-        background: rgba(2, 14, 22, 0.85);
-        border: 1px solid rgba(0, 232, 255, 0.5);
+        padding: 8px 12px;
+        border: 1px solid var(--line);
+        border-radius: var(--r-control);
+        background: var(--glass);
         font-family: var(--font-tech);
         font-size: 12px;
         line-height: 1.5;
-        color: var(--neon);
+        color: var(--text-2);
         pointer-events: none;
+      }
+      .stats-tile {
+        right: 8px;
+      }
+      .perf-overlay {
+        left: 8px;
+        white-space: pre;
       }
 
       /* A level's loading screen (UI-LOAD-06): shown only if loading takes longer than 300 ms
@@ -1302,27 +1207,18 @@
         }
       }
 
-      /* Debug perf overlay (DEV-PERF-03, F3): long frames, longest frame, level loading time. */
-      .perf-overlay {
-        position: fixed;
-        top: 8px;
-        left: 8px;
-        z-index: 10;
-        padding: 6px 10px;
-        background: rgba(2, 14, 22, 0.85);
-        border: 1px solid rgba(0, 232, 255, 0.5);
-        font-family: var(--font-tech);
-        font-size: 12px;
-        line-height: 1.5;
-        color: var(--neon);
-        white-space: pre;
-        pointer-events: none;
-      }
-
       @media (prefers-reduced-motion: reduce) {
-        .title-name,
-        .menu-hint {
+        .menu-enter {
+          animation-name: menu-fade-still;
+        }
+        .game-hud.hud-low::before {
           animation: none;
+          opacity: 0.6;
+        }
+      }
+      @keyframes menu-fade-still {
+        from {
+          opacity: 0;
         }
       }
     </style>

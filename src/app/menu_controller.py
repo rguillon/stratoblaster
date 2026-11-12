@@ -1,13 +1,13 @@
 # Copyright (c) 2026 Renaud Guillon
 """Runs the menus: feeds input to the `MenuFlow`, shows the matching view.
 
-Gives the "locked" feedback and remembers the chosen ship (UI-SHIP-07). Free of Babylon.
+Gives the "locked" feedback. Free of Babylon.
 """
 
 from app.menu_flow import MenuFlow
 from app.menu_state import MenuFlowOptions, MenuState
 from app.menu_view_builder import MenuViewContext, build_menu_view
-from app.saved_choices import load_saved_choices, save_high_score, save_last_ship
+from app.saved_choices import load_saved_choices, save_high_score
 from app.saved_settings import load_volumes, save_volumes
 from app.settings_menu import Volumes
 from config.audio import AUDIO_CONFIG
@@ -39,7 +39,6 @@ class MenuControllerDeps:
         storage: Any,
         transition_seconds: float,
         result_delay_seconds: float | None,
-        cards_width_percent: float,
         version: str,
         commit: str,
         on_change: Any,
@@ -54,7 +53,6 @@ class MenuControllerDeps:
         self.transition_seconds = transition_seconds
         # Input is ignored this long after the "Level complete" overlay shows (UI-OVER-04).
         self.result_delay_seconds = result_delay_seconds
-        self.cards_width_percent = cards_width_percent
         self.version = version
         self.commit = commit
         # Called after every state change, e.g. to update the 3D scenes.
@@ -105,7 +103,6 @@ class MenuController:
         self.deps = deps
         saved = load_saved_choices(deps.storage, game.id)
         self._high_score = saved.high_score
-        self._saved_ship_id: str | None = saved.last_ship_id
         volume_steps = int(AUDIO_CONFIG.volume_steps)
         # The default volumes, where none is saved (UI-SET-05).
         defaults = AUDIO_CONFIG.default_volumes
@@ -118,9 +115,9 @@ class MenuController:
         self._shown_fullscreen: bool | None = None
         self.flow = MenuFlow(
             MenuFlowOptions(
-                [ship.id for ship in game.player_ships.ships],
+                # The game's one ship (D-326): the first of its roster.
+                game.player_ships.ships[0].id,
                 game.levels,
-                saved.last_ship_id,
                 deps.transition_seconds,
                 deps.result_delay_seconds,
                 self._saved_volumes,
@@ -172,9 +169,9 @@ class MenuController:
         self.flow.complete_level(_with_new_high_score(result) if beaten else result)
         self.refresh()
 
-    def play_direct(self, ship_id: str, level_id: str) -> bool:
+    def play_direct(self, level_id: str) -> bool:
         """Start a level straight away (DEV-OPT-01 debug options); see `MenuFlow.play_direct`."""
-        started = self.flow.play_direct(ship_id, level_id)
+        started = self.flow.play_direct(level_id)
         self.refresh()
         return started
 
@@ -224,7 +221,6 @@ class MenuController:
         self._shown_progress = self._progress
         self._shown_fullscreen = fullscreen
         state: MenuState = self.flow.state
-        self._remember_ship(state.chosen_ship_id)
         self._remember_volumes(state.volumes)
         self.deps.display.show(
             build_menu_view(
@@ -234,7 +230,6 @@ class MenuController:
                     int(self._high_score),
                     self.deps.version,
                     self.deps.commit,
-                    self.deps.cards_width_percent,
                     self._progress,
                     int(AUDIO_CONFIG.volume_steps),
                     self.deps.dev_labels,
@@ -261,9 +256,3 @@ class MenuController:
             return
         save_volumes(self.deps.storage, self.game.id, volumes)
         self._saved_volumes = volumes
-
-    def _remember_ship(self, ship_id: str | None) -> None:
-        if ship_id is None or ship_id == self._saved_ship_id:
-            return
-        save_last_ship(self.deps.storage, self.game.id, ship_id)
-        self._saved_ship_id = ship_id

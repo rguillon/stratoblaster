@@ -1,5 +1,5 @@
 # Copyright (c) 2026 Renaud Guillon
-"""Screen state machine of the menus (UI-FLOW-02): Title → Ship select → Level select → Game.
+"""Screen state machine of the menus (UI-FLOW-02): Title → Level select → Game.
 
 With Back on each screen (UI-FLOW-05); Game ⇄ Pause, and Settings from the title or the pause menu
 (UI-SET-01, UI-PAUSE-09). Pure: no Babylon, no DOM, time comes from `update`.
@@ -38,14 +38,6 @@ DEFAULT_VOLUMES = Volumes(10, 10)
 DEFAULT_VOLUME_STEPS = 10
 
 
-def _index_of(values: list[str], value: str) -> int:
-    """`Array.indexOf`: the index of `value`, or -1."""
-    for i in range(len(values)):
-        if values[i] == value:
-            return i
-    return -1
-
-
 def _at(values: list[Any], index: int) -> Any:
     """`values[index]`, or None (JavaScript's `undefined`) when there is no such entry."""
     if index < 0 or index >= len(values):
@@ -67,7 +59,7 @@ def _title_target(entry: str) -> MenuScreen:
         return "settings"
     if entry == "dev":
         return "dev"
-    return "ship-select"
+    return "level-select"
 
 
 def _is_integer(value: float) -> bool:
@@ -78,8 +70,8 @@ class MenuFlow:
     """Screen state machine of the menus (UI-FLOW-01). Pure (UI-FLOW-04): no Babylon, no DOM."""
 
     def __init__(self, options: MenuFlowOptions) -> None:
-        if len(options.ship_ids) == 0:
-            msg = "The menu needs at least one ship"
+        if not options.ship_id:
+            msg = "The menu needs a ship"
             raise ValueError(msg)
         if len(options.levels.levels) == 0:
             msg = "The menu needs at least one level"
@@ -87,11 +79,7 @@ class MenuFlow:
         self._options = options
         self._screen: MenuScreen = "loading"
         self._title_index = 0
-        # The saved ship is highlighted first, else the first one (UI-SHIP-05).
-        initial = options.initial_ship_id if options.initial_ship_id is not None else ""
-        self._ship_index = max(0, _index_of(options.ship_ids, initial))
         self._level_index = first_unlocked_level(options.levels)
-        self._chosen_ship_id: str | None = None
         self._chosen_level_id: str | None = None
         self._transition_left = 0.0
         self._revision = 0
@@ -136,8 +124,7 @@ class MenuFlow:
             self._screen,
             selection,
             self._selected_id(selection),
-            self._ship_id(self._ship_index),
-            self._chosen_ship_id,
+            self._options.ship_id,
             self._chosen_level_id,
             self._transition_left > 0,
             self._result,
@@ -220,20 +207,17 @@ class MenuFlow:
         self._transition_left = delay if delay is not None else self._options.transition_seconds
         self._changed()
 
-    def play_direct(self, ship_id: str, level_id: str) -> bool:
-        """Start a level straight away with the given ship, skipping the menus.
+    def play_direct(self, level_id: str) -> bool:
+        """Start a level straight away, skipping the menus.
 
-        For the DEV-OPT-01 debug options. Returns False, and changes nothing, if the ship or the
-        level is unknown or the level is locked.
+        For the DEV-OPT-01 debug options. Returns False, and changes nothing, if the level is
+        unknown or locked.
         """
-        ship_index = _index_of(self._options.ship_ids, ship_id)
         level_index = _level_index(self._options.levels.levels, level_id)
         level = _at(self._options.levels.levels, level_index)
-        if ship_index < 0 or level is None or not level.unlocked:
+        if level is None or not level.unlocked:
             return False
-        self._ship_index = ship_index
         self._level_index = level_index
-        self._chosen_ship_id = ship_id
         self._chosen_level_id = level_id
         self._result = None
         self._start_level(None)
@@ -421,10 +405,6 @@ class MenuFlow:
             and self._result.checkpoint is not None
         )
 
-    def _ship_id(self, index: int) -> str:
-        ship = _at(self._options.ship_ids, index)
-        return ship if ship is not None else ""
-
     def _selection(self) -> int:
         if self._screen == "pause":
             return self._pause.selection
@@ -432,7 +412,6 @@ class MenuFlow:
             return self._settings.selection
         indices = {
             "title": self._title_index,
-            "ship-select": self._ship_index,
             "level-select": self._level_index,
             "dev": self._dev_index,
             "dev-viewer": self._dev_items[self._dev_index],
@@ -450,8 +429,6 @@ class MenuFlow:
             return self._pause.selected_id
         if screen == "settings":
             return self._settings.selected_id
-        if screen == "ship-select":
-            return self._ship_id(selection)
         if screen == "level-select":
             level = _at(self._options.levels.levels, selection)
             return level.id if level is not None else None
@@ -460,15 +437,12 @@ class MenuFlow:
     def _grid(self) -> GridShape | None:
         """Return the grid the arrows move in.
 
-        The title's entries (UI-TITLE-06), the ships, round (UI-SHIP-04), the levels (UI-LEVEL-05).
+        The title's entries (UI-TITLE-06), the levels (UI-LEVEL-05).
         """
         if self._screen == "title":
             return GridShape(len(self._title_entries), 1, False)
         if self._screen == "dev":
             return GridShape(len(DEV_VIEWERS), 1, False)
-        if self._screen == "ship-select":
-            count = len(self._options.ship_ids)
-            return GridShape(count, count, True)
         if self._screen == "level-select":
             levels = self._options.levels
             return GridShape(len(levels.levels), levels.columns, False)
@@ -479,8 +453,6 @@ class MenuFlow:
             return "none"
         if self._screen == "title":
             self._title_index = index
-        elif self._screen == "ship-select":
-            self._ship_index = index
         elif self._screen == "dev":
             self._dev_index = index
         else:
@@ -513,10 +485,9 @@ class MenuFlow:
         return self._set_selection(index)
 
     def _back(self) -> str:
-        """Back on the menu screens (UI-FLOW-05, UI-SHIP-06)."""
+        """Back on the menu screens (UI-FLOW-05)."""
         previous: dict[str, MenuScreen] = {
-            "ship-select": "title",
-            "level-select": "ship-select",
+            "level-select": "title",
             "dev": "title",
         }
         if self._screen not in previous:
@@ -526,16 +497,12 @@ class MenuFlow:
     def _confirm(self) -> str:
         """Confirm the choice on the current screen.
 
-        The title's entry (UI-TITLE-06), the ship (UI-SHIP-06), the level, or the end panel's
-        choice.
+        The title's entry (UI-TITLE-06), the level, or the end panel's choice.
         """
         screen = self._screen
         result = self._result
         if screen == "dev":
             return "screen" if self.go_to("dev-viewer") else "none"
-        if screen == "ship-select":
-            self._chosen_ship_id = self._ship_id(self._ship_index)
-            return "screen" if self.go_to("level-select") else "none"
         if screen == "level-select":
             return self._confirm_level()
         if screen == "game" and result is not None:

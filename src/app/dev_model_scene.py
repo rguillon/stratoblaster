@@ -1,5 +1,5 @@
 # Copyright (c) 2026 Renaud Guillon
-"""The scene of the enemies and bosses viewers (DEV-MENU-13, DEV-MENU-14, D-199).
+"""The scene of the player ships, enemies and bosses viewers (DEV-MENU-12 to 14, D-199, D-334).
 
 No level's ground (no terrain, roads, props, sea nor clouds, and no wait for the ground worker),
 only the level's light and sky reflections, the game's playfield camera and the playfield layer the

@@ -93,7 +93,7 @@ shots can hit. The concrete kinds (one class per kind), their numbers and their 
 
 #### ENM-05 — Sizes in L · MUST
 
-Enemy sizes are given relative to `L`, the length of the medium (balanced) player ship on the
+Enemy sizes are given relative to `L`, the length of the player ship on the
 playfield: `ENEMY_UNIT` logical pixels. Models are drawn in logical pixels.
 
 *Sources: phase 5 preamble, D-032.*
@@ -648,7 +648,7 @@ met to within 5 points.
 
 | Name | Value | Notes |
 |------|-------|-------|
-| `L` (`ENEMY_UNIT`) | 34 logical px | `src/game/config/enemies.py`; the balanced ship, 4.8 model units × 7 |
+| `L` (`ENEMY_UNIT`) | 34 logical px | `src/game/config/enemies.py`; the player ship, 4.8 model units × 7 |
 | `HITBOX` | 0.85 | hit radius = `HITBOX` × size × L / 2 (`radius()` in `enemies.py`) |
 | `ENEMY_SPAWN_MARGIN` | 60 px | `enemies.py`: how far outside the edge a group appears |
 | `ENTRY_INSET` | 0.08 | `src/game/sim/enemies/enemy_helpers.py`: entries kept off the corners |

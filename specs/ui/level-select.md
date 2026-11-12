@@ -1,8 +1,8 @@
 # Level select
 
-> **Area:** UI · **Prefix:** `UI-LEVEL` · **Related:** [screen-flow.md](screen-flow.md), [menu-input.md](menu-input.md), [ship-select.md](ship-select.md), [continue-and-game-over.md](continue-and-game-over.md), [../gameplay/level-flow.md](../gameplay/level-flow.md), [../performance.md](../performance.md), [../worlds/world-1/world.md](../worlds/world-1/world.md)
+> **Area:** UI · **Prefix:** `UI-LEVEL` · **Related:** [screen-flow.md](screen-flow.md), [menu-input.md](menu-input.md), [title-screen.md](title-screen.md), [continue-and-game-over.md](continue-and-game-over.md), [../gameplay/level-flow.md](../gameplay/level-flow.md), [../performance.md](../performance.md), [../worlds/world-1/world.md](../worlds/world-1/world.md)
 
-The screen where the player picks a level: a grid of 4 worlds × 5 levels, one row per world. Every
+The screen where the player picks a level, straight after the title's Start: a grid of 4 worlds × 5 levels, one row per world. Every
 level of the game can be played at any time, in any order. The worlds and their levels are in
 [worlds/](../worlds/world-1/world.md).
 
@@ -46,7 +46,7 @@ level of this game is locked.
 
 The engine still handles a level the data marks as locked: its cell is greyed out, hazard-striped,
 with a padlock. It can be highlighted (its frame is then red), but Confirm does not start it: the
-cell shakes (`locked_shake`) and the status line under the grid says "Locked!". This game's data has
+cell shakes (`locked_shake`) and the status line under the grid says "Locked". This game's data has
 no locked level, so this is checked with sample grids in unit tests only.
 
 **Acceptance criteria**
@@ -67,12 +67,12 @@ highlights it; tapping the highlighted cell confirms it.
 
 ### UI-LEVEL-06 — The first level is highlighted on arrival · MUST
 
-Coming from the ship select screen, the first unlocked level (`1-1`) is highlighted.
+Coming from the title screen, the first unlocked level (`1-1`) is highlighted.
 
 **Acceptance criteria**
-- Given `level-select` is opened from the ship select screen, then `1-1` is highlighted.
+- Given `level-select` is opened from the title screen, then `1-1` is highlighted.
 
-*Sources: P01-R07.*
+*Sources: P01-R07, D-326.*
 
 ### UI-LEVEL-07 — After a level, the next one is highlighted · MUST
 
@@ -92,20 +92,24 @@ Coming back from a level's end panel ([continue-and-game-over.md](continue-and-g
 
 ### UI-LEVEL-08 — Confirm starts the level · MUST
 
-Confirming an unlocked level opens the game screen, which starts that level with the chosen ship.
-Back opens the ship select screen.
+Confirming an unlocked level opens the game screen, which starts that level with the game's one
+ship, the player ship ([gameplay/player-ship.md](../gameplay/player-ship.md)). Back opens the
+title screen.
 
 **Acceptance criteria**
-- Given `1-1` is confirmed with the heavy ship, then the game screen plays `1-1` with the heavy ship.
+- Given `1-1` is confirmed, then the game screen plays `1-1` with the player ship.
 - Given any level of any world is confirmed, then the game screen starts that level.
+- Given `level-select`, when Back is pressed, then the screen is `title`.
 
-*Sources: P01-R07, P06-R01, P08-R01, P09-R01, P10-R01.*
+*Sources: P01-R07, P06-R01, P08-R01, P09-R01, P10-R01, D-326.*
 
 ### UI-LEVEL-09 — The screen's look · SHOULD
 
 The heading "Choose a level" is over the grid; the hint "Arrows to pick · Enter or tap to go"
-and the status line are under it; the Back button is at the top left. The cells are 68 × 68 px
-glass squares, 10 px apart, with a green border and the label in 22 px bold monospace. The
+and the status line are under it; the grid, the hint and the status line are centred together in
+the height left under the heading; the Back button is at the top left. The cells are 68 × 68 px
+glass squares with 8 px corners, 12 px apart, with a hairline border and the label in 24 px
+monospace at weight 600. The
 highlighted cell is the light cyan block of the menus with a white border and a dashed white
 outline ([look-and-layout.md](look-and-layout.md)).
 
@@ -120,9 +124,9 @@ outline ([look-and-layout.md](look-and-layout.md)).
 |------|-------|-------|
 | Worlds × levels per world | 4 × 5 | `src/game/config/levels.py` `LEVELS_CONFIG` (`worlds`, `levelsPerWorld`) |
 | Unlocked levels | every level of `GAME_LEVELS` | `src/game/sim/levels.py` `LEVELS` |
-| Level cell | 68 × 68 px, 10 px gap | `index.html` `.level-cell`, `.level-grid` |
+| Level cell | 68 × 68 px, 12 px gap | `index.html` `.level-cell`, `.level-grid` |
 | `locked_shake` | 0.3 s, ±6 px | `index.html` `.shake`, `@keyframes menu-shake` |
-| Locked text | "Locked!" | `src/game/config/menu_texts.py` `MENU_TEXTS["locked"]` |
+| Locked text | "Locked" | `src/game/config/menu_texts.py` `MENU_TEXTS["locked"]` |
 
 ## Notes
 

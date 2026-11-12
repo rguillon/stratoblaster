@@ -175,7 +175,7 @@ class EpisodeSetup:
 
     level_id: str
     seed: int = 606
-    ship_id: str = "balanced"
+    ship_id: str = "player"
     weapon: str = "bullet"
     weapon_levels: dict[str, int] = field(default_factory=lambda: dict.fromkeys(WEAPON_IDS, 1))
     lives: int = 3

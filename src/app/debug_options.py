@@ -1,10 +1,10 @@
 # Copyright (c) 2026 Renaud Guillon
 """Reads the debug options of the game screen from a URL query (DEV-OPT-01).
 
-`?level=1-3&t=120&ship=heavy` starts level 1-3 at 2:00 with the heavy ship. `level` turns debug on;
-`t` (seconds, default 0, DEV-OPT-02) and `ship` (default: the first ship) are optional. `boss=mini`
-or `boss=final` starts at that boss's arrival instead (DEV-OPT-03). `weather=0` turns the weather
-off (DEV-OPT-04) and `look=night` (or another time of day) forces the time of day (DEV-OPT-05).
+`?level=1-3&t=120` starts level 1-3 at 2:00, with the game's one ship. `level` turns debug on; `t`
+(seconds, default 0, DEV-OPT-02) is optional. `boss=mini` or `boss=final` starts at that boss's
+arrival instead (DEV-OPT-03). `weather=0` turns the weather off (DEV-OPT-04) and `look=night` (or
+another time of day) forces the time of day (DEV-OPT-05).
 `tiles=1` draws the grid of tiles over the districts (DEV-OPT-06). Without `level`, or with a value
 that does not parse, there are no debug options. `dev` (any value) adds the Dev entry to the title
 screen (DEV-MENU-01, D-199): see `dev_mode`.
@@ -57,7 +57,6 @@ def parse_debug_options(search: str) -> GameDebugOptions | None:
     return GameDebugOptions(
         level_id,
         time if _is_finite(time) and time > 0 else 0,
-        _query_text(search, "ship"),
         _boss_of(_query_text(search, "boss")),
         _query_text(search, "weather") != "0",
         _time_of_day_of(_query_text(search, "look")),

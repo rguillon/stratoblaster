@@ -1,7 +1,7 @@
 # Copyright (c) 2026 Renaud Guillon
 """A small game definition for the menu tests (ENG-145).
 
-The texts the menus read, two ships and a level catalog of three levels (the second and third
+The texts the menus read, one ship and a level catalog of three levels (the second and third
 locked).
 """
 
@@ -20,8 +20,6 @@ def make_texts() -> SimpleNamespace:
         fullscreen="Full screen",
         exitFullscreen="Exit full screen",
         startHint="Arrows",
-        chooseShip="Choose a ship",
-        chooseShipHint="Pick",
         back="Back",
         chooseLevel="Choose a level",
         chooseLevelHint="Pick a level",
@@ -41,7 +39,7 @@ def make_texts() -> SimpleNamespace:
         continueFromCheckpoint="Continue",
         toLevelSelect="Level select",
         continueHint="Tap to go on",
-        newHighScore="New high score!",
+        newHighScore="New high score",
         fire="FIRE",
         pauseButton="II",
         enemiesDestroyed=lambda destroyed, spawned: f"{destroyed}/{spawned}",
@@ -52,10 +50,7 @@ def make_texts() -> SimpleNamespace:
 
 
 def make_game() -> SimpleNamespace:
-    ships = PlayerShipRoster(
-        100,
-        [PlayerShipDefinition("alpha", "Alpha", 1, 5), PlayerShipDefinition("beta", "Beta", 2, 3)],
-    )
+    ships = PlayerShipRoster(100, [PlayerShipDefinition("alpha", "Alpha", 1, 5)])
     levels = LevelCatalog(
         2,
         [

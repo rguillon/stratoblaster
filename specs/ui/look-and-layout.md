@@ -3,9 +3,14 @@
 > **Area:** UI · **Prefix:** `UI-LOOK` · **Related:** [title-screen.md](title-screen.md), [hud.md](hud.md), [menu-input.md](menu-input.md), [boot-and-loading.md](boot-and-loading.md), [../gameplay/screen.md](../gameplay/screen.md), [../graphics/art-direction.md](../graphics/art-direction.md), [../graphics/readability.md](../graphics/readability.md)
 
 The menus, the HUD and the panels are an HTML/CSS overlay over the 3D canvas, laid out at the
-game's logical resolution and scaled to the window. They share one look: electric cyan and neon
-green on blue-black glass, a cold chrome logo, soft neon glows. This file fixes the layout, the
-palette, the fonts, the selection marks and the logo. The 3D look of the levels is in
+game's logical resolution and scaled to the window. They share one look, a cyan neon night made
+clear (D-324): a blue-black ramp, one electric cyan accent, a chrome logo with a hard extruded edge,
+a cyan horizon line under the headings, and nothing that glows. This file fixes the layout, the
+palette, the fonts, the selection marks and the logo.
+
+The chrome is quiet so the scenes carry the colour: the chrome logo on the title, the 3D trench and
+the ship behind the menus, the level in play. Panels, entries and texts frame them and never
+compete (no glow, no hue gradient on a panel or a text). The 3D look of the levels is in
 [graphics/](../graphics/art-direction.md); the title's 3D backdrop is in
 [title-screen.md](title-screen.md).
 
@@ -24,21 +29,24 @@ scaling; 480 × 640 until D-249), so every size in the UI specs is in logical px
 
 ### UI-LOOK-02 — Fitted to the window, never cropped or stretched · MUST
 
-The canvas and the overlay share one box, the largest box with the 16:9 logical aspect ratio that
-fits the window, centred, with dark bars (letterbox) on the rest. The menus have the game's aspect
-ratio (D-319): every menu screen, and the 3D scenes behind the menus (the backdrop, the ship select
-stage), are laid in the playfield window (540 × 720, 3:4, [gameplay/screen.md](../gameplay/screen.md)),
-between opaque blue-black side columns with a thin cyan line on the window's edges, as a level is.
-Their cards, sliders and entry lists keep to a column (`menu_column`) inside it. The dev viewer's
-3D views keep the whole box. The overlay is scaled to that box
-with a CSS transform, so the 3D models and their HTML captions line up. The box follows window
-resizes.
+The canvas and the overlay share one box with the 16:9 logical aspect ratio, fitted so its
+playfield window is as large as the window allows, centred (GAME-SCREEN-02, D-329): dark bars
+(letterbox) on the rest, or, in a window narrower than 16:9, the side columns running past its
+edges. The menus have the game's aspect
+ratio (D-319): every menu screen, and the 3D backdrop behind the menus, are laid in the playfield
+window (540 × 720, 3:4, [gameplay/screen.md](../gameplay/screen.md)), between opaque blue-black
+side columns with a hairline on the window's edges, as a level is. Their sliders and entry lists
+keep to a column (`menu_column`) inside it. The dev viewer's 3D views keep the whole box. The
+overlay is scaled to that box with a CSS transform, so the 3D scene and the HTML over it line up.
+The box follows window resizes.
 
-On a phone (the box scaled under `phone_scale`, such as 0.3 on a 390 × 844 portrait screen), the
+On a phone (the whole box would be scaled under `phone_scale`, such as 0.3 on a 390 × 844
+portrait screen), the
 menus, the pause menu, the settings and the end-of-level panels are instead laid out across the
 whole window at their real size (one CSS pixel per logical pixel), over the 16:9 canvas, so they stay
 readable and their touch targets keep their size (UI-INPUT-11). The HUD of a level being played
-keeps to the 16:9 box, lined up with the playfield; under a panel it is hidden (D-286).
+keeps to the box, lined up with the playfield, which fills the phone's width (D-329); under a
+panel it is hidden (D-286).
 
 **Acceptance criteria**
 - At window sizes 800 × 600 and 1920 × 1080, the menu is fully visible, not cropped, not stretched (16:9 within 0.5 %), and fills the window's width or height.
@@ -46,29 +54,33 @@ keeps to the 16:9 box, lined up with the playfield; under a panel it is hidden (
 - At 390 × 844 (portrait phone), the canvas is the 16:9 box and the menus fill the window at their real size (e2e: UI-INPUT-11, UI-SET-03); a level being played keeps its HUD on the box, a pause menu does not (unit tests).
 - Given the window goes from 800 × 600 to 390 × 844, then the menu follows within 5 s (e2e).
 
-*Sources: P01-R13, GD-02, GD-03, ENG-110, D-008, D-249, D-286, D-319.*
+*Sources: P01-R13, GD-02, GD-03, ENG-110, D-008, D-249, D-286, D-319, D-326.*
 
-### UI-LOOK-03 — Neon blue/green palette · MUST
+### UI-LOOK-03 — Cyan on blue-black · MUST
 
-The overlay uses a neon blue/green scheme (reviewer, 2026-10-30):
-- **neon**, electric cyan `#00e8ff`: the selected entries, the headings' glow, the loading bar, the scores;
-- **accent**, neon green `#3dff9a`: panel borders, labels, the sliders, the Back button;
-- **deep**, deep blue `#0a5cff`: glows and the start of the bars;
-- blue-black glass panels (`rgba(2, 14, 22, 0.8)`) on a blue-black background (`#010a10`), near-white text (`#ecfdff`);
-- a blue-to-green **neon line** gradient (deep blue → cyan → green → lime) for the lines and bar fills.
+The overlay uses one blue-black neutral ramp and one accent (owner, 2026-11-11, D-324: "put back the
+cyan theme"; synthwave pink D-323 and neon blue/green D-198 before):
+- **surfaces**: blue-black background `#010a10`, glass panels `rgba(4, 18, 28, 0.86)`;
+- **hairlines**: the primary text colour at 12 % opacity for borders, 24 % on hover;
+- **text**, three roles: primary `#ecfdff`, secondary `#9fbcc4`, muted `#5f7f89`;
+- **accent**, electric cyan `#00e8ff`, used rarely: the selected entry, the horizon line, the
+  sliders' filled cells, the loading and progress fills, the player's gauges in the HUD, the ship
+  select ring;
+- **green** `#3dff9a`: good things only (the lives, a new high score);
+- **chrome** (white, pale cyan, a navy horizon line, cyan): only inside the logo's letters
+  (UI-LOOK-12).
 
-The magenta / violet / blood red darksynth look (D-103) and the acid yellow / cyan / red cyberpunk
-look (D-013, D-014) are gone.
+Every other fill is a solid colour: no hue gradient on a panel, a bar or a text.
 
 **Acceptance criteria**
-- Manual check in screenshots of the title, ship select, level select, settings, pause menu and HUD: cyan, green and deep blue on blue-black, no magenta or violet.
+- Manual check in screenshots of the title, level select, settings, pause menu and HUD: cyan on blue-black, green only on the lives and the new high score, no magenta, pink or violet.
 
 *Sources: P01-R13, GD-60, D-198.*
 
 ### UI-LOOK-04 — Red for danger, orange for bombs · MUST
 
-Red (`#ff2244`) is used only for danger: low health, the "Game over" panel, locked levels and the
-"Locked!" status, and the boss gauge. The bombs are orange (`#ff8a1e`).
+Red (`#ff3b47`) is used only for danger: low health, the "Game over" panel, locked levels and the
+"Locked!" status, and the boss gauge. The bombs are orange (`#ff9a2e`).
 
 **Acceptance criteria**
 - Given the HUD at full health, then nothing in it is red; under 30 % health, the health bar is red.
@@ -79,24 +91,26 @@ Red (`#ff2244`) is used only for danger: low health, the "Game over" panel, lock
 
 The UI palette changes no gameplay colour (enemies, enemy shots, player shots, pickups) and none of
 the levels' 3D look ([graphics/readability.md](../graphics/readability.md)). Over the playfield, the
-UI draws no neon frame or line; the HUD over it is light, outlined text and slim gauges in the
+UI draws no frame or line; the HUD over it is light, outlined text and slim gauges in the
 window's corners and edges ([hud.md](hud.md), D-317).
 
 **Acceptance criteria**
-- Given the game screen, then the menu screens' neon frame and bottom line are not drawn.
+- Given the game screen, then no frame or line is drawn over the playfield.
 
 *Sources: D-198.*
 
-### UI-LOOK-06 — Glass panels and a neon frame · SHOULD
+### UI-LOOK-06 — Rounded glass panels and the horizon line · SHOULD
 
-Entries and panels are glass panels with a 2 px border and their top-left and bottom-right corners
-cut off (14 px chamfer); the level cells are square, so the dashed outline of the selected cell
-shows whole. Each menu screen has a thin neon frame 6 px inside its edge (cyan at the top, fading
-to deep blue), and a 3 px neon line along its bottom, both softly glowing. Headings are uppercase
-with a cyan and deep blue glow.
+Entries are glass panels with a 1 px hairline border and 8 px rounded corners; the panels (pause,
+end of level) have 16 px corners. Menu screens have no frame of their own: the hairline on the
+playfield window's edges (UI-LOOK-02) is their only edge. Each heading sits over the **horizon
+line**, the UI's one signature: a 2 px cyan rule, 48 px wide, under the heading, centred, the
+same line as the one under the logo. Headings are in sentence case, without a glow; only a soft dark
+shadow keeps them readable over the 3D scene. No text, panel or gauge of the overlay glows (no
+coloured `box-shadow`, `text-shadow` or `drop-shadow`).
 
 **Acceptance criteria**
-- Manual check: the title, ship select, level select and settings screens show the frame and the bottom line; the level cells have square corners.
+- Manual check: the title, level select and settings screens have no frame and nothing glowing; each heading has its horizon line.
 
 *Sources: P01-R13, D-013, D-014, D-103, D-198.*
 
@@ -112,29 +126,32 @@ layer over them.
 
 ### UI-LOOK-08 — The selection shows without colour · MUST
 
-The selected entry is a light cyan block with black text (much lighter than the dark panels), with
-a glow, plus a mark that does not rely on colour:
-- title entries and the pause menu's entries: a `▶` before (and on the title a `◀` after);
-- ship cards: a `▲` above the selected card;
+The selected entry is a solid cyan block with dark text (much lighter than the dark panels),
+without a glow, plus a mark that does not rely on colour:
+- title entries and the pause menu's entries: a `▶` before (and on the title a `◀` after), always
+  one space from the word;
 - level cells: a 3 px dashed white outline.
 
 **Acceptance criteria**
 - The selected entry stays identifiable in a greyscale screenshot.
-- e2e: the selected title entry has its `▶`, the selected ship card its visible `▲` (hidden on the others), the selected level cell a dashed outline.
+- e2e: the selected title entry has its `▶`, the selected level cell a dashed outline.
 
-*Sources: P01-R13, D-013, D-014, D-103, D-198.*
+*Sources: P01-R13, D-013, D-014, D-103, D-198, D-326.*
 
 ### UI-LOOK-09 — Readable by kids · MUST
 
-The menus are easy to read for a child: large text for entries and names (entries and ship names
-18 to 34 px, level cells 22 px, headings 32 px, hints 15 px; only the ship stats, the HUD readouts
-and the version are smaller), short words, few words per screen. Hints use plain words ("Press
-Space / Enter or tap to start").
+The menus are easy to read for a child: large text for entries (20 to 32 px, level cells 24 px,
+headings 32 px, hints 16 px; only the HUD readouts and the version are smaller, and no text is under
+12 px but the version, 11 px), short words, few words per screen. Hints use plain words ("Press Space / Enter or tap to start"). Texts are in
+sentence case, at weight 500, 600 for the headings, the entries and the score; letter spacing is at
+most 0.04 em; no italic and no weight over 600 but the logo. Interface texts end without an exclamation mark. Sizes and
+spacing are multiples of 4 px.
 
 **Acceptance criteria**
 - Manual check at 390 × 844: every menu text can be read without zooming.
+- Unit test of the game texts: no text ends with `!`.
 
-*Sources: P01-R13.*
+*Sources: P01-R13, D-326.*
 
 ### UI-LOOK-10 — Every text comes from the game · MUST
 
@@ -160,14 +177,17 @@ the game works offline once loaded.
 
 *Sources: P01-R13, D-013, D-014.*
 
-### UI-LOOK-12 — The logo · MUST
+### UI-LOOK-12 — The chrome logo · MUST
 
-The logo is the game's name in heavy, italic, uppercase letters filled with a cold chrome gradient
-(white, pale cyan, a navy horizon line across the middle, cyan, pale green), in a slow neon glow
-that pulses between cyan and green (`title_glow_period`). There is no sun or other emblem behind it.
+The logo is the title's one rich moment (D-324): the game's name in black (900), italic, uppercase
+condensed letters at `title_logo_size`, filled with a cold 80s chrome (white at the top, pale cyan,
+a hard navy horizon line across the middle, cyan, pale cyan at the foot), with a thin pale outline
+and a solid deep teal extruded edge `title_logo_depth` down and to the right (hard, unblurred
+layers, like a cast metal badge). Under it, the horizon line: a 4 px cyan bar, a little narrower
+than the name. Nothing behind it (no sun or emblem); it does not glow or move.
 
 **Acceptance criteria**
-- Manual check: the title logo is chrome letters in a cyan / green glow, with nothing behind them.
+- Manual check: the title logo is chrome letters with a hard teal edge over a cyan bar, nothing behind them, nothing glowing or moving.
 
 *Sources: P01-R13, D-103, D-104, D-198.*
 
@@ -182,14 +202,17 @@ goes down 1 px at a time, after each screen is shown, until it fits its parent's
 
 *Sources: D-016, D-017.*
 
-### UI-LOOK-14 — Gentle motion · SHOULD
+### UI-LOOK-14 — Motion that explains · SHOULD
 
-Hints pulse slowly (`hint_pulse_period`), the logo glows (UI-LOOK-12), a new screen fades in
-([screen-flow.md](screen-flow.md)) and a locked level shakes ([level-select.md](level-select.md)).
-Under the system's "reduce motion" setting, the logo's glow and the hints' pulse stop.
+Only motion that tells something: a new screen fades in ([screen-flow.md](screen-flow.md)), a
+locked level shakes ([level-select.md](level-select.md)), the low-health alarm pulses in the HUD
+([hud.md](hud.md)), a hovered entry changes colour (`menu_hover_duration`). Nothing in the menus
+loops: the hints and the logo are still. Under the system's "reduce motion" setting, the screen
+fade does not move and the alarm does not pulse.
 
 **Acceptance criteria**
-- Given `prefers-reduced-motion: reduce`, then the logo and the hints are not animated.
+- Given the title screen, then no element of the overlay has a running infinite animation.
+- Given `prefers-reduced-motion: reduce`, then the low-health alarm is not animated.
 
 *Sources: D-013, D-103.*
 
@@ -201,19 +224,20 @@ Under the system's "reduce motion" setting, the logo's glow and the hints' pulse
 | `menu_column` | 560 px, within the 540 px window since D-319 | `index.html` `--menu-column` (UI-LOOK-02, D-249) |
 | Menu window | the playfield window, 540 × 720 at x = 370 | `index.html` `#menu:not(.phone)::before`, `.menu-screen`; `src/app/menu_scenes.py` `window_camera` (D-319) |
 | `phone_scale` | 0.5 CSS px per logical px | `src/ui/stage_fit.py` `PHONE_SCALE`; `index.html` `#menu.phone` (UI-LOOK-02, D-286) |
-| `--neon` | `#00e8ff` | `index.html` `:root` |
-| `--accent` | `#3dff9a` | `index.html` `:root` |
-| `--deep` | `#0a5cff` | `index.html` `:root` |
-| `--red` | `#ff2244` | `index.html` `:root`, danger only |
-| Bombs orange | `#ff8a1e` | `index.html` (`.hud-bombs`, `.hud-bomb-button`) |
-| `--glass` | `rgba(2, 14, 22, 0.8)` | `index.html` `:root` |
-| `--black` / `--letterbox` | `#010a10` / `#000407` | `index.html` `:root` |
-| `--neon-line` | `#0a5cff → #00b4ff → #00e8ff → #3dff9a → #b4ff4a` | `index.html` `:root` |
-| `--chrome` | `#ffffff → #d4fbff → #0b3a5a (50 %) → #4ff0ff → #e4fff4` | `index.html` `:root`, the logo |
-| `--cut` | 14 px | `index.html`, panel chamfer |
-| `title_logo_size` | 46 px | `index.html` `.title-name`; lowered by `src/ui/shrink_to_fit.py` down to 12 px at most |
-| `title_glow_period` | 3.5 s | `index.html` `@keyframes title-glow` |
-| `hint_pulse_period` | 2.4 s | `index.html` `@keyframes hint-pulse` |
+| `--cyan` | `#00e8ff`, the one accent | `index.html` `:root` |
+| `--green` | `#3dff9a`, lives and new high score only | `index.html` `:root` |
+| `--text` / `--text-2` / `--text-3` | `#ecfdff` / `#9fbcc4` / `#5f7f89` | `index.html` `:root` |
+| `--line` / `--line-2` | primary text at 12 % / 24 % | `index.html` `:root`, hairlines |
+| `--red` | `#ff3b47` | `index.html` `:root`, danger only |
+| `--orange` | `#ff9a2e` | `index.html` `:root`, bombs |
+| `--glass` | `rgba(4, 18, 28, 0.86)` | `index.html` `:root` |
+| `--night` / `--letterbox` | `#010a10` / `#000407` | `index.html` `:root` |
+| Chrome | `#ffffff → #d4fbff → #0b3a5a (50 %) → #00e8ff → #c8fbff` | `index.html` `.title-name`, the logo only |
+| Radii | 8 px entries, 16 px panels | `index.html` `--r-control`, `--r-panel` |
+| Horizon line | 2 × 48 px, `--cyan` | `index.html` `.menu-heading::after` |
+| `title_logo_depth` | 6 px, `#05607a` to `#022a38` | `index.html` `.title-name` `filter` |
+| `title_logo_size` | 60 px | `index.html` `.title-name`; lowered by `src/ui/shrink_to_fit.py` down to 12 px at most |
+| `menu_hover_duration` | 120 ms, `cubic-bezier(0.2, 0, 0, 1)` | `index.html` `.menu-entry` |
 
 ## Notes
 
@@ -221,12 +245,17 @@ Under the system's "reduce motion" setting, the logo's glow and the hints' pulse
   HUD in acid yellow, cyan and red with corner brackets, scanlines and glitches over a night city
   (D-013, D-014), then the scanlines removed (D-040), then darksynth magenta, violet and blood red
   with a chrome logo over a striped sun (D-103), then the sun removed (D-104), and now neon
-  blue/green (D-198). `02-game-design.md` GD-60 still said "darksynth" for the menus and the HUD
+  blue/green (D-198), then retro synthwave made clear (D-323, 2026-11-11): a night violet ramp, one
+  pink accent, a striped sun behind the logo, no glows or gradients in the chrome; then the same
+  day back to cyan on blue-black with a chrome logo and no sun (D-324, owner: "remove the ugly
+  sun [...] put back a kick ass game name logo, and put back the cyan theme").
+  `02-game-design.md` GD-60 still said "darksynth" for the menus and the HUD
   when D-198 was made at the reviewer's request; the 3D art direction is in
   [graphics/art-direction.md](../graphics/art-direction.md).
-- From the cyberpunk and darksynth looks, these stay: the chamfered glass panels, the monospace
-  readouts, the segmented loading bar, the hazard-striped locked cells, the chrome logo, the neon
-  frame and bottom line, the pulsing hints and the light selected block with black text.
+- What stays across the looks: the glass panels (rounded since D-323), the monospace readouts, the
+  hazard-striped locked cells, the italic capital logo and the light selected block with dark text.
+  The chamfers, the chrome gradient, the neon frame and bottom line, the glows and the pulsing hints
+  went in D-323.
 - D-249 (2026-11-02): the screen is 16:9. The menus were laid out for the 3:4 screen and only
   got a centre column; on a 390 × 844 phone the stage is now 390 × 219 CSS px. The phone layout
   (D-286) lays the menus out across the window there, so the UI-INPUT-11 touch targets hold.

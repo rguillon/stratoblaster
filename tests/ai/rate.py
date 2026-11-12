@@ -16,7 +16,7 @@ An episode's difficulty is `1 - (progress + health left) / 2`:
 So 0 % is a level the brain clears without a scratch, 50 % one it clears with none of its health
 left (or one where it dies at the very end), 100 % one where it dies at once. A level's rating is
 the mean over its episodes. The ratings are relative to the brain's skill: a better brain rates
-every level easier, and the order of the levels is what tells how the difficulty is balanced.
+every level easier, and the order of the levels is what tells how the difficulty ramps up.
 
     uv run python -m ai.rate --episodes 8
 """
@@ -54,7 +54,7 @@ class RatingSettings:
     """How the levels are rated."""
 
     episodes: int = 8
-    ship: str = "balanced"
+    ship: str = "player"
     # Every weapon's level in every level; None: the level of the level's world (D-304).
     weapon_level: int | None = None
     # Moves drawn from the brain's choices, as it learned to play (seeded: the ratings repeat).

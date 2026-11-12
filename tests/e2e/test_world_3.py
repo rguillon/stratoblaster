@@ -26,7 +26,6 @@ def test_wld_3_01_the_world_3_row_shows_3_1_to_3_5_all_unlocked(page: Page) -> N
     """Also UI-LEVEL-01: the grid's third row."""
     open_game(page)
     send_action(page, "confirm")
-    send_action(page, "confirm")
     expect_state(page, {"screen": "level-select"})
     cells = page.locator(".level-cell")
     for i, level_id in enumerate(WORLD_3):
@@ -43,7 +42,6 @@ def test_ui_level_08_a_level_can_be_confirmed_from_the_menu_and_plays(
     Levels' identity and duration: LVL-3-1-01, LVL-3-2-01, LVL-3-3-01, LVL-3-4-01, LVL-3-5-01.
     """
     open_game(page)
-    send_action(page, "confirm")
     send_action(page, "confirm")
     expect_state(page, {"screen": "level-select", "selectedId": "1-1"})
     # Down two rows to World 3, then along it.
