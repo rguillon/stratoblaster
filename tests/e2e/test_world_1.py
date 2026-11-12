@@ -184,3 +184,43 @@ def test_lvl_1_1_13_1_1_ends_once_its_final_boss_is_destroyed(page: Page) -> Non
     # Confirm goes to 1-2.
     send_action(page, "confirm")
     expect_state(page, {"screen": "level-select", "selectedId": "1-2", "game": None})
+
+
+def _tip_tilts(page: Page) -> dict[str, float]:
+    """Return the playfield ship's wing-tip pods' tilts, nozzles down, in degrees (D-359)."""
+    return page.evaluate("""() => {
+        const out = {};
+        for (const engine of BABYLON.EngineStore.Instances)
+            for (const scene of engine.scenes)
+                for (const node of scene.transformNodes) {
+                    const side = node.name.match(/^ship-tip-(right|left)-pivot$/);
+                    let up = node.parent;
+                    while (up && up.name !== 'playfield-ship') up = up.parent;
+                    if (side && up) out[side[1]] = -node.rotation.x * 180 / Math.PI;
+                }
+        return out;
+    }""")
+
+
+def test_gfx_ship_01_the_tip_pods_tilt_like_a_vtols_with_the_sideways_moves(page: Page) -> None:
+    """D-359, D-360: level at rest; moving right, the left pod tilts nozzles down, the right up."""
+    play_level(page, 0)
+    advance(page, 2)
+    rest = _tip_tilts(page)
+    assert rest["right"] == pytest.approx(0, abs=1)
+    assert rest["left"] == pytest.approx(0, abs=1)
+    # The tilt eases on each frame drawn: one frame at a time.
+    page.keyboard.down("ArrowRight")
+    for _ in range(40):
+        step(page)
+    right = _tip_tilts(page)
+    page.keyboard.up("ArrowRight")
+    assert right["left"] > 12
+    assert right["right"] < -12
+    page.keyboard.down("ArrowLeft")
+    for _ in range(60):
+        step(page)
+    left = _tip_tilts(page)
+    page.keyboard.up("ArrowLeft")
+    assert left["right"] > 12
+    assert left["left"] < -12

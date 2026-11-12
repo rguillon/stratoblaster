@@ -34,7 +34,7 @@ from render.babylon import (
     vertex_data_of,
 )
 from render.geometry.gradient_shapes import build_gradient_rect
-from render.model_animation import step_model_animations
+from render.model_animation import SIDEWAYS, set_model_input, step_model_animations
 
 # isort: split
 # __pragma__ ("skip")
@@ -170,6 +170,8 @@ def build_title_backdrop(scene: Any) -> Any:
         # Banks into the sway, rolled most where it moves sideways fastest: moving to +X, its +X
         # wing dips (a negative roll about Z in Babylon's left-handed frame).
         pivot.rotation.z = -s.bankRad * math.cos(sway)
+        # Its sideways speed, a share of the sway's fastest, tilts its tip pods (D-359).
+        set_model_input(pivot, SIDEWAYS, math.cos(sway))
         step_model_animations(ship, dt)
 
     # The handle is a JavaScript object: `update` is read by the render layer as a property name.

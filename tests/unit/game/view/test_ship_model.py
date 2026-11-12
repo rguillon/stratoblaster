@@ -60,11 +60,15 @@ def test_gfx_ship_01_the_wings_are_forward_swept() -> None:
 
 
 def test_gfx_ship_01_twin_reactors_sit_one_over_the_other_on_each_wing_tip() -> None:
-    """D-331, D-339: one over the other, the fins canted 45°; the wing runs on past them."""
+    """D-331: one over the other; D-360: the wing stops at the pod, its fairing at its flank."""
     pod = ship_model.TIP_REACTOR
     tip = ship_model.MAIN_WING[2]
     body = ship_model.TIP_BODY
-    assert pod["x"] + body["halfWidth"] < tip[0] < pod["x"] + body["halfWidth"] + 0.3
+    flank = pod["x"] - body["halfWidth"]
+    fairing = ship_model.TIP_FAIRING
+    assert tip[0] < flank
+    assert fairing["x"] - fairing["halfWidth"] <= tip[0]
+    assert flank - 0.01 < fairing["x"] + fairing["halfWidth"] <= flank
     upper, lower = pod["ys"]
     assert upper > 0 > lower
     assert upper - lower >= 2 * pod["radius"]
@@ -142,10 +146,9 @@ def test_gfx_ship_01_the_tails_and_ventral_fins_stand_on_the_wing_tip_pods() -> 
     front = pod["z"] + pod["length"] / 2
     back = pod["z"] - pod["length"] / 2
     shift = ship_model.TIP_TAIL_SHIFT
-    for outline in [ship_model.TAIL, ship_model.VENTRAL_FIN]:
-        roots = [z + shift for x, z in outline if x == 0]
-        assert roots
-        assert all(back < z < front for z in roots)
+    roots = [z + shift for x, z in ship_model.TAIL if x == 0]
+    assert roots
+    assert all(back < z < front for z in roots)
 
 
 def test_gfx_ship_01_the_tip_pods_carry_a_tail_and_a_ventral_fin_not_45_degree_fins(
@@ -167,6 +170,10 @@ def test_gfx_ship_01_the_tip_pods_carry_a_tail_and_a_ventral_fin_not_45_degree_f
         assert tail.position.set.call_args[0][0] == pytest.approx(
             sign * ship_model.TIP_REACTOR["x"]
         )
+        # D-360: the ventral fin is the tail's mirror image under the pod; D-361: canted 40°.
+        fin = nodes["ship-ventral-" + side]
+        assert fin.rotation.z == pytest.approx(-tail.rotation.z)
+        assert abs(math.pi / 2 - abs(tail.rotation.z)) == pytest.approx(math.radians(40), abs=0.01)
 
 
 def test_gfx_ship_01_one_body_wraps_each_wing_tips_twin_reactors() -> None:
@@ -537,3 +544,65 @@ def test_gfx_ship_01_a_dark_plate_lies_on_the_bodys_square_back() -> None:
         assert max(abs(p[0]) for p in ring) < back[hull.BODY_HALF_WIDTH] * hull.CHINE_ROOT
         assert max(p[1] for p in ring) < back[hull.BODY_HEIGHT] + back[hull.SPINE]
         assert min(p[1] for p in ring) > -back[hull.BELLY_DEPTH]
+
+
+@pytest.mark.parametrize(
+    ("sign", "sideways", "tilt"),
+    [(1, 0, 0), (-1, 0, 0), (1, 1, -0.26), (-1, 1, 0.26), (1, -1, 0.26), (1, 3, -0.26)],
+)
+def test_gfx_ship_01_the_tip_pods_tilt_level_at_rest_and_opposite_ways_moving(
+    sign: int, sideways: float, tilt: float
+) -> None:
+    """D-359, D-360: level at rest; moving right, the left pod's nozzles down, the right's up."""
+    assert ship_model.tip_tilt_target(sign, sideways) == pytest.approx(tilt)
+
+
+def test_gfx_ship_01_the_tip_pods_tilt_eases_towards_its_target() -> None:
+    assert ship_model.eased_tilt(0, 1, 0.1) == pytest.approx(0.5)
+    assert ship_model.eased_tilt(0, 1, 1) == 1
+
+
+def test_gfx_ship_01_each_tip_pod_turns_on_its_pivot_with_the_ships_sideways_speed(
+    scene: Any, monkeypatch: Any
+) -> None:
+    """D-359: the pod, its tail and fin under a pivot at the pod's middle, turned round X."""
+    animations: dict[str, Any] = {}
+    monkeypatch.setattr(
+        ship_model, "add_model_animation", lambda node, run: animations.update({node.name: run})
+    )
+    sideways = [0.0]
+    monkeypatch.setattr(ship_model, "model_input", lambda _node, _name, _default: sideways[0])
+    nodes: dict[str, Any] = {}
+    real = ship_model.new_transform_node
+
+    def node(name: str, *args: Any) -> Any:
+        nodes[name] = real(name, *args)
+        nodes[name].name = name
+        return nodes[name]
+
+    monkeypatch.setattr(ship_model, "new_transform_node", node)
+    build_player_ship(scene)
+    pivot = nodes["ship-tip-right-pivot"]
+    assert pivot.position.set.call_args[0] == pytest.approx((ship_model.TIP_REACTOR["x"], 0, -0.4))
+    assert nodes["ship-tip-right-parts"].parent is pivot
+    assert nodes["ship-tail-right"].parent is nodes["ship-tip-right-parts"]
+    sideways[0] = 1.0
+    for _ in range(100):
+        animations["ship-tip-right-pivot"](0.1)
+        animations["ship-tip-left-pivot"](0.1)
+    # Nozzles down is a negative turn round X.
+    assert pivot.rotation.x == pytest.approx(0.26)
+    assert nodes["ship-tip-left-pivot"].rotation.x == pytest.approx(-0.26)
+
+
+def test_gfx_ship_01_the_wing_tip_fairing_runs_along_the_tips_chord() -> None:
+    """D-360: a rounded box tapering at both ends, over and under the wing, past its tip's edges."""
+    sections = ship_model.tip_fairing_sections(-1)
+    tip = ship_model.MAIN_WING
+    assert sections[0][0] > tip[2][1]
+    assert sections[-1][0] < tip[3][1]
+    for _z, ring in sections:
+        assert all(p[0] < 0 for p in ring)
+    middle = sections[1][1]
+    assert max(p[1] for p in middle) > ship_model.WING_THICKNESS / 2
+    assert len({len(ring) for _z, ring in sections}) == 1

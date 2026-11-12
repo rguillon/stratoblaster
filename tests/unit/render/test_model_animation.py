@@ -5,7 +5,12 @@ import pytest
 from helpers.render_fakes import FakeNode, FakeWeakMap, patch_babylon
 
 from render import model_animation
-from render.model_animation import add_model_animation, step_model_animations
+from render.model_animation import (
+    add_model_animation,
+    model_input,
+    set_model_input,
+    step_model_animations,
+)
 
 
 @pytest.fixture(autouse=True)
@@ -57,3 +62,17 @@ def test_animations_of_other_trees_are_not_run() -> None:
     add_model_animation(other, lambda _dt: seen.append("other"))
     step_model_animations(root, 1)
     assert seen == []
+
+
+def test_d359_a_model_input_set_on_a_node_is_read_from_below_it() -> None:
+    root, child, grandchild = _tree()
+    child.parent = root
+    grandchild.parent = child
+    assert model_input(grandchild, "sideways", 0.5) == 0.5
+    set_model_input(root, "sideways", 0.25)
+    assert model_input(grandchild, "sideways", 0) == 0.25
+    set_model_input(child, "sideways", -1)
+    set_model_input(child, "other", 2)
+    assert model_input(grandchild, "sideways", 0) == -1
+    assert model_input(root, "sideways", 0) == 0.25
+    assert model_input(grandchild, "missing", 3) == 3

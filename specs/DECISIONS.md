@@ -2781,3 +2781,47 @@
   at the intakes' spacing. The miniguns stand at x ±0.33 (0.27); the gun fairing widens to 0.18,
   0.27 and 0.25 half wide at z -0.45, 0.3 and 1.3 (0.14, 0.21, 0.19) to keep their drums half in
   its flanks. The test of that now measures the fairing's own size at the drums, not a fixed one.
+
+### D-359 — The wing-tip pods tilt like a VTOL's
+
+- **Date:** 2026-11-12
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-08, UI-TITLE-07.
+- **Context:** owner: "make the side reactors rotate like if the plane was a vtol, and make them
+  rotate accordingly when the ship moves left/right (in the main menu animation too)"; asked how,
+  the owner chose a tilt round the wing with a differential tilt moving sideways.
+- **Decision:** each wing-tip pod, its tail and ventral fin are built under a pivot through the
+  pod's middle on the wing (`_tip_pivot`), turned round X. A model animation eases its tilt
+  towards `tip_tilt_target`: the rest tilt, minus the side's sign times the ship's sideways speed
+  share times the swing, so the pod away from the move tilts its nozzles down and the other up.
+  The sideways speed is a new model input (`render/model_animation.py`: `set_model_input` on any
+  node, `model_input` read from below it, walking up the parents; `SIDEWAYS`): the game sets it on
+  the playfield ship's pivot (its vx over its top speed), the title backdrop on its ship's pivot
+  (the sway's speed share, `cos`). The unit tests' conftest gives each test a fresh map of inputs.
+- **Consequences:** an e2e test flies 1-1 right then left and reads the pods' turns. The dev
+  ships viewer shows the pods at rest.
+
+### D-360 — The wings stop at the pods; level pods with less tilt; matching ventral fins
+
+- **Date:** 2026-11-12
+- **Requirements:** GFX-SHIP-01.
+- **Context:** owner: "make the wings stop at the junction with the outer reactors, create a
+  better looking junction between the wing and the outer reactor, and keep the rotation centered
+  on the horizontal and reduce the rotation range. Also make the lower vertical wing on the
+  reactor the same as the upper ones"; then "remove the small joint between the wing and the side
+  reactor".
+- **Decision:** `MAIN_WING`'s tip is at x 1.78, its edges' sweep kept, its leading edge's glow one
+  strip from root to tip. A fairing (`TIP_FAIRING`, a rounded box tapering at both ends, along the
+  tip's chord, a little over and under the wing) closes the tip, its outer face at 1.85 against the
+  pod's flank (1.855), which turns along it. A hub on the pivot axis, across a gap between the
+  fairing and the pod, was tried first and removed at the owner's word. `TIP_TILT` is level at
+  rest and swings 0.26 rad (15°) either way (0.52 down at rest, 0.52 either way). The ventral fin is
+  the tail's outline and thickness, mirrored under the pod (`VENTRAL_FIN`, `VENTRAL_THICKNESS`
+  and `VENTRAL_CANT` are gone).
+
+### D-361 — The tails canted 40°
+
+- **Date:** 2026-11-12
+- **Requirements:** GFX-SHIP-01.
+- **Context:** owner: "angle the vertical wings 40°".
+- **Decision:** `TAIL_CANT` is 0.698 rad (40°) from vertical, outwards, for the tails and the
+  ventral fins (0.2 rad before).

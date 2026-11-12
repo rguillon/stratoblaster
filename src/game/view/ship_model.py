@@ -77,6 +77,7 @@ from render.geometry.section_loft import (
     polygon_lathe_sections,
     rounded_rectangle,
 )
+from render.model_animation import SIDEWAYS, add_model_animation, model_input
 
 # isort: split
 # __pragma__ ("skip")
@@ -89,16 +90,34 @@ Scene = Any
 # Right main wing (X > 0), forward-swept (owner, 2026-11-11, D-330: "make the wings front
 # sided"): the tip's leading edge well ahead of the root's, the trailing edge swept forward too, a
 # square-cut tip with a chamfered front corner. Its root lies in the nacelle (D-332), towards its
-# back (D-333, owner: "move the wings more to the back"; 0.6 further forward before). Its tip runs
-# on past the twin tip reactors (D-339, owner: "make the wings go a little beyond the side
-# reactors"; it stopped at 1.9, under them, before).
+# back (D-333, owner: "move the wings more to the back"; 0.6 further forward before). D-360 (owner:
+# "make the wings stop at the junction with the outer reactors"): its tip stops at 1.78, in the
+# tip fairing against the tilting pod's flank, its edges' sweep kept (it ran on past the pods to
+# 2.3, D-339).
 MAIN_WING = [
     [0.8, -0.7],
-    [2.25, 0.2425],
-    [2.3, 0.2],
-    [2.3, -0.4],
+    [1.76, -0.076],
+    [1.78, -0.096],
+    [1.78, -0.903],
     [0.8, -1.85],
 ]
+# D-360 (owner: "create a better looking junction between the wing and the outer reactor"): the
+# wing's tip ends in a fairing along its chord, a slim rounded box standing a little over and under
+# the wing, its flat outer face against the pod's flank, which turns along it as a tiltrotor's
+# nacelle does on its wing tip (owner: "remove the small joint between the wing and the side
+# reactor": a hub on the pivot axis joined them, across a gap, at first). The fairing: its middle's
+# X, its half width and half height, its corners, its front and back Z, how far its ends taper
+# (the share of its length at each end, and their size there).
+TIP_FAIRING = {
+    "x": 1.815,
+    "halfWidth": 0.035,
+    "halfHeight": 0.06,
+    "corner": 0.03,
+    "front": 0.0,
+    "back": -1.0,
+    "taper": 0.12,
+    "end": 0.45,
+}
 # D-336: the stub wings joining the body to the nacelles (D-332) are now the body's own strakes
 # (`ship_hull.py`). Their glowing leading edge follows the strakes' curve, at these Z.
 STRAKE_EDGE_ZS = [0.85, 0.6, 0.35, 0.1, -0.1, -0.3]
@@ -171,23 +190,18 @@ TAIL = [
     [0.85, -1.6],
     [0, -1.55],
 ]
-VENTRAL_FIN = [
-    [0, -0.95],
-    [0.38, -1.25],
-    [0.38, -1.4],
-    [0, -1.35],
-]
 # The twin tails and ventral fins stood on the main nacelles (D-332); they stand on the wing-tip
 # pods now, in place of the pods' 45° fins (owner, D-353: "move the vertical wings from the big
 # reactors to the small side reactors, they replace the side reactors original vertical wings"):
 # the tail on the pod's top, the ventral fin under it, both brought forward by `TIP_TAIL_SHIFT`
 # so their roots run along the pod. Their outlines stay as drawn (Z along the ship). The tails'
-# cant, in rad from vertical, outwards.
+# cant, in rad from vertical, outwards. D-360 (owner: "make the lower vertical wing on the reactor
+# the same as the upper ones"): the ventral fin is the tail's mirror image under the pod, its
+# outline, thickness and cant (smaller, canted 0.55, before).
 TIP_TAIL_SHIFT = 0.65
-TAIL_CANT = 0.2
+# D-361 (owner: "angle the vertical wings 40°"): 0.2 rad (11°) before.
+TAIL_CANT = 0.698
 TAIL_THICKNESS = 0.05
-VENTRAL_THICKNESS = 0.04
-VENTRAL_CANT = 0.55  # rad from vertical, outwards
 # The main reactors: nacelles standing out from the body (D-332: "spead the two main reactors";
 # at 0.42, inside the hull's shoulders, before), joined to it by its strakes (D-336), their middle
 # at the wings' plane, each with its intake.
@@ -352,6 +366,15 @@ TIP_REACTOR: dict[str, Any] = {
     "radius": 0.11,
     "length": 1.35,
 }
+# D-359 (owner: "make the side reactors rotate like if the plane was a vtol, and make them rotate
+# accordingly when the ship moves left/right"): each wing-tip pod, its tail and ventral fin pivot
+# together round a spanwise axis through the pod's middle on the wing, as a tiltrotor's nacelles
+# do. At rest the nozzles tilt `rest` rad down; moving sideways, the pod away from the move tilts
+# further down and the other one back up, `swing` rad at top sideways speed (both push the ship
+# sideways); the tilt eases towards that at `ease` per second. D-360 (owner: "keep the rotation
+# centered on the horizontal and reduce the rotation range"): level at rest, 15° either way (30°
+# down at rest, 30° either way, before).
+TIP_TILT = {"rest": 0.0, "swing": 0.26, "ease": 5.0}
 TIP_BODY: dict[str, Any] = {"halfWidth": 0.125, "halfHeight": 0.255, "corner": 0.1, "steps": 3}
 TIP_INTAKE: dict[str, Any] = {"radius": 0.124, "stretch": 2.05}
 TIP_BODY_PROFILE = [
@@ -673,14 +696,9 @@ def _build_edge_glow(side: str, sign: float, root: Any, scene: Any, glow_width: 
     wing_size = {"width": glow_width, "thickness": EDGE_GLOW["wing"]}
     canard_size = {"width": glow_width, "thickness": EDGE_GLOW["canard"]}
     name = "ship-glow-" + side
-    # The main wing's, either side of the tip reactors' body, which it runs through (D-339).
+    # The main wing's, from its root to its tip at the fairing (D-360).
     wing = mirror(MAIN_WING)
-    gap = [TIP_REACTOR["x"] - TIP_BODY["halfWidth"], TIP_REACTOR["x"] + TIP_BODY["halfWidth"]]
-    inner = mirror([[gap[0], _leading_edge(gap[0])]])[0]
-    outer = mirror([[gap[1], _leading_edge(gap[1])]])[0]
-    centre = _centre(wing)
-    edge_strip(name + "-wing", [wing[0], inner], centre, wing_size, mats.edgeGlow, root)
-    edge_strip(name + "-wing-tip", [outer, wing[1]], centre, wing_size, mats.edgeGlow, root)
+    edge_strip(name + "-wing", [wing[0], wing[1]], _centre(wing), wing_size, mats.edgeGlow, root)
     # The strake's leading edge, one strip between each two of its points (D-336).
     strake = mirror([[station_at(z)[CHINE_HALF_WIDTH], z] for z in STRAKE_EDGE_ZS])
     for k in range(len(strake) - 1):
@@ -722,13 +740,13 @@ def _build_tails(side: str, sign: float, root: Any, scene: Any, glow_width: floa
     # Ventral fin: same trick, pointing down and outwards.
     fin = new_transform_node("ship-ventral-" + side, scene)
     fin.position.set(x, bottom + 0.02, TIP_TAIL_SHIFT)
-    fin.rotation.z = -math.pi / 2 + sign * VENTRAL_CANT
+    fin.rotation.z = -math.pi / 2 + sign * TAIL_CANT
     fin.parent = root
-    panel("ship-ventral-" + side + "-panel", VENTRAL_FIN, VENTRAL_THICKNESS, mats.hullDark, fin)
+    panel("ship-ventral-" + side + "-panel", TAIL, TAIL_THICKNESS, mats.hullDark, fin)
     _glow_edges(
         "ship-glow-" + side + "-ventral",
-        VENTRAL_FIN,
-        VENTRAL_THICKNESS,
+        TAIL,
+        TAIL_THICKNESS,
         glow_width,
         mats.edgeGlow,
         fin,
@@ -839,6 +857,41 @@ def _build_tip_reactor(side: str, sign: float, root: Any, scene: Any) -> None:
     add_reactor_intake(name, TIP_INTAKE["radius"], 0, intake, OCTAGON, TIP_INTAKE["stretch"])
 
 
+def tip_fairing_sections(sign: float) -> list[list[Any]]:
+    """Return the wing-tip fairing's sections on `sign`'s side, front to back (D-360).
+
+    A rounded box along the tip's chord, its ends tapering to `end` of its size.
+    """
+    fairing = TIP_FAIRING
+    front = fairing["front"]
+    back = fairing["back"]
+    taper = (front - back) * fairing["taper"]
+    ring = rounded_rectangle(fairing["halfWidth"], fairing["halfHeight"], fairing["corner"], 2)
+    x = sign * fairing["x"]
+    sections: list[list[Any]] = []
+    for z, scale in [
+        [front, fairing["end"]],
+        [front - taper, 1.0],
+        [back + taper, 1.0],
+        [back, fairing["end"]],
+    ]:
+        sections.append([z, [[x + p[0] * scale, p[1] * scale] for p in ring]])
+    return sections
+
+
+def _build_tip_junction(side: str, sign: float, root: Any, scene: Any) -> None:
+    """Build the junction of a wing's tip and its tilting pod: the fairing (D-360).
+
+    It stays with the wing; the pod turns against its outer face.
+    """
+    mats = get_ship_materials(scene)
+    name = "ship-tip-" + side
+    sections = tip_fairing_sections(sign)
+    fairing = create_section_loft(name + "-fairing", sections, len(sections[0][1]), scene)
+    fairing.material = mats.hullMid
+    fairing.parent = root
+
+
 def scoop_sections(up: float) -> list[Any]:
     """Return the sections of a main reactor's secondary intake, `up` 1 on top, -1 under (D-347).
 
@@ -941,10 +994,12 @@ def build_player_ship(scene: Any, glow_width: float = EDGE_GLOW["width"]) -> Any
     _build_cockpit(root, scene, glow_width)
     for side, sign in [("right", 1), ("left", -1)]:
         _build_wing(side, sign, root, scene)
-        _build_tails(side, sign, root, scene, glow_width)
+        pod = _tip_pivot(side, sign, root, scene)
+        _build_tails(side, sign, pod, scene, glow_width)
         _build_edge_glow(side, sign, root, scene, glow_width)
         _build_missile_pod(side, sign, root, scene)
-        _build_tip_reactor(side, sign, root, scene)
+        _build_tip_reactor(side, sign, pod, scene)
+        _build_tip_junction(side, sign, root, scene)
         reactor = build_reactor(
             "ship-reactor-" + side, REACTOR, scene, True, OCTAGON, REACTOR_HEIGHT
         )
@@ -954,6 +1009,50 @@ def build_player_ship(scene: Any, glow_width: float = EDGE_GLOW["width"]) -> Any
         for label, up in [("top", 1), ("bottom", -1)]:
             _build_scoop("ship-reactor-" + side + "-scoop-" + label, up, reactor, scene)
     return root
+
+
+def tip_tilt_target(sign: float, sideways: float) -> float:
+    """Return a tip pod's tilt, nozzles down, for a sideways speed share (D-359).
+
+    `sign` 1 for the right (+X) pod, -1 for the left; `sideways` -1 to 1, positive moving to +X:
+    the pod away from the move tilts down further, the other one back up.
+    """
+    tilt = TIP_TILT
+    share = max(-1.0, min(1.0, sideways))
+    return tilt["rest"] - sign * share * tilt["swing"]
+
+
+def eased_tilt(current: float, target: float, dt: float) -> float:
+    """Return the tilt eased from `current` towards `target` over `dt` seconds (D-359)."""
+    return current + (target - current) * min(1.0, TIP_TILT["ease"] * dt)
+
+
+def _tip_pivot(side: str, sign: float, root: Any, scene: Any) -> Any:
+    """Return the node a wing-tip pod's parts are built under, in the ship's frame (D-359).
+
+    A pivot through the pod's middle turns round X; under it, a node set back by the pivot's place
+    holds the parts, so they are built where they were. Its animation tilts the pod by the ship's
+    sideways speed (`SIDEWAYS`, set by the game and the title backdrop).
+    """
+    pod = TIP_REACTOR
+    middle = (pod["ys"][0] + pod["ys"][1]) / 2
+    pivot = new_transform_node("ship-tip-" + side + "-pivot", scene)
+    pivot.position.set(sign * pod["x"], middle, pod["z"])
+    pivot.parent = root
+    holder = new_transform_node("ship-tip-" + side + "-parts", scene)
+    holder.position.set(-sign * pod["x"], -middle, -pod["z"])
+    holder.parent = pivot
+    tilt = [TIP_TILT["rest"]]
+    # Nozzles down is the nose up: a negative turn round X in Babylon's left-handed frame.
+    pivot.rotation.x = -tilt[0]
+
+    def on_frame(dt: float) -> None:
+        target = tip_tilt_target(sign, model_input(pivot, SIDEWAYS, 0.0))
+        tilt[0] = eased_tilt(tilt[0], target, dt)
+        pivot.rotation.x = -tilt[0]
+
+    add_model_animation(pivot, on_frame)
+    return holder
 
 
 def playfield_glow_width() -> float:

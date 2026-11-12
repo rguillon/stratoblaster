@@ -62,8 +62,9 @@ intake, joined to the body by its strakes (D-336; by a separate stub wing from D
 their length. They carry no tail: the tails and ventral fins stand on the wing-tip pods (D-353).
 
 **Wings:** forward-swept (D-330: "make the wings front sided"; the tip's leading and trailing
-edges ahead of the root's, a square-cut tip with a chamfered front corner, running on a little
-past the tip reactors, D-339: "make the wings go a little beyond the side reactors"), running out
+edges ahead of the root's, a square-cut tip with a chamfered front corner), stopping at the tip
+reactors (D-360, owner: "make the wings stop at the junction with the outer reactors"; they ran on
+past them before, D-339), running out
 of the nacelles towards their back
 (D-333: "move the wings more to the back"), with flap and panel lines. The canards lie with their
 top face at the body's chine edge, as the wings do, so their trim runs on from the body's beside
@@ -72,10 +73,22 @@ Each tip carries twin reactors one over the other (D-330, D-331), one above the 
 and one below; one steel body wraps both (D-332: "add more body to the wings reactors,
 connecting them"), a tall rounded rectangle in section, from their fronts to short of their
 nozzles, and one octagonal intake at its front, stretched upright to the body's height, feeds both.
-The body carries a canted gunmetal tail on its top and a ventral fin under it, with glowing leading
-edges and tips, brought forward along it from where they stood on the main nacelles (D-353, owner:
-"move the vertical wings from the big reactors to the small side reactors, they replace the side
-reactors original vertical wings"; each reactor had a small fin at 45° before). One intake for both
+The body carries a gunmetal tail on its top and a ventral fin under it, the tail's mirror image
+(D-360, owner: "make the lower vertical wing on the reactor the same as the upper ones"), both
+canted 40° outwards (D-361, owner: "angle the vertical wings 40°"), with glowing leading edges and
+tips, brought forward along it from where they stood on the main nacelles (D-353, owner: "move the
+vertical wings from the big reactors to the small side reactors, they replace the side reactors
+original vertical wings"; each reactor had a small fin at 45° before). Each pod, its tail and its
+fin turn together round a spanwise axis through the pod's middle on the wing, as a tiltrotor's
+nacelles do (D-359, owner: "make the side reactors rotate like if the plane was a vtol, and make
+them rotate accordingly when the ship moves left/right (in the main menu animation too)"): level at
+rest (D-360, owner: "keep the rotation centered on the horizontal and reduce the rotation range"),
+and as the ship moves sideways the pod away from the move tilts its nozzles down and the other one
+up, up to 15° at top sideways speed, easing there; in play and in the menus' backdrop, by the ship's
+sideways speed. The wing's tip ends in a slim rounded fairing along its chord, over and under the
+wing, its flat outer face against the pod's flank, which turns along it (D-360: "create a better
+looking junction between the wing and the outer reactor"; owner: "remove the small joint between
+the wing and the side reactor"). One intake for both
 (D-339, owner: "merge the two lateral intales into a single octogonal intake"; an intake each
 before). A missile launcher runs through each wing (D-330; D-343, owner: "make the missile pods
 hexagonal, higher and make them go trough the wings"; it hung under the wing on a pylon before;
@@ -120,11 +133,15 @@ No gun stands on top (D-330), and the ship carries no light of its own but its r
 
 **Acceptance criteria**
 - Given the ship's model, then its wing tips' leading and trailing edges are ahead of their
-  roots (forward-swept), the wing's root in the nacelle and its tip a little past the tip
-  reactors' body; twin reactors one over the other at each wing tip, wrapped in one body from
+  roots (forward-swept), the wing's root in the nacelle and its tip short of the tip reactors'
+  body, its fairing against the body's flank (D-360); twin reactors one over the other at each wing tip, wrapped in one body from
   their fronts to short of their nozzles, one octagonal intake as wide and tall as the body feeding
   both, a tail on its top and a ventral fin under it, their roots along it, none on the main
-  nacelles (D-353); the main reactors octagons with intakes (unit tests).
+  nacelles (D-353), the fin the tail's mirror image, both canted 40° (D-360, D-361); the main
+  reactors octagons with intakes (unit tests).
+- Given the ship at rest, then its tip pods are level; given it moving right at top speed, then
+  its left pod's nozzles tilt down and its right pod's up, about 15° each, and the reverse moving
+  left (unit tests, e2e test); the menus' backdrop tilts them with its sway (D-359, D-360).
 - Given the guns under the belly, then a laser lies on the centre line and a minigun of six
   barrels either side of it; the fairing's top lies inside the belly, the minigun drums half in
   its flanks, and the laser's rails clear under the nose, its core and prongs past the nose's tip
@@ -260,8 +277,8 @@ ship is about 40 px long, `player_glow_width` logical pixels across, so they sho
 (D-355, owner: "the player ship glow is not visible in game": a quarter of a pixel, they hardly
 showed); the sill rails widen in the same ratio. The dev viewer shows the playfield's build. The guns (the
 missile launchers, the laser, the miniguns and their fairing) and the reactors' bodies do not glow, but for the
-laser's core and emitter, of the reactors' core light (D-339, D-342). The main wing's strip stops
-either side of the tip reactors' body, so it does not cross their intake (D-339).
+laser's core and emitter, of the reactors' core light (D-339, D-342). The main wing's strip runs
+from its root to its tip (D-360).
 
 **Acceptance criteria**
 - Given the ship model, then it has no trim; the main wings', strakes', canards', tails' and ventral
@@ -298,13 +315,15 @@ either side of the tip reactors' body, so it does not cross their intake (D-339)
 | Hull facets | chine root 1.1, shoulder 0.8, deck edge 0.4 of the body's half width; shoulder at 0.75 of the deck's height | `ship_hull.py` `CHINE_ROOT`, `SHOULDER`, `DECK_EDGE`, `SHOULDER_HEIGHT` |
 | Body details | seams at z 1.7, 0.55, -0.75, -1.75 (0.024 wide, 2% proud); 3 vents a side, x 0.34-0.5 from z -0.15 | `ship_model.py` `SEAM_ZS`, `SEAM`, `VENTS` |
 | `profile_steps` | 3 | `ship_model.py` `PROFILE_STEPS` |
-| Wing | forward-swept: root x 0.8 (z -0.7 to -1.85), tip x 2.3 (z 0.2 to -0.4, chamfered to 2.25, 0.24) | `ship_model.py` `MAIN_WING` |
+| Wing | forward-swept: root x 0.8 (z -0.7 to -1.85), tip x 1.78 (z -0.096 to -0.903, chamfered to 1.76, -0.076; D-360) | `ship_model.py` `MAIN_WING` |
+| Wing-tip fairing | x 1.78 to 1.85, 0.12 high, z 0 to -1.0, its ends tapering to 0.45 over 0.12 of its length | `TIP_FAIRING` |
+| Tip pods' tilt | level at rest, 0.26 rad (15°) either way at top sideways speed, eased at 5 per second; pivot at the pod's middle | `TIP_TILT`, `tip_tilt_target`; `render/model_animation.py` `SIDEWAYS` |
 | Reactor section | hexagon (main reactors and tip intakes: octagon turned π/8), corners rounded at 0.3 of the radius, 3 points a corner (rings 2) | `ship_parts.py` `REACTOR_SIDES`, `polygon_turn`, `REACTOR_ROUNDING`, `REACTOR_CORNER_STEPS`, `RING_CORNER_STEPS`; `ship_model.py` `OCTAGON` |
 | Reactor intake | straight at 1.0 radius (the nacelle's) to 0.24 ahead, angled in to 0.8 at 0.47; flush with the nacelle; dark duct, its end behind the fan face; fan face at 0.68 radii; 4 horizontal fins at heights ±0.14 and ±0.42, z 0.12 to 0.4, inside a 0.66 duct hexagon | `ship_parts.py` `REACTOR_INTAKE*` |
 | Reactor scoops | top and bottom of each main reactor, z 0.5 to -1.0 of the nacelle, 0.21 wide, 0.13 high at the mouth, sunk 0.02 (D-358; 0.16, 0.1 and 0.012 before); corners 0.035; a 0.06 lip then 4 eased ramp sections; mouth 0.72 of its size; fins at -0.28, 0, 0.28 of its height | `ship_model.py` `REACTOR_SCOOP` |
 | Intake black | albedo [0.012, 0.012, 0.015], metallic 0, roughness 1 | `SHIP_LOOK["intakeBlack"]` |
 | Tip reactors | x 1.98, y 0.125 and -0.125, z -0.4; radius 0.11, length 1.35 (0.95 until D-340) | `TIP_REACTOR` |
-| Tails and ventral fins | on the tip pods, brought forward 0.65; tails canted 0.2 rad outwards, ventral fins 0.55 | `TIP_TAIL_SHIFT`, `TAIL_CANT`, `VENTRAL_CANT` |
+| Tails and ventral fins | on the tip pods, brought forward 0.65; one outline and thickness, canted 0.698 rad (40°) outwards (D-361) | `TIP_TAIL_SHIFT`, `TAIL`, `TAIL_CANT` |
 | Nacelles | at x ±0.8, y -0.02, centre z -0.95; radius 0.22, length 2.0, 1.3 times taller than wide; with intakes | `REACTOR`, `REACTOR_HEIGHT`, `REACTOR_OFFSET_X`, `REACTOR_Y`, `REACTOR_Z` |
 | Strakes | the body's chines, 0.64 half wide from z -0.4 to -1.2, 0.63 at -1.9; glowing edge from z 0.85 to -0.3 | `ship_hull.py` `STATIONS`; `ship_model.py` `STRAKE_EDGE_ZS` |
 | Tip reactors' body | rounded rectangle 0.125 x 0.255 half, corners 0.1; z 0.675 to -0.62 from the reactors' middle; one octagonal intake, radius 0.124, stretched 2.05 upright | `TIP_BODY`, `TIP_BODY_PROFILE`, `TIP_INTAKE` |

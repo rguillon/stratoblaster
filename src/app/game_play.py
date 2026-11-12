@@ -41,6 +41,7 @@ from render.babylon import (
 )
 from render.enemy_layer import EnemyLayer
 from render.game_view import BombFrame, BonusFrame
+from render.model_animation import SIDEWAYS, set_model_input
 from render.scenery.playfield_framing import playfield_eye, visible_half_width
 from ui.stats_tile import RenderStats
 
@@ -363,6 +364,8 @@ class GamePlay:
         self._ship.pivot.position.set(ship.x, ship.y, 0)
         set_enabled(self._ship.pivot, self._ship_shown())
         self._ship.pivot.rotation.y = self._bank(ship.vx, dt)
+        # Its sideways speed drives the model's own animations (the tip pods' tilt, D-359).
+        set_model_input(self._ship.pivot, SIDEWAYS, ship.vx / self._speed)
         self._ship.update(dt)
 
         def sync_playfield() -> None:
