@@ -2768,3 +2768,16 @@
   follow; the decisions log, `specs_old/` and the unused TypeScript tests in `node/tests/` keep the
   old name as history.
 - **Consequences:** no behaviour changes; the dev ships viewer labels the ship "Player ship".
+
+### D-358 — Larger reactor scoops, the miniguns spread again
+
+- **Date:** 2026-11-12
+- **Requirements:** GFX-SHIP-01.
+- **Context:** owner: "increase the size of the secondary vents and spread the minigun more
+  again". Taken as the secondary intakes on the main reactors (D-347, the owner's "secondary
+  intake"), not the dark vents on the strakes.
+- **Decision:** `REACTOR_SCOOP` is 0.21 wide and 0.13 high at its mouth (0.16 and 0.1), sunk 0.02
+  into the nacelle (0.012) so its wider base stays on the octagon's chamfers; it keeps three fins
+  at the intakes' spacing. The miniguns stand at x ±0.33 (0.27); the gun fairing widens to 0.18,
+  0.27 and 0.25 half wide at z -0.45, 0.3 and 1.3 (0.14, 0.21, 0.19) to keep their drums half in
+  its flanks. The test of that now measures the fairing's own size at the drums, not a fixed one.

@@ -262,7 +262,12 @@ def test_gfx_ship_01_a_laser_with_a_minigun_either_side_under_the_belly(
     for _x, z in rail:
         assert top < -hull.station_at(z)[hull.BELLY_DEPTH]
     # The minigun drums sit in the fairing's flanks: half in, half out.
-    _z, ring = ship_model.fairing_section(gun["z"], [gun["z"], 0.2, 0.1])
+    # D-357: the fairing's size where the drums are, between its two sizes around them.
+    fairing = ship_model.GUN_FAIRING
+    k = next(i for i in range(len(fairing) - 1) if fairing[i][0] <= gun["z"] <= fairing[i + 1][0])
+    t = (gun["z"] - fairing[k][0]) / (fairing[k + 1][0] - fairing[k][0])
+    size = [gun["z"]] + [fairing[k][c] + (fairing[k + 1][c] - fairing[k][c]) * t for c in [1, 2]]
+    _z, ring = ship_model.fairing_section(gun["z"], size)
     widest = max(p[0] for p in ring)
     assert gun["x"] - gun["drum"]["radius"] < widest < gun["x"] + gun["drum"]["radius"]
 

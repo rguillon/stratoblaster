@@ -212,9 +212,9 @@ OCTAGON = 8
 REACTOR_SCOOP: dict[str, Any] = {
     "front": 0.5,
     "back": -1.0,
-    "width": 0.16,
-    "height": 0.1,
-    "sink": 0.012,
+    "width": 0.21,
+    "height": 0.13,
+    "sink": 0.02,
     "mouth": 0.8,
     "corner": 0.035,
     "lip": 0.06,
@@ -229,9 +229,9 @@ REACTOR_SCOOP: dict[str, Any] = {
 # `[z, half width, depth under the belly]`, back to front, closed at both ends.
 GUN_FAIRING = [
     [-0.8, 0, 0],
-    [-0.45, 0.14, 0.07],
-    [0.3, 0.21, 0.11],
-    [1.3, 0.19, 0.09],
+    [-0.45, 0.18, 0.07],
+    [0.3, 0.27, 0.11],
+    [1.3, 0.25, 0.09],
     [2.55, 0.08, 0.07],
     [2.85, 0, 0],
 ]
@@ -268,7 +268,7 @@ LASER_EMITTER = [[3.68, 0], [3.65, 0.022], [3.61, 0.03], [3.6, 0]]
 # the minguns a little more"): 0.21 out from the centre line (0.17 before). D-349 ("and spread the
 # minigun more again"): 0.27, the fairing widened under the body's flanks to keep them half in it.
 MINIGUN: dict[str, Any] = {
-    "x": 0.27,
+    "x": 0.33,
     "y": -0.195,
     "z": 0.75,
     "drum": {"length": 0.9, "radius": 0.085},
