@@ -13,9 +13,9 @@ from config.dev_viewer import (
     DEV_MENU_COLUMNS,
     DEV_MODE_LABELS,
     DEV_MODE_VIEWERS,
-    DEV_VIEW_MODES,
     DEV_VIEWER_CONFIG,
     DEV_VIEWERS,
+    dev_view_modes,
 )
 from ui.menu_view import (
     DevAudioView,
@@ -257,7 +257,7 @@ def _dev_view(state: MenuState, ctx: MenuViewContext) -> Any:
     if viewer in DEV_MODE_VIEWERS:
         modes = [
             DevChoice(DEV_MODE_LABELS[mode], i, i == state.dev_mode)
-            for i, mode in enumerate(DEV_VIEW_MODES)
+            for i, mode in enumerate(dev_view_modes(viewer))
         ]
     return DevViewerView(
         texts.labels[viewer], hint, back, index, item, position, scrub, shown, columns, modes

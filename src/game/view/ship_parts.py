@@ -52,6 +52,10 @@ CORE_RADIUS = 0.8  # relative to the nacelle radius
 # The reactors' section (owner, 2026-11-11: "make the ship reactor rounded hexagons", D-330): a
 # hexagon, a flat face on top, its corners rounded by arcs of `REACTOR_CORNER_STEPS` points whose
 # radius is `REACTOR_ROUNDING` times the nacelle's. The flame's cones are hexagonal too.
+# A nacelle's taper behind its front: `[z, radius]` as shares of its length (from its middle) and
+# of its radius.
+NACELLE_TAPER = [[0.3, 1.0], [-0.4, 0.95], [-0.5, 0.85]]
+
 REACTOR_SIDES = 6
 REACTOR_ROUNDING = 0.3
 REACTOR_CORNER_STEPS = 3
@@ -84,7 +88,7 @@ REACTOR_INTAKE_DUCT = [[0.45, 0.74], [0.3, 0.71], [0.04, 0.67]]
 # "make the fins merge into the outer ring on all reactors"); the room they have, the duct
 # lining's radius.
 REACTOR_INTAKE_FAN = {"z": 0.1, "radius": 0.68}
-REACTOR_INTAKE_FINS: dict[str, Any] = {"front": 0.46, "ring": 0.8, "room": 0.71}
+REACTOR_INTAKE_FINS = {"front": 0.46, "ring": 0.8, "room": 0.71}
 # Every intake's fins (the main reactors', the wing tips', the secondary scoops') are this thick
 # and this deep in model units, whatever the size of the intake and the stretch of its frame
 # (owner: "equalize the size of the fins between the different intakes", D-350): only their width
@@ -236,14 +240,38 @@ def hexagon_band(
     return mesh
 
 
-def _add_reactor_rings(name: str, size: dict[str, float], root: Any, sides: int) -> None:
-    """Accent rings around the front of the nacelle and its nozzle, rounded hexagons as it is."""
+def _add_reactor_rings(
+    name: str, size: dict[str, float], root: Any, sides: int, front: bool = True
+) -> None:
+    """Accent rings around the front of the nacelle and its nozzle, rounded hexagons as it is.
+
+    Without `front`, the nozzle's only (D-385: a nacelle inside a body, its front ring hidden in
+    it, or poking through its sides).
+    """
     radius = size["radius"]
     length = size["length"]
     half = radius * 0.09  # half the ring's width and thickness
     accent = get_ship_materials(root.getScene()).accent
-    for ring, z, scale in [("front", length * 0.3, 1.02), ("rear", -length / 2, 0.9)]:
+    rings: list[tuple[str, float, float]] = [
+        ("front", length * 0.3, 1.02),
+        ("rear", -length / 2, 0.9),
+    ]
+    for ring, z, scale in rings if front else rings[1:]:
         hexagon_band(name + "-" + ring + "-ring", z, radius * scale, half, accent, root, sides)
+
+
+def raked_sections(sections: list[Any], rake: Any, keep: int) -> list[Any]:
+    """Return `sections` with each ring point moved along Z by `rake(y)` (D-364).
+
+    The last `keep` sections stay where they are (an intake's back, against its fan face).
+    """
+    if rake is None:
+        return sections
+    moved = len(sections) - keep
+    return [
+        [s[0], [[p[0], p[1], rake(p[1])] for p in s[1]]] if k < moved else s
+        for k, s in enumerate(sections)
+    ]
 
 
 def add_reactor_intake(
@@ -253,12 +281,15 @@ def add_reactor_intake(
     root: Any,
     sides: int = REACTOR_SIDES,
     stretch: float = 1.0,
+    rake: Any = None,
 ) -> Any:
     """Add an intake at `front` along Z of `root`, `sides` round (D-337); return its node.
 
     A hull-metal scoop, straight and flush with the nacelle, then angled in; inside, a
     matte black duct (D-347), a dark fan face and horizontal fins across the duct (D-338).
     `stretch` is how much `root`'s frame is stretched upright, so the fins keep their size (D-350).
+    `rake`, a function of the height in `root`'s frame, moves the mouth along Z by its value there,
+    the inner lip and the duct's back staying against the fan face (D-364).
     """
     scene = root.getScene()
     mats = get_ship_materials(scene)
@@ -266,14 +297,16 @@ def add_reactor_intake(
     node.position.z = front
     node.parent = root
     profile = [[p[0] * radius, p[1] * radius] for p in REACTOR_INTAKE]
-    sections = _hexagon_sections(profile, REACTOR_CORNER_STEPS, sides)
+    sections = raked_sections(_hexagon_sections(profile, REACTOR_CORNER_STEPS, sides), rake, 1)
     shell = create_section_loft(name + "-intake-shell", sections, len(sections[0][1]), scene)
     shell.material = mats.hull
     shell.parent = node
     # The duct's lining: a loft faces outward, turned round it faces the axis, seen through the
     # mouth (the metals cull their back faces).
     duct_profile = [[p[0] * radius, p[1] * radius] for p in REACTOR_INTAKE_DUCT]
-    duct_sections = _hexagon_sections(duct_profile, REACTOR_CORNER_STEPS, sides)
+    duct_sections = raked_sections(
+        _hexagon_sections(duct_profile, REACTOR_CORNER_STEPS, sides), rake, 1
+    )
     duct = create_section_loft(name + "-intake-duct", duct_sections, 0, scene)
     duct.flipFaces(True)
     duct.material = mats.intakeBlack
@@ -287,7 +320,7 @@ def add_reactor_intake(
     face.position.z = fan["z"] * radius
     face.material = mats.intakeBlack
     face.parent = node
-    _add_intake_fins(name, radius, mats.hullMid, node, sides, stretch)
+    _add_intake_fins(name, radius, mats.hullMid, node, sides, stretch, rake)
     return node
 
 
@@ -330,9 +363,18 @@ def intake_fin_thickness(stretch: float) -> float:
 
 
 def _add_intake_fins(
-    name: str, radius: float, material: Any, parent: Any, sides: int, stretch: float
+    name: str,
+    radius: float,
+    material: Any,
+    parent: Any,
+    sides: int,
+    stretch: float,
+    rake: Any = None,
 ) -> None:
-    """Add the horizontal fins across the intake's duct, in front of its fan face (D-338)."""
+    """Add the horizontal fins across the intake's duct, in front of its fan face (D-338).
+
+    With a `rake` (D-364), each fin moves along Z with the mouth at its height.
+    """
     fins = REACTOR_INTAKE_FINS
     front = fins["front"] * radius
     back = front - INTAKE_FIN_SIZE["depth"]
@@ -345,6 +387,8 @@ def _add_intake_fins(
         outline = [[-half, front], [half, front], [half, back], [-half, back]]
         fin = panel(name + "-intake-fin-" + str(k), outline, thickness, material, parent)
         fin.position.y = y
+        if rake is not None:
+            fin.position.z = rake(y)
 
 
 def build_reactor(
@@ -354,11 +398,13 @@ def build_reactor(
     intake: bool = False,
     sides: int = REACTOR_SIDES,
     stretch: float = 1.0,
+    front_ring: bool = True,
 ) -> Any:
     """Build a reactor centred on its origin, thrusting towards -Z: a rounded hexagon nacelle.
 
     Plus a glowing blue core at the nozzle and an animated blue flame behind it (GFX-SHIP-06), and
-    with `intake`, an intake at its front (D-330).
+    with `intake`, an intake at its front (D-330). Without `front_ring`, no accent ring round its
+    front (D-385).
     """
     mats = get_ship_materials(scene)
     radius = size["radius"]
@@ -368,20 +414,15 @@ def build_reactor(
     # With an intake, the nacelle runs on at full size to its front, where the intake's skin
     # carries it on flush (D-340: no bump round the intake); without one, it closes in.
     front = radius if intake else radius * 0.75
-    profile = [
-        [length / 2, 0],
-        [length / 2, front],
-        [length * 0.3, radius],
-        [-length * 0.4, radius * 0.95],
-        [-length / 2, radius * 0.85],
-        [-length / 2, 0],
-    ]
+    profile = [[length / 2, 0], [length / 2, front]]
+    profile.extend([[length * p[0], radius * p[1]] for p in NACELLE_TAPER])
+    profile.append([-length / 2, 0])
     sections = _hexagon_sections(profile, REACTOR_CORNER_STEPS, sides)
     nacelle = create_section_loft(name + "-nacelle", sections, len(sections[0][1]), scene)
     nacelle.material = mats.nozzle
     nacelle.parent = root
 
-    _add_reactor_rings(name, size, root, sides)
+    _add_reactor_rings(name, size, root, sides, front_ring)
     if intake:
         add_reactor_intake(name, radius, length / 2, root, sides, stretch)
 

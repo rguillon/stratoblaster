@@ -2,9 +2,11 @@
 """A skin lofted through cross-sections along the Z axis, smooth on top, faceted below.
 
 Each section is `[z, ring]`, the ring a closed loop of `[x, y]` points, every ring with the same
-number of points. Neighbouring sections are joined point to point. The first `smooth_count` points
-of each ring are the smooth part (a ship's upper half): the vertices there get normals averaged
-over the faces round them, so the skin shades as one curved surface; the other faces are flat. A
+number of points; a point may carry a third value, its own offset along Z from the section's `z`
+(a raked or stepped face, D-364). Neighbouring sections are joined point to point. The first
+`smooth_count` points of each ring are the smooth part (a ship's upper half): the vertices there
+get normals averaged over the faces round them, so the skin shades as one curved surface; the
+other faces are flat. A
 section whose ring is a single repeated point closes the skin (a nose or a tail); an end section
 with a real ring is closed by a flat cap.
 
@@ -49,7 +51,8 @@ def _centre(section: Section) -> Vec3:
 
 def _point(section: Section, j: int) -> Vec3:
     p = section[1][j]
-    return [p[0], p[1], section[0]]
+    z: float = section[0] + p[2] if len(p) > 2 else section[0]
+    return [p[0], p[1], z]
 
 
 class _Face:
@@ -93,8 +96,10 @@ def _turned_outward(faces: list[_Face], insides: list[Vec3]) -> list[_Face]:
     return faces
 
 
-def _faces(sections: list[Section], smooth_count: int) -> list[_Face]:
-    """Every triangle between neighbouring sections."""
+def _faces(
+    sections: list[Section], smooth_count: int, flat: list[int] | None = None
+) -> list[_Face]:
+    """Every triangle between neighbouring sections; those of the `flat` segments flat-shaded."""
     faces: list[_Face] = []
     insides: list[Vec3] = []
     count = len(sections[0][1])
@@ -106,7 +111,7 @@ def _faces(sections: list[Section], smooth_count: int) -> list[_Face]:
         inside = [(ca[k] + cb[k]) / 2 for k in range(3)]
         for j in range(count):
             k = (j + 1) % count
-            smooth = j + 1 < smooth_count
+            smooth = j + 1 < smooth_count and (flat is None or s not in flat)
             corners = [[s, j], [s, k], [s + 1, k], [s + 1, j]]
             keys = [str(c[0]) + ":" + str(c[1]) for c in corners]
             points = [_point(sections[c[0]], c[1]) for c in corners]
@@ -140,15 +145,24 @@ def _cap(sections: list[Section], s: int, toward: int) -> list[_Face]:
 def build_section_loft(
     sections: list[Section],
     smooth_count: int,
+    cap_first: bool = True,
+    cap_last: bool = True,
+    flat_segments: list[int] | None = None,
 ) -> tuple[list[float], list[int], list[float]]:
     """Return the positions, indices and normals of the skin through `sections`.
 
     Each face has its own vertices; the smooth part's share normals by ring point and section.
+    `cap_first` and `cap_last` close its end sections; an end hidden inside another part can be
+    left open, to spare its triangles (D-367). The `flat_segments` (by the index of their first
+    section) stay flat-shaded, their normals not shared with their neighbours', so the edges
+    round them read crisp in a smooth skin.
     """
-    faces = _faces(sections, smooth_count)
+    faces = _faces(sections, smooth_count, flat_segments)
     last = len(sections) - 1
-    faces.extend(_cap(sections, 0, 1))
-    faces.extend(_cap(sections, last, last - 1))
+    if cap_first:
+        faces.extend(_cap(sections, 0, 1))
+    if cap_last:
+        faces.extend(_cap(sections, last, last - 1))
     shared: dict[str, Vec3] = {}
     for face in faces:
         if face.smooth:
@@ -167,9 +181,19 @@ def build_section_loft(
     return positions, indices, normals
 
 
-def create_section_loft(label: str, sections: list[Section], smooth_count: int, scene: Any) -> Any:
+def create_section_loft(
+    label: str,
+    sections: list[Section],
+    smooth_count: int,
+    scene: Any,
+    cap_first: bool = True,
+    cap_last: bool = True,
+    flat_segments: list[int] | None = None,
+) -> Any:
     """Create the mesh of the skin through `sections` (see `build_section_loft`)."""
-    positions, indices, normals = build_section_loft(sections, smooth_count)
+    positions, indices, normals = build_section_loft(
+        sections, smooth_count, cap_first, cap_last, flat_segments
+    )
     mesh = new_mesh(label, scene)
     apply_vertex_data(vertex_data_of(positions, indices, normals), mesh)
     return mesh

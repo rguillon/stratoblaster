@@ -159,3 +159,44 @@ def test_gfx_ship_01_the_fins_stand_one_spacing_apart_round_the_middle() -> None
     assert gaps == {size["spacing"]}
     assert max(heights) + size["thickness"] / 2 <= 0.1876
     assert ship_parts.intake_fin_heights(0.04) == [0.0]
+
+
+def test_gfx_ship_01_raked_sections_move_each_point_by_its_height_but_the_kept_back() -> None:
+    """D-364: each ring point gets its own Z offset, the last `keep` sections none."""
+    sections = [[1.0, [[0.0, 1.0], [0.0, -1.0]]], [0.0, [[0.0, 1.0], [0.0, -1.0]]]]
+    raked = ship_parts.raked_sections(sections, lambda y: 0.5 if y > 0 else 0.0, 1)
+    assert raked[0] == [1.0, [[0.0, 1.0, 0.5], [0.0, -1.0, 0.0]]]
+    assert raked[1] is sections[1]
+    assert ship_parts.raked_sections(sections, None, 1) is sections
+
+
+def test_gfx_ship_01_a_raked_intakes_mouth_and_fins_move_its_back_stays(monkeypatch: Any) -> None:
+    """D-364: the shell's and duct's fronts and the fins follow the rake; their backs do not."""
+    stub_babylon(monkeypatch, ship_parts)
+    monkeypatch.setattr(ship_parts, "get_ship_materials", lambda _scene: MagicMock())
+    lofts: dict[str, Any] = {}
+
+    def loft(name: str, sections: Any, *_args: Any) -> Any:
+        lofts[name] = sections
+        return MagicMock(name=name)
+
+    fins: dict[str, Any] = {}
+
+    def panel(name: str, *_args: Any) -> Any:
+        fins[name] = MagicMock(name=name)
+        return fins[name]
+
+    monkeypatch.setattr(ship_parts, "create_section_loft", loft)
+    monkeypatch.setattr(ship_parts, "panel", panel)
+
+    def rake(y: float) -> float:
+        return 0.1 if y > 0 else 0.0
+
+    ship_parts.add_reactor_intake("r", 0.124, 0.0, MagicMock(name="root"), 8, 2.05, rake)
+    for name in ["r-intake-shell", "r-intake-duct"]:
+        front = lofts[name][0][1]
+        assert {p[2] for p in front if p[1] > 0} == {0.1}
+        assert {p[2] for p in front if p[1] < 0} == {0.0}
+        assert all(len(p) == 2 for p in lofts[name][-1][1])
+    for fin in fins.values():
+        assert fin.position.z == rake(fin.position.y)

@@ -3,7 +3,7 @@
 
 An original design. A long, slim, faceted central body with a needle nose and a bubble canopy set
 forward, a spine ridge, dark seams and vents, closing to a point at its tail, with no reactor at its
-back; canards; a gun pod under its belly. Two big rounded hexagon reactor nacelles stand out either
+back; a gun pod under its belly. Two big rounded hexagon reactor nacelles stand out either
 side, each with its intake, joined to the body by its strakes (D-336). From each nacelle a
 forward-swept wing runs out to twin reactors one over the other on its tip, wrapped in one body
 with one intake, a canted tail on its top and a ventral fin under it (D-353). A missile launcher
@@ -36,7 +36,6 @@ from game.view.ship_hull import (
     BELLY_DEPTH,
     BODY_HALF_WIDTH,
     CHINE_EDGE,
-    CHINE_HALF_WIDTH,
     CHINE_ROOT,
     STATIONS,
     hull_section,
@@ -48,18 +47,25 @@ from game.view.ship_hull import (
 from game.view.ship_materials import get_ship_materials
 from game.view.ship_parts import (
     INTAKE_FIN_SIZE,
+    NACELLE_TAPER,
     PART_FACETS,
+    REACTOR_CORNER_STEPS,
+    REACTOR_INTAKE,
+    REACTOR_INTAKE_DUCT,
+    REACTOR_INTAKE_FINS,
+    REACTOR_ROUNDING,
+    REACTOR_SIDES,
     add_reactor_intake,
     build_reactor,
     disc_options,
     edge_strip,
     faceted_rod,
-    hexagon_band,
     intake_fin_heights,
     intake_fin_thickness,
     mirror_x,
     panel,
     plate,
+    polygon_turn,
 )
 
 # create_disc: render/babylon.py.
@@ -74,10 +80,9 @@ from render.geometry.lathe_z import (
 )
 from render.geometry.section_loft import (
     create_section_loft,
-    polygon_lathe_sections,
+    rounded_polygon,
     rounded_rectangle,
 )
-from render.model_animation import SIDEWAYS, add_model_animation, model_input
 
 # isort: split
 # __pragma__ ("skip")
@@ -93,34 +98,21 @@ Scene = Any
 # back (D-333, owner: "move the wings more to the back"; 0.6 further forward before). D-360 (owner:
 # "make the wings stop at the junction with the outer reactors"): its tip stops at 1.78, in the
 # tip fairing against the tilting pod's flank, its edges' sweep kept (it ran on past the pods to
-# 2.3, D-339).
+# 2.3, D-339). D-371 (owner: "remove the ability to rotate for the secondary reactors and joint
+# geometry"): with no fairing, its tip runs on along its edges' sweep to 1.87, a little into the
+# fixed pod's flank (1.855).
+# D-383 (owner: "move the junction between the front of the wings and the main body to the front,
+# the wings will be wider at the main hull level"): its root's leading edge at z -0.3 (-0.7), its
+# tip where it was, so its chord is longer where it meets the body.
 MAIN_WING = [
-    [0.8, -0.7],
-    [1.76, -0.076],
-    [1.78, -0.096],
-    [1.78, -0.903],
+    [0.8, -0.3],
+    [1.85, -0.0175],
+    [1.87, -0.0375],
+    [1.87, -0.816],
     [0.8, -1.85],
 ]
-# D-360 (owner: "create a better looking junction between the wing and the outer reactor"): the
-# wing's tip ends in a fairing along its chord, a slim rounded box standing a little over and under
-# the wing, its flat outer face against the pod's flank, which turns along it as a tiltrotor's
-# nacelle does on its wing tip (owner: "remove the small joint between the wing and the side
-# reactor": a hub on the pivot axis joined them, across a gap, at first). The fairing: its middle's
-# X, its half width and half height, its corners, its front and back Z, how far its ends taper
-# (the share of its length at each end, and their size there).
-TIP_FAIRING = {
-    "x": 1.815,
-    "halfWidth": 0.035,
-    "halfHeight": 0.06,
-    "corner": 0.03,
-    "front": 0.0,
-    "back": -1.0,
-    "taper": 0.12,
-    "end": 0.45,
-}
 # D-336: the stub wings joining the body to the nacelles (D-332) are now the body's own strakes
-# (`ship_hull.py`). Their glowing leading edge follows the strakes' curve, at these Z.
-STRAKE_EDGE_ZS = [0.85, 0.6, 0.35, 0.1, -0.1, -0.3]
+# (`ship_hull.py`); their leading edge glowed until D-370.
 # D-356 (owner: "the central wing shall be oriented the other way (the entier wings will form a
 # W)"): behind the body's square back the strakes run on into the nacelles, their trailing edge
 # swept forward from the nacelle to the body's back corner, the way the main wings' runs from their
@@ -171,19 +163,12 @@ WING_LINES = [
     ]
     for x in WING_LINE_XS
 ]
-CANARD = [
-    [0.22, 1.12],
-    [0.68, 0.86],
-    [0.7, 0.74],
-    [0.22, 0.8],
-]
-# The canards' thickness; they lie with their top face at the body's chine edge, as the wings do
-# (D-333, owner: "lower the front wings so their highlight is aligned to the cockpit one"; 0.045
-# higher before, their trim above the body's).
-CANARD_THICKNESS = 0.04
 # The glowing leading edges (D-335): the strip's width across the edge and its thickness, a hair
-# thicker than the panel it caps.
-EDGE_GLOW = {"width": 0.035, "wing": WING_THICKNESS + 0.006, "canard": CANARD_THICKNESS + 0.006}
+# thicker than the panel it caps. D-363 (owner: "remove the little front wings"): no canards.
+# D-370 (owner: "remove the glow in the main body and wings, only keep the ones on the vertical
+# wings"): only the tails and ventral fins glow; the main wings', strakes' and canopy rails' are
+# gone. The width stays the canopy rails' scale.
+EDGE_GLOW = {"width": 0.035, "wing": WING_THICKNESS + 0.006}
 TAIL = [
     [0, -0.75],
     [0.85, -1.35],
@@ -223,17 +208,38 @@ OCTAGON = 8
 # D-348 (owner: "rework the secondary intakes, smoth them a little and add fins like the others"):
 # a rounded arch, smooth-shaded (`corner`), the ramp easing down over `rampSteps` sections after a
 # short straight `lip`; flat fins across the mouth at these shares of its height from its middle.
+# D-367 (owner: "rework the upper side of the secondary intake, make a better looking junction
+# with the main reactor"): its top a gentle arch (`crown`, a share of its half width), rounded
+# shoulders, and concave fillets `flare` wide running it into the nacelle's flat top and chamfers
+# (a straight-walled box sunk in them before), its base following the nacelle's taper; the ramp
+# eases down over 4 sections as before. In front of the nacelle, over the main intake, the
+# fillets fade out over `flareRun`. The fillets', shoulders' and crown's points per side.
+# D-366 (owner: "make the auxiliary intakes on the main reactor more to the front, they shall go
+# beyong the main intakes"; then "more the auxiliary intakes more to the front"): their front at
+# 1.3, well out past the nacelle's front (1.0) and the main intake's lip (1.1), overhanging it
+# (0.5, halfway along the nacelle, before).
+# D-368 (owner: "remove the under secondary intakes on the main reactors"): on the top only.
+# D-369 (owner: "rework the secondary intakes, it looks too flat, make it similar to the other
+# intakes"; a short collar round a flat black face, the fins at its rim, before): its mouth is
+# built as the main intakes are, on its own arch: the skin runs on straight from the scoop's
+# front, angles in to a thin lip and turns back into a matte black duct, the fins across the
+# duct, their ends in the lip's wall. The main intake's profiles (`REACTOR_INTAKE*`, in radii)
+# scale the scoop's front section round its middle, in units of its half width (`radius`).
 REACTOR_SCOOP: dict[str, Any] = {
-    "front": 0.5,
+    "front": 1.3,
     "back": -1.0,
     "width": 0.21,
     "height": 0.13,
     "sink": 0.02,
-    "mouth": 0.8,
     "corner": 0.035,
     "lip": 0.06,
     "rampSteps": 4,
-    "collar": 0.04,
+    "crown": 0.12,
+    "flare": 0.035,
+    "flareRun": 0.06,
+    "filletSteps": 1,
+    "cornerSteps": 2,
+    "crownSteps": 1,
 }
 
 # The guns under the belly (D-339, owner: "rework the undergun, make a cool looking laser and add
@@ -243,9 +249,9 @@ REACTOR_SCOOP: dict[str, Any] = {
 # `[z, half width, depth under the belly]`, back to front, closed at both ends.
 GUN_FAIRING = [
     [-0.8, 0, 0],
-    [-0.45, 0.18, 0.07],
-    [0.3, 0.27, 0.11],
-    [1.3, 0.25, 0.09],
+    [-0.45, 0.24, 0.07],
+    [0.3, 0.33, 0.11],
+    [1.3, 0.31, 0.09],
     [2.55, 0.08, 0.07],
     [2.85, 0, 0],
 ]
@@ -281,14 +287,48 @@ LASER_EMITTER = [[3.68, 0], [3.65, 0.022], [3.61, 0.03], [3.6, 0]]
 # hollow at its muzzle, a bore of `bore.radius` of the barrel's, `bore.depth` deep. D-346 ("spread
 # the minguns a little more"): 0.21 out from the centre line (0.17 before). D-349 ("and spread the
 # minigun more again"): 0.27, the fairing widened under the body's flanks to keep them half in it.
+# D-365 ("spread the minigun"): 0.39 (0.33, D-358), the fairing 0.06 wider again.
 MINIGUN: dict[str, Any] = {
-    "x": 0.33,
+    "x": 0.39,
     "y": -0.195,
     "z": 0.75,
     "drum": {"length": 0.9, "radius": 0.085},
-    "barrels": {"count": 6, "ring": 0.048, "radius": 0.021, "length": 0.5, "z": 0.65},
+    # D-389 (owner: "rework the minigun body, make it look cool, better than a single tube"): the
+    # drum's profile, `[z, radius]` back to front: a small rear cap and a chamfer (the motor's
+    # housing), two raised cooling ribs, a long run, then a flared collar the barrels come out of;
+    # its steps flat-shaded, its sides smooth (D-388).
+    "drumProfile": [
+        [-0.45, 0.0],
+        [-0.45, 0.045],
+        [-0.4, 0.07],
+        [-0.32, 0.07],
+        [-0.32, 0.092],
+        [-0.28, 0.092],
+        [-0.28, 0.08],
+        [-0.2, 0.08],
+        [-0.2, 0.092],
+        [-0.16, 0.092],
+        [-0.16, 0.085],
+        [0.32, 0.085],
+        [0.38, 0.098],
+        [0.45, 0.098],
+        [0.45, 0.0],
+    ],
+    "barrels": {
+        "count": 6,
+        "ring": 0.048,
+        "radius": 0.021,
+        "length": 0.5,
+        "z": 0.65,
+        "turn": math.pi / 6,
+    },
     "bore": {"radius": 0.55, "depth": 0.06},
-    "clamp": {"z": 0.68, "radius": 0.078, "half": 0.014},
+    # D-389 (owner: "move the small ring of the minigun to the back"): just ahead of the drum's
+    # collar (0.68 before).
+    "clamp": {"z": 0.5, "radius": 0.078, "half": 0.014},
+    # D-386: a second, thicker clamp near the muzzles, their last 0.046 bare. D-387 (owner: "make
+    # it 3 times thicker"): 0.144 deep (0.048), its front where it was, so it grows backwards.
+    "muzzleClamp": {"z": 0.782, "radius": 0.08, "half": 0.072},
 }
 
 # Dark panel seams round the body (D-336): their Z, their half width along Z and how much larger
@@ -325,28 +365,63 @@ VISOR_PROFILE = [[1.08, 0.0], [0.62, 0.86], [0.2, 1.06]]
 # "make the missile pods octogonal"): a crisp octagon, flat on top, bottom and sides, flat-shaded
 # with barely rounded corners, stretched upright (`stretch`), its axis in the wing's plane so the
 # wing runs through it; no pylon (it hung under the wing on one before).
-MISSILE_POD: dict[str, Any] = {"x": 1.3, "y": 0.0, "z": -0.4, "stretch": 1.35}
-MISSILE_POD_ROUNDING = 0.08
-MISSILE_POD_PROFILE = [
-    [0.58, 0],
-    [0.58, 0.085],
-    [0.53, 0.1],
-    [-0.3, 0.1],
-    [-0.5, 0.065],
-    [-0.58, 0],
-]
-# The band; the launch face; seven tubes (one in the middle, six round it), their missiles' tips.
-MISSILE_BAND: dict[str, Any] = {"z": 0.4, "radius": 0.1, "half": 0.018}
-MISSILE_FACE: dict[str, Any] = {"radius": 0.08}
-MISSILE_TIPS: dict[str, Any] = {"ring": 0.05, "radius": 0.02, "length": 0.07}
-# The tail fins: span along X from the axis, Z from the pod's middle; canted 45° under it, one
-# outwards, one inwards.
-MISSILE_FIN = [
-    [0, -0.22],
-    [0.17, -0.4],
-    [0.17, -0.52],
-    [0, -0.5],
-]
+# D-372 (owner: "make the missile pods wider, taking almost the entier wing, with more missiles";
+# an octagon 0.2 wide and 0.27 high at x 1.3, seven missiles, before): a wide flat launcher, a
+# rounded rectangle in section, spanning the wing from the main nacelle to short of the tip pod
+# (x 1.09 to 1.77), the wing still running through it. Its middle's place, half width, half
+# height and corners; its profile, `[z from its middle, scale of the section]`.
+# D-373 (owner: "use this missile pod, but put one over and one under the wings, moving them to
+# the back a little"): two per wing, their middles `y` over and under the wing's plane, so each
+# sits on the wing's face (half 0.035 thick), and 0.15 further back (-0.4 before). D-374 (owner:
+# "move the missile pods to the back so they dont over the edge of the wings"): their fronts behind
+# the leading edge all along them, which the forward sweep puts furthest back at their inner end
+# (z -0.51 at x 1.09): their middle at -1.12 (-0.55 before).
+# D-376 (owner: "make the missile pods shorter, so their back dont go past the wings too, remove
+# their small wings and rework the junction between the pod and the wing, make it look like it's
+# part of the wing instead of something put on top of it"; rounded boxes 1.16 long sitting on
+# the wing, an accent band round them and two small fins at their tails, before): each pod grows
+# out of the wing's face as the scoops grow out of the main reactors (D-367): a crowned arch in
+# section, its walls run into the wing by concave fillets `flare` wide, its base sunk `sink` in
+# the wing; full height from its front, then its top eases down into the wing towards its back.
+# It lies between the wing's edges across its whole width: the forward sweep sets its front by
+# the leading edge at its inner end and its back by the trailing edge at its outer end. Its
+# middle's X and its half width (at the walls); its front and back Z; its top over the wing's
+# plane; how much of its length stands at full height (the rest a ramp of `rampSteps`).
+MISSILE_POD: dict[str, Any] = {
+    "x": 1.43,
+    "halfWidth": 0.33,
+    # D-393 (owner: "and move the pods to the front a little"): 0.08 forward (-0.52 to -1.1
+    # before), still behind the leading edge, which runs further forward since D-383.
+    "front": -0.44,
+    "back": -1.02,
+    "top": 0.25,
+    "full": 0.45,
+    "rampSteps": 4,
+    "chamfer": 0.03,
+    "tip": 0.01,
+    "flare": 0.04,
+    "sink": 0.02,
+    "gap": 0.015,
+    "corner": 0.05,
+    "crown": 0.06,
+    "filletSteps": 1,
+    "cornerSteps": 2,
+    "crownSteps": 1,
+}
+# D-375 (owner: "rework the missiles, pack more missiles, move the missile plate a little to the
+# back"; 2 rows of 8 bare cones on a plate a hair proud of the pod's front, before): the pod's
+# front is open, lined in dark trim `recess` deep (its share of the front's size), the lining's
+# closed back the plate; the missiles packed in staggered rows (`columns` in the outer rows, one
+# fewer in the middle ones, set half a spacing over), each a nose cone, `[z ahead of the plate,
+# radius]`, its base just inside the recess (bodies behind it were out of sight in the dark and
+# took the ship over its triangle budget, GFX-SHIP-05), its tip standing out of the recess.
+MISSILE_FACE: dict[str, Any] = {"share": 0.85, "recess": 0.04}
+MISSILE_TIPS: dict[str, Any] = {
+    "rows": 3,
+    "columns": 9,
+    "spacing": [0.058, 0.05],
+    "radius": 0.019,
+}
 
 # Twin reactors on each wing tip (owner: "add two reactors on the tip of each wing, with 45° lil
 # wings on each", "make it a dual reactor on the tip of each wing, and add intake to the
@@ -366,20 +441,22 @@ TIP_REACTOR: dict[str, Any] = {
     "radius": 0.11,
     "length": 1.35,
 }
-# D-359 (owner: "make the side reactors rotate like if the plane was a vtol, and make them rotate
-# accordingly when the ship moves left/right"): each wing-tip pod, its tail and ventral fin pivot
-# together round a spanwise axis through the pod's middle on the wing, as a tiltrotor's nacelles
-# do. At rest the nozzles tilt `rest` rad down; moving sideways, the pod away from the move tilts
-# further down and the other one back up, `swing` rad at top sideways speed (both push the ship
-# sideways); the tilt eases towards that at `ease` per second. D-360 (owner: "keep the rotation
-# centered on the horizontal and reduce the rotation range"): level at rest, 15° either way (30°
-# down at rest, 30° either way, before).
-TIP_TILT = {"rest": 0.0, "swing": 0.26, "ease": 5.0}
 TIP_BODY: dict[str, Any] = {"halfWidth": 0.125, "halfHeight": 0.255, "corner": 0.1, "steps": 3}
-TIP_INTAKE: dict[str, Any] = {"radius": 0.124, "stretch": 2.05}
+# D-364 (owner: "rework the intakes of the side reactors, I want the first upper third of the
+# intake to be more on the front, then a diaginal third, and the final vertical third at it's
+# current position"): the intake's mouth, and the body's front round it, are stepped in side view:
+# the upper third `rake` further forward, the middle third a diagonal down to the lower third,
+# upright where it stood. D-384 (owner: "rework the side reactor intakes, make them flat"): no step,
+# the mouth one upright plane where its lower third stood (`rake` 0; 0.12 before).
+# D-385 (owner: "there is something wrong in the side reactor intakes geometry, the link with the
+# front part is ugly, it works well for the main reactors"): the body's section is the intake's
+# rounded octagon, stretched upright, so the intake's skin carries it on flush, as on the main
+# reactors (a rounded rectangle, shrunk at its front, met the octagon with a step before). Its
+# radius 0.135 (0.124), as wide as the rectangle was, its reactors' corners inside it.
+TIP_INTAKE: dict[str, Any] = {"radius": 0.135, "stretch": 2.05, "rake": 0.0}
 TIP_BODY_PROFILE = [
     [0.675, 0],
-    [0.675, 0.9],
+    [0.675, 1.0],
     [0.5, 1.0],
     [-0.48, 1.0],
     [-0.58, 0.82],
@@ -392,8 +469,11 @@ def _build_body(root: Any, scene: Any) -> None:
     mats = get_ship_materials(scene)
     body_root = new_transform_node("ship-body-root", scene)
     body_root.parent = root
-    # One faceted skin (D-336): every face flat-shaded, so the facets' edges read crisp.
-    body = create_section_loft("ship-body", hull_sections(), 0, scene)
+    # One skin (D-336). D-380 (owner: "use the smooth shading on the main hull too"): smooth-shaded
+    # as the pods and nacelles are, its normals shared round each section (every face flat-shaded,
+    # its facets' edges crisp, before).
+    sections = hull_sections()
+    body = create_section_loft("ship-body", sections, len(sections[0][1]), scene)
     body.material = mats.hull
     body.parent = body_root
     for k, z in enumerate(SEAM_ZS):
@@ -529,15 +609,11 @@ def _build_minigun(side: str, sign: float, root: Any, scene: Any) -> None:
     node = new_transform_node(name, scene)
     node.position.set(sign * gun["x"], gun["y"], gun["z"])
     node.parent = root
-    drum = gun["drum"]
-    faceted_rod(
-        name + "-drum",
-        {"length": drum["length"], "radius": drum["radius"]},
-        vector3(0, 0, 0),
-        mats.hull,
-        node,
-        OCTAGON,
-    )
+    # D-387 (owner: "apply the same smooth shader as the rest of the ship"): every part of the gun
+    # smooth-shaded, lofted as the hull and pods are (`smooth_lathe`); faceted lathes before.
+    shell = smooth_lathe(name + "-drum", gun["drumProfile"], OCTAGON, scene)
+    shell.material = mats.hull
+    shell.parent = node
     barrels = gun["barrels"]
     profile = barrel_profile(barrels["length"], barrels["radius"], gun["bore"])
     # The bore, its bottom and wall (the profile's first three points), matte black (owner, D-351:
@@ -547,11 +623,11 @@ def _build_minigun(side: str, sign: float, root: Any, scene: Any) -> None:
     # so its wall faced away from the axis and was culled. Turned round, it faces the axis.
     parts = [("-bore", profile[0:3], mats.intakeBlack), ("", profile[2:], mats.trim)]
     for k in range(barrels["count"]):
-        angle = 2 * math.pi * k / barrels["count"]
+        # D-378 (owner: "rotate the minigins 30° so one barrel is at the vertical top"): the ring
+        # turned `turn` round the axis (a barrel on +X, none on top, before).
+        angle = barrels["turn"] + 2 * math.pi * k / barrels["count"]
         for suffix, part, material in parts:
-            barrel = create_faceted_lathe_along_z(
-                name + "-barrel-" + str(k) + suffix, part, PART_FACETS, scene
-            )
+            barrel = smooth_lathe(name + "-barrel-" + str(k) + suffix, part, PART_FACETS, scene)
             barrel.position.set(
                 barrels["ring"] * math.cos(angle),
                 barrels["ring"] * math.sin(angle),
@@ -561,8 +637,32 @@ def _build_minigun(side: str, sign: float, root: Any, scene: Any) -> None:
                 barrel.flipFaces(True)
             barrel.material = material
             barrel.parent = node
-    clamp = gun["clamp"]
-    hexagon_band(name + "-clamp", clamp["z"], clamp["radius"], clamp["half"], mats.hullDark, node)
+    # D-386 (owner: "simplify the minigun rings, it can be full, and add a second thicker ring
+    # near the point of the guns"): each clamp a solid hexagonal disc the barrels run through (a
+    # hollow band before), turned with the barrels, its corners by them (D-378).
+    for label, clamp in [("clamp", gun["clamp"]), ("muzzle-clamp", gun["muzzleClamp"])]:
+        front = clamp["z"] + clamp["half"]
+        back = clamp["z"] - clamp["half"]
+        disc = [[front, 0], [front, clamp["radius"]], [back, clamp["radius"]], [back, 0]]
+        ring = smooth_lathe(name + "-" + label, disc, 6, scene)
+        ring.rotation.z = barrels["turn"]
+        ring.material = mats.hullDark
+        ring.parent = node
+
+
+def smooth_lathe(name: str, profile: list[list[float]], sides: int, scene: Any) -> Any:
+    """Return a smooth-shaded body of revolution round Z, `sides` round (D-387).
+
+    A section loft as the hull's and the pods' are: a regular polygon (a corner on +X) at each
+    `[z, radius]` of `profile`, its normals shared round each section and along it; a radius of
+    0 closes it there. Its faces across the axis stay flat-shaded (D-388).
+    """
+    angles = [2 * math.pi * k / sides for k in range(sides)]
+    sections = [[p[0], [[p[1] * math.cos(a), p[1] * math.sin(a)] for a in angles]] for p in profile]
+    # D-388 (owner: "dont apply the shader on the front/back sides of the rings and minigun
+    # body"): the flat faces across the axis (ends, rims) stay flat-shaded, edges crisp.
+    flat = [k for k in range(len(profile) - 1) if profile[k][0] == profile[k + 1][0]]
+    return create_section_loft(name, sections, sides, scene, False, False, flat)
 
 
 def _build_seam(name: str, z: float, material: Any, parent: Any, scene: Any) -> None:
@@ -590,7 +690,9 @@ def _build_cockpit(root: Any, scene: Any, glow_width: float) -> None:
             0,
             scene,
         )
-        rail.material = mats.edgeGlow
+        # D-370 (owner: "remove the glow in the main body and wings, only keep the ones on the
+        # vertical wings"): gunmetal, as the bow (they glowed before).
+        rail.material = mats.hullDark
         rail.parent = root
     bow = BOW
     half_width = bow["width"] / 2
@@ -646,7 +748,7 @@ def _build_cockpit_inside(root: Any, scene: Any) -> None:
 
 
 def _build_wing(side: str, sign: float, root: Any, scene: Any) -> None:
-    """Build a forward-swept main wing, its flap and panel lines, and the canard.
+    """Build a forward-swept main wing, its flap and panel lines (no canard, D-363).
 
     The main wing runs out of the nacelle; the body's strakes join the nacelle to the body (D-336).
     """
@@ -669,9 +771,6 @@ def _build_wing(side: str, sign: float, root: Any, scene: Any) -> None:
     for k, line in enumerate(WING_LINES):
         name = "ship-wing-" + side + "-line-" + str(k)
         plate(name, mirror(line), WING_THICKNESS / 2, mats.hullDark, wing)
-    canard = panel("ship-canard-" + side, mirror(CANARD), CANARD_THICKNESS, mats.hullMid, wing)
-    # Its top face at the body's chine edge, so its trim runs on from the body's (D-333).
-    canard.position.y = CHINE_EDGE - CANARD_THICKNESS / 2
 
 
 def _centre(outline: list[list[float]]) -> list[float]:
@@ -680,41 +779,6 @@ def _centre(outline: list[list[float]]) -> list[float]:
         sum(p[0] for p in outline) / len(outline),
         sum(p[1] for p in outline) / len(outline),
     ]
-
-
-def _build_edge_glow(side: str, sign: float, root: Any, scene: Any, glow_width: float) -> None:
-    """Build the glowing leading edges of a side's wing, strake and canard (D-335, D-336).
-
-    The extremities glow in place of a trim round the ship: the main wing's leading edge from
-    root to tip, the body's strake's, and the canard's leading edge and tip. The guns get none.
-    """
-    mats = get_ship_materials(scene)
-
-    def mirror(points: list[list[float]]) -> list[list[float]]:
-        return points if sign > 0 else mirror_x(points)
-
-    wing_size = {"width": glow_width, "thickness": EDGE_GLOW["wing"]}
-    canard_size = {"width": glow_width, "thickness": EDGE_GLOW["canard"]}
-    name = "ship-glow-" + side
-    # The main wing's, from its root to its tip at the fairing (D-360).
-    wing = mirror(MAIN_WING)
-    edge_strip(name + "-wing", [wing[0], wing[1]], _centre(wing), wing_size, mats.edgeGlow, root)
-    # The strake's leading edge, one strip between each two of its points (D-336).
-    strake = mirror([[station_at(z)[CHINE_HALF_WIDTH], z] for z in STRAKE_EDGE_ZS])
-    for k in range(len(strake) - 1):
-        edge = [strake[k], strake[k + 1]]
-        edge_strip(name + "-strake-" + str(k), edge, [0, -0.6], wing_size, mats.edgeGlow, root)
-    canard = mirror(CANARD)
-    for k in range(2):
-        strip = edge_strip(
-            name + "-canard-" + str(k),
-            [canard[k], canard[k + 1]],
-            _centre(canard),
-            canard_size,
-            mats.edgeGlow,
-            root,
-        )
-        strip.position.y = CHINE_EDGE - CANARD_THICKNESS / 2
 
 
 def _build_tails(side: str, sign: float, root: Any, scene: Any, glow_width: float) -> None:
@@ -768,60 +832,126 @@ def _glow_edges(
         edge_strip(name + "-" + str(k), edge, _centre(outline), size, material, parent)
 
 
-def _build_missile_tips(name: str, front: float, material: Any, parent: Any) -> None:
-    """Add the seven missiles' tips poking out of a launch face at `front`.
+def _build_missile_tips(name: str, plate: float, material: Any, parent: Any) -> None:
+    """Add the missiles' black launch holes on a launch plate at `plate`, packed in rows.
 
-    One in the middle, six round it, between the hexagon's corners.
+    D-375: staggered rows. D-391 (owner: "change the look of the missiles, create black holes for
+    the missiles instead of showing missile tips"): a matte black octagonal disc a hair proud of
+    the plate where each missile is, facing forward (a cone standing out of it before).
     """
     tips = MISSILE_TIPS
-    profile = [[tips["length"], 0], [0, tips["radius"]], [0, 0]]
-    places = [[0.0, 0.0]]
-    for k in range(6):
-        angle = math.pi / 6 + k * math.pi / 3
-        places.append([tips["ring"] * math.cos(angle), tips["ring"] * math.sin(angle)])
-    for k, place in enumerate(places):
-        tip = create_faceted_lathe_along_z(name + "-tip-" + str(k), profile, 4, parent.getScene())
-        tip.position.set(place[0], place[1], front)
-        tip.material = material
-        tip.parent = parent
+    spacing = tips["spacing"]
+    k = 0
+    for row in range(tips["rows"]):
+        y = (row - (tips["rows"] - 1) / 2) * spacing[1]
+        # The middle rows sit half a spacing over, one missile fewer, packed in the gaps.
+        columns = tips["columns"] - (row % 2)
+        for column in range(columns):
+            x = (column - (columns - 1) / 2) * spacing[0]
+            hole = create_disc(
+                name + "-hole-" + str(k), disc_options(tips["radius"], OCTAGON), parent.getScene()
+            )
+            hole.convertToFlatShadedMesh()
+            # A disc faces -Z: turned round, it faces forward.
+            hole.rotation.y = math.pi
+            hole.position.set(x, y, plate + 0.002)
+            hole.material = material
+            hole.parent = parent
+            k += 1
 
 
-def _build_missile_pod(side: str, sign: float, root: Any, scene: Any) -> None:
-    """Build the missile launcher through a wing: pod, launch face, missiles, band, fins."""
+def missile_pod_sections(up: float) -> list[Any]:
+    """Return a missile pod's sections, front to back, `up` 1 on the wing's top (D-376).
+
+    Each a crowned arch filleted into the wing's face (`scoop_ring` with the pod's shape), full
+    height from the front, then easing down into the wing along a half cosine to its back.
+    """
+    pod = MISSILE_POD
+    face = WING_THICKNESS / 2
+    front = pod["front"]
+    back = pod["back"]
+    ramp = front - (front - back) * pod["full"]
+    zs = [front - pod["chamfer"]]
+    steps = pod["rampSteps"]
+    zs.extend([ramp + (back - ramp) * k / steps for k in range(steps + 1)])
+    sections: list[Any] = []
+    for z in zs:
+        t = max(0.0, (ramp - z) / (ramp - back))
+        ease = (1 + math.cos(math.pi * t)) / 2
+        # D-392 (owner: "separate them from the wings a little, the lower part conflicts with the
+        # wing geometry"): its base `gap` clear of the wing's face (sunk 0.02 in it, before); its
+        # top eases down to just over its base.
+        bottom = face + pod["gap"]
+        top = bottom + max(0.01, (pod["top"] - bottom) * ease)
+        # D-379 (owner: "shift the back of the missile pods to the back a little keep the triangular
+        # end but make a longer body"): back at -1.1 (-0.9), full height over 0.45 of the length
+        # (0.35); the tapering tail stays inside the trailing edge, which runs further back
+        # towards the body.
+        # D-377 (owner: "rework the back of the missile pods, make it triangular, not flat"): over
+        # the ramp it narrows to a point too, a triangle seen from above (full width to its back,
+        # a straight edge across, before).
+        half = max(pod["tip"], pod["halfWidth"] * (1 - t))
+        # D-390 (owner: "rework the missile pods, it's revert to an pod that is attached to the
+        # wing"; asked, separate pods on the wing again): a rounded box from its base, sunk `sink`
+        # in the wing's face, to its top, no fillets into the wing (a filleted arch, D-376).
+        half_height = (top - bottom) / 2
+        corner = min(pod["corner"], half, half_height)
+        box = rounded_rectangle(half, half_height, corner, pod["cornerSteps"])
+        centre = (top + bottom) / 2
+        sections.append([z, [[p[0], up * (centre + p[1])] for p in box]])
+    # Its front edge chamfered in to the recess's lining, which it meets, so no gap opens onto
+    # the inside of its skin (D-376).
+    middle = up * missile_face_middle()
+    share = MISSILE_FACE["share"]
+    rim = [[p[0] * share, middle + (p[1] - middle) * share] for p in sections[0][1]]
+    sections.insert(0, [front, rim])
+    return sections
+
+
+def missile_face_middle() -> float:
+    """Return the height of a missile pod's front's middle over the wing's plane (D-376, D-390)."""
+    pod = MISSILE_POD
+    middle: float = (pod["top"] + WING_THICKNESS / 2 + pod["gap"]) / 2
+    return middle
+
+
+def _build_missile_pods(side: str, sign: float, root: Any, scene: Any) -> None:
+    """Build a wing's two missile launchers, one on its top and one under it (D-373)."""
+    for level, up in [("upper", 1.0), ("lower", -1.0)]:
+        _build_missile_pod(side + "-" + level, sign, up, root, scene)
+
+
+def _build_missile_pod(side: str, sign: float, up: float, root: Any, scene: Any) -> None:
+    """Build a missile launcher grown out of a wing's face: its fairing, recess and missiles.
+
+    `up` 1 on the wing's top, -1 under it (D-373); filleted into the wing (D-376).
+    """
     mats = get_ship_materials(scene)
     pod = MISSILE_POD
+    face = MISSILE_FACE
     name = "ship-missiles-" + side
     node = new_transform_node(name, scene)
-    node.position.set(sign * pod["x"], pod["y"], pod["z"])
-    node.scaling.y = pod["stretch"]
+    node.position.x = sign * pod["x"]
     node.parent = root
-    sections = polygon_lathe_sections(
-        MISSILE_POD_PROFILE, OCTAGON, MISSILE_POD_ROUNDING, 2, math.pi / OCTAGON
-    )
-    shell = create_section_loft(name + "-pod", sections, 0, scene)
+    sections = missile_pod_sections(up)
+    # Its front open round the recess (D-375); its back, a sliver on the wing, open too.
+    shell = create_section_loft(name + "-pod", sections, len(sections[0][1]), scene, False, False)
     shell.material = mats.hullMid
     shell.parent = node
-    front = MISSILE_POD_PROFILE[0][0]
-    face = create_disc(name + "-face", disc_options(MISSILE_FACE["radius"], OCTAGON), scene)
-    face.convertToFlatShadedMesh()
-    # A disc faces -Z: turned round, it faces forward, a hair ahead of the pod's front; turned as
-    # the pod's octagon is.
-    face.rotation.y = math.pi
-    face.rotation.z = math.pi / OCTAGON
-    face.position.z = front + 0.003
-    face.material = mats.trim
-    face.parent = node
-    _build_missile_tips(name, front + 0.003, mats.accent, node)
-    band = MISSILE_BAND
-    hexagon_band(
-        name + "-band", band["z"], band["radius"], band["half"], mats.accent, node, OCTAGON
-    )
-    fin = MISSILE_FIN if sign > 0 else mirror_x(MISSILE_FIN)
-    for label, turn in [("outer", -math.pi / 4), ("inner", -3 * math.pi / 4)]:
-        fin_node = new_transform_node(name + "-fin-" + label, scene)
-        fin_node.rotation.z = sign * turn
-        fin_node.parent = node
-        panel(name + "-fin-" + label + "-panel", fin, 0.025, mats.hullDark, fin_node)
+    front = pod["front"]
+    plate = front - face["recess"]
+    middle = up * missile_face_middle()
+    # The skin's chamfered front edge, which the lining meets.
+    ring = sections[0][1]
+    # The recess's dark lining, facing in; its closed back is the plate (D-375).
+    lining = create_section_loft(name + "-recess", [[front, ring], [plate, ring]], 0, scene, False)
+    lining.flipFaces(True)
+    lining.material = mats.trim
+    lining.parent = node
+    holder = new_transform_node(name + "-missiles", scene)
+    holder.position.y = middle
+    holder.parent = node
+    _build_missile_tips(name, plate, mats.intakeBlack, holder)
 
 
 def _build_tip_reactor(side: str, sign: float, root: Any, scene: Any) -> None:
@@ -835,16 +965,32 @@ def _build_tip_reactor(side: str, sign: float, root: Any, scene: Any) -> None:
     x = sign * pod["x"]
     for k, label in enumerate(["upper", "lower"]):
         y = pod["ys"][k]
-        reactor = build_reactor(name + "-reactor-" + label, pod, scene)
+        # Inside the pod's body: no front ring, which poked through its sides (D-385).
+        reactor = build_reactor(
+            name + "-reactor-" + label, pod, scene, False, REACTOR_SIDES, 1.0, False
+        )
         reactor.position.set(x, y, pod["z"])
         reactor.parent = root
-    # One body wrapping both: a tall rounded rectangle in section, scaled along the profile.
-    body = TIP_BODY
-    ring = rounded_rectangle(body["halfWidth"], body["halfHeight"], body["corner"], body["steps"])
+    # One body wrapping both, scaled along the profile: the intake's rounded octagon, stretched
+    # upright, so the intake's skin carries it on flush (D-385).
+    intake_size = TIP_INTAKE
+    octagon = rounded_polygon(
+        OCTAGON,
+        intake_size["radius"],
+        REACTOR_ROUNDING,
+        REACTOR_CORNER_STEPS,
+        polygon_turn(OCTAGON),
+    )
+    ring = [[q[0], q[1] * intake_size["stretch"]] for q in octagon]
     middle = (pod["ys"][0] + pod["ys"][1]) / 2
     sections = [
         [pod["z"] + p[0], [[x + p[1] * q[0], middle + p[1] * q[1]] for q in ring]]
         for p in TIP_BODY_PROFILE
+    ]
+    # Its front ring stepped with the intake's mouth (D-364); the closed point behind stays.
+    sections[1] = [
+        sections[1][0],
+        [[q[0], q[1], tip_intake_rake(q[1] - middle)] for q in sections[1][1]],
     ]
     shell = create_section_loft(name + "-body", sections, len(ring), scene)
     shell.material = mats.hullMid
@@ -854,137 +1000,277 @@ def _build_tip_reactor(side: str, sign: float, root: Any, scene: Any) -> None:
     intake.position.set(x, middle, pod["z"] + pod["length"] / 2)
     intake.scaling.y = TIP_INTAKE["stretch"]
     intake.parent = root
-    add_reactor_intake(name, TIP_INTAKE["radius"], 0, intake, OCTAGON, TIP_INTAKE["stretch"])
+    stretch = TIP_INTAKE["stretch"]
+
+    def rake(y: float) -> float:
+        return tip_intake_rake(y * stretch)
+
+    add_reactor_intake(name, TIP_INTAKE["radius"], 0, intake, OCTAGON, stretch, rake)
 
 
-def tip_fairing_sections(sign: float) -> list[list[Any]]:
-    """Return the wing-tip fairing's sections on `sign`'s side, front to back (D-360).
+def tip_intake_rake(height: float) -> float:
+    """Return how far forward the tip intake's mouth stands at `height` over its middle (D-364).
 
-    A rounded box along the tip's chord, its ends tapering to `end` of its size.
+    The upper third of the body's height `rake` forward, the middle third a diagonal, the lower
+    third where it stood.
     """
-    fairing = TIP_FAIRING
-    front = fairing["front"]
-    back = fairing["back"]
-    taper = (front - back) * fairing["taper"]
-    ring = rounded_rectangle(fairing["halfWidth"], fairing["halfHeight"], fairing["corner"], 2)
-    x = sign * fairing["x"]
-    sections: list[list[Any]] = []
-    for z, scale in [
-        [front, fairing["end"]],
-        [front - taper, 1.0],
-        [back + taper, 1.0],
-        [back, fairing["end"]],
-    ]:
-        sections.append([z, [[x + p[0] * scale, p[1] * scale] for p in ring]])
-    return sections
+    third = TIP_BODY["halfHeight"] * 2 / 3
+    share = max(0.0, min(1.0, (height + third / 2) / third))
+    rake: float = TIP_INTAKE["rake"] * share
+    return rake
 
 
-def _build_tip_junction(side: str, sign: float, root: Any, scene: Any) -> None:
-    """Build the junction of a wing's tip and its tilting pod: the fairing (D-360).
+def nacelle_scale(z: float) -> float:
+    """Return a main nacelle's size at `z` from its middle, a share of its radius (D-367)."""
+    length = REACTOR["length"]
+    taper = [[length * p[0], p[1]] for p in NACELLE_TAPER]
+    if z >= taper[0][0]:
+        return 1.0
+    for k in range(len(taper) - 1):
+        front = taper[k]
+        back = taper[k + 1]
+        if z >= back[0]:
+            t = (front[0] - z) / (front[0] - back[0])
+            scale: float = front[1] + (back[1] - front[1]) * t
+            return scale
+    last: float = taper[len(taper) - 1][1]
+    return last
 
-    It stays with the wing; the pod turns against its outer face.
+
+def nacelle_top(x: float, z: float) -> float:
+    """Return the height of a main nacelle's top at `x` across and `z` along it (D-367).
+
+    Its octagon's flat top, then the chamfer falling at 45° (the rounded corners ignored).
     """
-    mats = get_ship_materials(scene)
-    name = "ship-tip-" + side
-    sections = tip_fairing_sections(sign)
-    fairing = create_section_loft(name + "-fairing", sections, len(sections[0][1]), scene)
-    fairing.material = mats.hullMid
-    fairing.parent = root
+    radius = REACTOR["radius"] * nacelle_scale(z)
+    flat = radius * math.cos(math.pi / OCTAGON)
+    half = radius * math.sin(math.pi / OCTAGON)
+    top: float = flat - max(0.0, abs(x) - half)
+    return top
+
+
+def flat_seat(height: float) -> Any:
+    """Return a scoop's seat that is flat at `height` (D-367)."""
+
+    def seat(_x: float) -> float:
+        return height
+
+    return seat
+
+
+def nacelle_seat(z: float) -> Any:
+    """Return a scoop's seat on a main nacelle's top at `z` (D-367)."""
+
+    def seat(x: float) -> float:
+        return nacelle_top(x, z)
+
+    return seat
+
+
+def scoop_seat_end() -> float:
+    """Return where a scoop leaves the nacelle (D-367): the main intake's straight run ends there.
+
+    In front of it the scoop overhangs the intake, with nothing under it to blend into.
+    """
+    end: float = REACTOR["length"] / 2 + REACTOR_INTAKE[1][0] * REACTOR["radius"]
+    return end
+
+
+def scoop_ring(
+    half: float, top: float, flare: float, seat: Any, sink: float = 0.0, shape: Any = None
+) -> list[list[float]]:
+    """Return a scoop's section: a crowned arch on `seat(x)`, filleted into it (D-367).
+
+    `half` its half width at the wall, `top` its crown's height, `flare` how far its fillets run
+    out over the seat. Counter clockwise from the right foot: the fillet, a concave curve tangent
+    to the seat and to the wall; the wall; the rounded shoulder; the crown, a gentle arch; the
+    same on the left; then one point of its base, `sink` under the seat's middle (on a nacelle,
+    its chamfers fall away under the feet). Always the same point count. `shape` gives its corner,
+    crown and point counts (the scoops' by default; the missile pods', D-376).
+    """
+    scoop = shape if shape is not None else REACTOR_SCOOP
+    foot = [half + flare, seat(half + flare) - 0.004]
+    wall = seat(half)
+    room = max(0.001, top - wall)
+    corner = max(0.0005, min(scoop["corner"], half / 2, room / 2))
+    crown = min(scoop["crown"] * half, room / 4)
+    shoulder = top - crown
+    rise = max(0.0005, min(flare, shoulder - corner - wall))
+    right: list[list[float]] = []
+    steps = scoop["filletSteps"]
+    for k in range(steps + 1):
+        t = k / steps
+        a = (1 - t) * (1 - t)
+        b = 2 * t * (1 - t)
+        c = t * t
+        right.append([
+            a * foot[0] + b * half + c * half,
+            a * foot[1] + b * wall + c * (wall + rise),
+        ])
+    arc = [half - corner, shoulder - corner]
+    for k in range(scoop["cornerSteps"]):
+        angle = math.pi / 2 * k / (scoop["cornerSteps"] - 1)
+        right.append([arc[0] + corner * math.cos(angle), arc[1] + corner * math.sin(angle)])
+    span = half - corner
+    for k in range(1, scoop["crownSteps"] + 1):
+        x = span * (1 - k / scoop["crownSteps"])
+        right.append([x, top - crown * (x / span) * (x / span)])
+    left = [[-p[0], p[1]] for p in reversed(right[:-1])]
+    base = min(foot[1], seat(0.0) - sink)
+    # Built with `extend`: Transcrypt drops `*` unpacking in a list display, and `+` on lists is
+    # JavaScript's string concatenation.
+    ring: list[list[float]] = []
+    ring.extend(right)
+    ring.extend(left)
+    ring.append([0.0, base])
+    return ring
 
 
 def scoop_sections(up: float) -> list[Any]:
     """Return the sections of a main reactor's secondary intake, `up` 1 on top, -1 under (D-347).
 
-    A rounded arch on the nacelle's flat face (D-348: its corners rounded, smooth-shaded), full
-    height at its mouth, then a ramp easing down to the nacelle's back along a half cosine, a
-    little narrower there.
+    D-367: each section a crowned arch filleted into the nacelle's top (`scoop_ring`), full height
+    at its mouth, then a ramp easing down along a half cosine to the nacelle's back, a little
+    narrower there, its base following the nacelle's taper. Ahead of the nacelle's seat it
+    overhangs the main intake, its base flat at the nacelle's top, sunk `sink` as before, and the
+    fillets flare out over `flareRun` behind the seat's end.
     """
     scoop = REACTOR_SCOOP
-    base = REACTOR["radius"] * math.cos(math.pi / OCTAGON) - scoop["sink"]
-    half = scoop["width"] / 2
-    full = scoop["height"] + scoop["sink"]
+    sink = scoop["sink"]
     front = scoop["front"]
     lip = front - scoop["lip"]
+    back = scoop["back"]
+    seat_end = scoop_seat_end()
+    zs = [front, lip]
     steps = scoop["rampSteps"]
-    rows = [[front, full, half], [lip, full, half]]
-    for k in range(1, steps + 1):
-        t = k / steps
-        ease = (1 + math.cos(math.pi * t)) / 2
-        z = lip + (scoop["back"] - lip) * t
-        rows.append([z, max(0.004, full * ease), half * (1 - 0.15 * t)])
+    zs.extend([lip + (back - lip) * k / steps for k in range(1, steps + 1)])
+    joints = [seat_end - scoop["flareRun"]]
+    zs.extend([z for z in joints if back < z < lip])
+    zs.sort()
+    ordered: list[float] = []
+    for k in range(len(zs) - 1, -1, -1):
+        if len(ordered) == 0 or ordered[len(ordered) - 1] - zs[k] > 1e-9:
+            ordered.append(zs[k])
     sections = []
-    for row in rows:
-        height = row[1]
-        ring = rounded_rectangle(row[2], height / 2, scoop["corner"], 2)
-        middle = base + height / 2
-        sections.append([row[0], [[p[0], up * (middle + p[1])] for p in ring]])
+    for z in ordered:
+        t = max(0.0, (lip - z) / (lip - back))
+        ease = (1 + math.cos(math.pi * t)) / 2
+        flat = nacelle_top(0.0, z)
+        top = flat + max(0.004, scoop["height"] * ease)
+        half = scoop["width"] / 2 * (1 - 0.15 * t)
+        if z > seat_end:
+            ring = scoop_ring(half, top, 0.001, flat_seat(flat - sink))
+        else:
+            reach = min(1.0, (seat_end - z) / scoop["flareRun"])
+            flare = max(0.001, scoop["flare"] * reach * (0.5 + 0.5 * ease))
+            ring = scoop_ring(half, top, flare, nacelle_seat(z), sink)
+        sections.append([z, [[p[0], up * p[1]] for p in ring]])
     return sections
 
 
 def _build_scoop(name: str, up: float, reactor: Any, scene: Any) -> None:
     """Build a secondary intake on a main reactor's top or bottom (D-347, D-348).
 
-    A smooth silver arch ramping back to the nacelle's back. Ahead of it a short silver collar
-    rings its matte black mouth (D-351), steel fins across it merging into the collar's wall, as the
-    main intakes' fins merge into their rings: the same size and spacing as theirs (D-350, D-351).
+    A smooth silver arch ramping back to the nacelle's back. Its mouth is built as the main
+    intakes' (D-369): a silver skin straight on, then angled in to a lip and back into a matte
+    black duct; steel fins across the duct, their ends in the lip's wall, the same size and
+    spacing as every intake's (D-350, D-351).
     """
     mats = get_ship_materials(scene)
-    scoop = REACTOR_SCOOP
     sections = scoop_sections(up)
-    shell = create_section_loft(name, sections, len(sections[0][1]), scene)
+    # Its front inside its intake's skin and its back a sliver on the nacelle: left open (D-367).
+    shell = create_section_loft(name, sections, len(sections[0][1]), scene, False, False)
     shell.material = mats.hull
     shell.parent = reactor
-    outer = scoop_collar_rings(up)
-    front = scoop["front"]
-    rim = front + scoop["collar"]
-    collar = [[front, outer[0]], [rim, outer[0]], [rim, outer[1]], [front, outer[1]]]
-    ring = create_section_loft(name + "-collar", collar, 0, scene)
-    ring.material = mats.hull
-    ring.parent = reactor
-    # The black lining: a loft faces outward, turned round it faces the mouth's middle; its back
-    # end, ahead of the scoop's front face, is the mouth's black face.
-    lining = [[rim - 0.001, outer[2]], [front + 0.002, outer[2]]]
-    duct = create_section_loft(name + "-duct", lining, 0, scene)
+    skin = scoop_intake_sections(REACTOR_INTAKE, up)
+    # Its back on the scoop's open front; its end, inside the lip, closes the duct.
+    mouth = create_section_loft(name + "-intake", skin, len(skin[0][1]), scene, False, True)
+    mouth.material = mats.hull
+    mouth.parent = reactor
+    # The lining: a loft faces outward, turned round it faces the mouth's middle (D-347).
+    duct = create_section_loft(
+        name + "-duct", scoop_intake_sections(REACTOR_INTAKE_DUCT, up), 0, scene
+    )
     duct.flipFaces(True)
     duct.material = mats.intakeBlack
     duct.parent = reactor
-    # The fins: their ends halfway into the collar's side walls.
-    half = scoop["width"] / 2 * (1 + scoop["mouth"]) / 2
-    fin_front = rim - 0.002
-    fin_back = fin_front - INTAKE_FIN_SIZE["depth"]
-    fin_outline = [[-half, fin_front], [half, fin_front], [half, fin_back], [-half, fin_back]]
     thickness = intake_fin_thickness(REACTOR_HEIGHT)
-    middle = scoop_mouth_middle()
-    room = scoop["height"] * scoop["mouth"] / 2 * REACTOR_HEIGHT
-    for k, height in enumerate(intake_fin_heights(room)):
-        fin = panel(name + "-fin-" + str(k), fin_outline, thickness, mats.hullMid, reactor)
-        fin.position.y = up * (middle + height / REACTOR_HEIGHT)
+    for k, fin in enumerate(scoop_intake_fins(up)):
+        height, outline = fin
+        mesh = panel(name + "-fin-" + str(k), outline, thickness, mats.hullMid, reactor)
+        mesh.position.y = height
 
 
-def scoop_mouth_middle() -> float:
-    """Return the height of a scoop's mouth's middle over the nacelle's axis (D-347)."""
-    middle: float = REACTOR["radius"] * math.cos(math.pi / OCTAGON) + REACTOR_SCOOP["height"] / 2
-    return middle
+def scoop_mouth_frame() -> list[float]:
+    """Return a scoop's mouth's middle height and its half width, its intake's radius (D-369).
 
-
-def scoop_collar_rings(up: float) -> list[list[list[float]]]:
-    """Return a scoop collar's outer ring, its mouth's ring and its lining's, a hair inside (D-351).
-
-    The outer ring is the scoop's front section; the mouth's, the same arch shrunk to `mouth` of
-    it round the mouth's middle; all with the same number of points.
+    Both from its front section (on top), in the nacelle's unscaled units.
     """
-    scoop = REACTOR_SCOOP
-    outer = scoop_sections(up)[0][1]
-    share = scoop["mouth"]
-    middle = scoop_mouth_middle()
-    corner = scoop["corner"] * share
-    rings = [outer]
-    for grow in [1.0, 0.96]:
-        half_width = scoop["width"] / 2 * share * grow
-        half_height = scoop["height"] * share / 2 * grow
-        shape = rounded_rectangle(half_width, half_height, corner * grow, 2)
-        rings.append([[p[0], up * (middle + p[1])] for p in shape])
-    return rings
+    front = scoop_sections(1)[0][1]
+    ys = [p[1] for p in front]
+    middle = (max(ys) + min(ys)) / 2
+    radius = max([p[0] for p in front])
+    return [middle, radius]
+
+
+def scoop_intake_sections(profile: list[list[float]], up: float) -> list[Any]:
+    """Return a scoop intake's sections along `profile`, `[z, scale]` in radii (D-369).
+
+    Each the scoop's front section scaled round its middle by `scale`, `z` radii ahead of the
+    scoop's front, as the main intakes' rings follow the same profiles round their axis.
+    """
+    front = scoop_sections(1)[0][1]
+    frame = scoop_mouth_frame()
+    middle = frame[0]
+    radius = frame[1]
+    z0 = REACTOR_SCOOP["front"]
+    sections: list[Any] = []
+    for step in profile:
+        scale = step[1]
+        ring = [[p[0] * scale, up * (middle + (p[1] - middle) * scale)] for p in front]
+        sections.append([z0 + step[0] * radius, ring])
+    return sections
+
+
+def ring_half_width(ring: list[list[float]], y: float) -> float:
+    """Return how far out from the middle a closed `ring` reaches at height `y` (D-369)."""
+    reach = 0.0
+    for k in range(len(ring)):
+        a = ring[k]
+        b = ring[(k + 1) % len(ring)]
+        low = min(a[1], b[1])
+        high = max(a[1], b[1])
+        if low <= y <= high and high > low:
+            x = a[0] + (b[0] - a[0]) * (y - a[1]) / (b[1] - a[1])
+            reach = max(reach, abs(x))
+    return reach
+
+
+def scoop_intake_fins(up: float) -> list[Any]:
+    """Return a scoop intake's fins, `[height, outline]`, as the main intakes' (D-351, D-369).
+
+    One in the middle, the intakes' spacing apart within `room` of the duct, each reaching into
+    the lip's wall (`REACTOR_INTAKE_FINS["ring"]` of the mouth), the same depth back from their
+    front. Heights in the nacelle's unscaled units; the spacing holds once stretched upright.
+    """
+    fins = REACTOR_INTAKE_FINS
+    front_ring = scoop_sections(1)[0][1]
+    frame = scoop_mouth_frame()
+    middle = frame[0]
+    radius = frame[1]
+    ys = [p[1] for p in front_ring]
+    half_height = (max(ys) - min(ys)) / 2
+    wall = [[p[0] * fins["ring"], middle + (p[1] - middle) * fins["ring"]] for p in front_ring]
+    front = REACTOR_SCOOP["front"] + fins["front"] * radius
+    back = front - INTAKE_FIN_SIZE["depth"]
+    room = fins["room"] * half_height * REACTOR_HEIGHT
+    out: list[Any] = []
+    for height in intake_fin_heights(room):
+        y = middle + height / REACTOR_HEIGHT
+        half = ring_half_width(wall, y)
+        outline = [[-half, front], [half, front], [half, back], [-half, back]]
+        out.append([up * y, outline])
+    return out
 
 
 def build_player_ship(scene: Any, glow_width: float = EDGE_GLOW["width"]) -> Any:
@@ -994,65 +1280,19 @@ def build_player_ship(scene: Any, glow_width: float = EDGE_GLOW["width"]) -> Any
     _build_cockpit(root, scene, glow_width)
     for side, sign in [("right", 1), ("left", -1)]:
         _build_wing(side, sign, root, scene)
-        pod = _tip_pivot(side, sign, root, scene)
-        _build_tails(side, sign, pod, scene, glow_width)
-        _build_edge_glow(side, sign, root, scene, glow_width)
-        _build_missile_pod(side, sign, root, scene)
-        _build_tip_reactor(side, sign, pod, scene)
-        _build_tip_junction(side, sign, root, scene)
+        # D-371: the tip pods are fixed (they tilted, D-359), with no joint geometry (D-362).
+        _build_tails(side, sign, root, scene, glow_width)
+        _build_missile_pods(side, sign, root, scene)
+        _build_tip_reactor(side, sign, root, scene)
         reactor = build_reactor(
             "ship-reactor-" + side, REACTOR, scene, True, OCTAGON, REACTOR_HEIGHT
         )
         reactor.position.set(sign * REACTOR_OFFSET_X, REACTOR_Y, REACTOR_Z)
         reactor.scaling.y = REACTOR_HEIGHT
         reactor.parent = root
-        for label, up in [("top", 1), ("bottom", -1)]:
-            _build_scoop("ship-reactor-" + side + "-scoop-" + label, up, reactor, scene)
+        # D-368 (owner: "remove the under secondary intakes on the main reactors"): on top only.
+        _build_scoop("ship-reactor-" + side + "-scoop-top", 1, reactor, scene)
     return root
-
-
-def tip_tilt_target(sign: float, sideways: float) -> float:
-    """Return a tip pod's tilt, nozzles down, for a sideways speed share (D-359).
-
-    `sign` 1 for the right (+X) pod, -1 for the left; `sideways` -1 to 1, positive moving to +X:
-    the pod away from the move tilts down further, the other one back up.
-    """
-    tilt = TIP_TILT
-    share = max(-1.0, min(1.0, sideways))
-    return tilt["rest"] - sign * share * tilt["swing"]
-
-
-def eased_tilt(current: float, target: float, dt: float) -> float:
-    """Return the tilt eased from `current` towards `target` over `dt` seconds (D-359)."""
-    return current + (target - current) * min(1.0, TIP_TILT["ease"] * dt)
-
-
-def _tip_pivot(side: str, sign: float, root: Any, scene: Any) -> Any:
-    """Return the node a wing-tip pod's parts are built under, in the ship's frame (D-359).
-
-    A pivot through the pod's middle turns round X; under it, a node set back by the pivot's place
-    holds the parts, so they are built where they were. Its animation tilts the pod by the ship's
-    sideways speed (`SIDEWAYS`, set by the game and the title backdrop).
-    """
-    pod = TIP_REACTOR
-    middle = (pod["ys"][0] + pod["ys"][1]) / 2
-    pivot = new_transform_node("ship-tip-" + side + "-pivot", scene)
-    pivot.position.set(sign * pod["x"], middle, pod["z"])
-    pivot.parent = root
-    holder = new_transform_node("ship-tip-" + side + "-parts", scene)
-    holder.position.set(-sign * pod["x"], -middle, -pod["z"])
-    holder.parent = pivot
-    tilt = [TIP_TILT["rest"]]
-    # Nozzles down is the nose up: a negative turn round X in Babylon's left-handed frame.
-    pivot.rotation.x = -tilt[0]
-
-    def on_frame(dt: float) -> None:
-        target = tip_tilt_target(sign, model_input(pivot, SIDEWAYS, 0.0))
-        tilt[0] = eased_tilt(tilt[0], target, dt)
-        pivot.rotation.x = -tilt[0]
-
-    add_model_animation(pivot, on_frame)
-    return holder
 
 
 def playfield_glow_width() -> float:

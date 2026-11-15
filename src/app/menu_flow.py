@@ -11,7 +11,7 @@ from app.dev_groups import group_jump, group_starts
 from app.menu_state import MenuFlowOptions, MenuState
 from app.pause_menu import PauseMenu
 from app.settings_menu import SettingsMenu, Volumes
-from config.dev_viewer import DEV_AUDIO_VIEWERS, DEV_MODE_VIEWERS, DEV_VIEW_MODES, DEV_VIEWERS
+from config.dev_viewer import DEV_AUDIO_VIEWERS, DEV_VIEWERS, dev_view_modes
 from core.content.level_catalog import first_unlocked_level
 from core.menu.grid_cursor import GridShape, move_cursor
 from core.menu.menu_screen import can_transition
@@ -361,7 +361,7 @@ class MenuFlow:
         viewers in `DEV_MODE_VIEWERS` have the buttons.
         """
         viewer = DEV_VIEWERS[self._dev_index]
-        if viewer not in DEV_MODE_VIEWERS or mode >= len(DEV_VIEW_MODES):
+        if mode >= len(dev_view_modes(viewer)):
             return "none"
         if mode == self._dev_modes[self._dev_index]:
             return "none"

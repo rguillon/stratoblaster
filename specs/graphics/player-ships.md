@@ -30,7 +30,8 @@ better realistic looking cockpit"; a round bubble on a glowing frame before): a 
 the ship on the deck, each section an arch on its sill, a low raked windscreen rising to a dark
 bow, the peak just behind it, then a long fall into the spine; tinted see-through glass over a dark
 floor, the instrument hood under the windscreen, an ejection seat with its headrest and the
-pilot's helmet with a dark visor; glowing rails along both sills; canards. Under the belly
+pilot's helmet with a dark visor; gunmetal rails along both sills (glowing until D-370); no canards (D-363, owner:
+"remove the little front wings"). Under the belly
 (D-339, owner: "rework the undergun, make a cool looking laser and add two miniguns on it's
 sides"; D-340: "make the lazer longer, it should go further than the tip of the ship, and rework
 those weapons, make them better integrated into the hull"): a faceted keel fairing of hull metal
@@ -43,7 +44,8 @@ a blister, six thick barrels round its axis out ahead of it, each hollow at its 
 black (D-351, owner: "make the inner part of the minigun mat black"), its wall and bottom facing
 the barrel's axis so they are drawn seen from ahead (D-352), held by a
 gunmetal clamp (D-345: "increase the minigun size again, and add hole into the barrels"; D-346:
-"spread the minguns a little more"; D-349: "and spread the minigun more again", the fairing
+"spread the minguns a little more"; D-349: "and spread the minigun more again"; D-365: "spread
+the minigun", 0.39 out from the centre line, the fairing
 widened under the body's flanks, its top corners inside the hull's underside; D-341, owner:
 "increase ther size of the miniguns, and make their cannons thicker"). It is one skin (D-327: "smoth the transition between the elements"), a loft through
 cross-sections whose sizes follow smooth curves through hand-set stations, and it is faceted
@@ -66,9 +68,7 @@ edges ahead of the root's, a square-cut tip with a chamfered front corner), stop
 reactors (D-360, owner: "make the wings stop at the junction with the outer reactors"; they ran on
 past them before, D-339), running out
 of the nacelles towards their back
-(D-333: "move the wings more to the back"), with flap and panel lines. The canards lie with their
-top face at the body's chine edge, as the wings do, so their trim runs on from the body's beside
-the cockpit (D-333: "lower the front wings so their highlight is aligned to the cockpit one").
+(D-333: "move the wings more to the back"), with flap and panel lines.
 Each tip carries twin reactors one over the other (D-330, D-331), one above the wing's plane
 and one below; one steel body wraps both (D-332: "add more body to the wings reactors,
 connecting them"), a tall rounded rectangle in section, from their fronts to short of their
@@ -86,9 +86,17 @@ rest (D-360, owner: "keep the rotation centered on the horizontal and reduce the
 and as the ship moves sideways the pod away from the move tilts its nozzles down and the other one
 up, up to 15° at top sideways speed, easing there; in play and in the menus' backdrop, by the ship's
 sideways speed. The wing's tip ends in a slim rounded fairing along its chord, over and under the
-wing, its flat outer face against the pod's flank, which turns along it (D-360: "create a better
-looking junction between the wing and the outer reactor"; owner: "remove the small joint between
-the wing and the side reactor"). One intake for both
+wing (D-360: "create a better looking junction between the wing and the outer reactor"; owner:
+"remove the small joint between the wing and the side reactor"). As on a tiltrotor (D-362, owner:
+"rework the junction netween the wings and the rotating side reactors, make it more realistic"),
+it is the fixed housing of the conversion spindle: round the pivot axis it swells into a round hub,
+blended into its flat run; against its outer face, on the pod's flank, a dark bearing disc round
+the axis turns with the pod. The intake's mouth
+and the body's front round it are stepped in side view (D-364, owner: "I want the first upper
+third of the intake to be more on the front, then a diaginal third, and the final vertical third at
+it's current position"): the upper third 0.12 forward, the middle third a diagonal, the lower
+third upright where it stood; inside, the fins follow the mouth and the duct's back stays at the
+fan face. One intake for both
 (D-339, owner: "merge the two lateral intales into a single octogonal intake"; an intake each
 before). A missile launcher runs through each wing (D-330; D-343, owner: "make the missile pods
 hexagonal, higher and make them go trough the wings"; it hung under the wing on a pylon before;
@@ -112,22 +120,32 @@ black"), with four flat horizontal steel fins across the duct in front of
 it, each as wide as the duct's polygon at its height (D-338, owner: "replace the central helix by
 horizontal fins in the reactors"; ten fan blades round a spinner before); the mouths
 face forward, so the frontal menu camera looks straight into them. The two main reactors are taller
-than wide (D-337: "make the main reactors higher"): their section stretched 1.3 times upright. On the top and the bottom of each main
-reactor sits a secondary intake (D-347, owner: "add secondary intake at the top and botton of each
+than wide (D-337: "make the main reactors higher"): their section stretched 1.3 times upright. On the top of each main
+reactor sits a secondary intake (none under it since D-368, owner: "remove the under secondary
+intakes on the main reactors") (D-347, owner: "add secondary intake at the top and botton of each
 of the main reactors, with a slope eaching the back of the reactor"): a silver scoop on the
-nacelle's flat face, behind its front ring, its matte black mouth facing forward, its back a ramp
-sloping down to the nacelle's back; a rounded arch in section, smooth-shaded, the ramp easing down
-along a half cosine, three flat steel fins across its mouth (D-348, owner: "rework the secondary
-intakes, smoth them a little and add fins like the others"). Every intake's fins, the main reactors', the
+nacelle's flat face, its mouth out past the main intake's lip (D-366, owner: "make the auxiliary
+intakes on the main reactor more to the front, they shall go beyong the main intakes"), its matte
+black mouth facing forward, its back a ramp sloping down to the nacelle's back; a rounded arch in
+section, smooth-shaded, the ramp easing down along a half cosine, three flat steel fins across its
+mouth (D-348, owner: "rework the secondary intakes, smoth them a little and add fins like the
+others"). Its top is a gentle crowned arch on rounded shoulders, and concave fillets run its walls
+into the nacelle's flat top and chamfers, its base following the nacelle's taper (D-367, owner:
+"rework the upper side of the secondary intake, make a better looking junction with the main
+reactor"); over the main intake, where it overhangs, its base is flat and the fillets fade out.
+Its mouth is built as the main intakes are, on its own arch (D-369, owner: "rework the secondary
+intakes, it looks too flat, make it similar to the other intakes"; a short collar round a flat
+black face, the fins at its rim, before): the scoop's front section, scaled round its middle by
+the main intake's profiles in units of its half width, runs on straight, angles in to a thin lip
+and turns back into a matte black duct, the fins across the duct. Every intake's fins, the main reactors', the
 wing tips' and the secondary scoops', have one size: 0.016 model units thick and 0.035 deep,
 whatever the intake's size and its frame's upright stretch; only their width follows the mouth
 they span (D-350, owner: "equalize the size of the fins between the different intakes"). They
 stand 0.038 apart in every intake, one in the middle of the mouth, as many as it holds (nine in
 the main and tip intakes, three in a scoop), and their ends sink into the ring round the mouth,
 so the fins merge into it (D-351, owner: "Equalize the spacing too, and make the fins merge into
-the outer ring on all reactors"): in the main and tip intakes they reach into the lip's wall; a
-scoop's mouth is ringed by a short silver collar, 0.04 deep, lined in matte black, its fins
-running into the collar's walls.
+the outer ring on all reactors"): in every intake they reach into the lip's wall (in a scoop since
+D-369; into a collar's walls before).
 
 No gun stands on top (D-330), and the ship carries no light of its own but its reactors (D-327).
 
@@ -200,7 +218,7 @@ than the one before. The metals take the brighter hull light of GFX-ART-08.
 ### GFX-SHIP-05 — Polygon budget · MUST
 
 The player ship is under 11,000 triangles (2,000 until D-327, 4,500 until D-328, 7,000 until
-D-330; measured 10,797 in the browser (D-354; 10,004 at D-348) with its flames, its six reactors and their four finned intakes,
+D-330; measured 10,703 in headless Chromium (D-369; 10,543 at D-368, with Babylon's NullEngine and in headless Chromium alike; 10,775 so before D-362, 10,797 in the browser at D-354, 10,004 at D-348) with its flames, its six reactors and their four finned intakes,
 D-348). The round
 parts' extra triangles go on their upper half only, the side the playfield camera sees: the
 canopy 11 points over its arch, 2 under the sill; the tip reactors' body, a rounded
@@ -266,25 +284,24 @@ since D-327). There is no outline, trim or halo round it (D-335, owner: "remove 
 outter layer for the player's ship, instead make it look like it's the extremities of the wings and
 cockpit that are glowing, no highlight on the guns"), and no hitbox marker (GFX-READ-08).
 
-The extremities glow a self-lit cyan (`SHIP_LOOK.edgeGlow`), which blooms in the glow layer: a thin
-strip along the leading edge of each main wing, body strake (in short strips along its curve,
-D-336) and canard (and the canard's tip), and of each tail and ventral fin (and its tip; D-346,
-owner: "add highlight to the vertical wings too"), half
-on the panel and half out past it, a hair thicker than the panel so it caps the edge seen from
-above and from ahead; and the rails along the canopy's sills (D-354; its frame's rim before). The
-strips are 0.035 model units across on the larger ship of the menus; on the playfield, where the
-ship is about 40 px long, `player_glow_width` logical pixels across, so they show and bloom there
-(D-355, owner: "the player ship glow is not visible in game": a quarter of a pixel, they hardly
-showed); the sill rails widen in the same ratio. The dev viewer shows the playfield's build. The guns (the
+The extremities glow a self-lit cyan (`SHIP_LOOK.edgeGlow`), which blooms in the glow layer: only
+the vertical wings do (D-370, owner: "remove the glow in the main body and wings, only keep the
+ones on the vertical wings"; the main wings' leading edges, the body strakes' in short strips
+along their curve, D-336, and the rails along the canopy's sills, D-354, glowed from D-335 to
+D-369, the sill rails now gunmetal): a thin strip along the leading edge of each tail and ventral
+fin and its tip (D-346, owner: "add highlight to the vertical wings too"), half on the panel and
+half out past it, a hair thicker than the panel so it caps the edge seen from above and from
+ahead. The strips are 0.035 model units across on the larger ship of the menus; on the
+playfield, where the ship is about 40 px long, `player_glow_width` logical pixels across, so they
+show and bloom there (D-355, owner: "the player ship glow is not visible in game": a quarter of a
+pixel, they hardly showed); the sill rails keep their width in the same ratio. The dev viewer shows the playfield's build. The guns (the
 missile launchers, the laser, the miniguns and their fairing) and the reactors' bodies do not glow, but for the
-laser's core and emitter, of the reactors' core light (D-339, D-342). The main wing's strip runs
-from its root to its tip (D-360).
+laser's core and emitter, of the reactors' core light (D-339, D-342).
 
 **Acceptance criteria**
-- Given the ship model, then it has no trim; the main wings', strakes', canards', tails' and ventral
-  fins' leading edges
-  have a glowing strip, none of the guns do, and the canopy's sill rails are of the glowing
-  material (unit tests).
+- Given the ship model, then it has no trim; the tails' and ventral fins' leading edges and tips
+  have a glowing strip, nothing else does (the main wings, strakes and guns), and the canopy's
+  sill rails are gunmetal (D-370) (unit tests).
 - Given the ship in play, then it shows its glowing edges and flames and nothing else round it
   (manual).
 
@@ -316,20 +333,22 @@ from its root to its tip (D-360).
 | Body details | seams at z 1.7, 0.55, -0.75, -1.75 (0.024 wide, 2% proud); 3 vents a side, x 0.34-0.5 from z -0.15 | `ship_model.py` `SEAM_ZS`, `SEAM`, `VENTS` |
 | `profile_steps` | 3 | `ship_model.py` `PROFILE_STEPS` |
 | Wing | forward-swept: root x 0.8 (z -0.7 to -1.85), tip x 1.78 (z -0.096 to -0.903, chamfered to 1.76, -0.076; D-360) | `ship_model.py` `MAIN_WING` |
-| Wing-tip fairing | x 1.78 to 1.85, 0.12 high, z 0 to -1.0, its ends tapering to 0.45 over 0.12 of its length | `TIP_FAIRING` |
+| Wing-tip fairing | x 1.765 to 1.84, 0.1 high, z 0 to -1.0, its ends tapering to 0.45 over 0.12 of its length; a hub 0.1 in radius round the pivot axis, blended in (power 4) over 9 sections (D-362) | `TIP_FAIRING`, `tip_hub_height` |
+| Tip junction | dark bearing disc x 1.842 to 1.858, radius 0.13, 10 sides, turning with the pod (D-362) | `TIP_COLLAR`, `DISC_SIDES` |
+| Tip intake rake | upper third of the body's height 0.12 forward, middle third a diagonal, lower third 0 (D-364) | `TIP_INTAKE["rake"]`, `tip_intake_rake` |
 | Tip pods' tilt | level at rest, 0.26 rad (15°) either way at top sideways speed, eased at 5 per second; pivot at the pod's middle | `TIP_TILT`, `tip_tilt_target`; `render/model_animation.py` `SIDEWAYS` |
 | Reactor section | hexagon (main reactors and tip intakes: octagon turned π/8), corners rounded at 0.3 of the radius, 3 points a corner (rings 2) | `ship_parts.py` `REACTOR_SIDES`, `polygon_turn`, `REACTOR_ROUNDING`, `REACTOR_CORNER_STEPS`, `RING_CORNER_STEPS`; `ship_model.py` `OCTAGON` |
 | Reactor intake | straight at 1.0 radius (the nacelle's) to 0.24 ahead, angled in to 0.8 at 0.47; flush with the nacelle; dark duct, its end behind the fan face; fan face at 0.68 radii; 4 horizontal fins at heights ±0.14 and ±0.42, z 0.12 to 0.4, inside a 0.66 duct hexagon | `ship_parts.py` `REACTOR_INTAKE*` |
-| Reactor scoops | top and bottom of each main reactor, z 0.5 to -1.0 of the nacelle, 0.21 wide, 0.13 high at the mouth, sunk 0.02 (D-358; 0.16, 0.1 and 0.012 before); corners 0.035; a 0.06 lip then 4 eased ramp sections; mouth 0.72 of its size; fins at -0.28, 0, 0.28 of its height | `ship_model.py` `REACTOR_SCOOP` |
+| Reactor scoops | top of each main reactor (D-368; the bottom too before), z 1.3 to -1.0 of the nacelle (D-366; 0.5 before), past the main intake's lip at 1.1, 0.21 wide, 0.13 high at the mouth, sunk 0.02 (D-358; 0.16, 0.1 and 0.012 before); corners 0.035; a 0.06 lip then 4 eased ramp sections; crown 0.12 of its half width, fillets 0.035 out over the nacelle, fading out over 0.06 ahead of its seat; 10 points a section, its hidden ends left open (D-367); its mouth the main intake's profiles (`REACTOR_INTAKE`, `REACTOR_INTAKE_DUCT`, `REACTOR_INTAKE_FINS`) on its front section, in units of its half width (0.106), its lip 0.05 ahead; 3 fins (D-369) | `ship_model.py` `REACTOR_SCOOP`, `scoop_intake_sections`, `scoop_intake_fins` |
 | Intake black | albedo [0.012, 0.012, 0.015], metallic 0, roughness 1 | `SHIP_LOOK["intakeBlack"]` |
 | Tip reactors | x 1.98, y 0.125 and -0.125, z -0.4; radius 0.11, length 1.35 (0.95 until D-340) | `TIP_REACTOR` |
 | Tails and ventral fins | on the tip pods, brought forward 0.65; one outline and thickness, canted 0.698 rad (40°) outwards (D-361) | `TIP_TAIL_SHIFT`, `TAIL`, `TAIL_CANT` |
 | Nacelles | at x ±0.8, y -0.02, centre z -0.95; radius 0.22, length 2.0, 1.3 times taller than wide; with intakes | `REACTOR`, `REACTOR_HEIGHT`, `REACTOR_OFFSET_X`, `REACTOR_Y`, `REACTOR_Z` |
-| Strakes | the body's chines, 0.64 half wide from z -0.4 to -1.2, 0.63 at -1.9; glowing edge from z 0.85 to -0.3 | `ship_hull.py` `STATIONS`; `ship_model.py` `STRAKE_EDGE_ZS` |
+| Strakes | the body's chines, 0.64 half wide from z -0.4 to -1.2, 0.63 at -1.9; no glowing edge since D-370 (from z 0.85 to -0.3 before) | `ship_hull.py` `STATIONS` |
 | Tip reactors' body | rounded rectangle 0.125 x 0.255 half, corners 0.1; z 0.675 to -0.62 from the reactors' middle; one octagonal intake, radius 0.124, stretched 2.05 upright | `TIP_BODY`, `TIP_BODY_PROFILE`, `TIP_INTAKE` |
-| Gun fairing | z -0.8 to 2.3, up to 0.27 half wide (D-358; 0.21 before) and 0.11 under the belly, its top 0.02 inside the belly and its top corners 0.02 inside the hull's underside (D-349) | `GUN_FAIRING`, `GUN_FAIRING_SECTION` |
+| Gun fairing | z -0.8 to 2.3, up to 0.33 half wide (D-365; 0.27 since D-358) and 0.11 under the belly, its top 0.02 inside the belly and its top corners 0.02 inside the hull's underside (D-349) | `GUN_FAIRING`, `GUN_FAIRING_SECTION` |
 | Laser | at y -0.12; glowing core z 2.65 to 3.61 (nose tip 3.3, D-354), radius 0.012; rails 0.034 thick, x 0.02 to 0.052, z 2.55 to prongs at 3.75; bridge z 2.55 to 2.75; emitter to 3.68 | `LASER`, `LASER_RAIL`, `LASER_BRIDGE`, `LASER_EMITTER` |
-| Miniguns | at x ±0.33 (D-358; 0.27 since D-349), y -0.195, z 0.75; drum 0.9 long, radius 0.085, of hull metal; 6 six-sided barrels of radius 0.021 on a 0.048 ring, 0.5 long, each with a bore of 0.55 its radius, 0.06 deep (D-345, D-346) | `MINIGUN` |
+| Miniguns | at x ±0.39 (D-365; 0.33 since D-358), y -0.195, z 0.75; drum 0.9 long, radius 0.085, of hull metal; 6 six-sided barrels of radius 0.021 on a 0.048 ring, 0.5 long, each with a bore of 0.55 its radius, 0.06 deep (D-345, D-346) | `MINIGUN` |
 | Missile pods | through the wing at x 1.3, y 0, z -0.4; octagon, radius 0.1, corners rounded 0.08, 1.35 times taller, 1.16 long; 7 tips | `MISSILE_POD`, `MISSILE_POD_ROUNDING`, `MISSILE_POD_PROFILE`, `MISSILE_TIPS` |
 
 ## Notes

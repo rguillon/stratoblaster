@@ -2825,3 +2825,126 @@
 - **Context:** owner: "angle the vertical wings 40°".
 - **Decision:** `TAIL_CANT` is 0.698 rad (40°) from vertical, outwards, for the tails and the
   ventral fins (0.2 rad before).
+
+### D-362 — A tiltrotor's junction between the wing tips and the pods
+
+- **Date:** 2026-11-13
+- **Requirements:** GFX-SHIP-01.
+- **Context:** owner: "rework the junction netween the wings and the rotating side reactors, make
+  it more realistic".
+- **Decision:** as on a tiltrotor's wing tip, the fixed fairing (`TIP_FAIRING`, now x 1.765 to
+  1.84) is the conversion spindle's housing: round the pivot axis its half height swells into a hub
+  0.1 in radius, a smooth max (power 4) of its flat run and the hub's circle (`tip_hub_height`).
+  Against its outer face a dark bearing disc on the pod's flank (`TIP_COLLAR`, radius 0.13, 10
+  sides), built under the pod's pivot so it turns with it: a loft round Z on a node turned a
+  quarter round Y. A fixed seam disc, a silver collar and eight studs were built first and cut to
+  keep the ship under its triangle budget (GFX-SHIP-05; see D-368).
+
+### D-363 — No canards
+
+- **Date:** 2026-11-13
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-09.
+- **Context:** owner: "remove the little front wings".
+- **Decision:** `CANARD`, `CANARD_THICKNESS`, the canards' panels and glowing edges are gone
+  (`EDGE_GLOW["canard"]` too). The hull's strakes keep their shape.
+
+### D-364 — The tip intakes' mouths stepped in thirds
+
+- **Date:** 2026-11-13
+- **Requirements:** GFX-SHIP-01.
+- **Context:** owner: "Rework the intakes of the side reactors, I want the first upper third of
+  the intake to be more on the front, then a diaginal third, and the final vertical third at it's
+  current position".
+- **Decision:** a section loft's ring point may carry a third value, its own Z offset
+  (`render/geometry/section_loft.py`; game-agnostic). `ship_parts.raked_sections` moves ring points
+  by a `rake(y)` function, the last sections kept; `add_reactor_intake` takes an optional `rake`:
+  the shell's and duct's sections but their backs follow it (the inner lip and the duct's back stay
+  against the fan face) and each fin moves with the mouth at its height. `tip_intake_rake`: the
+  upper third of the pod body's height 0.12 forward (`TIP_INTAKE["rake"]`), the middle third a
+  diagonal, the lower third 0; the pod body's front ring follows it, its closed point behind not.
+
+### D-365 — The miniguns spread again
+
+- **Date:** 2026-11-13
+- **Requirements:** GFX-SHIP-01.
+- **Context:** owner: "and spread the minigun".
+- **Decision:** the miniguns stand at x ±0.39 (0.33); the gun fairing widens by 0.06 to 0.24,
+  0.33 and 0.31 half wide at z -0.45, 0.3 and 1.3, keeping their drums half in its flanks.
+
+### D-366 — The main reactors' scoops reach past their intakes
+
+- **Date:** 2026-11-13
+- **Requirements:** GFX-SHIP-01.
+- **Context:** owner: "make the auxiliary intakes on the main reactor more to the front, they
+  shall go beyong the main intakes"; then "more the auxiliary intakes more to the front" (1.12
+  first).
+- **Decision:** `REACTOR_SCOOP["front"]` is 1.3 (0.5), in the nacelle's units: past its front
+  (1.0) and the main intake's lip (1.1), its mouth and collar overhanging the intake; the ramp
+  still eases down to the nacelle's back, so it is longer.
+
+### D-367 — The main reactors' scoops crowned and filleted into the nacelles
+
+- **Date:** 2026-11-13
+- **Requirements:** GFX-SHIP-01.
+- **Context:** owner: "rework the upper side of the secondary intake, make a better looking
+  junction with the main reactor".
+- **Decision:** each scoop section is one shape (`scoop_ring`, a fixed point count): concave
+  fillets (quadratic curves tangent to the seat and to the wall) running `flare` (0.035) out over
+  the nacelle, straight walls, rounded shoulders and a crowned top (`crown`, 0.12 of the half
+  width), then its base under the seat. Its seat is the nacelle's real top (`nacelle_top`: the
+  octagon's flat, then its 45° chamfers, scaled by the nacelle's taper, `nacelle_scale`, from
+  `ship_parts.NACELLE_TAPER`, which `build_reactor` now uses too), so the ramp's end follows the
+  nacelle down instead of floating over its tapered back. Ahead of the main intake's straight run
+  (`scoop_seat_end`) the scoop overhangs it: a flat base, no fillet; the fillets grow in over
+  `flareRun` (0.06) behind it. The collar's mouth and lining rings are the same shape on a flat
+  seat, so the collar keeps its point counts. To keep the triangle budget the section has 10 points
+  (one per fillet end, two per shoulder, one at the crown, one under it) and the ramp 4 sections, and
+  the ends hidden inside other parts are left open: `create_section_loft` takes `cap_first` and
+  `cap_last` (game-agnostic); the scoop's front (inside its collar) and back (a sliver on the
+  nacelle), the collar's two ends and the duct's front. A list display with `*` unpacking, first
+  used here, broke the game at load: Transcrypt drops the `*` (and `+` on lists is JavaScript's
+  string concatenation); the ring is built with `extend`.
+
+### D-368 — No secondary intakes under the main reactors
+
+- **Date:** 2026-11-14
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-05.
+- **Context:** owner: "remove the under secondary intakes on the main reactors"; the ship had gone
+  over its triangle budget with D-362 to D-367 (13,855 counted with Babylon's NullEngine).
+- **Decision:** `build_player_ship` builds each main reactor's scoop on its top only;
+  `scoop_sections` and the collar keep their `up` argument. The ship counts 10,543 triangles with
+  its flames (10,775 before D-362), measured by building it with Babylon's NullEngine in
+  JavaScriptCore (`osascript -l JavaScript`), the e2e browser being unavailable.
+
+### D-369 — The scoops' mouths built as the main intakes
+
+- **Date:** 2026-11-15
+- **Requirements:** GFX-SHIP-01, GFX-SHIP-05.
+- **Context:** owner: "rework the secondary intakes, it looks too flat, make it similar to the other
+  intakes". Each scoop's mouth was a 0.04 deep collar round a flat black face, its three fins at
+  the rim.
+- **Decision:** the collar, its rings (`scoop_collar_rings`, `scoop_mouth_middle`) and the
+  `mouth` and `collar` tunables are gone. `scoop_intake_sections(profile, up)` scales the scoop's
+  front section round its middle along the main intake's own profiles, `[z, scale]` in radii,
+  taking the scoop's half width (`scoop_mouth_frame`) as the radius: the skin
+  (`REACTOR_INTAKE`, straight, angled in to the lip, back into the duct, its end capped) and the
+  matte black lining (`REACTOR_INTAKE_DUCT`, flipped), so the arch keeps its point count and
+  blends as before. `scoop_intake_fins` places the fins as the main intakes' (`REACTOR_INTAKE_FINS`:
+  front, room, their ends at the lip's wall, `ring_half_width` of the scaled section at each
+  height; `INTAKE_FIN_SIZE`'s spacing once stretched upright): three. `REACTOR_INTAKE_FINS` lost
+  its type annotation: Transcrypt does not export an annotated module constant, and esbuild
+  failed on its import. The ship counts 10,703 triangles with its flames, summed over its meshes'
+  indices in headless Chromium (10,543 so at D-368).
+
+### D-370 — Only the vertical wings glow
+
+- **Date:** 2026-11-15
+- **Requirements:** GFX-SHIP-09.
+- **Context:** owner: "remove the glow in the main body and wings, only keep the ones on the
+  vertical wings".
+- **Decision:** `_build_edge_glow` (the main wings' leading edge strip and the strakes' strips)
+  and `STRAKE_EDGE_ZS` are gone; the canopy's sill rails keep their shape and width (still
+  scaled by the glow width, D-355) but are gunmetal (`hullDark`, as the canopy's bow) instead of
+  `edgeGlow`. The tails' and ventral fins' strips (D-346) stay, the only `edgeGlow` left. The
+  laser's core and emitter keep the reactors' core light (D-339, D-342), which the spec counts with
+  the reactors' light rather than the extremities' glow, and the canopy glass keeps its faint tint.

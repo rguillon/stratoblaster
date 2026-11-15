@@ -166,3 +166,20 @@ def test_eng_a_rounded_rectangle_keeps_its_sides_and_rounds_its_corners() -> Non
     # A corner's middle point lies on its arc, inside the sharp corner.
     assert ring[1][0] < 0.12
     assert ring[1][1] < 0.25
+
+
+def test_a_ring_point_may_carry_its_own_z_offset() -> None:
+    """D-364: a third value on a ring point moves it along Z from its section's Z."""
+    ring = [[1.0, 0.0, 0.5], [0.0, 1.0], [-1.0, 0.0], [0.0, -1.0]]
+    positions, _indices, _normals = build_section_loft([[1.0, ring], [0.0, _ring(1, 4)]], 0)
+    points = [positions[k : k + 3] for k in range(0, len(positions), 3)]
+    assert [1.0, 0.0, 1.5] in [pytest.approx(p) for p in points]
+    assert max(p[2] for p in points) == pytest.approx(1.5)
+
+
+def test_a_loft_end_hidden_inside_another_part_may_be_left_open() -> None:
+    """D-367: no cap, fewer triangles; each end's cap is one triangle per ring point."""
+    sections = [[1.0, _ring(1)], [0.0, _ring(1)]]
+    capped = len(build_section_loft(sections, 0)[1]) // 3
+    assert len(build_section_loft(sections, 0, False, True)[1]) // 3 == capped - 8
+    assert len(build_section_loft(sections, 0, False, False)[1]) // 3 == capped - 16

@@ -16,6 +16,7 @@ from game.view import ship_model
 from game.view.player_ship_models import PLAYER_SHIP_MODELS
 from game.view.ship_hull import hull_sections
 from game.view.ship_model import build_player_ship
+from game.view.ship_parts import REACTOR_INTAKE
 from render.geometry.lathe_z import (
     build_faceted_lathe_vertex_data,
     build_smooth_top_lathe_vertex_data,
@@ -60,15 +61,19 @@ def test_gfx_ship_01_the_wings_are_forward_swept() -> None:
 
 
 def test_gfx_ship_01_twin_reactors_sit_one_over_the_other_on_each_wing_tip() -> None:
-    """D-331: one over the other; D-360: the wing stops at the pod, its fairing at its flank."""
+    """D-331: one over the other; D-360, D-362: the wing stops at the pod; fairing, seam, collar."""
     pod = ship_model.TIP_REACTOR
     tip = ship_model.MAIN_WING[2]
     body = ship_model.TIP_BODY
     flank = pod["x"] - body["halfWidth"]
     fairing = ship_model.TIP_FAIRING
+    collar = ship_model.TIP_COLLAR
     assert tip[0] < flank
     assert fairing["x"] - fairing["halfWidth"] <= tip[0]
-    assert flank - 0.01 < fairing["x"] + fairing["halfWidth"] <= flank
+    outer = fairing["x"] + fairing["halfWidth"]
+    # The fairing, then the bearing disc, a hair off it and into the pod's flank.
+    assert outer < collar["inner"] < outer + 0.005
+    assert flank < collar["outer"] < flank + 0.01
     upper, lower = pod["ys"]
     assert upper > 0 > lower
     assert upper - lower >= 2 * pod["radius"]
@@ -198,10 +203,11 @@ def test_gfx_ship_01_one_octagonal_intake_feeds_both_tip_reactors(
     monkeypatch.setattr(
         ship_model,
         "add_reactor_intake",
-        lambda name, radius, _front, _parent, sides, _stretch=1.0: intakes.append([
+        lambda name, radius, _front, _parent, sides, _stretch=1.0, rake=None: intakes.append([
             name,
             radius,
             sides,
+            rake,
         ]),
     )
     reactors: dict[str, list[Any]] = {}
@@ -214,6 +220,10 @@ def test_gfx_ship_01_one_octagonal_intake_feeds_both_tip_reactors(
     build_player_ship(scene)
     assert sorted(i[0] for i in intakes) == ["ship-tip-left", "ship-tip-right"]
     assert all(i[2] == 8 for i in intakes)
+    # D-364: the mouth stepped, its top forward of its bottom, in the intake's stretched frame.
+    rake = intakes[0][3]
+    assert rake(0.12) == pytest.approx(ship_model.TIP_INTAKE["rake"])
+    assert rake(-0.12) == 0
     intake = ship_model.TIP_INTAKE
     flat = intake["radius"] * math.cos(math.pi / 8)
     body = ship_model.TIP_BODY
@@ -300,18 +310,14 @@ def test_gfx_ship_01_the_wings_sit_towards_the_nacelles_back() -> None:
     assert back < root_back
 
 
-def test_gfx_trim_the_canards_top_lies_at_the_bodys_chine_edge() -> None:
-    """D-333: the canards' trim runs on from the body's beside the cockpit."""
-    root_x = ship_model.CANARD[0][0]
-    for _x, z in ship_model.CANARD:
-        assert root_x < hull.station_at(z)[hull.CHINE_HALF_WIDTH]
-    assert pytest.approx(hull.CHINE_EDGE) == ship_model.CHINE_EDGE
+def test_gfx_ship_01_no_canards() -> None:
+    """D-363: the little front wings are gone."""
+    assert not hasattr(ship_model, "CANARD")
+    assert "canard" not in ship_model.EDGE_GLOW
 
 
-def test_gfx_ship_09_the_wings_canards_and_canopy_glow_not_the_guns(
-    scene: Any, monkeypatch: Any
-) -> None:
-    """D-335: glowing leading edges on the wings, strakes and canards; none on the guns."""
+def test_gfx_ship_09_only_the_tails_and_ventral_fins_glow(scene: Any, monkeypatch: Any) -> None:
+    """D-370: glowing edges on the tails and ventral fins only (D-346), not the wings or strakes."""
     names: list[str] = []
     real = ship_model.edge_strip
 
@@ -321,13 +327,12 @@ def test_gfx_ship_09_the_wings_canards_and_canopy_glow_not_the_guns(
 
     monkeypatch.setattr(ship_model, "edge_strip", record)
     build_player_ship(scene)
-    for side in ["right", "left"]:
-        # D-346: the tails and ventral fins too, their leading edge and tip.
-        parts = ["wing", "strake-0", "strake-4", "canard-0", "canard-1"]
-        parts.extend(["tail-0", "tail-1", "ventral-0", "ventral-1"])
-        for part in parts:
-            assert "ship-glow-" + side + "-" + part in names
-    assert not any("missile" in n or "gun" in n for n in names)
+    expected = [
+        "ship-glow-" + side + "-" + part
+        for side in ["right", "left"]
+        for part in ["tail-0", "tail-1", "ventral-0", "ventral-1"]
+    ]
+    assert sorted(names) == sorted(expected)
 
 
 def test_gfx_ship_09_the_player_ship_has_no_trim_round_it() -> None:
@@ -335,8 +340,8 @@ def test_gfx_ship_09_the_player_ship_has_no_trim_round_it() -> None:
     assert GAME.view.player_ship_models is PLAYER_SHIP_MODELS
 
 
-def test_gfx_ship_09_the_canopy_sills_glow(scene: Any, monkeypatch: Any) -> None:
-    """D-335, D-354: the cockpit glows along its sill rails; the canopy is of tinted glass."""
+def test_gfx_ship_09_the_canopy_sills_are_gunmetal(scene: Any, monkeypatch: Any) -> None:
+    """D-354: sill rails along the canopy of tinted glass; D-370: gunmetal (glowing before)."""
     meshes: dict[str, Any] = {}
 
     def loft(name: str, *_args: Any) -> Any:
@@ -348,7 +353,7 @@ def test_gfx_ship_09_the_canopy_sills_glow(scene: Any, monkeypatch: Any) -> None
     monkeypatch.setattr(ship_model, "get_ship_materials", lambda _scene: materials)
     build_player_ship(scene)
     for side in ["right", "left"]:
-        assert meshes["ship-canopy-rail-" + side].material is materials.edgeGlow
+        assert meshes["ship-canopy-rail-" + side].material is materials.hullDark
     assert meshes["ship-canopy"].material is materials.glass
     assert meshes["ship-cockpit-floor"].material is materials.intakeBlack
 
@@ -389,7 +394,7 @@ def test_gfx_ship_01_the_reactor_scoops_stand_on_the_nacelle_and_ramp_to_its_bac
     sections = ship_model.scoop_sections(up)
     scoop = ship_model.REACTOR_SCOOP
     assert sections[0][0] == scoop["front"]
-    assert sections[-1][0] == pytest.approx(-ship_model.REACTOR["length"] / 2)
+    assert sections[-1][0] == pytest.approx(scoop["back"])
     heights = [max(abs(p[1]) for p in ring) for _z, ring in sections]
     assert heights[0] > heights[-1]
     positions, indices, normals = build_section_loft(sections, 0)
@@ -415,8 +420,9 @@ def test_gfx_ship_01_the_reactor_scoops_have_fins_across_their_mouths(
     monkeypatch.setattr(ship_model, "panel", record)
     build_player_ship(scene)
     fins = [n for n in names if "-scoop-" in n and "-fin-" in n]
-    # D-351: three fins fit the mouth at the intakes' spacing.
-    assert len(fins) == 2 * 2 * 3
+    # D-351: three fins fit the mouth at the intakes' spacing; D-368: a scoop on top only.
+    assert len(fins) == 2 * 3
+    assert not any("-scoop-bottom" in n for n in names)
     heights = [max(p[1] for p in ring) for _z, ring in ship_model.scoop_sections(1)]
     assert heights == sorted(heights, reverse=True)
 
@@ -432,27 +438,55 @@ def test_gfx_ship_01_the_fairing_meets_the_hull_under_its_flanks() -> None:
 
 
 @pytest.mark.parametrize("up", [1, -1])
-def test_gfx_ship_01_a_scoops_collar_rings_its_mouth_and_holds_its_fins(up: int) -> None:
-    """D-351: the mouth inside the collar's outer ring; the fins' ends in the collar's wall."""
-    outer, mouth, lining = ship_model.scoop_collar_rings(up)
-    assert len(outer) == len(mouth) == len(lining)
-    scoop = ship_model.REACTOR_SCOOP
+def test_gfx_ship_01_a_scoops_mouth_is_built_as_the_main_intakes(up: int) -> None:
+    """D-369: the scoop's front section, straight on, angled in to a lip, back into its duct."""
+    skin = ship_model.scoop_intake_sections(REACTOR_INTAKE, up)
+    lining = ship_model.scoop_intake_sections(ship_model.REACTOR_INTAKE_DUCT, up)
+    front = ship_model.scoop_sections(up)[0]
+    # It starts on the scoop's front, flush with it.
+    assert skin[0][0] == front[0]
+    assert [v for p in skin[0][1] for v in p] == pytest.approx([v for p in front[1] for v in p])
+    counts = {len(ring) for _z, ring in skin + lining}
+    assert counts == {len(front[1])}
+    middle, radius = ship_model.scoop_mouth_frame()
 
-    def extent(ring: list[list[float]]) -> tuple[float, float, float]:
+    def size(ring: list[list[float]]) -> tuple[float, float]:
         ys = [p[1] * up for p in ring]
-        return max(p[0] for p in ring), min(ys), max(ys)
+        return max(p[0] for p in ring), max(ys) - middle
 
-    o_half, o_low, o_high = extent(outer)
-    m_half, m_low, m_high = extent(mouth)
-    l_half, l_low, l_high = extent(lining)
-    assert o_low < m_low < l_low < l_high < m_high < o_high
-    assert m_half < o_half
-    assert l_half < m_half
-    fin_half = scoop["width"] / 2 * (1 + scoop["mouth"]) / 2
-    assert m_half < fin_half < o_half
-    room = scoop["height"] * scoop["mouth"] / 2 * ship_model.REACTOR_HEIGHT
-    heights = ship_model.intake_fin_heights(room)
-    assert len(heights) == 3
+    # The lip ahead of the scoop, narrower than the skin; the duct inside the lip.
+    lip = max(range(len(skin)), key=lambda k: skin[k][0])
+    assert skin[lip][0] == pytest.approx(front[0] + max(p[0] for p in REACTOR_INTAKE) * radius)
+    assert size(skin[lip][1])[0] < size(skin[0][1])[0]
+    assert size(skin[lip][1])[1] < size(skin[0][1])[1]
+    assert all(size(ring)[0] < size(skin[lip][1])[0] for _z, ring in lining)
+
+
+def test_gfx_ship_01_a_scoops_fins_span_its_duct_into_the_lips_wall() -> None:
+    """D-351, D-369: the intakes' spacing, ends between the duct's lining and the lip's skin."""
+    fins = ship_model.scoop_intake_fins(1)
+    assert len(fins) == 3
+    heights = [h for h, _outline in fins]
+    middle, _radius = ship_model.scoop_mouth_frame()
+    assert heights[1] == pytest.approx(middle)
+    for height, outline in fins:
+        half = max(p[0] for p in outline)
+        assert min(p[0] for p in outline) == pytest.approx(-half)
+        lining = ship_model.scoop_intake_sections(ship_model.REACTOR_INTAKE_DUCT, 1)[0][1]
+        assert half > ship_model.ring_half_width(lining, height)
+        lip = ship_model.scoop_intake_sections(REACTOR_INTAKE, 1)
+        skin = max(lip, key=lambda s: s[0])[1]
+        assert half < ship_model.ring_half_width(skin, height) + 0.01
+    assert [h for h, _o in ship_model.scoop_intake_fins(-1)] == [-h for h in heights]
+
+
+def test_gfx_ship_01_a_rings_half_width_at_a_height() -> None:
+    """D-369: how far a closed ring reaches out at a height; nothing outside it."""
+    square = [[1.0, 1.0], [-1.0, 1.0], [-1.0, -1.0], [1.0, -1.0]]
+    assert ship_model.ring_half_width(square, 0.0) == 1.0
+    diamond = [[1.0, 0.0], [0.0, 1.0], [-1.0, 0.0], [0.0, -1.0]]
+    assert ship_model.ring_half_width(diamond, 0.5) == pytest.approx(0.5)
+    assert ship_model.ring_half_width(diamond, 2.0) == 0.0
 
 
 def test_gfx_ship_01_the_minigun_bores_face_the_axis(scene: Any, monkeypatch: Any) -> None:
@@ -606,3 +640,103 @@ def test_gfx_ship_01_the_wing_tip_fairing_runs_along_the_tips_chord() -> None:
     middle = sections[1][1]
     assert max(p[1] for p in middle) > ship_model.WING_THICKNESS / 2
     assert len({len(ring) for _z, ring in sections}) == 1
+
+
+def test_gfx_ship_01_the_tip_fairing_swells_round_the_pivot_axis() -> None:
+    """D-362: the fairing's flat run swells into the spindle's round housing round the axis."""
+    fairing = ship_model.TIP_FAIRING
+    z = ship_model.TIP_REACTOR["z"]
+    assert ship_model.tip_hub_height(z) >= fairing["hub"]
+    assert ship_model.tip_hub_height(z + fairing["hub"]) == pytest.approx(fairing["halfHeight"])
+    assert ship_model.tip_hub_height(fairing["front"]) == pytest.approx(fairing["halfHeight"])
+    sections = ship_model.tip_fairing_sections(1)
+    zs = [section[0] for section in sections]
+    assert zs == sorted(zs, reverse=True)
+    tallest = max(max(p[1] for p in ring) for _z, ring in sections)
+    # Inside the turning bearing disc.
+    assert fairing["hub"] <= tallest < ship_model.TIP_COLLAR["radius"]
+    flat = ship_model.TIP_BODY["halfHeight"] - ship_model.TIP_BODY["corner"]
+    assert ship_model.TIP_COLLAR["radius"] < flat
+
+
+def test_gfx_ship_01_the_tip_collar_turns_with_the_pod_the_seam_stays(
+    scene: Any, monkeypatch: Any
+) -> None:
+    """D-362: the bearing disc is under the pod's pivot; the fairing is not."""
+    made: dict[str, Any] = {}
+
+    def recorder(real: Any) -> Any:
+        def make(name: str, *args: Any) -> Any:
+            made[name] = real(name, *args)
+            made[name].name = name
+            return made[name]
+
+        return make
+
+    for maker in ["new_transform_node", "create_section_loft", "faceted_rod"]:
+        monkeypatch.setattr(ship_model, maker, recorder(getattr(ship_model, maker)))
+    build_player_ship(scene)
+
+    def under_pivot(node: Any, side: str) -> bool:
+        while node in made.values():
+            if node is made["ship-tip-" + side + "-pivot"]:
+                return True
+            node = node.parent
+        return False
+
+    for side in ["right", "left"]:
+        name = "ship-tip-" + side
+        assert under_pivot(made[name + "-collar"], side)
+        assert not under_pivot(made[name + "-fairing"], side)
+        assert made[name + "-collar-root"].rotation.y == pytest.approx(math.pi / 2)
+
+
+@pytest.mark.parametrize(
+    ("height", "share"),
+    [(0.255, 1), (0.1, 1), (0.0, 0.5), (-0.1, 0), (-0.255, 0), (0.0425, 0.75)],
+)
+def test_gfx_ship_01_the_tip_intake_is_stepped_in_thirds(height: float, share: float) -> None:
+    """D-364: upper third forward, middle third a diagonal, lower third where it stood."""
+    rake = ship_model.TIP_INTAKE["rake"]
+    assert ship_model.tip_intake_rake(height) == pytest.approx(rake * share)
+
+
+def test_gfx_ship_01_the_reactor_scoops_reach_past_the_main_intakes() -> None:
+    """D-366: the scoops' fronts stand out ahead of the main intakes' lips."""
+    reactor = ship_model.REACTOR
+    lip = reactor["length"] / 2 + max(p[0] for p in REACTOR_INTAKE) * reactor["radius"]
+    assert ship_model.REACTOR_SCOOP["front"] > lip
+
+
+def test_gfx_ship_01_a_main_nacelles_top_is_flat_then_falls_at_its_chamfers() -> None:
+    """D-367: the seat the scoops blend into, tapering towards the nacelle's back."""
+    radius = ship_model.REACTOR["radius"]
+    flat = radius * math.cos(math.pi / 8)
+    edge = radius * math.sin(math.pi / 8)
+    assert ship_model.nacelle_top(0.0, 1.0) == pytest.approx(flat)
+    assert ship_model.nacelle_top(edge + 0.05, 1.0) == pytest.approx(flat - 0.05)
+    assert ship_model.nacelle_scale(2.0) == 1
+    assert ship_model.nacelle_scale(-0.8) == pytest.approx(0.95)
+    assert ship_model.nacelle_scale(-0.9) == pytest.approx(0.9)
+    assert ship_model.nacelle_scale(-3.0) == pytest.approx(0.85)
+
+
+def test_gfx_ship_01_a_scoop_is_filleted_into_the_nacelle_and_crowned() -> None:
+    """D-367: its feet sink just under the nacelle's top, its walls over it; a flat base ahead."""
+    sections = ship_model.scoop_sections(1)
+    assert len({len(ring) for _z, ring in sections}) == 1
+    end = ship_model.scoop_seat_end()
+    seated = [s for s in sections if s[0] < end - ship_model.REACTOR_SCOOP["flareRun"] + 0.001]
+    assert seated
+    z, ring = seated[0]
+    foot = ring[0]
+    assert -0.01 < foot[1] - ship_model.nacelle_top(foot[0], z) < 0
+    wall = ring[ship_model.REACTOR_SCOOP["filletSteps"]]
+    assert wall[1] - ship_model.nacelle_top(wall[0], z) > 0.0
+    over = [s for s in sections if s[0] > end]
+    assert over
+    low = min(p[1] for p in over[0][1])
+    assert len([p for p in over[0][1] if p[1] < low + 0.001]) >= 2
+    # The crown: the middle of the top stands over the shoulders.
+    top = max(p[1] for p in ring)
+    assert any(abs(p[0]) < 1e-9 and p[1] == top for p in ring)

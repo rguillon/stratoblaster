@@ -14,9 +14,19 @@ DEFAULT_DEV_MENU_COLUMNS = 3
 # How the enemies and bosses viewers show their subject (DEV-MENU-21), one button each: the model
 # alone at the middle of the view, the same drawn as a wireframe, and on the game's playfield as
 # in a level, moving and firing. The viewers that have the buttons, and their labels.
+# The player ships viewer has the first two (owner: "add a wireframe/normal button in the player
+# ship dev view"): the model and its wireframe, no game view.
 DEV_VIEW_MODES = ["model", "wireframe", "game"]
-DEV_MODE_VIEWERS = ["enemies", "bosses"]
+DEV_MODE_VIEWERS = ["enemies", "bosses", "ships"]
 DEV_MODE_LABELS = {"model": "Model", "wireframe": "Wireframe", "game": "Game view"}
+DEV_MODE_COUNTS = {"ships": 2}
+
+
+def dev_view_modes(viewer: str) -> list[str]:
+    """Return the views a viewer's buttons offer, in order; none for a viewer without them."""
+    if viewer not in DEV_MODE_VIEWERS:
+        return []
+    return DEV_VIEW_MODES[: DEV_MODE_COUNTS.get(viewer, len(DEV_VIEW_MODES))]
 
 
 class DevViewerTexts:
