@@ -227,12 +227,16 @@ OCTAGON = 8
 # scale the scoop's front section round its middle, in units of its half width (`radius`).
 REACTOR_SCOOP: dict[str, Any] = {
     "front": 1.3,
-    "back": -1.0,
+    "back": -0.7,
     "width": 0.21,
-    "height": 0.13,
+    # D-398 (owner: "make those intakes a little higher"): 0.16 (0.13); the chamfer under it; full
+    # height back to the nacelle's middle (`lip` 1.3 from its front, 0.06 before), the ramp down
+    # to -0.7 (to its back, -1.0, before).
+    "height": 0.16,
+    "chamfer": 0.025,
     "sink": 0.02,
     "corner": 0.035,
-    "lip": 0.06,
+    "lip": 1.3,
     "rampSteps": 4,
     "crown": 0.12,
     "flare": 0.035,
@@ -247,17 +251,34 @@ REACTOR_SCOOP: dict[str, Any] = {
 # the ship, and rework those weapons, make them better integrated into the hull"). A faceted keel
 # fairing of hull metal runs along the belly, its top inside the belly so the two read as one;
 # `[z, half width, depth under the belly]`, back to front, closed at both ends.
+# D-399 (owner: "rework completly the part connecting the miniguns and the laser to the hull, make
+# something cool and aerodynamic"; a wide faceted box, the miniguns' drums half sunk in its
+# flanks, before): a slim streamlined keel, smooth-shaded, an oval below the belly in section, its
+# top buried in the hull; it swells behind the cockpit and narrows to a point under the laser's
+# bridge, the laser out of its nose. `[z, half width, depth under the belly]`, back to front,
+# closed at both ends; the points of its rounded underside.
 GUN_FAIRING = [
-    [-0.8, 0, 0],
-    [-0.45, 0.24, 0.07],
-    [0.3, 0.33, 0.11],
-    [1.3, 0.31, 0.09],
-    [2.55, 0.08, 0.07],
-    [2.85, 0, 0],
+    [-0.85, 0.0, 0.0],
+    [-0.6, 0.08, 0.05],
+    [-0.2, 0.14, 0.09],
+    [0.4, 0.16, 0.11],
+    [1.3, 0.15, 0.1],
+    [2.1, 0.1, 0.1],
+    [2.6, 0.08, 0.13],
+    [2.85, 0.0, 0.0],
 ]
-# The fairing's section, as shares of its half width: its top, its widest, its bottom; how far
-# down its widest point lies, as a share of its depth.
-GUN_FAIRING_SECTION = {"top": 0.8, "bottom": 0.55, "waist": 0.4}
+GUN_FAIRING_POINTS = 9
+# Each minigun hangs on a swept pylon out of the keel's flank (D-399): a thin wing of an airfoil
+# section, its root inside the keel, its tip inside the drum. Its root's and tip's X; their
+# leading and trailing edges' Z; their thickness; the airfoil, `[share of the chord from the
+# leading edge, share of the thickness over (under) the chord]`, leading edge to trailing edge.
+MINIGUN_PYLON: dict[str, Any] = {
+    "xs": [0.1, 0.36],
+    "leading": [1.2, 1.05],
+    "trailing": [0.1, 0.45],
+    "thickness": [0.05, 0.036],
+    "airfoil": [[0.0, 0.0], [0.25, 0.5], [0.6, 0.35], [1.0, 0.0]],
+}
 # The laser (D-342, owner: "review the laze design, the rings sucks"; a barrel ringed by accent
 # coils before): out of the fairing's nose and past the ship's tip (3.3, D-354: everything 0.55
 # further forward with the longer nose), two gunmetal rails
@@ -265,20 +286,35 @@ GUN_FAIRING_SECTION = {"top": 0.8, "bottom": 0.55, "waist": 0.4}
 # a glowing emitter at the core's tip, between the prongs. Its height; the core (Z back and front,
 # radius); the right rail's planform (mirrored left) and thickness; the bridge's planform; the
 # emitter (a lathe profile, Z absolute).
+# D-400 (owner: "move the laser down make it bigger and improve the design of the sides"): at y
+# -0.19 (-0.12), half as big again, its rails shaped blades, lofted along it (flat plates before):
+# each section a pentagon, its flat inner face towards the core, its outer edge sharp, bevelled
+# above and below, tapering into a slim prong ahead of the emitter. A rail section: `[z, inner X,
+# outer X, half height]`, back to front (the right rail; mirrored left), and how much of its
+# width the bevels take.
 LASER: dict[str, Any] = {
-    "y": -0.12,
-    "core": {"zs": [2.65, 3.61], "radius": 0.012},
-    "railThickness": 0.034,
+    "y": -0.19,
+    "core": {"zs": [2.65, 3.61], "radius": 0.018},
+    "railThickness": 0.05,
+    "bevel": 0.4,
 }
-LASER_RAIL = [
-    [0.02, 2.55],
-    [0.052, 2.55],
-    [0.052, 3.4],
-    [0.03, 3.75],
-    [0.02, 3.55],
+# D-401 (owner: "make the side parts of the laser bigger and more complex looking"): larger blades,
+# a ridge along their top and bottom (a seven-sided section: the sharp outer edge, a bevel, the
+# ridge, the inner face), and accent clamps round their backs, at `clamps` Z, `half` deep, a
+# little proud of the blade.
+# D-405 (owner: "the sides of the laser are too pointy"): full-bodied nearly to their front, a
+# short chamfer into a flat front face (they tapered into slim prongs before).
+LASER_RAIL_SECTIONS = [
+    [2.45, 0.035, 0.1, 0.06],
+    [2.75, 0.035, 0.115, 0.068],
+    [3.2, 0.035, 0.11, 0.062],
+    [3.55, 0.037, 0.1, 0.055],
+    [3.72, 0.04, 0.09, 0.045],
+    [3.78, 0.045, 0.08, 0.032],
 ]
-LASER_BRIDGE = [[-0.052, 2.55], [0.052, 2.55], [0.052, 2.75], [-0.052, 2.75]]
-LASER_EMITTER = [[3.68, 0], [3.65, 0.022], [3.61, 0.03], [3.6, 0]]
+LASER_CLAMPS: dict[str, Any] = {"zs": [2.58, 2.7, 2.82], "half": 0.012, "proud": 0.008}
+LASER_BRIDGE = [[-0.115, 2.45], [0.115, 2.45], [0.115, 2.75], [-0.115, 2.75]]
+LASER_EMITTER = [[3.71, 0], [3.665, 0.033], [3.61, 0.045], [3.6, 0]]
 # The miniguns, one in each flank of the fairing: their drums half sunk in it as blisters, their
 # six barrels out ahead of it. Place; drum; barrels (ring radius, radius, length, middle along Z
 # from the drum's); the clamp round the barrels. D-341 (owner: "increase ther size of the
@@ -392,13 +428,15 @@ MISSILE_POD: dict[str, Any] = {
     "halfWidth": 0.33,
     # D-393 (owner: "and move the pods to the front a little"): 0.08 forward (-0.52 to -1.1
     # before), still behind the leading edge, which runs further forward since D-383.
-    "front": -0.44,
+    # D-402 (owner: "move the front of the missile pods to the front (they will be longer) and cut
+    # the back triangle shape mid width"): front -0.3 (-0.44), still behind the leading edge.
+    "front": -0.3,
     "back": -1.02,
     "top": 0.25,
     "full": 0.45,
     "rampSteps": 4,
     "chamfer": 0.03,
-    "tip": 0.01,
+    "tail": 0.6,
     "flare": 0.04,
     "sink": 0.02,
     "gap": 0.015,
@@ -453,14 +491,22 @@ TIP_BODY: dict[str, Any] = {"halfWidth": 0.125, "halfHeight": 0.255, "corner": 0
 # rounded octagon, stretched upright, so the intake's skin carries it on flush, as on the main
 # reactors (a rounded rectangle, shrunk at its front, met the octagon with a step before). Its
 # radius 0.135 (0.124), as wide as the rectangle was, its reactors' corners inside it.
-TIP_INTAKE: dict[str, Any] = {"radius": 0.135, "stretch": 2.05, "rake": 0.0}
+# D-404 (owner: "the side reactor collide with the hull on the outer part, make the hull wider"):
+# radius 0.15 (0.135), stretched 1.845 (2.05), as tall as before, wider: the nozzles' rings clear
+# its chamfered corners at its back.
+TIP_INTAKE: dict[str, Any] = {"radius": 0.15, "stretch": 1.845, "rake": 0.0}
+# D-395 (owner: "there are still useless reactor tubes in the side reactor inside the hulls"):
+# the body runs on to the nozzles' plane, a little narrower there, and ends in a flat back face
+# carrying the two nozzles' cores and rings; the reactors have no nacelle of their own (tubes in
+# the body, their ends out of its pointed tail, before).
 TIP_BODY_PROFILE = [
     [0.675, 0],
     [0.675, 1.0],
     [0.5, 1.0],
     [-0.48, 1.0],
-    [-0.58, 0.82],
-    [-0.62, 0],
+    [-0.6, 0.95],
+    [-0.675, 0.95],
+    [-0.675, 0],
 ]
 
 
@@ -519,26 +565,47 @@ def _build_tail_plate(parent: Any, scene: Any) -> None:
 
 
 def fairing_section(z: float, size: list[float]) -> list[Any]:
-    """Return the gun fairing's section `[z, ring]` at `z` for `[_, half width, depth]`."""
+    """Return the gun keel's section `[z, ring]` at `z` for `[_, half width, depth]` (D-399).
+
+    A half oval under the belly: from its right top corner down round its underside to its left
+    top corner, a little inside the hull's underside (D-349), its top edge closing it in the hull.
+    """
     half = size[1]
     depth = size[2]
-    shape = GUN_FAIRING_SECTION
-    # Its top a little inside the belly, so the fairing grows out of it; its top corners a little
-    # inside the hull's underside where they reach out under its flanks (D-349).
     station = station_at(z)
-    top = -station[BELLY_DEPTH] + 0.02
-    corner = max(top, underside_height(station, half * shape["top"]) + 0.02)
-    bottom = top - depth - 0.02
-    waist = top - (depth + 0.02) * shape["waist"]
-    ring = [
-        [half * shape["top"], corner],
-        [-half * shape["top"], corner],
-        [-half, waist],
-        [-half * shape["bottom"], bottom],
-        [half * shape["bottom"], bottom],
-        [half, waist],
-    ]
+    belly = -station[BELLY_DEPTH]
+    corner = max(belly + 0.02, underside_height(station, half) + 0.02)
+    bottom = belly - depth
+    count = GUN_FAIRING_POINTS - 1
+    ring = []
+    for k in range(count + 1):
+        angle = math.pi * k / count
+        ring.append([half * math.cos(angle), corner + (bottom - corner) * math.sin(angle)])
     return [z, ring]
+
+
+def pylon_sections(sign: float) -> list[Any]:
+    """Return a minigun pylon's airfoil sections, root and tip, on `sign`'s side (D-399).
+
+    In the frame of a node turned a quarter round Y: Z there is the ship's X (`sign` times the
+    span), X there the ship's -Z; Y the height, round the minigun's axis.
+    """
+    pylon = MINIGUN_PYLON
+    sections: list[Any] = []
+    for k in range(2):
+        lead = pylon["leading"][k]
+        chord = lead - pylon["trailing"][k]
+        half = pylon["thickness"][k] / 2
+        foil = pylon["airfoil"]
+        upper = [[lead - p[0] * chord, MINIGUN["y"] + p[1] * half] for p in foil]
+        lower = [
+            [lead - foil[j][0] * chord, MINIGUN["y"] - foil[j][1] * half]
+            for j in range(len(foil) - 2, 0, -1)
+        ]
+        ring = [[-p[0], p[1]] for p in upper]
+        ring.extend([[-p[0], p[1]] for p in lower])
+        sections.append([sign * pylon["xs"][k], ring])
+    return sections
 
 
 def _build_laser(root: Any, scene: Any) -> None:
@@ -549,9 +616,18 @@ def _build_laser(root: Any, scene: Any) -> None:
     """
     mats = get_ship_materials(scene)
     sections = [fairing_section(f[0], f) for f in GUN_FAIRING]
-    fairing = create_section_loft("ship-gun-fairing", sections, 0, scene)
+    # Smooth round its underside, its top edge (in the hull) flat (D-399).
+    fairing = create_section_loft("ship-gun-fairing", sections, GUN_FAIRING_POINTS, scene)
     fairing.material = mats.hull
     fairing.parent = root
+    for side, sign in [("right", 1), ("left", -1)]:
+        span = new_transform_node("ship-minigun-" + side + "-pylon-root", scene)
+        span.rotation.y = math.pi / 2
+        span.parent = root
+        foil = pylon_sections(sign)
+        pylon = create_section_loft("ship-minigun-" + side + "-pylon", foil, len(foil[0][1]), scene)
+        pylon.material = mats.hull
+        pylon.parent = span
     laser = LASER
     node = new_transform_node("ship-laser", scene)
     node.position.y = laser["y"]
@@ -569,12 +645,70 @@ def _build_laser(root: Any, scene: Any) -> None:
     )
     thickness = laser["railThickness"]
     for side, sign in [("right", 1), ("left", -1)]:
-        outline = LASER_RAIL if sign > 0 else mirror_x(LASER_RAIL)
-        panel("ship-laser-rail-" + side, outline, thickness, mats.hullDark, node)
-    panel("ship-laser-bridge", LASER_BRIDGE, thickness * 1.2, mats.hullDark, node)
+        rail = create_section_loft("ship-laser-rail-" + side, laser_rail_sections(sign), 0, scene)
+        rail.material = mats.hullDark
+        rail.parent = node
+    panel("ship-laser-bridge", LASER_BRIDGE, thickness * 1.4, mats.hullDark, node)
+    _build_laser_clamps(mats, node)
     emitter = create_faceted_lathe_along_z("ship-laser-emitter", LASER_EMITTER, OCTAGON, scene)
     emitter.material = mats.reactorCore
     emitter.parent = node
+
+
+def laser_rail_at(z: float) -> list[float]:
+    """Return a laser rail's `[inner X, outer X, half height]` at `z`, between its sections."""
+    rows = LASER_RAIL_SECTIONS
+    for k in range(len(rows) - 1):
+        a = rows[k]
+        b = rows[k + 1]
+        if a[0] <= z <= b[0]:
+            t = (z - a[0]) / (b[0] - a[0])
+            return [a[i] + (b[i] - a[i]) * t for i in range(1, 4)]
+    last = rows[len(rows) - 1] if z > rows[0][0] else rows[0]
+    return [last[1], last[2], last[3]]
+
+
+def _build_laser_clamps(mats: Any, node: Any) -> None:
+    """Add the accent clamps round the laser rails' backs, a little proud of them (D-401)."""
+    clamps = LASER_CLAMPS
+    proud = clamps["proud"]
+    half = clamps["half"]
+    for k, z in enumerate(clamps["zs"]):
+        inner, outer, height = laser_rail_at(z)
+        for side, sign in [("right", 1.0), ("left", -1.0)]:
+            xs = [sign * (inner + proud), sign * (outer + proud)]
+            outline = [
+                [min(xs), z - half],
+                [max(xs), z - half],
+                [max(xs), z + half],
+                [min(xs), z + half],
+            ]
+            name = "ship-laser-clamp-" + side + "-" + str(k)
+            panel(name, outline, 2 * (height + proud), mats.accent, node)
+
+
+def laser_rail_sections(sign: float) -> list[Any]:
+    """Return a laser rail's blade sections on `sign`'s side, back to front (D-400)."""
+    bevel = LASER["bevel"]
+    sections: list[Any] = []
+    for row in LASER_RAIL_SECTIONS:
+        inner = row[1]
+        outer = row[2]
+        half = row[3]
+        width = outer - inner
+        edge = outer - width * bevel * 0.6
+        ridge = outer - width * bevel * 1.4
+        ring = [
+            [outer, 0.0],
+            [edge, half * 0.55],
+            [ridge, half],
+            [inner, half * 0.8],
+            [inner, -half * 0.8],
+            [ridge, -half],
+            [edge, -half * 0.55],
+        ]
+        sections.append([row[0], [[sign * p[0], p[1]] for p in ring]])
+    return sections
 
 
 def barrel_profile(length: float, radius: float, bore: dict[str, float]) -> list[list[float]]:
@@ -621,7 +755,8 @@ def _build_minigun(side: str, sign: float, root: Any, scene: Any) -> None:
     # D-352 (owner: "the inside polygons of the gun barrel are not drawn"): the lathe turns a
     # profile to run towards the nose and faces it outward; the bore's alone already runs that way,
     # so its wall faced away from the axis and was culled. Turned round, it faces the axis.
-    parts = [("-bore", profile[0:3], mats.intakeBlack), ("", profile[2:], mats.trim)]
+    # D-394: the outside open at its back end, inside the drum's collar (capped there before).
+    parts = [("-bore", profile[0:3], mats.intakeBlack), ("", profile[2:5], mats.trim)]
     for k in range(barrels["count"]):
         # D-378 (owner: "rotate the minigins 30° so one barrel is at the vertical top"): the ring
         # turned `turn` round the axis (a barrel on +X, none on top, before).
@@ -698,12 +833,15 @@ def _build_cockpit(root: Any, scene: Any, glow_width: float) -> None:
     half_width = bow["width"] / 2
     outline_z = [[-1.0, -half_width], [1.0, -half_width], [1.0, half_width], [-1.0, half_width]]
     for k, (x, y, angle, length) in enumerate(bow_segments()):
-        node = new_transform_node("ship-canopy-bow-" + str(k), scene)
+        bow_name = "ship-canopy-bow-" + str(k)
+        node = new_transform_node(bow_name, scene)
         node.position.set(x, y, bow["z"])
         node.rotation.z = angle
         node.parent = root
         outline = [[p[0] * length / 2, p[1]] for p in outline_z]
-        panel(node.name + "-panel", outline, bow["thickness"], mats.hullDark, node)
+        # D-394: its name from the string, not `node.name`, which Transcrypt reads as `py_name`
+        # (undefined in the game: every bow panel was "undefined-panel").
+        panel(bow_name + "-panel", outline, bow["thickness"], mats.hullDark, node)
     _build_cockpit_inside(root, scene)
 
 
@@ -861,50 +999,48 @@ def _build_missile_tips(name: str, plate: float, material: Any, parent: Any) -> 
 
 
 def missile_pod_sections(up: float) -> list[Any]:
-    """Return a missile pod's sections, front to back, `up` 1 on the wing's top (D-376).
+    """Return a missile pod's sections, front to back, `up` 1 on the wing's top.
 
-    Each a crowned arch filleted into the wing's face (`scoop_ring` with the pod's shape), full
-    height from the front, then easing down into the wing along a half cosine to its back.
+    A rounded box (D-390) `gap` clear of the wing's face (D-392), full size from its front, then
+    tapering evenly to `tail` of its width and height along a half cosine, its base still on the
+    wing (D-403). Both ends chamfered in to a rim the size of their recess's lining: the launch
+    face at its front (D-376), the rear vent at its back (D-403).
     """
     pod = MISSILE_POD
-    face = WING_THICKNESS / 2
+    share = MISSILE_FACE["share"]
     front = pod["front"]
     back = pod["back"]
+    chamfer = pod["chamfer"]
     ramp = front - (front - back) * pod["full"]
-    zs = [front - pod["chamfer"]]
+    end = back + chamfer
+    zs = [front - chamfer]
     steps = pod["rampSteps"]
-    zs.extend([ramp + (back - ramp) * k / steps for k in range(steps + 1)])
+    zs.extend([ramp + (end - ramp) * k / steps for k in range(steps + 1)])
+    bottom = WING_THICKNESS / 2 + pod["gap"]
+    height = pod["top"] - bottom
     sections: list[Any] = []
     for z in zs:
-        t = max(0.0, (ramp - z) / (ramp - back))
-        ease = (1 + math.cos(math.pi * t)) / 2
-        # D-392 (owner: "separate them from the wings a little, the lower part conflicts with the
-        # wing geometry"): its base `gap` clear of the wing's face (sunk 0.02 in it, before); its
-        # top eases down to just over its base.
-        bottom = face + pod["gap"]
-        top = bottom + max(0.01, (pod["top"] - bottom) * ease)
-        # D-379 (owner: "shift the back of the missile pods to the back a little keep the triangular
-        # end but make a longer body"): back at -1.1 (-0.9), full height over 0.45 of the length
-        # (0.35); the tapering tail stays inside the trailing edge, which runs further back
-        # towards the body.
-        # D-377 (owner: "rework the back of the missile pods, make it triangular, not flat"): over
-        # the ramp it narrows to a point too, a triangle seen from above (full width to its back,
-        # a straight edge across, before).
-        half = max(pod["tip"], pod["halfWidth"] * (1 - t))
-        # D-390 (owner: "rework the missile pods, it's revert to an pod that is attached to the
-        # wing"; asked, separate pods on the wing again): a rounded box from its base, sunk `sink`
-        # in the wing's face, to its top, no fillets into the wing (a filleted arch, D-376).
-        half_height = (top - bottom) / 2
-        corner = min(pod["corner"], half, half_height)
+        t = max(0.0, (ramp - z) / (ramp - end))
+        # D-403 (owner: "the back of the missile pods is ugly, make up something better"; its top
+        # eased down onto its base and its width cut to half, a flat sliver at its end, before):
+        # an even taper in width and height to `tail` of its size.
+        scale = 1 - (1 - pod["tail"]) * (1 - math.cos(math.pi * t)) / 2
+        half = pod["halfWidth"] * scale
+        half_height = height * scale / 2
+        corner = min(pod["corner"] * scale, half, half_height)
         box = rounded_rectangle(half, half_height, corner, pod["cornerSteps"])
-        centre = (top + bottom) / 2
+        centre = bottom + half_height
         sections.append([z, [[p[0], up * (centre + p[1])] for p in box]])
-    # Its front edge chamfered in to the recess's lining, which it meets, so no gap opens onto
-    # the inside of its skin (D-376).
-    middle = up * missile_face_middle()
-    share = MISSILE_FACE["share"]
-    rim = [[p[0] * share, middle + (p[1] - middle) * share] for p in sections[0][1]]
-    sections.insert(0, [front, rim])
+    # Each end chamfered in to its recess's lining, which it meets, so no gap opens onto the
+    # inside of its skin.
+    rims = []
+    for k in [0, len(sections) - 1]:
+        ring = sections[k][1]
+        ys = [p[1] for p in ring]
+        middle = (max(ys) + min(ys)) / 2
+        rims.append([[p[0] * share, middle + (p[1] - middle) * share] for p in ring])
+    sections.insert(0, [front, rims[0]])
+    sections.append([back, rims[1]])
     return sections
 
 
@@ -934,7 +1070,7 @@ def _build_missile_pod(side: str, sign: float, up: float, root: Any, scene: Any)
     node.position.x = sign * pod["x"]
     node.parent = root
     sections = missile_pod_sections(up)
-    # Its front open round the recess (D-375); its back, a sliver on the wing, open too.
+    # Open at both ends, round its recesses (D-375, D-403).
     shell = create_section_loft(name + "-pod", sections, len(sections[0][1]), scene, False, False)
     shell.material = mats.hullMid
     shell.parent = node
@@ -948,6 +1084,15 @@ def _build_missile_pod(side: str, sign: float, up: float, root: Any, scene: Any)
     lining.flipFaces(True)
     lining.material = mats.trim
     lining.parent = node
+    # D-403: the rear vent, a recess as the front's, its lining dark, its plate facing back.
+    tail = sections[len(sections) - 1][1]
+    vent_back = pod["back"] + face["recess"]
+    vent = create_section_loft(
+        name + "-vent", [[pod["back"], tail], [vent_back, tail]], 0, scene, False
+    )
+    vent.flipFaces(True)
+    vent.material = mats.trim
+    vent.parent = node
     holder = new_transform_node(name + "-missiles", scene)
     holder.position.y = middle
     holder.parent = node
@@ -966,8 +1111,9 @@ def _build_tip_reactor(side: str, sign: float, root: Any, scene: Any) -> None:
     for k, label in enumerate(["upper", "lower"]):
         y = pod["ys"][k]
         # Inside the pod's body: no front ring, which poked through its sides (D-385).
+        # D-395: no nacelle, the body's back carries the nozzle (no front ring either, D-385).
         reactor = build_reactor(
-            name + "-reactor-" + label, pod, scene, False, REACTOR_SIDES, 1.0, False
+            name + "-reactor-" + label, pod, scene, False, REACTOR_SIDES, 1.0, False, False
         )
         reactor.position.set(x, y, pod["z"])
         reactor.parent = root
@@ -992,7 +1138,9 @@ def _build_tip_reactor(side: str, sign: float, root: Any, scene: Any) -> None:
         sections[1][0],
         [[q[0], q[1], tip_intake_rake(q[1] - middle)] for q in sections[1][1]],
     ]
-    shell = create_section_loft(name + "-body", sections, len(ring), scene)
+    # Its flat back face flat-shaded, its edge crisp (D-395).
+    back = [len(sections) - 2]
+    shell = create_section_loft(name + "-body", sections, len(ring), scene, True, True, back)
     shell.material = mats.hullMid
     shell.parent = root
     # One octagonal intake for both reactors, at the body's front.
@@ -1096,6 +1244,11 @@ def scoop_ring(
     crown = min(scoop["crown"] * half, room / 4)
     shoulder = top - crown
     rise = max(0.0005, min(flare, shoulder - corner - wall))
+    if flare < 0:
+        # D-398: a negative `flare` chamfers its base's corners at 45°, `-flare` up the wall and
+        # in along the base (two 45° turns in place of one at 90°), where it stands in the air.
+        foot = [half + flare, seat(half + flare)]
+        rise = min(-flare, max(0.0005, shoulder - corner - wall))
     right: list[list[float]] = []
     steps = scoop["filletSteps"]
     for k in range(steps + 1):
@@ -1152,17 +1305,22 @@ def scoop_sections(up: float) -> list[Any]:
         if len(ordered) == 0 or ordered[len(ordered) - 1] - zs[k] > 1e-9:
             ordered.append(zs[k])
     sections = []
+    chamfer = scoop["chamfer"]
     for z in ordered:
         t = max(0.0, (lip - z) / (lip - back))
-        ease = (1 + math.cos(math.pi * t)) / 2
+        # D-398 (owner: "increase the back angle merging into the main reactors"): a quarter
+        # cosine, steepest where it meets the nacelle (a half cosine, tangent to it, before).
+        ease = math.cos(math.pi * t / 2)
         flat = nacelle_top(0.0, z)
         top = flat + max(0.004, scoop["height"] * ease)
         half = scoop["width"] / 2 * (1 - 0.15 * t)
         if z > seat_end:
-            ring = scoop_ring(half, top, 0.001, flat_seat(flat - sink))
+            # D-398 (owner: "smooth the under part of the secondary intakes (two 45° instead of a
+            # single 90°)"): its base's corners chamfered where it overhangs the main intake.
+            ring = scoop_ring(half, top, -chamfer, flat_seat(flat - sink))
         else:
             reach = min(1.0, (seat_end - z) / scoop["flareRun"])
-            flare = max(0.001, scoop["flare"] * reach * (0.5 + 0.5 * ease))
+            flare = -chamfer + (scoop["flare"] * (0.5 + 0.5 * ease) + chamfer) * reach
             ring = scoop_ring(half, top, flare, nacelle_seat(z), sink)
         sections.append([z, [[p[0], up * p[1]] for p in ring]])
     return sections
@@ -1179,12 +1337,18 @@ def _build_scoop(name: str, up: float, reactor: Any, scene: Any) -> None:
     mats = get_ship_materials(scene)
     sections = scoop_sections(up)
     # Its front inside its intake's skin and its back a sliver on the nacelle: left open (D-367).
-    shell = create_section_loft(name, sections, len(sections[0][1]), scene, False, False)
+    # D-397 (owner: "the under part of the secondary intake look wrong"): its base flat-shaded,
+    # the last ring points' faces: where it overhangs the main intake its flat bottom shared the
+    # walls' normals and shaded as a smear; the walls and crown stay smooth.
+    # D-398: its chamfers smooth with the walls, the flat bottom alone flat-shaded.
+    smooth = len(sections[0][1]) - 1
+    shell = create_section_loft(name, sections, smooth, scene, False, False)
     shell.material = mats.hull
     shell.parent = reactor
     skin = scoop_intake_sections(REACTOR_INTAKE, up)
     # Its back on the scoop's open front; its end, inside the lip, closes the duct.
-    mouth = create_section_loft(name + "-intake", skin, len(skin[0][1]), scene, False, True)
+    # Open at its end too, just inside the lip (D-394): the duct's lining carries on from there.
+    mouth = create_section_loft(name + "-intake", skin, len(skin[0][1]) - 1, scene, False, False)
     mouth.material = mats.hull
     mouth.parent = reactor
     # The lining: a loft faces outward, turned round it faces the mouth's middle (D-347).

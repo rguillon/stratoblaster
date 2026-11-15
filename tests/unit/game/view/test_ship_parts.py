@@ -61,6 +61,10 @@ def test_gfx_ship_09_an_edge_strip_lies_across_the_edge_half_out_past_it(monkeyp
     zs = sorted({round(p[1], 9) for p in outline})
     assert zs == [0.9, 1.1]
     assert sorted({p[0] for p in outline}) == [0, 2]
+    # The panel ahead of it (z > 1): the strip still across the edge, half out past it.
+    ship_parts.edge_strip("glow", [[0, 1], [2, 1]], [1, 2], size, MagicMock(), MagicMock())
+    outline, _thickness = made[1]
+    assert sorted({round(p[1], 9) for p in outline}) == [0.9, 1.1]
 
 
 def test_gfx_ship_01_an_intake_runs_straight_then_angles_in_to_its_lip() -> None:
@@ -144,9 +148,9 @@ def test_gfx_ship_01_every_intakes_fins_have_one_size_whatever_the_stretch(
     assert count >= 3
     assert thicknesses == pytest.approx([size["thickness"]] * count)
     assert depths == pytest.approx([size["depth"]] * count)
-    # The depth stays ahead of the smallest intake's fan face.
-    front = ship_parts.REACTOR_INTAKE_FINS["front"] * 0.124
-    assert front - size["depth"] > ship_parts.REACTOR_INTAKE_FAN["z"] * 0.124
+    # D-396: the depth stays ahead of the smallest intake's fan face (the tip's, 0.15, D-404).
+    front = ship_parts.REACTOR_INTAKE_FINS["front"] * 0.15
+    assert front - size["depth"] > ship_parts.REACTOR_INTAKE_FAN["z"] * 0.15
 
 
 def test_gfx_ship_01_the_fins_stand_one_spacing_apart_round_the_middle() -> None:

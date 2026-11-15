@@ -306,10 +306,18 @@ def test_dev_menu_21_the_enemies_and_bosses_viewers_have_three_view_buttons() ->
 
 
 def test_dev_menu_21_the_other_viewers_have_no_view_buttons() -> None:
-    for viewer in ("ships", "props", "levels"):
+    for viewer in ("props", "levels"):
         view = build_menu_view(state("dev-viewer", dev_viewer=viewer), dev_ctx())
         assert isinstance(view, DevViewerView)
         assert view.modes is None
+
+
+def test_dev_menu_21_the_ships_viewer_has_a_model_and_a_wireframe_button() -> None:
+    """Owner: "add a wireframe/normal button in the player ship dev view"; no game view."""
+    view = build_menu_view(state("dev-viewer", dev_viewer="ships"), dev_ctx())
+    assert isinstance(view, DevViewerView)
+    assert view.modes is not None
+    assert [m.label for m in view.modes] == ["Model", "Wireframe"]
 
 
 def test_d333_a_model_viewer_with_a_single_model_has_no_menu() -> None:

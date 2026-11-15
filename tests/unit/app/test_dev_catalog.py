@@ -19,7 +19,7 @@ from app.dev_catalog import (
 from app.dev_catalog import dev_catalog as catalog_of
 from audio.audio_bindings import AudioBindings, AudioMix, MusicRequest
 from audio.audio_types import Track
-from config.dev_viewer import DEV_VIEWERS
+from config.dev_viewer import DEV_VIEWERS, dev_view_modes
 
 
 def game() -> SimpleNamespace:
@@ -231,3 +231,13 @@ def test_dev_menu_13_the_enemies_are_listed_under_their_kind_s_group() -> None:
     ]
     groups = dev_groups(catalog_of(g))
     assert groups["enemies"] == ["Tier 1", "Tier 2"]
+
+
+def test_dev_menu_21_the_views_each_viewer_offers() -> None:
+    """DEV-MENU-21: three for the enemies and bosses, two for the ships, none for the others.
+
+    Owner: "add a wireframe/normal button in the player ship dev view": model and wireframe.
+    """
+    assert dev_view_modes("enemies") == ["model", "wireframe", "game"]
+    assert dev_view_modes("ships") == ["model", "wireframe"]
+    assert dev_view_modes("props") == []

@@ -75,8 +75,11 @@ REACTOR_INTAKE = [
     [0.44, 0.86],
     [0.47, 0.8],
     [0.44, 0.75],
-    [0.08, 0.7],
 ]
+# D-394 (owner: "there are useless geometry on the player's ship, reactor details that are inside
+# the hull etc... perform an extensive pass and cleanup the ship geometry"): the skin stops just
+# inside its lip, open there and at its back (it turned back into the duct to 0.08 and was capped
+# at both ends before): the duct's lining, starting at 0.45 a hair inside it, hides the rest.
 # The duct seen through the mouth: a dark lining facing inwards, a hair inside the skin's.
 # Its back end lies behind the fan face: the duct's cap there and the fan face fought for depth
 # when they lay in one plane (D-341).
@@ -88,7 +91,10 @@ REACTOR_INTAKE_DUCT = [[0.45, 0.74], [0.3, 0.71], [0.04, 0.67]]
 # "make the fins merge into the outer ring on all reactors"); the room they have, the duct
 # lining's radius.
 REACTOR_INTAKE_FAN = {"z": 0.1, "radius": 0.68}
-REACTOR_INTAKE_FINS = {"front": 0.46, "ring": 0.8, "room": 0.71}
+# D-396 (owner: "move the fins of the intake a little to the back"): their front at 0.38 (0.46,
+# just behind the lip, before), their backs still ahead of the fan face, their ends behind the
+# duct's lining.
+REACTOR_INTAKE_FINS = {"front": 0.38, "ring": 0.8, "room": 0.71}
 # Every intake's fins (the main reactors', the wing tips', the secondary scoops') are this thick
 # and this deep in model units, whatever the size of the intake and the stretch of its frame
 # (owner: "equalize the size of the fins between the different intakes", D-350): only their width
@@ -233,7 +239,9 @@ def hexagon_band(
     outer = radius + half
     profile = [[-half, inner], [-half, outer], [half, outer], [half, inner]]
     sections = _hexagon_sections(profile, RING_CORNER_STEPS, sides)
-    mesh = create_section_loft(name, sections, 0, parent.getScene())
+    # D-394: open at both ends, discs across its inside before, hidden in the body it rings (the
+    # rear rings' hid the reactors' glowing cores).
+    mesh = create_section_loft(name, sections, 0, parent.getScene(), False, False)
     mesh.position.z = z
     mesh.material = material
     mesh.parent = parent
@@ -298,7 +306,9 @@ def add_reactor_intake(
     node.parent = root
     profile = [[p[0] * radius, p[1] * radius] for p in REACTOR_INTAKE]
     sections = raked_sections(_hexagon_sections(profile, REACTOR_CORNER_STEPS, sides), rake, 1)
-    shell = create_section_loft(name + "-intake-shell", sections, len(sections[0][1]), scene)
+    shell = create_section_loft(
+        name + "-intake-shell", sections, len(sections[0][1]), scene, False, False
+    )
     shell.material = mats.hull
     shell.parent = node
     # The duct's lining: a loft faces outward, turned round it faces the axis, seen through the
@@ -307,7 +317,9 @@ def add_reactor_intake(
     duct_sections = raked_sections(
         _hexagon_sections(duct_profile, REACTOR_CORNER_STEPS, sides), rake, 1
     )
-    duct = create_section_loft(name + "-intake-duct", duct_sections, 0, scene)
+    # D-394: open at both ends: its front cap faced back, never seen; its back lies behind the
+    # fan face, which closes it.
+    duct = create_section_loft(name + "-intake-duct", duct_sections, 0, scene, False, False)
     duct.flipFaces(True)
     duct.material = mats.intakeBlack
     duct.parent = node
@@ -391,6 +403,21 @@ def _add_intake_fins(
             fin.position.z = rake(y)
 
 
+def _add_nacelle(
+    name: str, radius: float, length: float, intake: bool, sides: int, material: Any, root: Any
+) -> None:
+    """Add a reactor's nacelle: open at its front onto an intake, else closed in (D-340, D-394)."""
+    profile = [[length / 2, radius]] if intake else [[length / 2, 0], [length / 2, radius * 0.75]]
+    profile.extend([[length * p[0], radius * p[1]] for p in NACELLE_TAPER])
+    profile.append([-length / 2, 0])
+    sections = _hexagon_sections(profile, REACTOR_CORNER_STEPS, sides)
+    shell = create_section_loft(
+        name + "-nacelle", sections, len(sections[0][1]), root.getScene(), False, False
+    )
+    shell.material = material
+    shell.parent = root
+
+
 def build_reactor(
     name: str,
     size: dict[str, float],
@@ -399,12 +426,15 @@ def build_reactor(
     sides: int = REACTOR_SIDES,
     stretch: float = 1.0,
     front_ring: bool = True,
+    nacelle: bool = True,
 ) -> Any:
     """Build a reactor centred on its origin, thrusting towards -Z: a rounded hexagon nacelle.
 
     Plus a glowing blue core at the nozzle and an animated blue flame behind it (GFX-SHIP-06), and
     with `intake`, an intake at its front (D-330). Without `front_ring`, no accent ring round its
-    front (D-385).
+    front (D-385). With an intake, the nacelle is open at its front, where the intake's skin
+    carries it on (D-394). Without `nacelle`, no nacelle at all: a body round it carries its
+    nozzle (D-395).
     """
     mats = get_ship_materials(scene)
     radius = size["radius"]
@@ -413,14 +443,8 @@ def build_reactor(
 
     # With an intake, the nacelle runs on at full size to its front, where the intake's skin
     # carries it on flush (D-340: no bump round the intake); without one, it closes in.
-    front = radius if intake else radius * 0.75
-    profile = [[length / 2, 0], [length / 2, front]]
-    profile.extend([[length * p[0], radius * p[1]] for p in NACELLE_TAPER])
-    profile.append([-length / 2, 0])
-    sections = _hexagon_sections(profile, REACTOR_CORNER_STEPS, sides)
-    nacelle = create_section_loft(name + "-nacelle", sections, len(sections[0][1]), scene)
-    nacelle.material = mats.nozzle
-    nacelle.parent = root
+    if nacelle:
+        _add_nacelle(name, radius, length, intake, sides, mats.nozzle, root)
 
     _add_reactor_rings(name, size, root, sides, front_ring)
     if intake:

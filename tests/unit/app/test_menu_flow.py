@@ -794,10 +794,13 @@ def test_dev_menu_21_a_tap_on_a_view_button_picks_the_view_of_the_enemies_viewer
     assert flow.state.dev_mode == 2
 
 
-def test_dev_menu_21_the_ships_viewer_has_no_views() -> None:
+def test_dev_menu_21_the_ships_viewer_has_the_model_and_wireframe_views_only() -> None:
+    """Owner: "add a wireframe/normal button in the player ship dev view"; no game view."""
     flow = at_dev_menu()
     flow.dispatch("confirm")
     settle(flow)
     assert flow.state.dev_viewer == "ships"
-    assert flow.dispatch(MenuSelect(-2)) == "none"
+    assert flow.dispatch(MenuSelect(-3)) == "none"
     assert flow.state.dev_mode == 0
+    assert flow.dispatch(MenuSelect(-2)) == "adjusted"
+    assert flow.state.dev_mode == 1
