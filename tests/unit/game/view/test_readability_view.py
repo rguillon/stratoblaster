@@ -9,14 +9,12 @@ from unittest.mock import MagicMock
 import pytest
 
 from game.config.readability import READABILITY
-from game.config.ship_look import PLAYER_SHIP_SCALE
 from game.view import readability_view
 from game.view.readability_view import (
     KEEP,
     all_toned,
     toned,
     toned_shots,
-    trimmed_ships,
 )
 
 LOOK = READABILITY
@@ -114,24 +112,6 @@ def test_gfx_read_02_all_toned_keeps_the_ids_of_its_looks() -> None:
     result = all_toned(looks, 0.3)
     assert list(result) == ["1-1"]
     assert result["1-1"].tone == 0.3
-
-
-def test_gfx_trim_05_each_ship_model_gets_an_edge_trim_in_the_player_colour(
-    monkeypatch: Any,
-) -> None:
-    """Also GFX-TRIM-01 and GFX-READ-07: the player ship stands out by its trim."""
-    request = MagicMock(name="request_trim")
-    add = MagicMock(name="add_edge_trim")
-    monkeypatch.setattr(readability_view, "request_trim", request)
-    monkeypatch.setattr(readability_view, "add_edge_trim", add)
-    root = MagicMock(name="root")
-    models = trimmed_ships({"light": lambda _scene: root})
-    assert models["light"]("scene") is root
-    request.assert_called_once_with(root, LOOK.playerTrim.color)
-    options = add.call_args.args[1]
-    # Logical pixels on the playfield, the models drawn PLAYER_SHIP_SCALE times smaller.
-    assert options.width == LOOK.playerTrim.width / PLAYER_SHIP_SCALE
-    assert options.offset == LOOK.playerTrim.offset / PLAYER_SHIP_SCALE
 
 
 def test_gfx_read_14_the_shot_renderers_are_wrapped_one_for_each_weapon() -> None:

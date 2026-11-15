@@ -19,7 +19,7 @@ from app.dev_catalog import (
 from app.dev_catalog import dev_catalog as catalog_of
 from audio.audio_bindings import AudioBindings, AudioMix, MusicRequest
 from audio.audio_types import Track
-from config.dev_viewer import DEV_VIEWERS
+from config.dev_viewer import DEV_VIEWERS, dev_view_modes
 
 
 def game() -> SimpleNamespace:
@@ -65,10 +65,7 @@ def test_d199_the_ships_enemies_and_bosses_are_shown_over_the_first_level() -> N
     """DEV-MENU-12."""
     g = game()
     ships = dev_items(g, "ships")
-    assert [(i.id, i.label, i.host) for i in ships] == [
-        ("alpha", "Alpha", "1-1"),
-        ("beta", "Beta", "1-1"),
-    ]
+    assert [(i.id, i.label, i.host) for i in ships] == [("alpha", "Alpha", "1-1")]
     assert [(i.id, i.label, i.group) for i in dev_items(g, "enemies")] == [
         ("hornet", "Hornet", "Tier 1")
     ]
@@ -135,10 +132,10 @@ def test_d199_the_catalog_and_its_labels_cover_every_viewer() -> None:
     assert list(catalog) == DEV_VIEWERS
     labels = dev_labels(catalog)
     assert labels["props"] == ["buoy", "hut", "tower"]
-    assert labels["ships"] == ["Alpha", "Beta"]
+    assert labels["ships"] == ["Alpha"]
     groups = dev_groups(catalog)
     assert groups["props"] == ["Other", "Other", "Other"]
-    assert groups["ships"] == ["", ""]
+    assert groups["ships"] == [""]
 
 
 def test_d209_the_cars_of_the_levels_are_listed_with_their_props(
@@ -234,3 +231,13 @@ def test_dev_menu_13_the_enemies_are_listed_under_their_kind_s_group() -> None:
     ]
     groups = dev_groups(catalog_of(g))
     assert groups["enemies"] == ["Tier 1", "Tier 2"]
+
+
+def test_dev_menu_21_the_views_each_viewer_offers() -> None:
+    """DEV-MENU-21: three for the enemies and bosses, two for the ships, none for the others.
+
+    Owner: "add a wireframe/normal button in the player ship dev view": model and wireframe.
+    """
+    assert dev_view_modes("enemies") == ["model", "wireframe", "game"]
+    assert dev_view_modes("ships") == ["model", "wireframe"]
+    assert dev_view_modes("props") == []

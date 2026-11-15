@@ -184,7 +184,7 @@ def fit_to_window(engine: Any, stage: Any, overlay: Any, draw_scale: float) -> N
     """
 
     def fit() -> None:
-        stage_fit = fit_stage(window.innerWidth, window.innerHeight, GAME.screen)
+        stage_fit = fit_stage(window.innerWidth, window.innerHeight, GAME.screen, GAME.playfield)
         apply_stage_fit(stage, overlay, stage_fit, GAME.screen)
         ratio = render_ratio(pixel_ratio(), stage_fit, ENGINE_CONFIG.max_render_scale)
         engine.setHardwareScalingLevel(1 / (ratio * draw_scale))

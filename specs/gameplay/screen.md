@@ -35,15 +35,20 @@ resolution and the window are game data.
 
 ### GAME-SCREEN-02 — Fitted to the window · MUST
 
-The stage (the 3D canvas and the HTML overlay of the menus and the HUD) is the largest 16:9
-rectangle that fits in the window, centred, with bars on the sides or above and below
-(letterboxed): never cropped, never stretched. The overlay is laid out at 1280 × 720 CSS pixels and
-scaled with the stage, so the canvas and the overlay always line up. The stage is fitted again
-when the window is resized (ENG-110).
+The stage (the 3D canvas and the HTML overlay of the menus and the HUD) keeps its 16:9 logical
+ratio, never stretched, centred. What must fit the window is the playfield window (GAME-SCREEN-04),
+where everything is drawn, played and laid out (D-252, D-317, D-319): it is the largest it can be
+in the window, never cropped, and the stage's side columns round it may run past the window's
+edges rather than shrink it (owner, 2026-11-11, D-329: "the display area get small for no good
+reason when I play with the browser size"). A window wide enough for the whole stage shows it
+whole, letterboxed as before. A game without a playfield window fits the whole stage. The overlay
+is laid out at 1280 × 720 CSS pixels and scaled with the stage, so the canvas and the overlay
+always line up. The stage is fitted again when the window is resized (ENG-110).
 
 **Acceptance criteria**
-- Given windows of 800 × 600, 1920 × 1080 and 390 × 844, then the whole stage is visible, with its
-  16:9 ratio, centred (unit test on the fit, e2e); at 1920 × 1080 it fills the window.
+- Given windows of 800 × 600, 1000 × 900, 1920 × 1080 and 390 × 844, then the stage keeps its
+  16:9 ratio and its playfield window is wholly visible, centred, filling the window's width or
+  height (unit test on the fit, e2e); at 1920 × 1080 the whole stage fills the window.
 - Given the window is resized, then the stage is fitted to the new size.
 - Given a window with no room, then the scale is 0 and nothing throws (unit test).
 

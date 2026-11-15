@@ -33,7 +33,6 @@ def test_dev_perf_07_a_world_s_first_level_loads_in_steps_its_loading_time_in_bu
     level_id = f"{world}-1"
     open_game(page)
     send_action(page, "confirm")
-    send_action(page, "confirm")
     expect_state(page, {"screen": "level-select"})
     for _ in range(1, world):
         send_action(page, "down")

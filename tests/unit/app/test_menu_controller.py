@@ -1,6 +1,6 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/menu_controller.py`."""
-# (UI-SHIP-07, GAME-SCORE-05, UI-PAUSE-11, UI-SET-06).
+# (UI-FLOW-02, GAME-SCORE-05, UI-PAUSE-11, UI-SET-06).
 
 import pytest
 from helpers.memory_storage import MemoryStorage
@@ -12,7 +12,7 @@ from app.saved_settings import saved_setting_keys
 from config.dev_viewer import DEV_VIEWERS
 from core.systems.level_run_types import LevelResult
 from input.menu_action import MenuSet
-from ui.menu_view import GameScreenView, LoadingView, SettingsView, ShipSelectView, TitleView
+from ui.menu_view import GameScreenView, LevelSelectView, LoadingView, SettingsView, TitleView
 
 
 class FakeDisplay:
@@ -56,7 +56,6 @@ def make(
         store,
         0.25,
         None,
-        80,
         "1.0",
         "abc",
         on_change,
@@ -95,7 +94,6 @@ def with_fullscreen(fullscreen: FakeFullscreen) -> tuple[MenuController, FakeDis
         MemoryStorage(),
         0.25,
         None,
-        80,
         "1.0",
         "abc",
         None,
@@ -181,43 +179,34 @@ def test_game_score_05_a_score_above_the_high_score_is_saved_and_a_lower_one_is_
 def test_ui_over_02_a_completed_level_that_beats_the_score_says_so_on_its_panel() -> None:
     controller, display, _, _ = make()
     finish(controller)
-    go(controller, "confirm", "confirm", "confirm")
+    go(controller, "confirm", "confirm")
     controller.complete_level(level_result(1200))
     assert controller.high_score == 1200
     game_view = display.last
     assert isinstance(game_view, GameScreenView)
-    assert game_view.complete.new_high_score == "New high score!"
+    assert game_view.complete.new_high_score == "New high score"
 
 
 def test_dev_opt_01_a_direct_start_refreshes_the_display() -> None:
     controller, display, _, _ = make()
     finish(controller)
-    assert controller.play_direct("alpha", "1-1") is True
+    assert controller.play_direct("1-1") is True
     assert isinstance(display.last, GameScreenView)
-    assert controller.play_direct("nope", "1-1") is False
+    assert controller.play_direct("nope") is False
 
 
-def test_ui_ship_07_the_chosen_ship_is_remembered_for_next_time() -> None:
-    controller, _, _, storage = make()
-    finish(controller)
-    go(controller, "confirm", "right", "confirm")
-    assert storage.get(saved_choice_keys("stratoblaster").last_ship) == "beta"
-
-
-def test_ui_ship_07_the_saved_ship_is_highlighted_when_the_menu_starts() -> None:
-    storage = MemoryStorage()
-    storage.set(saved_choice_keys("stratoblaster").last_ship, "beta")
-    controller, display, _, _ = make(storage)
+def test_ui_flow_02_start_shows_the_level_select_flown_with_the_game_s_one_ship() -> None:
+    controller, display, _, _ = make()
     finish(controller)
     controller.command("confirm")
-    assert isinstance(display.last, ShipSelectView)
-    assert display.last.selected == 1
+    assert isinstance(display.last, LevelSelectView)
+    assert controller.flow.state.ship_id == "alpha"
 
 
 def test_ui_set_06_the_volumes_are_saved_on_every_change() -> None:
     controller, _, _, storage = make()
     finish(controller)
-    go(controller, "confirm", "down", "down", "confirm")
+    go(controller, "down", "confirm")
     controller.command(MenuSet(0, 2))
     keys = saved_setting_keys("stratoblaster")
     assert storage.get(keys.music) == "2"
@@ -245,7 +234,7 @@ def test_ui_set_06_an_invalid_saved_volume_falls_back_to_the_default() -> None:
 def test_ui_level_04_a_locked_pick_shakes_the_entry_with_the_locked_text() -> None:
     controller, display, _, _ = make()
     finish(controller)
-    go(controller, "confirm", "confirm", "down", "confirm")
+    go(controller, "confirm", "down", "confirm")
     assert display.shaken == ["Locked"]
 
 
@@ -263,7 +252,7 @@ def test_ui_pause_11_pausing_reports_the_pause_and_refreshes() -> None:
     feedback: list = []
     controller, display, _, _ = make(on_feedback=lambda c, r: feedback.append((c, r)))
     finish(controller)
-    go(controller, "confirm", "confirm", "confirm")
+    go(controller, "confirm", "confirm")
     assert controller.pause() is True
     assert feedback[-1] == ("pause", "paused")
     assert isinstance(display.last, GameScreenView)
@@ -310,7 +299,7 @@ def test_d199_the_dev_labels_give_the_flow_its_counts_and_the_views_their_items(
     labels.update({"ships": ["A", "B"], "levels": ["1-1"]})
     display = FakeDisplay()
     deps = MenuControllerDeps(
-        display, FakeInput(), MemoryStorage(), 0.25, None, 80, "1.0", "abc", None, None, labels
+        display, FakeInput(), MemoryStorage(), 0.25, None, "1.0", "abc", None, None, labels
     )
     controller = MenuController(make_game(), deps)
     finish(controller)
@@ -337,7 +326,6 @@ def test_d202_the_dev_groups_let_up_and_down_jump_between_the_groups() -> None:
         MemoryStorage(),
         0.25,
         None,
-        80,
         "1.0",
         "abc",
         None,

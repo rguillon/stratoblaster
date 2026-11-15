@@ -894,7 +894,7 @@ this rule.
 
 #### BOSS-56 — Fight times · MUST
 
-A boss's health is tuned so that a simulated player (the balanced ship, guns at level 3, always on
+A boss's health is tuned so that a simulated player (the player ship, guns at level 3, always on
 target, flying under the next shielding part, then the others, then the core) needs a fight time in
 the ranges of its world. World 1's are in Tunable values; the other worlds' are in their world
 files.

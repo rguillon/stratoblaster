@@ -20,6 +20,11 @@ ModelAnimation = Callable[[float], None]
 
 
 ANIMATIONS: WeakMap[list[ModelAnimation]] = new_weak_map()
+# What drives a model's animations from outside, by node: name to number (the ship's sideways
+# speed, D-359).
+INPUTS: WeakMap[dict[str, float]] = new_weak_map()
+# The ship's sideways speed as a share of its top speed, -1 to 1, positive towards the model's +X.
+SIDEWAYS = "sideways"
 
 
 def add_model_animation(node: Any, animation: Any) -> None:
@@ -43,3 +48,27 @@ def step_model_animations(root: Any, dt_seconds: float) -> None:
         if animations is not None:
             for animation in animations:
                 animation(dt_seconds)
+
+
+def set_model_input(node: Any, name: str, value: float) -> None:
+    """Set an input `name` of the model under `node` (or of the node itself), for its animations.
+
+    The game sets it on the node it moves the model by; the model's animations read it with
+    `model_input` from their own node, below it.
+    """
+    inputs = weak_map_get(INPUTS, node)
+    if inputs is None:
+        inputs = {}
+        weak_map_set(INPUTS, node, inputs)
+    inputs[name] = value
+
+
+def model_input(node: Any, name: str, default: float) -> float:
+    """Return the input `name` set on `node` or the nearest of its ancestors; `default` if none."""
+    current = node
+    while current:
+        inputs = weak_map_get(INPUTS, current)
+        if inputs is not None and name in inputs:
+            return inputs[name]
+        current = current.parent
+    return default

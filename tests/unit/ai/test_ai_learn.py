@@ -68,13 +68,13 @@ def test_d_271_each_episode_is_a_campaign_from_the_first_level_afresh() -> None:
         assert (setup.weapon, setup.lives, setup.bombs) == (WEAPON_IDS[0], 3, 3)
         assert setup.start_time == 0
         assert setup.weapon_levels == dict.fromkeys(WEAPON_IDS, 1)
-        assert setup.ship_id == "balanced"
-    assert "balanced" in SHIP_IDS
+        assert setup.ship_id == "player"
+    assert "player" in SHIP_IDS
 
 
 def _game(score: float, cleared: int = 0, outcome: str = "over") -> EpisodeReport:
     level = LEVEL_IDS[min(cleared, len(LEVEL_IDS) - 1)]
-    return EpisodeReport("balanced", outcome, score, level, cleared, 0.5, 3, 100)
+    return EpisodeReport("player", outcome, score, level, cleared, 0.5, 3, 100)
 
 
 def test_d_271_the_report_says_how_the_games_went_in_words() -> None:

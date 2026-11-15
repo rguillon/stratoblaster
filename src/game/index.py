@@ -25,7 +25,7 @@ from game.view.bombs.bomb_renderer import create_bomb_renderer
 from game.view.bonuses.bonus_renderer import create_bonus_renderer
 from game.view.enemies.enemy_bindings import ENEMY_BINDINGS
 from game.view.player_ship_models import PLAYER_SHIP_MODELS
-from game.view.readability_view import toned_shots, trimmed_ships
+from game.view.readability_view import toned_shots
 from game.view.scenery_bindings import SCENERY_BINDINGS
 from game.view.shots.player_shot_renderers import PLAYER_SHOT_RENDERERS
 from game.view.title_backdrop import build_title_backdrop
@@ -90,7 +90,8 @@ GAME = GameDefinition(
     # The ships with a glowing edge trim (GFX-READ-07), the shots toned down (GFX-READ-14), the
     # ships drawn at their playfield scale (GFX-SHIP-07).
     GameBindings(
-        trimmed_ships(PLAYER_SHIP_MODELS),
+        # GFX-SHIP-09 (D-335): no trim round the player ship; its edges glow.
+        PLAYER_SHIP_MODELS,
         PLAYER_SHIP_SCALE,
         toned_shots(PLAYER_SHOT_RENDERERS),
         build_title_backdrop,

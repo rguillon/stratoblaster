@@ -94,10 +94,8 @@ def test_its_memory_starts_over_with_each_attempt() -> None:
 
 
 def test_the_game_is_asked_for_with_ai_and_the_level_only_when_given() -> None:
-    assert page_query(None, None) == "?ai=1"
-    assert page_query(None, "heavy") == "?ai=1"
-    assert page_query("2-3", None) == "?ai=1&level=2-3"
-    assert page_query("2-3", "heavy") == "?ai=1&level=2-3&ship=heavy"
+    assert page_query(None) == "?ai=1"
+    assert page_query("2-3") == "?ai=1&level=2-3"
 
 
 def test_the_server_sends_the_game_on_with_ai_and_answers_with_the_keys() -> None:

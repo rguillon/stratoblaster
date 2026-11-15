@@ -6,6 +6,7 @@ docs/superpowers/specs/2026-10-31-ship-glow-and-boss-transform-design.md): GFX-T
 GFX-TRIM-10.
 """
 
+import pytest
 from helpers.render_geometry import babylon_normal, triangles
 
 from render.geometry.edge_trim import (
@@ -220,3 +221,18 @@ def test_a_flat_matrix_has_no_inverse_and_gives_the_identity() -> None:
     result = inverse(flat)
     assert result == IDENTITY
     assert result is not IDENTITY
+
+
+def test_gfx_trim_02_an_edge_partly_covered_keeps_its_trim_where_it_shows() -> None:
+    """D-330: a fin across half a hull's edge hides only that half of the edge's trim."""
+    hull = _box([2, 1, 4])
+    # A plate standing out past the hull's right side (x = 1) over its back half (z < 0).
+    fin = _box([1, 0.2, 2], [1.4, 0.7, -1])
+    cover = up_triangles(hull.geometry.positions, hull.geometry.indices, 0.2)
+    cover.extend(up_triangles(fin.geometry.positions, fin.geometry.indices, 0.2))
+    right = [e for e in _edges(hull, cover) if e.out[0] > 0.5]
+    assert len(right) == 1
+    zs = sorted([right[0].a[2], right[0].b[2]])
+    # The front half (z from 0 to 2) keeps its trim; the back half, under the fin, has none.
+    assert zs[0] == pytest.approx(0, abs=0.01)
+    assert zs[1] == pytest.approx(2)

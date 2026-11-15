@@ -17,7 +17,6 @@ def test_dev_opt_01_the_level_in_the_query_turns_debug_on() -> None:
     assert options is not None
     assert options.level_id == "1-3"
     assert options.time == 0
-    assert options.ship_id is None
     assert options.boss is None
     assert options.weather is True
     assert options.time_of_day is None
@@ -26,16 +25,15 @@ def test_dev_opt_01_the_level_in_the_query_turns_debug_on() -> None:
 
 def test_dev_opt_01_without_a_level_there_are_no_debug_options() -> None:
     assert parse_debug_options("") is None
-    assert parse_debug_options("?ship=heavy") is None
+    assert parse_debug_options("?t=120") is None
     assert parse_debug_options("?level=") is None
 
 
-def test_dev_opt_02_the_start_time_ship_and_boss_are_read() -> None:
-    """Also DEV-OPT-01 (the ship) and DEV-OPT-03 (the boss)."""
-    options = parse_debug_options("?level=2-1&t=120&ship=heavy&boss=final")
+def test_dev_opt_02_the_start_time_and_boss_are_read() -> None:
+    """Also DEV-OPT-03 (the boss)."""
+    options = parse_debug_options("?level=2-1&t=120&boss=final")
     assert options is not None
     assert options.time == 120
-    assert options.ship_id == "heavy"
     assert options.boss == "final"
 
 

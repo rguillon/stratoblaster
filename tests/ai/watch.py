@@ -5,10 +5,10 @@ A local server (no browser of its own: open its address in any browser) serves t
 the game (`dist-e2e/`) with `?ai` in its address: the game then runs in real time, and while a
 level is played (not paused, not over) it posts what is on the playfield to `POST /ai` about 15
 times a second (`src/debug/remote_player.py`, D-291). The brain answers here, in Python, with the
-keys to hold: the arrows, Space (fire), R (a bomb), E (the next weapon). Choose a ship and a level
-in the menus as usual (or give `--level`); the menus and the panels are yours. Ctrl-C stops it.
+keys to hold: the arrows, Space (fire), R (a bomb), E (the next weapon). Choose a level in the
+menus as usual (or give `--level`); the menus and the panels are yours. Ctrl-C stops it.
 
-    uv run python -m ai.watch [--level 2-3] [--ship heavy] [--port 5174]
+    uv run python -m ai.watch [--level 2-3] [--port 5174]
 """
 
 import argparse
@@ -24,7 +24,7 @@ import torch
 
 from ai import REPO_ROOT
 from ai.brain import BRAIN_FILE, Batch, Brain, load_brain
-from ai.game_env import LEVEL_IDS, SHIP_IDS, level_difficulty
+from ai.game_env import LEVEL_IDS, level_difficulty
 from ai.observation import Scene, observe_scene
 
 DIST = REPO_ROOT / "dist-e2e"
@@ -86,13 +86,11 @@ class Player:
         return set(MOVE_KEYS[move]) | {FIRE_KEY}, taps
 
 
-def page_query(level: str | None, ship: str | None) -> str:
+def page_query(level: str | None) -> str:
     """Return the query of the game's address: `ai` (D-291), and the level to start, if any."""
     query: dict[str, str] = {"ai": "1"}
     if level is not None:
         query["level"] = level
-        if ship is not None:
-            query["ship"] = ship
     return "?" + urlencode(query)
 
 
@@ -139,9 +137,7 @@ def make_server(player: Player, query: str, host: str, port: int) -> ThreadingHT
     return ThreadingHTTPServer((host, port), partial(handler, directory=str(DIST)))
 
 
-def serve(
-    brain_path: Path, level: str | None, ship: str | None, host: str, port: int, greedy: bool
-) -> None:
+def serve(brain_path: Path, level: str | None, host: str, port: int, greedy: bool) -> None:
     """Serve the game and let the brain play its levels, until Ctrl-C."""
     if not (DIST / "index.html").exists():
         msg = f"No e2e build in {DIST}: run `make serve-ai` (it builds it)."
@@ -152,7 +148,7 @@ def serve(
     torch.set_num_threads(2)
     brain, stats = load_brain(brain_path)
     brain.eval()
-    server = make_server(Player(brain, greedy), page_query(level, ship), host, port)
+    server = make_server(Player(brain, greedy), page_query(level), host, port)
     shown = "localhost" if host in ("127.0.0.1", "0.0.0.0") else host  # noqa: S104
     print(
         f"The brain of {brain_path} ({stats.updates} updates, {stats.hours:.1f} h of learning)"
@@ -171,7 +167,6 @@ def serve(
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description="Serve the game for the brain to play it.")
     parser.add_argument("--level", choices=LEVEL_IDS, help="start this level (else: the menus)")
-    parser.add_argument("--ship", choices=SHIP_IDS, help="with this ship (with --level)")
     parser.add_argument("--host", default="127.0.0.1", help="0.0.0.0: reachable from elsewhere")
     parser.add_argument("--port", type=int, default=5174)
     parser.add_argument(
@@ -181,7 +176,7 @@ def main(argv: list[str] | None = None) -> None:
     )
     parser.add_argument("--brain", type=Path, default=BRAIN_FILE)
     args = parser.parse_args(argv)
-    serve(args.brain, args.level, args.ship, args.host, args.port, args.greedy)
+    serve(args.brain, args.level, args.host, args.port, args.greedy)
 
 
 if __name__ == "__main__":

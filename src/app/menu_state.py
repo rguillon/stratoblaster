@@ -35,8 +35,7 @@ class MenuState:
         screen: MenuScreen,
         selection: int,
         selected_id: str | None,
-        highlighted_ship_id: str,
-        chosen_ship_id: str | None,
+        ship_id: str,
         chosen_level_id: str | None,
         transitioning: bool,
         level_result: LevelResult | None,
@@ -53,11 +52,10 @@ class MenuState:
         self.screen = screen
         # Index of the selected entry on the current screen.
         self.selection = selection
-        # Id of the selected entry (`start`, a ship id, a level id), or None.
+        # Id of the selected entry (`start`, a level id), or None.
         self.selected_id = selected_id
-        # Ship highlighted on the ship select screen.
-        self.highlighted_ship_id = highlighted_ship_id
-        self.chosen_ship_id = chosen_ship_id
+        # The ship the levels are flown with: the game's one ship (D-326).
+        self.ship_id = ship_id
         self.chosen_level_id = chosen_level_id
         # True during a screen transition, while input is ignored (UI-FLOW-08).
         self.transitioning = transitioning
@@ -92,9 +90,8 @@ class MenuFlowOptions:
 
     def __init__(
         self,
-        ship_ids: list[str],
+        ship_id: str,
         levels: LevelCatalog,
-        initial_ship_id: str | None,
         transition_seconds: float,
         result_delay_seconds: float | None,
         volumes: Volumes | None,
@@ -103,11 +100,9 @@ class MenuFlowOptions:
         dev_groups: list[list[str]] | None = None,
         fullscreen: bool | None = None,
     ) -> None:
-        # Ship ids in display order; the first one is the default selection.
-        self.ship_ids = ship_ids
+        # The ship the levels are flown with: the game's one ship (D-326).
+        self.ship_id = ship_id
         self.levels = levels
-        # Ship to highlight first instead of the default one (UI-SHIP-07). Ignored if unknown.
-        self.initial_ship_id = initial_ship_id
         # Input is ignored for this long after each screen change (UI-FLOW-08).
         self.transition_seconds = transition_seconds
         # ...and for this long after the "Level complete" overlay shows (UI-OVER-04).

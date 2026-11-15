@@ -9,7 +9,7 @@ def test_game_screen_05_the_ship_flies_inside_the_playfield_window() -> None:
     """D-251: it may reach the bottom edge (its model on screen); D-252: the window bounds it."""
     margin = GAME_PLAY_CONFIG.ship_margin
     assert margin.side > 0
-    assert 17 <= margin.bottom <= 24  # half the balanced ship's length, ENEMY_UNIT 34
+    assert 17 <= margin.bottom <= 24  # half the player ship's length, ENEMY_UNIT 34
     assert margin.top > margin.bottom
 
 

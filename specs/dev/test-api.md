@@ -47,7 +47,7 @@ seed call, it only moves when stepped, and the game's own pause is sent with `se
 |-------|------------|
 | `screen` | The current screen ([../ui/screen-flow.md](../ui/screen-flow.md)), `pause` and `settings` included |
 | `selection`, `selectedId` | The index selected on the screen, and the id of what it selects |
-| `highlightedShipId`, `chosenShipId`, `chosenLevelId` | The ship highlighted on ship select, the ship and the level chosen |
+| `shipId`, `chosenLevelId` | The ship flown (the game's one ship, D-326) and the level chosen |
 | `transitioning` | True during a screen transition, while input is ignored |
 | `levelResult` | The "Level complete" / "Game over" result while its panel shows, or null: `levelId`, `destroyed`, `spawned`, `outcome`, `score`, `newHighScore` (only when there is one), `checkpoint` (`progress`, `bossesPassed`, `score`, or null) |
 | `choice` | The choice selected on a "Game over" panel (0 Continue, 1 level select), or on the `Leave the level?` question (0 No, 1 Yes) |

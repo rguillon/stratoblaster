@@ -25,8 +25,8 @@ else starts, and no error is thrown or logged.
 
 The "not supported" message is short and plain, understandable by a kid's parent: the game cannot
 run in this browser or on this device, and which browsers to try. It comes from the game's texts
-(`unsupported`): "Sorry! This game cannot run in this browser or on this device. Please try a
-recent version of Chrome, Edge, Firefox or Safari on a computer." It is centred on the whole page,
+(`unsupported`): "This game cannot run in this browser or on this device. Please try a recent
+version of Chrome, Edge, Firefox or Safari on a computer." It is centred on the whole page,
 in large text (22 px) on the dark background.
 
 **Acceptance criteria**
@@ -36,17 +36,16 @@ in large text (22 px) on the dark background.
 
 ### UI-LOAD-03 — A loading screen with real progress · MUST
 
-While the menus' 3D scenes are prepared, a loading screen shows a progress bar that goes from 0 %
+While the menus' 3D scene is prepared, a loading screen shows a progress bar that goes from 0 %
 to 100 % with the real work (ENG-108). The work is a list of steps, and the bar moves after each
-one: build the title backdrop, build the ship select stage, wait until each of the two scenes has
-compiled its shaders, then draw each ship highlighted once (so the first highlight on the ship
-select screen does not stall). The browser paints between two steps, so the bar visibly moves. It
-never goes back.
+one: build the title backdrop, then wait until its scene has compiled its shaders (the ship select
+stage and its warm-up steps went with that screen, D-326). The browser paints between two steps,
+so the bar visibly moves. It never goes back.
 
 **Acceptance criteria**
 - Given a page load, then a progress bar going from 0 % to 100 % is visible before the title screen, with more than two values, in increasing order (e2e).
 
-*Sources: P01-R02, ENG-108, D-008, D-118.*
+*Sources: P01-R02, ENG-108, D-008, D-118, D-326.*
 
 ### UI-LOAD-04 — The title follows by itself · MUST
 
@@ -59,13 +58,12 @@ When the last loading step is done, the title screen appears without any user ac
 
 ### UI-LOAD-05 — The loading screen's look · SHOULD
 
-The loading screen shows, centred: the game's "Loading…" text (30 px, italic, uppercase, in a cyan
-glow), a 320 × 24 px gauge with a cyan border filled by the blue-to-green neon line cut into
-segments like a power gauge, and the percent under it in green monospace. Its background is a faint
-cyan grid floor under a deep blue horizon glow. It does not fade in.
+The loading screen shows, centred: the game's "Loading…" text (28 px, sentence case, weight 600),
+a 320 × 8 px gauge (a hairline track with 4 px corners, filled in solid cyan) and the percent
+under it in muted monospace. Its background is the plain blue-black. It does not fade in.
 
 **Acceptance criteria**
-- Manual check: the loading screen matches this description in the neon blue/green look ([look-and-layout.md](look-and-layout.md)).
+- Manual check: the loading screen matches this description ([look-and-layout.md](look-and-layout.md)).
 - The gauge is a `progressbar` with its value from 0 to 100 (unit test).
 
 *Sources: P01-R13, D-013, D-198.*
@@ -103,7 +101,7 @@ player to reload the page: there is no reload button.
 
 | Name | Value | Notes |
 |------|-------|-------|
-| Boot loading steps | 5 | `src/app/menu_scenes.py` `prepare_menu_scenes` (backdrop, ships, wait for each scene, highlight each ship) |
+| Boot loading steps | 2 | `src/app/menu_scenes.py` `prepare_menu_scenes` (backdrop, wait for its scene) |
 | `loading_screen_after_ms` | 300 ms | `index.html` `.level-loading` (animation delay 0.3 s, then a 0.15 s fade) |
 | Loading gauge | 320 × 24 px | `index.html` `.loading-bar` |
 | Loading text | "Loading…" | `src/game/config/menu_texts.py` `MENU_TEXTS["loading"]` |

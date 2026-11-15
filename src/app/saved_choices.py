@@ -1,8 +1,7 @@
 # Copyright (c) 2026 Renaud Guillon
-"""What the menus keep between visits.
+"""What the menus keep between visits: the high score.
 
-The high score and the last ship Keys are prefixed with the game's id so several games can share a
-domain.
+Keys are prefixed with the game's id so several games can share a domain.
 """
 
 import math
@@ -20,24 +19,21 @@ from host.key_value_storage import KeyValueStorage
 class SavedChoices:
     """What the menus read from storage at start-up."""
 
-    def __init__(self, high_score: float, last_ship_id: str | None) -> None:
+    def __init__(self, high_score: float) -> None:
         # Best score so far, 0 when none or unreadable (UI-TITLE-03).
         self.high_score = high_score
-        # Ship chosen last time (UI-SHIP-07), or None.
-        self.last_ship_id = last_ship_id
 
 
 class ChoiceKeys:
     """The storage keys of a game's choices."""
 
-    def __init__(self, high_score: str, last_ship: str) -> None:
+    def __init__(self, high_score: str) -> None:
         self.high_score = high_score
-        self.last_ship = last_ship
 
 
 def saved_choice_keys(game_id: str) -> ChoiceKeys:
-    """Return the storage keys of the high score and last ship of `game_id`."""
-    return ChoiceKeys(game_id + "_high_score", game_id + "_last_ship")
+    """Return the storage key of the high score of `game_id`."""
+    return ChoiceKeys(game_id + "_high_score")
 
 
 def parse_high_score(raw: str | None) -> float:
@@ -56,14 +52,9 @@ def _plain_score(raw: str) -> float:
 
 
 def load_saved_choices(storage: KeyValueStorage, game_id: str) -> SavedChoices:
-    """Return the saved high score and last ship of `game_id`."""
+    """Return the saved high score of `game_id`."""
     keys = saved_choice_keys(game_id)
-    return SavedChoices(parse_high_score(storage.get(keys.high_score)), storage.get(keys.last_ship))
-
-
-def save_last_ship(storage: KeyValueStorage, game_id: str, ship_id: str) -> None:
-    """Keep the ship the player last chose for `game_id`."""
-    storage.set(saved_choice_keys(game_id).last_ship, ship_id)
+    return SavedChoices(parse_high_score(storage.get(keys.high_score)))
 
 
 def save_high_score(storage: KeyValueStorage, game_id: str, score: float) -> None:

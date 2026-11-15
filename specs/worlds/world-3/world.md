@@ -307,7 +307,7 @@ is a chase (faster than ×1). The bosses themselves are described in their files
 - Each final boss has more full HP than its level's mini boss.
 - Each World 3 boss has more full HP than the World 2 boss of the same level number and rank.
 - Boss bullets use the level's bullet speed and fire rate factors.
-- The fight times (simulation, balanced ship, guns at level 3, always firing at the boss) are within `mini_fight_time` and `final_fight_time`.
+- The fight times (simulation, player ship, guns at level 3, always firing at the boss) are within `mini_fight_time` and `final_fight_time`.
 
 Full HP is the boss's health bar at its arrival: its core and all its parts, the hidden weapons it
 reveals as it transforms included (see [bosses](../../bosses/common.md)).

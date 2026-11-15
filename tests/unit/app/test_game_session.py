@@ -21,7 +21,6 @@ from app.game_session import (
     SessionScores,
     atmosphere_of,
     highlighted_level,
-    ship_of,
 )
 from app.saved_supplies import load_saved_supplies, save_supplies, saved_supplies_key
 from app.saved_weapons import load_saved_weapons, save_weapons
@@ -33,8 +32,7 @@ def state(**overrides: object) -> SimpleNamespace:
     values: dict[str, object] = {
         "screen": "game",
         "selected_id": None,
-        "chosen_ship_id": None,
-        "highlighted_ship_id": "alpha",
+        "ship_id": "alpha",
     }
     values.update(overrides)
     return SimpleNamespace(**values)
@@ -45,12 +43,6 @@ def test_perf_12_the_highlighted_level_is_prefetched_only_on_the_level_select_sc
     assert highlighted_level(state(screen="title", selected_id="start")) is None
 
 
-def test_perf_13_the_ship_of_the_levels_is_the_chosen_one_or_else_the_highlighted() -> None:
-    """The level built ahead is flown with the highlighted ship."""
-    assert ship_of(state(chosen_ship_id="beta")) == "beta"
-    assert ship_of(state(chosen_ship_id=None, highlighted_ship_id="gamma")) == "gamma"
-
-
 def test_dev_opt_04_without_debug_options_the_look_is_the_levels_own() -> None:
     """Also DEV-OPT-05 and DEV-OPT-06."""
     options = atmosphere_of(None)
@@ -59,7 +51,7 @@ def test_dev_opt_04_without_debug_options_the_look_is_the_levels_own() -> None:
 
 def test_dev_opt_05_debug_options_force_the_time_of_day_and_weather_off_and_the_tiles() -> None:
     """Also DEV-OPT-04 and DEV-OPT-06."""
-    debug = GameDebugOptions("1-1", 0, None, None, weather=False, time_of_day="night", tiles=True)
+    debug = GameDebugOptions("1-1", 0, None, weather=False, time_of_day="night", tiles=True)
     options = atmosphere_of(debug)
     assert options.time_of_day == "night"
     assert options.weather is False
@@ -67,7 +59,7 @@ def test_dev_opt_05_debug_options_force_the_time_of_day_and_weather_off_and_the_
 
 
 def test_dev_opt_06_the_tile_grid_is_left_to_the_level_when_not_asked() -> None:
-    debug = GameDebugOptions("1-1", 0, None, None, None, None, tiles=False)
+    debug = GameDebugOptions("1-1", 0, None, None, None, tiles=False)
     options = atmosphere_of(debug)
     assert options.weather is None
     assert options.tile_grid is None
@@ -331,8 +323,7 @@ def menu(screen: str = "game", **overrides: object) -> SimpleNamespace:
     values: dict[str, object] = {
         "screen": screen,
         "selected_id": None,
-        "highlighted_ship_id": "alpha",
-        "chosen_ship_id": "alpha",
+        "ship_id": "alpha",
         "chosen_level_id": "1-1",
         "attempt": 1,
         "level_result": None,
@@ -480,7 +471,7 @@ def test_perf_09_a_step_not_over_runs_again_on_the_next_frame(env: Env) -> None:
 
 
 def test_dev_opt_06_the_roads_are_made_with_the_tile_grid_when_it_shows(env: Env) -> None:
-    session = make_session(debug=GameDebugOptions("1-1", 0, None, None, tiles=True))
+    session = make_session(debug=GameDebugOptions("1-1", 0, None, tiles=True))
     session.sync(menu())
     assert env.roads.asked == [(GAME, "1-1", True, 1)]
 
@@ -633,7 +624,7 @@ def test_game_level_13_a_level_on_its_end_panel_is_not_started_again(env: Env) -
 
 def test_dev_opt_02_the_debug_start_time_and_boss_apply_to_the_first_level_only(env: Env) -> None:
     """Also DEV-OPT-03 and DEV-OPT-05 (the time of day of the debug options)."""
-    debug = GameDebugOptions("1-1", 120, None, "mini", None, "night", None)
+    debug = GameDebugOptions("1-1", 120, "mini", None, "night", None)
     session = make_session(debug=debug)
     session.sync(menu())
     first = env.plays[0].options
@@ -651,7 +642,7 @@ def ahead_session() -> GameSession:
 
 def selecting(level_id: str, ship_id: str = "beta") -> SimpleNamespace:
     """Return the level select screen, its highlight on `level_id`, flown by `ship_id`."""
-    return menu("level-select", selected_id=level_id, chosen_ship_id=ship_id, chosen_level_id=None)
+    return menu("level-select", selected_id=level_id, ship_id=ship_id, chosen_level_id=None)
 
 
 def test_perf_13_the_level_the_highlight_rests_on_is_built_ahead_but_not_started(
@@ -682,7 +673,7 @@ def test_perf_13_a_level_built_ahead_starts_in_the_very_frame_it_is_confirmed(en
     session.sync(selecting("1-2"))
     session.load_step(BUILD_AHEAD_AFTER)
     load(session, STEPS)
-    session.sync(menu(chosen_ship_id="beta", chosen_level_id="1-2"))
+    session.sync(menu(ship_id="beta", chosen_level_id="1-2"))
     (play,) = env.plays
     assert session.play is play
     assert play.calls[-2:] == [("warm", False), "attach"]
@@ -705,7 +696,7 @@ def test_perf_13_the_level_built_ahead_is_dropped_for_another_level_or_ship(env:
     load(session, 1)
     assert second.disposed is True
     # Off the level select screen, the one being built ahead is dropped too.
-    session.sync(menu("title", chosen_ship_id=None, chosen_level_id=None))
+    session.sync(menu("title", chosen_level_id=None))
     load(session, 1)
     assert session._ahead is None
     assert len(env.plays) == 2

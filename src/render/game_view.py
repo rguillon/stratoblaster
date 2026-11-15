@@ -23,9 +23,8 @@ ModelFactory = Callable[[Any], Any]
 class MenuBackdrop:
     """The animated 3D scene behind the menus, built by the game.
 
-    Implementations provide `update(dt_seconds)`, `show_screen(screen)` (called when the menu screen
-    changes, e.g. to hide parts that a screen draws itself) and the attribute `glow_excluded_meshes`
-    (self-lit meshes, sky and sun, that must not bloom in the glow layer).
+    Implementations provide `update(dt_seconds)` and the attribute `glow_excluded_meshes` (self-lit
+    meshes, sky and sun, that must not bloom in the glow layer).
     """
 
 

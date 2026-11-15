@@ -69,11 +69,11 @@ ship's muzzle, so they start 16 px below the tip of its nose.
 ### GAME-WPN-05 — The muzzle · MUST
 
 The ship's muzzle (where the guns and the laser leave from) is `muzzle_inset` (3 px) below the tip
-of the ship's nose, measured on each ship's own model, so the shots of every ship start at its
-nose. The missiles leave from the ship's centre instead.
+of the ship's nose, measured on the ship's own model, so the shots start at its nose. The missiles
+leave from the ship's centre instead.
 
 **Acceptance criteria**
-- Given each of the three ships, then the laser starts 3 px below the tip of its nose.
+- Given the ship, then the laser starts 3 px below the tip of its nose.
 
 *Sources: P03-R01, P03-R03.*
 
