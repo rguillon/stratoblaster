@@ -2,7 +2,8 @@
 """Exhaust flame of a reactor (GFX-SHIP-06, ENM-40): the blue light behind each reactor.
 
 It is a living flame: an outer exhaust cone and a hotter inner cone that flicker in length, width
-and brightness, and plasma puffs that flow from the nozzle down the exhaust.
+and brightness, and plasma puffs that flow from the nozzle down the exhaust. A flame has no mesh
+of its own: the scene's flame layer draws them all together (`flame_layer.py`, D-428).
 """
 
 import math
@@ -11,16 +12,8 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from game.config.record import field
 from game.config.ship_look import REACTOR_FLAME as FLAME
-from game.view.ship_materials import get_ship_materials
-
-# create_cylinder and create_polyhedron: render/babylon.py.
-from render.babylon import (
-    babylon_class,
-    create_cylinder,
-    create_polyhedron,
-    new_transform_node,
-)
-from render.mesh_merge import keep_apart
+from game.config.ship_look import SHIP_LOOK
+from game.view.flame_layer import PUFF_STRETCH, flame_layer
 from render.model_animation import add_model_animation
 
 # isort: split
@@ -55,34 +48,19 @@ def _char_code(text: str, index: int) -> int:
     return 0
 
 
-def _cylinder_options(height: float, diameter_bottom: float, tessellation: int) -> Any:
-    """Options for `CreateCylinder`: a cone pointing up, with its tip at the top."""
-    options: Any = None
-    __pragma__(
-        "js",
-        "{}",
-        "options = {height: height, diameterTop: 0, diameterBottom: diameter_bottom, "
-        "tessellation: tessellation};",
-    )
-    return options
-
-
-def _polyhedron_options(kind: int, size: float) -> Any:
-    """Options for `CreatePolyhedron`: `{ type, size }`."""
-    options: Any = None
-    __pragma__("js", "{}", "options = {type: kind, size: size};")
-    return options
-
-
 def flicker(time_sec: float, phase: float, hz: list[float]) -> float:
     """Irregular flicker in [-1, 1]: the mean of sines at the given frequencies, phase-shifted.
 
     See GFX-ART-11.
     """
+    count = len(hz)
+    if count == 0:
+        return 0
     total = 0.0
-    for i, f in enumerate(hz):
-        total += math.sin(TAU * f * time_sec + phase * (i + 1))
-    return total / len(hz) if len(hz) > 0 else 0
+    # A plain loop: this runs for every flame, every frame (ENG-157).
+    for i in range(count):
+        total += math.sin(TAU * hz[i] * time_sec + phase * (i + 1))
+    return total / count
 
 
 def reactor_phase(text: str) -> float:
@@ -116,145 +94,120 @@ def _dimmed(value: float, amount: float) -> float:
     return 1 - (amount * (1 - value)) / 2
 
 
-class Cone:
-    """A cone of the flame: `pivot` at the nozzle, `mesh` the cone itself.
+class FlameColors:
+    """The colours of a flame: its exhaust cone, its inner flame and its puffs.
 
-    Scaling the pivot stretches the cone from the nozzle.
+    Each is `[r, g, b, alpha]`.
     """
 
-    def __init__(self, pivot: Any, mesh: Any) -> None:
-        self.pivot = pivot
-        self.mesh = mesh
+    def __init__(self, exhaust: list[float], flame: list[float], plasma: list[float]) -> None:
+        self.exhaust = exhaust
+        self.flame = flame
+        self.plasma = plasma
 
 
-def _cone(name: str, size: dict[str, Any], material: Any, parent: Any) -> Cone:
-    """Return a cone of the flame, from the nozzle towards -Z."""
-    scene = parent.getScene()
-    pivot = new_transform_node(name + "-pivot", scene)
-    pivot.parent = parent
-    options = _cylinder_options(size["length"], size["diameter"], size["sides"])
-    if not size["caps"]:
-        options.cap = babylon_class("Mesh").NO_CAP
-    mesh = create_cylinder(name, options, scene)
-    # The cylinder grows along +Y; -90° around X points its tip towards -Z.
-    mesh.rotation.x = -math.pi / 2
-    mesh.position.z = -size["length"] / 2
-    mesh.material = material
-    mesh.isPickable = False
-    mesh.parent = pivot
-    return Cone(pivot, mesh)
+def _tint(look: Any) -> list[float]:
+    emissive = look.emissive
+    return [emissive[0], emissive[1], emissive[2], look.alpha]
 
 
-def _build_puffs(
-    name: str,
-    diameter: float,
-    material: Any,
-    parent: Any,
-    light: Any,
-) -> list[Any]:
-    """Plasma puffs of a flame; the animation places them along the exhaust."""
-    scene = parent.getScene()
-    count = light["puffs"] if light else FLAME.puffCount
-    puffs: list[Any] = []
-    for i in range(count):
+def player_flame_colors() -> FlameColors:
+    """Return the player ships' blue flame (GFX-ART-04)."""
+    return FlameColors(
+        _tint(SHIP_LOOK.reactorExhaust),
+        _tint(SHIP_LOOK.reactorFlame),
+        _tint(SHIP_LOOK.reactorPlasma),
+    )
+
+
+class Flame:
+    """One reactor's flame: where it hangs (`node`), its sizes and colours, and its own time.
+
+    `write(world)` adds its cones and puffs, as they are at its time, to the layer's batches;
+    `world` holds the 16 numbers of its node's matrix.
+    """
+
+    def __init__(
+        self, node: Any, size: dict[str, Any], colors: FlameColors, phase: float, layer: Any
+    ) -> None:
+        light = field(size, "light", None)
+        self.node = node
+        self.time = 0.0
+        self._phase = phase
+        self._colors = colors
+        self._nozzle_z = size["nozzleZ"]
+        self._length = size["length"]
+        self._diameter = size["diameter"]
+        self._puff_radius = size["puffDiameter"] / 2
+        self._puff_count = light["puffs"] if light else FLAME.puffCount
+        self._cones = layer.cones(size["sides"])
         # An icosahedron (20 triangles): small, translucent and moving, it reads as a blob. Light
-        # flames use a tetrahedron (4 triangles).
-        puff = create_polyhedron(
-            name + "-puff-" + str(i),
-            _polyhedron_options(TETRAHEDRON if light else ICOSAHEDRON, diameter / 2),
-            scene,
-        )
-        puff.material = material
-        puff.isPickable = False
-        puff.parent = parent
-        puffs.append(puff)
-    return puffs
+        # flames (enemies) use a tetrahedron (4 triangles).
+        self._puffs = layer.puffs(TETRAHEDRON if light else ICOSAHEDRON)
+        # Reused for every instance written: nothing is allocated per frame.
+        self._scale = [1.0, 1.0, 1.0]
 
-
-def _player_flame(parent: Any) -> dict[str, Any]:
-    """Return the player ships' blue flame materials (GFX-ART-04)."""
-    mats = get_ship_materials(parent.getScene())
-    return {
-        "exhaust": mats.reactorExhaust,
-        "flame": mats.reactorFlame,
-        "plasma": mats.reactorPlasma,
-    }
+    def write(self, world: Any) -> None:
+        """Add the flame's cones and puffs to their batches, placed by `world`."""
+        time = self.time
+        phase = self._phase
+        hz = FLAME.flickerHz
+        outer_length = flicker(time, phase, hz)
+        inner_length = flicker(time, phase + 1 * 1.7, hz)
+        width = flicker(time, phase + 2 * 1.7, hz)
+        brightness = flicker(time, phase + 3 * 1.7, hz)
+        colors = self._colors
+        scale = self._scale
+        length = self._length
+        w = _around(width, FLAME.widthFlicker) * self._diameter
+        scale[0] = w
+        scale[1] = w
+        scale[2] = _around(outer_length, FLAME.lengthFlicker) * length
+        exhaust = colors.exhaust
+        dim = _dimmed(brightness, FLAME.brightnessFlicker)
+        self._cones.add(world, scale, self._nozzle_z, exhaust, exhaust[3] * dim)
+        scale[0] = w * FLAME.coreWidth
+        scale[1] = w * FLAME.coreWidth
+        scale[2] = _around(inner_length, FLAME.lengthFlicker) * length * FLAME.coreLength
+        flame = colors.flame
+        dim = _dimmed(-brightness, FLAME.brightnessFlicker)
+        self._cones.add(world, scale, self._nozzle_z, flame, flame[3] * dim)
+        plasma = colors.plasma
+        count = self._puff_count
+        for i in range(count):
+            p = puff_progress(time, i, count, FLAME.puffSpeed)
+            s = (1 - (1 - PUFF_END_SCALE) * p) * self._puff_radius
+            scale[0] = s
+            scale[1] = s
+            scale[2] = s * PUFF_STRETCH
+            # Nudged off the nozzle plane so the puff always sits behind it.
+            along = self._nozzle_z - 0.01 - p * length
+            self._puffs.add(world, scale, along, plasma, plasma[3] * puff_opacity(p))
 
 
 def build_reactor_flame(
     name: str,
     size: dict[str, Any],
     parent: Any,
-    materials: dict[str, Any] | None = None,
-) -> None:
-    """Build an animated reactor flame (GFX-SHIP-06) under `parent`, named after `name`.
+    colors: FlameColors | None = None,
+) -> Flame:
+    """Add an animated reactor flame (GFX-SHIP-06) at `parent`, named after `name`.
 
-    It is blue like the player ships' unless other `materials` are given (enemies, ENM-40).
+    It is blue like the player ships' unless other `colors` are given (enemies, ENM-40).
 
     `size` holds `nozzleZ`, `length`, `diameter` (exhaust cone at the nozzle), `puffDiameter`,
-    `sides`, and optionally `light` (`{ "puffs": n }`): lighter flames (enemies) have no caps on
-    the cones, that many puffs, and tetrahedra instead of icosahedra.
+    `sides`, and optionally `light` (`{ "puffs": n }`): lighter flames (enemies) have that many
+    puffs, tetrahedra instead of icosahedra. The flame points to `parent`'s -Z, and shows
+    whenever `parent` does.
     """
-    if materials is None:
-        materials = _player_flame(parent)
-    sides = size["sides"]
-    light = field(size, "light", None)
-    caps = not light
-    outer = _cone(
-        name + "-exhaust",
-        {"length": size["length"], "diameter": size["diameter"], "sides": sides, "caps": caps},
-        materials["exhaust"],
-        parent,
-    )
-    inner = _cone(
-        name + "-flame",
-        {
-            "length": size["length"] * FLAME.coreLength,
-            "diameter": size["diameter"] * FLAME.coreWidth,
-            "sides": sides,
-            "caps": caps,
-        },
-        materials["flame"],
-        parent,
-    )
-    for cone in [outer, inner]:
-        cone.pivot.position.z = size["nozzleZ"]
-
-    puffs = _build_puffs(name, size["puffDiameter"], materials["plasma"], parent, light)
-    # Moved, scaled and faded every frame: never merged with the model's still parts (PERF-02).
-    animated = [outer.pivot, inner.pivot]
-    animated.extend(puffs)
-    for node in animated:
-        keep_apart(node)
-
-    phase = reactor_phase(name)
-    hz = FLAME.flickerHz
-    # The time since the flame was built, in seconds.
-    clock = [0.0]
-
-    def apply() -> None:
-        time = clock[0]
-        outer_length = flicker(time, phase, hz)
-        inner_length = flicker(time, phase + 1 * 1.7, hz)
-        width = flicker(time, phase + 2 * 1.7, hz)
-        brightness = flicker(time, phase + 3 * 1.7, hz)
-        w = _around(width, FLAME.widthFlicker)
-        outer.pivot.scaling.set(w, w, _around(outer_length, FLAME.lengthFlicker))
-        inner.pivot.scaling.set(w, w, _around(inner_length, FLAME.lengthFlicker))
-        outer.mesh.visibility = _dimmed(brightness, FLAME.brightnessFlicker)
-        inner.mesh.visibility = _dimmed(-brightness, FLAME.brightnessFlicker)
-        for i, puff in enumerate(puffs):
-            p = puff_progress(time, i, len(puffs), FLAME.puffSpeed)
-            # Nudged off the nozzle plane so the puff always sits behind it.
-            puff.position.z = size["nozzleZ"] - 0.01 - p * size["length"]
-            s = 1 - (1 - PUFF_END_SCALE) * p
-            puff.scaling.set(s, s, s * 1.6)
-            puff.visibility = puff_opacity(p)
-
-    apply()
+    if colors is None:
+        colors = player_flame_colors()
+    layer = flame_layer(parent.getScene())
+    flame = Flame(parent, size, colors, reactor_phase(name), layer)
+    layer.add(flame)
 
     def on_frame(dt_seconds: float) -> None:
-        clock[0] = clock[0] + dt_seconds
-        apply()
+        flame.time = flame.time + dt_seconds
 
     add_model_animation(parent, on_frame)
+    return flame

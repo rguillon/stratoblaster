@@ -3388,3 +3388,61 @@
   to 285 ms), the shaders asked and waited for (90 + 15 to 90 ms). **For the owner:** a raw
   JavaScript helper must not name a parameter `values` (Transcrypt renames it `py_values`, and the
   JavaScript then names nothing): found here by a level that no longer loaded.
+
+### D-427 — The playfield glow draws only what gives light
+
+- **Date:** 2026-11-15
+- **Requirements:** PERF-02, PERF-03 (exception agreed by the owner), PERF-32, ENG-106, GFX-ART-02.
+- **Context:** `docs/performance-analysis.md`: the main thread's time in play follows the draw
+  calls (about 7 µs each on the desktop measured), and the playfield glow layer drew every
+  playfield mesh that was not additive a second time, hulls and flesh included, black, as
+  occluders: 27 to 47 % of a busy frame's draw calls. Asked whether a light may glow through a
+  wing or a gun passing over it, the owner agreed.
+- **Decision:** `app/level_scene.playfield_layer` adds a mesh to the playfield glow only if its
+  material gives light (`gives_light`): unlit, or lit with an emissive colour of at least
+  `GLOW_MIN_EMISSIVE` (0.2) on a channel, above the enemy hulls' own faint light (0.04) and the
+  ship's canopy (0.12).
+- **Consequences:** draw calls per frame, mean of 15 s (`tests/perf/analyse_perf.py`, Ryzen 9
+  3900X, RX 9060 XT, 1080p): 1-1@30 689 → 603, 4-1@30 2 120 → 1 942, 4-5@200 2 075 → 1 857; the
+  main thread's work 10.6 → 9.9 ms in 4-1. The hulls no longer add their faint own light to the
+  glow, and a neon behind a hull glows through it. **For the owner:** PERF-03 does not describe
+  this exception; the text is the owner's to update.
+
+### D-428 — Every reactor flame of a scene drawn by a few shared meshes
+
+- **Date:** 2026-11-15
+- **Requirements:** PERF-02, PERF-03 (exception agreed by the owner), PERF-32, ENG-104, ENG-106,
+  GFX-SHIP-06, ENM-40.
+- **Context:** a reactor flame was four meshes (exhaust cone, inner cone, two or three puffs),
+  each a draw call in the main pass and again in the playfield glow: 220 of the 562 enemy meshes
+  of a busy 4-1 frame, 31 of the player ship's 41. Owner: "go for a shared layer, but simple
+  geometry is fine too".
+- **Decision:** `game/view/flame_layer.FlameLayer`, one per scene (kept in a WeakMap): one
+  thin-instanced mesh for the cones of each number of sides (a unit cone, tip at -Z, no caps) and
+  one for each shape of puff, all with one unlit, blended material, each instance with its own
+  matrix and colour (its opacity in the alpha). `reactor_flame.build_reactor_flame` now makes no
+  mesh: a `Flame` keeps the node it hangs from, its sizes, its colours (`FlameColors`, in place of
+  three materials per colour) and its own time, still moved on by the model's animation. Before
+  the scene works out its active meshes (`onBeforeActiveMeshesEvaluationObservable`, once per
+  frame; world matrices are current there, they are not in `onBeforeRender`), the layer writes
+  the cones and puffs of every flame whose node is enabled, with the same flicker and puff
+  motion as before, and drops the flames whose node was disposed. The meshes are marked
+  (`render/glow_marks`) so a glow layer draws them with their own material and colours; the
+  layer tells every effect layer of its scene, and `playfield_layer` adds them to the playfield
+  glow.
+- **Alternatives considered:** enemy flames without puffs (half the gain, a visible change);
+  merging a flame's four meshes into one with a shader that animates it (a new shader, still a
+  draw call per reactor).
+- **Consequences:** with D-427, draw calls per frame and the main thread's work, mean of 15 s:
+
+  | Scenario | Before | After D-427 | After D-428 |
+  |----------|--------|-------------|-------------|
+  | 1-1@30   | 689 / 3.7 ms | 603 / 3.9 ms | 398 / 3.3 ms |
+  | 4-1@30   | 2 120 / 10.6 ms | 1 942 / 9.9 ms | 1 360 / 8.1 ms |
+  | 4-5@200  | 2 075 / 10.7 ms | 1 857 / 9.8 ms | 1 476 / 9.3 ms |
+
+  What changes in the frames: the ship's cones lose their end caps (hidden in the nozzle); the
+  see-through flames of a scene are blended in the order they were written, not sorted mesh by
+  mesh; enemy flames of one colour no longer share three materials (fewer materials per level).
+  `enemy_materials.glowing` and `flame_materials` are gone; `mesh_merge.keep_apart` has no
+  caller left.

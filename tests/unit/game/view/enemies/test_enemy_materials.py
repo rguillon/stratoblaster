@@ -36,7 +36,6 @@ def babylon(monkeypatch: Any) -> None:
     monkeypatch.setattr(em, "new_standard_material", lambda name, _scene: MagicMock(name=name))
     monkeypatch.setattr(em, "_ENEMY_CACHE", [])
     monkeypatch.setattr(em, "_TINTED_CACHE", [])
-    monkeypatch.setattr(em, "_FLAME_CACHE", [])
 
 
 def test_enm_38_enemy_colour_is_moved_into_the_enemies_hue_family() -> None:
@@ -177,22 +176,19 @@ def test_p05_tinted_hull_is_tinted_towards_the_neon_by_the_tint() -> None:
 
 
 @pytest.mark.usefixtures("babylon")
-def test_p05_flame_materials_are_shared_by_colour_and_scene() -> None:
-    scene = object()
-    flame = em.flame_materials(scene, [0, 0.5, 1])
-    assert em.flame_materials(scene, [0, 0.5, 1]) is flame
-    assert em.flame_materials(scene, [1, 0.5, 0]) is not flame
-    assert flame.exhaust.alpha == pytest.approx(ENEMY_LOOK.reactor.exhaustAlpha)
-    assert flame.flame.alpha == pytest.approx(ENEMY_LOOK.reactor.flameAlpha)
-    assert flame.plasma.alpha == pytest.approx(ENEMY_LOOK.reactor.plasmaAlpha)
-    assert flame.exhaust.backFaceCulling is False
+def test_enm_40_a_flame_s_colours_are_its_neon_at_the_look_s_opacities() -> None:
+    """D-428: colours, not materials: the scene's flame layer tints each flame."""
+    flame = em.flame_colors([0, 0.5, 1])
+    look = ENEMY_LOOK.reactor
+    assert flame.exhaust == [0, 0.5, 1, look.exhaustAlpha]
+    assert flame.plasma == [0, 0.5, 1, look.plasmaAlpha]
+    assert flame.flame[3] == look.flameAlpha
 
 
-@pytest.mark.usefixtures("babylon")
 def test_p05_flame_is_a_whiter_core_than_its_exhaust() -> None:
-    flame = em.flame_materials(object(), [0, 0, 0])
-    assert flame.flame.emissiveColor.r == pytest.approx(ENEMY_LOOK.reactor.whiten)
-    assert flame.exhaust.emissiveColor.r == 0
+    flame = em.flame_colors([0, 0, 0])
+    assert flame.flame[0] == pytest.approx(ENEMY_LOOK.reactor.whiten)
+    assert flame.exhaust[0] == 0
 
 
 @pytest.mark.parametrize(

@@ -1362,4 +1362,3 @@ Title screen after 849 ms (local server, no network delay); JS heap then 77 MB, 
 | render.scenery | 9 | 20 | 16.4 |
 | core.math | 4 | 3 | 2.4 |
 | math | 1 | 2 | 1.4 |
-

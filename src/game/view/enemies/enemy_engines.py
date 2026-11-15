@@ -6,7 +6,7 @@ import math
 from game.config.enemy_look import ENEMY_LOOK
 from game.view.enemies.enemy_materials import (
     enemy_color,
-    flame_materials,
+    flame_colors,
     mesh_of,
 )
 from game.view.reactor_flame import build_reactor_flame
@@ -133,5 +133,5 @@ def add_reactors(
             node_name(node),
             options,
             node,
-            flame_materials(root.getScene(), color),
+            flame_colors(color),
         )

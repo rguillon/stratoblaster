@@ -128,6 +128,12 @@ def render(monkeypatch: pytest.MonkeyPatch) -> Recorder:
     fake = Recorder()
     monkeypatch.setattr(level_scene, "new_scene", lambda _engine: FakeScene())
     monkeypatch.setattr(level_scene, "new_glow_layer", fake.new_glow_layer)
+    # The metadata helper is JavaScript: a plain dict's field here.
+    monkeypatch.setattr(
+        level_scene,
+        "glows_as_drawn",
+        lambda mesh: bool((getattr(mesh, "metadata", None) or {}).get("glowsAsDrawn")),
+    )
     monkeypatch.setattr(level_scene, "OutlineLayer", fake.outline_layer)
     monkeypatch.setattr(level_scene, "apply_showcase_environment", fake.apply_showcase_environment)
     monkeypatch.setattr(level_scene, "update_sky_environment", fake.update_sky_environment)
@@ -280,14 +286,46 @@ def _adopt(adopter: Any, scene: FakeScene, make: Any) -> list[FakeNode]:
 
 def _playfield_meshes(scene: FakeScene) -> list[FakeNode]:
     neon = scene.add_node("neon", is_mesh=True)
+    neon.material = _material(disableLighting=True)
     shot = scene.add_node("shot", is_mesh=True)
-    shot.material = SimpleNamespace(alphaMode="ALPHA_ADD")
+    shot.material = _material(alphaMode="ALPHA_ADD", disableLighting=True)
     smoke = scene.add_node("smoke", is_mesh=True)
+    smoke.material = _material(disableLighting=True)
     smoke.hasVertexAlpha = True
     # An instance is in the scene's meshes but is no `Mesh`.
     instance = FakeNode("instance", scene.next_id())
     scene.meshes.append(instance)
-    return [neon, shot, smoke, instance]
+    # D-427: a hull faintly lit by its neon gives no light; a lit part bright by itself does.
+    hull = scene.add_node("hull", is_mesh=True)
+    hull.material = _material(emissiveColor=SimpleNamespace(r=0.04, g=0.02, b=0))
+    lamp = scene.add_node("lamp", is_mesh=True)
+    lamp.material = _material(emissiveColor=SimpleNamespace(r=0, g=0.5, b=0))
+    bare = scene.add_node("bare", is_mesh=True)
+    # D-428: the flames, each instance in its own colour and opacity, glow as they are drawn.
+    flames = scene.add_node("flames", is_mesh=True)
+    flames.material = _material(disableLighting=True)
+    flames.hasVertexAlpha = True
+    flames.metadata = {"glowsAsDrawn": True}
+    return [neon, shot, smoke, instance, hull, lamp, bare, flames]
+
+
+def test_d427_what_gives_light_is_unlit_or_bright_by_itself() -> None:
+    assert level_scene.gives_light(None) is False
+    assert level_scene.gives_light(_material(disableLighting=True)) is True
+    # A shader material has no emissive colour at all.
+    assert level_scene.gives_light(_material()) is False
+    dim = SimpleNamespace(r=0.19, g=0.1, b=0.0)
+    assert level_scene.gives_light(_material(emissiveColor=dim)) is False
+    for channel in ("r", "g", "b"):
+        bright = SimpleNamespace(r=0.0, g=0.0, b=0.0)
+        setattr(bright, channel, level_scene.GLOW_MIN_EMISSIVE)
+        assert level_scene.gives_light(_material(emissiveColor=bright)) is True
+
+
+def _material(**fields: Any) -> SimpleNamespace:
+    values = {"alphaMode": "ALPHA_COMBINE", "disableLighting": False, "emissiveColor": None}
+    values.update(fields)
+    return SimpleNamespace(**values)
 
 
 def test_gfx_art_02_only_the_ships_neon_glows_on_the_playfield_above_the_clouds(
@@ -302,11 +340,14 @@ def test_gfx_art_02_only_the_ships_neon_glows_on_the_playfield_above_the_clouds(
     (glow,) = render.glow_layers
     assert glow.args == ("playfield-glow", scene, 32, None, None)
     assert (glow.intensity, glow.renderingGroupId) == (0.9, ABOVE_CLOUDS_GROUP)
-    neon, shot, smoke, instance = _adopt(adopter, scene, _playfield_meshes)
-    assert glow.included == [neon]
+    neon, shot, smoke, instance, hull, lamp, bare, flames = _adopt(
+        adopter, scene, _playfield_meshes
+    )
+    assert glow.included == [neon, lamp, flames]
+    assert glow.own_material == [flames]
     (outline,) = render.outlines
     assert outline.look == "outline-look"
-    assert outline.added == [neon, shot, smoke, instance]
+    assert outline.added == [neon, shot, smoke, instance, hull, lamp, bare, flames]
     assert neon.parent is adopter.root
 
 

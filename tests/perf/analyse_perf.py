@@ -212,6 +212,9 @@ def measure_play(
     cdp.send("Profiler.enable")
     page.keyboard.down("Space")
     page.wait_for_timeout(args.settle * 1000)
+    # What the scenario looks like, to compare the frames of two builds by eye.
+    shot = Path(args.out) / ("play-" + scenario.replace("@", "-at-") + ".png")
+    page.screenshot(path=str(shot))
     page.evaluate(PLAY_PROBE)
     report: dict[str, Any] = {"scenario": scenario}
     # 1. The frames, with nothing else running.
