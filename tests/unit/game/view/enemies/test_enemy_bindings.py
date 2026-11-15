@@ -52,6 +52,8 @@ def test_a_boss_model_wins_over_an_enemy_with_the_same_key(monkeypatch: Any) -> 
         "add_edge_trim",
         lambda root, _options, _memo=None: trimmed_roots.append(root),
     )
+    merged_roots: list[Any] = []
+    monkeypatch.setattr(enemy_bindings, "merge_rigid_meshes", merged_roots.append)
     monkeypatch.setattr(
         enemy_bindings, "ENEMY_MODELS", {"shared": enemy_builder, "only": enemy_builder}
     )
@@ -61,6 +63,9 @@ def test_a_boss_model_wins_over_an_enemy_with_the_same_key(monkeypatch: Any) -> 
     assert models["only"]("scene").root == "enemy"
     # Each model gets its glowing edge trim once built whole (GFX-TRIM-01).
     assert trimmed_roots == ["boss", "enemy"]
+    # D-429: an enemy's meshes are then merged, one per material; a boss's are not (its parts
+    # flash and break one by one).
+    assert merged_roots == ["enemy"]
 
 
 def test_gfx_trim_06_the_trim_options_are_the_enemy_trim_look(monkeypatch: Any) -> None:

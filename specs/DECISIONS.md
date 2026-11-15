@@ -3446,3 +3446,44 @@
   mesh; enemy flames of one colour no longer share three materials (fewer materials per level).
   `enemy_materials.glowing` and `flame_materials` are gone; `mesh_merge.keep_apart` has no
   caller left.
+
+### D-429 — An enemy model is one mesh per material, its moving parts following their nodes
+
+- **Date:** 2026-11-15
+- **Requirements:** PERF-02, PERF-03, PERF-32, ENG-104, ENG-106.
+- **Context:** after D-428 an enemy was still a mesh per material for its body and again for
+  each moving piece (a gun slide, a wing, a head, a neck segment), each with its edge trim: 33
+  meshes for a Hydra, 47 for a Juggernaut, a draw call each in the main pass and, for the lit
+  ones, in the playfield glow. Owner, on what to do if the pieces could not be merged: "keep
+  them".
+- **Decision:** `render/mesh_merge.merge_rigid_meshes(root)`, called by
+  `enemy_bindings.trimmed` for the enemy models once a model has its trims. As
+  `merge_still_meshes` (same groups: material, rendering group, draw order, shadows, layer mask,
+  and now the fog flag, which a merge dropped), but a mesh under a node that moves is merged
+  too: each vertex is bound to one bone, that of the nearest transform node above its mesh, of
+  one flat skeleton per model. Just before the scene works out its active meshes, each bone of a
+  shown model takes its node's world matrix relative to the model's root, so the code that
+  moves the nodes (recoil slides, wing flutter, joints, the body's roll) is unchanged; a bone
+  whose node, or a node above it, is disabled is set to nothing, so the part is not drawn
+  (a sunk rocket, a destroyed joint). What hung from a merged mesh without being merged itself
+  is first hung from the node above. The bones go to the shaders as an array, their number
+  rounded up to a multiple of 8: skinned from a texture, the glow layer did not draw the meshes
+  (seen as a weaker glow); the rounding keeps the number of shaders small. The culling box of a
+  merged mesh is half as large again, as its parts move. The boss models are not merged: their
+  parts flash and break one by one, by mesh.
+- **Alternatives considered:** fewer moving pieces on the heavy kinds (a design change, not
+  needed); one mesh per enemy with one material for hull, flesh, neon and trim (a shader of its
+  own, left for later).
+- **Consequences:** `tests/perf/frame_shots.py` (new: the same stepped frames of two e2e builds,
+  compared pixel by pixel) finds no pixel different, within 2/255, on eight frames of eight
+  levels before and after. Draw calls per frame and the main thread's work, mean of 15 s (Ryzen 9
+  3900X, RX 9060 XT, 1080p), from before D-427:
+
+  | Scenario | Before D-427 | After D-428 | After D-429 |
+  |----------|--------------|-------------|-------------|
+  | 1-1@30   | 689 / 3.7 ms | 398 / 3.3 ms | 253 / 3.0 ms |
+  | 4-1@30   | 2 120 / 10.6 ms | 1 360 / 8.1 ms | 763 / 5.4 ms |
+  | 4-5@200  | 2 075 / 10.7 ms | 1 476 / 9.3 ms | 716 / 5.9 ms |
+
+  The worst window seen (4-5 around 3:50, under the profiler): 20.0 → 9.5 ms. A model is merged
+  each time one is built, also in play when a kind needs one more than were built ahead.

@@ -10,6 +10,7 @@ from game.view.enemies.enemy_shot_renderer import create_enemy_shot_renderer
 from game.view.enemies.living_motion import set_living_motion
 from render.edge_trim_mesh import add_edge_trim
 from render.geometry.edge_trim import TrimOptions
+from render.mesh_merge import merge_rigid_meshes
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -39,11 +40,14 @@ class EnemyBindingsHandle:
         self.setIdleMotion = set_idle
 
 
-def trimmed(build: Any) -> Any:
+def trimmed(build: Any, merged: bool = False) -> Any:
     """Return a model factory that gives the whole model `build` makes its glowing edge trim.
 
     The trim (GFX-TRIM-06) makes it stand out from the ground (ENM-47, GFX-READ-09): each hull asks
     for one in its rim colour, and the model's meshes hide each other's inner edges.
+
+    With `merged`, the model's meshes are then merged into one per material, its moving parts
+    following their nodes (D-429): a draw call per material, not per part.
     """
     look = READABILITY.enemyTrim
     options = TrimOptions(look.width, look.offset)
@@ -54,6 +58,8 @@ def trimmed(build: Any) -> Any:
     def build_trimmed(scene: Any) -> Any:
         model = build(scene)
         add_edge_trim(model.root, options, memo)
+        if merged:
+            merge_rigid_meshes(model.root)
         return model
 
     return build_trimmed
@@ -66,7 +72,7 @@ def merged_models() -> dict[str, object]:
     """
     models: dict[str, object] = {}
     for key, model in ENEMY_MODELS.items():
-        models[key] = trimmed(model)
+        models[key] = trimmed(model, True)
     for key, model in BOSS_MODELS.items():
         models[key] = trimmed(model)
     return models
