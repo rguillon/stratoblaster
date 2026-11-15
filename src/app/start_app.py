@@ -15,6 +15,7 @@ from app.dev_catalog import dev_catalog, dev_groups, dev_labels
 from app.dev_session import DevSession
 from app.game_audio import GameAudio
 from app.game_session import GameSession, GameSessionOptions, SessionAudio, SessionScores
+from app.graphics_quality import QUALITY_MODES, GraphicsQuality
 from app.menu_controller import MenuController, MenuControllerDeps
 from app.menu_scenes import prepare_menu_scenes, render_menu_scenes
 from app.page_audio import (
@@ -35,6 +36,7 @@ from core.loop.fixed_step_clock import FixedStepClock
 from input.gamepad_menu_input import GamepadMenuInput
 from input.keyboard_menu_input import KeyboardMenuInput
 from input.menu_input import MenuInput
+from render.quality import new_gpu_timer
 from ui.menu_overlay import MenuOverlay, MenuOverlayOptions
 
 # isort: split
@@ -77,6 +79,7 @@ class AppOptions(PageOptions):
         every: Any | None = None,
         dev: bool | None = None,
         fullscreen: Any | None = None,
+        render_scale: Any | None = None,
     ) -> None:
         PageOptions.__init__(self, audio, gamepads, gesture_target, visibility, every)
         # Image-based lighting and glow. Needs a real WebGL engine.
@@ -118,6 +121,9 @@ class AppOptions(PageOptions):
         # The page's full screen, behind the title's Full screen entry (UI-TITLE-11,
         # `app/page_fullscreen.py`); None: no such entry.
         self.fullscreen = fullscreen
+        # `render_scale(share)`: draws that share of the pixels across, for the graphics quality
+        # (D-410); None: the quality is never changed (unit tests, e2e builds).
+        self.render_scale = render_scale
 
 
 class RunningApp:
@@ -438,6 +444,51 @@ def run_loop(engine: Any, tick: Any) -> None:
     engine.runRenderLoop(frame)
 
 
+def new_graphics_quality(engine: Any, game: Any, options: AppOptions) -> GraphicsQuality | None:
+    """Return the session's graphics quality (D-410).
+
+    None without a render loop or a render scale to set (unit tests, e2e builds).
+    """
+    if options.render_scale is None or not options.render_loop:
+        return None
+    return GraphicsQuality(
+        ENGINE_CONFIG.quality,
+        options.storage,
+        game.id,
+        options.render_scale,
+        new_gpu_timer(engine),
+    )
+
+
+def follow_graphics_setting(quality: GraphicsQuality | None, state: MenuState) -> None:
+    """Give the graphics quality the setting's choice (D-410), if there is a quality to set."""
+    if quality is not None:
+        quality.set_mode(QUALITY_MODES[state.volumes.graphics])
+
+
+def quality_ticked(
+    quality: GraphicsQuality | None,
+    frames: FrameControls,
+    session: GameSession,
+    perf: PerfMonitor,
+) -> Any:
+    """Return the render loop's frame: `frames.tick`, then the graphics quality's count (D-410).
+
+    Without a graphics quality, just `frames.tick`.
+    """
+    if quality is None:
+        return frames.tick
+
+    def tick(dt_seconds: float) -> None:
+        frames.tick(dt_seconds)
+        play = session.play
+        scene = play.view.scene if play is not None else None
+        playing = play is not None and not session.paused and not perf.loading
+        quality.frame(dt_seconds * 1000, perf.last_frame_ms, scene, playing)
+
+    return tick
+
+
 def start_debug_level(menu: MenuController, debug: Any | None) -> None:
     """With debug options (DEV-OPT-01), starts their level straight away once loading is over."""
     if debug is None:
@@ -457,6 +508,11 @@ def session_options(
     precompile: Any = options.precompile_shaders
     background: Any = options.background_loading
     prebuild: Any = options.prebuild_levels
+    # D-425: quick loading steps share a frame where the game runs in real time (as the levels
+    # built ahead: not in the e2e builds, which the tests step frame by frame).
+    clock = None
+    if prebuild:
+        clock = options.now if options.now is not None else performance_now
     return GameSessionOptions(
         options.environment,
         options.doc,
@@ -472,6 +528,7 @@ def session_options(
         background,
         prebuild,
         on_draw_calls,
+        clock,
     )
 
 
@@ -557,9 +614,11 @@ def start_app(engine: Any, game: Any, options: AppOptions) -> RunningApp:
     session = create_session(engine, game, options, get_menu, audio, perf)
     controls = session.controls
     dev = create_dev(engine, game, options, audio)
+    quality = new_graphics_quality(engine, game, options)
 
     def on_change(state: MenuState) -> None:
         session.sync(state)
+        follow_graphics_setting(quality, state)
         if dev is not None:
             dev[0].sync(state)
         audio.menu_changed(state)
@@ -568,6 +627,7 @@ def start_app(engine: Any, game: Any, options: AppOptions) -> RunningApp:
     menu_handle = create_menu(game, options, input_handle, controls, audio, on_change, dev_menu)
     menu = menu_handle.menu
     overlay = menu_handle.overlay
+    follow_graphics_setting(quality, menu.flow.state)
     stop_page = listen_to_page(options, menu, audio)
     prepared = prepare_menu_scenes(engine, game, options.environment)
 
@@ -592,7 +652,7 @@ def start_app(engine: Any, game: Any, options: AppOptions) -> RunningApp:
     )
     frames = FrameControls(clock, ticker, perf)
     if options.render_loop:
-        run_loop(engine, frames.tick)
+        run_loop(engine, quality_ticked(quality, frames, session, perf))
 
     def dispose() -> None:
         engine.stopRenderLoop()

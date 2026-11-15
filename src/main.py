@@ -175,23 +175,33 @@ def pixel_ratio() -> float:
     return cap
 
 
-def fit_to_window(engine: Any, stage: Any, overlay: Any, draw_scale: float) -> None:
+def fit_to_window(engine: Any, stage: Any, overlay: Any, draw_scale: float) -> Any:
     """Keep the stage and the menu overlay fitted to the window (ENG-110, GAME-SCREEN-02).
 
     Covers UI-LOOK-02 too. The canvas draws `draw_scale` times the pixels of the stage (1, or
     less in e2e builds), capped at `ENGINE_CONFIG.max_render_scale` pixels per logical pixel
     (D-250): the hardware scaling level follows the fit, so a resize keeps the cap.
+
+    Returns `set_render_scale(share)`: the graphics quality's share of those pixels drawn across
+    (D-410), kept through resizes.
     """
+    quality = [1.0]
 
     def fit() -> None:
         stage_fit = fit_stage(window.innerWidth, window.innerHeight, GAME.screen, GAME.playfield)
         apply_stage_fit(stage, overlay, stage_fit, GAME.screen)
         ratio = render_ratio(pixel_ratio(), stage_fit, ENGINE_CONFIG.max_render_scale)
-        engine.setHardwareScalingLevel(1 / (ratio * draw_scale))
+        engine.setHardwareScalingLevel(1 / (ratio * draw_scale * quality[0]))
         engine.resize()
+
+    def set_render_scale(share: float) -> None:
+        if share != quality[0]:
+            quality[0] = share
+            fit()
 
     window.addEventListener("resize", fit)
     fit()
+    return set_render_scale
 
 
 def tested() -> bool:
@@ -207,7 +217,7 @@ def start_game(engine: Any, draw_scale: float) -> None:
     stepped = tested()
     document.title = GAME.title
     overlay = element("menu")
-    fit_to_window(engine, element("stage"), overlay, draw_scale)
+    set_render_scale = fit_to_window(engine, element("stage"), overlay, draw_scale)
     # The URL's debug options, in every build (DEV-OPT-01, DEV-OPT-07).
     debug = parse_debug_options(window.location.search)
     storage: Any = CookieStorage(document, MENU_CONFIG.cookie_max_age_days)
@@ -250,6 +260,9 @@ def start_game(engine: Any, draw_scale: float) -> None:
         dev_mode(window.location.search),
         # UI-TITLE-11: the title's Full screen entry.
         PageFullscreen(document),
+        # D-410: the graphics quality's share of the pixels drawn; not in e2e builds, which keep
+        # their own (ENGINE_CONFIG.e2e).
+        None if stepped else set_render_scale,
     )
     app = start_app(engine, GAME, options)
     __pragma__("ifdef", "e2e")

@@ -27,6 +27,64 @@ class PerfOverlay:
         self.key = key
 
 
+class QualityLevel:
+    """A graphics quality level (D-410): what it draws, from the full look down.
+
+    `render_scale`: the share of the pixels drawn across (1: all; 0.5: a quarter of them), on top of
+    the fit's (ENG-110). `shadow_filter`: the sun's shadows' filtering, `"medium"` or `"low"`
+    (Babylon's PCF qualities).
+    """
+
+    def __init__(self, render_scale: float, shadow_filter: str) -> None:
+        self.render_scale = render_scale
+        self.shadow_filter = shadow_filter
+
+
+class QualityConfig:
+    """Automatic graphics quality (D-410): levels, and when to change level.
+
+    `levels`: from the full look (0) down. While a level plays, frames are judged by windows of
+    `window_ms` of frames: a window is slow when its mean frame interval is above `slow_ms` and
+    more than `late_share` of its frames are late (longer than `late_factor` times the display's
+    frame, the shortest interval seen lately), so a display slower than 60 Hz is not taken for a
+    slow machine. A slow window lowers the level by one; then `settle_ms` of frames are not judged.
+    After `clean_ms` of windows that are not slow, with frames within `fast_ms` (and, where the GPU
+    can be timed, the GPU's and the main thread's work within `headroom_ms`), the level goes up by
+    one to try; if the next window is slow, it goes back down and stays there.
+    `medium` and `low`: the levels the Graphics quality setting's Medium and Low choices hold.
+    A slow window whose main thread's work takes more than `cpu_share` of its frames is the
+    processor's, which fewer pixels do not help: the level stays.
+    """
+
+    def __init__(
+        self,
+        levels: list[QualityLevel],
+        window_ms: float,
+        slow_ms: float,
+        late_share: float,
+        late_factor: float,
+        settle_ms: float,
+        clean_ms: float,
+        fast_ms: float,
+        headroom_ms: float,
+        medium: int,
+        low: int,
+        cpu_share: float,
+    ) -> None:
+        self.levels = levels
+        self.window_ms = window_ms
+        self.slow_ms = slow_ms
+        self.late_share = late_share
+        self.late_factor = late_factor
+        self.settle_ms = settle_ms
+        self.clean_ms = clean_ms
+        self.fast_ms = fast_ms
+        self.headroom_ms = headroom_ms
+        self.medium = medium
+        self.low = low
+        self.cpu_share = cpu_share
+
+
 class EngineConfig:
     """The engine-wide tunables, in the order of `ENGINE_CONFIG`."""
 
@@ -39,6 +97,8 @@ class EngineConfig:
         e2e: E2eConfig,
         long_frame_ms: float,
         perf_overlay: PerfOverlay,
+        quality: QualityConfig,
+        load_budget_ms: float,
     ) -> None:
         # Fixed simulation rate in Hz (ENG-100).
         self.simulation_hz = simulation_hz
@@ -54,6 +114,12 @@ class EngineConfig:
         # PERF-01 `long_frame_ms`: a frame whose work takes longer counts as a long frame.
         self.long_frame_ms = long_frame_ms
         self.perf_overlay = perf_overlay
+        # D-410: the graphics quality levels, and when the game changes level by itself.
+        self.quality = quality
+        # D-425: a frame of a level's loading runs its next step, or builds its next enemy model,
+        # only while the loading has used less than this of the frame (ms); a long step still
+        # runs alone.
+        self.load_budget_ms = load_budget_ms
 
 
 ENGINE_CONFIG = EngineConfig(
@@ -64,4 +130,25 @@ ENGINE_CONFIG = EngineConfig(
     E2eConfig(0.5, False),
     50,
     PerfOverlay(0.25, "F3"),
+    QualityConfig(
+        [
+            QualityLevel(1.0, "medium"),
+            QualityLevel(0.8, "medium"),
+            QualityLevel(0.67, "low"),
+            QualityLevel(0.57, "low"),
+            QualityLevel(0.5, "low"),
+        ],
+        2000,
+        1000 / 55,
+        0.1,
+        1.5,
+        1500,
+        10000,
+        17.5,
+        9,
+        2,
+        4,
+        0.8,
+    ),
+    8,
 )

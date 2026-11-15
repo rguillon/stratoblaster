@@ -3,10 +3,11 @@
 
 import math
 
+from core.scenery import traffic as traffic_module
 from core.scenery.ground_boxes import GroundArea
 from core.scenery.road_types import Road, RoadPoint
 from core.scenery.scenery_level import CarRules
-from core.scenery.traffic import Traffic
+from core.scenery.traffic import CAR_VALUES, WINDOW_PAD, CarsInView, Traffic
 
 FAR = GroundArea(-1000, 1000, -1000, 5000)
 
@@ -137,3 +138,145 @@ def test_two_lanes_each_way_put_cars_at_two_offsets() -> None:
     assert cars
     # Lane 0 is 0.75 from the centre line, lane 1 is 2.25 (each lane 3 wide).
     assert {round(abs(c.x), 6) for c in cars} <= {0.75, 2.25}
+
+
+def _reference_at(traffic: Traffic, time: float, area: GroundArea) -> list[tuple[object, ...]]:
+    """Return the cars as `Traffic.at` placed them before D-412: one by one, then the area."""
+    out: list[tuple[object, ...]] = []
+    hide = traffic._rules.length_
+    for index in traffic._tracks_in(area):
+        for car in traffic._tracks[index].cars:
+            track = car.track
+            length = track.length_
+            s = ((car.start + car.side * car.speed * time) % length + length) % length
+            if s < hide or s > length - hide:
+                continue
+            i = traffic_module._segment_at(track, s)
+            a = track.road.points[i]
+            b = track.road.points[i + 1]
+            s0 = track.along[i]
+            s1 = track.along[i + 1]
+            t = (s - s0) / (s1 - s0)
+            dx = (b.x - a.x) / (s1 - s0)
+            dz = (b.z - a.z) / (s1 - s0)
+            heights = traffic._heights_of(track)
+            h0 = heights[i] if i < len(heights) else 0
+            h1 = heights[i + 1] if i + 1 < len(heights) else 0
+            x = a.x + (b.x - a.x) * t + dz * car.side * car.offset
+            z = a.z + (b.z - a.z) * t - dx * car.side * car.offset
+            if x >= area.x_min and x < area.x_max and z >= area.z_min and z < area.z_max:
+                rotation = math.atan2(dx, dz) + (0 if car.side > 0 else math.pi)
+                out.append((car.kind, x, h0 + (h1 - h0) * t, z, rotation, traffic._rules.scale))
+    return out
+
+
+def test_d412_the_cars_are_where_they_were_placed_one_by_one() -> None:
+    """D-412 (PERF-03): the one-loop placement gives the same cars, in order, at the same places."""
+    roads = []
+    for k in range(4):
+        points = [RoadPoint(30 * k + 15 * math.sin(i / 3), i * 20 + 7 * k, 8) for i in range(30)]
+        roads.append(Road(k, "main", 8, 2, points))
+
+    def hilly(x: float, z: float) -> float:
+        return math.sin(x / 40) + math.cos(z / 55)
+
+    traffic = Traffic(roads, hilly, rules(kinds=["car", "van"], density=0.6), 3)
+    areas = [FAR, GroundArea(-20, 60, 100, 300), GroundArea(0, 200, 400, 520)]
+    for time in [0.0, 1.3, 7.75, 42.0, 300.5]:
+        for area in areas:
+            new = [(p.kind, p.x, p.y, p.z, p.rotation, p.scale) for p in traffic.at(time, area)]
+            assert new == _reference_at(traffic, time, area)
+            assert len(new) > 0 or area is not FAR
+
+
+def _numbers(cars: list[object]) -> list[tuple[object, ...]]:
+    return [(p.kind, p.x, p.y, p.z, p.rotation, p.scale) for p in cars]  # type: ignore[attr-defined]
+
+
+def _winding_roads() -> list[Road]:
+    """Roads of every course: along Z, winding, doubling back in Z, and across the level."""
+    along = [RoadPoint(-30 + 10 * math.sin(i / 4), i * 25, 8) for i in range(60)]
+    back = [RoadPoint(40 + i * 0.5, 300 + 220 * math.sin(i / 6), 8) for i in range(70)]
+    across = [RoadPoint(-80 + i * 12, 640 + 3 * math.sin(i), 8) for i in range(16)]
+    short = [RoadPoint(60, 900 + i * 4, 8) for i in range(5)]
+    return [
+        Road(0, "main", 8, 2, along),
+        Road(1, "main", 8, 1, back),
+        Road(2, "street", 8, 1, across),
+        Road(3, "street", 8, 1, short),
+    ]
+
+
+def test_d422_a_scrolling_view_sees_the_cars_a_check_of_every_car_does() -> None:
+    """D-422 (PERF-03): looking only along the stretch of each road near the view loses no car.
+
+    The view scrolls by less than the pad of the look, then jumps: the look is kept, then made
+    again; before the roads and past them, no stretch is near.
+    """
+
+    def hilly(x: float, z: float) -> float:
+        return math.sin(x / 40) + math.cos(z / 55)
+
+    traffic = Traffic(_winding_roads(), hilly, rules(kinds=["car", "van"], density=0.7), 5)
+    seen = 0
+    for step in range(260):
+        z0 = -400 + step * 7.3 if step < 230 else 4000 - (step - 230) * 150
+        area = GroundArea(-70, 95, z0, z0 + 140)
+        time = step * 0.37
+        cars = _numbers(traffic.at(time, area))
+        assert cars == _reference_at(traffic, time, area)
+        seen += len(cars)
+    assert seen > 500
+
+
+def test_d422_a_road_is_looked_at_again_only_when_the_view_leaves_the_stretch_looked_at() -> None:
+    traffic = Traffic([straight(0, length=2000)], ground, rules(), 1)
+    entry = traffic._tracks[0]
+    traffic.at(0.0, GroundArea(-100, 100, 400, 500))
+    reach = entry.reach
+    assert reach == 1.5
+    assert (entry.from_z, entry.to_z) == (400 - reach - WINDOW_PAD, 500 + reach + WINDOW_PAD)
+    # The stretch: the road's segments (20 long) that meet that range.
+    assert (entry.s_first, entry.s_last) == (340, 560)
+    traffic.at(1.0, GroundArea(-100, 100, 400 + WINDOW_PAD - 1, 500 + WINDOW_PAD - 1))
+    assert entry.from_z == 400 - reach - WINDOW_PAD
+    traffic.at(2.0, GroundArea(-100, 100, 400 + WINDOW_PAD + 1, 500 + WINDOW_PAD + 1))
+    assert entry.from_z == 400 + 1 - reach
+    # Near the road's start, the stretch stops where the cars are hidden (GFX-CAR-06).
+    traffic.at(3.0, GroundArea(-100, 100, -50, 60))
+    assert entry.s_first == 10
+    traffic.at(4.0, GroundArea(-100, 100, 1900, 2100))
+    assert entry.s_last == 1990
+
+
+def test_d422_a_road_with_no_stretch_near_the_view_places_no_car() -> None:
+    # A road so wide that its Z range, as wide each way, meets a view its points are far from.
+    road = Road(0, "main", 100, 1, [RoadPoint(0, 200 + i * 5, 100) for i in range(10)])
+    traffic = Traffic([road], ground, rules(length=1), 1)
+    assert traffic.at(0.0, GroundArea(-100, 100, 0, 110)) == []
+    entry = traffic._tracks[0]
+    assert entry.s_first > entry.s_last
+    assert traffic.at(0.0, GroundArea(-100, 100, 180, 260)) != []
+
+
+def test_d422_fill_writes_the_cars_as_numbers_into_the_list_it_is_given() -> None:
+    kinds = ["car", "van", "bus"]
+    traffic = Traffic([straight(0), straight(1)], ground, rules(kinds=kinds, scale=1.25), 3)
+    cars = CarsInView()
+    assert (cars.count, cars.values) == (0, [])
+    traffic.fill(4.0, FAR, cars)
+    values = cars.values
+    placements = traffic.at(4.0, FAR)
+    assert cars.count == len(placements) > 0
+    assert len(values) == cars.count * CAR_VALUES
+    for n, p in enumerate(placements):
+        at = n * CAR_VALUES
+        assert kinds[values[at]] == p.kind
+        assert values[at + 1 : at + CAR_VALUES] == [p.x, p.y, p.z, p.rotation]
+        assert p.scale == 1.25
+    assert len({values[n * CAR_VALUES] for n in range(cars.count)}) > 1
+    # The same list the next time, with that time's cars only.
+    traffic.fill(4.0, GroundArea(500, 600, 0, 100), cars)
+    assert cars.count == 0
+    assert cars.values is values
+    assert values == []

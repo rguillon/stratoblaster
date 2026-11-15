@@ -18,6 +18,7 @@ def _babylon(monkeypatch: pytest.MonkeyPatch) -> None:
     patch_babylon(monkeypatch, model_animation)
     # `ANIMATIONS` is made at import time, when Babylon's WeakMap does not exist yet.
     monkeypatch.setattr(model_animation, "ANIMATIONS", FakeWeakMap())
+    monkeypatch.setattr(model_animation, "_ANIMATED", FakeWeakMap())
 
 
 def _tree() -> tuple[FakeNode, FakeNode, FakeNode]:
@@ -76,3 +77,17 @@ def test_d359_a_model_input_set_on_a_node_is_read_from_below_it() -> None:
     assert model_input(grandchild, "sideways", 0) == -1
     assert model_input(root, "sideways", 0) == 0.25
     assert model_input(grandchild, "missing", 3) == 3
+
+
+def test_d411_the_animated_nodes_are_found_once_until_an_animation_is_added() -> None:
+    """D-411: the animated nodes under a root are kept; an animation added finds them anew."""
+    root, child, grandchild = _tree()
+    seen: list[str] = []
+    add_model_animation(child, lambda _dt: seen.append("child"))
+    step_model_animations(root, 1)
+    # A node added under the root without an animation: the kept list still serves.
+    grandchild.children = [FakeNode("late")]
+    step_model_animations(root, 1)
+    add_model_animation(grandchild, lambda _dt: seen.append("grandchild"))
+    step_model_animations(root, 1)
+    assert seen == ["child", "child", "child", "grandchild"]

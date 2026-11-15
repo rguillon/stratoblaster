@@ -83,6 +83,7 @@ from render.geometry.section_loft import (
     rounded_polygon,
     rounded_rectangle,
 )
+from render.mesh_merge import merge_still_meshes
 
 # isort: split
 # __pragma__ ("skip")
@@ -913,10 +914,13 @@ def _build_wing(side: str, sign: float, root: Any, scene: Any) -> None:
 
 def _centre(outline: list[list[float]]) -> list[float]:
     """Return the middle of a planform outline's points."""
-    return [
-        sum(p[0] for p in outline) / len(outline),
-        sum(p[1] for p in outline) / len(outline),
-    ]
+    # Plain loops (ENG-157, D-413).
+    x = 0.0
+    y = 0.0
+    for p in outline:
+        x += p[0]
+        y += p[1]
+    return [x / len(outline), y / len(outline)]
 
 
 def _build_tails(side: str, sign: float, root: Any, scene: Any, glow_width: float) -> None:
@@ -1471,6 +1475,13 @@ def playfield_glow_width() -> float:
 def build_playfield_ship(scene: Any) -> Any:
     """Build the player ship for the playfield: its glowing edges wide enough to show (D-355).
 
-    At about 40 px long, the menus' strips would be a quarter of a pixel across.
+    At about 40 px long, the menus' strips would be a quarter of a pixel across. Its still parts are
+    merged into a mesh per material (D-406: over 300 draw calls, twice over with the glow layer).
     """
-    return build_player_ship(scene, playfield_glow_width())
+    return merged_ship(build_player_ship(scene, playfield_glow_width()))
+
+
+def merged_ship(root: Any) -> Any:
+    """Return the ship built under `root`, its still parts merged by material (D-406)."""
+    merge_still_meshes(root)
+    return root

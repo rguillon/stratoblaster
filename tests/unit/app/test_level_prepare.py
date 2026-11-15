@@ -12,6 +12,7 @@ from app import level_prepare
 from app.level_prepare import (
     PREFETCH_AFTER,
     LevelPrefetcher,
+    level_after,
     level_of,
     prefetch_level,
     prepare_level,
@@ -51,6 +52,15 @@ def test_perf_08_a_level_is_found_by_its_id_and_an_unknown_one_is_refused() -> N
     assert level_of(game(first, level("1-2")), "1-1") is first
     with pytest.raises(ValueError, match="cannot be played"):
         level_of(game(first), "9-9")
+
+
+def test_d424_the_level_after_a_level_is_the_next_of_the_game_and_the_last_has_none() -> None:
+    levels = game(level("1-1"), level("1-2"), level("2-1"))
+    assert level_after(levels, "1-1") == "1-2"
+    assert level_after(levels, "1-2") == "2-1"
+    assert level_after(levels, "2-1") is None
+    assert level_after(levels, "9-9") is None
+    assert level_after(game(), "1-1") is None
 
 
 @pytest.mark.usefixtures("ground")
@@ -226,12 +236,12 @@ def tiled_game() -> SimpleNamespace:
     return fake
 
 
-def test_perf_17_the_streets_of_the_first_screens_are_waited_for(grounds: Grounds) -> None:
+def test_perf_17_d415_the_streets_of_the_first_screens_are_asked_for(grounds: Grounds) -> None:
     length = level_prepare.SCENERY_STAGE_CONFIG.chunk_length
     source = FakeRoads(set())
     grounds.source = source
     fake = tiled_game()
-    assert level_prepare.roads_ready(fake, "1-1", True, 0) is False
+    level_prepare.ask_roads(fake, "1-1", True)
     ((spans, tiles, grid),) = source.requests
     assert (tiles, grid) == ("tiles", True)
     assert grounds.asked[0][1] == 7
@@ -240,32 +250,27 @@ def test_perf_17_the_streets_of_the_first_screens_are_waited_for(grounds: Ground
     for previous, span in itertools.pairwise(spans):
         assert span == [previous[0] + 1, previous[2], previous[2] + length]
     assert spans[-1][1] > level_prepare.FIRST_Z
-    source.made = {int(span[0]) for span in spans}
-    assert level_prepare.roads_ready(fake, "1-1", False, 1) is True
 
 
-def test_perf_18_the_scene_makes_the_streets_itself_without_a_worker_or_after_the_wait(
-    grounds: Grounds,
-) -> None:
+def test_perf_18_without_a_worker_or_a_level_no_street_is_asked_for(grounds: Grounds) -> None:
     fake = tiled_game()
-    assert level_prepare.roads_ready(fake, "1-1", False, 0) is True
+    # No worker: the scene makes them itself.
+    level_prepare.ask_roads(fake, "1-1", False)
     source = FakeRoads(set())
     grounds.source = source
-    late = level_prepare.ROAD_WAIT_FRAMES + 1
-    assert level_prepare.roads_ready(fake, "1-1", False, late) is True
-    assert level_prepare.roads_ready(fake, "9-9", False, 0) is True
+    level_prepare.ask_roads(fake, "9-9", False)
     assert source.requests == []
     assert len(grounds.asked) == 1
 
 
-def test_perf_17_a_level_without_street_tiles_or_a_look_waits_for_no_street(
+def test_perf_17_a_level_without_street_tiles_or_a_look_asks_for_no_street(
     grounds: Grounds,
 ) -> None:
     source = FakeRoads(set())
     grounds.source = source
     fake = game(level("1-1"))
-    assert level_prepare.roads_ready(fake, "1-1", False, 0) is True
+    level_prepare.ask_roads(fake, "1-1", False)
     fake.view.scenery.looks = {}
-    assert level_prepare.roads_ready(fake, "1-1", False, 0) is True
+    level_prepare.ask_roads(fake, "1-1", False)
     assert source.requests == []
     assert len(grounds.asked) == 2

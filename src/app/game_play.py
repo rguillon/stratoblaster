@@ -528,6 +528,10 @@ class GamePlay:
         if compile_now:
             compile_shaders(self.view.scene.meshes)
 
+    def roads_ready(self) -> bool:
+        """Whether the street surfaces of the chunks in view are in (D-415: from the worker)."""
+        return self.view.stage.take_roads()
+
     def warm_shots(self, on: bool) -> None:
         """Show (or hide) one enemy bullet of each colour while the level loads (PERF-20)."""
         self._shots.warm(on)

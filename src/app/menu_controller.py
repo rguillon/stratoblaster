@@ -252,7 +252,11 @@ class MenuController:
     def _remember_volumes(self, volumes: Volumes) -> None:
         """Save the volumes on every change (UI-SET-06)."""
         saved = self._saved_volumes
-        if volumes.music == saved.music and volumes.sfx == saved.sfx:
+        if (
+            volumes.music == saved.music
+            and volumes.sfx == saved.sfx
+            and volumes.graphics == saved.graphics
+        ):
             return
         save_volumes(self.deps.storage, self.game.id, volumes)
         self._saved_volumes = volumes

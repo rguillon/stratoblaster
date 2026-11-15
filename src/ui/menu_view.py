@@ -188,12 +188,18 @@ class GameScreenView:
 
 
 class SliderView:
-    """One slider of the settings screen (UI-SET-02): value from 0 to `max`."""
+    """One slider of the settings screen (UI-SET-02): value from 0 to `max`.
 
-    def __init__(self, label: str, value: int, max_value: int) -> None:
+    `value_text`: what it shows for its value (a choice's name, D-410); the number when None.
+    """
+
+    def __init__(
+        self, label: str, value: int, max_value: int, value_text: str | None = None
+    ) -> None:
         self.label = label
         self.value = value
         self.max = max_value
+        self.value_text = value_text
 
 
 class SettingsView(BackView):

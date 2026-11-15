@@ -1,9 +1,12 @@
 # Copyright (c) 2026 Renaud Guillon
-"""Generates levels' grounds and scenery textures in a worker (PERF-14).
+"""Generates levels' grounds and scenery textures in workers (PERF-14).
 
 So a level can be prepared while the player is still choosing it, without freezing the menus.
 
-Unless stopped, every ground the game asks for is generated there (`generate_grounds_with`).
+Unless stopped, every ground the game asks for is generated there (`generate_grounds_with`). The
+grounds, their chunks and street surfaces go to the ground worker; the scenery textures, which
+need nothing of the ground, to texture workers of their own where the machine has the cores, so
+they are made at the same time as the ground and its roads (D-414).
 """
 
 from org.transcrypt.stubs.browser import __pragma__
@@ -98,6 +101,22 @@ def _worker_available() -> bool:
     return False
 
 
+def _cores() -> int:
+    """`navigator.hardwareConcurrency`: the machine's logical processors (2 when unknown)."""
+    __pragma__("js", "{}", "return (self.navigator && navigator.hardwareConcurrency) || 2;")
+    return 2
+
+
+def texture_worker_count(cores: int) -> int:
+    """How many texture workers to start besides the ground worker (D-414).
+
+    One per core left over by the main thread and the ground worker, at most two (a level has ten
+    or so textures, the longest a third of the work): at least one, so the textures never queue
+    behind a ground.
+    """
+    return max(1, min(2, cores - 2))
+
+
 def _new_game_worker() -> Any:
     """Return the game's ground worker (`ground_worker.js`, next to this module).
 
@@ -112,44 +131,68 @@ def _new_game_worker() -> Any:
 
 
 class _Waiting:
-    """A job waiting for its reply: the number of the next job, and the handlers by job id."""
+    """The jobs posted to a worker waiting for their reply: the handlers by job id."""
 
-    def __init__(self) -> None:
-        self.next = 0
+    def __init__(self, port: Any) -> None:
+        self.port = port
         self.handlers: Any = _new_map()
+
+    def on_message(self, event: Any) -> None:
+        data = event.data
+        done = True
+        if _map_has(self.handlers, data.id):
+            done = _map_get(self.handlers, data.id)(data)
+        if done:
+            _map_delete(self.handlers, data.id)
+
+    def fail(self) -> None:
+        """Hand every job waiting its failure (`None`)."""
+        for done in _map_values(self.handlers):
+            done(None)
+        _map_clear(self.handlers)
 
 
 class BackgroundLoader:
     """Generates levels' grounds and scenery textures in a worker (PERF-14).
 
-    `port` is the worker's side it talks to, a `Worker` or a fake: `postMessage(message)`,
-    `onmessage`, `onerror` and `terminate()` (optional). What it posts is copied to plain data first
-    (ENG-164).
+    `port` is the ground worker's side it talks to, a `Worker` or a fake: `postMessage(message)`,
+    `onmessage`, `onerror` and `terminate()` (optional); `texture_ports`, the texture workers', the
+    same (none: the textures go to the ground worker too, D-414). What it posts is copied to plain
+    data first (ENG-164).
     """
 
-    def __init__(self, port: Any) -> None:
+    def __init__(self, port: Any, texture_ports: list[Any] | None = None) -> None:
         self.port = port
-        self._waiting = _Waiting()
+        # The number of the next job (unique across the workers).
+        self._next = 0
+        self._waiting = _Waiting(port)
         # Textures asked for and not back yet, by key.
         self._textures: Any = _new_map()
-        port.onmessage = self._on_message
+        port.onmessage = self._waiting.on_message
         # A broken worker: every job waiting fails (the ground is then generated on the main
         # thread).
         port.onerror = self._on_error
+        self._texture_workers: list[_Waiting] = []
+        for texture_port in texture_ports or []:
+            self._texture_workers.append(self._texture_worker(texture_port))
+        # The texture worker the next texture goes to.
+        self._turn = 0
         generate_grounds_with(self._ground_generator)
 
-    def _on_message(self, event: Any) -> None:
-        data = event.data
-        done = True
-        if _map_has(self._waiting.handlers, data.id):
-            done = _map_get(self._waiting.handlers, data.id)(data)
-        if done:
-            _map_delete(self._waiting.handlers, data.id)
-
     def _on_error(self, _event: Any) -> None:
-        for done in _map_values(self._waiting.handlers):
-            done(None)
-        _map_clear(self._waiting.handlers)
+        self._waiting.fail()
+
+    def _texture_worker(self, port: Any) -> _Waiting:
+        """Listen to texture worker `port`; a broken one fails its jobs and gets no more."""
+        waiting = _Waiting(port)
+        port.onmessage = waiting.on_message
+
+        def on_error(_event: Any) -> None:
+            waiting.fail()
+            self._texture_workers = [w for w in self._texture_workers if w is not waiting]
+
+        port.onerror = on_error
+        return waiting
 
     def _ground_generator(self, level: Any, seed: int, replies: GroundReplies) -> None:
         # Whether the ground, then the runout and the chunks (asked for later) came back.
@@ -210,7 +253,14 @@ class BackgroundLoader:
         return on_reply
 
     def _post_texture(self, job: TextureJob, key: str) -> None:
-        self._post(_texture_message(0, to_plain(job)), self._texture_reply(job, key))
+        """Post the texture job to the texture workers in turn, or to the ground worker."""
+        message = _texture_message(0, to_plain(job))
+        waiting = self._waiting
+        count = len(self._texture_workers)
+        if count > 0:
+            waiting = self._texture_workers[self._turn % count]
+            self._turn += 1
+        self._post_to(waiting, message, self._texture_reply(job, key))
 
     def _post_ground(self, level: Any, seed: int, done: Callable[[Any], bool]) -> int:
         return self._post(_ground_message(0, to_plain(level), seed), done)
@@ -218,20 +268,30 @@ class BackgroundLoader:
     def stop(self) -> None:
         """Stop generating in the background: the grounds are made on the main thread again."""
         generate_grounds_with(None)
-        if hasattr(self.port, "terminate"):
-            self.port.terminate()
+        ports = [self.port]
+        ports.extend([waiting.port for waiting in self._texture_workers])
+        for port in ports:
+            if hasattr(port, "terminate"):
+                port.terminate()
 
     def _post(self, message: Any, done: Callable[[Any], bool]) -> int:
-        job_id = self._waiting.next
-        self._waiting.next += 1
+        return self._post_to(self._waiting, message, done)
+
+    def _post_to(self, waiting: _Waiting, message: Any, done: Callable[[Any], bool]) -> int:
+        job_id = self._next
+        self._next += 1
         message.id = job_id
-        _map_set(self._waiting.handlers, job_id, done)
-        self.port.postMessage(message)
+        _map_set(waiting.handlers, job_id, done)
+        waiting.port.postMessage(message)
         return job_id
 
 
 def start_background_loader() -> BackgroundLoader | None:
-    """Return a loader on the game's worker, if the browser has workers (none in unit tests)."""
+    """Return a loader on the game's workers, if the browser has workers (none in unit tests).
+
+    The ground worker, and `texture_worker_count` texture workers (the same script, D-414).
+    """
     if not _worker_available():
         return None
-    return BackgroundLoader(_new_game_worker())
+    textures = [_new_game_worker() for _ in range(texture_worker_count(_cores()))]
+    return BackgroundLoader(_new_game_worker(), textures)

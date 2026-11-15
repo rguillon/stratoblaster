@@ -190,3 +190,24 @@ def test_gfx_trim_08_a_mesh_under_a_plain_node_belongs_to_the_model_s_own_group(
     trims = add_edge_trim(root, TrimOptions(0.1, 0))
     assert [t.parent for t in trims] == [big]
     assert small.children == []
+
+
+def test_d408_a_memo_reuses_the_trims_of_a_models_first_build() -> None:
+    """D-408: the second build of a model gets the first's trims, without working them out."""
+    memo: dict[str, object] = {}
+    trims = []
+    for _ in range(2):
+        scene = FakeScene()
+        root = _root(scene)
+        mesh = _box_mesh(scene, root, "hull", [2, 1, 2])
+        set_trim(mesh, CYAN)
+        (trim,) = add_edge_trim(root, TrimOptions(0.1, 0), memo)
+        trims.append(trim)
+        if len(trims) == 1:
+            # The second build cannot work them out again.
+            memo_trims = memo["trims"]
+            assert isinstance(memo_trims, list)
+            assert len(memo_trims) == 1
+    assert trims[1].data.positions == trims[0].data.positions
+    assert trims[1].data.indices == trims[0].data.indices
+    assert trims[1].parent is not trims[0].parent

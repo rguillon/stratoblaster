@@ -2948,3 +2948,443 @@
   `edgeGlow`. The tails' and ventral fins' strips (D-346) stay, the only `edgeGlow` left. The
   laser's core and emitter keep the reactors' core light (D-339, D-342), which the spec counts with
   the reactors' light rather than the extremities' glow, and the canopy glass keeps its faint tint.
+
+### D-406 — The player ship's still parts merged into one mesh per material
+
+- **Date:** 2026-11-15
+- **Requirements:** PERF-02, PERF-03, ENG-106.
+- **Context:** owner: "optimize the game as much as possible, I want it to be smooth 60fps on an old
+  machine". Measured with `tests/perf/measure_perf.py` (1920×1080, Apple M1 through ANGLE/Metal,
+  `--cpu-slowdown 4` for an old processor): on 1-1 the ship's 300-odd meshes were most of the draw
+  calls: 332 in the screen pass and 322 more in the playfield glow layer, which draws every mesh
+  again.
+- **Decision:** `render/mesh_merge.merge_still_meshes(root)` (game-agnostic) merges the meshes under
+  a root that share a material and their drawing state (rendering group, alpha index, shadows,
+  layer mask, pickability) with `Mesh.MergeMeshes`, baked in the root's frame. Skinned, instanced,
+  thin-instanced, hidden, faded, disabled and multi-material meshes are left alone, as are those
+  under a node marked `keep_apart` (the reactor flames' pivots and puffs, which animate). The
+  playfield ship (`build_playfield_ship`) and the title's ship are merged; `build_player_ship`
+  itself is not, for its tests. Same triangles, same materials: the same frames.
+- **Correction (same day, found by comparing frames, see D-415):** the first version shaded the
+  rear of the ship differently (up to 31/255 on 210 pixels): `MergeMeshes` turns each part's
+  normals by its matrix, where Babylon draws an unevenly scaled mesh with its matrix's inverse
+  transpose. An unevenly scaled part's normals are now first set to `(AᵀA)⁻¹·n` (A its world
+  matrix's 3×3), which the merge turns into `A⁻ᵀ·n`, the shader's direction. See-through meshes
+  (alpha blending or testing) are also left apart: they are sorted by their own centre. The frames
+  of 1-1, 2-1, 3-1, 4-1 and the title in the e2e build then match `main` pixel for pixel.
+- **Consequences:** the ship is 41 meshes instead of 319. A part that animates must be marked
+  `keep_apart` before the merge.
+
+### D-407 — Thin-instance matrices kept in one buffer per mesh
+
+- **Date:** 2026-11-15
+- **Requirements:** PERF-02, PERF-03, PERF-25.
+- **Context:** the prop fields (traffic, scenery props) and the imposter fields called
+  `thinInstanceSetBuffer` with a new `Float32Array` whenever their instances changed: a new GPU
+  buffer and garbage each time, visible in the CPU profile of 2-1 to 4-1 (streets full of cars).
+- **Decision:** `render.babylon.upload_thin_matrices(mesh, matrices)` keeps each mesh's own
+  buffer (`__ownThinMatrices`), grown ×2 when too small, copies the matrices in, sets
+  `thinInstanceCount` and calls `thinInstanceBufferUpdated`; a new buffer only when it grew.
+- **Consequences:** see D-412 for the numbers of the scenery work together.
+
+### D-408 — An enemy model's edge trims worked out once per model
+
+- **Date:** 2026-11-15
+- **Requirements:** PERF-02, PERF-03, PERF-23.
+- **Context:** every enemy built (pooled or not) worked out its edge trims (`add_edge_trim`) from its
+  meshes' triangles again, the same result for every copy of a model; the profile under 4× CPU
+  slowdown showed it in the waves' frames (4-1's longest frame: 186 ms).
+- **Decision:** `add_edge_trim(root, options, memo)` keeps the trims' vertex data in `memo` (one
+  per model factory, `enemy_bindings.trimmed`) and reuses it when the model has as many trimmed
+  meshes; `_trim_datas` / `_trim_mesh` split the work from the mesh creation.
+- **Consequences:** 4-1 longest frame under 4× slowdown 186 → 65 ms (with D-409 to D-412).
+
+### D-409 — Plain loops instead of `any` / `all` over generators in per-frame code
+
+- **Date:** 2026-11-15
+- **Requirements:** PERF-02, PERF-03, ENG-157.
+- **Context:** Transcrypt compiles a generator expression into a JavaScript generator and `any` /
+  `all` into a call over it: an object and an iterator per call. In the CPU profile they were among
+  the top self-time entries (boss checks, gun muzzles, road districts, ground spans).
+- **Decision:** plain loops with an early return in `edge_trim`, `boss_fights`, `boss_mounts`,
+  `gun_muzzles`, `boss`, `jointed_enemy`, `road_network`, `level_ground` and `level_prepare`
+  (ENG-157 already asks for it; these had been missed). Same results.
+
+### D-410 — Automatic graphics quality, and a Graphics setting
+
+- **Date:** 2026-11-15
+- **Requirements:** PERF-03 (exception agreed by the owner), UI-SET-02, UI-SET-03.
+- **Context:** owner: "smooth 60fps on an old machine". The GPU time of 1-1 on the M1 at 1080p:
+  11.1 ms; without the glow 8.4 ms, without the shadows 7.4 ms, at half the resolution 3.6 ms. On a
+  GPU slower than the M1 the pixels are what fails 60 FPS, and no change that keeps the frames
+  identical brings them down. Asked how to treat old GPUs, the owner chose "Auto quality": the game
+  lowers its render resolution and its effects' cost only when it cannot hold 60 FPS; a fast machine
+  keeps today's look; a Graphics setting (Auto / High / Medium / Low) overrides it.
+- **Decision:**
+  - `config.engine.QualityConfig`: five levels (render scale 1.0 / 0.8 / 0.67 / 0.57 / 0.5, PCF
+    shadow filtering medium for the first two then low) and the governor's tunables.
+  - `core/loop/quality_governor.QualityGovernor` (pure): judges 2 s windows of play frames. Slow =
+    mean interval over 1000/55 ms, over 10 % of frames later than 1.5× the display's frame (the
+    shortest interval seen, so a 50 Hz display is not a slow machine), and the main thread's work
+    under 80 % of the frame (a processor-bound frame does not get faster with fewer pixels). A slow
+    window lowers the level one step, then 1.5 s settle. After 10 s of quick windows (mean ≤ 17.5
+    ms) with the main thread's work and the GPU's time (where `EXT_disjoint_timer_query` gives it)
+    under 9 ms, it tries one level up; the try is on trial until it has run as long again, and a
+    slow window during the trial stops any other try for the session.
+  - `app/graphics_quality.GraphicsQuality`: feeds the governor while a level plays (not in the
+    menus, loading or paused), sets the page's render scale (`main.fit_to_window`, on top of the
+    device pixel ratio cap) and, in the level's scene, the shadows' filtering and the glow layers'
+    blur kernel scaled with the render scale so a glow keeps its size on screen
+    (`render/quality.apply_quality`). The level the game chose is saved (`<game>_graphics_level`)
+    so the next visit starts there.
+  - The settings screen gains a third slider, Graphics, whose steps are named choices (a cell per
+    choice, the chosen one lit, its name as the value, `aria-valuetext`); saved as
+    `<game>_graphics_quality`. High holds level 0, Medium level 2, Low level 4.
+- **Alternatives considered:** a fixed lower resolution on every machine (changes the look on fast
+  machines too); a quality chosen once at load from a benchmark (cannot see a level's heavier
+  scenes); lowering the MSAA (needs a new engine, so a reload).
+- **Consequences:** checked on software WebGL (SwiftShader): the level steps 0 → 4, it is saved, and
+  the frame rate rises; on the M1 at full speed and under 4× CPU slowdown (processor-bound) it stays
+  at 0, the frames unchanged. **For the owner:** UI-SET-02 says one slider per volume (now a
+  Graphics slider too), and PERF-03 and the engineering spec do not yet describe the automatic
+  quality; `tests/perf/measure_perf.py` is the new DEV-PERF-06 script (that requirement is marked
+  removed since D-189). The requirement texts are the owner's to update.
+
+### D-411 — The animated nodes of a model found once
+
+- **Date:** 2026-11-15
+- **Requirements:** PERF-02, PERF-03.
+- **Context:** `step_model_animations(root)` walked every descendant of the model each frame to find
+  the few with animations (the ship's 300-odd nodes, every enemy's), a top self-time entry.
+- **Decision:** the animations lists under a root are kept (`_ANIMATED` WeakMap) with the count of
+  animations added when the list was made; it is made again once any animation was added since.
+  Animations are never taken off a node, so the kept list stays right.
+
+### D-412 — Traffic placed in one pass
+
+- **Date:** 2026-11-15
+- **Requirements:** PERF-02, PERF-03, PERF-24.
+- **Context:** `Traffic.at` (the cars on the streets, each frame) built a placement per car, then
+  filtered them by the visible area, computing every car's ground height first; with the uploads
+  of D-407 it was the largest game-side entry of the 2-1 to 4-1 CPU profiles.
+- **Decision:** one loop: each car's distance and segment inline, its x and z, the area check, and
+  only then its height and `PropPlacement`. `test_d412_…` compares it with the old algorithm, car
+  for car (PERF-03).
+- **Consequences:** D-406 to D-412 together (1920×1080, M1, frames/s and main-thread ms per frame
+  under 4× CPU slowdown; uncapped frames/s at full speed):
+
+  | Level | main ×4 | branch ×4 | main uncapped | branch uncapped |
+  |-------|---------|-----------|---------------|-----------------|
+  | 1-1   | 46.6 fps / 20.4 ms | 58.7 fps / 8.4 ms | 146 fps | 153 fps |
+  | 2-1   | 30.4 fps / 31.8 ms | 44.8 fps / 20.6 ms | 117 fps | 162 fps |
+  | 3-1   | 28.7 fps / 33.8 ms | 40.1 fps / 23.9 ms | 111 fps | 157 fps |
+  | 4-1   | 23.8 fps / 41.0 ms | 45.6 fps / 20.3 ms | 89 fps | 124 fps |
+
+  Measured again after D-406's correction and D-413 to D-419, `main` and the branch one after the
+  other per level (the machine busier then: another application used most of a core), ×4:
+  1-1 28.5 → 57.6 fps (33.8 → 11.5 ms, draws 1321 → 366), 2-1 23.7 → 43.3 fps (40.8 → 22.0 ms),
+  3-1 18.3 → 38.3 fps (52.6 → 24.9 ms), 4-1 18.7 → 42.0 fps (52.3 → 22.7 ms, draws 2121 → 1079).
+
+  What is left in 3-1 under 4× slowdown: Babylon's rendering 60 % (the glow layers' main textures
+  17 %, `evaluateActiveMeshes` 15.6 %), traffic still 12.8 %, shots 4.5 %.
+
+### D-413 — Level loading measured; less work per call in the load's own code
+
+- **Date:** 2026-11-15
+- **Requirements:** PERF-02, PERF-03, PERF-08, ENG-157, DEV-PERF-06.
+- **Context:** owner: "make an extensive rework to reduce the levels loading time".
+  `tests/perf/measure_perf.py --load` (new) starts a level cold from the URL (`?level=`), and times
+  its loading from the frame its loading screen is added to the frame it goes, step by step
+  (from the loading bar's progress each frame), with `--profile` the main thread's CPU profile of
+  that time (`console.profile`). A build whose worker logs its jobs gives the worker's timeline
+  too. On the M1 (1920×1080, full speed), before: 1-1 3.3 s, 2-1 2.4 s, 3-1 2.9 s, 4-1 3.5 s;
+  the main thread idle for 1.1 to 1.9 s of it, waiting for the one worker (its ground, then ten
+  textures of 40 to 750 ms one after the other, then the roads), then building the scene in one
+  frame of 650 to 980 ms.
+- **Decision:** the per-call waste first, same results: the ship's section lofts and planform
+  centres summed with plain loops (a generator in `sum` raised a JavaScript `StopIteration` each
+  call: 3 % of the load), likewise `lanes.is_boulevard`, `street_dead_ends._side_to_cut`,
+  `tile_streets._unique_nodes`, `Boss` transformations, `boss_model._has_armour` and the gamepad's
+  `_any_held`; `jittered_cells` (the stone and crack textures) works out each grid point's jitter
+  once instead of nine times a pixel: 1-1's stone texture 750 → 222 ms. A unit test compares the
+  cells with the old algorithm's.
+
+### D-414 — Texture workers beside the ground worker
+
+- **Date:** 2026-11-15
+- **Requirements:** PERF-02, PERF-03, PERF-12, PERF-14, PERF-18.
+- **Context:** D-413: the scenery textures (ten or so, 0.7 to 1.3 s of work) queued behind the
+  ground in the one worker, and the roads behind them; on 1-1 the texture wait ran out (60 frames)
+  and the scene made the rest itself, the worker making them a second time.
+- **Decision:** `start_background_loader` also starts `texture_worker_count(cores)` texture workers
+  (the same script): one per core left by the main thread and the ground worker, at least one, at
+  most two. Textures are posted to them in turn; a broken one fails its jobs and gets no more (with
+  none left, the ground worker takes them again). Same pixels.
+- **Consequences:** the textures step 660 to 1020 ms → 0 to 170 ms (made while the ground is).
+
+### D-415 — The roads asked for with the ground, waited for after the scene
+
+- **Date:** 2026-11-15
+- **Requirements:** PERF-02, PERF-03, PERF-09, PERF-17, PERF-18.
+- **Context:** the loading asked the worker for the street surfaces of the first screens only after
+  the textures, and waited for them before building the scene; the scene and the enemy models
+  (0.6 to 1.3 s of main-thread work) then came after the worker's roads (up to 790 ms on 4-1).
+- **Decision:** the steps are: ground, roads asked (`ask_roads`, at once), textures, scene,
+  shaders asked, enemy models, roads (`GamePlay.roads_ready`: the stage takes the surfaces come
+  since and says whether a chunk in view still waits, at most `ROAD_WAIT_FRAMES`), first drawing,
+  start. The stage already makes chunks wait for their surfaces (PERF-17); it now gives them under
+  the ground's root, as in play (`SceneryStage.take_roads`). The first version did not, and the
+  streets were drawn at the wrong scale: found by comparing the e2e frames of `main` and the branch
+  (the e2e build steps the game, so the same calls give the same frames), which now match pixel
+  for pixel.
+- **Consequences:** the worker makes the roads while the main thread builds the scene and its
+  enemy models. **For the owner:** PERF-09 lists the street surfaces before the scene; they are now
+  asked for there and waited for after the enemy models.
+
+### D-416 — The buildings ahead of the first screens come from the worker
+
+- **Date:** 2026-11-15
+- **Requirements:** PERF-02, PERF-03, PERF-16.
+- **Context:** `SceneryStage` placed the buildings up to two screens past its view on the main
+  thread when built (Z 1820 to 2280, the worker sends up to `first_placed_z`, 1600): four chunks,
+  350 ms of the scene's frame on 4-1.
+- **Decision:** the stage asks for them (`want_placed`, from the worker where there is one), as it
+  does in play; the chunks round the first screens are placed with them (`PropPlacer.place`). The
+  buildings are the same whatever the thread (PERF-16).
+- **Consequences:** with D-415, the scene's frame on 2-1 to 4-1: 650 to 980 ms → 215 to 255 ms.
+
+### D-417 — An enemy model's edge trims: the cover worked out once per model
+
+- **Date:** 2026-11-15
+- **Requirements:** PERF-02, PERF-03, PERF-21.
+- **Context:** `trim_model` built the grid of the model's up-facing triangles again for every mesh
+  of the model, and worked out each mesh's up-facing triangles twice; `_Grid` went through
+  Transcrypt's generic `min` and `max`. Edge trims were 10 % of the 1-1 load.
+- **Decision:** `trim_model` makes each mesh's up-facing triangles and the grid once
+  (`_silhouette`); `_Grid` takes each triangle's bounds once with `_min3` / `_max3`. A unit test
+  compares the trims with `silhouette_edges` called per mesh.
+- **Consequences:** the enemy models step 390 → 330 ms (1-1).
+
+### D-418 — Transcrypt's slow helpers out of the per-pixel and per-sample code
+
+- **Date:** 2026-11-15
+- **Requirements:** PERF-02, PERF-03, PERF-17.
+- **Context:** in the worker's roads job (790 ms on 4-1, measured on the main thread in a build
+  without workers), the road atlas's distance fields spent most of their time in `Array.append`:
+  Transcrypt builds a list comprehension by calling its `append` once per item, over hundreds of
+  thousands of pixels; and Transcrypt's generic `min` / `max` (texture bytes, noise, ground
+  samples) and `int` (`float(x) | 0`, in `hash_2d`) were 4 to 6 % of the load.
+- **Decision:** `road_paint` fills its masks and fields from `_filled(n, value)` (`new Array(n)
+  .fill(value)`) with index loops, and writes the parabolas' meeting point out in `_envelope`;
+  `_byte`, the noise's clamps, `smoothstep`, `ridged` and `SampledGround` compare instead of
+  calling `min` / `max`; `hash_2d` hands its coordinates to `Math.imul` as they are (`_whole`),
+  which truncates them as `int` did. Unit tests compare the fields and painted pieces with the list
+  comprehensions'.
+- **Consequences:** the roads job 790 → 550 ms (4-1), 480 → 380 ms (3-1).
+
+### D-419 — Junctions found by position; the road pieces made once per network
+
+- **Date:** 2026-11-15
+- **Requirements:** PERF-02, PERF-03, PERF-24.
+- **Context:** in the ground job, placing the first chunks' buildings worked out the road pieces of
+  the whole network (192 ms on 4-1), trying every row street against every column street; the
+  roads job worked them out again.
+- **Decision:** `_junctions` finds the columns a row can meet by halving them sorted by their line
+  (`_columns_along`), then takes them in their own order, so the pieces come in the same order;
+  `RoadTilesCache` uses `cached_road_pieces`, which the street surfaces use too. A unit test
+  compares the pieces with every pair tried.
+- **Consequences:** D-413 to D-419 together (M1, 1920×1080, full speed, cold start from the URL,
+  median of three; `main` measured the same day on the same machine):
+
+  | Level | main | branch | longest step, main → branch |
+  |-------|------|--------|-----------------------------|
+  | 1-1   | 4.0 s | 1.59 s | 937 → 488 ms |
+  | 2-1   | 3.1 s | 1.23 s | 652 → 230 ms |
+  | 3-1   | 3.1 s | 1.27 s | 691 → 255 ms |
+  | 4-1   | 3.6 s | 1.33 s | 875 → 259 ms |
+
+  What is left: the wait for the worker's ground (350 to 450 ms, the main thread idle), the scene
+  (230 to 490 ms, the trees of the first screens on 1-1), the enemy models (300 to 330 ms, one a
+  frame by PERF-21), the shaders (about 180 ms). PERF-10's 200 ms step is still exceeded by the
+  scene's frame.
+
+### D-420 — All the HUD in the upper part of the playfield window
+
+- **Date:** 2026-11-15
+- **Requirements:** UI-HUD-01, UI-HUD-02, UI-HUD-04, UI-HUD-06, UI-HUD-07, UI-HUD-08, UI-HUD-12.
+- **Context:** owner: "rework the ingame UI, move all the elements to the upper part of the
+  screen". The health was at the bottom left of the window, the weapon at the bottom right and the
+  progress rail up the right edge (D-317).
+- **Decision:** everything is laid out in the top 110 px of the 720 px window, 12 px in from its
+  sides as before:
+  - down the top left: the score, the high score, the level played (unchanged), then the ship's
+    callsign and health over its bar (`top: 80px`);
+  - down the top right: the lives and bombs (unchanged), then the weapon's name and pips
+    (`top: 64px`);
+  - the boss gauge between them, unchanged;
+  - the progress rail along the top edge (`top: 4px`, 12 px in from each side, 2 px tall), filled
+    from the left (`width`, no longer `height`), its bead at the end of the fill.
+
+  Only `index.html`'s HUD rules and the rail's fill in `GameHud` change; the parts, their order
+  and texts are the same. The ship still flies the whole window (UI-HUD-07); the touch buttons
+  stay where they were (UI-HUD-10). The e2e check of UI-HUD-08 now checks every pair of parts
+  apart, and a new e2e test checks that every part is in the top sixth of the window at
+  1280 × 720, 800 × 600 and 390 × 844.
+- **For the owner:** `specs/ui/hud.md` still places the health at the bottom left, the weapon at
+  the bottom right and the progress rail up the right edge (UI-HUD-01, UI-HUD-02, UI-HUD-04,
+  UI-HUD-06, the intro, UI-HUD-07's "under the bottom readouts", and the "Readout places" and
+  "Progress rail" rows of its tunable values); those texts are the owner's to update.
+
+### D-421 — A scene looks for what to draw among its enabled meshes only
+
+- **Date:** 2026-11-15
+- **Requirements:** PERF-02, PERF-03, PERF-32.
+- **Context:** owner: "another extensive pass of optimisation, I want as much FPS as I can and
+  reduced loading times". Measured as D-406 (`tests/perf/measure_perf.py`, 1920×1080, M1 through
+  ANGLE/Metal, `--cpu-slowdown 4`), the build of the commit before and the new one in turn, the
+  median of three rounds. The CPU profile of 4-1: Babylon's `_evaluateActiveMeshes` 17 % of the
+  main thread, half of that before any mesh is checked against the view: a level's scene holds about a thousand
+  meshes (1026 on 4-1, the hidden models of the enemies not on screen and of the props not in
+  view), 130 to 320 of them drawn, and Babylon 9 does a map look-up and asks each mesh for its
+  vertex count and its readiness before it skips the disabled ones.
+- **Decision:** `render.babylon.new_scene` gives every scene a `getActiveMeshCandidates` (Babylon's
+  own hook, the one its octree uses) that hands back the scene's enabled meshes, in the scene's
+  order, in an array it keeps. A disabled mesh was never drawn: the same frames. (Babylon's count
+  of all the scene's vertices, which the game does not read, now counts the enabled meshes only.)
+- **Consequences:** see D-422 for the numbers together.
+
+### D-422 — The cars write their instance matrices themselves
+
+- **Date:** 2026-11-15
+- **Requirements:** PERF-02, PERF-03, PERF-24, PERF-25, PERF-27, GFX-CAR-08.
+- **Context:** the traffic was still 14 % of the main thread on 4-1 (D-412: "traffic still
+  12.8 %"): each frame, a `PropPlacement` per car in view (350 on 4-1), grouped by kind into a
+  chunk, grouped again into what is drawn, a matrix composed per car through Babylon's vectors,
+  quaternion and matrix, copied car by car into a new array, then the same cars grouped again by
+  heading for their imposters with a new array per group.
+- **Decision:**
+  - `Traffic.fill(time, area, cars)` writes the cars in view as numbers (kind index, x, y, z,
+    turn) into one list that `CarsInView` keeps; `Traffic.at` makes its placements from it (the
+    same cars: `test_d412_…` still compares them with the old algorithm).
+  - Each road with cars keeps the stretch of it (two distances along it) that can be in the
+    view's Z range, `WINDOW_PAD` (48) wider each way, worked out again only when the view leaves
+    that range; the cars elsewhere along the road are passed over after their distance is known,
+    without their segment, position and area check. `test_d422_a_scrolling_view_…` compares 260
+    views with a check of every car.
+  - `TrafficLayer` writes each car's matrix straight into the buffer of its kind
+    (`turned_matrix`: the numbers of `Quaternion.RotationYawPitchRollToRef` and
+    `Matrix.ComposeToRef` for a turn round Y and one scale, worked out the same way, equal to the
+    last bit: a unit test compares them with Babylon's formulas written out) and, for the
+    imposters, into the buffer of its kind and heading (`upright_matrix`). The buffers are kept
+    and doubled when full. `PropField.draw_kind` and `ImposterField.draw_frame` upload them
+    (D-407); a kind or heading left without cars is hidden once. The cars are drawn in the same
+    order within each mesh.
+- **Consequences:** D-421 and D-422 together, frames/s and main-thread ms per frame under 4× CPU
+  slowdown (the commit before → now):
+
+  | Level | before | now |
+  |-------|--------|-----|
+  | 1-1   | 58.7 fps / 9.2 ms | 59.5 fps / 7.0 ms |
+  | 2-1   | 53.0 fps / 17.3 ms | 55.2 fps / 15.2 ms |
+  | 3-1   | 46.9 fps / 20.3 ms | 51.7 fps / 18.2 ms |
+  | 4-1   | 44.1 fps / 21.4 ms | 48.4 fps / 17.9 ms |
+
+  At full speed the M1 is held by its GPU (uncapped: 136 and 124 to 128 frames/s on 1-1 and 4-1,
+  unchanged). The frames of the e2e builds before and now are the same pixel for pixel: the title
+  and 1-1, 2-1, 3-1, 4-1 (at 30 s), 2-5 (60 s) and 4-5 (90 s), 27 frames, software WebGL.
+
+  What is left on 4-1 under 4× slowdown: Babylon's drawing 58 % (the two glow layers' own pass
+  18 %, the active meshes 14 %), the traffic 8 % (half of it the cars' places), the enemies' and
+  shots' sync 7 %. The longest frames of play are an enemy model built when its kind's pool is
+  empty (`EnemyLayer._take`): 2 to 5 ms each on 1-1, 4 to 14 ms on 4-1 at full speed, one per
+  enemy that comes while all the models of its kind are on screen (28 in the first 75 s of 1-1,
+  23 of 4-1). Not changed here: building them ahead moves the same work into the loading.
+
+### D-423 — Both scripts fetched at once; no error raised for a number at start-up
+
+- **Date:** 2026-11-15
+- **Requirements:** PERF-02, PERF-03, ENG-82, ENG-84, UI-LOAD-01.
+- **Context:** from the page's start to the title screen (cold, a local server): 840 ms. The
+  game's bundle was asked for only after Babylon.js (8.7 MB, 1.9 MB gzip) was downloaded and run
+  (at 170 ms locally; on a network, after its whole download): the page's module script is read
+  after the classic one. And the profile of the start showed Transcrypt's `isinstance` among the
+  first entries: given a number, it raises a JavaScript error and catches it, and the boss config
+  tables ask `isinstance(height, list)` for every hidden weapon.
+- **Decision:** `index.html` asks for both in its head (`<link rel="preload" as="script">` for
+  Babylon.js, `<link rel="modulepreload">` for the game), with the URLs of the scripts (the
+  build's `sed` gives all four the commit, ENG-84). `weapon_kinds._is_pair` is `Array.isArray`
+  (its Python twin `isinstance`).
+- **Consequences:** the title shows after 730 ms (from 840 ms), the game's bundle asked for at
+  5 ms; over a network the two downloads now overlap. **For the owner:** the larger part of the
+  start is Babylon.js itself (ENG-107's discrepancy); a build of only the Babylon modules the game
+  uses would cut it, against ENG-02's vendored UMD file.
+
+### D-424 — The next level prefetched when a level is completed; a scene's sky built once
+
+- **Date:** 2026-11-15
+- **Requirements:** PERF-02, PERF-03, PERF-11, PERF-12, GFX-SKY-10.
+- **Context:** after "Level complete" the level select opens on the next level, whose ground was
+  asked for only once the highlight had rested there (PERF-12): a quick player waited for it. And
+  each scene built its sky cube and its lighting twice: when made, then on its first update with
+  the same sky (the update keeps the key of the last sky, the making did not set it): 17 to 20 ms
+  of a level's scene, and of the menus'.
+- **Decision:** `GameSession._completed` prefetches the level after the one completed
+  (`level_prepare.level_after`: the next of the game's levels) as soon as it is completed, not on
+  a game over; `apply_showcase_environment` records the sky it was made with.
+- **Consequences:** with D-425 and D-426 below.
+
+### D-425 — Quick loading steps share a frame
+
+- **Date:** 2026-11-15
+- **Requirements:** PERF-02, PERF-08, PERF-09, PERF-10, PERF-21.
+- **Context:** a level loaded one step a frame (PERF-09) and one enemy model a frame (PERF-21),
+  so a step of 2 ms (the roads asked, the textures found ready, the roads taken) and a model of
+  5 ms each waited for the next frame of the display: 48 to 57 frames for a load, several of
+  them nearly empty.
+- **Decision:** a frame of the loading goes on to the next step, and the enemies' step to the next
+  model, while the loading has used less than `ENGINE_CONFIG.load_budget_ms` (8 ms) of the frame;
+  a step that waits (for the worker, for the shaders) still ends the frame, and a long step still
+  has its frame to itself, so no frame is longer than before by more than the budget. The clock is
+  `GameSessionOptions.load_clock` (the app's `now`, the browser's `performance.now`), given only
+  where the game runs in real time: without it (unit tests, e2e builds, which step the game frame
+  by frame) the loading is one step and one model a frame, as before. The level built ahead on the
+  level select (PERF-13) still runs one step a frame, its small models sharing a frame.
+- **Consequences:** 33 to 39 frames for a load. **For the owner:** PERF-09's criterion ("each
+  frame runs at most one loading step") and PERF-21 ("one per loading frame") now hold for the
+  steps and models that take more than the budget; the texts are the owner's to update.
+
+### D-426 — Comparisons the linter had turned back into `min`; the browser's sort; `floor`
+
+- **Date:** 2026-11-15
+- **Requirements:** PERF-02, PERF-03, PERF-14, PERF-31, ENG-157, ENG-158, ENG-160.
+- **Context:** the load profiled with no worker (the main thread then does the workers' jobs):
+  Transcrypt's generic `min` / `max` 5.5 % of it, 4 % from `noise` (every texel of every ground
+  and noise texture, per octave). D-418 had replaced those by comparisons, but as conditional
+  expressions, which ruff's `FURB136` rewrote into `min(...)` when the change was committed (the
+  comment still said "as a comparison"); likewise `ridged`, `smoothstep` and `SampledGround`. In
+  the same profile: `math.floor` in `noise` 2.4 % (under Transcrypt `import math` makes every
+  `math.x` a getter call on the module), the merge sort of `equalize` (the two noise textures of a
+  level, a list sliced and filled per texel) 2.4 %, and the merge sort of the columns of every row
+  street (`road_tiles._ascending`) 1.6 %.
+- **Decision:** the clamps of `noise`, `ridged`, `smoothstep` and `SampledGround.height` are `if`
+  statements, which no rule rewrites; `noise` and the textures' `_byte` call `floor` imported from
+  `math`; `procedural_textures._rank_order` sorts a `Uint32Array` of indices with the browser's
+  sort, the index breaking ties (the stable order, whatever the sort; its Python twin is the merge
+  sort), and `road_tiles._ascending` is `numbers.slice().sort((a, b) => a - b)` (twin: `sorted`).
+  Same textures and same road pieces: the existing unit tests compare them, and the frames are
+  those of D-422's comparison.
+- **Consequences:** D-424 to D-426 together, a level's loading from a cold start by the URL
+  (`measure_perf.py --load`, M1, full speed, the commit before and now in turn, median of five):
+
+  | Level | before | now |
+  |-------|--------|-----|
+  | 1-1   | 1625 ms | 1227 ms |
+  | 2-1   | 1240 ms | 962 ms |
+  | 3-1   | 1272 ms | 1070 ms |
+  | 4-1   | 1302 ms | 1139 ms |
+
+  What is left: the worker's ground (320 to 450 ms: the road network, the buildings of the first
+  screens), the scene (230 ms; 1-1's waits 170 ms more for its textures), the enemy models (240
+  to 285 ms), the shaders asked and waited for (90 + 15 to 90 ms). **For the owner:** a raw
+  JavaScript helper must not name a parameter `values` (Transcrypt renames it `py_values`, and the
+  JavaScript then names nothing): found here by a level that no longer loaded.

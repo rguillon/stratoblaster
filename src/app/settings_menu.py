@@ -12,27 +12,38 @@ INFINITY = float("Infinity")
 
 
 class Volumes:
-    """The two volume settings (UI-SET-02), each a step from 0 (silent) to the slider's maximum."""
+    """The settings (UI-SET-02): the two volumes and the graphics quality (D-410).
 
-    def __init__(self, music: int, sfx: int) -> None:
+    Each volume is a step from 0 (silent) to the slider's maximum; the graphics quality a step of
+    `GRAPHICS_CHOICES`, 0 for Auto.
+    """
+
+    def __init__(self, music: int, sfx: int, graphics: int = 0) -> None:
         self.music = music
         self.sfx = sfx
+        self.graphics = graphics
 
 
-# The sliders of the settings screen, in display order (two, nothing else: UI-SET-02).
-SETTINGS_SLIDERS = ["music", "sfx"]
+# The sliders of the settings screen, in display order: the two volumes, then the graphics quality
+# (D-410), whose steps are choices: Auto, High, Medium, Low.
+SETTINGS_SLIDERS = ["music", "sfx", "graphics"]
+GRAPHICS_CHOICES = 4
 
 
 def volume_of(volumes: Volumes, slider: str) -> int:
-    """Return the step of the slider `slider` (`music` or `sfx`)."""
+    """Return the step of the slider `slider` (`music`, `sfx` or `graphics`)."""
+    if slider == "graphics":
+        return volumes.graphics
     return volumes.music if slider == "music" else volumes.sfx
 
 
 def with_volume(volumes: Volumes, slider: str, step: int) -> Volumes:
     """Return a copy of `volumes` with the slider `slider` set to `step`."""
     if slider == "music":
-        return Volumes(step, volumes.sfx)
-    return Volumes(volumes.music, step)
+        return Volumes(step, volumes.sfx, volumes.graphics)
+    if slider == "sfx":
+        return Volumes(volumes.music, step, volumes.graphics)
+    return Volumes(volumes.music, volumes.sfx, step)
 
 
 def _is_integer(value: float) -> bool:
@@ -64,7 +75,11 @@ class SettingsMenu:
     def __init__(self, volumes: Volumes, max_step: int) -> None:
         self._max_step = max_step
         self._selection = 0
-        self._volumes = Volumes(self._clamp(volumes.music), self._clamp(volumes.sfx))
+        self._volumes = Volumes(
+            _clamp(volumes.music, max_step),
+            _clamp(volumes.sfx, max_step),
+            _clamp(volumes.graphics, GRAPHICS_CHOICES - 1),
+        )
 
     @property
     def selection(self) -> int:
@@ -109,12 +124,17 @@ class SettingsMenu:
             return "none"
         moved = index != self._selection
         self._selection = index
-        step = self._clamp(value)
+        step = _clamp(value, self._max_of(slider))
         if step == volume_of(self._volumes, slider):
             return "moved" if moved else "none"
         self._volumes = with_volume(self._volumes, slider, step)
         return "adjusted"
 
-    def _clamp(self, value: float) -> int:
-        # Math.round: halves go up.
-        return min(self._max_step, max(0, math.floor(value + 0.5)))
+    def _max_of(self, slider: str) -> int:
+        """Return the highest step of `slider`: the volumes' maximum, or the last choice."""
+        return GRAPHICS_CHOICES - 1 if slider == "graphics" else self._max_step
+
+
+def _clamp(value: float, max_step: int) -> int:
+    """Return `value` rounded (halves up, as Math.round) and kept from 0 to `max_step`."""
+    return min(max_step, max(0, math.floor(value + 0.5)))

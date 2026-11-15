@@ -62,6 +62,12 @@ MENU_TEXTS = record({
     "settingsHint": "▲ ▼ to pick · ◀ ▶ or tap to set",
     "musicVolume": "Music",
     "sfxVolume": "Sound effects",
+    # D-410: the graphics quality setting and its choices, in step order.
+    "graphics": "Graphics",
+    "graphicsAuto": "Auto",
+    "graphicsHigh": "High",
+    "graphicsMedium": "Medium",
+    "graphicsLow": "Low",
     "paused": "Paused",
     "resume": "Resume",
     "mainMenu": "Main menu",

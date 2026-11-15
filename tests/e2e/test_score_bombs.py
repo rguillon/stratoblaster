@@ -148,6 +148,18 @@ def test_game_score_06_a_continue_after_the_mini_boss_keeps_the_score_up_to_the_
     assert (game(page) or {})["bombs"] == 3
 
 
+# The HUD's parts (UI-HUD-01), the level played with them (UI-HUD-06).
+HUD_PARTS = [
+    ".hud-score",
+    ".game-level",
+    ".hud-stock",
+    ".hud-health",
+    ".hud-weapon",
+    ".hud-progress",
+    ".boss-bar",
+]
+
+
 @pytest.mark.parametrize(("width", "height"), [(800, 600), (390, 844)])
 def test_ui_hud_08_the_score_lines_show_and_cover_no_other_hud_part(
     page: Page, width: int, height: int
@@ -158,12 +170,33 @@ def test_ui_hud_08_the_score_lines_show_and_cover_no_other_hud_part(
     score = page.locator(".hud-score")
     expect(score).to_be_visible()
     expect(page.locator(".boss-bar")).to_be_visible()
-    for other in [".hud-health", ".hud-weapon", ".hud-progress", ".boss-bar"]:
-        assert not overlap(score, page.locator(other)), other
+    # D-420: every part apart from every other, now that they share the top of the window.
+    for i, one in enumerate(HUD_PARTS):
+        for other in HUD_PARTS[i + 1 :]:
+            assert not overlap(page.locator(one), page.locator(other)), (one, other)
     box = score.bounding_box()
     assert box
     assert box["y"] >= 0
     assert box["x"] + box["width"] <= width
+
+
+@pytest.mark.parametrize(("width", "height"), [(1280, 720), (800, 600), (390, 844)])
+def test_d420_every_hud_part_is_in_the_upper_part_of_the_window(
+    page: Page, width: int, height: int
+) -> None:
+    """D-420 (owner): the readouts, the progress rail and the boss gauge all in the top sixth."""
+    page.set_viewport_size({"width": width, "height": height})
+    open_debug(page, "?level=1-1&boss=final")
+    wait_for_boss(page, "Storm Petrel")
+    window = page.locator(".game-hud").bounding_box()
+    assert window
+    for part in HUD_PARTS:
+        box = page.locator(part).bounding_box()
+        assert box, part
+        assert box["y"] >= window["y"], part
+        assert box["y"] + box["height"] <= window["y"] + window["height"] / 6, part
+        assert box["x"] >= window["x"], part
+        assert box["x"] + box["width"] <= window["x"] + window["width"] + 1, part
 
 
 @pytest.mark.browser_context_args(**TOUCH_PHONE)

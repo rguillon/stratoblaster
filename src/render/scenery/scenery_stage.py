@@ -153,9 +153,12 @@ class SceneryStage:
             scene,
             _kit_context(look, self.sun, sea_level, self._x_half * 2, sea_length, level.seed),
         )
-        # The screens the level starts with (and two more ahead of each, see `update`), placed now.
+        # The buildings two screens ahead of the view, asked for as the view moves (see `update`).
+        # Those round the first screens are placed with their chunks (`PropPlacer.place`); the ones
+        # ahead come from the worker, which places them while the level loads, as in play (D-416),
+        # and are placed here only without one.
         self._ahead = 2 * (self._ground.z_far - self._ground.z_near)
-        self._placer.ensure_placed(self._ground.z_far + self._ahead)
+        self._placer.want_placed(self._ground.z_far + self._ahead)
         self._chunks = self._ground_root.adopt(self._build_chunks)
         self._roads = RoadLayers(scene, self.kit.roads)
         # The street surfaces of the tile roads come from the ground (the worker's, or made here)
@@ -493,6 +496,15 @@ class SceneryStage:
         area = GroundArea(-self._x_half, self._x_half, job[1], z_to)
         self._props.add_to_chunk(job[0], self._placer.trees_in(area))
         job[1] = z_to
+
+    def take_roads(self) -> bool:
+        """Give the street surfaces that came to their chunks; whether none is waiting any more.
+
+        The level's loading waits on it (D-415). Under the ground's root, as in `_cover`: the
+        surfaces made now belong to the ground, drawn at its scale.
+        """
+        self._ground_root.adopt(self._take_roads)
+        return len(self._road_pending) == 0
 
     def _take_roads(self) -> None:
         """Give the street surfaces that are ready to their chunks; the others keep waiting."""

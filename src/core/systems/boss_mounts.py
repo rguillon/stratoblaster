@@ -170,7 +170,11 @@ class BossMount:
     def _side_by_side(self) -> bool:
         """Whether its barrels all point the same way (a twin gun's take turns)."""
         angle = self.barrels[0].angle
-        return all(barrel.angle == angle for barrel in self.barrels)
+        # Plain loop (ENG-157, D-409).
+        for barrel in self.barrels:
+            if barrel.angle != angle:
+                return False
+        return True
 
 
 class MountLaserOwner:

@@ -109,7 +109,13 @@ def _unique_nodes(values: Sequence[Node]) -> list[Node]:
     """Return the nodes once each (by identity), in their first order."""
     result: list[Node] = []
     for n in values:
-        if not any(m is n for m in result):
+        # Plain loop (ENG-157, D-413).
+        seen = False
+        for m in result:
+            if m is n:
+                seen = True
+                break
+        if not seen:
             result.append(n)
     return result
 

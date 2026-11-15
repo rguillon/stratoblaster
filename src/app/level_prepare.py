@@ -55,6 +55,16 @@ def level_of(game: Any, level_id: str) -> Any:
     return level
 
 
+def level_after(game: Any, level_id: str) -> str | None:
+    """Return the id of the level that follows `level_id` in the game, if there is one."""
+    levels = game.game_levels
+    for i in range(len(levels) - 1):
+        if levels[i].id == level_id:
+            after: str = levels[i + 1].id
+            return after
+    return None
+
+
 def prepare_level(game: Any, level_id: str) -> bool:
     """Asks for the ground of level `level_id` ahead of its `GamePlay` (PERF-14).
 
@@ -108,27 +118,27 @@ def textures_ready(game: Any, level_id: str, loader: Any, tries: int) -> bool:
 ROAD_WAIT_FRAMES = 120
 
 
-def roads_ready(game: Any, level_id: str, grid: bool, tries: int) -> bool:
-    """Whether the street surfaces of the first screens of `level_id` are made (PERF-17).
+def ask_roads(game: Any, level_id: str, grid: bool) -> None:
+    """Ask the worker for the street surfaces of the first screens of `level_id` (PERF-17).
 
-    The worker makes them while the loading goes on, so the scene does not make them on the main
-    thread. Without a worker, or after ROAD_WAIT_FRAMES, the scene makes them itself (PERF-18).
+    As soon as its ground is there, so the worker makes them while the main thread builds the
+    level's scene (D-415); the scene takes them when they come. Nothing without a worker (the scene
+    makes them itself) or a tile look.
     """
     level = find_game_level(game.game_levels, level_id)
-    if level is None or tries > ROAD_WAIT_FRAMES:
-        return True
+    if level is None:
+        return
     scenery = scenery_with_runout(level)
     source = level_ground(scenery, scenery.seed).roads_source
     look = game.view.scenery.looks.get(level.scenery.id)
     if source is None or look is None or look.roads.tiles is None:
-        return True
+        return
     length = SCENERY_STAGE_CONFIG.chunk_length
     spans = [
         [index, index * length, (index + 1) * length]
         for index in range(-1, int(FIRST_Z / length) + 2)
     ]
     source.request(spans, look.roads.tiles, grid)
-    return all(source.ready(span[0]) for span in spans)
 
 
 # Seconds the level select highlight rests on a level before it is prefetched.

@@ -461,7 +461,11 @@ class RoadNetwork:
         return self.clear_of(x, z, laying + gap)
 
     def _in_district(self, z: float) -> bool:
-        return any(z >= d.z_min and z <= d.z_max for d in self._districts)
+        # Plain loop (ENG-157, D-409).
+        for d in self._districts:
+            if z >= d.z_min and z <= d.z_max:
+                return True
+        return False
 
     def snapshot(self) -> RoadSnapshot:
         """Return what this network made (PERF-14): its roads, blocks and slots."""

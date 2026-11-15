@@ -136,9 +136,18 @@ def test_ui_over_06_a_game_over_with_a_checkpoint_offers_its_two_choices() -> No
 def test_ui_set_02_the_settings_screen_shows_one_slider_per_volume() -> None:
     view = build_menu_view(state("settings", selection=1), ctx())
     assert isinstance(view, SettingsView)
-    assert [slider.label for slider in view.sliders] == ["Music", "Effects"]
-    assert [slider.value for slider in view.sliders] == [5, 6]
-    assert all(slider.max == 10 for slider in view.sliders)
+    volumes = view.sliders[:2]
+    assert [slider.label for slider in volumes] == ["Music", "Effects"]
+    assert [slider.value for slider in volumes] == [5, 6]
+    assert all(slider.max == 10 for slider in volumes)
+    # D-410: then the Graphics setting, its steps named.
+    graphics = view.sliders[2]
+    assert (graphics.label, graphics.value, graphics.max, graphics.value_text) == (
+        "Graphics",
+        0,
+        3,
+        "Auto",
+    )
     assert view.selected == 1
     assert view.over_level is False
 

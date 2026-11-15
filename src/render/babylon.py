@@ -167,8 +167,37 @@ def new_engine(canvas: Canvas, antialias: bool) -> Engine:
 
 
 def new_scene(engine: Engine) -> Scene:
-    """Return `new Scene(engine)`."""
-    __pragma__("js", "{}", "return new BABYLON.Scene(engine);")
+    """Return `new Scene(engine)`, which looks for what to draw among its enabled meshes only.
+
+    D-421: Babylon goes through every mesh of a scene each frame (a map look-up, its vertex count
+    and its readiness, each) before it skips the disabled ones; a level's scene holds about a
+    thousand, most of them the hidden models of enemies not on screen. `getActiveMeshCandidates`
+    (Babylon's own hook, the one its octree uses) hands it the enabled ones instead; a disabled
+    mesh was never drawn, so the frames are the same.
+    """
+    __pragma__(
+        "js",
+        "{}",
+        """
+        const scene = new BABYLON.Scene(engine);
+        const enabled = { data: [], length: 0 };
+        scene.getActiveMeshCandidates = function () {
+            const meshes = scene.meshes;
+            const data = enabled.data;
+            let count = 0;
+            for (let i = 0; i < meshes.length; i++) {
+                const mesh = meshes[i];
+                if (mesh.isEnabled()) {
+                    data[count++] = mesh;
+                }
+            }
+            data.length = count;
+            enabled.length = count;
+            return enabled;
+        };
+        return scene;
+        """,
+    )
     return cast("Scene", None)
 
 
@@ -685,6 +714,35 @@ def float32_array(length: int) -> Float32Array:
     """Return a zero-filled `Float32Array` of `length` numbers (thin-instance matrices)."""
     __pragma__("js", "{}", "return new Float32Array(length);")
     return cast("Float32Array", None)
+
+
+def upload_thin_matrices(mesh: Mesh, matrices: Float32Array) -> None:
+    """Draw `mesh` once per matrix of `matrices` (16 numbers each), keeping its GPU buffer (D-407).
+
+    The matrices are copied into a buffer the mesh keeps, grown (doubled) only when too small, and
+    its GPU buffer is updated in place: a new array for each upload made a new GPU buffer, and new
+    vertex arrays, every frame for the moving cars. The mesh draws only the first matrices (its
+    `thinInstanceCount`); it never fits its bounds to its instances (`doNotSyncBoundingInfo`).
+    """
+    __pragma__(
+        "js",
+        "{}",
+        """
+        const floats = matrices.length;
+        let own = mesh.__ownThinMatrices;
+        if (!own || own.length < floats) {
+            own = new Float32Array(Math.max(floats, own ? own.length * 2 : 0, 16));
+            own.set(matrices);
+            mesh.__ownThinMatrices = own;
+            mesh.thinInstanceSetBuffer('matrix', own, 16, false);
+            mesh.thinInstanceCount = floats / 16;
+        } else {
+            own.set(matrices);
+            mesh.thinInstanceCount = floats / 16;
+            mesh.thinInstanceBufferUpdated('matrix');
+        }
+        """,
+    )
 
 
 def new_matrix() -> Matrix:

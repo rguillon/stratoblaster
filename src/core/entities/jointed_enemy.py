@@ -180,7 +180,11 @@ class JointedEnemy(Enemy):
     @property
     def shielded(self) -> bool:
         """Whether a standing part shields the hull."""
-        return any(part.spec.shields and not part.destroyed for part in self.parts)
+        # Plain loop (ENG-157, D-409).
+        for part in self.parts:
+            if part.spec.shields and not part.destroyed:
+                return True
+        return False
 
     def _hit_targets(self) -> list[ShotTarget]:
         """Return the hull and its standing parts: what shots hit and the player can bump into."""

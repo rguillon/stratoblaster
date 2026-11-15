@@ -44,9 +44,13 @@ def _dot(a: Vec3, b: Vec3) -> float:
 def _centre(section: Section) -> Vec3:
     """Return the middle of a section's ring, at its Z."""
     ring = section[1]
-    x = sum(p[0] for p in ring) / len(ring)
-    y = sum(p[1] for p in ring) / len(ring)
-    return [x, y, section[0]]
+    # Plain loops (ENG-157, D-413): a generator in `sum` costs a JavaScript iterator per call.
+    x = 0.0
+    y = 0.0
+    for p in ring:
+        x += p[0]
+        y += p[1]
+    return [x / len(ring), y / len(ring), section[0]]
 
 
 def _point(section: Section, j: int) -> Vec3:
@@ -75,7 +79,15 @@ def _face(keys: list[str], points: list[Vec3], smooth: bool) -> _Face | None:
 
 def _outwardness(face: _Face, inside: Vec3) -> float:
     """How much the face looks away from `inside` (negative when it looks towards it)."""
-    middle = [sum(p[k] for p in face.points) / 3 for k in range(3)]
+    a = face.points[0]
+    b = face.points[1]
+    c = face.points[2]
+    # The sums as `sum` added them, from 0 (D-413).
+    middle = [
+        (0 + a[0] + b[0] + c[0]) / 3,
+        (0 + a[1] + b[1] + c[1]) / 3,
+        (0 + a[2] + b[2] + c[2]) / 3,
+    ]
     return _dot(face.normal, _minus(middle, inside))
 
 

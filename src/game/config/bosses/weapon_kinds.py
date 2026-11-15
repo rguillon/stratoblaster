@@ -20,6 +20,8 @@ numbers (`game/view/bosses/hidden_weapon_shapes.py`). Offsets in px from the bos
 Y up (its nose points down, at -Y), and heights above the playfield.
 """
 
+from org.transcrypt.stubs.browser import __pragma__
+
 from game.config.bosses.boss_guns import gun_mount, laser_mount, missile_mount
 from game.config.bosses.boss_kit import bullet, bursting, sweeping, volley
 from game.config.record import record
@@ -118,6 +120,16 @@ WEAPON_FIRE = record({
 })
 
 
+def _is_pair(height: Any) -> bool:
+    """Whether `height` is a list (`Array.isArray(height)`): `[base, top]`.
+
+    Not `isinstance`, which under Transcrypt raises and catches a JavaScript error for every
+    number it is given (D-423: the config tables call this hundreds of times as the page starts).
+    """
+    __pragma__("js", "{}", "return Array.isArray(height);")
+    return isinstance(height, list)
+
+
 def pod_height(radius: float, height: Any) -> float:
     """Return the height of a weapon's pod's top: `height` when given, else its share of the radius.
 
@@ -126,7 +138,7 @@ def pod_height(radius: float, height: Any) -> float:
     if height == None:
         value: float = radius * WEAPON_SHAPE.height
         return value
-    if isinstance(height, list):
+    if _is_pair(height):
         top: float = height[1]
         return top
     given: float = height
@@ -138,7 +150,7 @@ def pod_base(height: Any) -> float:
 
     A pod on a wing stands on its membrane, not through it from the playfield.
     """
-    if isinstance(height, list):
+    if _is_pair(height):
         base: float = height[0]
         return base
     return 0.0

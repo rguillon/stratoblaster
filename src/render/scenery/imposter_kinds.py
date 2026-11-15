@@ -54,6 +54,8 @@ class ImposterKinds:
     ) -> None:
         self.kinds = kinds
         self.field = ImposterField(scene, kinds, atlas.look, tilt, atlas.material)
+        self.headings: int = atlas.look.headings
+        """The headings each kind is pictured from (the frames of `ImposterField.draw_frame`)."""
         self.models: dict[str, Any] = {}
         for k, factory in models.items():
             self.models[k] = lights_only(factory) if k in kinds else factory

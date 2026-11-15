@@ -48,9 +48,12 @@ def trimmed(build: Any) -> Any:
     look = READABILITY.enemyTrim
     options = TrimOptions(look.width, look.offset)
 
+    # D-408: the trims worked out for this model's first build, reused by the next ones.
+    memo: dict[str, Any] = {}
+
     def build_trimmed(scene: Any) -> Any:
         model = build(scene)
-        add_edge_trim(model.root, options)
+        add_edge_trim(model.root, options, memo)
         return model
 
     return build_trimmed

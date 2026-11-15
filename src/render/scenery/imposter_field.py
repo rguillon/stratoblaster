@@ -8,7 +8,7 @@ One mesh per kind and frame, its quads as thin instances (moved and scaled, neve
 shows the turn; ENG-104).
 """
 
-from render.babylon import float32_array, set_enabled
+from render.babylon import float32_array, set_enabled, upload_thin_matrices
 from render.scenery.imposters import frame_of, frame_uv, imposter_quad
 from render.scenery.prop_field import MATRIX_FLOATS, mesh_of, same_placements
 
@@ -73,6 +73,21 @@ class ImposterField:
         """Every quad mesh."""
         return list(self._meshes.values())
 
+    def draw_frame(self, kind: str, frame: int, matrices: Any) -> None:
+        """Draw frame `frame` of `kind` once per matrix of `matrices` (16 numbers each), or hide it.
+
+        D-422: for the imposters that move every frame (the cars), which write their matrices
+        themselves (as `placement_matrix` does). A kind it does not know is left out. Not to be
+        mixed with `place`.
+        """
+        mesh = self._meshes.get(_mesh_key(kind, frame))
+        if not mesh:
+            return
+        shown = len(matrices) > 0
+        if shown:
+            upload_thin_matrices(mesh, matrices)
+        set_enabled(mesh, shown)
+
     def place(self, placements: list[PropPlacement]) -> None:
         """Draws one imposter per placement (of a kind it knows), and no others."""
         headings: int = self._look.headings
@@ -99,6 +114,7 @@ class ImposterField:
             buffer = float32_array(count * MATRIX_FLOATS)
             for j in range(count):
                 placement_matrix(buffer, j * MATRIX_FLOATS, group[j])
-            mesh.thinInstanceSetBuffer("matrix", buffer, MATRIX_FLOATS, False)
+            # D-407: its GPU buffer updated in place, not a new one per upload.
+            upload_thin_matrices(mesh, buffer)
             set_enabled(mesh, True)
             self._drawn[key] = group

@@ -2,6 +2,7 @@
 """Seeded 2D gradient noise and its fractal sums (the terrain's relief, GFX-TERRAIN-02)."""
 
 import math
+from math import floor
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -59,6 +60,20 @@ def _int_mod(a: int, n: int) -> int:
     return r
 
 
+def _whole(value: float) -> int:
+    """Return `int(value)` for `imul`; in JavaScript, the value itself (D-418).
+
+    `Math.imul` truncates it to 32 bits as Transcrypt's `int` (`value | 0`) did, without going
+    through Transcrypt's generic `float`.
+    """
+    r = 0
+    __pragma__("skip")
+    r = int(value)
+    __pragma__("noskip")
+    __pragma__("js", "{}", "r = value;")
+    return r
+
+
 def _wrap(i: int, period: int) -> int:
     return _int_mod(_int_mod(i, period) + period, period)
 
@@ -85,8 +100,10 @@ def create_noise2d(seed: int, period: int = TABLE_SIZE) -> Noise2D:
         return cos_table[h] * dx + sin_table[h] * dy
 
     def noise(x: float, y: float) -> float:
-        ix = math.floor(x)
-        iy = math.floor(y)
+        # `floor`, not `math.floor`: under Transcrypt every `math.` goes through a getter of the
+        # module, and this runs four times a texel (D-426).
+        ix = floor(x)
+        iy = floor(y)
         fx = x - ix
         fy = y - iy
         u = _smootherstep(fx)
@@ -95,7 +112,13 @@ def create_noise2d(seed: int, period: int = TABLE_SIZE) -> Noise2D:
         top = _lerp(gradient(ix, iy + 1, fx, fy - 1), gradient(ix + 1, iy + 1, fx - 1, fy - 1), u)
         # Gradient noise peaks at about ±0.71 in 2D: scale it to fill [-1, 1].
         value = _lerp(bottom, top, v) * SQRT2
-        return -1 if value < -1 else (min(value, 1))
+        # Clamped by comparisons (D-418): Transcrypt's `min` is generic, and slow here. As
+        # statements: the linter turns a conditional expression back into `min` (D-426).
+        if value < -1:
+            return -1
+        if value > 1:
+            return 1
+        return value
 
     return noise
 
@@ -124,7 +147,10 @@ def ridged(noise: Noise2D, x: float, y: float, options: OctaveOptions) -> float:
     for _ in range(options.octaves):
         crest = 1 - abs(noise(x * frequency, y * frequency))
         value = crest * crest * weight
-        weight = min(1, value * 2)
+        # A comparison, not Transcrypt's generic `min` (D-418, D-426).
+        weight = value * 2
+        if weight > 1:
+            weight = 1
         total_sum += value * amplitude
         total += amplitude
         amplitude *= options.gain
@@ -137,13 +163,20 @@ def smoothstep(edge0: float, edge1: float, x: float) -> float:
     if edge0 == edge1:
         return 0.0 if x < edge0 else 1.0
     t = (x - edge0) / (edge1 - edge0)
-    t = 0 if t < 0 else (min(t, 1))
+    # Comparisons, not Transcrypt's generic `min` (D-418, D-426).
+    if t < 0:
+        t = 0
+    elif t > 1:
+        t = 1
     return t * t * (3 - 2 * t)
 
 
 def hash_2d(x: int, y: int, seed: int) -> float:
     """Return a well-mixed 32-bit hash of integer coordinates and a seed, as a number in [0, 1)."""
-    h = xor(xor(imul(int(x), 0x27D4EB2D), imul(int(y), 0x165667B1)), imul(int(seed), 0x9E3779B1))
+    h = xor(
+        xor(imul(_whole(x), 0x27D4EB2D), imul(_whole(y), 0x165667B1)),
+        imul(_whole(seed), 0x9E3779B1),
+    )
     h = imul(xor(h, ushr(h, 15)), 0x85EBCA6B)
     h = imul(xor(h, ushr(h, 13)), 0xC2B2AE35)
     return xor(h, ushr(h, 16)) / 4294967296

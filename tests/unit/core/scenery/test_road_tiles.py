@@ -1,8 +1,10 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/scenery/road_tiles.py`."""
 
+import math
 from typing import Any
 
+import pytest
 from helpers.level_builders import (
     flat,
     make_level,
@@ -13,6 +15,7 @@ from helpers.level_builders import (
     tile_rules,
 )
 
+from core.math.rng import create_rng
 from core.scenery.district_packing import DistrictSite, RoadTilesCache, pack_districts
 from core.scenery.districts import ZRange
 from core.scenery.height_field import HeightField
@@ -230,3 +233,56 @@ def test_road_tiles_marks_every_tile_of_each_piece() -> None:
     assert not line.row
     assert line.start == 3
     assert _line_of(Road(0, "street", 24.0, 1, []), TILE_ROADS) is None
+
+
+def _reference_junctions(rows: list[_TileLine], columns: list[_TileLine]) -> list[RoadPiece]:
+    """D-419: `_junctions` as it was, every row tried against every column."""
+    found: list[RoadPiece] = []
+    position: dict[str, int] = {}
+    for row in rows:
+        for column in columns:
+            piece = _junction(row, column)
+            if piece is None:
+                continue
+            key = str(tile_key(piece.x, piece.z))
+            sides = piece.sides
+            if key in position:
+                other = found[position[key]]
+                sides = [s if s is not None else other.sides[i] for i, s in enumerate(sides)]
+            replaced = RoadPiece(
+                piece.x, piece.z, piece.size, _kind_of(sides), piece.adapter, sides
+            )
+            if key in position:
+                found[position[key]] = replaced
+            else:
+                position[key] = len(found)
+                found.append(replaced)
+    return found
+
+
+def _piece_fields(pieces: list[RoadPiece]) -> list[Any]:
+    return [
+        (p.x, p.z, p.size, p.kind, p.adapter, [None if s is None else vars(s) for s in p.sides])
+        for p in pieces
+    ]
+
+
+@pytest.mark.parametrize("seed", [1, 2, 3])
+def test_d419_junctions_found_by_position_match_every_pair_tried(seed: int) -> None:
+    """PERF-03: the same pieces, in the same order, as when every column was tried."""
+    random = create_rng(seed)
+    rows = []
+    columns = []
+    for _ in range(40):
+        at = math.floor(random() * 30) * 24.0
+        a = math.floor(random() * 30) * 24.0 - 120
+        b = a + math.floor(random() * 12 + 1) * 24.0
+        size = 1 + math.floor(random() * 2)
+        rows.append(_row(math.floor(at / 24), at, a, b, size=size))
+        at = math.floor(random() * 30) * 24.0
+        a = math.floor(random() * 30) * 24.0 - 120
+        b = a + math.floor(random() * 12 + 1) * 24.0
+        columns.append(_column(math.floor(at / 24), at, a, b))
+    made = _junctions(rows, columns)
+    assert len(made) > 10
+    assert _piece_fields(made) == _piece_fields(_reference_junctions(rows, columns))

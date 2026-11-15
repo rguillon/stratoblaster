@@ -1,10 +1,11 @@
 # Copyright (c) 2026 Renaud Guillon
-"""The in-game HUD: light readouts in the corners of the playfield window (UI-HUD-01, D-317).
+"""The in-game HUD: light readouts in the upper part of the playfield window (UI-HUD-01, D-420).
 
-No panels and no backgrounds: outlined text and slim gauges over the level. The score at the top
-left, the lives and bombs at the top right, the boss gauge between them during a fight, the level's
-progress as a rail up the right edge, the health at the bottom left and the weapon at the bottom
-right. The side columns outside the window are left empty (the touch buttons sit in the right one).
+No panels and no backgrounds: outlined text and slim gauges over the level (D-317). Down the top
+left, the score, the high score, the level played and the health; down the top right, the lives,
+the bombs and the weapon; the boss gauge between them during a fight; the level's progress as a
+rail along the top edge. The rest of the window is left to the level and the ship. The side columns
+outside the window are left empty (the touch buttons sit in the right one).
 """
 
 from org.transcrypt.stubs.browser import window
@@ -167,14 +168,14 @@ class GameHud:
         return stock
 
     def _new_progress(self, doc: Any) -> Any:
-        """Return the level's progress: a rail up the right edge, filled from below (UI-HUD-02)."""
+        """Return the level's progress: a rail along the top edge, filled from the left (D-420)."""
         progress = element(doc, "div", "hud-progress")
         self._progress_bar = element(doc, "div", "hud-progress-fill")
         progress.append(self._progress_bar)
         return progress
 
     def _new_health(self, doc: Any, ship: str) -> Any:
-        """Return the bottom left: the callsign and health over a segmented bar (UI-HUD-04)."""
+        """Return the top left, under the level: the callsign and health over a bar (UI-HUD-04)."""
         health = element(doc, "div", "hud-health")
         label = element(doc, "div", "hud-health-label")
         self._health_text = element(doc, "span", "hud-health-text")
@@ -186,7 +187,7 @@ class GameHud:
         return health
 
     def _new_weapon(self, doc: Any) -> Any:
-        """Return the bottom right: the weapon's name and a pip per level, lit to it (UI-HUD-06)."""
+        """Return the top right, under the bombs: the weapon and a pip per level lit (UI-HUD-06)."""
         weapon = element(doc, "div", "hud-weapon")
         self._weapon = element(doc, "div", "hud-weapon-name")
         self._pips = element(doc, "div", "hud-weapon-pips")
@@ -229,7 +230,7 @@ class GameHud:
         self._health_text.textContent = shown[0]
         self._health_bar.style.width = shown[1]
         self._weapon.textContent = shown[2]
-        self._progress_bar.style.height = shown[3]
+        self._progress_bar.style.width = shown[3]
 
     def _update_pips(self, level: int, levels: int) -> None:
         """One pip per weapon level, the first `level` lit (UI-HUD-06)."""

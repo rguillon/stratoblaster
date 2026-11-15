@@ -149,6 +149,12 @@ class FakeTypedArray(list):  # type: ignore[type-arg]
         for i, value in enumerate(values):
             self[offset + i] = value
 
+    def subarray(self, begin: int, end: int) -> FakeTypedArray:
+        """Return the numbers from `begin` to `end` (a copy here: the tests read it at once)."""
+        part = FakeTypedArray(0)
+        part.extend(self[begin:end])
+        return part
+
 
 class FakeWeakMap:
     """A `WeakMap` by identity (a dict is enough for the tests)."""
@@ -294,7 +300,13 @@ def _fake_light(label: str, direction: Any, _scene: Any) -> FakeLight:
     return FakeLight(label, direction)
 
 
+def _fake_upload_thin_matrices(mesh: Any, matrices: Any) -> None:
+    """`upload_thin_matrices` (D-407): the matrices given to the mesh as its buffer."""
+    mesh.thinInstanceSetBuffer("matrix", matrices, 16, False)
+
+
 BABYLON_FAKES: dict[str, Any] = {
+    "upload_thin_matrices": _fake_upload_thin_matrices,
     "float32_array": FakeTypedArray,
     "uint32_array": FakeTypedArray,
     "uint8_array": FakeTypedArray,

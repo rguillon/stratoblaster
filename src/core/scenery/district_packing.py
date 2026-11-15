@@ -13,8 +13,8 @@ from core.scenery.draws import weighted
 from core.scenery.ground_boxes import PropPlacement
 from core.scenery.ordering import stable_sort_by
 from core.scenery.road_tiles import (
+    cached_road_pieces,
     has_tile_key,
-    road_pieces,
     road_tiles,
     tile_has,
     tile_key,
@@ -177,7 +177,8 @@ class RoadTilesCache:
     def of(self, roads: Sequence[Road], tiles: TileRules) -> dict[str, bool]:
         """Return the tiles `roads` cover on the grid `tiles`."""
         if self._roads is None or self._roads is not roads:
-            self._tiles = road_tiles(road_pieces(roads, tiles))
+            # The pieces the street surfaces are made of too (D-419: worked out once for both).
+            self._tiles = road_tiles(cached_road_pieces(roads, tiles))
             self._roads = roads
         return self._tiles
 

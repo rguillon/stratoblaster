@@ -29,10 +29,15 @@ def _value_at(track: Any, client_x: float, max_value: int) -> float:
 
 
 def _slider_bar(doc: Any, slider: SliderView) -> Any:
-    """Return a bar of `max` cells, the first `value` of them lit, like the settings sketch."""
+    """Return a bar of `max` cells, the first `value` of them lit, like the settings sketch.
+
+    A slider of choices (D-410) has a cell per choice, the chosen one lit.
+    """
     bar = element(doc, "div", "slider-bar")
-    for i in range(slider.max):
-        bar.append(element(doc, "span", "slider-cell on" if i < slider.value else "slider-cell"))
+    choices = slider.value_text is not None
+    for i in range(slider.max + 1 if choices else slider.max):
+        lit = i == slider.value if choices else i < slider.value
+        bar.append(element(doc, "span", "slider-cell on" if lit else "slider-cell"))
     return bar
 
 
@@ -75,18 +80,26 @@ def _drag_to_set(bar: Any, index: int, max_value: int, handlers: ScreenHandlers)
 def _slider_row(
     doc: Any, slider: SliderView, index: int, selected: bool, handlers: ScreenHandlers
 ) -> Any:
-    row = entry(doc, "settings-slider", index, selected, handlers.on_tap)
+    kind = "settings-slider settings-choice" if slider.value_text is not None else "settings-slider"
+    row = entry(doc, kind, index, selected, handlers.on_tap)
     row.setAttribute("role", "slider")
     row.setAttribute("aria-label", slider.label)
     row.setAttribute("aria-valuemin", "0")
     row.setAttribute("aria-valuemax", str(slider.max))
     row.setAttribute("aria-valuenow", str(slider.value))
+    if slider.value_text is not None:
+        row.setAttribute("aria-valuetext", slider.value_text)
     bar = _slider_bar(doc, slider)
     _drag_to_set(bar, index, slider.max, handlers)
     row.append(
         element(doc, "span", "slider-label", slider.label),
         bar,
-        element(doc, "span", "slider-value", str(slider.value)),
+        element(
+            doc,
+            "span",
+            "slider-value",
+            slider.value_text if slider.value_text is not None else str(slider.value),
+        ),
     )
     return row
 

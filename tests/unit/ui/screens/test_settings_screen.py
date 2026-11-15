@@ -102,3 +102,17 @@ def test_ui_set_03_without_a_set_handler_a_tap_on_the_bar_sets_nothing() -> None
     bar.fire("click")
     assert press.stopped is True
     assert taps == []
+
+
+def test_d410_a_slider_of_choices_lights_the_chosen_cell_and_names_it() -> None:
+    """D-410: the Graphics setting: a cell per choice, the chosen one lit, its name shown."""
+    sliders = [SliderView("Graphics", 2, 3, "Medium")]
+    view = SettingsView("Settings", "Drag or tap", "Back", 0, sliders, False)
+    handlers = ScreenHandlers(lambda _index: None, lambda: None)
+    root = render_settings_screen(FakeDocument(), view, handlers)
+    row = root.querySelector(".settings-list").children[0]
+    assert row.classList.contains("settings-choice")
+    assert row.getAttribute("aria-valuetext") == "Medium"
+    assert row.querySelector(".slider-value").textContent == "Medium"
+    cells = row.querySelectorAll(".slider-cell")
+    assert [cell.classList.contains("on") for cell in cells] == [False, False, True, False]

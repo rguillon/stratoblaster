@@ -236,3 +236,28 @@ def test_gfx_trim_02_an_edge_partly_covered_keeps_its_trim_where_it_shows() -> N
     # The front half (z from 0 to 2) keeps its trim; the back half, under the fin, has none.
     assert zs[0] == pytest.approx(0, abs=0.01)
     assert zs[1] == pytest.approx(2)
+
+
+def test_d417_a_model_s_trims_match_each_mesh_worked_out_on_its_own() -> None:
+    """PERF-03: the grid and up-facing triangles made once give the trims made mesh by mesh."""
+    shapes = []
+    for k, size in enumerate([[4, 1, 4], [1, 1, 1], [2, 0.5, 1], [1.5, 2, 0.7]]):
+        geo = _box(size, [0.3 * k, 0.2 * k, -0.4 * k]).geometry
+        turn = [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0.7 * k, 0.5 * k, 0.25 * k, 1]
+        shapes.append(TrimShape(geo.positions, geo.indices, turn))
+    options = TrimOptions(0.1, 0.02)
+    placed = [transformed(s.positions, s.matrix) for s in shapes]
+    cover = []
+    for k, shape in enumerate(shapes):
+        cover.extend(up_triangles(placed[k], shape.indices, options.min_up))
+    expected = []
+    for k, shape in enumerate(shapes):
+        edges = silhouette_edges(placed[k], shape.indices, cover, options.min_up)
+        geo = trim_ribbons(edges, options)
+        expected.append([
+            transformed(geo.positions, inverse(shape.matrix)),
+            geo.indices,
+            geo.colors,
+        ])
+    made = trim_model(shapes, options)
+    assert [[g.positions, g.indices, g.colors] for g in made] == expected

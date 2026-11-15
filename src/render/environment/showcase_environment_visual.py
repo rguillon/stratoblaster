@@ -82,6 +82,9 @@ def apply_showcase_environment(scene: Any, options: ShowcaseEnvironmentOptions) 
     )
     # From the faces here, not read back from the GPU (PERF-30).
     set_cube_sphere_lighting(texture, faces, options.cube_size)
+    # D-424: the sky it was made with, so the first `update_sky_environment` with the same sky
+    # does not build the same cube and lighting a second time.
+    weak_map_set(LAST_SKY, scene, _sky_key(options.stops))
     scene.environmentTexture = texture
     scene.environmentIntensity = options.intensity
     scene.imageProcessingConfiguration.toneMappingEnabled = True

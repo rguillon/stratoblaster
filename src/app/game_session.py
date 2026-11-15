@@ -9,10 +9,18 @@ level select highlight rests on is built ahead (PERF-13).
 """
 
 from app.game_play import GameChoice, GamePlay, GamePlayOptions
-from app.level_prepare import LevelPrefetcher, prepare_level, roads_ready, textures_ready
+from app.level_prepare import (
+    ROAD_WAIT_FRAMES,
+    LevelPrefetcher,
+    ask_roads,
+    level_after,
+    prepare_level,
+    textures_ready,
+)
 from app.listen_controls import listen_controls
 from app.saved_supplies import load_saved_supplies, save_supplies
 from app.saved_weapons import load_saved_weapons, save_weapons
+from config.engine import ENGINE_CONFIG
 from config.game_controls import GAME_CONTROLS_CONFIG
 from input.game_controls import GameControls
 from render.outline import outlines_ready
@@ -83,7 +91,8 @@ class GameSessionOptions:
     keyboard when None), `gamepads`, `storage` (where the weapons and supplies are kept; not kept
     when None), `on_load_start` (DEV-PERF-01), `stepped_loading` (PERF-09), `precompile_shaders`
     (PERF-20; None: on), `background_loading` (PERF-12: the worker), `prebuild_levels` (PERF-13),
-    `on_draw_calls` (ENG-106: the draw calls of each frame drawn).
+    `on_draw_calls` (ENG-106: the draw calls of each frame drawn), `load_clock` (D-425: the clock,
+    in ms, that lets a frame run more than one quick loading step; None: one step a frame).
     """
 
     def __init__(
@@ -102,6 +111,7 @@ class GameSessionOptions:
         background_loading: bool = False,
         prebuild_levels: bool = False,
         on_draw_calls: Any = None,
+        load_clock: Any = None,
     ) -> None:
         self.environment = environment
         self.doc = doc
@@ -117,6 +127,7 @@ class GameSessionOptions:
         self.background_loading = background_loading
         self.prebuild_levels = prebuild_levels
         self.on_draw_calls = on_draw_calls
+        self.load_clock = load_clock
 
 
 class SessionScores:
@@ -207,6 +218,8 @@ class GameSession:
         self._start_boss = debug.boss if debug is not None else None
         # The menu flow's attempt the level being played was started for.
         self._attempt = -1
+        # The level being played (the last one started).
+        self._level_id: str | None = None
         self._load: LevelLoad | None = None
         # The level highlighted on the level select screen, built ahead (PERF-13).
         self._ahead: LevelLoad | None = None
@@ -216,6 +229,8 @@ class GameSession:
         self._highlighted: str | None = None
         # The ship the level highlighted on the level select screen would be flown with.
         self._ahead_ship: str | None = None
+        # When this frame's loading began, by the loading's clock (D-425).
+        self._frame_start = 0.0
 
         def current_play() -> Any:
             # No debug keys while paused (UI-PAUSE-04, DEV-OPT-10: nothing in the level changes).
@@ -263,12 +278,33 @@ class GameSession:
         screen once it rests there (PERF-12).
         """
         self._prefetcher.update(dt, self._highlighted)
+        self._frame_start = self._clock()
         load = self._load
         if load is None:
             self._build_ahead()
             return
-        if self._run_step(load):
-            self._load = None
+        while not self._run_step(load):
+            # D-425: the next step in this frame too, when this one is over (a step that waits
+            # runs again on the next frame) and the frame still has time for it.
+            if load.tries > 0 or not self._has_time():
+                return
+        self._load = None
+
+    def _clock(self) -> float:
+        """Return the time now in ms, by the loading's clock (0 without one)."""
+        clock = self.options.load_clock
+        now: float = clock() if clock is not None else 0.0
+        return now
+
+    def _has_time(self) -> bool:
+        """Whether this frame's loading may do more (D-425).
+
+        It has a clock and has used less than `load_budget_ms` of the frame. Without a clock
+        (unit tests, e2e builds), never: one step, and one enemy model, a frame.
+        """
+        if self.options.load_clock is None:
+            return False
+        return self._clock() - self._frame_start < ENGINE_CONFIG.load_budget_ms
 
     def _run_step(self, load: LevelLoad) -> bool:
         """Run the next step of `load`; true once its last step has run."""
@@ -383,17 +419,34 @@ class GameSession:
         debug = self.options.debug
         return debug is not None and debug.tiles is True
 
-    def _roads_step(self, level_id: str, load: LevelLoad) -> bool:
-        """Return the street surfaces of the first screens, made by the worker (PERF-17)."""
-        return roads_ready(self.game, level_id, self._road_grid(), load.tries)
+    def _ask_roads_step(self, level_id: str) -> None:
+        """Ask the worker for the street surfaces of the first screens (PERF-17, D-415).
+
+        Right after the ground, so it makes them while the scene is built.
+        """
+        ask_roads(self.game, level_id, self._road_grid())
+
+    def _roads_step(self, load: LevelLoad) -> bool:
+        """Wait for the street surfaces of the chunks in view, and give them to the scene (D-415).
+
+        For at most ROAD_WAIT_FRAMES (PERF-18): the chunks still waiting then take theirs in play.
+        """
+        if load.play is None or load.tries > ROAD_WAIT_FRAMES:
+            return True
+        ready: bool = load.play.roads_ready()
+        return ready
 
     def _enemies_step(self, load: LevelLoad) -> bool:
         """Return the enemy models, one a frame, here rather than in play (PERF-21)."""
         if not self.options.stepped_loading or load.play is None:
             return True
         precompile = self.options.precompile_shaders
-        built: bool = load.play.build_enemies(True if precompile is None else precompile)
-        return built
+        compile_now = True if precompile is None else precompile
+        # D-425: small models share a frame, while it has time; a large one fills its own.
+        while not load.play.build_enemies(compile_now):
+            if not self._has_time():
+                return False
+        return True
 
     def _new_load(self, level_id: str, ship_id: str, state: Any) -> LevelLoad:
         """Return the steps loading `level_id` flown by `ship_id` (PERF-09): the level's ground.
@@ -426,13 +479,16 @@ class GameSession:
             # The textures the worker makes, before the scene (which would make them here).
             return textures_ready(self.game, level_id, self._loader, load.tries)
 
+        # D-415: the roads are asked for as soon as the ground is in, and waited for only after the
+        # scene and its enemy models are built: the worker makes them meanwhile.
         load.steps = [
             ground,
+            lambda: self._ask_roads_step(level_id),
             textures,
-            lambda: self._roads_step(level_id, load),
             build,
             prepare_play,
             lambda: self._enemies_step(load),
+            lambda: self._roads_step(load),
             lambda: self._compile_wait(load),
             start,
         ]
@@ -507,6 +563,7 @@ class GameSession:
         self._start_time = 0.0
         self._start_boss = None
         self._attempt = state.attempt
+        self._level_id = level_id
         self.play = play
 
     def _completed(self, play: GamePlay) -> None:
@@ -520,6 +577,13 @@ class GameSession:
             supplies = play.run.supplies
             if supplies:
                 save_supplies(storage, self.game.id, supplies)
+        # D-424: the next level's ground and textures are made while "Level complete" shows, not
+        # only once the level select has rested on it (PERF-12): it is the level chosen next.
+        after = None
+        if play.run.phase == "complete" and self._level_id is not None:
+            after = level_after(self.game, self._level_id)
+        if after is not None:
+            self._prefetcher.start(after)
         self._on_complete(play)
 
     def end(self) -> None:

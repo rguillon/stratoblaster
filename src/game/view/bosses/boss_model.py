@@ -56,6 +56,14 @@ def _field(obj: Any, key: str) -> Any:
     return obj[key]
 
 
+def _has_armour(design: Any, mount_id: str) -> bool:
+    """Whether an armour plate of `design` covers the mount `mount_id` (plain loop, D-413)."""
+    for armour in _field(design, "armour") or []:
+        if armour.mount == mount_id:
+            return True
+    return False
+
+
 def _point_of(spot: Any) -> list[Any]:
     """`bossPoint(...spot)`: a playfield point `[x, y]` or `[x, y, height]`, in model space."""
     if len(spot) > 2:
@@ -174,7 +182,7 @@ def build_mounts(design: Any, piece: str, holder: Any, look: Any) -> list[MountV
         model.root.position.set(-at[0], -at[1], -at[2])
         model.root.parent = pivot
         rise = mount.size if mount.kind != "missile" else 6
-        hatched = any(r.mount == mount.id for r in _field(design, "armour") or [])
+        hatched = _has_armour(design, mount.id)
         result.append(MountView(i, pivot, model, at, rise, hatch_opens() if hatched else 0))
     return result
 

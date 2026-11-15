@@ -168,7 +168,8 @@ def test_ui_set_01_from_the_title_music_shows_6_and_sound_effects_8_back_returns
     expect_state(page, {"selectedId": "settings"})
     page.keyboard.press("Enter")
     expect_state(page, {"screen": "settings", "volumes": {"music": 6, "sfx": 8}})
-    expect(page.locator(".slider-value")).to_have_text(["6", "8"])
+    # D-410: then the Graphics setting, the game deciding by default.
+    expect(page.locator(".slider-value")).to_have_text(["6", "8", "Auto"])
     page.keyboard.press("Escape")
     expect_state(page, {"screen": "title", "selectedId": "settings"})
 

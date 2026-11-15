@@ -23,7 +23,10 @@ from app.start_app import (
     TouchHandlers,
     create_input,
     dispose_scenes,
+    follow_graphics_setting,
     frame_ticker,
+    new_graphics_quality,
+    quality_ticked,
     run_loop,
     start_debug_level,
 )
@@ -288,6 +291,7 @@ def test_eng_83_the_app_options_keep_the_browser_pieces_and_default_to_none() ->
         options.every,
         options.dev,
         options.fullscreen,
+        options.render_scale,
     ]
     assert optional == [None for _ in optional]
 
@@ -540,6 +544,25 @@ def test_dev_perf_01_the_session_options_are_the_app_s_and_two_callbacks() -> No
     assert (session.stepped_loading, session.precompile_shaders) == ("stepped", "precompile")
     assert (session.background_loading, session.prebuild_levels) == ("background", "prebuild")
     assert session.on_draw_calls == "on-draw-calls"
+    # D-425: with the levels built ahead (the game in real time), the loading has the browser's
+    # clock to fill its frames by.
+    assert session.load_clock is start_app.performance_now
+
+
+def test_d425_the_loading_s_clock_is_the_app_s_own_and_none_when_the_tests_step_the_game() -> None:
+    def clock() -> float:
+        return 5.0
+
+    def options_with(prebuild: Any) -> AppOptions:
+        return AppOptions(
+            False, "doc", "overlay", "storage", _yield, False, "1", "c", None, None, None, clock,
+            None, True, None, None, prebuild,
+        )  # fmt: skip
+
+    assert start_app.session_options(options_with(True), None, None).load_clock is clock
+    # e2e builds and unit tests: one loading step a frame (PERF-09).
+    assert start_app.session_options(options_with(False), None, None).load_clock is None
+    assert start_app.session_options(options_with(None), None, None).load_clock is None
 
 
 def test_game_score_05_the_session_reports_to_the_menus_the_audio_and_the_perf(
@@ -782,3 +805,63 @@ def test_eng_100_an_app_disposed_while_loading_has_no_scenes_to_release(
     parts.scenes.backdrop_scene.dispose.assert_not_called()
     # The loading that never ran is closed, not left pending.
     app.loaded.close()
+
+
+# The graphics quality (D-410).
+
+
+class _Storage:
+    def __init__(self) -> None:
+        self.values: dict[str, str] = {}
+
+    def get(self, key: str) -> str | None:
+        return self.values.get(key)
+
+    def set(self, key: str, value: str) -> None:
+        self.values[key] = value
+
+
+def _quality_options(render_scale: Any, render_loop: bool) -> AppOptions:
+    given: list[Any] = [None] * 16
+    given.append(render_scale)
+    return AppOptions(False, "doc", "overlay", _Storage(), "yield", render_loop, "1", "c", *given)
+
+
+def test_d410_the_graphics_quality_needs_a_render_loop_and_a_render_scale(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(start_app, "new_gpu_timer", lambda _engine: None)
+    game = SimpleNamespace(id="game")
+    scales: list[float] = []
+    assert new_graphics_quality("engine", game, _quality_options(None, True)) is None
+    assert new_graphics_quality("engine", game, _quality_options(scales.append, False)) is None
+    quality = new_graphics_quality("engine", game, _quality_options(scales.append, True))
+    assert quality is not None
+    assert scales == [1.0]
+
+
+def test_d410_the_graphics_setting_sets_the_quality_s_mode() -> None:
+    quality = MagicMock()
+    state: Any = SimpleNamespace(volumes=SimpleNamespace(graphics=3))
+    follow_graphics_setting(quality, state)
+    quality.set_mode.assert_called_once_with("low")
+    # Without a quality (unit tests, e2e builds), nothing to set.
+    follow_graphics_setting(None, state)
+
+
+def test_d410_each_frame_ticks_then_goes_to_the_graphics_quality() -> None:
+    frames: Any = MagicMock()
+    perf: Any = SimpleNamespace(loading=False, last_frame_ms=4.0)
+    assert quality_ticked(None, frames, MagicMock(), perf) is frames.tick
+    quality = MagicMock()
+    session: Any = SimpleNamespace(play=None, paused=False)
+    tick = quality_ticked(quality, frames, session, perf)
+    tick(0.02)
+    frames.tick.assert_called_once_with(0.02)
+    quality.frame.assert_called_with(20.0, 4.0, None, False)
+    session.play = SimpleNamespace(view=SimpleNamespace(scene="scene"))
+    tick(0.02)
+    quality.frame.assert_called_with(20.0, 4.0, "scene", True)
+    session.paused = True
+    tick(0.02)
+    quality.frame.assert_called_with(20.0, 4.0, "scene", False)

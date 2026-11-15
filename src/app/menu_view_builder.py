@@ -6,7 +6,7 @@ every text from the game (UI-LOOK-10).
 """
 
 from app.dev_groups import group_of, group_starts
-from app.settings_menu import SETTINGS_SLIDERS
+from app.settings_menu import SETTINGS_SLIDERS, volume_of
 from config.dev_viewer import (
     DEFAULT_DEV_MENU_COLUMNS,
     DEV_AUDIO_VIEWERS,
@@ -104,11 +104,21 @@ def _settings_view(state: MenuState, ctx: MenuViewContext) -> SettingsView:
     Over the paused level when opened from the pause menu (UI-SET-07).
     """
     texts: Any = ctx.game.texts
-    labels = {"music": texts.musicVolume, "sfx": texts.sfxVolume}
+    labels = {"music": texts.musicVolume, "sfx": texts.sfxVolume, "graphics": texts.graphics}
     sliders: list[SliderView] = []
     for slider in SETTINGS_SLIDERS:
-        value = state.volumes.music if slider == "music" else state.volumes.sfx
-        sliders.append(SliderView(labels[slider], value, ctx.volume_steps))
+        value = volume_of(state.volumes, slider)
+        if slider == "graphics":
+            # D-410: its steps are choices, named.
+            choices = [
+                texts.graphicsAuto,
+                texts.graphicsHigh,
+                texts.graphicsMedium,
+                texts.graphicsLow,
+            ]
+            sliders.append(SliderView(labels[slider], value, len(choices) - 1, choices[value]))
+        else:
+            sliders.append(SliderView(labels[slider], value, ctx.volume_steps))
     return SettingsView(
         texts.settings,
         texts.settingsHint,
