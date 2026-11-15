@@ -19,11 +19,11 @@ class Curriculum:
     From the first of `levels` with a fresh start (3 lives, 3 bombs, the first weapon at level 1,
     as when watched and rated, D-294), each level cleared going on to the next with what it ended
     with, until the game is over, a level takes too long or the last one is cleared. Always with
-    the `ship` (the balanced one); the seed varies.
+    the `ship` (the player ship); the seed varies.
     """
 
     levels: tuple[str, ...] = LEVEL_IDS
-    ship: str = "balanced"
+    ship: str = "player"
 
     def draw(self, rng: random.Random) -> GameEnv:
         """Return the game of a new episode."""

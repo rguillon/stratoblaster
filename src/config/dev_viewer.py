@@ -14,9 +14,19 @@ DEFAULT_DEV_MENU_COLUMNS = 3
 # How the enemies and bosses viewers show their subject (DEV-MENU-21), one button each: the model
 # alone at the middle of the view, the same drawn as a wireframe, and on the game's playfield as
 # in a level, moving and firing. The viewers that have the buttons, and their labels.
+# The player ships viewer has the first two (owner: "add a wireframe/normal button in the player
+# ship dev view"): the model and its wireframe, no game view.
 DEV_VIEW_MODES = ["model", "wireframe", "game"]
-DEV_MODE_VIEWERS = ["enemies", "bosses"]
+DEV_MODE_VIEWERS = ["enemies", "bosses", "ships"]
 DEV_MODE_LABELS = {"model": "Model", "wireframe": "Wireframe", "game": "Game view"}
+DEV_MODE_COUNTS = {"ships": 2}
+
+
+def dev_view_modes(viewer: str) -> list[str]:
+    """Return the views a viewer's buttons offer, in order; none for a viewer without them."""
+    if viewer not in DEV_MODE_VIEWERS:
+        return []
+    return DEV_VIEW_MODES[: DEV_MODE_COUNTS.get(viewer, len(DEV_VIEW_MODES))]
 
 
 class DevViewerTexts:
@@ -37,6 +47,7 @@ class DevViewerTexts:
         sounds_hint: str = "",
         music_hint: str = "",
         playing: str = "",
+        single_hint: str = "",
     ) -> None:
         # The title screen's entry.
         self.entry = entry
@@ -59,6 +70,8 @@ class DevViewerTexts:
         # The hints of the sounds and music viewers (DEV-MENU-19, DEV-MENU-20).
         self.sounds_hint = sounds_hint
         self.music_hint = music_hint
+        # The hint of a model viewer with a single item: no menu, nothing to step to (D-333).
+        self.single_hint = single_hint
         # The audio viewers' status line, before what plays.
         self.playing = playing
 
@@ -204,6 +217,7 @@ DEV_VIEWER_CONFIG = DevViewerConfig(
         "Arrows or tap: play a sound · Hold a button: repeat it · Enter: play it again · Esc: back",
         "◀ ▶ or tap: play a track · ▲ ▼: group · Enter: play it again · Esc: back",
         "Playing: ",
+        "Wheel: zoom · Drag: turn · Enter: close-up / game size · Esc: back",
     ),
     0.01,
     DevPropStageConfig(

@@ -9,7 +9,6 @@ from ui.menu_view import (
     LevelSelectView,
     LoadingView,
     SettingsView,
-    ShipSelectView,
     SliderView,
     TitleView,
 )
@@ -18,7 +17,6 @@ from ui.menu_view import (
 def test_ui_flow_01_each_screen_view_names_its_screen_kind() -> None:
     assert LoadingView.kind == "loading"
     assert TitleView.kind == "title"
-    assert ShipSelectView.kind == "ship-select"
     assert LevelSelectView.kind == "level-select"
     assert GameScreenView.kind == "game"
     assert SettingsView.kind == "settings"

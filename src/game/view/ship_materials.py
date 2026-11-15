@@ -30,28 +30,39 @@ class ShipMaterials:
     def __init__(
         self,
         hull: Any,
+        hullMid: Any,
+        hullDark: Any,
         accent: Any,
         canopy: Any,
         trim: Any,
-        navLight: Any,
         nozzle: Any,
         reactorCore: Any,
         reactorExhaust: Any,
         reactorFlame: Any,
         reactorPlasma: Any,
+        edgeGlow: Any = None,
+        intakeBlack: Any = None,
+        glass: Any = None,
     ) -> None:
         self.hull = hull
+        # Two darker shades of the hull's metal (D-327).
+        self.hullMid = hullMid
+        self.hullDark = hullDark
         self.accent = accent
         self.canopy = canopy
         # Darker metal for panel lines, frames, intakes and barrels.
         self.trim = trim
-        # Small blue lights (wing tips, tails, cannon muzzles).
-        self.navLight = navLight
         self.nozzle = nozzle
         self.reactorCore = reactorCore
         self.reactorExhaust = reactorExhaust
         self.reactorFlame = reactorFlame
         self.reactorPlasma = reactorPlasma
+        # The glowing edges of the wings, the canards and the canopy (D-335).
+        self.edgeGlow = edgeGlow
+        # The matte black inside the intakes (D-347).
+        self.intakeBlack = intakeBlack
+        # The canopy's tinted, see-through glass (D-354).
+        self.glass = glass
 
 
 def _rgb_color(rgb: Any) -> Any:
@@ -97,17 +108,25 @@ def _create_ship_materials(scene: Scene) -> ShipMaterials:
     canopy.emissiveColor = _rgb_color(SHIP_LOOK.canopy.emissive)
     reactor_core = _light("ship-reactor-core", SHIP_LOOK.reactorCore.emissive, scene)
     reactor_core.backFaceCulling = False
+    edge_glow = _light("ship-edge-glow", SHIP_LOOK.edgeGlow.emissive, scene)
+    edge_glow.backFaceCulling = False
+    glass = _metal("ship-glass", SHIP_LOOK.glass, scene)
+    glass.alpha = SHIP_LOOK.glass.alpha
     return ShipMaterials(
         _metal("ship-hull", SHIP_LOOK.hull, scene),
+        _metal("ship-hull-mid", SHIP_LOOK.hullMid, scene),
+        _metal("ship-hull-dark", SHIP_LOOK.hullDark, scene),
         _metal("ship-accent", SHIP_LOOK.accent, scene),
         canopy,
         _metal("ship-trim", SHIP_LOOK.trim, scene),
-        _light("ship-nav-light", SHIP_LOOK.navLight.emissive, scene),
         _metal("ship-nozzle", SHIP_LOOK.nozzle, scene),
         reactor_core,
         _glow("ship-reactor-exhaust", SHIP_LOOK.reactorExhaust, scene),
         _glow("ship-reactor-flame", SHIP_LOOK.reactorFlame, scene),
         _glow("ship-reactor-plasma", SHIP_LOOK.reactorPlasma, scene),
+        edge_glow,
+        _metal("ship-intake-black", SHIP_LOOK.intakeBlack, scene),
+        glass,
     )
 
 

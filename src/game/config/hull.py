@@ -3,7 +3,7 @@
 
 3 lives at the start (GAME-LIFE-02; then those kept from the level completed before, reviewer
 2026-10-28), as many as life bonuses add, each a full health bar (GAME-LIFE-01: the ship's
-`maxHealth`, balanced 100, heavy 140, light 80); 2 s of invincibility after a hit (GAME-LIFE-07); a
+`maxHealth`, 100); 2 s of invincibility after a hit (GAME-LIFE-07); a
 hitbox of 5 px around the ship's centre, much smaller than its model (GAME-SHIP-06). Bullets take
 10, missiles 20, a laser beam 25 (once per beam), ramming an enemy 30, and the rammed enemy takes 40
 (small ones blow up) (GAME-LIFE-03, GAME-LIFE-05, D-050).

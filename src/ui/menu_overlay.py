@@ -13,7 +13,6 @@ from ui.menu_view import (
     GameScreenView,
     LevelSelectView,
     LoadingView,
-    ShipSelectView,
     TitleView,
 )
 from ui.screens.dev_screen import (
@@ -27,7 +26,6 @@ from ui.screens.level_select_screen import render_level_select_screen
 from ui.screens.loading_screen import render_loading_screen
 from ui.screens.screen_handlers import ScreenHandlers
 from ui.screens.settings_screen import render_settings_screen
-from ui.screens.ship_select_screen import render_ship_select_screen
 from ui.screens.title_screen import render_title_screen
 from ui.shrink_to_fit import shrink_to_fit
 
@@ -70,7 +68,6 @@ def _render_loading(doc: MenuDocument, view: Any, _handlers: ScreenHandlers) -> 
 _RENDERERS: list[Any] = [
     [LoadingView, _render_loading],
     [TitleView, render_title_screen],
-    [ShipSelectView, render_ship_select_screen],
     [LevelSelectView, render_level_select_screen],
     [GameScreenView, render_game_screen],
     [DevMenuView, render_dev_screen],

@@ -26,7 +26,7 @@ level shows through everywhere (D-317). It holds:
 - at the bottom right, the weapon and its level (UI-HUD-06).
 
 The side columns, `hud_side_width` wide, down the left and right of the screen are opaque
-blue-black and empty, with a thin cyan line along the window's edges; nothing of the level is drawn
+blue-black and empty, with a hairline along the window's edges; nothing of the level is drawn
 there (D-252, D-263). The right one holds the touch fire and bomb buttons on touch screens
 (UI-HUD-10). There is no pause button (D-251; the keyboard and the gamepad pause,
 [pause-menu.md](pause-menu.md)).
@@ -40,7 +40,7 @@ there (D-252, D-263). The right one holds the touch fire and bomb buttons on tou
 ### UI-HUD-02 — The level's progress · MUST
 
 A 2 px rail up the right edge of the window fills from the bottom with the share of the level flown,
-in the blue-to-green neon line, a bright bead where the fill ends.
+in solid cyan, a near-white bead where the fill ends.
 
 **Acceptance criteria**
 - Given a level half flown, then the progress rail is half filled (unit test on the value given to the HUD).
@@ -53,19 +53,19 @@ The top right corner of the window shows the ship's lives as `♥ N` (green), an
 bombs as a count, `● N` (orange), however many there are.
 
 **Acceptance criteria**
-- Given the balanced ship with 3 lives and 7 bombs, then the HUD shows `♥ 3` and `● 7`.
+- Given the player ship with 3 lives and 7 bombs, then the HUD shows `♥ 3` and `● 7`.
 
 *Sources: D-041, D-050, D-154, D-155, D-317.*
 
 ### UI-HUD-04 — Health · MUST
 
-The bottom left corner shows the ship's name (small, cyan, uppercase) and the health, rounded up,
-over the full health, `HP 73 / 100`; under them a health bar `hud_health_bar_width` wide, cut into
-ten cells, filled with the share of health left, in deep blue to cyan. Under `low_health` of the
+The bottom left corner shows the ship's name (12 px, secondary text colour) and the health, rounded
+up, over the full health, `HP 73 / 100`; under them a health bar `hud_health_bar_width` wide, cut
+into ten cells, filled with the share of health left, in solid cyan. Under `low_health` of the
 ship's full health the bar and the text turn red and the window's edges glow red, pulsing.
 
 **Acceptance criteria**
-- Given the balanced ship at 72.4 health, then the text is `HP 73 / 100` and the bar is 72.4 % full.
+- Given the player ship at 72.4 health, then the text is `HP 73 / 100` and the bar is 72.4 % full.
 - Given the ship under 30 % health, then the bar is red and the HUD is marked low; at 30 % or more,
   it is not.
 
@@ -86,9 +86,9 @@ current score, padded the same way. Both change on the frame the points are scor
 
 ### UI-HUD-06 — The weapon and the level played · MUST
 
-The bottom right corner shows the name of the weapon in use (cyan, uppercase) and under it one
-diamond pip per level of the weapon, lit up to its level. Under the high score, small and dim, the
-level played (`Level 1-2`).
+The bottom right corner shows the name of the weapon in use (16 px, cyan, sentence case) and
+under it one diamond pip per level of the weapon, lit up to its level. Under the high score, in
+12 px secondary text, the level played (`Level 1-2`).
 
 **Acceptance criteria**
 - Given the laser at level 3 of 5 in level 2-4, then the HUD shows `Laser` with 3 of its 5 pips lit,
@@ -196,18 +196,17 @@ health, so the player can see how much a part is worth.
 
 ### UI-HUD-16 — The boss's kind and name · MUST
 
-The boss's kind (`MINI BOSS` or `BOSS`, small, red) and its name (cyan) are written above the
-gauge, centred.
+The boss's kind (`Mini boss` or `Boss`, 12 px, red) and its name (primary text) are written above
+the gauge, centred.
 
 **Acceptance criteria**
-- Given the 1-1 mini boss fight, then `MINI BOSS` and the boss's name are written above the gauge.
+- Given the 1-1 mini boss fight, then `Mini boss` and the boss's name are written above the gauge.
 
 *Sources: P07-R02, D-105.*
 
 ### UI-HUD-17 — The boss gauge's colours · MUST
 
-The gauge has a red border; its fill goes from dark red at the left through red to orange-red,
-with a red glow; the notches are white. Red marks the danger ([look-and-layout.md](look-and-layout.md)).
+The gauge has a red border and a solid red fill, without a glow; the notches are white. Red marks the danger ([look-and-layout.md](look-and-layout.md)).
 
 **Acceptance criteria**
 - Manual check: the gauge is red, with white notches, in every level.
@@ -224,12 +223,12 @@ with a red glow; the notches are white. Red marks the danger ([look-and-layout.m
 | `hud_health_bar_width` | 130 px × 6 px, ten cells of 11 px with 2 px gaps (116 × 9 px in the left column, D-253 to D-317) | `index.html` `.hud-bar` |
 | `score_digits` | 7 | `src/game/config/menu_texts.py` `SCORE_DIGITS` |
 | HUD texts | `HP`, `♥ N`, `● N`, `HI …`, `Bomb N`, `Mini boss`, `Boss`, `Level …` | `src/game/config/menu_texts.py` `MENU_TEXTS` (`hud*`, `gameLevel`) |
-| Readout places | 12 px in from the window's corners (14 px on the right) | `index.html` `.hud-score`, `.hud-stock`, `.hud-health`, `.hud-weapon`, `.game-level` |
+| Readout places | 12 px in from the window's corners, on all four sides | `index.html` `.hud-score`, `.hud-stock`, `.hud-health`, `.hud-weapon`, `.game-level` |
 | Progress rail | 2 px wide, 104 px in from the window's top and bottom, 5 px from its right edge | `index.html` `.hud-progress` |
 | Boss gauge place | 12 px from the top of the window, centred | `index.html` `.boss-bar` |
 | `boss_gauge_width` × `boss_gauge_height` | 200 × 4 px (300 × 8 px, vertical, until D-317) | `index.html` `.boss-bar`, `.boss-track` |
 | `boss_gauge_fill` | 1 s | `src/game/config/boss_fights.py` `BOSS_FIGHT_RULES["barFillSeconds"]` |
-| Boss gauge fill colours | `#7a0016 → #ff2244 → #ff5a3c` | `index.html` `.boss-fill` |
+| Boss gauge fill colour | `#ff3b47` | `index.html` `.boss-fill` |
 | Touch fire / bomb buttons | 92 px round, in the right side column: right 24 px, bottom 40 / 160 px | `index.html` `.game-fire`, `.hud-bomb-button` |
 
 ## Notes

@@ -2,7 +2,7 @@
 
 > **Area:** UI · **Prefix:** `UI-INPUT` · **Related:** [screen-flow.md](screen-flow.md), [pause-menu.md](pause-menu.md), [settings.md](settings.md), [look-and-layout.md](look-and-layout.md), [../gameplay/controls.md](../gameplay/controls.md), [../01-engineering.md](../01-engineering.md)
 
-Every menu (title, ship select, level select, settings, pause menu, end-of-level panels) can be used
+Every menu (title, level select, settings, pause menu, end-of-level panels) can be used
 with the keyboard, a gamepad, or a mouse or touch screen. The devices are turned into the same few
 abstract menu actions, and the screens react only to those. This file covers the menu actions and
 their bindings. Flying, shooting and bombing in a level are game controls, in
@@ -43,7 +43,7 @@ On the "Level complete" and "Game over" panels, only the moves and `confirm` do 
 **Acceptance criteria**
 - Given a level, when `cancel` or `pause` comes, then the level is paused; when `back` comes, then nothing happens.
 - Given the pause menu, when `back`, `cancel` or `pause` comes, then the level resumes.
-- Given the ship select screen, when `cancel` comes, then the screen is `title`.
+- Given the level select screen, when `cancel` comes, then the screen is `title`.
 
 *Sources: D-096, P12-R01, P12-R02.*
 
@@ -96,7 +96,7 @@ repeating while any key bound to it is still down. `confirm`, `back`, `cancel` a
 repeat: each press gives one action.
 
 **Acceptance criteria**
-- Holding Right in `ship-select` moves the selection once, then repeats after the repeat delay.
+- Holding Right in `level-select` moves the selection once, then repeats after the repeat delay.
 - Holding Enter on the title gives one `confirm`.
 
 *Sources: P01-R09, P01-R10.*
@@ -114,7 +114,7 @@ All connected gamepads are merged. A button acts once, when it goes down.
 | `up` / `down` / `left` / `right` | D-pad (12 / 13 / 14 / 15), or the left stick (UI-INPUT-08) |
 
 **Acceptance criteria**
-- With a gamepad connected, the whole flow Title → Ship select → Level select → Game → pause → Main menu → Title can be done with the gamepad only (e2e with a fake `navigator.getGamepads()`).
+- With a gamepad connected, the whole flow Title → Level select → Game → pause → Main menu → Title can be done with the gamepad only (e2e with a fake `navigator.getGamepads()`).
 - Given a level, when Start is pressed, then the level is paused (unit test).
 
 *Sources: P01-R10, P12-R01.*
@@ -139,19 +139,19 @@ since picking an item there shows it: a tap on another item selects it, a tap on
 confirms it.
 
 **Acceptance criteria**
-- Given the ship select screen with Balanced highlighted, when the Heavy card is tapped once, then Heavy is the ship and the screen is `level-select` (e2e).
+- Given the level select screen with `1-1` highlighted, when another unlocked level is tapped once, then that level is played and the screen is `game` (e2e).
 - Given a dev viewer, when another item is tapped, then it is selected and nothing is confirmed (unit test).
 
 *Sources: P01-R11, D-008, D-287.*
 
 ### UI-INPUT-10 — An on-screen Back button · MUST
 
-Every menu screen but the title (ship select, level select, settings, the dev menu) shows a
+Every menu screen but the title (level select, settings, the dev menu) shows a
 **◀ Back** button at its top left. Tapping it is `back`. The pause menu has none: its Resume entry
 plays that part.
 
 **Acceptance criteria**
-- Given each of the ship select, level select and settings screens, then a Back button is visible and tapping it goes back.
+- Given each of the level select and settings screens, then a Back button is visible and tapping it goes back.
 
 *Sources: P01-R11.*
 
@@ -162,7 +162,7 @@ choices) is at least 44 × 44 CSS px, also on a 390 px wide phone, where the men
 their real size across the window (UI-LOOK-02, D-286).
 
 **Acceptance criteria**
-- At 390 × 844, every `.menu-entry` and `.menu-back` of the title, ship select and level select screens is at least 44 × 44 CSS px (e2e).
+- At 390 × 844, every `.menu-entry` and `.menu-back` of the title and level select screens is at least 44 × 44 CSS px (e2e).
 
 *Sources: P01-R11.*
 
@@ -172,7 +172,7 @@ The whole menu flow, the pause menu and the settings screen can each be used wit
 the gamepad only, the mouse only, and taps only.
 
 **Acceptance criteria**
-- e2e: Title → Ship select → Level select → Game → pause → Main menu → Yes → Title with the keyboard only, the gamepad only, the mouse only, and taps only (touch emulation).
+- e2e: Title → Level select → Game → pause → Main menu → Yes → Title with the keyboard only, the gamepad only, the mouse only, and taps only (touch emulation).
 
 *Sources: P01-R09, P01-R10, P01-R11, P12-R02, P12-R04.*
 
@@ -183,7 +183,7 @@ Enter press into a second click on a focused entry: the keyboard reaches the men
 menu input.
 
 **Acceptance criteria**
-- Given the mouse clicked Start, when Space is pressed on the ship select screen, then exactly one `confirm` happens.
+- Given the mouse clicked Start, when Space is pressed on the level select screen, then exactly one `confirm` happens.
 
 *Sources: D-008.*
 

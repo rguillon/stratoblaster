@@ -17,7 +17,7 @@ requirements that now carry it.
 | [`01-engineering.md`](01-engineering.md) | `ENG` | Stack, layout, layering, tooling, tests, CI, deployment, Transcrypt rules |
 | [`performance.md`](performance.md) | `PERF` | Frame rate, loading, freezes, budgets |
 | [`gameplay/`](gameplay/) | `GAME-<FILE>` | Screen, controls, player ship handling, weapons, lives, bombs, bonuses, scoring, level flow |
-| [`ui/`](ui/) | `UI-<FILE>` | Screen flow, menu input, look, boot and loading, title, ship select, level select, HUD, pause, settings, continue / game over |
+| [`ui/`](ui/) | `UI-<FILE>` | Screen flow, menu input, look, boot and loading, title, level select, HUD, pause, settings, continue / game over |
 | [`audio/`](audio/) | `AUD-<FILE>` | Audio engine, music, sound effects |
 | [`graphics/`](graphics/) | `GFX-<FILE>` | Art direction, readability, edge trim, player ships, shots, effects, camera, terrain, water, sky and light, weather, roads, buildings, props, traffic |
 | [`enemies/common.md`](enemies/common.md) | `ENM` | Rules shared by every enemy kind |
@@ -39,8 +39,8 @@ requirements that now carry it.
 `bonuses.md` `GAME-BONUS` · `scoring.md` `GAME-SCORE` · `level-flow.md` `GAME-LEVEL`
 
 **ui/** — `screen-flow.md` `UI-FLOW` · `menu-input.md` `UI-INPUT` · `look-and-layout.md` `UI-LOOK` ·
-`boot-and-loading.md` `UI-LOAD` · `title-screen.md` `UI-TITLE` · `ship-select.md` `UI-SHIP` ·
-`level-select.md` `UI-LEVEL` · `hud.md` `UI-HUD` · `pause-menu.md` `UI-PAUSE` · `settings.md` `UI-SET` ·
+`boot-and-loading.md` `UI-LOAD` · `title-screen.md` `UI-TITLE` · `level-select.md` `UI-LEVEL` ·
+`hud.md` `UI-HUD` · `pause-menu.md` `UI-PAUSE` · `settings.md` `UI-SET` ·
 `continue-and-game-over.md` `UI-OVER`
 
 **audio/** — `engine.md` `AUD-ENGINE` · `music.md` `AUD-MUSIC` · `sfx.md` `AUD-SFX`

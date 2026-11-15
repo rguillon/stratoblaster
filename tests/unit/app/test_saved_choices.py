@@ -1,6 +1,6 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/app/saved_choices.py`."""
-# (UI-TITLE-03, UI-SHIP-07, GAME-SCORE-05).
+# (UI-TITLE-03, GAME-SCORE-05).
 
 from helpers.memory_storage import MemoryStorage
 
@@ -9,7 +9,6 @@ from app.saved_choices import (
     load_saved_choices,
     parse_high_score,
     save_high_score,
-    save_last_ship,
     saved_choice_keys,
 )
 
@@ -21,7 +20,6 @@ _PLAIN_SCORE = saved_choices._plain_score
 def test_ui_title_03_the_keys_are_prefixed_with_the_game_id() -> None:
     keys = saved_choice_keys("stratoblaster")
     assert keys.high_score == "stratoblaster_high_score"
-    assert keys.last_ship == "stratoblaster_last_ship"
 
 
 def test_ui_title_03_a_plain_stored_score_is_read_as_a_number() -> None:
@@ -46,26 +44,16 @@ def test_game_score_05_a_saved_high_score_is_floored_and_never_negative() -> Non
     assert storage.get("game_high_score") == "0"
 
 
-def test_ui_ship_07_the_last_ship_is_saved_under_its_key() -> None:
-    storage = MemoryStorage()
-    save_last_ship(storage, "game", "beta")
-    assert storage.get("game_last_ship") == "beta"
-
-
 def test_ui_title_03_the_saved_choices_are_loaded_at_start_up() -> None:
-    """Also UI-SHIP-07 (the last ship)."""
     storage = MemoryStorage()
     storage.set("game_high_score", "900")
-    storage.set("game_last_ship", "gamma")
     saved = load_saved_choices(storage, "game")
     assert saved.high_score == 900
-    assert saved.last_ship_id == "gamma"
 
 
-def test_ui_title_03_nothing_saved_loads_as_no_score_and_no_ship() -> None:
+def test_ui_title_03_nothing_saved_loads_as_no_score() -> None:
     saved = load_saved_choices(MemoryStorage(), "game")
     assert saved.high_score == 0
-    assert saved.last_ship_id is None
 
 
 def test_ui_title_03_the_score_check_is_javascript_only() -> None:

@@ -18,7 +18,7 @@ def test_a_final_boss_transforms_and_its_hidden_weapons_come_out_and_fire(
     page: Page, level_id: str
 ) -> None:
     """BOSS-35 (a final boss transforms) and BOSS-38 (its hidden weapons come out and fire)."""
-    open_debug(page, f"?level={level_id}&boss=final&ship=heavy")
+    open_debug(page, f"?level={level_id}&boss=final")
     step_until(page, lambda: (boss(page) or {}).get("state"), lambda s: s == "fighting")
     hidden = boss(page)["hiddenParts"]
     assert hidden > 0

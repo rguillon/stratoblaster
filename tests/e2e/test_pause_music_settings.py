@@ -44,7 +44,7 @@ def audio_state(page: Page) -> str:
 def play_first_level(page: Page) -> None:
     """Goes from the title to level 1-1 with the keyboard."""
     open_game(page)
-    for screen in ["ship-select", "level-select", "game"]:
+    for screen in ["level-select", "game"]:
         page.keyboard.press("Enter")
         expect_state(page, {"screen": screen})
 
@@ -268,7 +268,7 @@ def test_aud_music_11_the_menu_theme_plays_in_the_menus_the_level_track_in_the_l
     open_game(page)
     assert game_state(page)["music"] == "menu"
     send_action(page, "confirm")
-    expect_state(page, {"screen": "ship-select", "music": "menu"})
+    expect_state(page, {"screen": "level-select", "music": "menu"})
     open_debug(page, "?level=2-3")
     step(page, 2)
     assert game_state(page)["music"] == "level-2-3"

@@ -1,10 +1,10 @@
 # Copyright (c) 2026 Renaud Guillon
-"""The darksynth backdrop of the menus (UI-TITLE-07, UI-TITLE-08 for its colours, D-103).
+"""The backdrop of the menus: the ship racing down a neon trench (UI-TITLE-07, D-325).
 
-A night street between dark towers with lit windows, neon signs and roof trims, scrolling towards
-the camera, a distant skyline, haze, rain, and the balanced ship floating and turning above the
-street. Everything is generated in code from a fixed seed. The ship is hidden on the ship select
-screen, which shows the ships itself (UI-TITLE-09).
+UI-TITLE-08 for its colours. The player ship flies down a trench towards a frontal camera that
+flies backwards ahead of it; the trench scrolls away behind the ship, speed streaks rush past
+faster still, and the ship sways, banks and floats. Everything is generated in code from a fixed
+seed. It shows behind every menu screen (UI-TITLE-09).
 """
 
 import math
@@ -13,8 +13,8 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from core.math.rng import create_rng
 from game.config.title_look import TITLE_LOOK as LOOK
-from game.view.balanced_ship import build_balanced_ship
-from game.view.city_geometry import build_city_chunk, build_rain, build_skyline
+from game.view.ship_model import build_player_ship
+from game.view.trench_geometry import build_streaks, build_trench_chunk
 from render.babylon import (
     apply_vertex_data,
     babylon_class,
@@ -34,7 +34,7 @@ from render.babylon import (
     vertex_data_of,
 )
 from render.geometry.gradient_shapes import build_gradient_rect
-from render.model_animation import step_model_animations
+from render.model_animation import SIDEWAYS, set_model_input, step_model_animations
 
 # isort: split
 # __pragma__ ("skip")
@@ -67,8 +67,8 @@ def _colored_mesh(name: str, geo: Any, scene: Any, fog: bool, intensity: float =
     return mesh
 
 
-def _build_sky(scene: Any, random: Any) -> list[Any]:
-    """Return the sky and the distant skyline; returns the meshes that must not glow."""
+def _build_sky(scene: Any) -> Any:
+    """Return the glow at the far end of the trench, kept out of the glow layer."""
     sky = LOOK.sky
     sky_mesh = _colored_mesh(
         "title-sky",
@@ -77,37 +77,39 @@ def _build_sky(scene: Any, random: Any) -> list[Any]:
         False,
     )
     sky_mesh.position.set(0, sky.centerY, sky.z)
-    skyline_look = LOOK.skyline
-    towers = build_skyline(skyline_look, random)
-    skyline_mesh = _colored_mesh("title-skyline", towers["structure"], scene, False)
-    skyline_lights = _colored_mesh(
-        "title-skyline-lights",
-        towers["lights"],
-        scene,
-        False,
-        LOOK.neonIntensity,
-    )
-    for mesh in [skyline_mesh, skyline_lights]:
-        mesh.position.set(0, skyline_look.y, skyline_look.z)
-    return [sky_mesh, skyline_mesh]
+    return sky_mesh
 
 
-def _build_city(scene: Any, random: Any) -> dict[str, Any]:
-    """Two copies of a city chunk, end to end, under one node that scrolls towards the camera.
+def _build_trench(scene: Any, random: Any) -> dict[str, Any]:
+    """Two stretches of trench end to end, under one node that scrolls away from the camera.
 
-    Each copy is two merged meshes, the lights at the neon intensity (UI-TITLE-10).
+    Each stretch is two merged meshes, the lights at the neon intensity (UI-TITLE-10). The second
+    stretch lies one length nearer the camera, so the trench reaches it as the node moves away.
     """
-    chunk = build_city_chunk(LOOK.city, random)
-    city = new_transform_node("title-city", scene)
-    structure = _colored_mesh("title-city-structure", chunk["structure"], scene, True)
-    lights = _colored_mesh("title-city-lights", chunk["lights"], scene, True, LOOK.neonIntensity)
-    structure.parent = city
-    lights.parent = city
-    structure_copy = structure.clone("title-city-structure-2", city)
-    lights_copy = lights.clone("title-city-lights-2", city)
-    structure_copy.position.z = LOOK.city["length"]
-    lights_copy.position.z = LOOK.city["length"]
-    return {"city": city, "structure": [structure, structure_copy]}
+    look = LOOK.trench
+    chunk = build_trench_chunk(look, random)
+    trench = new_transform_node("title-trench", scene)
+    structure = _colored_mesh("title-trench-structure", chunk["structure"], scene, True)
+    lights = _colored_mesh("title-trench-lights", chunk["lights"], scene, True, LOOK.neonIntensity)
+    structure.parent = trench
+    lights.parent = trench
+    structure_copy = structure.clone("title-trench-structure-2", trench)
+    lights_copy = lights.clone("title-trench-lights-2", trench)
+    structure_copy.position.z = look["length"]
+    lights_copy.position.z = look["length"]
+    trench.position.z = look.startZ
+    return {"trench": trench, "structure": [structure, structure_copy]}
+
+
+def _build_streaks(scene: Any, random: Any) -> Any:
+    """Two stretches of speed streaks end to end, under one node; they glow."""
+    look = LOOK.streaks
+    streaks = new_transform_node("title-streaks", scene)
+    mesh = _colored_mesh("title-streak-mesh", build_streaks(look, random), scene, True)
+    mesh.parent = streaks
+    mesh.clone("title-streak-mesh-2", streaks).position.z = look["length"]
+    streaks.position.z = look.startZ
+    return streaks
 
 
 def _set_up_scene(scene: Any) -> None:
@@ -134,48 +136,46 @@ def _set_up_scene(scene: Any) -> None:
 def build_title_backdrop(scene: Any) -> Any:
     """Build the title backdrop in `scene` and return its `MenuBackdrop` handle.
 
-    The handle holds the meshes that must not glow, an `update(dt)` per frame, and
-    `showScreen(screen)`.
+    The handle holds the meshes that must not glow and an `update(dt)` per frame.
     """
     _set_up_scene(scene)
     random = create_rng(LOOK.seed)
-    sky = _build_sky(scene, random)
-    city_parts = _build_city(scene, random)
-    city = city_parts["city"]
-    structure = city_parts["structure"]
-    rain = _colored_mesh("title-rain", build_rain(LOOK.rain, random), scene, True)
-    rain.position.y = LOOK.rain.y
+    sky = _build_sky(scene)
+    trench_parts = _build_trench(scene, random)
+    trench = trench_parts["trench"]
+    streaks = _build_streaks(scene, random)
     pivot = new_transform_node("title-ship", scene)
     ship_position = LOOK.ship.position
     pivot.position.set(ship_position[0], ship_position[1], ship_position[2])
-    ship = build_balanced_ship(scene)
+    # The model's nose is towards +Z, where the camera is: the ship flies at it.
+    ship = build_player_ship(scene)
     ship.parent = pivot
     # Seconds since the backdrop was built.
     clock = [0.0]
 
-    glow_excluded: list[Any] = []
-    glow_excluded.extend(sky)
-    glow_excluded.extend(structure)
-    glow_excluded.append(rain)
+    glow_excluded: list[Any] = [sky]
+    glow_excluded.extend(trench_parts["structure"])
 
     def update_frame(dt: float) -> None:
         clock[0] = clock[0] + dt
         t = clock[0]
-        c = LOOK.city
-        r = LOOK.rain
+        tr = LOOK.trench
+        st = LOOK.streaks
         s = LOOK.ship
-        city.position.z = -((t * c.scrollSpeed) % c["length"])
-        rain.position.y = r.y - ((t * r.speed) % r.height)
-        pivot.rotation.y += s.rotationSpeedRadPerSec * dt
+        trench.position.z = tr.startZ - ((t * tr.speed) % tr["length"])
+        streaks.position.z = st.startZ - ((t * st.speed) % st["length"])
+        sway = 2 * math.pi * s.swayHz * t
+        pivot.position.x = s.position[0] + s.swayAmplitude * math.sin(sway)
         pivot.position.y = s.position[1] + s.bobAmplitude * math.sin(2 * math.pi * s.bobHz * t)
+        # Banks into the sway, rolled most where it moves sideways fastest: moving to +X, its +X
+        # wing dips (a negative roll about Z in Babylon's left-handed frame).
+        pivot.rotation.z = -s.bankRad * math.cos(sway)
+        # Its sideways speed, a share of the sway's fastest, tilts its tip pods (D-359).
+        set_model_input(pivot, SIDEWAYS, math.cos(sway))
         step_model_animations(ship, dt)
-
-    def show_screen(screen: str) -> None:
-        pivot.setEnabled(screen != "ship-select")
 
     # The handle is a JavaScript object: `update` is read by the render layer as a property name.
     backdrop = js_object()
     js_set(backdrop, "glowExcludedMeshes", glow_excluded)
     js_set(backdrop, "update", update_frame)
-    js_set(backdrop, "showScreen", show_screen)
     return backdrop
