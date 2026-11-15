@@ -6,6 +6,44 @@ A plan, not yet a phase spec: nothing here is implemented. The owner has agreed 
 some enemies may change where it is needed (an exception to PERF-03, to be logged in
 `DECISIONS.md` with the first step that uses it).
 
+## Status (2026-11-15, branch `perf/draw-calls`)
+
+| Step | State | Decision | Result |
+|---|---|---|---|
+| 3. Playfield glow draws only lights | Done | D-427 | 4-1@30: 2 120 → 1 942 draw calls |
+| 1. Shared flame layer | Done | D-428 | 4-1@30: → 1 360 draw calls, 8.1 ms |
+| 2. One mesh per material per enemy | Done, without any design change | D-429 | 4-1@30: → 763 draw calls, 5.4 ms; frames identical pixel for pixel |
+| 4. Per-mesh engine settings | Tried, not kept | – | See below |
+| 5 to 9 | Not started | | |
+
+Measured on the same machine as the analysis, mean of 15 s:
+
+| Scenario | Draw calls before → now | Main thread before → now | Under 4× CPU throttling before → now |
+|---|---:|---:|---:|
+| 1-1@30 | 689 → 253 | 3.7 → 3.0 ms | 14.2 → 10.8 ms |
+| 4-1@30 | 2 120 → 763 | 10.6 → 5.4 ms | 46.0 → 24.8 ms (21 → 40 fps) |
+| 4-5@200 | 2 075 → 716 | 10.7 → 5.9 ms | 48.1 → 24.4 ms (21 → 41 fps) |
+| Worst window (4-5 around 3:50, profiled) | 3 880 → 1 113 | 20.0 → 9.5 ms | |
+
+Level loading is unchanged to within 50 ms (the merge costs about 30 ms a load); one run of 1-1
+was 200 ms slower in its `prepare` step and should be measured again.
+
+**Step 4, tried on a frozen 4-5 frame of 661 draw calls (6.6 ms):** freezing every material
+saved 0.75 ms, but a frozen material ignores later changes (the pulsing veins and charge lights,
+the sky's reflections, the graphics quality's shadow filter), and freezing only the enemies'
+still materials would save about half of that; never syncing the playfield's bounding boxes
+saved 0.3 ms but breaks the culling of enemies off screen; always drawing the playfield's meshes
+cost draw calls for no gain. None was kept.
+
+**What is left of a busy frame** (4-5, 604 draw calls frozen): enemies 335 (a Hydra is now 11
+meshes: hull, flesh, neon, vein, three charge lights, trim, and the four lit ones again in the
+glow), enemy shots 87 (each missile is a body and a tip, drawn twice), buildings 50 to 104,
+traffic 48, player shots 27 to 47 (each bullet spark is its own mesh). 60 fps under 4× throttling
+needs about 400 draw calls a frame. The candidates, in order of what they would remove:
+one mesh for an enemy's four kinds of light (a small shader plugin for the animated veins and
+charge), the bullet sparks and enemy missiles as thin instances, the bones' update (0.2 to
+0.45 ms a frame in `render.mesh_merge`).
+
 ## 1. Goal and how each step is judged
 
 The analysis found one dominant cost: the main thread's time is proportional to draw calls (about
