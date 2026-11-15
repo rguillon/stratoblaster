@@ -237,29 +237,18 @@ def _columns_along(columns: Sequence[_TileLine], order: list[int], row: _TileLin
     return _ascending(picked)
 
 
-def _ascending(values: list[int]) -> list[int]:
-    """`values` sorted, smallest first (a merge sort: Transcrypt's `sort` takes no comparator)."""
-    if len(values) < 2:
-        return values
-    middle = len(values) // 2
-    left = _ascending(values[0:middle])
-    right = _ascending(values[middle : len(values)])
-    out: list[int] = []
-    i = 0
-    j = 0
-    while i < len(left) and j < len(right):
-        if right[j] < left[i]:
-            out.append(right[j])
-            j += 1
-        else:
-            out.append(left[i])
-            i += 1
-    while i < len(left):
-        out.append(left[i])
-        i += 1
-    while j < len(right):
-        out.append(right[j])
-        j += 1
+def _ascending(numbers: list[int]) -> list[int]:
+    """Return `numbers` sorted, smallest first: `numbers.slice().sort((a, b) => a - b)`.
+
+    D-426: the browser's sort, in place of a merge sort written here (Transcrypt's own `sort`
+    takes no comparator and compares numbers as text): it ran for every row street of a level.
+    (Not named `values`, which Transcrypt renames: the JavaScript below would not find it.)
+    """
+    out = numbers
+    __pragma__("skip")
+    out = sorted(numbers)
+    __pragma__("noskip")
+    __pragma__("js", "{}", "out = numbers.slice().sort((a, b) => a - b);")
     return out
 
 

@@ -73,6 +73,21 @@ class ImposterField:
         """Every quad mesh."""
         return list(self._meshes.values())
 
+    def draw_frame(self, kind: str, frame: int, matrices: Any) -> None:
+        """Draw frame `frame` of `kind` once per matrix of `matrices` (16 numbers each), or hide it.
+
+        D-422: for the imposters that move every frame (the cars), which write their matrices
+        themselves (as `placement_matrix` does). A kind it does not know is left out. Not to be
+        mixed with `place`.
+        """
+        mesh = self._meshes.get(_mesh_key(kind, frame))
+        if not mesh:
+            return
+        shown = len(matrices) > 0
+        if shown:
+            upload_thin_matrices(mesh, matrices)
+        set_enabled(mesh, shown)
+
     def place(self, placements: list[PropPlacement]) -> None:
         """Draws one imposter per placement (of a kind it knows), and no others."""
         headings: int = self._look.headings

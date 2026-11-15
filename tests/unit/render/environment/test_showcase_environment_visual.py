@@ -98,6 +98,12 @@ def test_gfx_art_02_a_scene_is_lit_by_its_sky_gradient_tone_mapped_and_given_a_g
 ) -> None:
     """ENG-114, ENG-126, PERF-30: the lighting comes from the faces built here, not the GPU."""
     patch_babylon(monkeypatch, showcase_environment)
+    monkeypatch.setattr(showcase_environment, "LAST_SKY", FakeWeakMap())
+    monkeypatch.setattr(showcase_environment, "is_raw_cube_texture", lambda t: t is not None)
+    updated: list[Any] = []
+    monkeypatch.setattr(
+        showcase_environment, "update_raw_cube_texture", lambda *args: updated.append(args)
+    )
     faces = ["face"] * 6
     built: list[Any] = []
     textures: list[Any] = []
@@ -142,6 +148,15 @@ def test_gfx_art_02_a_scene_is_lit_by_its_sky_gradient_tone_mapped_and_given_a_g
     assert layers == [("glow", scene, 32, 0.25, 4)]
     assert result is layer
     assert layer.intensity == 0.6
+    # D-424: a first update with the sky it was made with builds nothing again; another sky does.
+    update_sky_environment(scene, 16, STOPS, 0.9)
+    assert built == [(16, STOPS)]
+    assert updated == []
+    assert lit == [(texture, faces, 16)]
+    dusk = [GradientStop(-1, [0.2, 0, 0]), GradientStop(1, [1, 0.5, 0.25])]
+    update_sky_environment(scene, 16, dusk, 0.9)
+    assert built == [(16, STOPS), (16, dusk)]
+    assert len(updated) == 1
 
 
 def test_gfx_terrain_15_a_glow_leaves_its_resolution_to_babylon_by_default() -> None:

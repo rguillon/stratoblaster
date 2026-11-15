@@ -40,7 +40,7 @@ def _model(lit: bool) -> Any:
 
 class _Atlas:
     def __init__(self) -> None:
-        self.look = SimpleNamespace()
+        self.look = SimpleNamespace(headings=8)
         self.material = "material"
         self.baked: list = []
 
@@ -74,6 +74,8 @@ def test_d212_imposter_kinds_keep_only_their_lights_and_bake_once() -> None:
     assert asked == [1]
     assert kinds.kinds == ["tree"]
     assert kinds.meshes == ["quad-tree"]
+    # D-422: the headings each kind is pictured from, for those who draw its frames themselves.
+    assert kinds.headings == 8
     tree = kinds.models["tree"]()
     assert tree.structure.indices == []
     assert tree.lights.indices == [0, 1, 2]

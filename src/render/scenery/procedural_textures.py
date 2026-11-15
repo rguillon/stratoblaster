@@ -6,6 +6,7 @@ in the worker, and kept for reuse.
 """
 
 import math
+from math import floor
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -255,13 +256,35 @@ def tileable_fbm(size: int, frequency: float, octaves: float, seed: int) -> Any:
     return values
 
 
+def _rank_order(samples: Any) -> Any:
+    """Return the indices of `samples` from the lowest value up, equal values in index order.
+
+    D-426: `indices.sort((a, b) => samples[a] - samples[b] || a - b)` on a `Uint32Array`, the
+    browser's own sort (the index breaks ties, so the order is the stable one whatever the sort),
+    in place of a merge sort written here, which sliced and filled lists for every texel.
+    (Not named `values`, which Transcrypt renames: the JavaScript below would not find it.)
+    """
+    __pragma__(
+        "js",
+        "{}",
+        """
+        const order = new Uint32Array(samples.length);
+        for (let i = 0; i < order.length; i++) {
+            order[i] = i;
+        }
+        order.sort((a, b) => samples[a] - samples[b] || a - b);
+        return order;
+        """,
+    )
+    return _stable_sort(list(range(len(samples))), lambda a, b: samples[a] - samples[b])
+
+
 def equalize(values: Any) -> Any:
     """Ranks of `values` scaled to [0, 1].
 
     The same order, but evenly spread (histogram equalised).
     """
-    indices = list(range(len(values)))
-    order = _stable_sort(indices, lambda a, b: values[a] - values[b])
+    order = _rank_order(values)
     out = float32_array(len(values))
     last = max(1, len(values) - 1)
     for rank in range(len(order)):
@@ -275,7 +298,8 @@ def _byte(v: float) -> int:
         return 0
     if v >= 1:
         return 255
-    return math.floor(v * 255 + 0.5)
+    # `floor`, not `math.floor`: no getter of the module on the way (D-426).
+    return floor(v * 255 + 0.5)
 
 
 def _mix_rgb(a: Sequence[float], b: Sequence[float], t: float) -> list[float]:

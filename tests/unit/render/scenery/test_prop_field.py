@@ -61,10 +61,7 @@ NORMALS: list[int] = []
 
 
 class _Floats(FakeTypedArray):
-    """A Float32Array: a fake typed array with `subarray` (a copy is enough here)."""
-
-    def subarray(self, start: int, end: int) -> list[float]:
-        return list(self[start:end])
+    """A Float32Array: the fake typed array (its `subarray` is a copy, enough here)."""
 
 
 class _Mesh(FakeNode):
@@ -518,6 +515,26 @@ def test_perf_25_the_props_in_the_window_are_uploaded_to_every_mesh_of_their_kin
     tree = f._meshes["tree"].structure
     assert tree.enabled is False
     assert tree.buffers == []
+
+
+def test_d422_a_kind_is_drawn_with_the_matrices_given_straight_to_its_meshes() -> None:
+    """D-422: what moves every frame (the cars) writes its own matrices."""
+    f = _hut_field()
+    matrices = _Floats(2 * MATRIX_FLOATS)
+    matrices.set([7] * 2 * MATRIX_FLOATS)
+    f.draw_kind("hut", matrices)
+    meshes = f._mesh_list(f._meshes["hut"])
+    assert len(meshes) == 5
+    for mesh in meshes:
+        assert mesh.enabled is True
+        assert mesh.buffers == [("matrix", [7] * 2 * MATRIX_FLOATS, MATRIX_FLOATS, False)]
+    # No matrix: the kind is hidden, and nothing is uploaded.
+    f.draw_kind("hut", _Floats(0))
+    for mesh in meshes:
+        assert mesh.enabled is False
+        assert len(mesh.buffers) == 1
+    with pytest.raises(ValueError, match='No model for prop "ufo"'):
+        f.draw_kind("ufo", matrices)
 
 
 def test_perf_25_nothing_is_uploaded_again_while_the_window_stays_in_the_range_drawn() -> None:

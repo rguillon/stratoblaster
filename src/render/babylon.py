@@ -167,8 +167,37 @@ def new_engine(canvas: Canvas, antialias: bool) -> Engine:
 
 
 def new_scene(engine: Engine) -> Scene:
-    """Return `new Scene(engine)`."""
-    __pragma__("js", "{}", "return new BABYLON.Scene(engine);")
+    """Return `new Scene(engine)`, which looks for what to draw among its enabled meshes only.
+
+    D-421: Babylon goes through every mesh of a scene each frame (a map look-up, its vertex count
+    and its readiness, each) before it skips the disabled ones; a level's scene holds about a
+    thousand, most of them the hidden models of enemies not on screen. `getActiveMeshCandidates`
+    (Babylon's own hook, the one its octree uses) hands it the enabled ones instead; a disabled
+    mesh was never drawn, so the frames are the same.
+    """
+    __pragma__(
+        "js",
+        "{}",
+        """
+        const scene = new BABYLON.Scene(engine);
+        const enabled = { data: [], length: 0 };
+        scene.getActiveMeshCandidates = function () {
+            const meshes = scene.meshes;
+            const data = enabled.data;
+            let count = 0;
+            for (let i = 0; i < meshes.length; i++) {
+                const mesh = meshes[i];
+                if (mesh.isEnabled()) {
+                    data[count++] = mesh;
+                }
+            }
+            data.length = count;
+            enabled.length = count;
+            return enabled;
+        };
+        return scene;
+        """,
+    )
     return cast("Scene", None)
 
 

@@ -120,6 +120,25 @@ def test_d211_each_placement_is_drawn_by_the_frame_nearest_its_heading(
     assert [m.name for m in field.meshes if m.enabled] == ["imposter-car#0", "imposter-car#1"]
 
 
+def test_d422_a_frame_is_drawn_with_the_matrices_given_straight_to_its_quad(
+    field: ImposterField,
+) -> None:
+    """D-422: the imposters that move every frame (the cars) write their own matrices."""
+    matrices = FakeTypedArray(16)
+    matrices.set(list(range(16)))
+    field.draw_frame("car", 1, matrices)
+    mesh = _mesh(field, "car", 1)
+    assert mesh.uploads == [list(range(16))]
+    assert mesh.enabled
+    # No matrix: the frame is hidden, and nothing is uploaded.
+    field.draw_frame("car", 1, FakeTypedArray(0))
+    assert not mesh.enabled
+    assert len(mesh.uploads) == 1
+    # A kind without imposters is left out.
+    field.draw_frame("tank", 0, matrices)
+    assert [m.name for m in field.meshes if m.enabled] == []
+
+
 def test_d212_unchanged_placements_are_not_uploaded_again(field: ImposterField) -> None:
     cars = [_car(1), _car(2)]
     field.place(cars)

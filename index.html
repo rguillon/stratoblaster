@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>Stratoblaster</title>
+    <!-- D-423: both scripts are fetched at once, as soon as the page is; without these the game's
+         bundle was asked for only once Babylon.js had been downloaded and run. The same URLs as
+         the scripts below (the build gives all four the same version, ENG-84). -->
+    <link rel="preload" href="vendor/babylon.js" as="script" />
+    <link rel="modulepreload" href="./js/game.js" />
     <style>
       /*
        * Cyan neon night, made clear (owner, 2026-11-11, D-324; synthwave pink D-323, neon

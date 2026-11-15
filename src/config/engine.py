@@ -98,6 +98,7 @@ class EngineConfig:
         long_frame_ms: float,
         perf_overlay: PerfOverlay,
         quality: QualityConfig,
+        load_budget_ms: float,
     ) -> None:
         # Fixed simulation rate in Hz (ENG-100).
         self.simulation_hz = simulation_hz
@@ -115,6 +116,10 @@ class EngineConfig:
         self.perf_overlay = perf_overlay
         # D-410: the graphics quality levels, and when the game changes level by itself.
         self.quality = quality
+        # D-425: a frame of a level's loading runs its next step, or builds its next enemy model,
+        # only while the loading has used less than this of the frame (ms); a long step still
+        # runs alone.
+        self.load_budget_ms = load_budget_ms
 
 
 ENGINE_CONFIG = EngineConfig(
@@ -145,4 +150,5 @@ ENGINE_CONFIG = EngineConfig(
         4,
         0.8,
     ),
+    8,
 )

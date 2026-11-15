@@ -589,6 +589,21 @@ class PropField:
         if self._imposters is not None:
             self._place_imposters(by_kind, self._imposters)
 
+    def draw_kind(self, kind: str, matrices: Any) -> None:
+        """Draw the meshes of `kind` once per matrix of `matrices` (16 numbers each), or hide them.
+
+        D-422: for what moves every frame (the cars), which writes its instance matrices itself:
+        no placement, no chunk and no window. Not to be mixed with `set_chunk` for the same kind.
+        """
+        meshes = self._meshes.get(kind)
+        if not meshes:
+            raise ValueError('No model for prop "' + kind + '"')
+        shown = len(matrices) > 0
+        for mesh in self._mesh_list(meshes):
+            set_enabled(mesh, shown)
+            if shown:
+                upload_thin_matrices(mesh, matrices)
+
     def _place_imposters(self, by_kind: dict[str, Drawn], imposters: "ImposterKinds") -> None:
         """D-212: the imposters of the props drawn."""
         placements: list[PropPlacement] = []

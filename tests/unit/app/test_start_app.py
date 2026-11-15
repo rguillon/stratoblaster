@@ -544,6 +544,25 @@ def test_dev_perf_01_the_session_options_are_the_app_s_and_two_callbacks() -> No
     assert (session.stepped_loading, session.precompile_shaders) == ("stepped", "precompile")
     assert (session.background_loading, session.prebuild_levels) == ("background", "prebuild")
     assert session.on_draw_calls == "on-draw-calls"
+    # D-425: with the levels built ahead (the game in real time), the loading has the browser's
+    # clock to fill its frames by.
+    assert session.load_clock is start_app.performance_now
+
+
+def test_d425_the_loading_s_clock_is_the_app_s_own_and_none_when_the_tests_step_the_game() -> None:
+    def clock() -> float:
+        return 5.0
+
+    def options_with(prebuild: Any) -> AppOptions:
+        return AppOptions(
+            False, "doc", "overlay", "storage", _yield, False, "1", "c", None, None, None, clock,
+            None, True, None, None, prebuild,
+        )  # fmt: skip
+
+    assert start_app.session_options(options_with(True), None, None).load_clock is clock
+    # e2e builds and unit tests: one loading step a frame (PERF-09).
+    assert start_app.session_options(options_with(False), None, None).load_clock is None
+    assert start_app.session_options(options_with(None), None, None).load_clock is None
 
 
 def test_game_score_05_the_session_reports_to_the_menus_the_audio_and_the_perf(

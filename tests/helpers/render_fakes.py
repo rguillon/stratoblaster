@@ -149,6 +149,12 @@ class FakeTypedArray(list):  # type: ignore[type-arg]
         for i, value in enumerate(values):
             self[offset + i] = value
 
+    def subarray(self, begin: int, end: int) -> FakeTypedArray:
+        """Return the numbers from `begin` to `end` (a copy here: the tests read it at once)."""
+        part = FakeTypedArray(0)
+        part.extend(self[begin:end])
+        return part
+
 
 class FakeWeakMap:
     """A `WeakMap` by identity (a dict is enough for the tests)."""

@@ -1,8 +1,11 @@
 # Copyright (c) 2026 Renaud Guillon
 """Unit tests of `src/core/math/noise.py`."""
 
+import math
+
 import pytest
 
+from core.math import noise as noise_module
 from core.math.noise import OctaveOptions, create_noise2d, fbm, hash_2d, ridged, smoothstep
 from core.scenery.ice_sculpt import crevasse_depth
 from core.scenery.scenery_level import Crevasses
@@ -25,6 +28,22 @@ def test_noise_differs_between_seeds() -> None:
 def test_noise_stays_within_minus_one_and_one() -> None:
     noise = create_noise2d(3)
     assert all(-1 <= noise(x, y) <= 1 for x, y in SAMPLES)
+
+
+def test_d426_noise_past_its_range_is_clamped_to_minus_one_and_one(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """D-418, D-426: clamped by comparisons. A larger scale shows both ends of the clamp."""
+    plain = create_noise2d(3)
+    points = [(0.37 + 0.61 * i, 0.83 + 0.47 * i) for i in range(200)]
+    values = [plain(x, y) for x, y in points]
+    monkeypatch.setattr(noise_module, "SQRT2", 50.0)
+    scaled = [create_noise2d(3)(x, y) for x, y in points]
+    assert set(scaled) >= {-1, 1}
+    for value, wide in zip(values, scaled, strict=True):
+        # 50 / sqrt(2) times the value, cut to the range.
+        expected = max(-1.0, min(1.0, value / math.sqrt(2) * 50))
+        assert wide == pytest.approx(expected)
 
 
 def test_noise_is_zero_on_the_lattice() -> None:

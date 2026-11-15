@@ -55,6 +55,16 @@ def level_of(game: Any, level_id: str) -> Any:
     return level
 
 
+def level_after(game: Any, level_id: str) -> str | None:
+    """Return the id of the level that follows `level_id` in the game, if there is one."""
+    levels = game.game_levels
+    for i in range(len(levels) - 1):
+        if levels[i].id == level_id:
+            after: str = levels[i + 1].id
+            return after
+    return None
+
+
 def prepare_level(game: Any, level_id: str) -> bool:
     """Asks for the ground of level `level_id` ahead of its `GamePlay` (PERF-14).
 

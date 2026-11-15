@@ -12,6 +12,7 @@ from app import level_prepare
 from app.level_prepare import (
     PREFETCH_AFTER,
     LevelPrefetcher,
+    level_after,
     level_of,
     prefetch_level,
     prepare_level,
@@ -51,6 +52,15 @@ def test_perf_08_a_level_is_found_by_its_id_and_an_unknown_one_is_refused() -> N
     assert level_of(game(first, level("1-2")), "1-1") is first
     with pytest.raises(ValueError, match="cannot be played"):
         level_of(game(first), "9-9")
+
+
+def test_d424_the_level_after_a_level_is_the_next_of_the_game_and_the_last_has_none() -> None:
+    levels = game(level("1-1"), level("1-2"), level("2-1"))
+    assert level_after(levels, "1-1") == "1-2"
+    assert level_after(levels, "1-2") == "2-1"
+    assert level_after(levels, "2-1") is None
+    assert level_after(levels, "9-9") is None
+    assert level_after(game(), "1-1") is None
 
 
 @pytest.mark.usefixtures("ground")

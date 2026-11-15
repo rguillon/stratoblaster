@@ -25,6 +25,7 @@ from app.game_session import (
 )
 from app.saved_supplies import load_saved_supplies, save_supplies, saved_supplies_key
 from app.saved_weapons import load_saved_weapons, save_weapons
+from config.engine import ENGINE_CONFIG
 from core.systems.level_run_types import Supplies
 from core.systems.run_arsenal import WeaponLevels
 
@@ -72,6 +73,7 @@ def _session(storage: MemoryStorage | None, completed: list[object]) -> GameSess
     session.options = SimpleNamespace(storage=storage)
     session.game = SimpleNamespace(id="game")
     session._on_complete = completed.append
+    session._level_id = None
     return session
 
 
@@ -581,6 +583,104 @@ def test_perf_21_the_enemy_models_are_built_one_a_frame_while_it_loads(env: Env)
     load(session, 1)
     assert session.play is env.plays[0]
     assert env.plays[0].calls.count(("enemies", True)) == 3
+
+
+class Clock:
+    """The loading's clock (D-425): `step` ms later at each reading."""
+
+    def __init__(self, step: float) -> None:
+        self.now = 0.0
+        self.step = step
+
+    def __call__(self) -> float:
+        self.now += self.step
+        return self.now
+
+
+def test_d425_quick_loading_steps_share_a_frame_while_it_has_time(env: Env) -> None:
+    """D-425: a step that is over is followed by the next in the same frame, within the budget."""
+    env.enemies_left = 3
+    session = make_session(overlay="overlay", stepped_loading=True, load_clock=Clock(0))
+    session.sync(menu())
+    (screen,) = env.screens
+    load(session, 1)
+    # Every step, and every enemy model, in the one frame: none had to wait and none took time.
+    assert session.loading is False
+    (play,) = env.plays
+    assert session.play is play
+    assert play.calls.count(("enemies", True)) == 4
+    assert screen.shown == [pytest.approx(done / STEPS) for done in range(STEPS + 1)]
+
+
+def test_d425_a_loading_step_that_waits_ends_the_frame(env: Env) -> None:
+    """PERF-09: the worker's answer comes between two frames, however much time the frame has."""
+    env.ground.queued = [False, False]
+    session = make_session(stepped_loading=True, load_clock=Clock(0))
+    session.sync(menu())
+    load(session, 2)
+    assert len(env.ground.asked) == 2
+    assert env.plays == []
+    load(session, 1)
+    assert session.play is env.plays[0]
+
+
+def test_d425_a_frame_out_of_time_leaves_the_next_step_to_the_next_frame(env: Env) -> None:
+    budget = ENGINE_CONFIG.load_budget_ms
+    # Each reading of the clock is 0.6 budget later: a step, then one more, then the frame is over.
+    session = make_session(overlay="overlay", stepped_loading=True, load_clock=Clock(0.6 * budget))
+    session.sync(menu())
+    (screen,) = env.screens
+    load(session, 1)
+    assert screen.shown == [pytest.approx(done / STEPS) for done in range(3)]
+    load(session, 1)
+    assert screen.shown == [pytest.approx(done / STEPS) for done in range(5)]
+    load(session, 3)
+    assert session.loading is False
+
+
+def test_d425_a_large_enemy_model_fills_its_own_frame(env: Env) -> None:
+    """PERF-21: the models are still built while the level loads, the large ones one a frame."""
+    env.enemies_left = 2
+    budget = ENGINE_CONFIG.load_budget_ms
+    session = make_session(stepped_loading=True, load_clock=Clock(2 * budget))
+    session.sync(menu())
+    # Five steps, one a frame (the clock leaves no time for a second), then the models.
+    load(session, 5)
+    (play,) = env.plays
+    assert play.calls.count(("enemies", True)) == 0
+    load(session, 1)
+    assert play.calls.count(("enemies", True)) == 1
+    load(session, 2)
+    assert play.calls.count(("enemies", True)) == 3
+    assert session.loading is True
+
+
+def test_d424_a_completed_level_prefetches_the_level_after_it(env: Env) -> None:
+    """D-424 (PERF-12): its ground is made while "Level complete" shows."""
+    levels = [SimpleNamespace(id="1-1"), SimpleNamespace(id="1-2")]
+    game = SimpleNamespace(id="game", texts=GAME.texts, game_levels=levels)
+    completed: list[Any] = []
+    options = GameSessionOptions(False, "doc", background_loading=True)
+    session = GameSession("engine", game, options, completed.append)
+    (loader,) = env.loaders
+    session.sync(menu())
+    (play,) = env.plays
+    assert env.prefetched == [("1-1", loader)]
+    # A game over prefetches nothing more.
+    play.run.phase = "over"
+    play.options.on_complete("result")
+    assert env.prefetched == [("1-1", loader)]
+    play.run.phase = "complete"
+    play.options.on_complete("result")
+    assert env.prefetched == [("1-1", loader), ("1-2", loader)]
+    assert completed == [play, play]
+    # The game's last level has none after it.
+    session.end()
+    session.sync(menu(chosen_level_id="1-2", attempt=2))
+    last = env.plays[1]
+    last.run.phase = "complete"
+    last.options.on_complete("result")
+    assert env.prefetched == [("1-1", loader), ("1-2", loader)]
 
 
 def test_dev_perf_01_the_start_of_a_level_s_loading_is_reported(env: Env) -> None:

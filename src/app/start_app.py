@@ -508,6 +508,11 @@ def session_options(
     precompile: Any = options.precompile_shaders
     background: Any = options.background_loading
     prebuild: Any = options.prebuild_levels
+    # D-425: quick loading steps share a frame where the game runs in real time (as the levels
+    # built ahead: not in the e2e builds, which the tests step frame by frame).
+    clock = None
+    if prebuild:
+        clock = options.now if options.now is not None else performance_now
     return GameSessionOptions(
         options.environment,
         options.doc,
@@ -523,6 +528,7 @@ def session_options(
         background,
         prebuild,
         on_draw_calls,
+        clock,
     )
 
 

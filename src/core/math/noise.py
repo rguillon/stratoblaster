@@ -2,6 +2,7 @@
 """Seeded 2D gradient noise and its fractal sums (the terrain's relief, GFX-TERRAIN-02)."""
 
 import math
+from math import floor
 
 from org.transcrypt.stubs.browser import __pragma__
 
@@ -99,8 +100,10 @@ def create_noise2d(seed: int, period: int = TABLE_SIZE) -> Noise2D:
         return cos_table[h] * dx + sin_table[h] * dy
 
     def noise(x: float, y: float) -> float:
-        ix = math.floor(x)
-        iy = math.floor(y)
+        # `floor`, not `math.floor`: under Transcrypt every `math.` goes through a getter of the
+        # module, and this runs four times a texel (D-426).
+        ix = floor(x)
+        iy = floor(y)
         fx = x - ix
         fy = y - iy
         u = _smootherstep(fx)
@@ -109,8 +112,13 @@ def create_noise2d(seed: int, period: int = TABLE_SIZE) -> Noise2D:
         top = _lerp(gradient(ix, iy + 1, fx, fy - 1), gradient(ix + 1, iy + 1, fx - 1, fy - 1), u)
         # Gradient noise peaks at about ±0.71 in 2D: scale it to fill [-1, 1].
         value = _lerp(bottom, top, v) * SQRT2
-        # `min(value, 1)` as a comparison (D-418): Transcrypt's `min` is generic, and slow here.
-        return -1 if value < -1 else (min(value, 1))
+        # Clamped by comparisons (D-418): Transcrypt's `min` is generic, and slow here. As
+        # statements: the linter turns a conditional expression back into `min` (D-426).
+        if value < -1:
+            return -1
+        if value > 1:
+            return 1
+        return value
 
     return noise
 
@@ -139,7 +147,10 @@ def ridged(noise: Noise2D, x: float, y: float, options: OctaveOptions) -> float:
     for _ in range(options.octaves):
         crest = 1 - abs(noise(x * frequency, y * frequency))
         value = crest * crest * weight
-        weight = min(1, value * 2)
+        # A comparison, not Transcrypt's generic `min` (D-418, D-426).
+        weight = value * 2
+        if weight > 1:
+            weight = 1
         total_sum += value * amplitude
         total += amplitude
         amplitude *= options.gain
@@ -152,7 +163,11 @@ def smoothstep(edge0: float, edge1: float, x: float) -> float:
     if edge0 == edge1:
         return 0.0 if x < edge0 else 1.0
     t = (x - edge0) / (edge1 - edge0)
-    t = 0 if t < 0 else (min(t, 1))
+    # Comparisons, not Transcrypt's generic `min` (D-418, D-426).
+    if t < 0:
+        t = 0
+    elif t > 1:
+        t = 1
     return t * t * (3 - 2 * t)
 
 
