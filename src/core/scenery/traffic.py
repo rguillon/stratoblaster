@@ -221,20 +221,45 @@ class Traffic:
     def at(self, time: float, area: GroundArea) -> list[PropPlacement]:
         """Return the cars in `area` at `time` (seconds), in road order.
 
-        They face the way they drive.
+        They face the way they drive. Each car is hidden near the ends of its road, where it turns
+        into the crossing street or leaves the screen. D-412: worked out in one loop, a placement
+        made only for the cars in `area` (a call per car, and a placement for each, before: the
+        same cars, at the same places).
         """
         out: list[PropPlacement] = []
+        hide = self._rules.length_
+        scale = self._rules.scale
         for index in self._tracks_in(area):
-            for car in self._tracks[index].cars:
-                p = self._place(car, time)
-                if (
-                    p is not None
-                    and p.x >= area.x_min
-                    and p.x < area.x_max
-                    and p.z >= area.z_min
-                    and p.z < area.z_max
-                ):
-                    out.append(p)
+            entry = self._tracks[index]
+            track = entry.track
+            length = track.length_
+            points = track.road.points
+            along = track.along
+            heights: list[float] | None = None
+            for car in entry.cars:
+                side = car.side
+                s = ((car.start + side * car.speed * time) % length + length) % length
+                if s < hide or s > length - hide:
+                    continue
+                # A segment that ends after `s` (< length): s0 <= s < s1.
+                i = _segment_at(track, s)
+                a = points[i]
+                b = points[i + 1]
+                s0 = along[i]
+                s1 = along[i + 1]
+                t = (s - s0) / (s1 - s0)
+                dx = (b.x - a.x) / (s1 - s0)
+                dz = (b.z - a.z) / (s1 - s0)
+                x = a.x + (b.x - a.x) * t + dz * side * car.offset
+                z = a.z + (b.z - a.z) * t - dx * side * car.offset
+                if x < area.x_min or x >= area.x_max or z < area.z_min or z >= area.z_max:
+                    continue
+                if heights is None:
+                    heights = self._heights_of(track)
+                h0 = heights[i] if i < len(heights) else 0
+                h1 = heights[i + 1] if i + 1 < len(heights) else 0
+                rotation = math.atan2(dx, dz) + (0 if side > 0 else math.pi)
+                out.append(PropPlacement(car.kind, x, h0 + (h1 - h0) * t, z, rotation, scale))
         return out
 
     def _tracks_in(self, area: GroundArea) -> list[int]:
@@ -255,15 +280,6 @@ class Traffic:
             b += 1
         return sorted(found)
 
-    def _distance(self, car: Car, time: float) -> float | None:
-        """How far along its road `car` is at `time`; None near the ends, where it is hidden."""
-        length = car.track.length_
-        s = ((car.start + car.side * car.speed * time) % length + length) % length
-        # Hidden near the ends, where it turns into the crossing street or leaves the screen.
-        if s < self._rules.length_ or s > length - self._rules.length_:
-            return None
-        return s
-
     def _heights_of(self, track: Track) -> list[float]:
         """Return the road surface heights at the points of `track` (PERF-27).
 
@@ -272,31 +288,3 @@ class Traffic:
         if track.heights is None:
             track.heights = [self._height(p.x, p.z) + self._rules.lift for p in track.road.points]
         return track.heights
-
-    def _place(self, car: Car, time: float) -> PropPlacement | None:
-        track = car.track
-        side = car.side
-        s = self._distance(car, time)
-        if s is None:
-            return None
-        # A segment that ends after `s` (< length): s0 <= s < s1.
-        i = _segment_at(track, s)
-        points = track.road.points
-        a = points[i]
-        b = points[i + 1]
-        s0 = track.along[i]
-        s1 = track.along[i + 1]
-        t = (s - s0) / (s1 - s0)
-        dx = (b.x - a.x) / (s1 - s0)
-        dz = (b.z - a.z) / (s1 - s0)
-        heights = self._heights_of(track)
-        h0 = heights[i] if i < len(heights) else 0
-        h1 = heights[i + 1] if i + 1 < len(heights) else 0
-        return PropPlacement(
-            car.kind,
-            a.x + (b.x - a.x) * t + dz * side * car.offset,
-            h0 + (h1 - h0) * t,
-            a.z + (b.z - a.z) * t - dx * side * car.offset,
-            math.atan2(dx, dz) + (0 if side > 0 else math.pi),
-            self._rules.scale,
-        )

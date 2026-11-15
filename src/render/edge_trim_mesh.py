@@ -123,16 +123,30 @@ def _material(scene: Any, color: Rgb) -> Any:
     return by_color[key]
 
 
-def add_edge_trim(root: Any, options: TrimOptions) -> list[Any]:
+def add_edge_trim(root: Any, options: TrimOptions, memo: Any = None) -> list[Any]:
     """Give each mesh under `root` that asks for a trim its trim mesh, as a child.
 
     In a trim group (see `set_trim_group`), the meshes asking for one hide each other's inner edges.
+    With a `memo` (a dict the caller keeps for one model), the trims worked out for its first build
+    are reused for the next builds, which are the same (D-408: every enemy shown past the one built
+    ahead worked its trims out again, a long frame).
 
     Returns the trim meshes made.
     """
     meshes = [mesh for mesh in child_meshes(root, False) if trim_of(mesh) is not None]
     if len(meshes) == 0:
         return []
+    known = memo.get("trims") if memo is not None else None
+    if known is not None and len(known) == len(meshes):
+        return [_trim_mesh(meshes[k], known[k]) for k in range(len(meshes)) if known[k]]
+    datas = _trim_datas(root, meshes, options)
+    if memo is not None:
+        memo["trims"] = datas
+    return [_trim_mesh(meshes[k], datas[k]) for k in range(len(meshes)) if datas[k]]
+
+
+def _trim_datas(root: Any, meshes: list[Any], options: TrimOptions) -> list[Any]:
+    """Return each mesh's trim, `[positions, indices, normals, colors]`, or None for none."""
     to_root = inverse(world_matrix(root))
     # The meshes of each trim group, the model's own (root) first.
     groups: list[Any] = []
@@ -161,20 +175,25 @@ def add_edge_trim(root: Any, options: TrimOptions) -> list[Any]:
         trims = trim_model(shapes, options)
         for j, k in enumerate(indices):
             geos[k] = trims[j]
-    made: list[Any] = []
-    for k, mesh in enumerate(meshes):
-        geo = geos[k]
+    datas: list[Any] = []
+    for geo in geos:
         if len(geo.indices) == 0:
+            datas.append(None)
             continue
-        scene = mesh.getScene()
-        trim = new_mesh(node_name(mesh) + "-trim", scene)
         normals = compute_normals(geo.positions, geo.indices)
-        apply_vertex_data(vertex_data_of(geo.positions, geo.indices, normals, geo.colors), trim)
-        color: Rgb = trim_of(mesh) or []
-        trim.material = _material(scene, color)
-        trim.isPickable = False
-        # A light: the haze of the level (fog) does not dim it, as it did not dim the rim.
-        trim.applyFog = False
-        trim.parent = mesh
-        made.append(trim)
-    return made
+        datas.append([geo.positions, geo.indices, normals, geo.colors])
+    return datas
+
+
+def _trim_mesh(mesh: Any, data: Any) -> Any:
+    """Return `mesh`'s trim mesh, a child of it, from its trim `data`."""
+    scene = mesh.getScene()
+    trim = new_mesh(node_name(mesh) + "-trim", scene)
+    apply_vertex_data(vertex_data_of(data[0], data[1], data[2], data[3]), trim)
+    color: Rgb = trim_of(mesh) or []
+    trim.material = _material(scene, color)
+    trim.isPickable = False
+    # A light: the haze of the level (fog) does not dim it, as it did not dim the rim.
+    trim.applyFog = False
+    trim.parent = mesh
+    return trim

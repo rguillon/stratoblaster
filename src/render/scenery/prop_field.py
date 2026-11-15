@@ -26,6 +26,7 @@ from render.babylon import (
     quaternion,
     quaternion_yaw_pitch_roll_to_ref,
     set_enabled,
+    upload_thin_matrices,
     vector3,
 )
 from render.geometry.textured import TexturedGeometry
@@ -583,7 +584,8 @@ class PropField:
                 set_enabled(mesh, len(matrices) > 0)
                 if len(matrices) == 0:
                     continue
-                mesh.thinInstanceSetBuffer("matrix", matrices, MATRIX_FLOATS, False)
+                # D-407: its GPU buffer updated in place, not a new one per upload.
+                upload_thin_matrices(mesh, matrices)
         if self._imposters is not None:
             self._place_imposters(by_kind, self._imposters)
 

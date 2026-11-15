@@ -5,13 +5,19 @@ import math
 
 import pytest
 
+from core.math.rng import create_rng
 from core.scenery.road_tiles import PieceSide, RoadPiece
 from core.scenery.scenery_level import TileRules
 from render.scenery.road_paint import (
+    INF,
+    KERB_RADIUS,
     Canvas,
     _close,
     _crossing,
     _distance_to,
+    _fround,
+    _invert,
+    _paint_lines,
     _road_mask,
     _rounded_road,
     _within,
@@ -204,3 +210,104 @@ def test_a_two_lane_turn_has_lane_arcs_either_side_of_its_centre_arc() -> None:
     assert any(r > 10 for r in radii)
     half = LOOK.lineWidth / 2
     assert all(abs(r - 6) <= half + 1e-9 or abs(r - 14) <= half + 1e-9 for r in radii)
+
+
+# D-418: the distance fields as they were, with list comprehensions, to compare with (PERF-03).
+
+
+def _reference_envelope(f: list[float]) -> tuple[list[int], list[float], int]:
+    n = len(f)
+    v = [0 for _ in range(n)]
+    z = [0.0 for _ in range(n + 1)]
+
+    def meet(p: int, q: int) -> float:
+        return (f[q] + q * q - (f[p] + p * p)) / (2 * q - 2 * p)
+
+    k = -1
+    for q in range(n):
+        if f[q] == INF:
+            continue
+        while k >= 0 and meet(v[k], q) <= z[k]:
+            k -= 1
+        k += 1
+        v[k] = q
+        z[k] = -INF if k == 0 else meet(v[k - 1], q)
+        z[k + 1] = INF
+    return v, z, k + 1
+
+
+def _reference_line(f: list[float]) -> list[float]:
+    n = len(f)
+    d = [INF for _ in range(n)]
+    v, z, count = _reference_envelope(f)
+    if count == 0:
+        return d
+    j = 0
+    for q in range(n):
+        while z[j + 1] < q:
+            j += 1
+        p = v[j]
+        d[q] = (q - p) * (q - p) + f[p]
+    return d
+
+
+def _reference_distance(mask: list[int], side: int) -> list[float]:
+    grid = [0.0 if m else INF for m in mask]
+    line = [0.0 for _ in range(side)]
+    for stride, step in [(side, 1), (1, side)]:
+        for a in range(side):
+            for b in range(side):
+                line[b] = grid[a * stride + b * step]
+            d = _reference_line(line)
+            for b in range(side):
+                grid[a * stride + b * step] = d[b]
+    return [_fround(math.sqrt(g)) for g in grid]
+
+
+def _reference_within(mask: list[int], side: int, r: float) -> list[int]:
+    return [1 if v <= r else 0 for v in _reference_distance(mask, side)]
+
+
+def _reference_close(mask: list[int], side: int, r: float) -> list[int]:
+    inverted = [1 - v for v in _reference_within(mask, side, r)]
+    return [1 - v for v in _reference_within(inverted, side, r)]
+
+
+@pytest.mark.parametrize("seed", [1, 2, 3, 4])
+def test_d418_the_distance_fields_match_the_list_comprehensions(seed: int) -> None:
+    random = create_rng(seed)
+    side = 17
+    mask = [1 if random() < 0.15 * seed else 0 for _ in range(side * side)]
+    assert _distance_to(mask, side) == _reference_distance(mask, side)
+    assert _within(mask, side, 2.5) == _reference_within(mask, side, 2.5)
+    assert _close(mask, side, 3.2) == _reference_close(mask, side, 3.2)
+    assert _invert(mask) == [1 - v for v in mask]
+    empty = [0] * side
+    assert _distance_to(empty, 1) == [INF] * side
+
+
+@pytest.mark.parametrize("kind", ["straight", "tee", "cross"])
+def test_d418_a_piece_is_painted_as_with_the_list_comprehensions(kind: str) -> None:
+    sides = {
+        "straight": [PieceSide(2, 0), None, PieceSide(2, 0), None],
+        "tee": [PieceSide(2, 0), PieceSide(2, 0), PieceSide(2, 0), None],
+        "cross": [PieceSide(2, 0)] * 4,
+    }[kind]
+    piece = _piece(sides, kind, 2)
+    n = 24
+    scale = n / (piece.size * TILE.size)
+    margin = math.ceil((KERB_RADIUS + LOOK.kerbWidth) * 2 * scale)
+    c = Canvas(scale, margin, n + 2 * margin)
+    road = _reference_close(_road_mask(piece, TILE, c), c.side, KERB_RADIUS * c.scale)
+    kerb = _reference_within(road, c.side, LOOK.kerbWidth * scale)
+    pixels = [
+        LOOK.roadway if road[i] else (LOOK.kerb if kerb[i] else LOOK.sidewalk)
+        for i in range(c.side * c.side)
+    ]
+    _paint_lines(pixels, piece, TILE, LOOK, c)
+    expected = []
+    for j in range(n):
+        for i in range(n):
+            v = pixels[(j + margin) * c.side + i + margin]
+            expected.append(v or LOOK.sidewalk)
+    assert paint_piece(piece, TILE, LOOK, n) == expected

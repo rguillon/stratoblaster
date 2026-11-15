@@ -301,7 +301,11 @@ def _remove_job(job: _Job) -> None:
 
 
 def _is_pending(level: SceneryLevel, seed: int) -> bool:
-    return any(p.level is level and p.seed == seed for p in _state.pending)
+    # Plain loop (ENG-157, D-409).
+    for p in _state.pending:
+        if p.level is level and p.seed == seed:
+            return True
+    return False
 
 
 def request_level_ground(level: SceneryLevel, seed: int | None = None) -> bool:

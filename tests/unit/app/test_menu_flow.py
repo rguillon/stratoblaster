@@ -702,6 +702,9 @@ def test_ui_set_03_up_and_down_pick_a_slider_and_left_and_right_change_it() -> N
     assert flow.revision == revision
     assert flow.dispatch("down") == "moved"
     assert flow.state.selected_id == "sfx"
+    # D-410: the Graphics setting is the last slider.
+    assert flow.dispatch("down") == "moved"
+    assert flow.state.selected_id == "graphics"
     assert flow.dispatch("down") == "none"
 
 

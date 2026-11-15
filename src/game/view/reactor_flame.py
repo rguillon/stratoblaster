@@ -20,6 +20,7 @@ from render.babylon import (
     create_polyhedron,
     new_transform_node,
 )
+from render.mesh_merge import keep_apart
 from render.model_animation import add_model_animation
 
 # isort: split
@@ -220,6 +221,11 @@ def build_reactor_flame(
         cone.pivot.position.z = size["nozzleZ"]
 
     puffs = _build_puffs(name, size["puffDiameter"], materials["plasma"], parent, light)
+    # Moved, scaled and faded every frame: never merged with the model's still parts (PERF-02).
+    animated = [outer.pivot, inner.pivot]
+    animated.extend(puffs)
+    for node in animated:
+        keep_apart(node)
 
     phase = reactor_phase(name)
     hz = FLAME.flickerHz

@@ -177,6 +177,92 @@ def _junction(row: _TileLine, column: _TileLine) -> RoadPiece | None:
     return RoadPiece(x, z, size, _kind_of(sides), row.size != column.size, sides)
 
 
+def _sorted_by_at(lines: Sequence[_TileLine]) -> list[int]:
+    """Return the indices of `lines` sorted by their middle line (`at`), ties by index."""
+    ats = [line.at for line in lines]
+    return _merge_sorted(list(range(len(lines))), ats)
+
+
+def _merge_sorted(order: list[int], values: Sequence[float]) -> list[int]:
+    """Return the indices `order` sorted by `values[i]`, stably (a merge sort).
+
+    Transcrypt's `sort` is not stable, and takes no comparator.
+    """
+    if len(order) < 2:
+        return order
+    middle = len(order) // 2
+    left = _merge_sorted(order[0:middle], values)
+    right = _merge_sorted(order[middle : len(order)], values)
+    out: list[int] = []
+    i = 0
+    j = 0
+    while i < len(left) and j < len(right):
+        if values[right[j]] < values[left[i]]:
+            out.append(right[j])
+            j += 1
+        else:
+            out.append(left[i])
+            i += 1
+    while i < len(left):
+        out.append(left[i])
+        i += 1
+    while j < len(right):
+        out.append(right[j])
+        j += 1
+    return out
+
+
+def _columns_along(columns: Sequence[_TileLine], order: list[int], row: _TileLine) -> list[int]:
+    """Return the indices of the columns whose middle line is within `row`'s reach, ascending.
+
+    Those `_meet` may accept (it checks the rest); `order`: the columns by `at` (`_sorted_by_at`).
+    """
+    low = row.from_ - EPSILON
+    high = row.to + EPSILON
+    # The first column at or past `low`.
+    a = 0
+    b = len(order)
+    while a < b:
+        m = (a + b) // 2
+        if columns[order[m]].at < low:
+            a = m + 1
+        else:
+            b = m
+    picked: list[int] = []
+    k = a
+    while k < len(order) and columns[order[k]].at <= high:
+        picked.append(order[k])
+        k += 1
+    # Back in the columns' own order: the indices sorted by themselves.
+    return _ascending(picked)
+
+
+def _ascending(values: list[int]) -> list[int]:
+    """`values` sorted, smallest first (a merge sort: Transcrypt's `sort` takes no comparator)."""
+    if len(values) < 2:
+        return values
+    middle = len(values) // 2
+    left = _ascending(values[0:middle])
+    right = _ascending(values[middle : len(values)])
+    out: list[int] = []
+    i = 0
+    j = 0
+    while i < len(left) and j < len(right):
+        if right[j] < left[i]:
+            out.append(right[j])
+            j += 1
+        else:
+            out.append(left[i])
+            i += 1
+    while i < len(left):
+        out.append(left[i])
+        i += 1
+    while j < len(right):
+        out.append(right[j])
+        j += 1
+    return out
+
+
 def _junctions(rows: Sequence[_TileLine], columns: Sequence[_TileLine]) -> list[RoadPiece]:
     """Return the junctions of `rows` and `columns`.
 
@@ -186,8 +272,13 @@ def _junctions(rows: Sequence[_TileLine], columns: Sequence[_TileLine]) -> list[
     # The pieces in the order their keys were first set (a Map keeps that order).
     found: list[RoadPiece] = []
     position: dict[str, int] = {}
+    # D-419: a row meets only the columns whose middle line lies along it (`_meet`); they are found
+    # by halving the columns sorted by that line, then taken in their own order, as when every
+    # column was tried.
+    order = _sorted_by_at(columns)
     for row in rows:
-        for column in columns:
+        for c in _columns_along(columns, order, row):
+            column = columns[c]
             piece = _junction(row, column)
             if piece is None:
                 continue
@@ -247,8 +338,10 @@ def road_pieces(roads: Sequence[Road], tile: TileRules) -> list[RoadPiece]:
     for line in lines:
         more = _straights(line, tile, taken)
         for p in more:
-            for k in list(road_tiles([p]).keys()):
-                taken[k] = True
+            # The piece's tiles, as `road_tiles([p])` keys them, without a dict each (D-419).
+            for i in range(p.size):
+                for j in range(p.size):
+                    taken[str(tile_key(p.x + i, p.z + j))] = True
         pieces.extend(more)
     return pieces
 

@@ -13,7 +13,11 @@ from typing import Any
 import pytest
 
 from render.scenery import background_loader
-from render.scenery.background_loader import BackgroundLoader, start_background_loader
+from render.scenery.background_loader import (
+    BackgroundLoader,
+    start_background_loader,
+    texture_worker_count,
+)
 from render.scenery.level_ground import GroundReplies
 from render.scenery.procedural_textures import TextureJob
 
@@ -33,6 +37,7 @@ JS_HELPERS: list[tuple[Any, tuple[Any, ...], Any]] = [
     (background_loader._roads_message, (0, [], None, False), None),
     (background_loader._worker_available, (), False),
     (background_loader._new_game_worker, (), None),
+    (background_loader._cores, (), 2),
 ]
 
 
@@ -163,7 +168,7 @@ def test_the_javascript_helpers_return_their_placeholder_under_cpython(
 def test_perf_14_the_loader_listens_to_the_worker_and_takes_over_the_grounds(env: Env) -> None:
     port = FakePort()
     loader = BackgroundLoader(port)
-    assert port.onmessage == loader._on_message
+    assert port.onmessage == loader._waiting.on_message
     assert port.onerror == loader._on_error
     assert env.generators == [loader._ground_generator]
 
@@ -346,10 +351,56 @@ def test_perf_14_without_workers_there_is_no_loader() -> None:
 def test_perf_14_with_workers_the_loader_runs_on_the_game_worker(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    port = StoppablePort()
+    ports = [StoppablePort(), StoppablePort(), StoppablePort()]
+    made = list(ports)
     monkeypatch.setattr(background_loader, "_worker_available", lambda: True)
-    monkeypatch.setattr(background_loader, "_new_game_worker", lambda: port)
+    monkeypatch.setattr(background_loader, "_new_game_worker", made.pop)
+    monkeypatch.setattr(background_loader, "_cores", lambda: 8)
     loader = start_background_loader()
     assert loader is not None
-    assert loader.port is port
-    assert port.onmessage == loader._on_message
+    # D-414: two texture workers on 8 cores, made first, then the ground worker.
+    assert loader.port is ports[0]
+    assert ports[0].onmessage == loader._waiting.on_message
+    assert [w.port for w in loader._texture_workers] == [ports[2], ports[1]]
+    loader.stop()
+    assert all(port.terminated for port in ports)
+
+
+def test_d414_the_texture_workers_are_one_per_core_left_at_most_two() -> None:
+    assert [texture_worker_count(cores) for cores in [1, 2, 3, 4, 8, 16]] == [1, 1, 1, 2, 2, 2]
+    # CPython has no `navigator`: the placeholder.
+    assert background_loader._cores() == 2
+
+
+def test_d414_textures_go_to_the_texture_workers_in_turn_and_come_back_from_them(
+    env: Env,
+) -> None:
+    ground = FakePort()
+    textures = [FakePort(), FakePort()]
+    loader = BackgroundLoader(ground, textures)
+    jobs = [TextureJob("noise", [64, 8, k]) for k in range(3)]
+    loader.prefetch_textures(jobs)
+    _ground_job(loader)
+    assert [m.id for m in textures[0].posted] == [0, 2]
+    assert [m.id for m in textures[1].posted] == [1]
+    # The ground has its own worker, and its own job number.
+    assert [(m.kind, m.id) for m in ground.posted] == [("ground", 3)]
+    textures[1].reply(id=1, pixels=[9])
+    assert env.kept == {_texture_key(jobs[1]): [9]}
+
+
+def test_d414_a_broken_texture_worker_fails_its_jobs_and_gets_no_more(env: Env) -> None:
+    ground = FakePort()
+    textures = [FakePort(), FakePort()]
+    loader = BackgroundLoader(ground, textures)
+    loader.prefetch_textures([TextureJob("noise", [64, 8, 1])])
+    textures[0].onerror(None)
+    assert env.kept == {}
+    assert loader._textures == {}
+    loader.prefetch_textures([TextureJob("noise", [64, 8, 2]), TextureJob("noise", [64, 8, 3])])
+    assert len(textures[0].posted) == 1
+    assert [m.id for m in textures[1].posted] == [1, 2]
+    # With none left, the textures go to the ground worker.
+    textures[1].onerror(None)
+    loader.prefetch_textures([TextureJob("noise", [64, 8, 4])])
+    assert [m.id for m in ground.posted] == [3]

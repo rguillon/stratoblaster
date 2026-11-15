@@ -100,6 +100,26 @@ def _key(p: Vec3) -> str:
     )
 
 
+def _min3(a: float, b: float, c: float) -> float:
+    """`min(a, b, c)` without Transcrypt's generic `min` (D-417)."""
+    low = a
+    if b < low:
+        low = b
+    if c < low:
+        low = c
+    return low
+
+
+def _max3(a: float, b: float, c: float) -> float:
+    """`max(a, b, c)` without Transcrypt's generic `max` (D-417)."""
+    high = a
+    if b > high:
+        high = b
+    if c > high:
+        high = c
+    return high
+
+
 class _Grid:
     """The triangles of `cover` in the XZ cells their bounds touch, to find those over a point."""
 
@@ -109,16 +129,32 @@ class _Grid:
         if len(cover) == 0:
             self._size = 1.0
             return
-        low_x = min([min(t[0][0], t[1][0], t[2][0]) for t in cover])
-        high_x = max([max(t[0][0], t[1][0], t[2][0]) for t in cover])
-        low_z = min([min(t[0][2], t[1][2], t[2][2]) for t in cover])
-        high_z = max([max(t[0][2], t[1][2], t[2][2]) for t in cover])
-        self._size = max(high_x - low_x, high_z - low_z, _FLAT) / 32
-        for i, t in enumerate(cover):
-            x0 = self._cell(min(t[0][0], t[1][0], t[2][0]))
-            x1 = self._cell(max(t[0][0], t[1][0], t[2][0]))
-            z0 = self._cell(min(t[0][2], t[1][2], t[2][2]))
-            z1 = self._cell(max(t[0][2], t[1][2], t[2][2]))
+        # Each triangle's bounds once, in one pass (D-417).
+        bounds = [
+            [
+                _min3(t[0][0], t[1][0], t[2][0]),
+                _max3(t[0][0], t[1][0], t[2][0]),
+                _min3(t[0][2], t[1][2], t[2][2]),
+                _max3(t[0][2], t[1][2], t[2][2]),
+            ]
+            for t in cover
+        ]
+        low_x = bounds[0][0]
+        high_x = bounds[0][1]
+        low_z = bounds[0][2]
+        high_z = bounds[0][3]
+        for b in bounds:
+            low_x = min(low_x, b[0])
+            high_x = max(high_x, b[1])
+            low_z = min(low_z, b[2])
+            high_z = max(high_z, b[3])
+        self._size = _max3(high_x - low_x, high_z - low_z, _FLAT) / 32
+        for i in range(len(bounds)):
+            b = bounds[i]
+            x0 = self._cell(b[0])
+            x1 = self._cell(b[1])
+            z0 = self._cell(b[2])
+            z1 = self._cell(b[3])
             for cx in range(x0, x1 + 1):
                 for cz in range(z0, z1 + 1):
                     key = str(cx) + "," + str(cz)
@@ -134,7 +170,11 @@ class _Grid:
         key = str(self._cell(x)) + "," + str(self._cell(z))
         if key not in self._cells:
             return False
-        return any(_inside(self._cover[i], x, z) for i in self._cells[key])
+        # Plain loop (ENG-157): Transcrypt runs `any` over a generator slowly (D-409).
+        for i in self._cells[key]:
+            if _inside(self._cover[i], x, z):
+                return True
+        return False
 
 
 def _inside(t: Triangle, x: float, z: float) -> bool:
@@ -181,7 +221,11 @@ def silhouette_edges(
     geometry when None; GFX-TRIM-02).
     """
     ups = up_triangles(positions, indices, min_up)
-    grid = _Grid(cover if cover is not None else ups)
+    return _silhouette(ups, _Grid(cover if cover is not None else ups))
+
+
+def _silhouette(ups: list[Triangle], grid: _Grid) -> list[TrimEdge]:
+    """`silhouette_edges` of the up-facing triangles `ups`, against the cover in `grid`."""
     counts: dict[str, int] = {}
     found: dict[str, list[Vec3]] = {}
     order: list[str] = []
@@ -482,15 +526,19 @@ def trim_model(shapes: list[TrimShape], options: TrimOptions) -> list[ColoredGeo
     Its silhouette edges in the model's space are left out where another of its meshes lies just
     outside them, seen from above.
     """
-    placed: list[list[float]] = []
+    # Each mesh's up-facing triangles, and the grid of all of them, worked out once (D-417): the
+    # same for every mesh's `silhouette_edges`.
+    ups: list[list[Triangle]] = []
     cover: list[Triangle] = []
     for shape in shapes:
         positions = transformed(shape.positions, shape.matrix)
-        placed.append(positions)
-        cover.extend(up_triangles(positions, shape.indices, options.min_up))
+        own = up_triangles(positions, shape.indices, options.min_up)
+        ups.append(own)
+        cover.extend(own)
+    grid = _Grid(cover)
     result: list[ColoredGeometry] = []
     for k, shape in enumerate(shapes):
-        edges = silhouette_edges(placed[k], shape.indices, cover, options.min_up)
+        edges = _silhouette(ups[k], grid)
         geo = trim_ribbons(edges, options)
         geo.positions = transformed(geo.positions, inverse(shape.matrix))
         result.append(geo)

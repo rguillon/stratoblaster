@@ -687,6 +687,35 @@ def float32_array(length: int) -> Float32Array:
     return cast("Float32Array", None)
 
 
+def upload_thin_matrices(mesh: Mesh, matrices: Float32Array) -> None:
+    """Draw `mesh` once per matrix of `matrices` (16 numbers each), keeping its GPU buffer (D-407).
+
+    The matrices are copied into a buffer the mesh keeps, grown (doubled) only when too small, and
+    its GPU buffer is updated in place: a new array for each upload made a new GPU buffer, and new
+    vertex arrays, every frame for the moving cars. The mesh draws only the first matrices (its
+    `thinInstanceCount`); it never fits its bounds to its instances (`doNotSyncBoundingInfo`).
+    """
+    __pragma__(
+        "js",
+        "{}",
+        """
+        const floats = matrices.length;
+        let own = mesh.__ownThinMatrices;
+        if (!own || own.length < floats) {
+            own = new Float32Array(Math.max(floats, own ? own.length * 2 : 0, 16));
+            own.set(matrices);
+            mesh.__ownThinMatrices = own;
+            mesh.thinInstanceSetBuffer('matrix', own, 16, false);
+            mesh.thinInstanceCount = floats / 16;
+        } else {
+            own.set(matrices);
+            mesh.thinInstanceCount = floats / 16;
+            mesh.thinInstanceBufferUpdated('matrix');
+        }
+        """,
+    )
+
+
 def new_matrix() -> Matrix:
     """Return `new Matrix()`: the identity matrix."""
     __pragma__("js", "{}", "return new BABYLON.Matrix();")

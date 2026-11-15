@@ -8,7 +8,7 @@ One mesh per kind and frame, its quads as thin instances (moved and scaled, neve
 shows the turn; ENG-104).
 """
 
-from render.babylon import float32_array, set_enabled
+from render.babylon import float32_array, set_enabled, upload_thin_matrices
 from render.scenery.imposters import frame_of, frame_uv, imposter_quad
 from render.scenery.prop_field import MATRIX_FLOATS, mesh_of, same_placements
 
@@ -99,6 +99,7 @@ class ImposterField:
             buffer = float32_array(count * MATRIX_FLOATS)
             for j in range(count):
                 placement_matrix(buffer, j * MATRIX_FLOATS, group[j])
-            mesh.thinInstanceSetBuffer("matrix", buffer, MATRIX_FLOATS, False)
+            # D-407: its GPU buffer updated in place, not a new one per upload.
+            upload_thin_matrices(mesh, buffer)
             set_enabled(mesh, True)
             self._drawn[key] = group

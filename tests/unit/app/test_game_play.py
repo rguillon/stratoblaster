@@ -806,6 +806,15 @@ def test_perf_20_the_scene_and_the_models_built_ahead_compile_their_shaders(env:
     assert env.compiled[-1] == ["warden-mesh"]
 
 
+@pytest.mark.usefixtures("env")
+def test_d415_the_play_says_whether_its_stage_has_its_streets() -> None:
+    play, _ = make_play()
+    answers = [False, True]
+    play.view.stage.take_roads = lambda: answers.pop(0)
+    assert play.roads_ready() is False
+    assert play.roads_ready() is True
+
+
 def test_perf_20_the_level_shows_one_bullet_of_each_colour_while_it_loads(env: Env) -> None:
     play, _ = make_play()
     play.warm_shots(True)

@@ -48,7 +48,9 @@ def test_a_boss_model_wins_over_an_enemy_with_the_same_key(monkeypatch: Any) -> 
 
     trimmed_roots = []
     monkeypatch.setattr(
-        enemy_bindings, "add_edge_trim", lambda root, _options: trimmed_roots.append(root)
+        enemy_bindings,
+        "add_edge_trim",
+        lambda root, _options, _memo=None: trimmed_roots.append(root),
     )
     monkeypatch.setattr(
         enemy_bindings, "ENEMY_MODELS", {"shared": enemy_builder, "only": enemy_builder}
@@ -64,7 +66,7 @@ def test_a_boss_model_wins_over_an_enemy_with_the_same_key(monkeypatch: Any) -> 
 def test_gfx_trim_06_the_trim_options_are_the_enemy_trim_look(monkeypatch: Any) -> None:
     seen = []
     monkeypatch.setattr(
-        enemy_bindings, "add_edge_trim", lambda _root, options: seen.append(options)
+        enemy_bindings, "add_edge_trim", lambda _root, options, _memo=None: seen.append(options)
     )
     enemy_bindings.trimmed(lambda _scene: SimpleNamespace(root="r"))("scene")
     look = READABILITY.enemyTrim

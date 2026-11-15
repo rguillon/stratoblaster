@@ -65,7 +65,8 @@ def test_ui_hud_01_the_weapon_lives_progress_and_score_are_written() -> None:
     hud.update(frame())
     assert hud.root.querySelector(".hud-weapon-name").textContent == "Bullet"
     assert hud.root.querySelector(".hud-lives").textContent == "x3"
-    assert hud.root.querySelector(".hud-progress-fill").style.height == "50.0%"
+    # D-420: the rail runs along the top edge, filled from the left.
+    assert hud.root.querySelector(".hud-progress-fill").style.width == "50.0%"
     assert hud.root.querySelector(".hud-score-lead").textContent == "0000"
     assert hud.root.querySelector(".hud-score-digits").textContent == "100"
     assert hud.root.querySelector(".hud-high-score").textContent == "HI 100"

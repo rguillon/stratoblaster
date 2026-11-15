@@ -59,6 +59,20 @@ def _int_mod(a: int, n: int) -> int:
     return r
 
 
+def _whole(value: float) -> int:
+    """Return `int(value)` for `imul`; in JavaScript, the value itself (D-418).
+
+    `Math.imul` truncates it to 32 bits as Transcrypt's `int` (`value | 0`) did, without going
+    through Transcrypt's generic `float`.
+    """
+    r = 0
+    __pragma__("skip")
+    r = int(value)
+    __pragma__("noskip")
+    __pragma__("js", "{}", "r = value;")
+    return r
+
+
 def _wrap(i: int, period: int) -> int:
     return _int_mod(_int_mod(i, period) + period, period)
 
@@ -95,6 +109,7 @@ def create_noise2d(seed: int, period: int = TABLE_SIZE) -> Noise2D:
         top = _lerp(gradient(ix, iy + 1, fx, fy - 1), gradient(ix + 1, iy + 1, fx - 1, fy - 1), u)
         # Gradient noise peaks at about ±0.71 in 2D: scale it to fill [-1, 1].
         value = _lerp(bottom, top, v) * SQRT2
+        # `min(value, 1)` as a comparison (D-418): Transcrypt's `min` is generic, and slow here.
         return -1 if value < -1 else (min(value, 1))
 
     return noise
@@ -143,7 +158,10 @@ def smoothstep(edge0: float, edge1: float, x: float) -> float:
 
 def hash_2d(x: int, y: int, seed: int) -> float:
     """Return a well-mixed 32-bit hash of integer coordinates and a seed, as a number in [0, 1)."""
-    h = xor(xor(imul(int(x), 0x27D4EB2D), imul(int(y), 0x165667B1)), imul(int(seed), 0x9E3779B1))
+    h = xor(
+        xor(imul(_whole(x), 0x27D4EB2D), imul(_whole(y), 0x165667B1)),
+        imul(_whole(seed), 0x9E3779B1),
+    )
     h = imul(xor(h, ushr(h, 15)), 0x85EBCA6B)
     h = imul(xor(h, ushr(h, 13)), 0xC2B2AE35)
     return xor(h, ushr(h, 16)) / 4294967296

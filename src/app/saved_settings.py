@@ -6,7 +6,7 @@ Keys are prefixed with the game's id.
 
 from org.transcrypt.stubs.browser import __pragma__
 
-from app.settings_menu import Volumes
+from app.settings_menu import GRAPHICS_CHOICES, Volumes
 
 # isort: split
 # Typing names are for mypy only: Transcrypt skips this block (it has no typing module).
@@ -17,16 +17,19 @@ from host.key_value_storage import KeyValueStorage
 
 
 class SettingKeys:
-    """The storage keys of the two volumes."""
+    """The storage keys of the two volumes and of the graphics quality (D-410)."""
 
-    def __init__(self, music: str, sfx: str) -> None:
+    def __init__(self, music: str, sfx: str, graphics: str) -> None:
         self.music = music
         self.sfx = sfx
+        self.graphics = graphics
 
 
 def saved_setting_keys(game_id: str) -> SettingKeys:
-    """Return the storage keys of the music and sound volumes of `game_id`."""
-    return SettingKeys(game_id + "_music_volume", game_id + "_sfx_volume")
+    """Return the storage keys of the music and sound volumes, and of the graphics quality."""
+    return SettingKeys(
+        game_id + "_music_volume", game_id + "_sfx_volume", game_id + "_graphics_quality"
+    )
 
 
 def parse_volume(raw: str | None, max_step: int, fallback: int) -> int:
@@ -65,6 +68,7 @@ def load_volumes(
     return Volumes(
         parse_volume(storage.get(keys.music), max_step, defaults.music),
         parse_volume(storage.get(keys.sfx), max_step, defaults.sfx),
+        parse_volume(storage.get(keys.graphics), GRAPHICS_CHOICES - 1, defaults.graphics),
     )
 
 
@@ -73,3 +77,4 @@ def save_volumes(storage: KeyValueStorage, game_id: str, volumes: Volumes) -> No
     keys = saved_setting_keys(game_id)
     storage.set(keys.music, str(volumes.music))
     storage.set(keys.sfx, str(volumes.sfx))
+    storage.set(keys.graphics, str(volumes.graphics))

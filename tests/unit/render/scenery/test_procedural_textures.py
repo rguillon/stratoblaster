@@ -2,6 +2,7 @@
 """Unit tests of `src/render/scenery/procedural_textures.py` (GFX-TERRAIN-07, PERF-11)."""
 
 import json
+import math
 from types import SimpleNamespace
 from typing import Any
 
@@ -9,8 +10,11 @@ import pytest
 from helpers.render_fakes import patch_babylon
 from helpers.render_looks import BLACK, GREY, WHITE, make_look, texture
 
+from core.math.noise import hash_2d
 from render.scenery import procedural_textures
 from render.scenery.procedural_textures import (
+    STONE_LIGHT_X,
+    STONE_LIGHT_Y,
     TextureJob,
     build_ground_texture,
     build_noise_texture,
@@ -139,6 +143,62 @@ def test_jittered_cells_give_a_number_a_gap_and_a_lit_side_per_pixel() -> None:
         assert 0 <= cells[i * 3] < 1
         assert cells[i * 3 + 1] >= 0
         assert -1 - 1e-6 <= cells[i * 3 + 2] <= 1 + 1e-6
+
+
+def _reference_cells(
+    size: int, cells: float, seed: int, jitter: float, aspect: float
+) -> list[float]:
+    """D-413: `jittered_cells` as it was, each point worked out for every pixel that looks at it."""
+    n = max(2, math.floor(cells + 0.5))
+    m = max(2, math.floor(cells * aspect + 0.5))
+
+    def point(i: int, j: int) -> list[float]:
+        wi = ((i % n) + n) % n
+        wj = ((j % m) + m) % m
+        return [
+            i + 0.5 + (hash_2d(wi, wj, seed) - 0.5) * jitter,
+            j + 0.5 + (hash_2d(wi, wj, seed + 1) - 0.5) * jitter,
+            hash_2d(wi, wj, seed + 2),
+        ]
+
+    out = [0.0] * (size * size * 3)
+    for y in range(size):
+        for x in range(size):
+            u = (x / size) * n
+            v = (y / size) * m
+            nearest = 1e9
+            second = 1e9
+            own = 0.0
+            lit = 0.0
+            for j in range(math.floor(v) - 1, math.floor(v) + 2):
+                for i in range(math.floor(u) - 1, math.floor(u) + 2):
+                    p = point(i, j)
+                    d = math.hypot(u - p[0], v - p[1])
+                    if d < nearest:
+                        second = nearest
+                        nearest = d
+                        own = p[2]
+                        light = (u - p[0]) * STONE_LIGHT_X + (v - p[1]) * STONE_LIGHT_Y
+                        lit = light / (d or 1)
+                    elif d < second:
+                        second = d
+            k = (y * size + x) * 3
+            out[k] = own
+            out[k + 1] = second - nearest
+            out[k + 2] = lit
+    return out
+
+
+@pytest.mark.parametrize(
+    ("size", "cells", "seed", "jitter", "aspect"),
+    [(24, 4, 3, 0.75, 1.5), (32, 5.5, 91, 1, 1), (16, 2.2, 7, 0.4, 0.6)],
+)
+def test_d413_jittered_cells_match_the_points_worked_out_per_pixel(
+    size: int, cells: float, seed: int, jitter: float, aspect: float
+) -> None:
+    """PERF-03: the grid's points worked out once give the same cells."""
+    made = procedural_textures.jittered_cells(size, cells, seed, jitter, aspect)
+    assert list(made) == _reference_cells(size, cells, seed, jitter, aspect)
 
 
 def test_a_noise_texture_holds_fine_and_coarse_noise_in_red_and_green() -> None:

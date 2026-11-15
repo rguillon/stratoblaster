@@ -185,7 +185,11 @@ class GunMuzzles:
 
     def has_fixed(self) -> bool:
         """Whether any of its barrels is fixed (has an angle)."""
-        return any(barrel.angle is not None for barrel in self.barrels)
+        # Plain loop (ENG-157, D-409).
+        for barrel in self.barrels:
+            if barrel.angle is not None:
+                return True
+        return False
 
     def _fixed_towards(self, source: MuzzleSource, heading: float) -> tuple[Barrel, float] | None:
         """Return the fixed barrel pointing nearest `heading` and its heading, within tolerance."""

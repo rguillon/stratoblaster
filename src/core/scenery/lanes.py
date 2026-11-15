@@ -51,7 +51,11 @@ def is_boulevard(rules: RoadRules, width: float) -> bool:
     """Whether `width` is a boulevard's (see `RoadRules.boulevards`)."""
     if rules.boulevards is None:
         return False
-    return any(b.width == width for b in rules.boulevards)
+    # Plain loop (ENG-157, D-413).
+    for b in rules.boulevards:
+        if b.width == width:
+            return True
+    return False
 
 
 def main_road_width(rules: RoadRules, index: int) -> float:

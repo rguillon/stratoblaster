@@ -183,8 +183,15 @@ def _side_to_cut(around: Sequence[Link], random: Random) -> str | None:
     Up or down the level, or left or right where a boulevard runs along the level, so it keeps going
     straight. None where two boulevards cross.
     """
-    along = any(not link.across and link.boulevard for link in around)
-    across = any(link.across and link.boulevard for link in around)
+    # Plain loop (ENG-157, D-413).
+    along = False
+    across = False
+    for link in around:
+        if link.boulevard:
+            if link.across:
+                across = True
+            else:
+                along = True
     if along and across:
         return None
     coin = random() < HALF_SIDE

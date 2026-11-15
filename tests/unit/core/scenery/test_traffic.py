@@ -3,6 +3,7 @@
 
 import math
 
+from core.scenery import traffic as traffic_module
 from core.scenery.ground_boxes import GroundArea
 from core.scenery.road_types import Road, RoadPoint
 from core.scenery.scenery_level import CarRules
@@ -137,3 +138,52 @@ def test_two_lanes_each_way_put_cars_at_two_offsets() -> None:
     assert cars
     # Lane 0 is 0.75 from the centre line, lane 1 is 2.25 (each lane 3 wide).
     assert {round(abs(c.x), 6) for c in cars} <= {0.75, 2.25}
+
+
+def _reference_at(traffic: Traffic, time: float, area: GroundArea) -> list[tuple[object, ...]]:
+    """Return the cars as `Traffic.at` placed them before D-412: one by one, then the area."""
+    out: list[tuple[object, ...]] = []
+    hide = traffic._rules.length_
+    for index in traffic._tracks_in(area):
+        for car in traffic._tracks[index].cars:
+            track = car.track
+            length = track.length_
+            s = ((car.start + car.side * car.speed * time) % length + length) % length
+            if s < hide or s > length - hide:
+                continue
+            i = traffic_module._segment_at(track, s)
+            a = track.road.points[i]
+            b = track.road.points[i + 1]
+            s0 = track.along[i]
+            s1 = track.along[i + 1]
+            t = (s - s0) / (s1 - s0)
+            dx = (b.x - a.x) / (s1 - s0)
+            dz = (b.z - a.z) / (s1 - s0)
+            heights = traffic._heights_of(track)
+            h0 = heights[i] if i < len(heights) else 0
+            h1 = heights[i + 1] if i + 1 < len(heights) else 0
+            x = a.x + (b.x - a.x) * t + dz * car.side * car.offset
+            z = a.z + (b.z - a.z) * t - dx * car.side * car.offset
+            if x >= area.x_min and x < area.x_max and z >= area.z_min and z < area.z_max:
+                rotation = math.atan2(dx, dz) + (0 if car.side > 0 else math.pi)
+                out.append((car.kind, x, h0 + (h1 - h0) * t, z, rotation, traffic._rules.scale))
+    return out
+
+
+def test_d412_the_cars_are_where_they_were_placed_one_by_one() -> None:
+    """D-412 (PERF-03): the one-loop placement gives the same cars, in order, at the same places."""
+    roads = []
+    for k in range(4):
+        points = [RoadPoint(30 * k + 15 * math.sin(i / 3), i * 20 + 7 * k, 8) for i in range(30)]
+        roads.append(Road(k, "main", 8, 2, points))
+
+    def hilly(x: float, z: float) -> float:
+        return math.sin(x / 40) + math.cos(z / 55)
+
+    traffic = Traffic(roads, hilly, rules(kinds=["car", "van"], density=0.6), 3)
+    areas = [FAR, GroundArea(-20, 60, 100, 300), GroundArea(0, 200, 400, 520)]
+    for time in [0.0, 1.3, 7.75, 42.0, 300.5]:
+        for area in areas:
+            new = [(p.kind, p.x, p.y, p.z, p.rotation, p.scale) for p in traffic.at(time, area)]
+            assert new == _reference_at(traffic, time, area)
+            assert len(new) > 0 or area is not FAR

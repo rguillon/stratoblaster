@@ -500,11 +500,12 @@
         text-shadow: var(--outline);
         pointer-events: none;
       }
-      /* In-game HUD (D-317): no panels and no backgrounds, only outlined text and slim gauges in
-         the corners of the playfield window, 12 px in, so the level shows through everywhere.
-         Score top left, lives and bombs top right, the boss gauge between them during a fight,
-         the progress as a rail up the right edge, the health bottom left, the weapon bottom
-         right (UI-HUD-01, laid out without overlap, UI-HUD-08). Never takes clicks (UI-HUD-11). */
+      /* In-game HUD (D-317, D-420): no panels and no backgrounds, only outlined text and slim
+         gauges, all in the upper part of the playfield window, 12 px in, so the level and the ship
+         show through everywhere below. Score, high score, level and health down the top left;
+         lives, bombs and weapon down the top right; the boss gauge between them during a fight;
+         the progress as a rail along the top edge (UI-HUD-01, laid out without overlap,
+         UI-HUD-08). Never takes clicks (UI-HUD-11). */
       .game-hud {
         position: absolute;
         top: 0;
@@ -580,39 +581,39 @@
       .hud-bombs {
         color: var(--orange);
       }
-      /* Level progress (UI-HUD-02): a hairline rail up the right edge of the window, filled from
-         the bottom in solid cyan, a near-white bead where the fill ends: the ship climbing the
-         level. */
+      /* Level progress (UI-HUD-02, D-420): a hairline rail along the top edge of the window, above
+         the readouts, filled from the left in solid cyan, a near-white bead where the fill ends. */
       .hud-progress {
         position: absolute;
-        top: 104px;
-        bottom: 104px;
-        right: 4px;
-        width: 2px;
+        top: 4px;
+        left: 12px;
+        right: 12px;
+        height: 2px;
         background: var(--line);
       }
       .hud-progress-fill {
         position: absolute;
-        left: 0;
-        right: 0;
+        top: 0;
         bottom: 0;
+        left: 0;
         background: var(--cyan);
       }
       .hud-progress-fill::after {
         content: '';
         position: absolute;
-        top: -3px;
-        left: -2px;
+        top: -2px;
+        right: -3px;
         width: 6px;
         height: 6px;
         border-radius: 50%;
         background: var(--text);
       }
-      /* Health (UI-HUD-04), bottom left: the ship's callsign and `HP n / N` over a segmented bar. */
+      /* Health (UI-HUD-04, D-420), top left under the level played: the ship's callsign and
+         `HP n / N` over a segmented bar. */
       .hud-health {
         position: absolute;
         left: 12px;
-        bottom: 12px;
+        top: 80px;
       }
       .hud-health-label {
         display: flex;
@@ -654,11 +655,12 @@
       .hud-bar-fill.low {
         background: var(--red);
       }
-      /* Weapon (UI-HUD-06), bottom right: its name and one pip per level, lit up to its level. */
+      /* Weapon (UI-HUD-06, D-420), top right under the bombs: its name and one pip per level, lit
+         up to its level. */
       .hud-weapon {
         position: absolute;
         right: 12px;
-        bottom: 12px;
+        top: 64px;
         display: flex;
         flex-direction: column;
         align-items: flex-end;
@@ -711,8 +713,8 @@
         pointer-events: auto;
         touch-action: none;
       }
-      /* Too little of the column in view: both buttons in the window's lower right corner, above
-         the weapon readout (D-329). */
+      /* Too little of the column in view: both buttons in the window's lower right corner (D-329;
+         the readouts are all at the top since D-420). */
       #menu.narrow-sides .hud-bomb-button {
         right: 24px;
         bottom: 200px;
@@ -921,6 +923,10 @@
         font-size: 20px;
         font-variant-numeric: tabular-nums;
         text-align: right;
+      }
+      /* D-410: a slider of named choices (Graphics: Auto, High, Medium, Low). */
+      .settings-slider.settings-choice {
+        grid-template-columns: 132px 1fr 84px;
       }
 
       /* "Level complete" overlay (UI-OVER-01), in the panels' look (UI-OVER-09). */

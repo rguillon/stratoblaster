@@ -616,9 +616,11 @@ def test_gfx_cam_05_a_stage_is_built_over_its_level_s_ground_seen_by_its_camera(
     assert (s._ground.z_near, s._ground.z_far) == (window.z_near, window.z_far)
     x_half = math.ceil((window.half_width + 80) / 8) * 8
     assert s._x_half == x_half
-    # The buildings of the screens the level starts with, and two more ahead, placed now.
+    # D-416: the buildings two screens ahead of the first are asked for (from the worker), not
+    # placed here; those round the first screens are placed with their chunks.
     ahead = 2 * (window.z_far - window.z_near)
-    assert ground.placer.ensured == [window.z_far + ahead]
+    assert ground.placer.ensured == []
+    assert ground.placer.wanted[0] == window.z_far + ahead
     # D-216: the camera's clipping planes.
     assert (s.camera.half_fov, s.camera.clips) == (framing.half_fov, (200, 4000))
     assert s.camera.viewport is None  # D-252: the whole canvas unless a window is given
@@ -801,7 +803,8 @@ def test_gfx_cam_02_an_update_moves_the_camera_and_the_ground_to_the_distance() 
     assert s._ground_root.node.position.z == -100
     camera_z = (camera.z + 100) / 2
     ahead = 2 * (s._ground.z_far - s._ground.z_near)
-    assert s._placer.wanted == [camera_z + s._ground.z_far + ahead]
+    # D-416: after the stage's own ask, two screens ahead of the first.
+    assert s._placer.wanted[-1] == camera_z + s._ground.z_far + ahead
     assert s._sight == tree_sight(camera_z, s._ground, 40)
     first = math.floor((camera_z + s._ground.z_near - 80) / 320)
     last = math.floor((camera_z + s._ground.z_far + 80) / 320)
@@ -965,3 +968,22 @@ def test_d217_the_street_surfaces_ready_are_given_to_their_chunks_the_others_wai
     s.update(0, 0.5)
     assert sorted(s._road_pending) == sorted(s._chunks.meshes)
     assert len(set(s._road_pending)) == len(s._road_pending)
+
+
+def test_d415_the_loading_gives_the_chunks_their_streets_as_they_come(world: _World) -> None:
+    """D-415: `take_roads` takes those come since, and says whether any chunk still waits."""
+    world.tiles = "tiles"
+    options = _stage_options()
+    options.look.roads.tiles = "tile look"
+    s = _built(options)
+    s.update(0, 0.5)
+    waiting = sorted(s._road_pending)
+    assert len(waiting) > 1
+    source = s._road_source
+    source.ready[waiting[0]] = "first streets"
+    assert s.take_roads() is False
+    assert (waiting[0], "first streets") in s._roads.tile_chunks
+    for index in waiting[1:]:
+        source.ready[index] = "streets"
+    assert s.take_roads() is True
+    assert s._road_pending == []

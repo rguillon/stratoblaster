@@ -270,7 +270,12 @@ def equalize(values: Any) -> Any:
 
 
 def _byte(v: float) -> int:
-    return math.floor(min(1, max(0, v)) * 255 + 0.5)
+    # Comparisons, not Transcrypt's generic `min` and `max`: four per pixel (D-418).
+    if v <= 0:
+        return 0
+    if v >= 1:
+        return 255
+    return math.floor(v * 255 + 0.5)
 
 
 def _mix_rgb(a: Sequence[float], b: Sequence[float], t: float) -> list[float]:
@@ -298,15 +303,16 @@ def jittered_cells(size: int, cells: float, seed: int, jitter: float = 1, aspect
     """
     n = max(2, math.floor(cells + 0.5))
     m = max(2, math.floor(cells * aspect + 0.5))
-
-    def point(i: int, j: int) -> list[float]:
-        wi = ((i % n) + n) % n
-        wj = ((j % m) + m) % m
-        return [
-            i + 0.5 + (hash_2d(wi, wj, seed) - 0.5) * jitter,
-            j + 0.5 + (hash_2d(wi, wj, seed + 1) - 0.5) * jitter,
-            hash_2d(wi, wj, seed + 2),
-        ]
+    # Each grid point's jitter and number, worked out once (D-413), not nine times a pixel; a point
+    # of a neighbouring tile is its wrapped point's, moved by whole tiles.
+    shift_x: list[float] = []
+    shift_y: list[float] = []
+    number: list[float] = []
+    for wj in range(m):
+        for wi in range(n):
+            shift_x.append((hash_2d(wi, wj, seed) - 0.5) * jitter)
+            shift_y.append((hash_2d(wi, wj, seed + 1) - 0.5) * jitter)
+            number.append(hash_2d(wi, wj, seed + 2))
 
     out = float32_array(size * size * 3)
     for y in range(size):
@@ -318,14 +324,17 @@ def jittered_cells(size: int, cells: float, seed: int, jitter: float = 1, aspect
             own = 0.0
             lit = 0.0
             for j in range(math.floor(v) - 1, math.floor(v) + 2):
+                wj = ((j % m) + m) % m
                 for i in range(math.floor(u) - 1, math.floor(u) + 2):
-                    p = point(i, j)
-                    d = _hypot2(u - p[0], v - p[1])
+                    w = wj * n + ((i % n) + n) % n
+                    px = i + 0.5 + shift_x[w]
+                    py = j + 0.5 + shift_y[w]
+                    d = _hypot2(u - px, v - py)
                     if d < nearest:
                         second = nearest
                         nearest = d
-                        own = p[2]
-                        lit = ((u - p[0]) * STONE_LIGHT_X + (v - p[1]) * STONE_LIGHT_Y) / (d or 1)
+                        own = number[w]
+                        lit = ((u - px) * STONE_LIGHT_X + (v - py) * STONE_LIGHT_Y) / (d or 1)
                     elif d < second:
                         second = d
             k = (y * size + x) * 3

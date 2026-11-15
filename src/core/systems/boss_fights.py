@@ -195,12 +195,12 @@ class BossFights:
     @property
     def has_final(self) -> bool:
         """Whether one of the level's bosses is the final one."""
-        return any(boss.rank == "final" for boss in self._bosses)
+        return _has_final(self._bosses)
 
     @property
     def final_defeated(self) -> bool:
         """Whether the final boss has been defeated."""
-        return any(boss.rank == "final" for boss in self.defeated)
+        return _has_final(self.defeated)
 
     @property
     def bosses(self) -> list[LevelBoss]:
@@ -279,3 +279,11 @@ class BossFights:
         track.set_speed_factor(1, self._rules.speed_ease_seconds)
         self.defeated.append(fight.level)
         self.just_defeated = fight.level
+
+
+def _has_final(bosses: Sequence[LevelBoss]) -> bool:
+    """Whether one of `bosses` is the final one (a plain loop, ENG-157, D-409)."""
+    for boss in bosses:
+        if boss.rank == "final":
+            return True
+    return False

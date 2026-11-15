@@ -59,6 +59,7 @@ class SampledGround:
         v = _clamped((z - self._z0) / self._step, rows)
         i = math.floor(u)
         j = math.floor(v)
+        # Comparisons, not Transcrypt's generic `min` (D-418).
         i = min(i, columns - 1)
         j = min(j, rows - 1)
         fu = u - i

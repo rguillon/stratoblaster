@@ -294,7 +294,13 @@ def _fake_light(label: str, direction: Any, _scene: Any) -> FakeLight:
     return FakeLight(label, direction)
 
 
+def _fake_upload_thin_matrices(mesh: Any, matrices: Any) -> None:
+    """`upload_thin_matrices` (D-407): the matrices given to the mesh as its buffer."""
+    mesh.thinInstanceSetBuffer("matrix", matrices, 16, False)
+
+
 BABYLON_FAKES: dict[str, Any] = {
+    "upload_thin_matrices": _fake_upload_thin_matrices,
     "float32_array": FakeTypedArray,
     "uint32_array": FakeTypedArray,
     "uint8_array": FakeTypedArray,

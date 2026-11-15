@@ -244,9 +244,11 @@ class Boss(Enemy):
     @property
     def core_shielded(self) -> bool:
         """Whether some part that shields the core is still there (and not hidden, BOSS-14)."""
-        return any(
-            part.shields_core and not part.destroyed and not part.hidden for part in self.parts
-        )
+        # Plain loop (ENG-157, D-409).
+        for part in self.parts:
+            if part.shields_core and not part.destroyed and not part.hidden:
+                return True
+        return False
 
     @property
     def core_unarmed(self) -> bool:
@@ -255,7 +257,13 @@ class Boss(Enemy):
         Then its parts' guns are its last: it dies with the last of them, its core never hit.
         """
         mounts = self.stats.mounts
-        return mounts is not None and len(mounts) > 0 and all(m.piece != CORE for m in mounts)
+        if mounts is None or len(mounts) == 0:
+            return False
+        # Plain loop (ENG-157, D-409).
+        for m in mounts:
+            if m.piece == CORE:
+                return False
+        return True
 
     @property
     def core_health(self) -> float:
@@ -317,7 +325,7 @@ class Boss(Enemy):
             if not part.destroyed and not part.hidden:
                 part.destroy()
                 return
-        if any(part.hidden and not part.retired for part in self.parts):
+        if self._some_hidden():
             # Its parts all broken before it could transform (coming in): it reveals its next
             # weapons at once.
             self.form += 1
@@ -405,7 +413,18 @@ class Boss(Enemy):
         """
         if not self.core_unarmed or self.state != "fighting":
             return False
-        return all(part.destroyed or part.retired for part in self.parts)
+        # Plain loop (ENG-157, D-409).
+        for part in self.parts:
+            if not part.destroyed and not part.retired:
+                return False
+        return True
+
+    def _some_hidden(self) -> bool:
+        """Whether some part is hidden, not retired (a plain loop, ENG-157, D-409)."""
+        for part in self.parts:
+            if part.hidden and not part.retired:
+                return True
+        return False
 
     def _forms_due(self) -> int:
         """How many transformations its destroyed original parts call for."""
@@ -414,7 +433,13 @@ class Boss(Enemy):
             destroyed = [p.spec.id for p in self.parts if p.destroyed]
             due = 0
             for ids in wanted:
-                if not all(i in destroyed for i in ids):
+                # Plain loop (ENG-157, D-413).
+                every = True
+                for i in ids:
+                    if i not in destroyed:
+                        every = False
+                        break
+                if not every:
                     break
                 due += 1
             return due

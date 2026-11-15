@@ -147,7 +147,11 @@ def _button_held(gamepad: GamepadLike, index: int) -> bool:
 
 
 def _any_held(gamepad: GamepadLike, indices: Sequence[int]) -> bool:
-    return any(_button_held(gamepad, index) for index in indices)
+    # Plain loop (ENG-157, D-413): read every frame.
+    for index in indices:
+        if _button_held(gamepad, index):
+            return True
+    return False
 
 
 def _pad_input(gamepad: GamepadLike, bindings: GameControlBindings) -> _PadInput:

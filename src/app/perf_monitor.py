@@ -41,6 +41,8 @@ class PerfMonitor:
         self._load_start: float | None = None
         # Frames left to skip before counting again (a level's first second, DEV-PERF-02).
         self._skip: float = 0
+        # The work of the last frame timed, in ms (the graphics quality's, D-410).
+        self.last_frame_ms = 0.0
 
     @property
     def numbers(self) -> PerfNumbers:
@@ -73,6 +75,7 @@ class PerfMonitor:
             return
         time = self._now() - self._frame_start
         self._frame_start = None
+        self.last_frame_ms = time
         if self.loading:
             self._loading_step = max(self._loading_step, time)
             return

@@ -13,7 +13,7 @@ from org.transcrypt.stubs.browser import __pragma__
 
 from core.math.rng import create_rng
 from game.config.title_look import TITLE_LOOK as LOOK
-from game.view.ship_model import build_player_ship
+from game.view.ship_model import build_player_ship, merged_ship
 from game.view.trench_geometry import build_streaks, build_trench_chunk
 from render.babylon import (
     apply_vertex_data,
@@ -148,7 +148,8 @@ def build_title_backdrop(scene: Any) -> Any:
     ship_position = LOOK.ship.position
     pivot.position.set(ship_position[0], ship_position[1], ship_position[2])
     # The model's nose is towards +Z, where the camera is: the ship flies at it.
-    ship = build_player_ship(scene)
+    # Its still parts merged by material (D-406).
+    ship = merged_ship(build_player_ship(scene))
     ship.parent = pivot
     # Seconds since the backdrop was built.
     clock = [0.0]

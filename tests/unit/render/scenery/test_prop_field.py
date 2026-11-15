@@ -131,6 +131,12 @@ def _babylon(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setattr(prop_field, "apply_vertex_data", _apply_vertex_data)
     monkeypatch.setattr(prop_field, "compute_normals", _compute_normals)
     monkeypatch.setattr(prop_field, "is_enabled", lambda node: node.isEnabled())
+    # D-407: each upload, as the buffer the mesh is given (the browser keeps its own GPU buffer).
+    monkeypatch.setattr(
+        prop_field,
+        "upload_thin_matrices",
+        lambda mesh, matrices: mesh.thinInstanceSetBuffer("matrix", matrices, 16, False),
+    )
     monkeypatch.setattr(
         prop_field,
         "new_standard_material",

@@ -18,7 +18,23 @@ def make(music: int = 5, sfx: int = 7, max_step: int = 10) -> SettingsMenu:
 
 
 def test_ui_set_02_there_is_a_music_and_a_sound_effects_slider() -> None:
-    assert SETTINGS_SLIDERS == ["music", "sfx"]
+    """D-410: and a graphics quality slider, of four choices."""
+    assert SETTINGS_SLIDERS == ["music", "sfx", "graphics"]
+
+
+def test_d410_the_graphics_slider_steps_through_its_choices() -> None:
+    menu = make()
+    menu.select(2)
+    assert menu.selected_id == "graphics"
+    assert menu.volumes.graphics == 0
+    assert menu.move("right") == "adjusted"
+    assert menu.set(2, 10) == "adjusted"
+    assert menu.volumes.graphics == 3
+    assert menu.move("right") == "none"
+    assert volume_of(menu.volumes, "graphics") == 3
+    graphics = with_volume(Volumes(3, 4), "graphics", 2)
+    assert (graphics.music, graphics.sfx, graphics.graphics) == (3, 4, 2)
+    assert make(music=1, sfx=1).volumes.graphics == 0
 
 
 def test_ui_set_02_volume_of_and_with_volume_read_and_copy_the_sliders() -> None:
@@ -50,7 +66,10 @@ def test_ui_set_03_up_and_down_pick_a_slider_and_stop_at_the_ends() -> None:
     assert menu.move("up") == "none"
     assert menu.move("down") == "moved"
     assert menu.selected_id == "sfx"
+    assert menu.move("down") == "moved"
+    assert menu.selected_id == "graphics"
     assert menu.move("down") == "none"
+    assert menu.move("up") == "moved"
     assert menu.move("up") == "moved"
     assert menu.selected_id == "music"
 
@@ -103,7 +122,7 @@ def test_ui_set_03_setting_the_same_value_reports_none_or_a_move() -> None:
 
 def test_ui_set_03_a_slider_that_does_not_exist_or_a_nan_value_is_refused() -> None:
     menu = make()
-    assert menu.set(2, 3) == "none"
+    assert menu.set(3, 3) == "none"
     assert menu.set(-1, 3) == "none"
     assert menu.set(0, math.nan) == "none"
     assert menu.set(0, float("inf")) == "none"
@@ -114,7 +133,7 @@ def test_ui_set_03_a_direct_pick_moves_the_selection_or_is_refused() -> None:
     menu = make()
     assert menu.select(1) == "moved"
     assert menu.select(1) == "none"
-    assert menu.select(2) == "none"
+    assert menu.select(3) == "none"
     assert menu.select(0.5) == "none"
 
 

@@ -20,6 +20,11 @@ ModelAnimation = Callable[[float], None]
 
 
 ANIMATIONS: WeakMap[list[ModelAnimation]] = new_weak_map()
+# D-411: by model root, the nodes under it with animations, found once and kept until an
+# animation is added anywhere (`_added` counts them): looking through every node of every model on
+# every frame for them cost the frames of busy levels.
+_ANIMATED: WeakMap[list[Any]] = new_weak_map()
+_added = [0]
 # What drives a model's animations from outside, by node: name to number (the ship's sideways
 # speed, D-359).
 INPUTS: WeakMap[dict[str, float]] = new_weak_map()
@@ -37,17 +42,44 @@ def add_model_animation(node: Any, animation: Any) -> None:
         weak_map_set(ANIMATIONS, node, [animation])
     else:
         current.append(animation)
+    _added[0] += 1
 
 
 def step_model_animations(root: Any, dt_seconds: float) -> None:
     """Run the animations attached to `root` and to all its descendants."""
+    for animations in _animated_under(root):
+        for animation in animations:
+            animation(dt_seconds)
+
+
+def _animated_under(root: Any) -> list[list[ModelAnimation]]:
+    """Return the animations of `root` and of the nodes under it, node by node (D-411), found once.
+
+    The list is kept with the count of animations added when it was made, and made again once any
+    animation was added since (a model built or changed).
+    """
+    if _ANIMATED is None:
+        # CPython (unit tests): no WeakMap to keep the list in.
+        return _find_animated(root)
+    known = weak_map_get(_ANIMATED, root)
+    if known is not None and known[0] == _added[0]:
+        cached: list[list[ModelAnimation]] = known[1]
+        return cached
+    animated = _find_animated(root)
+    weak_map_set(_ANIMATED, root, [_added[0], animated])
+    return animated
+
+
+def _find_animated(root: Any) -> list[list[ModelAnimation]]:
+    """Return the animations of `root` and of the nodes under it that have some, in tree order."""
     nodes = [root]
     nodes.extend(descendants(root, False))
+    found: list[list[ModelAnimation]] = []
     for node in nodes:
         animations = weak_map_get(ANIMATIONS, node)
         if animations is not None:
-            for animation in animations:
-                animation(dt_seconds)
+            found.append(animations)
+    return found
 
 
 def set_model_input(node: Any, name: str, value: float) -> None:

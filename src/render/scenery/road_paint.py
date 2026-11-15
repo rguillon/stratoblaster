@@ -55,6 +55,19 @@ def _fround(x: float) -> float:
     return 0
 
 
+def _filled(n: int, value: Any) -> list[Any]:
+    """Return a list of `n` times `value`.
+
+    `new Array(n).fill(value)` in JavaScript (D-418): a list comprehension there appends each item
+    through Transcrypt's `append`, which costs more than the distance fields' own sums.
+    """
+    __pragma__("js", "{}", "return new Array(n).fill(value);")
+    __pragma__("skip")
+    return [value] * n
+    __pragma__("noskip")
+    return []
+
+
 def _round(x: float) -> int:
     """`Math.round(x)`: halves go up, as in JavaScript."""
     return math.floor(x + 0.5)
@@ -79,24 +92,27 @@ def _envelope(f: list[float]) -> tuple[list[int], list[float], int]:
     It comes as their apexes and boundaries.
     """
     n = len(f)
-    v = [0 for _ in range(n)]
-    z = [0.0 for _ in range(n + 1)]
-
-    def at(i: int) -> float:
-        return f[i]
-
-    def meet(p: int, q: int) -> float:
-        return (at(q) + q * q - (at(p) + p * p)) / (2 * q - 2 * p)
-
+    v = _filled(n, 0)
+    z = _filled(n + 1, 0.0)
+    # Where the parabolas of `p` and `q` meet, `(f[q] + q*q - (f[p] + p*p)) / (2q - 2p)`, written
+    # out in the loop (D-418): a closure call per pixel and step costs more than the sum.
     k = -1
     for q in range(n):
-        if at(q) == INF:
+        fq = f[q]
+        if fq == INF:
             continue
-        while k >= 0 and meet(v[k], q) <= z[k]:
+        while k >= 0:
+            p = v[k]
+            if not (fq + q * q - (f[p] + p * p)) / (2 * q - 2 * p) <= z[k]:
+                break
             k -= 1
         k += 1
         v[k] = q
-        z[k] = -INF if k == 0 else meet(v[k - 1], q)
+        if k == 0:
+            z[k] = -INF
+        else:
+            p = v[k - 1]
+            z[k] = (fq + q * q - (f[p] + p * p)) / (2 * q - 2 * p)
         z[k + 1] = INF
     return v, z, k + 1
 
@@ -104,7 +120,7 @@ def _envelope(f: list[float]) -> tuple[list[int], list[float], int]:
 def _line_1d(f: list[float]) -> list[float]:
     """Squared distances along one line (Felzenszwalb and Huttenlocher)."""
     n = len(f)
-    d = [INF for _ in range(n)]
+    d = _filled(n, INF)
     v, z, count = _envelope(f)
     if count == 0:
         return d
@@ -119,8 +135,12 @@ def _line_1d(f: list[float]) -> list[float]:
 
 def _distance_to(mask: list[int], side: int) -> list[float]:
     """Exact distance (in pixels) from each pixel to the nearest pixel of `mask`."""
-    grid = [0.0 if m else INF for m in mask]
-    line = [0.0 for _ in range(side)]
+    count = len(mask)
+    grid = _filled(count, INF)
+    for k in range(count):
+        if mask[k]:
+            grid[k] = 0.0
+    line = _filled(side, 0.0)
     for stride, step in [(side, 1), (1, side)]:
         for a in range(side):
             for b in range(side):
@@ -128,15 +148,25 @@ def _distance_to(mask: list[int], side: int) -> list[float]:
             d = _line_1d(line)
             for b in range(side):
                 grid[a * stride + b * step] = d[b]
-    return [_fround(math.sqrt(g)) for g in grid]
+    for k in range(count):
+        grid[k] = _fround(math.sqrt(grid[k]))
+    return grid
 
 
 def _within(mask: list[int], side: int, r: float) -> list[int]:
-    return [1 if v <= r else 0 for v in _distance_to(mask, side)]
+    distances = _distance_to(mask, side)
+    out = _filled(len(distances), 0)
+    for k in range(len(distances)):
+        if distances[k] <= r:
+            out[k] = 1
+    return out
 
 
 def _invert(mask: list[int]) -> list[int]:
-    return [1 - v for v in mask]
+    out = _filled(len(mask), 0)
+    for k in range(len(mask)):
+        out[k] = 1 - mask[k]
+    return out
 
 
 def _close(mask: list[int], side: int, r: float) -> list[int]:
@@ -164,7 +194,7 @@ def _fill(mask: list[Any], c: Canvas, rect: Rect, value: object) -> None:
 
 def _road_mask(piece: RoadPiece, tile: TileRules, c: Canvas) -> list[int]:
     """Return the roadway, its arms run on past the edges of the piece to stay straight there."""
-    mask = [0 for _ in range(c.side * c.side)]
+    mask = _filled(c.side * c.side, 0)
     size = piece.size * tile.size
     out = c.margin / c.scale
     roadway, _arms = piece_roadway(piece, tile)
@@ -321,14 +351,16 @@ def paint_piece(
     c = Canvas(scale, margin, n + 2 * margin)
     road = _rounded_road(piece, tile, c)
     kerb = _within(road, c.side, look.kerbWidth * scale)
-    pixels = [
-        look.roadway if road[i] else (look.kerb if kerb[i] else look.sidewalk)
-        for i in range(c.side * c.side)
-    ]
+    pixels = _filled(c.side * c.side, look.sidewalk)
+    for i in range(c.side * c.side):
+        if road[i]:
+            pixels[i] = look.roadway
+        elif kerb[i]:
+            pixels[i] = look.kerb
     _paint_lines(pixels, piece, tile, look, c)
-    out: list[Any] = []
+    out = _filled(n * n, look.sidewalk)
     for j in range(n):
         for i in range(n):
             v = pixels[(j + margin) * c.side + i + margin]
-            out.append(v or look.sidewalk)
+            out[j * n + i] = v or look.sidewalk
     return out

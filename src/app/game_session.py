@@ -9,7 +9,13 @@ level select highlight rests on is built ahead (PERF-13).
 """
 
 from app.game_play import GameChoice, GamePlay, GamePlayOptions
-from app.level_prepare import LevelPrefetcher, prepare_level, roads_ready, textures_ready
+from app.level_prepare import (
+    ROAD_WAIT_FRAMES,
+    LevelPrefetcher,
+    ask_roads,
+    prepare_level,
+    textures_ready,
+)
 from app.listen_controls import listen_controls
 from app.saved_supplies import load_saved_supplies, save_supplies
 from app.saved_weapons import load_saved_weapons, save_weapons
@@ -383,9 +389,22 @@ class GameSession:
         debug = self.options.debug
         return debug is not None and debug.tiles is True
 
-    def _roads_step(self, level_id: str, load: LevelLoad) -> bool:
-        """Return the street surfaces of the first screens, made by the worker (PERF-17)."""
-        return roads_ready(self.game, level_id, self._road_grid(), load.tries)
+    def _ask_roads_step(self, level_id: str) -> None:
+        """Ask the worker for the street surfaces of the first screens (PERF-17, D-415).
+
+        Right after the ground, so it makes them while the scene is built.
+        """
+        ask_roads(self.game, level_id, self._road_grid())
+
+    def _roads_step(self, load: LevelLoad) -> bool:
+        """Wait for the street surfaces of the chunks in view, and give them to the scene (D-415).
+
+        For at most ROAD_WAIT_FRAMES (PERF-18): the chunks still waiting then take theirs in play.
+        """
+        if load.play is None or load.tries > ROAD_WAIT_FRAMES:
+            return True
+        ready: bool = load.play.roads_ready()
+        return ready
 
     def _enemies_step(self, load: LevelLoad) -> bool:
         """Return the enemy models, one a frame, here rather than in play (PERF-21)."""
@@ -426,13 +445,16 @@ class GameSession:
             # The textures the worker makes, before the scene (which would make them here).
             return textures_ready(self.game, level_id, self._loader, load.tries)
 
+        # D-415: the roads are asked for as soon as the ground is in, and waited for only after the
+        # scene and its enemy models are built: the worker makes them meanwhile.
         load.steps = [
             ground,
+            lambda: self._ask_roads_step(level_id),
             textures,
-            lambda: self._roads_step(level_id, load),
             build,
             prepare_play,
             lambda: self._enemies_step(load),
+            lambda: self._roads_step(load),
             lambda: self._compile_wait(load),
             start,
         ]
