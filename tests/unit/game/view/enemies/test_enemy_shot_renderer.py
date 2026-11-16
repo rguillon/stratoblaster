@@ -347,9 +347,7 @@ def missile_parts(monkeypatch: pytest.MonkeyPatch) -> SimpleNamespace:
     monkeypatch.setattr(sr, "enemy_materials", lambda _scene: mats)
     monkeypatch.setattr(sr, "set_outline", lambda mesh, color: parts.outlines.append((mesh, color)))
     parts.flames = []
-    monkeypatch.setattr(
-        sr, "flame_materials", lambda _scene, color: SimpleNamespace(color=list(color))
-    )
+    monkeypatch.setattr(sr, "flame_colors", lambda color: SimpleNamespace(color=list(color)))
     monkeypatch.setattr(
         sr,
         "build_reactor_flame",

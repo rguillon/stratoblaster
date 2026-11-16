@@ -106,6 +106,7 @@ ignore = [  "COM812",   # cause incompatibility with the formatter
 "src/app/saved_weapons.py" = ["ARG001"]
 "src/debug/remote_player.py" = ["ARG001"]
 "src/game/view/audio/game_audio.py" = ["ARG001"]
+"src/game/view/flame_layer.py" = ["ARG001"]
 "src/game/view/reactor_flame.py" = ["ARG001"]
 "src/game/view/readability_view.py" = ["ARG001"]
 "src/game/view/ship_materials.py" = ["ARG001", "N803"]  # N803: config record keys (ENG-15)

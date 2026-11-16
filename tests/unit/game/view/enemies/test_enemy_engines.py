@@ -56,7 +56,7 @@ def babylon(monkeypatch: Any) -> Any:
     monkeypatch.setattr(ee, "node_name", lambda node: node.label)
     monkeypatch.setattr(ee, "mesh_of", mesh_of)
     monkeypatch.setattr(ee, "enemy_color", lambda color, _hues=None: color)
-    monkeypatch.setattr(ee, "flame_materials", lambda _scene, color: ("flame", color))
+    monkeypatch.setattr(ee, "flame_colors", lambda color: ("flame", color))
     monkeypatch.setattr(
         ee, "build_reactor_flame", lambda _name, options, _node, _mats: flames.append(options)
     )
@@ -103,7 +103,7 @@ def test_a_reactor_is_a_nozzle_and_a_flame_on_a_node_at_its_place(babylon: Any) 
 @pytest.mark.usefixtures("babylon")
 def test_d231_a_reactor_flame_takes_the_enemy_s_neon_colour(monkeypatch: Any) -> None:
     seen = []
-    monkeypatch.setattr(ee, "flame_materials", lambda _scene, color: seen.append(color))
+    monkeypatch.setattr(ee, "flame_colors", lambda color: seen.append(color))
     parts = SimpleNamespace(hull=SolidBuilder(), neon=SolidBuilder())
     add_reactors("gnat", [Reactor([0, 1, -4], 1.0)], parts, _scene_root(), [1, 0.9, 0.1])
     add_reactors("gnat", [Reactor([0, 1, -4], 1.0)], parts, _scene_root())

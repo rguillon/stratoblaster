@@ -22,6 +22,7 @@ from render.environment.showcase_environment_visual import (
     apply_showcase_environment,
     update_sky_environment,
 )
+from render.glow_marks import glows_as_drawn
 from render.node_adopter import NodeAdopter
 from render.outline import OutlineLayer, compile_outlines
 from render.scenery.cloud_layers import ABOVE_CLOUDS_GROUP, BELOW_CLOUDS_GROUP
@@ -41,6 +42,10 @@ from typing import Any
 
 # Babylon's default resolution of a glow image, as a share of the screen's.
 DEFAULT_GLOW_RATIO = 0.5
+
+# The emissive colour, on any channel, from which a lit material glows on the playfield (D-427):
+# above the enemy hulls' own faint light (0.04) and the ship's canopy (0.12).
+GLOW_MIN_EMISSIVE = 0.2
 
 # Samples per pixel of the ground's glow image (antialiased: thin lights do not flicker).
 GROUND_GLOW_SAMPLES = 4
@@ -89,6 +94,22 @@ def scenery_look(game: Any, level: Any) -> Any:
     if look is None:
         raise ValueError('No look for scenery level "' + level.id + '"')
     return look
+
+
+def gives_light(material: Any) -> bool:
+    """Whether a mesh of `material` glows on the playfield: unlit, or lit and bright by itself.
+
+    A hull faintly lit by its neon (under `GLOW_MIN_EMISSIVE`) does not.
+    """
+    if material is None:
+        return False
+    if material.disableLighting:
+        return True
+    emissive = material.emissiveColor
+    if emissive == None:
+        return False
+    least = GLOW_MIN_EMISSIVE
+    return bool(emissive.r >= least or emissive.g >= least or emissive.b >= least)
 
 
 def _playfield_glow(scene: Any, look: Any) -> Any:
@@ -211,15 +232,18 @@ def playfield_layer(scene: Any, options: LevelSceneOptions) -> NodeAdopter:
     def on_mesh(mesh: Any) -> None:
         # Shots are additive and bright enough already: only the ships' neon lights glow. Nor do
         # soft, see-through particles (vertex alpha: the blasts' fire and smoke), which the glow
-        # layer would draw white, without their tints.
+        # layer would draw white, without their tints. Nor the parts that give no light (hulls,
+        # flesh): drawn black there, they only hid the lights behind them, a draw call each
+        # (D-427).
         material = mesh.material
         additive = material is not None and material.alphaMode == babylon_constant("ALPHA_ADD")
-        if (
-            glow is not None
-            and is_instance_of(mesh, "Mesh")
-            and not additive
-            and not mesh.hasVertexAlpha
-        ):
+        if glow is None or not is_instance_of(mesh, "Mesh") or additive:
+            pass
+        elif glows_as_drawn(mesh):
+            # Its instances have their own colours and opacity (the flames, D-428).
+            glow.addIncludedOnlyMesh(mesh)
+            glow.referenceMeshToUseItsOwnMaterial(mesh)
+        elif not mesh.hasVertexAlpha and gives_light(material):
             glow.addIncludedOnlyMesh(mesh)
         if outline is not None:
             outline.add(mesh)

@@ -9,6 +9,7 @@ from org.transcrypt.stubs.browser import __pragma__
 from core.math.color import capped_saturation, hue_saturation, snap_to_hues
 from game.config.enemy_look import ENEMY_LOOK
 from game.config.readability import READABILITY
+from game.view.reactor_flame import FlameColors
 from render.babylon import (
     apply_vertex_data,
     block_material_marks,
@@ -107,19 +108,9 @@ class EnemyMaterials:
         self.neon = neon
 
 
-class FlameMaterials:
-    """The materials of a reactor's flame: exhaust, flame and plasma."""
-
-    def __init__(self, exhaust: Any, flame: Any, plasma: Any) -> None:
-        self.exhaust = exhaust
-        self.flame = flame
-        self.plasma = plasma
-
-
 # Per-scene caches: pairs of [scene, value], matched by identity.
 _ENEMY_CACHE = []  # type: list[list[Any]]
 _TINTED_CACHE = []  # type: list[list[Any]]
-_FLAME_CACHE = []  # type: list[list[Any]]
 
 
 def _cached(cache: list[list[Any]], scene: Any) -> list[Any] | None:
@@ -254,33 +245,12 @@ def mesh_of(name: str, geo: Any, material: Any, scene: Any) -> Any:
     return mesh
 
 
-def glowing(name: str, color: Sequence[float], alpha: float, scene: Any) -> Any:
-    """Return an unlit, see-through material of `color` at `alpha`, drawn both sides."""
-    was = block_material_marks(scene, True)
-    mat = unlit(name, scene)
-    mat.emissiveColor = color3(color[0], color[1], color[2])
-    mat.alpha = alpha
-    mat.backFaceCulling = False
-    block_material_marks(scene, was)
-    return mat
-
-
-def flame_materials(scene: Any, color: Sequence[float]) -> Any:
-    """Flame materials in `color`, shared by the scene's reactors of that colour."""
+def flame_colors(color: Sequence[float]) -> FlameColors:
+    """Return the colours of a reactor flame in `color`: its inner flame whitened (ENM-40)."""
     look = ENEMY_LOOK.reactor
-    pair = _cached(_FLAME_CACHE, scene)
-    if pair is None:
-        pair = [scene, {}]
-        _FLAME_CACHE.append(pair)
-    by_color = pair[1]
-    key = ",".join([str(c) for c in color])
-    mats = by_color.get(key)
-    if mats is None:
-        hot = [c + (1 - c) * look.whiten for c in color]
-        mats = FlameMaterials(
-            glowing("enemy-exhaust-" + key, color, look.exhaustAlpha, scene),
-            glowing("enemy-flame-" + key, hot, look.flameAlpha, scene),
-            glowing("enemy-plasma-" + key, color, look.plasmaAlpha, scene),
-        )
-        by_color[key] = mats
-    return mats
+    hot = [c + (1 - c) * look.whiten for c in color]
+    return FlameColors(
+        [color[0], color[1], color[2], look.exhaustAlpha],
+        [hot[0], hot[1], hot[2], look.flameAlpha],
+        [color[0], color[1], color[2], look.plasmaAlpha],
+    )

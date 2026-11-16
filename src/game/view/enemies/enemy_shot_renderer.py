@@ -13,7 +13,7 @@ from game.config.enemy_look import ENEMY_LOOK
 from game.config.readability import READABILITY
 from game.view.enemies.blast_renderer import LayerMesh, puff
 from game.view.enemies.enemy_lasers import EnemyLasers
-from game.view.enemies.enemy_materials import enemy_materials, flame_materials, mesh_of
+from game.view.enemies.enemy_materials import enemy_materials, flame_colors, mesh_of
 from game.view.enemies.missile_smoke import MissileSmoke
 from game.view.reactor_flame import build_reactor_flame
 from game.view.shot_geometry import (
@@ -344,7 +344,7 @@ def build_missile(scene: Any, i: int) -> Any:
             "light": {"puffs": reactor.puffs},
         },
         nozzle,
-        flame_materials(scene, look.flameColor),
+        flame_colors(look.flameColor),
     )
     return root
 
