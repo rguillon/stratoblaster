@@ -20,7 +20,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-tags: true
-      - uses: astral-sh/setup-uv@v10.3.3
+      - uses: astral-sh/setup-uv@v10.4.0
       # ENG-74: Python 3.12 (pinned by pyproject.toml) is fetched by uv. Node is not used here, but
       # the Makefile checks its version before any step (node/.nvmrc).
       - uses: actions/setup-node@v7
@@ -36,7 +36,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-tags: true
-      - uses: astral-sh/setup-uv@v10.3.3
+      - uses: astral-sh/setup-uv@v10.4.0
       - uses: actions/setup-node@v7
         with:
           node-version-file: node/.nvmrc
@@ -70,7 +70,7 @@ jobs:
       - uses: actions/checkout@v7
         with:
           fetch-tags: true
-      - uses: astral-sh/setup-uv@v10.3.3
+      - uses: astral-sh/setup-uv@v10.4.0
       - uses: actions/setup-node@v7
         with:
           node-version-file: node/.nvmrc
